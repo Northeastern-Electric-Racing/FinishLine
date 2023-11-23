@@ -4,12 +4,12 @@
  */
 
 import { ImplementedChange } from 'shared';
-import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { Link, ListItem, List, Typography } from '@mui/material';
-import PageBlock from '../../layouts/PageBlock';
 import { Link as RouterLink } from 'react-router-dom';
 import DynamicTooltip from '../../components/DynamicTooltip';
+import CRBlock from '../../layouts/CRBlock';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -18,30 +18,34 @@ interface ImplementedChangesListProps {
 
 const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
   return (
-    <PageBlock
+    <CRBlock
       title={'Implemented Changes'}
-      headerRight={<>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>}
-    >
-      <List>
-        {changes.map((ic, idx) => (
-          <ListItem key={idx}>
-            <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
-              {
-                <Typography>
-                  [
+      children={
+        <List>
+          {changes.length === 0 ? (
+            <Typography>—— There are no implemented changes for this change request.</Typography>
+          ) : (
+            changes.map((ic, idx) => (
+              <ListItem key={idx}>
+                <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
                   {
-                    <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
-                      {wbsPipe(ic.wbsNum)}
-                    </Link>
+                    <Typography>
+                      [
+                      {
+                        <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
+                          {wbsPipe(ic.wbsNum)}
+                        </Link>
+                      }
+                      ] {ic.detail}
+                    </Typography>
                   }
-                  ] {ic.detail}
-                </Typography>
-              }
-            </DynamicTooltip>
-          </ListItem>
-        ))}
-      </List>
-    </PageBlock>
+                </DynamicTooltip>
+              </ListItem>
+            ))
+          )}
+        </List>
+      }
+    ></CRBlock>
   );
 };
 

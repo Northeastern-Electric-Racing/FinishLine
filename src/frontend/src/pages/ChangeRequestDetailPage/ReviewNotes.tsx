@@ -5,8 +5,8 @@
 
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
-import PageBlock from '../../layouts/PageBlock';
-import { Tooltip, Typography } from '@mui/material';
+import { Tooltip, Typography, Grid } from '@mui/material';
+import CRBlock from '../../layouts/CRBlock';
 
 interface ReviewNotesProps {
   reviewer?: User;
@@ -16,29 +16,30 @@ interface ReviewNotesProps {
 
 const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
-    <PageBlock
+    <CRBlock
       title={'Review Notes'}
-      headerRight={
-        <Tooltip
-          id="tooltip"
-          arrow
-          placement="left"
-          title={
-            <Typography
-              sx={{
-                fontSize: 14
-              }}
-            >
-              {'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}
-            </Typography>
-          }
-        >
-          <span>{fullNamePipe(reviewer)}</span>
-        </Tooltip>
+      children={
+        <Typography>
+          <Tooltip
+            id="tooltip"
+            arrow
+            placement="bottom"
+            title={
+              <Typography
+                sx={{
+                  fontSize: 14
+                }}
+              >
+                {'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}
+              </Typography>
+            }
+          >
+            <span>{fullNamePipe(reviewer)}— </span>
+          </Tooltip>
+          {reviewNotes ? reviewNotes : 'There are no review notes for this change request.'}
+        </Typography>
       }
-    >
-      {reviewNotes ? reviewNotes : 'There are no review notes for this change request.'}
-    </PageBlock>
+    ></CRBlock>
   );
 };
 

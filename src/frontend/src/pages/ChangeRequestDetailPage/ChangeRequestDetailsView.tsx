@@ -30,7 +30,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
-import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -108,52 +107,53 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         />
       }
     >
-      <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
-        <Grid container spacing={1}>
-          <Grid item xs={2}>
-            <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
+      <Grid container rowGap={4}>
+        <Grid container columnSpacing={3}>
+          <Grid item xs={'auto'}>
+            <Typography sx={{ fontWeight: 'normal', fontSize: '24px' }}>
+              <b>WBS: </b>{' '}
+              <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                {wbsPipe(changeRequest.wbsNum)} - {projectName}
+                {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
+              </Link>
+            </Typography>
           </Grid>
-          <Grid item xs={10}>
-            {changeRequest.type}
-          </Grid>
-          <Grid item xs={2}>
-            <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
-          </Grid>
-          <Grid item xs={10}>
-            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-              {wbsPipe(changeRequest.wbsNum)} - {projectName}
-              {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
-            </Link>
-          </Grid>
-          <Grid item xs={3} md={2}>
-            <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Typography>{datePipe(changeRequest.dateSubmitted)}</Typography>
+          <Grid item xs={'auto'}>
+            <Typography sx={{ fontWeight: 'normal', fontSize: '24px' }}>
+              <b>Submitter: </b>
+              {fullNamePipe(changeRequest.submitter)} on {datePipe(changeRequest.dateSubmitted)}
+            </Typography>
           </Grid>
         </Grid>
-      </PageBlock>
-      {buildDetails(changeRequest)}
-      {buildProposedSolutions(changeRequest)}
-      <ReviewNotes
-        reviewer={changeRequest.reviewer}
-        reviewNotes={changeRequest.reviewNotes}
-        dateReviewed={changeRequest.dateReviewed}
-      />
-      <ImplementedChangesList
-        changes={changeRequest.implementedChanges || []}
-        overallDateImplemented={changeRequest.dateImplemented}
-      />
+        <Grid container rowSpacing={2}>
+          <Grid item xs={12}>
+            {buildDetails(changeRequest)}
+          </Grid>
+          <Grid item xs={12}>
+            {buildProposedSolutions(changeRequest)}
+          </Grid>
+          <Grid item xs={12}>
+            <ReviewNotes
+              reviewer={changeRequest.reviewer}
+              reviewNotes={changeRequest.reviewNotes}
+              dateReviewed={changeRequest.dateReviewed}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <ImplementedChangesList
+              changes={changeRequest.implementedChanges || []}
+              overallDateImplemented={changeRequest.dateImplemented}
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+
       {reviewModalShow && (
         <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
       )}
       {deleteModalShow && (
         <DeleteChangeRequest modalShow={deleteModalShow} handleClose={handleDeleteClose} cr={changeRequest} />
       )}
-      <OtherChangeRequestsPopupTabs changeRequest={changeRequest} />
     </PageLayout>
   );
 };
