@@ -16,6 +16,7 @@ import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } f
 import ErrorPage from '../ErrorPage';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import { useAllTeams } from '../../hooks/teams.hooks';
+import { displayEnum } from '../../utils/pipes';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -152,7 +153,7 @@ const Settings: React.FC = () => {
             <DetailDisplay label="Email ID" content={String(user.emailId)} />
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg>
-            <DetailDisplay label="Role" content={user.role} />
+            <DetailDisplay label="Role" content={displayEnum(user.role)} />
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg>
             <DetailDisplay

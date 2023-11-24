@@ -3,10 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ReimbursementProductCreateArgs, ReimbursementReceiptCreateArgs, WbsNumber, wbsPipe } from 'shared';
+import {
+  OtherProductReason,
+  OtherReimbursementProductCreateArgs,
+  ReimbursementProductCreateArgs,
+  ReimbursementReceiptCreateArgs,
+  ValidatedWbsReimbursementProductCreateArgs,
+  wbsPipe,
+  WbsReimbursementProductCreateArgs
+} from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Prisma, Receipt, Reimbursement_Product, Team, User } from '@prisma/client';
+import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Team, User } from '@prisma/client';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import { isUserOnTeam } from './teams.utils';
 
@@ -43,51 +51,51 @@ export const removeDeletedReceiptPictures = async (
  * @throws if any of the wbs elements are deleted or dont exist
  */
 export const validateReimbursementProducts = async (
-  reimbursementProductCreateArgs: ReimbursementProductCreateArgs[]
-): Promise<
-  {
-    name: string;
-    cost: number;
-    wbsElementId: number;
-    wbsNum: WbsNumber;
-  }[]
-> => {
-  if (reimbursementProductCreateArgs.length === 0) {
+  otherReimbursementProductCreateArgs: OtherReimbursementProductCreateArgs[],
+  wbsReimbursementProductsCreateArgs: WbsReimbursementProductCreateArgs[]
+): Promise<{
+  validatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[];
+  validatedWbsReimbursementProducts: ValidatedWbsReimbursementProductCreateArgs[];
+}> => {
+  if (otherReimbursementProductCreateArgs.length + wbsReimbursementProductsCreateArgs.length === 0) {
     throw new HttpException(400, 'You must have at least one product to reimburse');
   }
-
-  /**
-   * Aggregate all the wbsNums for all the reimbursement products
-   */
-  const wbsNums = reimbursementProductCreateArgs.map((reimbursementProductInfo) => reimbursementProductInfo.wbsNum);
 
   /**
    * Goes through each wbsNum and finds the wbs element associated with it
    * Checks if the wbs element exists and is not deleted
    */
-  const reimbursementProductsWithWbsElement: Promise<{
-    name: string;
-    cost: number;
-    wbsElementId: number;
-    wbsNum: WbsNumber;
-  }>[] = wbsNums.map(async (wbsNum, index) => {
-    const wbsElement = await prisma.wBS_Element.findFirst({
-      where: {
-        carNumber: wbsNum.carNumber,
-        projectNumber: wbsNum.projectNumber,
-        workPackageNumber: wbsNum.workPackageNumber
-      }
-    });
-    if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
-    if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
+  const validatedWbsReimbursementProductsPromises: Promise<ValidatedWbsReimbursementProductCreateArgs>[] =
+    wbsReimbursementProductsCreateArgs.map(async (product) => {
+      //check whether the reason is a WBS Number
+      const wbsNum = product.reason;
+      const wbsElement = await prisma.wBS_Element.findFirst({
+        where: {
+          carNumber: wbsNum.carNumber,
+          projectNumber: wbsNum.projectNumber,
+          workPackageNumber: wbsNum.workPackageNumber
+        }
+      });
+      if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
+      if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
 
+      return {
+        ...product,
+        wbsElementId: wbsElement.wbsElementId,
+        wbsNum
+      };
+    });
+
+  const validatedOtherReimbursementProducts = otherReimbursementProductCreateArgs.map((product) => {
     return {
-      ...reimbursementProductCreateArgs[index],
-      wbsElementId: wbsElement.wbsElementId
+      ...product,
+      reason: product.reason as OtherProductReason
     };
   });
 
-  return Promise.all(reimbursementProductsWithWbsElement);
+  const validatedWbsReimbursementProducts = await Promise.all(validatedWbsReimbursementProductsPromises);
+
+  return { validatedOtherReimbursementProducts, validatedWbsReimbursementProducts };
 };
 
 /**
@@ -98,22 +106,31 @@ export const validateReimbursementProducts = async (
  */
 export const updateReimbursementProducts = async (
   currentReimbursementProducts: Reimbursement_Product[],
-  updatedReimbursementProducts: ReimbursementProductCreateArgs[],
+  updatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+  updatedWbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
   reimbursementRequestId: string
 ) => {
-  if (updatedReimbursementProducts.length === 0) {
+  if (updatedOtherReimbursementProducts.length + updatedWbsReimbursementProducts.length === 0) {
     throw new HttpException(400, 'A reimbursement request must have at least one reimbursement product!');
   }
 
   //if a product has an id that means it existed before and was updated
-  const updatedExistingProducts = updatedReimbursementProducts.filter((product) => product.id);
+  const updatedOtherExistingProducts = updatedOtherReimbursementProducts.filter((product) => product.id);
+
+  const updatedWbsExistingProducts = updatedWbsReimbursementProducts.filter((product) => product.id);
+
+  const updatedExistingProducts = (updatedOtherExistingProducts as ReimbursementProductCreateArgs[]).concat(
+    updatedWbsExistingProducts as ReimbursementProductCreateArgs[]
+  );
 
   validateUpdatedProductsExistInDatabase(currentReimbursementProducts, updatedExistingProducts);
 
   const updatedExistingProductIds = updatedExistingProducts.map((product) => product.id!);
 
   //if the product does not have an id that means it is new
-  const newProducts = updatedReimbursementProducts.filter((product) => !product.id);
+  const newOtherProducts = updatedOtherReimbursementProducts.filter((product) => !product.id);
+
+  const newWbsProducts = updatedWbsReimbursementProducts.filter((product) => !product.id);
 
   //if there are products that exist in the current database but were not included in this edit, that means they were deleted
   const deletedProducts = currentReimbursementProducts.filter(
@@ -122,7 +139,7 @@ export const updateReimbursementProducts = async (
 
   await updateDeletedProducts(deletedProducts);
 
-  await createNewProducts(newProducts, reimbursementRequestId);
+  await createNewProducts(newOtherProducts, newWbsProducts, reimbursementRequestId);
 
   await updateExistingProducts(updatedExistingProducts);
 };
@@ -184,35 +201,142 @@ const updateDeletedProducts = async (products: Reimbursement_Product[]) => {
 };
 
 /**
- * Creates the new products in the database
- * @param products the products to create
+ * Validates and Creates the new products in the database
+ * @param otherProducts the other reimbursement products to create
+ * @param wbsProducts the wbs reimbursement products to create
  */
-const createNewProducts = async (products: ReimbursementProductCreateArgs[], reimbursementRequestId: string) => {
+const createNewProducts = async (
+  otherProducts: OtherReimbursementProductCreateArgs[],
+  wbsProducts: WbsReimbursementProductCreateArgs[],
+  reimbursementRequestId: string
+) => {
   //create the new reimbursement products
-  if (products.length !== 0) {
-    const validatedReimbursementProudcts = await validateReimbursementProducts(products);
-    await prisma.reimbursement_Product.createMany({
-      data: validatedReimbursementProudcts.map((product) => ({
-        name: product.name,
-        cost: product.cost,
-        wbsElementId: product.wbsElementId,
-        reimbursementRequestId
-      }))
-    });
+  if (otherProducts.length + wbsProducts.length !== 0) {
+    const validatedReimbursementProducts = await validateReimbursementProducts(otherProducts, wbsProducts);
+    await createReimbursementProducts(
+      validatedReimbursementProducts.validatedOtherReimbursementProducts,
+      validatedReimbursementProducts.validatedWbsReimbursementProducts,
+      reimbursementRequestId
+    );
   }
 };
 
+/**
+ * Takes in validated reimbursement products and create them in the database
+ * @param validatedOtherReimbursementProducts the other reimbursement products to create
+ * @param validatedWbsReimbursementProducts the wbs reimbursement products to create
+ * @param reimbursementRequestId id of the reimbursement request to associate the reimbursement products with
+ */
+export const createReimbursementProducts = async (
+  validatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+  validatedWbsReimbursementProducts: ValidatedWbsReimbursementProductCreateArgs[],
+  reimbursementRequestId: string
+): Promise<void> => {
+  const otherReimbursementProductPromises = validatedOtherReimbursementProducts.map(async (product) => {
+    const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
+      data: {
+        otherReason: product.reason
+      }
+    });
+
+    return await prisma.reimbursement_Product.create({
+      data: {
+        name: product.name,
+        cost: product.cost,
+        reimbursementRequestId,
+        reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
+      }
+    });
+  });
+
+  const wbsReimbursementProductPromises = validatedWbsReimbursementProducts.map(async (product) => {
+    const reimbursementProductReason = await prisma.reimbursement_Product_Reason.create({
+      data: {
+        wbsElement: {
+          connect: {
+            wbsElementId: product.wbsElementId
+          }
+        }
+      }
+    });
+
+    return await prisma.reimbursement_Product.create({
+      data: {
+        name: product.name,
+        cost: product.cost,
+        reimbursementRequestId,
+        reimbursementProductReasonId: reimbursementProductReason.reimbursementProductReasonId
+      }
+    });
+  });
+
+  await Promise.all([...otherReimbursementProductPromises, ...wbsReimbursementProductPromises]);
+};
+
+/**
+ * Validates that the given user is on the finance team.
+ *
+ * @param user The user to validate.
+ * @throws {AccessDeniedException} Fails validation when user is not on the
+ * finance team.
+ */
 export const validateUserIsPartOfFinanceTeam = async (user: User) => {
+  const isUserAuthorized = await isUserOnFinanceTeam(user);
+
+  if (!isUserAuthorized) {
+    throw new AccessDeniedException(`You are not a member of the finance team!`);
+  }
+};
+
+/**
+ * Determines if a user is part of the finance team.
+ *
+ * To be used for Prisma input validation of a plain User, as opposed to
+ * <code>isAuthUserOnFinance</code>, which uses the additional fields
+ * produced by authUserQueryArgs that are not in the User type by default.
+ *
+ * @param user the user to authenticate
+ * @returns whether the user is on the finance team
+ * @throws {HttpException} if finance team not found in database
+ */
+export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
+  if (!process.env.FINANCE_TEAM_ID) {
+    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
+  }
+
   const financeTeam = await prisma.team.findUnique({
     where: { teamId: process.env.FINANCE_TEAM_ID },
     include: { head: true, leads: true, members: true }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+  return isUserOnTeam(financeTeam, user);
+};
 
-  if (!isUserOnTeam(financeTeam, user)) {
-    throw new AccessDeniedException(`You are not a member of the finance team!`);
+/**
+ * Determines if a user is lead or head of the finance team.
+ *
+ * To be used for Prisma input validation of a plain User, as opposed to
+ * <code>isAuthUserAtLeastLeadForFinance</code>, which uses the additional fields
+ * produced by authUserQueryArgs that are not in the User type by default.
+ *
+ * @param user the user to authenticate
+ * @returns whether the user is lead or head of the finance team
+ * @throws {HttpException} if finance team not found in database
+ */
+export const isUserLeadOrHeadOfFinanceTeam = async (user: User): Promise<boolean> => {
+  if (!process.env.FINANCE_TEAM_ID) {
+    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
   }
+
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID },
+    include: { head: true, leads: true }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  return user.userId === financeTeam.headId || financeTeam.leads.map((u) => u.userId).includes(user.userId);
 };
 
 export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
@@ -226,10 +350,36 @@ export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQ
   );
 };
 
+/**
+ * Determines if the user is a finance lead or head.
+ * @param user the user to check
+ * @returns Whether they are a finance lead.
+ */
+export const isAuthUserAtLeastLeadForFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
+  if (!process.env.FINANCE_TEAM_ID) return false;
+  const financeTeamId = process.env.FINANCE_TEAM_ID;
+  const { teamAsHead, teamsAsLead } = user;
+  return teamAsHead?.teamId === financeTeamId || isTeamIdInList(financeTeamId, teamsAsLead);
+};
+
 export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
   return user.teamAsHead?.teamId === process.env.FINANCE_TEAM_ID;
 };
 
 const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
   return teamsList.map((team) => team.teamId).includes(teamId);
+};
+
+/**
+ * Validates user has permission to edit the reimbursement request.
+ * @param user the person editing the reimbursement request
+ * @param reimbursementRequest the reimbursement request to edit
+ */
+export const validateUserEditRRPermissions = async (user: User, reimbursementRequest: Reimbursement_Request) => {
+  try {
+    await validateUserIsPartOfFinanceTeam(user);
+  } catch {
+    if (reimbursementRequest.recipientId !== user.userId)
+      throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');
+  }
 };

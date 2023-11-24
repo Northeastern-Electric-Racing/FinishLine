@@ -43,7 +43,6 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
   const theme = useTheme();
 
   const autocompleteStyle = {
-    height: '40px',
     backgroundColor: theme.palette.background.default,
     width: '100%',
     border: 0,
@@ -56,7 +55,8 @@ const NERAutocomplete: React.FC<NERAutocompleteProps> = ({
       <TextField
         {...params}
         InputProps={{
-          ...params.InputProps
+          ...params.InputProps,
+          sx: { height: '56px' }
         }}
         placeholder={placeholder}
         required

@@ -45,4 +45,13 @@ export interface CreateSingleProjectPayload {
   name: string;
   carNumber: number;
   summary: string;
+  teamIds: string[];
+  budget: number;
+  rules: string[];
+  goals: { id: number; detail: string }[];
+  features?: { id: number; detail: string }[];
+  otherConstraints?: { id: number; detail: string }[];
+  links?: LinkCreateArgs[];
+  projectLeadId?: number;
+  projectManagerId?: number;
 }

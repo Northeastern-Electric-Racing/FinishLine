@@ -7,7 +7,7 @@ import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { TimelineStatus, WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
-import { Task } from 'shared';
+import { Assembly, Material, Task } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
@@ -25,6 +25,8 @@ export interface WbsElement {
   projectManager?: User;
   links: Link[];
   changes: ImplementedChange[];
+  materials: Material[];
+  assemblies: Assembly[];
 }
 
 export enum WbsElementStatus {
@@ -94,11 +96,4 @@ export interface LinkCreateArgs {
   linkId: string;
   linkTypeName: string;
   url: string;
-}
-
-export enum MaterialStatus {
-  Ordered = 'ORDERED',
-  Received = 'RECEIVED',
-  Unordered = 'UNORDERED',
-  Shipped = 'SHIPPED'
 }

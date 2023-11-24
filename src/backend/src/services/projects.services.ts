@@ -1,5 +1,19 @@
-import { Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
-import { isAdmin, isGuest, isLeadership, isProject, LinkCreateArgs, LinkType, Project, WbsNumber, wbsPipe } from 'shared';
+import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import {
+  isAdmin,
+  isGuest,
+  isHead,
+  isLeadership,
+  isProject,
+  LinkCreateArgs,
+  LinkType,
+  Manufacturer,
+  MaterialType,
+  Project,
+  Unit,
+  WbsNumber,
+  wbsPipe
+} from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
 import projectTransformer from '../transformers/projects.transformer';
@@ -12,25 +26,18 @@ import {
   DeletedException,
   AccessDeniedException
 } from '../utils/errors.utils';
-import {
-  addDescriptionBullets,
-  editDescriptionBullets,
-  getHighestProjectNumber,
-  getUserFullName
-} from '../utils/projects.utils';
+import { updateProjectAndCreateChanges, getHighestProjectNumber } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
 import WorkPackagesService from './work-packages.services';
-import { createChange, createListChanges } from '../utils/changes.utils';
-import {
-  DescriptionBulletPreview,
-  descriptionBulletsToChangeListValues,
-  descriptionBulletToChangeListValue
-} from '../utils/description-bullets.utils';
 import linkQueryArgs from '../prisma-query-args/links.query-args';
 import linkTypeQueryArgs from '../prisma-query-args/link-types.query-args';
+import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args';
 import { linkTypeTransformer } from '../transformers/links.transformer';
-import { updateLinks, linkToChangeListValue } from '../utils/links.utils';
 import { isUserPartOfTeams } from '../utils/teams.utils';
+import { materialTypeTransformer } from '../transformers/material-type.transformer';
+import { materialPreviewTransformer } from '../transformers/material.transformer';
+import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import manufacturerTransformer from '../transformers/manufacturer.transformer';
 
 export default class ProjectsService {
   /**
@@ -78,6 +85,15 @@ export default class ProjectsService {
    * @param name the name of the new project
    * @param summary the summary of the new project
    * @param teamIds the ids of the teams that the new project will be assigned to
+   * @param budget the new budget of the project
+   * @param linkCreateArgs the link create args
+   * @param summary the new summary of the project
+   * @param rules the new rules of the project
+   * @param goals the new goals of the project
+   * @param features the new features of the project
+   * @param otherConstraints the new otherConstraints of the project
+   * @param projectLeadId the new projectLead of the project
+   * @param projectManagerId the new projectManager of the project
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
@@ -87,10 +103,18 @@ export default class ProjectsService {
     carNumber: number,
     name: string,
     summary: string,
-    teamIds: string[]
+    teamIds: string[],
+    budget: number | null,
+    linkCreateArgs: LinkCreateArgs[] | null,
+    rules: string[],
+    goals: { id: number; detail: string }[] | null,
+    features: { id: number; detail: string }[] | null,
+    otherConstraints: { id: number; detail: string }[] | null,
+    projectLeadId: number | null,
+    projectManagerId: number | null
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
-
+    const { userId } = user;
     await validateChangeRequestAccepted(crId);
 
     if (teamIds.length > 0) {
@@ -127,6 +151,28 @@ export default class ProjectsService {
       },
       include: { project: true, changes: true }
     });
+
+    const { wbsElementId, project: createdProject } = createdWbsElement;
+    if (!createdProject) {
+      throw new NotFoundException('Project', wbsElementId);
+    }
+
+    // Project has been created, so create the changes and add other details (like budget, project manager id, etc)
+    await updateProjectAndCreateChanges(
+      createdProject?.projectId,
+      crId,
+      userId,
+      name,
+      budget,
+      summary,
+      rules,
+      goals,
+      features,
+      otherConstraints,
+      linkCreateArgs,
+      projectLeadId,
+      projectManagerId
+    );
 
     return wbsNumOf(createdWbsElement);
   }
@@ -194,188 +240,21 @@ export default class ProjectsService {
     if (!originalProject) throw new NotFoundException('Project', projectId);
     if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
-    const { wbsElementId } = originalProject;
-
-    let changes = [];
-
-    // get the changes or undefined for each field and add it to changes
-    const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, userId, wbsElementId);
-
-    const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, userId, wbsElementId);
-
-    const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, userId, wbsElementId);
-
-    const projectManagerChangeJson = createChange(
-      'project manager',
-      await getUserFullName(originalProject.wbsElement.projectManagerId),
-      await getUserFullName(projectManagerId),
+    const { project: updatedProject } = await updateProjectAndCreateChanges(
+      originalProject.projectId,
       crId,
       userId,
-      wbsElementId
+      name,
+      budget,
+      summary,
+      rules,
+      goals,
+      features,
+      otherConstraints,
+      linkCreateArgs,
+      projectLeadId,
+      projectManagerId
     );
-
-    const projectLeadChangeJson = createChange(
-      'project lead',
-      await getUserFullName(originalProject.wbsElement.projectLeadId),
-      await getUserFullName(projectLeadId),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    // add to changes if not undefined
-    if (nameChangeJson !== undefined) {
-      changes.push(nameChangeJson);
-    }
-    if (budgetChangeJson !== undefined) {
-      changes.push(budgetChangeJson);
-    }
-    if (summaryChangeJson !== undefined) {
-      changes.push(summaryChangeJson);
-    }
-    if (projectManagerChangeJson !== undefined) {
-      changes.push(projectManagerChangeJson);
-    }
-    if (projectLeadChangeJson !== undefined) {
-      changes.push(projectLeadChangeJson);
-    }
-
-    // Dealing with lists
-    const rulesChangeJson = createListChanges(
-      'rules',
-      originalProject.rules.map((rule) => {
-        return {
-          element: rule,
-          comparator: rule,
-          displayValue: rule
-        };
-      }),
-      rules.map((rule) => {
-        return {
-          element: rule,
-          comparator: rule,
-          displayValue: rule
-        };
-      }),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const goalsChangeJson = createListChanges(
-      'goals',
-      descriptionBulletsToChangeListValues(originalProject.goals),
-      goals.map((goal) => descriptionBulletToChangeListValue(goal)),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const featuresChangeJson = createListChanges(
-      'features',
-      descriptionBulletsToChangeListValues(originalProject.features),
-      features.map((feature) => descriptionBulletToChangeListValue(feature)),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const otherConstraintsChangeJson = createListChanges(
-      'other constraints',
-      descriptionBulletsToChangeListValues(originalProject.otherConstraints),
-      otherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    const linkChanges = createListChanges(
-      'link',
-      originalProject.wbsElement.links.map(linkToChangeListValue),
-      linkCreateArgs.map(linkToChangeListValue),
-      crId,
-      userId,
-      wbsElementId
-    );
-
-    // add the changes for each of blockers, expected activities, and deliverables
-    changes = changes
-      .concat(rulesChangeJson.changes)
-      .concat(goalsChangeJson.changes)
-      .concat(featuresChangeJson.changes)
-      .concat(otherConstraintsChangeJson.changes)
-      .concat(linkChanges.changes);
-
-    // update the project with the input fields
-    const updatedProject = await prisma.project.update({
-      where: {
-        wbsElementId
-      },
-      data: {
-        budget,
-        summary,
-        rules,
-        wbsElement: {
-          update: {
-            name,
-            projectLeadId,
-            projectManagerId
-          }
-        }
-      },
-      ...projectQueryArgs
-    });
-
-    // Update any deleted description bullets to have their date deleted as right now
-    const deletedDescriptionBullets: DescriptionBulletPreview[] = goalsChangeJson.deletedElements
-      .concat(featuresChangeJson.deletedElements)
-      .concat(otherConstraintsChangeJson.deletedElements);
-
-    if (deletedDescriptionBullets.length > 0) {
-      await prisma.description_Bullet.updateMany({
-        where: {
-          descriptionId: {
-            in: deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id)
-          }
-        },
-        data: {
-          dateDeleted: new Date()
-        }
-      });
-    }
-
-    // Add the new goals
-    await addDescriptionBullets(
-      goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedProject.projectId,
-      'projectIdGoals'
-    );
-    // Add the new features
-    await addDescriptionBullets(
-      featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedProject.projectId,
-      'projectIdFeatures'
-    );
-    // Add the new other constraints
-    await addDescriptionBullets(
-      otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedProject.projectId,
-      'projectIdOtherConstraints'
-    );
-    // Edit the existing description bullets
-    await editDescriptionBullets(
-      goalsChangeJson.editedElements
-        .concat(featuresChangeJson.editedElements)
-        .concat(otherConstraintsChangeJson.editedElements)
-    );
-
-    // Update the links
-    await updateLinks(linkChanges, updatedProject.wbsElementId, userId);
-
-    // create the changes in prisma
-    await prisma.change.createMany({
-      data: changes
-    });
 
     // return the updated work package
     return projectTransformer(updatedProject);
@@ -614,7 +493,6 @@ export default class ProjectsService {
    * @param manufacturerName the name of the material's manufacturer
    * @param manufacturerPartNumber the manufacturer part number for the material
    * @param quantity the quantity of material as a number
-   * @param unitName the name of the Quantity Unit the quantity is measured in
    * @param price the price of the material in whole cents
    * @param subtotal the subtotal of the price for the material in whole cents
    * @param linkUrl the url for the material's link as a string
@@ -622,6 +500,7 @@ export default class ProjectsService {
    * @param wbsNumber the WBS number of the project associated with this material
    * @param assemblyId the id of the Assembly for the material
    * @param pdmFileName the name of the pdm file for the material
+   * @param unitName the name of the Quantity Unit the quantity is measured in
    * @returns the created material
    */
   static async createMaterial(
@@ -632,14 +511,14 @@ export default class ProjectsService {
     manufacturerName: string,
     manufacturerPartNumber: string,
     quantity: number,
-    unitName: string,
     price: number,
     subtotal: number,
     linkUrl: string,
     notes: string,
     wbsNumber: WbsNumber,
     assemblyId?: string,
-    pdmFileName?: string
+    pdmFileName?: string,
+    unitName?: string
   ): Promise<Material> {
     const project = await prisma.project.findFirst({
       where: {
@@ -669,10 +548,12 @@ export default class ProjectsService {
     });
     if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
 
-    const unit = await prisma.unit.findFirst({
-      where: { name: unitName }
-    });
-    if (!unit) throw new NotFoundException('Unit', unitName);
+    if (unitName) {
+      const unit = await prisma.unit.findFirst({
+        where: { name: unitName }
+      });
+      if (!unit) throw new NotFoundException('Unit', unitName);
+    }
 
     const perms = isLeadership(creator.role) || isUserPartOfTeams(project.teams, creator);
 
@@ -706,7 +587,7 @@ export default class ProjectsService {
    * Create an assembly
    * @param name The name of the assembly to be created
    * @param userCreated The user creating the assembly
-   * @param wbsElementId The
+   * @param wbsElementId The wbsElement that the created assembly is associated with
    * @param pdmFileName optional - The name of the file holding the assembly
    * @returns the project that the user has favorited/unfavorited
    * @throws if the project wbs doesn't exist or is not corresponding to a project
@@ -734,9 +615,8 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', wbsPipe(wbsNumber));
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
-    const checkAssembly = await prisma.assembly.findUnique({ where: { name } });
-
-    if (checkAssembly) throw new HttpException(400, `${name} already exists as an assembly!`);
+    if (project.wbsElement.assemblies.some((assembly) => assembly.name === name && !assembly.dateDeleted))
+      throw new HttpException(400, `${name} already exists as an assembly on this project!`);
 
     const { teams, wbsElementId } = project;
 
@@ -758,7 +638,7 @@ export default class ProjectsService {
     return assembly;
   }
 
-  /*
+  /**
    * Creates a new Manufacturer
    * @param submitter the user who's creating the manufacturer
    * @param name the name of the manufacturer
@@ -777,10 +657,80 @@ export default class ProjectsService {
     if (manufacturer) throw new HttpException(400, `${name} already exists as a manufacturer!`);
 
     const newManufacturer = await prisma.manufacturer.create({
-      data: { name, dateCreated: new Date(), creatorId: submitter.userId }
+      data: { name, dateCreated: new Date(), userCreatedId: submitter.userId }
     });
 
     return newManufacturer;
+  }
+
+  /**
+   * Deletes a manufacturer
+   * @param user the user who's deleting the manufacturer
+   * @param name the name of the manufacturer
+   * @throws if the user is not at least a head, or if the provided name isn't a manufacturer, or if the manufacturer has already been soft-deleted
+   * @returns the deleted manufacturer
+   */
+  static async deleteManufacturer(user: User, name: string) {
+    if (!isHead(user.role)) {
+      throw new AccessDeniedException('Only heads and above can delete a manufacturer');
+    }
+
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: {
+        name
+      }
+    });
+
+    if (!manufacturer) {
+      throw new NotFoundException('Manufacturer', name);
+    }
+
+    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
+
+    const dateDeleted: Date = new Date();
+    const deletedManufacturer = await prisma.manufacturer.update({
+      where: {
+        name: manufacturer.name
+      },
+      data: {
+        dateDeleted
+      }
+    });
+
+    return deletedManufacturer;
+  }
+  /**
+   * Get all the manufacturers in the database.
+   * @param submitter the user who's getting all manufacturers
+   * @returns all the manufacturers
+   */
+  static async getAllManufacturers(submitter: User): Promise<Manufacturer[]> {
+    if (submitter.role === Role.GUEST) {
+      throw new AccessDeniedGuestException('Get Manufacturers');
+    }
+
+    return (
+      await prisma.manufacturer.findMany({
+        ...manufacturerQueryArgs
+      })
+    ).map(manufacturerTransformer);
+  }
+
+  /**
+   * Get all the material types in the database.
+   * @param submitter the user who's getting all material types
+   * @returns all the material types
+   */
+  static async getAllMaterialTypes(submitter: User): Promise<MaterialType[]> {
+    if (submitter.role === Role.GUEST) {
+      throw new AccessDeniedGuestException('Get Material Types');
+    }
+
+    return (
+      await prisma.material_Type.findMany({
+        ...materialTypeQueryArgs
+      })
+    ).map(materialTypeTransformer);
   }
 
   /**
@@ -805,10 +755,320 @@ export default class ProjectsService {
       data: {
         name,
         dateCreated: new Date(),
-        creatorId: submitter.userId
+        userCreatedId: submitter.userId
       }
     });
 
     return newMaterialType;
+  }
+
+  /**
+   * Assign a material on a project to a different assembly
+   * @param submitter the submitter
+   * @param materialId the material that will be moved
+   * @param assemblyId the assembly to change the material to, or undefined to unassign the material
+   * @throws if the submitter does not have the relevant positions
+   * @returns the updated material
+   */
+  static async assignMaterialAssembly(submitter: User, materialId: string, assemblyId?: string) {
+    const material = await prisma.material.findUnique({
+      where: { materialId },
+      include: { wbsElement: true, assembly: true }
+    });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElementId: material.wbsElementId
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', material.wbsElementId);
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    // Permission: leadership and up, anyone on project team
+    if (!(isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter)))
+      throw new AccessDeniedException(
+        `Only leadership or above, or someone on the project's team can assign materials to assemblies`
+      );
+
+    //assigning the material to a new assembly
+    if (assemblyId) {
+      const assembly = await prisma.assembly.findUnique({
+        where: { assemblyId },
+        include: { wbsElement: true }
+      });
+      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+
+      // Confirm that the assembly's wbsElement is the same as the material's wbsElement
+      if (material.wbsElementId !== assembly.wbsElementId)
+        throw new HttpException(
+          400,
+          `The WBS element of the material (${wbsPipe(material.wbsElement)}) and assembly (${wbsPipe(
+            assembly.wbsElement
+          )}) do not match`
+        );
+      const updatedMaterial = await prisma.material.update({
+        where: { materialId },
+        data: { assemblyId }
+      });
+
+      return updatedMaterial;
+    }
+    //unassigning material from an existing assembly
+    if (material.assemblyId) {
+      await prisma.assembly.update({
+        where: { assemblyId: material.assemblyId },
+        data: { materials: { disconnect: { materialId } } },
+        include: { materials: true }
+      });
+
+      const updatedMaterial = await prisma.material.findUnique({
+        where: { materialId },
+        include: { wbsElement: true, assembly: true }
+      });
+
+      return updatedMaterial;
+    }
+    return material;
+  }
+
+  /**
+   * Deletes an assembly type
+   * @param assemblyId the name of the assembly
+   * @param submitter the user who is deleting the assembly type
+   * @throws if the user is not an admin/head, the assembly does not exist, or has already been deleted
+   * @returns
+   */
+  static async deleteAssembly(assemblyId: string, submitter: User): Promise<Assembly> {
+    if (!isAdmin(submitter.role) || !isHead(submitter.role))
+      throw new AccessDeniedException('Only an Admin or a head can delete an Assembly');
+
+    const assembly = await prisma.assembly.findUnique({
+      where: {
+        assemblyId
+      }
+    });
+
+    if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
+
+    const deletedAssembly = await prisma.assembly.update({
+      where: {
+        assemblyId
+      },
+      data: {
+        dateDeleted: new Date()
+      }
+    });
+
+    return deletedAssembly;
+  }
+
+  /**
+   * Deletes a material type based on the given Id
+   * @param submitter the user who is deleting the material type
+   * @param materialTypeId the Id of the material type being deleted
+   * @throws if the submitter is not an admin/head or if the material type is not found
+   * @returns the deleted material type
+   */
+  static async deleteMaterialType(materialTypeId: string, submitter: User): Promise<Material_Type> {
+    if (!isHead(submitter.role) && !isAdmin(submitter.role)) {
+      throw new AccessDeniedException('Only an admin or head can delete a material type');
+    }
+    const materialType = await prisma.material_Type.findUnique({
+      where: {
+        name: materialTypeId
+      }
+    });
+
+    if (!materialType) throw new NotFoundException('Material Type', materialTypeId);
+    if (materialType.dateDeleted) throw new DeletedException('Material Type', materialTypeId);
+
+    const deletedMaterialType = await prisma.material_Type.update({
+      where: {
+        name: materialTypeId
+      },
+      data: {
+        dateDeleted: new Date()
+      }
+    });
+
+    return deletedMaterialType;
+  }
+
+  /**
+   * Delete material in the database
+   * @param materialId the id number of the given material
+   * @param currentUser the current user currently accessing the material
+   * @returns the deleted material
+   * @throws if the user does not have permission, or materidal already deleted
+   */
+  static async deleteMaterial(currentUser: User, materialId: string): Promise<Material> {
+    if (!isLeadership(currentUser.role)) {
+      throw new AccessDeniedException('Only Leadership can delete materials');
+    }
+
+    const material = await prisma.material.findUnique({ where: { materialId } });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+
+    if (material.dateDeleted) throw new DeletedException('Material', materialId);
+
+    const deletedMaterial = await prisma.material.update({
+      where: { materialId },
+      data: { dateDeleted: new Date(), userDeletedId: currentUser.userId }
+    });
+
+    return deletedMaterial;
+  }
+
+  /**
+   * Update a material
+   * @param submitter the submitter of the request
+   * @param materialId the material id of the material being edited
+   * @param name the name of the edited material
+   * @param status the status of the edited material
+   * @param materialTypeName the material type of the edited material
+   * @param manufacturerName the manufacturerName of the edited material
+   * @param manufacturerPartNumber the manufacturerPartNumber of the edited material
+   * @param quantity the quantity of the edited material
+   * @param price the price of the edited material
+   * @param subtotal the subtotal of the edited material
+   * @param linkUrl the linkUrl of the edited material
+   * @param notes the notes of the edited material
+   * @param unitName the unit name of the edited material
+   * @param assemblyId the assembly id of the edited material
+   * @param pdmFileName the pdm file name of the edited material
+   * @throws if permission denied or material's wbsElement is undefined/deleted
+   * @returns the updated material
+   */
+  static async editMaterial(
+    submitter: User,
+    materialId: string,
+    name: string,
+    status: Material_Status,
+    materialTypeName: string,
+    manufacturerName: string,
+    manufacturerPartNumber: string,
+    quantity: number,
+    price: number,
+    subtotal: number,
+    linkUrl: string,
+    notes: string,
+    unitName?: string,
+    assemblyId?: string,
+    pdmFileName?: string
+  ): Promise<Material> {
+    const material = await prisma.material.findUnique({
+      where: {
+        materialId
+      }
+    });
+
+    if (!material) throw new NotFoundException('Material', materialId);
+    if (material.dateDeleted) throw new DeletedException('Material', materialId);
+
+    const project = await prisma.project.findFirst({
+      where: {
+        wbsElementId: material.wbsElementId
+      },
+      ...projectQueryArgs
+    });
+
+    if (!project) throw new NotFoundException('Project', material.wbsElementId);
+    if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
+
+    if (assemblyId) {
+      const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
+      if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    }
+
+    const materialType = await prisma.material_Type.findFirst({
+      where: { name: materialTypeName }
+    });
+    if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
+
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: { name: manufacturerName }
+    });
+    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+
+    if (unitName) {
+      const unit = await prisma.unit.findFirst({
+        where: { name: unitName }
+      });
+      if (!unit) throw new NotFoundException('Unit', unitName);
+    }
+
+    const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update material');
+
+    const updatedMaterial = await prisma.material.update({
+      where: { materialId },
+      data: {
+        name,
+        status,
+        materialTypeName,
+        manufacturerName,
+        manufacturerPartNumber,
+        quantity,
+        unitName,
+        price,
+        subtotal,
+        linkUrl,
+        notes,
+        wbsElementId: project.wbsElementId,
+        assemblyId,
+        pdmFileName
+      }
+    });
+
+    return updatedMaterial;
+  }
+
+  /**
+   * Gets all the units in the database with all their materials
+   * @returns all the units in the database
+   */
+  static async getAllUnits(user: User): Promise<Unit[]> {
+    if (isGuest(user.role)) throw new AccessDeniedGuestException('get units');
+
+    const units = await prisma.unit.findMany({
+      include: {
+        materials: true
+      }
+    });
+
+    return units.map((unit) => {
+      return { ...unit, materials: unit.materials.map(materialPreviewTransformer) };
+    });
+  }
+
+  /**
+   * Creates a new unit
+   * @param submitter the user who's creating the unit
+   * @param name the name of the unit
+   * @throws if the submitter is a guest or the given unit name already exists
+   */
+  static async createUnit(name: string, submitter: User): Promise<Unit> {
+    if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create units');
+
+    const unit = await prisma.unit.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (unit) throw new HttpException(400, `${name} already exists as a unit!`);
+
+    const newUnit = await prisma.unit.create({
+      data: { name }
+    });
+
+    return { ...newUnit, materials: [] };
   }
 }

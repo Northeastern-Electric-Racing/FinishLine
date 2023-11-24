@@ -6,17 +6,24 @@ import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '..
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
+workPackagesRouter.post(
+  '/get-many',
+  body('wbsNums').isArray(),
+  intMinZero(body('wbsNums.*.carNumber')),
+  intMinZero(body('wbsNums.*.projectNumber')),
+  intMinZero(body('wbsNums.*.workPackageNumber')),
+  validateInputs,
+  WorkPackagesController.getManyWorkPackages
+);
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
 workPackagesRouter.post(
   '/create',
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  intMinZero(body('projectWbsNum.carNumber')),
-  intMinZero(body('projectWbsNum.projectNumber')),
-  intMinZero(body('projectWbsNum.workPackageNumber')),
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
+  body('blockedBy').isArray(),
   intMinZero(body('blockedBy.*.carNumber')),
   intMinZero(body('blockedBy.*.projectNumber')),
   intMinZero(body('blockedBy.*.workPackageNumber')),

@@ -13,6 +13,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
 import { useState } from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface CreateChangeRequestProps {}
 
@@ -25,8 +26,23 @@ export interface FormInput {
 const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const query = useQuery();
   const history = useHistory();
+  const user = useCurrentUser();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
-  const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
+  const defaultProposedSolution = query.get('budgetChange')
+    ? [
+        {
+          id: '',
+          description: 'Increase Budget',
+          budgetImpact: Number(query.get('budgetChange')),
+          timelineImpact: 0,
+          scopeImpact: 'No Changes',
+          createdBy: user,
+          dateCreated: new Date(),
+          approved: false
+        }
+      ]
+    : [];
+  const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>(defaultProposedSolution);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const toast = useToast();
 

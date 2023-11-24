@@ -6,6 +6,7 @@
 import { render, screen } from '../../../test-support/test-utils';
 import { exampleUserSettingsLight } from '../../../test-support/test-data/user-settings.stub';
 import UserSettingsView from '../../../../pages/SettingsPage/UserSettings/UserSettingsView';
+import { displayEnum } from '../../../../utils/pipes';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -17,6 +18,6 @@ const renderComponent = () => {
 describe('user settings view component', () => {
   it('renders default theme', () => {
     renderComponent();
-    expect(screen.getByText(exampleUserSettingsLight.defaultTheme)).toBeInTheDocument();
+    expect(screen.getByText(displayEnum(exampleUserSettingsLight.defaultTheme))).toBeInTheDocument();
   });
 });

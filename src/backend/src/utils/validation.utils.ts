@@ -1,4 +1,4 @@
-import { ValidationChain } from 'express-validator';
+import { body, ValidationChain } from 'express-validator';
 import { ClubAccount, MaterialStatus } from 'shared';
 import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
 
@@ -15,6 +15,21 @@ export const isRole = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
     .isIn([RoleEnum.APP_ADMIN, RoleEnum.ADMIN, RoleEnum.HEAD, RoleEnum.LEADERSHIP, RoleEnum.MEMBER, RoleEnum.GUEST]);
+};
+
+export const validateReimbursementProducts = () => {
+  return [
+    body('otherReimbursementProducts').isArray(),
+    nonEmptyString(body('otherReimbursementProducts.*.name')),
+    intMinZero(body('otherReimbursementProducts.*.cost')),
+    nonEmptyString(body('otherReimbursementProducts.*.reason')),
+    body('wbsReimbursementProducts').isArray(),
+    nonEmptyString(body('wbsReimbursementProducts.*.name')),
+    intMinZero(body('wbsReimbursementProducts.*.cost')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.carNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.projectNumber')),
+    intMinZero(body('wbsReimbursementProducts.*.reason.workPackageNumber'))
+  ];
 };
 
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
