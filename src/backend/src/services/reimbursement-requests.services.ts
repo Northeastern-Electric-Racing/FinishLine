@@ -22,6 +22,7 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  isUserAdminOrOnFinance,
   createReimbursementProducts,
   isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
@@ -771,21 +772,19 @@ export default class ReimbursementRequestService {
   /**
    * Edits the vendor name
    *
-   * @param name name to change of the vendor
-   * @param vendorId id of the vedor used to edit the name
-   * @param submitter the user who is downloading the receipt image
-   * @returns new vendor with a edited name
+   * @param name the new vendor name
+   * @param vendorId the requested vendor to be edited
+   * @param submitter the user editing the vendor name
+   * @returns the updated vendor
    */
   static async editVendors(name: string, vendorId: string, submitter: User) {
-    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('only Admins can edit vendors');
+    await isUserAdminOrOnFinance(submitter);
 
-    const vendorExists = await prisma.vendor.findUnique({
+    const vendorUniqueName = await prisma.vendor.findUnique({
       where: { name }
     });
 
-    console.log(vendorExists);
-
-    if (!!vendorExists) throw new HttpException(400, 'vendor name already exists');
+    if (!!vendorUniqueName) throw new HttpException(400, 'vendor name already exists');
 
     const vendor = await prisma.vendor.update({
       where: { vendorId },
