@@ -1,5 +1,4 @@
 import { validateWBS } from 'shared';
-import { HttpException } from '../../../../backend/src/utils/errors.utils';
 import { useQuery } from '../../hooks/utils.hooks';
 import WorkPackageForm from './WorkPackageForm';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
