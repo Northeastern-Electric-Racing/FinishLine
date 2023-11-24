@@ -451,14 +451,97 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /**
+   * Change Requests for Creating Work Packages
+   */
+
+  const changeRequestWP1 = await ChangeRequestsService.createStandardChangeRequest(
+    cyborg,
+    project1WbsNumber.carNumber,
+    project1WbsNumber.projectNumber,
+    project1WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ],
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ]
+  );
+
+  const changeRequestWP1Id = changeRequestWP1.crId;
+
+  // make a proposed solution for it
+  const proposedSolution2 = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestWP1Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact'
+  );
+
+  const proposedSolution2Id = proposedSolution2.id;
+
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP1Id, 'LGTM', true, proposedSolution2Id);
+
+  const changeRequestWP5 = await ChangeRequestsService.createStandardChangeRequest(
+    cyborg,
+    project5WbsNumber.carNumber,
+    project5WbsNumber.projectNumber,
+    project5WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ],
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ]
+  );
+
+  const changeRequestWP5Id = changeRequestWP5.crId;
+
+  // make a proposed solution for it
+  const proposedSolution5 = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestWP5Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact'
+  );
+
+  const proposedSolution5Id = proposedSolution5.id;
+
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP5Id, 'LGTM', true, proposedSolution5Id);
+
+  /**
    * Work Packages
    */
   /** Work Package 1 */
   const { workPackageWbsNumber: workPackage1WbsNumber, workPackage: workPackage1 } = await seedWorkPackage(
     joeShmoe,
-    project1WbsNumber,
     'Bodywork Concept of Design',
-    changeRequest1.crId,
+    changeRequestWP1Id,
     WorkPackageStage.Design,
     '01/01/2023',
     3,
@@ -497,9 +580,8 @@ const performSeed: () => Promise<void> = async () => {
   /** Work Package 2 */
   const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
     thomasEmrax,
-    project1WbsNumber,
     'Adhesive Shear Strength Test',
-    changeRequest1.crId,
+    changeRequestWP1Id,
     WorkPackageStage.Research,
     '01/22/2023',
     5,
@@ -521,9 +603,8 @@ const performSeed: () => Promise<void> = async () => {
   /** Work Package 3 */
   const workPackage3WbsString = await WorkPackagesService.createWorkPackage(
     thomasEmrax,
-    project5WbsNumber,
     'Manufacture Wiring Harness',
-    changeRequest1.crId,
+    changeRequestWP5Id,
     WorkPackageStage.Manufacturing,
     '02/01/2023',
     3,
@@ -541,7 +622,6 @@ const performSeed: () => Promise<void> = async () => {
   /** Work Package 4 */
   const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
     thomasEmrax,
-    project5WbsNumber,
     'Install Wiring Harness',
     changeRequest1.crId,
     WorkPackageStage.Install,

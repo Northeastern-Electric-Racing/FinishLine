@@ -6,8 +6,8 @@
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import WBSDetails from '../WBSDetails';
-import CreateWorkPackageForm from '../CreateWorkPackagePage/CreateWorkPackageForm';
 import ProjectsPage from './ProjectsPage';
+import CreateWorkPackageForm from '../WorkPackageForm/CreateWorkPackageForm';
 import ProjectCreateContainer from '../ProjectDetailPage/ProjectForm/ProjectCreateContainer';
 
 const Projects: React.FC = () => {

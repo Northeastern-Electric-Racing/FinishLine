@@ -4,14 +4,15 @@
  */
 
 import { User, WorkPackageStage } from 'shared';
-import { fullNamePipe } from '../../../utils/pipes';
-import PageBlock from '../../../layouts/PageBlock';
-import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
+import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import NERAutocomplete from '../../../components/NERAutocomplete';
-import { WorkPackageEditFormPayload } from './WorkPackageEditContainer';
+import { Box } from '@mui/system';
+import ChangeRequestDropdown from '../../components/ChangeRequestDropdown';
+import NERAutocomplete from '../../components/NERAutocomplete';
+import ReactHookTextField from '../../components/ReactHookTextField';
+import { fullNamePipe } from '../../utils/pipes';
+import { WorkPackageFormViewPayload } from './WorkPackageFormView';
 
 interface Props {
   lead?: string;
@@ -20,11 +21,12 @@ interface Props {
   setLead: (lead?: string) => void;
   usersForProjectLead: User[];
   usersForProjectManager: User[];
-  control: Control<WorkPackageEditFormPayload>;
-  errors: Partial<FieldErrorsImpl<WorkPackageEditFormPayload>>;
+  control: Control<WorkPackageFormViewPayload>;
+  errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
+  createForm?: boolean;
 }
 
-const WorkPackageEditDetails: React.FC<Props> = ({
+const WorkPackageFormDetails: React.FC<Props> = ({
   lead,
   manager,
   setManager,
@@ -32,7 +34,8 @@ const WorkPackageEditDetails: React.FC<Props> = ({
   usersForProjectLead,
   usersForProjectManager,
   control,
-  errors
+  errors,
+  createForm
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -45,7 +48,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({
 
   const StageSelect = () => (
     <FormControl fullWidth>
-      <FormLabel>Stage Select</FormLabel>
+      <FormLabel>Work Package Stage</FormLabel>
       <Controller
         name="stage"
         control={control}
@@ -64,9 +67,12 @@ const WorkPackageEditDetails: React.FC<Props> = ({
   );
 
   return (
-    <PageBlock title="Work Package Details">
-      <Grid container xs={12}>
-        <Grid item xs={12} md={5} sx={{ mt: 2, mr: 2 }}>
+    <Box>
+      <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
+        Details
+      </Typography>
+      <Grid container spacing={1} xs={12}>
+        <Grid item xs={12} md={4}>
           <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
@@ -77,7 +83,13 @@ const WorkPackageEditDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={3}>
+          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <StageSelect />
+        </Grid>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -99,10 +111,7 @@ const WorkPackageEditDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
-          <StageSelect />
-        </Grid>
-        <Grid item xs={12} md={2} sx={{ mt: 2, mr: 2 }}>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
@@ -114,33 +123,37 @@ const WorkPackageEditDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-          <FormLabel> Project Lead</FormLabel>
-          <NERAutocomplete
-            sx={{ mt: 1, width: '90%' }}
-            id="project-lead-autocomplete"
-            onChange={(_event, value) => setLead(value?.id)}
-            options={usersForProjectLead.map(userToOption)}
-            size="small"
-            placeholder="Select a Project Lead"
-            value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
-          />
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ mt: 1 }}>
-          <FormLabel>Project Manager</FormLabel>
-          <NERAutocomplete
-            sx={{ mt: 1, width: '90%' }}
-            id="project-manager-autocomplete"
-            onChange={(_event, value) => setManager(value?.id)}
-            options={usersForProjectManager.map(userToOption)}
-            size="small"
-            placeholder="Select a Project Manager"
-            value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
-          />
-        </Grid>
+        {!createForm && (
+          <>
+            <Grid item xs={12} md={5}>
+              <FormLabel> Project Lead</FormLabel>
+              <NERAutocomplete
+                sx={{ width: '100%' }}
+                id="project-lead-autocomplete"
+                onChange={(_event, value) => setLead(value?.id)}
+                options={usersForProjectLead.map(userToOption)}
+                size="small"
+                placeholder="Select a Project Lead"
+                value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
+              />
+            </Grid>
+            <Grid item xs={12} md={5}>
+              <FormLabel>Project Manager</FormLabel>
+              <NERAutocomplete
+                sx={{ width: '100%' }}
+                id="project-manager-autocomplete"
+                onChange={(_event, value) => setManager(value?.id)}
+                options={usersForProjectManager.map(userToOption)}
+                size="small"
+                placeholder="Select a Project Manager"
+                value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
+              />
+            </Grid>
+          </>
+        )}
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 
-export default WorkPackageEditDetails;
+export default WorkPackageFormDetails;
