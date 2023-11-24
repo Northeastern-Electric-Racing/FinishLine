@@ -2,6 +2,8 @@ import { Box } from '@mui/system';
 import { DataGrid, GridColumns } from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
 import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
+import { addMaterialCosts } from '../BOMTab';
+import { centsToDollar } from '../../../../utils/pipes';
 
 interface BOMTableProps {
   columns: GridColumns<BomRow>;
@@ -23,7 +25,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
       type: '',
       name: '',
       manufacturer: '',
-      manufacturerPN: `Assembly: ${assembly.name}`,
+      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(assembly.materials.reduce(addMaterialCosts, 0))}`,
       pdmFileName: '',
       quantity: '',
       price: '',

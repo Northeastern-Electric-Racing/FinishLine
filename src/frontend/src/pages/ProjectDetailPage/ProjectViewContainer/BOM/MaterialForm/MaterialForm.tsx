@@ -114,7 +114,9 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   }
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
-    onSubmit({ ...data, subtotal: data.price * data.quantity });
+    const price = data.price * 100;
+    const subtotal = data.unitName ? price : data.quantity * price;
+    onSubmit({ ...data, subtotal: subtotal, price: price });
   };
 
   const createUnitWrapper = async (unitName: string): Promise<void> => {
@@ -143,6 +145,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       open={open}
       watch={watch}
       createUnit={createUnitWrapper}
+      setValue={setValue}
     />
   );
 };

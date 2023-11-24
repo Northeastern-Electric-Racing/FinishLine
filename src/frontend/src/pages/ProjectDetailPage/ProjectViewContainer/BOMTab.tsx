@@ -2,12 +2,13 @@ import { Box } from '@mui/system';
 import { MaterialPreview, Project } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import WarningIcon from '@mui/icons-material/Warning';
-import { MenuItem, Select, SelectChangeEvent, Tooltip, useTheme } from '@mui/material';
+import { Tooltip, useTheme } from '@mui/material';
 import { useState } from 'react';
 import BOMTableWrapper from './BOM/BOMTableWrapper';
 import CreateMaterialModal from './BOM/MaterialForm/CreateMaterialModal';
 import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
 import NERSuccessButton from '../../../components/NERSuccessButton';
+import { centsToDollar } from '../../../utils/pipes';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
   currentMaterial.subtotal + accumulator;
@@ -15,15 +16,9 @@ export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialP
 const BOMTab = ({ project }: { project: Project }) => {
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAddAssembly, setShowAddAssembly] = useState(false);
-  const [assembly, setAssembly] = useState('Total');
   const theme = useTheme();
 
-  const costOptions = project.assemblies.map((assembly) => assembly.name);
-  costOptions.push('Total');
-
   const totalCost = project.materials.reduce(addMaterialCosts, 0);
-  const selectedAssemblyMaterials = project.assemblies.find((a) => a.name === assembly)?.materials;
-  const displayedCost = selectedAssemblyMaterials ? selectedAssemblyMaterials.reduce(addMaterialCosts, 0) : totalCost;
 
   return (
     <Box>
@@ -44,33 +39,9 @@ const BOMTab = ({ project }: { project: Project }) => {
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
               Budget: ${project.budget}
             </Box>
-            <Select
-              id="cr-autocomplete"
-              value={assembly}
-              onChange={(event: SelectChangeEvent<string>) => setAssembly(event.target.value)}
-              size={'small'}
-              placeholder={'Change Request Id'}
-              sx={{ width: 200, textAlign: 'left' }}
-              MenuProps={{
-                anchorOrigin: {
-                  vertical: 'top',
-                  horizontal: 'left'
-                },
-                transformOrigin: {
-                  vertical: 'bottom',
-                  horizontal: 'left'
-                }
-              }}
-            >
-              {costOptions.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option === 'Total' ? option : `Assembly: ${option}`}
-                </MenuItem>
-              ))}
-            </Select>
 
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
-              ${displayedCost}
+              Total Cost: ${centsToDollar(totalCost)}
             </Box>
             {totalCost > project.budget && (
               <Tooltip title="Current Total Cost Exceeds Budget!" placement="top" arrow>

@@ -1,6 +1,6 @@
-import { FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField } from '@mui/material';
 import { Box } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormWatch } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
@@ -21,6 +21,7 @@ export interface MaterialFormViewProps {
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
   createUnit: (name: string) => void;
+  setValue: UseFormSetValue<MaterialFormInput>;
 }
 
 const MaterialFormView: React.FC<MaterialFormViewProps> = ({
@@ -36,11 +37,17 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   assemblies,
   open,
   watch,
-  createUnit
+  createUnit,
+  setValue
 }) => {
   const quantity = watch('quantity');
   const price = watch('price');
-  const subtotal = quantity && price ? quantity * price : 0;
+  const unit = watch('unitName');
+  const subtotal = quantity && price ? (unit ? price : quantity * price) : 0;
+
+  const onCostBlurHandler = (value: number) => {
+    setValue(`price`, parseFloat(value.toFixed(2)));
+  };
 
   return (
     <NERFormModal
@@ -208,17 +215,30 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Price</FormLabel>
-            <ReactHookTextField
-              name="price"
+            <Controller
+              name={`price`}
               control={control}
-              errorMessage={errors.price}
-              placeholder="Enter Price"
-              type="number"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  variant={'outlined'}
+                  type="number"
+                  autoComplete="off"
+                  placeholder="Enter Price"
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">$</InputAdornment>
+                  }}
+                  onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value))}
+                  sx={{ width: '100%' }}
+                  error={!!errors.price}
+                />
+              )}
             />
+            <FormHelperText error>{errors.price}</FormHelperText>
           </FormControl>
         </Grid>
         <Grid item xs={3} display="flex" alignItems="center" mt={2}>
-          <DetailDisplay label="Subtotal" content={subtotal.toString()} />
+          <DetailDisplay label="Subtotal" content={'$' + subtotal.toString()} />
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
