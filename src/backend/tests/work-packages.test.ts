@@ -169,7 +169,7 @@ describe('Work Packages', () => {
       );
     });
 
-    test("fails if the blocked by include the work package's own project", async () => {
+    test('fails if the blocked by is a project', async () => {
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValueOnce(prismaWbsElement1);
       const argsToTest: [User, string, number, WorkPackageStage, string, number, WbsNumber[], string[], string[]] = [
         batman,
@@ -187,9 +187,7 @@ describe('Work Packages', () => {
         return await WorkPackageService.createWorkPackage.apply(null, argsToTest);
       };
 
-      await expect(callCreateWP()).rejects.toThrow(
-        new HttpException(400, 'A Work Package cannot have its own project as a blocker')
-      );
+      await expect(callCreateWP()).rejects.toThrow(new HttpException(400, 'A Project cannot be a Blocker'));
     });
 
     test('the endpoint completes successfully', async () => {
