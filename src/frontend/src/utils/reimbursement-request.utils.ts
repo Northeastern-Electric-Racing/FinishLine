@@ -95,6 +95,10 @@ export const getReimbursementRequestDateSubmittedToSabo = (reimbursementRequest:
 
 export const imagePreviewUrl = (googleFileId: string) => `https://drive.google.com/file/d/${googleFileId}/preview`;
 
+export const imageFileUrl = (googleFileId: string) => `https://drive.google.com/file/d/${googleFileId}`;
+
+export const imageDownloadUrl = (googleFileId: string) => `https://drive.google.com/uc?export=download&id=${googleFileId}`;
+
 export const getRefundRowData = (refund: Reimbursement) => {
   return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted };
 };
