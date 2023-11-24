@@ -467,7 +467,14 @@ const performSeed: () => Promise<void> = async () => {
         explain: 'need this to initialize work packages'
       }
     ],
-    []
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ]
   );
 
   const changeRequestWP1Id = changeRequestWP1.crId;
@@ -500,7 +507,14 @@ const performSeed: () => Promise<void> = async () => {
         explain: 'need this to initialize work packages'
       }
     ],
-    []
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ]
   );
 
   const changeRequestWP5Id = changeRequestWP5.crId;

@@ -34,10 +34,9 @@ interface ChangeRequestDropdownProps {
   control: Control<any, any>;
   name: string;
   errors: FieldErrors<ChangeRequest>;
-  changeHeight?: number;
 }
 
-const ChangeRequestDropdown = ({ control, name, errors, changeHeight = 1 }: ChangeRequestDropdownProps) => {
+const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownProps) => {
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
@@ -69,7 +68,7 @@ const ChangeRequestDropdown = ({ control, name, errors, changeHeight = 1 }: Chan
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
               placeholder={'Change Request Id'}
-              sx={{ textAlign: 'left', height: changeHeight }}
+              sx={{ height: 56, width: '100%', textAlign: 'left' }}
               error={!!errors.crId}
               MenuProps={{
                 anchorOrigin: {

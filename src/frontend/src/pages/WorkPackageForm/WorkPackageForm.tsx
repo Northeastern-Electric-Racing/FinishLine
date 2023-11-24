@@ -38,17 +38,18 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
       wp.wbsNum.workPackageNumber === wbsNum.workPackageNumber
   );
 
-  const defaultValues: WorkPackageFormViewPayload | undefined = createForm
-    ? undefined
-    : {
-        ...workPackage!,
-        workPackageId: workPackage!.id,
-        crId: workPackage!.changes[0].changeRequestId.toString(),
-        stage: workPackage!.stage ?? 'NONE',
-        blockedBy: workPackage!.blockedBy.map(wbsPipe),
-        expectedActivities: bulletsToObject(workPackage!.expectedActivities),
-        deliverables: bulletsToObject(workPackage!.deliverables)
-      };
+  const defaultValues: WorkPackageFormViewPayload | undefined =
+    !createForm && workPackage
+      ? {
+          ...workPackage,
+          workPackageId: workPackage.id,
+          crId: workPackage!.changes[0].changeRequestId.toString(),
+          stage: workPackage!.stage ?? 'NONE',
+          blockedBy: workPackage!.blockedBy.map(wbsPipe),
+          expectedActivities: bulletsToObject(workPackage!.expectedActivities),
+          deliverables: bulletsToObject(workPackage!.deliverables)
+        }
+      : undefined;
 
   const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
     return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
