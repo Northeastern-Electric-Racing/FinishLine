@@ -14,11 +14,11 @@ import {
   StandardChangeRequest
 } from 'shared';
 import { exampleAdminUser, exampleAppAdminUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
-import { exampleWbsWorkPackage1 } from './wbs-numbers.stub';
+import { exampleWbsProject1, exampleWbsWorkPackage1 } from './wbs-numbers.stub';
 
 export const exampleStandardChangeRequest: StandardChangeRequest = {
   crId: 37,
-  wbsNum: exampleWbsWorkPackage1,
+  wbsNum: exampleWbsProject1,
   wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),

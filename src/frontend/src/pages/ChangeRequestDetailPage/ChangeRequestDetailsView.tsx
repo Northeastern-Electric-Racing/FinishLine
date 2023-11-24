@@ -164,7 +164,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         <MenuItem
           component={RouterLink}
           to={`${routes.WORK_PACKAGE_NEW}?crId=${changeRequest.crId}&wbs=${projectWbsPipe(changeRequest.wbsNum)}`}
-          disabled={!isUserAllowedToImplement}
+          disabled={!isUserAllowedToImplement || !isProject(changeRequest.wbsNum)}
           onClick={handleDropdownClose}
         >
           <ListItemIcon>
