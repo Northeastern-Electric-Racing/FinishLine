@@ -13,8 +13,8 @@ const CreateWorkPackageForm: React.FC = () => {
   const wbsNum = query.get('wbs');
   const history = useHistory();
 
-  if (!wbsNum) throw new HttpException(400, 'WBS number not included in request.');
-  if (!crId) throw new HttpException(400, 'CR ID not included in request.');
+  if (!wbsNum) throw new Error('WBS number not included in request.');
+  if (!crId) throw new Error('CR ID not included in request.');
 
   const { mutateAsync } = useCreateSingleWorkPackage();
 
