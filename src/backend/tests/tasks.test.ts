@@ -1,4 +1,4 @@
-import { Task_Priority, Task_Status } from '@prisma/client';
+import { Task, Task_Priority, Task_Status } from '@prisma/client';
 import { WbsNumber } from 'shared';
 import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
 import prisma from '../src/prisma/prisma';
@@ -16,7 +16,16 @@ import {
   taskSaveTheDayPrisma,
   taskSaveTheDayShared
 } from './test-data/tasks.test-data';
-import { aquaman, batman, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import {
+  aquaman,
+  batman,
+  batmanSettings,
+  greenlantern,
+  superman,
+  supermanSettings,
+  theVisitor,
+  wonderwoman
+} from './test-data/users.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import { prismaProject1 } from './test-data/projects.test-data';
 import { justiceLeague, prismaTeam1 } from './test-data/teams.test-data';
@@ -54,7 +63,7 @@ describe('Tasks', () => {
         TasksService.createTask(theVisitor, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [])
       ).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app-admins, project leads, project managers, or current team users can create tasks'
+          'Only admins, app-admins, project leads, project managers, work package leads, work package managers, or current team users can create tasks'
         )
       );
 
@@ -129,6 +138,7 @@ describe('Tasks', () => {
       vi.spyOn(teamUtils, 'areUsersPartOfTeams').mockReturnValue(true);
       vi.spyOn(prisma.task, 'create').mockResolvedValue(taskSaveTheDayPrisma);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batman, wonderwoman]);
+      vi.spyOn(prisma.user_Settings, 'findMany').mockResolvedValue([batmanSettings, supermanSettings]);
 
       const task = await TasksService.createTask(batman, mockWBSNum, 'hellow world', '', mockDate, 'HIGH', 'DONE', [
         batman.userId,
@@ -201,7 +211,7 @@ describe('Tasks', () => {
       // Try updating from IN_PROGRESS to IN_BACKLOG
       await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
         )
       );
     });
@@ -216,7 +226,7 @@ describe('Tasks', () => {
       // Aquaman is a leader, but did not create this task
       await expect(() => TasksService.editTaskStatus(aquaman, taskId, Task_Status.IN_BACKLOG)).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
         )
       );
     });
@@ -237,12 +247,13 @@ describe('Tasks', () => {
       vi.spyOn(prisma.task, 'findUnique').mockResolvedValue({
         ...taskSaveTheDayPrisma,
         wbsElement: { project: { teams: [justiceLeague] } }
-      } as any);
+      } as Task);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(mockWBSElementWithProject);
       vi.spyOn(prisma.task, 'update').mockResolvedValue(taskSaveTheDayInProgressPrisma);
       vi.spyOn(taskTransformer, 'default').mockReturnValue(taskSaveTheDayInProgressShared);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([batman, wonderwoman]);
       vi.spyOn(teamUtils, 'areUsersPartOfTeams').mockReturnValue(true);
+      vi.spyOn(prisma.user_Settings, 'findMany').mockResolvedValue([batmanSettings, supermanSettings]);
 
       const taskId = '1';
       const userIds = [
@@ -288,7 +299,7 @@ describe('Tasks', () => {
         TasksService.editTaskAssignees(aquaman, taskId, [superman.userId, wonderwoman.userId])
       ).rejects.toThrow(
         new AccessDeniedException(
-          'Only admins, app admins, task creators, project leads, project managers, or project assignees can edit a task'
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
         )
       );
     });
@@ -391,7 +402,11 @@ describe('Tasks', () => {
       vi.spyOn(taskUtils, 'hasPermissionToEditTask').mockResolvedValue(false);
       await expect(() =>
         TasksService.editTask(wonderwoman, taskId, fakeTitle, fakeNotes, fakePriority, fakeDeadline)
-      ).rejects.toThrow(new AccessDeniedException());
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'Only admins, app admins, heads, task creators, project leads, project managers, or project assignees can edit a task'
+        )
+      );
     });
 
     test('Task not found', async () => {

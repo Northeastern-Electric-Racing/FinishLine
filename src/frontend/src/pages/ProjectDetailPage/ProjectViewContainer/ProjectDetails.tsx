@@ -13,6 +13,8 @@ import Typography from '@mui/material/Typography';
 import WorkPackageSummary from './WorkPackageSummary';
 import DetailDisplay from '../../../components/DetailDisplay';
 import LinkView from '../../../components/Link/LinkView';
+import GroupIcon from '@mui/icons-material/Group';
+import { getProjectTeamsName } from '../../../utils/gantt.utils';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -34,30 +36,33 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
 
         <Grid container spacing={2}>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
+            <GroupIcon sx={{ mr: 2 }} />
+            <DetailDisplay
+              label={project.teams.length > 1 ? 'Teams' : 'Team'}
+              content={getProjectTeamsName(project)}
+              paddingRight={1}
+            />
+          </Grid>
+          <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <Construction sx={{ mr: 2 }} />
             <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={1} />
           </Grid>
-
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <ScheduleIcon sx={{ mr: 2 }} />
             <DetailDisplay label="Start Date" content={datePipe(project.startDate) || 'n/a'} paddingRight={1} />
           </Grid>
-
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <Work sx={{ mr: 2 }} />
             <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={1} />
           </Grid>
-
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <ScheduleIcon sx={{ mr: 2 }} />
             <DetailDisplay label="End Date" content={datePipe(project.endDate) || 'n/a'} paddingRight={1} />
           </Grid>
-
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <AttachMoneyIcon sx={{ mr: 2 }} />
             <DetailDisplay label="Budget" content={dollarsPipe(project.budget)} paddingRight={1} />
           </Grid>
-
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <ScheduleIcon sx={{ mr: 2 }} />
             <DetailDisplay label="Duration" content={weeksPipe(project.duration)} paddingRight={1} />

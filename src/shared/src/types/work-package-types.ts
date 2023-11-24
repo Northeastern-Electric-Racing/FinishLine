@@ -14,5 +14,5 @@ export enum WorkPackageStage {
   Research = 'RESEARCH',
   Design = 'DESIGN',
   Manufacturing = 'MANUFACTURING',
-  Integration = 'INTEGRATION'
+  Install = 'INSTALL'
 }

@@ -82,7 +82,7 @@ const AdminToolsUserManagement: React.FC = () => {
     }
   };
 
-  const userToAutocompleteOption = (user: User): { label: string; id: string } => {
+  const userToAutocompleteOptionWithRole = (user: User): { label: string; id: string } => {
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
@@ -93,10 +93,10 @@ const AdminToolsUserManagement: React.FC = () => {
           <NERAutocomplete
             id="users-autocomplete"
             onChange={usersSearchOnChange}
-            options={users.filter((user) => rankUserRole(user.role) < currentUserRank).map(userToAutocompleteOption)}
+            options={users.filter((user) => rankUserRole(user.role) < currentUserRank).map(userToAutocompleteOptionWithRole)}
             size="small"
             placeholder="Select a User"
-            value={user ? userToAutocompleteOption(user) : null}
+            value={user ? userToAutocompleteOptionWithRole(user) : null}
           />
         </Grid>
         <Grid item xs={12} md={4}>

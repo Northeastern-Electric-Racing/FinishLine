@@ -51,7 +51,7 @@ const FinancePage = () => {
     error: allPendingAdvisorListError
   } = useGetPendingAdvisorList();
 
-  const { isFinance, isHeadOfFinance } = user;
+  const { isFinance } = user;
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -60,16 +60,16 @@ const FinancePage = () => {
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
-  if (isHeadOfFinance && allPendingAdvisorListIsError) return <ErrorPage message={allPendingAdvisorListError?.message} />;
+  if (isFinance && allPendingAdvisorListIsError) return <ErrorPage message={allPendingAdvisorListError?.message} />;
   if (
     (isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
     userReimbursementRequestIsLoading ||
     !userReimbursementRequests ||
-    (isHeadOfFinance && !allPendingAdvisorList)
+    (isFinance && !allPendingAdvisorList)
   )
     return <LoadingIndicator />;
 
-  if (isHeadOfFinance && (!allPendingAdvisorList || allPendingAdvisorListIsLoading)) return <LoadingIndicator />;
+  if (isFinance && (!allPendingAdvisorList || allPendingAdvisorListIsLoading)) return <LoadingIndicator />;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -112,7 +112,7 @@ const FinancePage = () => {
             handleDropdownClose();
             setShowPendingAdvisorListModal(true);
           }}
-          disabled={!isHeadOfFinance}
+          disabled={!isFinance}
         >
           <ListItemIcon>
             <ListAltIcon fontSize="small" />
@@ -131,7 +131,7 @@ const FinancePage = () => {
 
   return (
     <PageLayout title="Finance" headerRight={financeActionsDropdown}>
-      {isHeadOfFinance && (
+      {isFinance && (
         <PendingAdvisorModal
           open={showPendingAdvisorListModal}
           saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}

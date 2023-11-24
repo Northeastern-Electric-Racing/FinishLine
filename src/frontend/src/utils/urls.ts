@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { WbsNumber, wbsPipe } from 'shared';
+
 /**
  * This file centralizes URLs used to query the API.
  */
@@ -53,6 +55,7 @@ const workPackagesEdit = () => `${workPackages()}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
+const workPackagesMany = () => `${workPackages()}/get-many`;
 
 /**************** Change Requests Endpoints ****************/
 const changeRequests = () => `${API_URL}/change-requests`;
@@ -64,13 +67,17 @@ const changeRequestsCreateActivation = () => `${changeRequestsCreate()}/activati
 const changeRequestsCreateStageGate = () => `${changeRequestsCreate()}/stage-gate`;
 const changeRequestsCreateStandard = () => `${changeRequestsCreate()}/standard`;
 const changeRequestCreateProposeSolution = () => `${changeRequestsCreate()}/proposed-solution`;
+const changeRequestRequestReviewer = (id: string) => changeRequestsById(id) + '/request-review';
 
 /**************** Teams Endpoints ****************/
 const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
+const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
+const teamsCreate = () => `${teams()}/create`;
+const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -99,6 +106,24 @@ const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advis
 const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
 const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
+
+/**************** Bill of Material Endpoints **************************/
+const bomEndpoints = () => `${API_URL}/projects/bom`;
+const materialEndpoints = () => `${bomEndpoints()}/material`;
+const assemblyEndpoints = () => `${bomEndpoints()}/assembly`;
+const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${materialEndpoints}/${wbsPipe(wbsNum)}`;
+const bomGetAllUnits = () => `${bomEndpoints()}/units`;
+const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-type`;
+const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturer`;
+const bomGetAssembliesByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/assemblies`;
+const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
+const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
+const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
+const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
+const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
+const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -138,6 +163,7 @@ export const apiUrls = {
   workPackagesDelete,
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
+  workPackagesMany,
 
   changeRequests,
   changeRequestsById,
@@ -148,12 +174,16 @@ export const apiUrls = {
   changeRequestsCreateStageGate,
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
+  changeRequestRequestReviewer,
 
   teams,
   teamsById,
+  teamsDelete,
   teamsSetMembers,
   teamsSetHead,
   teamsSetDescription,
+  teamsCreate,
+  teamsSetLeads,
 
   descriptionBulletsCheck,
 
@@ -179,6 +209,21 @@ export const apiUrls = {
   financeEditExpenseType,
   financeCreateExpenseType,
   financeCreateVendor,
+
+  bomEndpoints,
+  bomGetMaterialsByWbsNum,
+  bomGetAllUnits,
+  bomGetAllMaterialTypes,
+  bomGetAllManufacturers,
+  bomGetAssembliesByWbsNum,
+  bomCreateMaterial,
+  bomEditMaterial,
+  bomDeleteMaterial,
+  bomCreateAssembly,
+  bomAssignAssembly,
+  bomCreateManufacturer,
+  bomCreateMaterialType,
+  bomCreateUnit,
 
   version
 };

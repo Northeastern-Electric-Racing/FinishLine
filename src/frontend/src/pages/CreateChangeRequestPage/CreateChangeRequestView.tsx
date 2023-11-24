@@ -36,6 +36,8 @@ import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { wbsNamePipe } from '../../utils/pipes';
 import PageLayout from '../../components/PageLayout';
+import { wbsNumComparator } from 'shared/src/validate-wbs';
+import { useQuery } from '../../hooks/utils.hooks';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -77,6 +79,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   setProposedSolutions,
   handleCancel
 }) => {
+  const query = useQuery();
   const {
     handleSubmit,
     control,
@@ -85,11 +88,17 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     watch
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      what: crDesc,
-      why: [{ type: ChangeRequestReason.Other, explain: '' }],
-      type: ChangeRequestType.Issue
-    }
+    defaultValues: query.get('budgetChange')
+      ? {
+          what: 'Increase the budget to account for the cost of materials',
+          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
+          type: ChangeRequestType.Issue
+        }
+      : {
+          what: crDesc,
+          why: [{ type: ChangeRequestReason.Other, explain: '' }],
+          type: ChangeRequestType.Issue
+        }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
@@ -103,6 +112,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   if (isError) return <ErrorPage message={error?.message} />;
 
   const projectOptions: { label: string; id: string }[] = [];
+
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
   projects.forEach((project: Project) => {
@@ -121,6 +131,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       });
     });
   });
+
+  wbsDropdownOptions.sort((wbsNum1, wbsNum2) => wbsNumComparator(wbsNum1.id, wbsNum2.id));
 
   const wbsAutocompleteOnChange = (
     _event: React.SyntheticEvent<Element, Event>,

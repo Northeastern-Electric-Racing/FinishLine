@@ -12,7 +12,8 @@ import {
   getAllBlockingWorkPackages,
   getAllWorkPackages,
   getSingleWorkPackage,
-  slackUpcomingDeadlines
+  slackUpcomingDeadlines,
+  getManyWorkPackages
 } from '../apis/work-packages.api';
 
 /**
@@ -34,22 +35,6 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
   return useQuery<WorkPackage, Error>(['work packages', wbsNum], async () => {
     const { data } = await getSingleWorkPackage(wbsNum);
     return data;
-  });
-};
-
-/**
- * Custom React Hook to supply multiple work packages
- *
- * @param wbsNums WBS numbers of the requested work packages
- */
-export const useManyWorkPackages = (wbsNums: WbsNumber[]) => {
-  return useQuery<WorkPackage[], Error>(['work packages', wbsNums], async () => {
-    const workPackagePromises = wbsNums.map(async (wbsNum) => {
-      const { data } = await getSingleWorkPackage(wbsNum);
-      return data;
-    });
-    const workPackages = await Promise.all(workPackagePromises);
-    return workPackages;
   });
 };
 
@@ -111,6 +96,16 @@ export const useDeleteWorkPackage = () => {
 export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
   return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNum], async () => {
     const { data } = await getAllBlockingWorkPackages(wbsNum);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get many work packages
+ */
+export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
+  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNums], async () => {
+    const { data } = await getManyWorkPackages(wbsNums);
     return data;
   });
 };

@@ -7,11 +7,13 @@
 
 import {
   CR_Type,
+  Club_Accounts,
   PrismaClient,
   Scope_CR_Why_Type,
   Task_Priority,
   Task_Status,
   Team,
+  Vendor,
   WBS_Element_Status
 } from '@prisma/client';
 import { dbSeedAllUsers } from './seed-data/users.seed';
@@ -20,13 +22,14 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { ClubAccount, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
+import { ClubAccount, MaterialStatus, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { writeFileSync } from 'fs';
+import ProjectsService from '../services/projects.services';
 
 const prisma = new PrismaClient();
 
@@ -37,6 +40,14 @@ const performSeed: () => Promise<void> = async () => {
   });
   const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
   const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
+  const lexLuther = await prisma.user.create({ data: dbSeedAllUsers.lexLuther });
+  const hawkgirl = await prisma.user.create({ data: dbSeedAllUsers.hawkgirl });
+  const elongatedMan = await prisma.user.create({ data: dbSeedAllUsers.elongatedMan });
+  const zatanna = await prisma.user.create({ data: dbSeedAllUsers.zatanna });
+  const phantomStranger = await prisma.user.create({ data: dbSeedAllUsers.phantomStranger });
+  const redTornado = await prisma.user.create({ data: dbSeedAllUsers.redTornado });
+  const firestorm = await prisma.user.create({ data: dbSeedAllUsers.firestorm });
+  const hankHeywood = await prisma.user.create({ data: dbSeedAllUsers.hankHeywood });
   const wonderwoman = await prisma.user.create({ data: dbSeedAllUsers.wonderwoman });
   const flash = await prisma.user.create({ data: dbSeedAllUsers.flash });
   const aquaman = await prisma.user.create({ data: dbSeedAllUsers.aquaman });
@@ -58,6 +69,55 @@ const performSeed: () => Promise<void> = async () => {
   const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
   const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
   const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
+  const aang = await prisma.user.create({ data: dbSeedAllUsers.aang });
+  const katara = await prisma.user.create({ data: dbSeedAllUsers.katara });
+  const sokka = await prisma.user.create({ data: dbSeedAllUsers.sokka });
+  const toph = await prisma.user.create({ data: dbSeedAllUsers.toph });
+  const zuko = await prisma.user.create({ data: dbSeedAllUsers.zuko });
+  const iroh = await prisma.user.create({ data: dbSeedAllUsers.iroh });
+  const azula = await prisma.user.create({ data: dbSeedAllUsers.azula });
+  const appa = await prisma.user.create({ data: dbSeedAllUsers.appa });
+  const momo = await prisma.user.create({ data: dbSeedAllUsers.momo });
+  const suki = await prisma.user.create({ data: dbSeedAllUsers.suki });
+  const yue = await prisma.user.create({ data: dbSeedAllUsers.yue });
+  const bumi = await prisma.user.create({ data: dbSeedAllUsers.bumi });
+  const cristianoRonaldo = await prisma.user.create({ data: dbSeedAllUsers.cristianoRonaldo });
+  const thierryHenry = await prisma.user.create({ data: dbSeedAllUsers.thierryHenry });
+  const frankLampard = await prisma.user.create({ data: dbSeedAllUsers.frankLampard });
+  const stevenGerrard = await prisma.user.create({ data: dbSeedAllUsers.stevenGerrard });
+  const ryanGiggs = await prisma.user.create({ data: dbSeedAllUsers.ryanGiggs });
+  const paulScholes = await prisma.user.create({ data: dbSeedAllUsers.paulScholes });
+  const alanShearer = await prisma.user.create({ data: dbSeedAllUsers.alanShearer });
+  const ericCantona = await prisma.user.create({ data: dbSeedAllUsers.ericCantona });
+  const patrickVieira = await prisma.user.create({ data: dbSeedAllUsers.patrickVieira });
+  const didierDrogba = await prisma.user.create({ data: dbSeedAllUsers.didierDrogba });
+  const johnTerry = await prisma.user.create({ data: dbSeedAllUsers.johnTerry });
+  const dennisBergkamp = await prisma.user.create({ data: dbSeedAllUsers.dennisBergkamp });
+  const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
+  const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
+  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
+  const odellBeckham = await prisma.user.create({ data: dbSeedAllUsers.odellBeckham });
+  const chrisHorton = await prisma.user.create({ data: dbSeedAllUsers.chrisHorton });
+  const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
+  const toddMonken = await prisma.user.create({ data: dbSeedAllUsers.toddMonken });
+  const stephenBisciotti = await prisma.user.create({ data: dbSeedAllUsers.stephenBisciotti });
+  const brooksRobinson = await prisma.user.create({ data: dbSeedAllUsers.brooksRobinson });
+  const jimPalmer = await prisma.user.create({ data: dbSeedAllUsers.jimPalmer });
+  const eddieMurray = await prisma.user.create({ data: dbSeedAllUsers.eddieMurray });
+  const georgeSisler = await prisma.user.create({ data: dbSeedAllUsers.georgeSisler });
+  const urbanShocker = await prisma.user.create({ data: dbSeedAllUsers.urbanShocker });
+  const kenWilliams = await prisma.user.create({ data: dbSeedAllUsers.kenWilliams });
+  const boogPowell = await prisma.user.create({ data: dbSeedAllUsers.boogPowell });
+  const mannyMachado = await prisma.user.create({ data: dbSeedAllUsers.mannyMachado });
+  const babyDollJacobson = await prisma.user.create({ data: dbSeedAllUsers.babyDollJacobson });
+  const husky = await prisma.user.create({ data: dbSeedAllUsers.husky });
+  const winter = await prisma.user.create({ data: dbSeedAllUsers.winter });
+  const frostBite = await prisma.user.create({ data: dbSeedAllUsers.frostBite });
+  const snowPaws = await prisma.user.create({ data: dbSeedAllUsers.snowPaws });
+  const paws = await prisma.user.create({ data: dbSeedAllUsers.paws });
+  const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
+  const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
+  const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -86,7 +146,7 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * Make an initial change request for car 1 using the wbs of the genesis project
    */
-  const changeRequest1Id: number = await ChangeRequestsService.createStandardChangeRequest(
+  const changeRequest1: StandardChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
     genesisProject.wbsElement.carNumber,
     genesisProject.wbsElement.projectNumber,
@@ -98,30 +158,36 @@ const performSeed: () => Promise<void> = async () => {
         type: Scope_CR_Why_Type.INITIALIZATION,
         explain: 'need this to initialize all the seed data'
       }
+    ],
+    [
+      {
+        description: 'Initialize seed data',
+        scopeImpact: 'no scope impact',
+        timelineImpact: 0,
+        budgetImpact: 0
+      }
     ]
   );
 
-  // make a proposed solution for it
-  const proposedSolution1Id: string = await ChangeRequestsService.addProposedSolution(
-    cyborg,
-    changeRequest1Id,
-    0,
-    'Initializing seed data',
-    0,
-    'no scope impact'
-  );
-
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequest1Id, 'LGTM', true, proposedSolution1Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequest1.crId,
+    'LGTM',
+    true,
+    changeRequest1.proposedSolutions[0].id
+  );
 
   /**
    * TEAMS
    */
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
+  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
 
   /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
   const financeTeamId = justiceLeague.teamId;
@@ -142,24 +208,92 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     batman,
     justiceLeague.teamId,
-    [wonderwoman, flash, aquaman, superman, hawkMan, hawkWoman, cyborg, greenLantern, martianManhunter].map(
-      (user) => user.userId
-    )
+    [
+      flash,
+      aquaman,
+      superman,
+      hawkMan,
+      hawkWoman,
+      greenLantern,
+      lexLuther,
+      hawkgirl,
+      elongatedMan,
+      zatanna,
+      phantomStranger,
+      redTornado,
+      firestorm,
+      hankHeywood
+    ].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    batman,
+    justiceLeague.teamId,
+    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
+  );
+  await TeamsService.setTeamMembers(
+    aang,
+    avatarBenders.teamId,
+    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     johnHarbaugh,
     ravens.teamId,
-    [lamarJackson, nezamJazayeri, ryanHowe].map((user) => user.userId)
+    [
+      lamarJackson,
+      nezamJazayeri,
+      ryanHowe,
+      jkDobbins,
+      davidOjabo,
+      markAndrews,
+      odellBeckham,
+      chrisHorton,
+      mikeMacdonald,
+      toddMonken,
+      stephenBisciotti
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
     orioles.teamId,
-    [adleyRutschman, calRipken, anthonyBernardi].map((user) => user.userId)
+    [
+      adleyRutschman,
+      calRipken,
+      anthonyBernardi,
+      brooksRobinson,
+      jimPalmer,
+      eddieMurray,
+      georgeSisler,
+      urbanShocker,
+      kenWilliams,
+      boogPowell,
+      mannyMachado,
+      babyDollJacobson
+    ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
     thomasEmrax,
     huskies.teamId,
-    [joeShmoe, joeBlow, reidChandler, nightwing].map((user) => user.userId)
+    [joeShmoe, joeBlow, reidChandler, nightwing, frostBite, snowPaws, paws, whiteTail, husky, howler, snowBite].map(
+      (user) => user.userId
+    )
+  );
+
+  await TeamsService.setTeamMembers(
+    cristianoRonaldo,
+    plLegends.teamId,
+    [
+      thierryHenry,
+      frankLampard,
+      stevenGerrard,
+      ryanGiggs,
+      paulScholes,
+      alanShearer,
+      ericCantona,
+      patrickVieira,
+      didierDrogba,
+      johnTerry,
+      dennisBergkamp
+    ].map((user) => user.userId)
   );
 
   /**
@@ -169,7 +303,7 @@ const performSeed: () => Promise<void> = async () => {
   /** Project 1 */
   const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
-    changeRequest1Id,
+    changeRequest1.crId,
     1,
     'Impact Attenuator',
     'Develop rules-compliant impact attenuator',
@@ -199,7 +333,7 @@ const performSeed: () => Promise<void> = async () => {
   /** Project 2 */
   const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
     thomasEmrax,
-    changeRequest1Id,
+    changeRequest1.crId,
     1,
     'Bodywork',
     'Develop rules-compliant bodywork',
@@ -229,7 +363,7 @@ const performSeed: () => Promise<void> = async () => {
   /** Project 3 */
   const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
     thomasEmrax,
-    changeRequest1Id,
+    changeRequest1.crId,
     1,
     'Battery Box',
     'Develop rules-compliant battery box.',
@@ -259,7 +393,7 @@ const performSeed: () => Promise<void> = async () => {
   /** Project 4 */
   const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
     thomasEmrax,
-    changeRequest1Id,
+    changeRequest1.crId,
     1,
     'Motor Controller Integration',
     'Develop rules-compliant motor controller integration.',
@@ -289,7 +423,7 @@ const performSeed: () => Promise<void> = async () => {
   /** Project 5 */
   const { projectWbsNumber: project5WbsNumber, projectId: project5Id } = await seedProject(
     thomasEmrax,
-    changeRequest1Id,
+    changeRequest1.crId,
     1,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
@@ -320,7 +454,7 @@ const performSeed: () => Promise<void> = async () => {
    * Change Requests for Creating Work Packages
    */
 
-  const changeRequestWP1Id: number = await ChangeRequestsService.createStandardChangeRequest(
+  const changeRequestWP1 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
     project1WbsNumber.carNumber,
     project1WbsNumber.projectNumber,
@@ -332,11 +466,14 @@ const performSeed: () => Promise<void> = async () => {
         type: Scope_CR_Why_Type.INITIALIZATION,
         explain: 'need this to initialize work packages'
       }
-    ]
+    ],
+    []
   );
 
+  const changeRequestWP1Id = changeRequestWP1.crId;
+
   // make a proposed solution for it
-  const proposedSolution2Id: string = await ChangeRequestsService.addProposedSolution(
+  const proposedSolution2 = await ChangeRequestsService.addProposedSolution(
     cyborg,
     changeRequestWP1Id,
     0,
@@ -345,10 +482,12 @@ const performSeed: () => Promise<void> = async () => {
     'no scope impact'
   );
 
+  const proposedSolution2Id = proposedSolution2.id;
+
   // approve the change request
   await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP1Id, 'LGTM', true, proposedSolution2Id);
 
-  const changeRequestWP5Id: number = await ChangeRequestsService.createStandardChangeRequest(
+  const changeRequestWP5 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
     project5WbsNumber.carNumber,
     project5WbsNumber.projectNumber,
@@ -360,11 +499,14 @@ const performSeed: () => Promise<void> = async () => {
         type: Scope_CR_Why_Type.INITIALIZATION,
         explain: 'need this to initialize work packages'
       }
-    ]
+    ],
+    []
   );
 
+  const changeRequestWP5Id = changeRequestWP5.crId;
+
   // make a proposed solution for it
-  const proposedSolution5Id: string = await ChangeRequestsService.addProposedSolution(
+  const proposedSolution5 = await ChangeRequestsService.addProposedSolution(
     cyborg,
     changeRequestWP5Id,
     0,
@@ -372,6 +514,8 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'no scope impact'
   );
+
+  const proposedSolution5Id = proposedSolution5.id;
 
   // approve the change request
   await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP5Id, 'LGTM', true, proposedSolution5Id);
@@ -461,6 +605,23 @@ const performSeed: () => Promise<void> = async () => {
   );
   const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
 
+  /** Work Package 4 */
+  const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
+    thomasEmrax,
+    'Install Wiring Harness',
+    changeRequest1.crId,
+    WorkPackageStage.Install,
+    '04/01/2023',
+    7,
+    [],
+    ['Assemble and install wiring harness', 'Confirm the installation was successful'],
+    ['Wiring harness is functional and installed in the car'],
+    thomasEmrax,
+    WbsElementStatus.Active,
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
+
   /**
    * Change Requests
    */
@@ -473,7 +634,7 @@ const performSeed: () => Promise<void> = async () => {
     true
   );
 
-  const changeRequest2Id = await ChangeRequestsService.createStandardChangeRequest(
+  const changeRequest2 = await ChangeRequestsService.createStandardChangeRequest(
     thomasEmrax,
     project2WbsNumber.carNumber,
     project2WbsNumber.projectNumber,
@@ -483,18 +644,23 @@ const performSeed: () => Promise<void> = async () => {
     [
       { type: Scope_CR_Why_Type.DESIGN, explain: 'It would be really pretty' },
       { type: Scope_CR_Why_Type.ESTIMATION, explain: 'I estimate that it would be really pretty' }
+    ],
+    [
+      {
+        description: 'Buy hot pink paint',
+        scopeImpact: 'n/a',
+        timelineImpact: 1,
+        budgetImpact: 50
+      },
+      {
+        description: 'Buy slightly cheaper but lower quality hot pink paint',
+        scopeImpact: 'n/a',
+        timelineImpact: 1,
+        budgetImpact: 40
+      }
     ]
   );
-  await ChangeRequestsService.addProposedSolution(thomasEmrax, changeRequest2Id, 50, 'Buy hot pink paint', 1, 'n/a');
-  await ChangeRequestsService.addProposedSolution(
-    thomasEmrax,
-    changeRequest2Id,
-    40,
-    'Buy slightly cheaper but lower quality hot pink paint',
-    1,
-    'n/a'
-  );
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2Id, 'What the hell Thomas', false, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
 
   await ChangeRequestsService.createActivationChangeRequest(
     thomasEmrax,
@@ -740,28 +906,91 @@ const performSeed: () => Promise<void> = async () => {
     [joeShmoe.userId]
   );
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
+  /**
+   * Reimbursements
+   */
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true);
+  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
+  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
+  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
+
+  const vendors: Vendor[] = [vendor, vendor2, vendor3];
+
+  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
+    Club_Accounts.CASH,
+    Club_Accounts.BUDGET
+  ]);
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     new Date(),
     vendor.vendorId,
     ClubAccount.CASH,
+    [],
     [
       {
         name: 'GLUE',
-        wbsNum: {
+        reason: {
           carNumber: 1,
           projectNumber: 1,
-          workPackageNumber: 1
+          workPackageNumber: 0
         },
         cost: 200000
       }
     ],
     expenseType.expenseTypeId,
     100
+  );
+
+  /**
+   * Bill of Materials
+   */
+  await ProjectsService.createManufacturer(thomasEmrax, 'Digikey');
+  await ProjectsService.createMaterialType('Resistor', thomasEmrax);
+
+  const assembly1 = await ProjectsService.createAssembly('1', thomasEmrax, {
+    carNumber: 1,
+    projectNumber: 1,
+    workPackageNumber: 0
+  });
+
+  await ProjectsService.createMaterial(
+    thomasEmrax,
+    '10k Resistor',
+    MaterialStatus.Ordered,
+    'Resistor',
+    'Digikey',
+    'abcdef',
+    20,
+    30,
+    600,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    'Here are some notes',
+    {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    }
+  );
+
+  await ProjectsService.createMaterial(
+    thomasEmrax,
+    '20k Resistor',
+    MaterialStatus.Ordered,
+    'Resistor',
+    'Digikey',
+    'bacfed',
+    10,
+    7,
+    70,
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    'Here are some more notes',
+    {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    assembly1.assemblyId
   );
 };
 

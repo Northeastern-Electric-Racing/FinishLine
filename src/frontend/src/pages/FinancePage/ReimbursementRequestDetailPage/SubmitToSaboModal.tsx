@@ -1,13 +1,14 @@
 import NERModal from '../../../components/NERModal';
 import { Box, Grid, Typography } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
-import { ReimbursementRequest, wbsPipe } from 'shared';
+import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { datePipe } from '../../../utils/pipes';
+import { centsToDollar, datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -21,6 +22,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
+  const toast = useToast();
 
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
@@ -28,12 +30,25 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
 
   const filteredProductsNames = reimbursementProducts
     .filter((product) => !product.dateDeleted)
-    .map((product) => wbsPipe(product.wbsNum) + ' - ' + product.wbsName)
+    .map((product) =>
+      !!(product.reimbursementProductReason as WBSElementData).wbsNum
+        ? wbsPipe((product.reimbursementProductReason as WBSElementData).wbsNum) +
+          ' - ' +
+          (product.reimbursementProductReason as WBSElementData).wbsName
+        : (product.reimbursementProductReason as OtherProductReason)
+    )
     .filter((product, index, self) => index === self.indexOf(product))
     .join(', ');
 
   const handleSubmitToSabo = () => {
-    submitToSabo();
+    try {
+      submitToSabo();
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+
     setOpen(false);
   };
 
@@ -82,10 +97,10 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Date Of Expense" content={datePipe(dateOfExpense)} />
         </Grid>
         <Grid item xs={7}>
-          <DetailDisplay label="Total Expense" content={`$${totalCost}`} />
+          <DetailDisplay label="Total Expense" content={`$${centsToDollar(totalCost)}`} />
         </Grid>
         <Grid item xs={12}>
-          <DetailDisplay label="Expense Description" content={`${vendor.name}[${totalCost}]`} />
+          <DetailDisplay label="Expense Description" content={`${vendor.name}[${centsToDollar(totalCost)}]`} />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>

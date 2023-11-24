@@ -5,8 +5,7 @@
 
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestReason, ChangeRequestType, ProposedSolution, validateWBS } from 'shared';
-import { useAuth } from '../../hooks/auth.hooks';
-import { useCreateProposeSolution, useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { routes } from '../../utils/routes';
 import ErrorPage from '../ErrorPage';
@@ -14,6 +13,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import CreateChangeRequestsView from './CreateChangeRequestView';
 import { useState } from 'react';
 import { useToast } from '../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface CreateChangeRequestProps {}
 
@@ -24,51 +24,45 @@ export interface FormInput {
 }
 
 const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
-  const auth = useAuth();
   const query = useQuery();
   const history = useHistory();
+  const user = useCurrentUser();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
-  const {
-    isLoading: cpsIsLoading,
-    isError: cpsIsError,
-    error: cpsError,
-    mutateAsync: cpsMutateAsync
-  } = useCreateProposeSolution();
-  const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>([]);
+  const defaultProposedSolution = query.get('budgetChange')
+    ? [
+        {
+          id: '',
+          description: 'Increase Budget',
+          budgetImpact: Number(query.get('budgetChange')),
+          timelineImpact: 0,
+          scopeImpact: 'No Changes',
+          createdBy: user,
+          dateCreated: new Date(),
+          approved: false
+        }
+      ]
+    : [];
+  const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>(defaultProposedSolution);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const toast = useToast();
 
-  if (isLoading || cpsIsLoading || !auth.user) return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-  if (cpsIsError) return <ErrorPage message={cpsError?.message} />;
-
-  const { userId } = auth.user;
 
   const handleConfirm = async (data: FormInput) => {
-    const cr = await mutateAsync({
-      ...data,
-      wbsNum: validateWBS(wbsNum)
-    });
-    const crId = parseInt(cr.message);
-    proposedSolutions.forEach(async (ps) => {
-      const { description, timelineImpact, scopeImpact, budgetImpact } = ps;
-      try {
-        await cpsMutateAsync({
-          crId,
-          submitterId: userId,
-          description,
-          timelineImpact,
-          scopeImpact,
-          budgetImpact
-        });
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        }
+    try {
+      await mutateAsync({
+        ...data,
+        wbsNum: validateWBS(wbsNum),
+        proposedSolutions
+      });
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
       }
-    });
-
-    history.push(routes.CHANGE_REQUESTS);
+    } finally {
+      history.push(routes.CHANGE_REQUESTS);
+    }
   };
 
   const handleCancel = () => {

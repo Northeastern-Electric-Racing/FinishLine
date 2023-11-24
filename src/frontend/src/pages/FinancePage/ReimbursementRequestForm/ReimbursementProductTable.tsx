@@ -5,7 +5,9 @@
 import {
   Autocomplete,
   Button,
+  FormControl,
   FormLabel,
+  FormHelperText,
   IconButton,
   InputAdornment,
   Table,
@@ -19,15 +21,23 @@ import {
   styled,
   Box
 } from '@mui/material';
-import { ReimbursementProductCreateArgs, validateWBS, wbsPipe } from 'shared';
+import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
 
+const otherCategoryOptions = [
+  { label: 'Competition', id: 'COMPETITION' },
+  { label: 'Consumeables', id: 'CONSUMABLES' },
+  { label: 'General Stock', id: 'GENERAL_STOCK' },
+  { label: 'Subscriptions and Memberships', id: 'SUBSCRIPTIONS_AND_MEMBERSHIPS' },
+  { label: 'Tools and Equipment', id: 'TOOLS_AND_EQUIPMENT' }
+];
+
 interface ReimbursementProductTableProps {
-  reimbursementProducts: ReimbursementProductCreateArgs[];
+  reimbursementProducts: ReimbursementProductFormArgs[];
   removeProduct: (index: number) => void;
-  appendProduct: (args: ReimbursementProductCreateArgs) => void;
+  appendProduct: (args: ReimbursementProductFormArgs) => void;
   wbsElementAutocompleteOptions: {
     label: string;
     id: string;
@@ -59,12 +69,13 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     }[]
   >();
   reimbursementProducts.forEach((product, index) => {
-    const wbs = wbsPipe(product.wbsNum);
-    if (uniqueWbsElementsWithProducts.has(wbs)) {
-      const products = uniqueWbsElementsWithProducts.get(wbs);
+    const hasWbsNum = (product.reason as WbsNumber).carNumber !== undefined;
+    const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as string);
+    if (uniqueWbsElementsWithProducts.has(productReason)) {
+      const products = uniqueWbsElementsWithProducts.get(productReason);
       products?.push({ ...product, index: index });
     } else {
-      uniqueWbsElementsWithProducts.set(wbs, [{ ...product, index: index }]);
+      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index: index }]);
     }
   });
 
@@ -78,7 +89,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
         <TableHead>
           <TableRow>
             <TableCell width={'40%'}>
-              <FormLabel>WBS Element</FormLabel>
+              <FormLabel>Project/Category</FormLabel>
             </TableCell>
             <TableCell width={'60%'}>
               <FormLabel>Products</FormLabel>
@@ -90,48 +101,60 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
             return (
               <TableRow key={key}>
                 <TableCell>
-                  <Typography>{wbsElementAutocompleteOptions.find((value) => value.id === key)!.label}</Typography>
+                  <Typography>
+                    {wbsElementAutocompleteOptions.concat(otherCategoryOptions).find((value) => value.id === key)?.label}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <ListItem key={product.index}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                          <Controller
-                            name={`reimbursementProducts.${product.index}.name`}
-                            control={control}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                label={'Description'}
-                                autoComplete="off"
-                                size={'small'}
-                                variant={'outlined'}
-                                sx={{ width: '50%', marginRight: '4px' }}
-                                error={!!errors.reimbursementProducts?.[product.index]?.name}
-                              />
-                            )}
-                          />
-                          <Controller
-                            name={`reimbursementProducts.${product.index}.cost`}
-                            control={control}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                label={'Cost'}
-                                size={'small'}
-                                variant={'outlined'}
-                                type="number"
-                                autoComplete="off"
-                                InputProps={{
-                                  startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                }}
-                                onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                sx={{ width: '50%' }}
-                                error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                              />
-                            )}
-                          />
+                          <FormControl sx={{ width: '50%', marginRight: '4px' }}>
+                            <Controller
+                              name={`reimbursementProducts.${product.index}.name`}
+                              control={control}
+                              render={({ field }) => (
+                                <TextField
+                                  {...field}
+                                  label={'Description'}
+                                  autoComplete="off"
+                                  size={'small'}
+                                  variant={'outlined'}
+                                  sx={{ width: '100%' }}
+                                  error={!!errors.reimbursementProducts?.[product.index]?.name}
+                                />
+                              )}
+                            />
+                            <FormHelperText error>
+                              {errors.reimbursementProducts?.[product.index]?.name?.message}
+                            </FormHelperText>
+                          </FormControl>
+                          <FormControl sx={{ width: '50%' }}>
+                            <Controller
+                              name={`reimbursementProducts.${product.index}.cost`}
+                              control={control}
+                              render={({ field }) => (
+                                <TextField
+                                  {...field}
+                                  label={'Cost'}
+                                  size={'small'}
+                                  variant={'outlined'}
+                                  type="number"
+                                  autoComplete="off"
+                                  InputProps={{
+                                    startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                  }}
+                                  onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                  sx={{ width: '100%' }}
+                                  error={!!errors.reimbursementProducts?.[product.index]?.cost}
+                                />
+                              )}
+                            />
+                            <FormHelperText error>
+                              {errors.reimbursementProducts?.[product.index]?.cost?.message}
+                            </FormHelperText>
+                          </FormControl>
                           <IconButton onClick={() => removeProduct(product.index)}>
                             <Delete />
                           </IconButton>
@@ -144,7 +167,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     startIcon={<Add />}
                     onClick={() =>
                       appendProduct({
-                        wbsNum: validateWBS(key),
+                        reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
                         name: '',
                         cost: 0
                       })
@@ -158,17 +181,46 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
           })}
           <TableRow>
             <TableCell colSpan={2} sx={{ borderBottom: 0 }}>
-              <Autocomplete
-                fullWidth
-                sx={{ my: 1 }}
-                options={wbsElementAutocompleteOptions}
-                onChange={(_event, value) => {
-                  if (value) appendProduct({ wbsNum: validateWBS(value.id), name: '', cost: 0 });
-                }}
-                id={'append-product-autocomplete'}
-                size={'small'}
-                renderInput={(params) => <TextField {...params} placeholder="Select a Wbs Element" />}
-              />
+              <Box sx={{ display: 'flex', flexDirection: 'horizontal', gap: '5px' }}>
+                <Autocomplete
+                  fullWidth
+                  sx={{ my: 1 }}
+                  options={wbsElementAutocompleteOptions}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: validateWBS(value.id),
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Project" />}
+                />
+                <Autocomplete
+                  fullWidth
+                  sx={{ my: 1 }}
+                  options={otherCategoryOptions}
+                  onChange={(_event, value) => {
+                    if (value) {
+                      appendProduct({
+                        reason: value.id as OtherProductReason,
+                        name: '',
+                        cost: 0
+                      });
+                    }
+                  }}
+                  value={null}
+                  blurOnSelect={true}
+                  id={'append-product-autocomplete'}
+                  size={'small'}
+                  renderInput={(params) => <TextField {...params} placeholder="Select Other Category" />}
+                />
+              </Box>
             </TableCell>
           </TableRow>
         </TableBody>

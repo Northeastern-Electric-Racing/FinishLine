@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ChangeRequest, ChangeRequestReason, ChangeRequestType, WbsNumber } from 'shared';
+import { ChangeRequest, ChangeRequestReason, ChangeRequestType, ProposedSolutionCreateArgs, WbsNumber } from 'shared';
 import {
   createActivationChangeRequest,
   createStandardChangeRequest,
@@ -13,7 +13,8 @@ import {
   getSingleChangeRequest,
   reviewChangeRequest,
   addProposedSolution,
-  deleteChangeRequest
+  deleteChangeRequest,
+  requestCRReview
 } from '../apis/change-requests.api';
 
 /**
@@ -86,6 +87,7 @@ export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
   why: { explain: string; type: ChangeRequestReason }[];
+  proposedSolutions: ProposedSolutionCreateArgs[];
 };
 
 /**
@@ -144,6 +146,25 @@ export const useCreateProposeSolution = () => {
         payload.timelineImpact,
         payload.budgetImpact
       );
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to request cr reviewers
+ */
+export const useRequestCRReview = (crId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['change requests', 'review'],
+    async (crReviewPayload: { userIds: number[] }) => {
+      const { data } = await requestCRReview(crId, crReviewPayload);
       return data;
     },
     {

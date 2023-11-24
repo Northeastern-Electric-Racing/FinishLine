@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Paper, Table, TableBody, TableContainer, TableHead, Typography, Box } from '@mui/material';
+import { TableRow, TableCell, Typography, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { ExpenseType } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
+import AdminToolTable from '../AdminToolTable';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 const AccountCodesTable = () => {
   const {
@@ -27,18 +29,24 @@ const AccountCodesTable = () => {
     return <ErrorPage message={expenseTypesError.message} />;
   }
 
-  const accountCodesTableRows = expenseTypes.map((expenseType) => (
+  const accountCodesTableRows = expenseTypes.map((expenseType, index) => (
     <TableRow
       onClick={() => {
         setClickedAccountCode(expenseType);
         setShowEditModal(true);
       }}
+      key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell sx={{ border: '2px solid black' }}>{expenseType.name}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{expenseType.code}</TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black' }}>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
         <Typography>{expenseType.allowed ? 'Yes' : 'No'}</Typography>
+      </TableCell>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
+        {expenseType.allowedRefundSources.map((refundSource, idx) => (
+          <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
+        ))}
       </TableCell>
     </TableRow>
   ));
@@ -49,44 +57,25 @@ const AccountCodesTable = () => {
       {clickedAccountCode && (
         <EditAccountCodeModal
           showModal={showEditModal}
-          handleClose={() => setShowEditModal(false)}
+          handleClose={() => {
+            setShowEditModal(false);
+            setClickedAccountCode(undefined);
+          }}
           accountCode={clickedAccountCode}
         />
       )}
       <Typography variant="subtitle1" textAlign="left">
         Account Codes
       </Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableCell
-              align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="50%"
-            >
-              Account Name
-            </TableCell>
-            <TableCell
-              align="left"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="30%"
-            >
-              Account Code
-            </TableCell>
-            <TableCell
-              align="center"
-              sx={{ fontSize: '16px', fontWeight: 600, border: '2px solid black' }}
-              itemType="date"
-              width="20%"
-            >
-              Allowed
-            </TableCell>
-          </TableHead>
-          <TableBody>{accountCodesTableRows}</TableBody>
-        </Table>
-      </TableContainer>
+      <AdminToolTable
+        columns={[
+          { name: 'Account Name', width: '25%' },
+          { name: 'Account Code', width: '25%' },
+          { name: 'Allowed', width: '15%' },
+          { name: 'Allowed Refund Sources', width: '35%' }
+        ]}
+        rows={accountCodesTableRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

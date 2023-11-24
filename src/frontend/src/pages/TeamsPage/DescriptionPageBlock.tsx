@@ -14,6 +14,7 @@ import ErrorPage from '../ErrorPage';
 import PageBlock from '../../layouts/PageBlock';
 import ReactMarkdown from 'react-markdown';
 import styles from '../../stylesheets/pages/teams.module.css';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface DescriptionPageBlockProps {
   team: Team;
@@ -26,6 +27,7 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
   const [description, setDescription] = useState(team.description);
   const [isPreview, setIsPreview] = useState(false);
   const { isLoading, isError, error, mutateAsync } = useEditTeamDescription(team.teamId);
+  const toast = useToast();
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
@@ -34,7 +36,14 @@ const DescriptionPageBlock: React.FC<DescriptionPageBlockProps> = ({ team }) => 
     if (!isUnderWordCount(description, 300)) {
       return alert('Description must be less than 300 words');
     }
-    await mutateAsync(description);
+    try {
+      await mutateAsync(description);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+
     resetDefaults();
   };
 

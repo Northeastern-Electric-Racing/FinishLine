@@ -10,7 +10,8 @@ export enum ReimbursementStatusType {
   PENDING_FINANCE = 'PENDING_FINANCE',
   SABO_SUBMITTED = 'SABO_SUBMITTED',
   ADVISOR_APPROVED = 'ADVISOR_APPROVED',
-  REIMBURSED = 'REIMBURSED'
+  REIMBURSED = 'REIMBURSED',
+  DENIED = 'DENIED'
 }
 
 export interface ReimbursementStatus {
@@ -45,13 +46,23 @@ export interface ReimbursementRequest {
   expenseType: ExpenseType;
 }
 
+export enum OtherProductReason {
+  ToolsAndEquipment = 'TOOLS_AND_EQUIPMENT',
+  Competition = 'COMPETITION',
+  Consumables = 'CONSUMABLES',
+  GeneralStock = 'GENERAL_STOCK',
+  SubscriptionsAndMemberships = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
+}
+
+export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
+
+export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {
   reimbursementProductId: string;
   name: string;
   dateDeleted?: Date;
   cost: number;
-  wbsNum: WbsNumber;
-  wbsName: string;
+  reimbursementProductReason: ReimbursementProductReason;
 }
 
 export interface Vendor {
@@ -65,12 +76,29 @@ export interface ExpenseType {
   name: string;
   code: number;
   allowed: boolean;
+  allowedRefundSources: ClubAccount[];
 }
 
 export interface ReimbursementProductCreateArgs {
   id?: string;
   name: string;
   cost: number;
+}
+
+export interface ReimbursementProductFormArgs extends ReimbursementProductCreateArgs {
+  reason: WbsNumber | OtherProductReason;
+}
+
+export interface OtherReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
+  reason: OtherProductReason;
+}
+
+export interface WbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
+  reason: WbsNumber;
+}
+
+export interface ValidatedWbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
+  wbsElementId: number;
   wbsNum: WbsNumber;
 }
 

@@ -1,13 +1,14 @@
-import { FormControl } from '@mui/material';
-import NERFormModal from '../../../components/NERFormModal';
-import { useForm } from 'react-hook-form';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ReactHookTextField from '../../../components/ReactHookTextField';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useToast } from '../../../hooks/toasts.hooks';
-import { useReportRefund } from '../../../hooks/finance.hooks';
-import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { FormControl, FormLabel, TextField } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { Controller, useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import NERFormModal from '../../../components/NERFormModal';
+import ReactHookTextField from '../../../components/ReactHookTextField';
+import { useReportRefund } from '../../../hooks/finance.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
   refundAmount: yup
@@ -15,9 +16,12 @@ const schema = yup.object().shape({
     .required()
     .test('two decimals', 'Refund must be formatted as a dollar amount with at most two decimals', (value) => {
       if (!value) return false;
-      return Math.floor(value * 100) === value * 100;
+      const roundedValue = Math.round(value * 100) / 100; // 2 decimal places
+      const threshold = 0.001;
+      return Math.abs(roundedValue - value) <= threshold;
     })
-    .typeError('The refund amount should be a valid number')
+    .typeError('The refund amount should be a valid number'),
+  dateReceived: yup.date().required()
 });
 
 interface ReportRefundProps {
@@ -41,16 +45,20 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      refundAmount: ''
+      refundAmount: '',
+      dateReceived: new Date()
     },
     mode: 'onChange'
   });
 
-  const handleConfirm = async (data: { refundAmount: number }) => {
+  const handleConfirm = async (data: { refundAmount: number; dateReceived: Date }) => {
     handleClose();
     try {
-      await mutateAsync({ refundAmount: data.refundAmount * 100 });
-      toast.success(`New Account Credit Amount #${data.refundAmount} Reported Successfully`);
+      await mutateAsync({
+        refundAmount: Math.round(data.refundAmount * 100),
+        dateReceived: data.dateReceived.toISOString()
+      });
+      toast.success('New Account Credit Reported Successfully');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -72,12 +80,29 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
         <LoadingIndicator />
       ) : (
         <FormControl>
+          <FormLabel>Amount</FormLabel>
           <ReactHookTextField
             name="refundAmount"
             control={control}
             sx={{ width: 1 }}
             startAdornment={<AttachMoneyIcon />}
             errorMessage={errors.refundAmount}
+          />
+
+          <FormLabel sx={{ paddingTop: 2 }}>Date Received</FormLabel>
+          <Controller
+            name="dateReceived"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <DatePicker
+                inputFormat="yyyy-MM-dd"
+                onChange={(e) => onChange(e ?? new Date())}
+                className={'padding: 10'}
+                value={value}
+                renderInput={(params) => <TextField autoComplete="off" {...params} />}
+              />
+            )}
           />
         </FormControl>
       )}

@@ -41,7 +41,7 @@ describe('Change Requests', () => {
       return undefined;
     });
     vi.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
-      return undefined;
+      return [];
     });
     vi.spyOn(changeRequestUtils, 'updateBlocking').mockImplementation(async () => {});
     vi.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
@@ -174,6 +174,14 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.project, 'findUnique').mockResolvedValue(prismaProject1);
       vi.spyOn(prisma.project, 'update').mockResolvedValue(prismaProject1);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
+      vi.spyOn(prisma.change, 'create').mockResolvedValue({
+        changeId: 1,
+        changeRequestId: 2,
+        detail: 'Changed Duration from "10" to "20"',
+        implementerId: 2,
+        wbsElementId: 65,
+        dateImplemented: new Date()
+      });
       const response = await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1');
       expect(response).toStrictEqual(prismaChangeRequest1.crId);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
@@ -181,44 +189,6 @@ describe('Change Requests', () => {
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.project.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.project.update).toHaveBeenCalledTimes(1);
-      expect(prisma.project.update).toHaveBeenCalledWith({
-        data: {
-          budget: 1003,
-          wbsElement: {
-            update: {
-              changes: {
-                create: {
-                  changeRequestId: 2,
-                  detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2,
-                  wbsElementId: 65
-                }
-              }
-            }
-          },
-          workPackages: {
-            update: {
-              data: {
-                duration: 20,
-                wbsElement: {
-                  update: {
-                    changes: {
-                      create: {
-                        changeRequestId: 2,
-                        detail: 'Changed Duration from "10" to "20"',
-                        implementerId: 2,
-                        wbsElementId: 65
-                      }
-                    }
-                  }
-                }
-              },
-              where: { workPackageId: 1 }
-            }
-          }
-        },
-        where: { projectId: 1 }
-      });
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });
 
@@ -240,24 +210,6 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.project.update).toHaveBeenCalledWith({
-        data: {
-          budget: 1003,
-          wbsElement: {
-            update: {
-              changes: {
-                create: {
-                  changeRequestId: 2,
-                  detail: 'Changed Budget from "3" to "1003"',
-                  implementerId: 2,
-                  wbsElementId: 65
-                }
-              }
-            }
-          }
-        },
-        where: { projectId: 2 }
-      });
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);
     });
 
@@ -392,7 +344,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(prismaScopeChangeRequest1);
       vi.spyOn(prisma.proposed_Solution, 'create').mockResolvedValue(prismaProposedSolution1);
       const response = await ChangeRequestsService.addProposedSolution(aquaman, crId, 1000, description, 10, 'huge');
-      expect(response).toStrictEqual(prismaProposedSolution1.proposedSolutionId);
+      expect(response).toStrictEqual({ ...prismaProposedSolution1, id: prismaProposedSolution1.proposedSolutionId });
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.create).toHaveBeenCalledTimes(1);
@@ -505,9 +457,10 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
+    const changeRequest = { ...prismaChangeRequest1, requestedReviewers: [] };
     test('Change request successfully assigned reviewers', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batmanWithUserSettings]);
-      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeRequest);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
 
       await ChangeRequestsService.requestCRReview(batman, [1], 1);

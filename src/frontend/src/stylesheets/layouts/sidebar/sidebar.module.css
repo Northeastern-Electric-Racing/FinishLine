@@ -14,10 +14,9 @@
 }
 
 .versionNumber {
-  position: absolute;
+  position: relative;
   text-align: center;
   color: #ffffff;
   width: 100%;
-  bottom: 0;
-  height: 6em;
+  padding-bottom: 2em;
 }

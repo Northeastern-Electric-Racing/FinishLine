@@ -3,7 +3,12 @@ import { User } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
-import { NotFoundException, AccessDeniedException, HttpException } from '../utils/errors.utils';
+import {
+  NotFoundException,
+  AccessDeniedException,
+  HttpException,
+  AccessDeniedAdminOnlyException
+} from '../utils/errors.utils';
 import { getUsers } from '../utils/users.utils';
 import { isUnderWordCount } from 'shared';
 
@@ -155,6 +160,123 @@ export default class TeamsService {
       data: {
         head: {
           connect: { userId }
+        }
+      },
+      ...teamQueryArgs
+    });
+    return teamTransformer(updateTeam);
+  }
+
+  /**
+   * Hard deletes the team with the given teamId
+   * @param deleter the user submitting this request
+   * @param teamId the id of the team to be deleted
+   */
+  static async deleteTeam(deleter: User, teamId: string): Promise<void> {
+    const team = await prisma.team.findUnique({ where: { teamId }, ...teamQueryArgs });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+    if (!isAdmin(deleter.role)) throw new AccessDeniedAdminOnlyException('delete teams');
+
+    await prisma.team.delete({ where: { teamId }, ...teamQueryArgs });
+  }
+
+  /**
+   * Creates a new team in the database
+   * @param submitter The submitter who is trying to create a new team
+   * @param teamName the name of the new team
+   * @param headId the id of the user who will be the head on the new team
+   * @param slackId the slack id for the slack channel for the team
+   * @param description a short description of the team (must be less than 300 words)
+   * @returns The newly created team
+   */
+  static async createTeam(
+    submitter: User,
+    teamName: string,
+    headId: number,
+    slackId: string,
+    description: string
+  ): Promise<Team> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedException('You must be an admin or higher to create a new team!');
+    }
+
+    if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+
+    const newHead = await prisma.user.findUnique({
+      where: { userId: headId }
+    });
+
+    if (!newHead) throw new NotFoundException('User', headId);
+    if (!isHead(newHead.role)) throw new HttpException(400, 'The team head must be at least a head');
+
+    // checking to see if any other teams have the new head as their current head
+    const newHeadTeam = await prisma.team.findFirst({
+      where: { headId }
+    });
+
+    if (newHeadTeam) throw new HttpException(400, 'The new team head must not be a head of another team');
+
+    const duplicateName = await prisma.team.findFirst({
+      where: { teamName }
+    });
+
+    if (duplicateName) throw new HttpException(400, 'The new team name must not be the name of another team');
+
+    const createdTeam = await prisma.team.create({
+      data: {
+        teamName,
+        slackId,
+        description,
+        head: { connect: { userId: headId } }
+      },
+      ...teamQueryArgs
+    });
+
+    return teamTransformer(createdTeam);
+  }
+
+  /*
+   * Update the given teamId's team's leads
+   * @param submitter a user who's making this request
+   * @param teamId a id of team to be updated
+   * @param userIds a array of user Ids that replaces team's old leads
+   * @returns an updated team
+   * @throws if the team is not found, the submitter has no privilege, or any user from the given userIds does not exist
+   */
+  static async setTeamLeads(submitter: User, teamId: string, userIds: number[]): Promise<Team> {
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    const newLeads = await getUsers(userIds);
+
+    if (!team) throw new NotFoundException('Team', teamId);
+
+    if (!isAdmin(submitter.role) && submitter.userId !== team.headId) {
+      throw new AccessDeniedException('You must be an admin or the head to update the lead!');
+    }
+
+    if (newLeads.map((lead) => lead.userId).includes(team.headId)) {
+      throw new HttpException(400, 'A lead cannot be the head of the team!');
+    }
+
+    if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
+      throw new HttpException(400, 'A lead cannot be a member of the team!');
+    }
+
+    const transformedLeads = newLeads.map((lead) => {
+      return {
+        userId: lead.userId
+      };
+    });
+
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        leads: {
+          set: transformedLeads
         }
       },
       ...teamQueryArgs

@@ -3,12 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { expenseTypePipe } from '../../../utils/pipes';
 import { Edit } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -20,9 +21,17 @@ import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../../utils/pipes';
 import {
-  imagePreviewUrl,
+  centsToDollar,
+  codeAndRefundSourceName,
+  datePipe,
+  dateUndefinedPipe,
+  fullNamePipe,
+  undefinedPipe
+} from '../../../utils/pipes';
+import {
+  imageDownloadUrl,
+  imageFileUrl,
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestSaboSubmitted
 } from '../../../utils/reimbursement-request.utils';
@@ -30,6 +39,7 @@ import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
+import DownloadIcon from '@mui/icons-material/Download';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -96,7 +106,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       submitText="Yes"
       onSubmit={handleMarkDelivered}
     >
-      <Typography>Are you sure you want to mark this reimbursement request as delivered?</Typography>
+      <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
     </NERModal>
   );
 
@@ -115,13 +125,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Sabo Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Refund Source" content={`${reimbursementRequest.account}`} />
+            <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={`${reimbursementRequest.expenseType.name}`} />
+            <VerticalDetailDisplay label="Expense Type" content={expenseTypePipe(reimbursementRequest.expenseType)} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Date Delivered" content={dateUndefinedPipe(reimbursementRequest.dateDelivered)} />
+            <VerticalDetailDisplay
+              label="Date Item Delivered"
+              content={dateUndefinedPipe(reimbursementRequest.dateDelivered)}
+            />
           </Grid>
           <Grid
             item
@@ -134,7 +147,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <Grid item xs={6} textAlign={'center'} mt={-2}>
               <Typography fontSize={50}>Total Cost</Typography>
             </Grid>
-            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
             </Grid>
           </Grid>
@@ -161,14 +174,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const ReceiptsView = () => {
     return (
       <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
-        <Typography variant="h5">Receipts</Typography>
+        <Box sx={{ position: 'sticky', top: 0, background: theme.palette.background.default, pb: 1, zIndex: 1 }}>
+          <Typography variant="h5">Receipts</Typography>
+        </Box>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
-            <iframe
-              style={{ height: `200px`, width: '50%' }}
-              src={imagePreviewUrl(receipt.googleFileId)}
-              title={receipt.name}
-            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover" sx={{ mr: 1, fontSize: 30 }}>
+                {receipt.name}
+              </Link>
+              <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
+                <DownloadIcon sx={{ fontSize: 30 }} />
+              </IconButton>
+            </Box>
           );
         })}
       </Box>
@@ -183,7 +201,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Edit',
       onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
       icon: <Edit />,
-      disabled: !allowEdit
+      disabled: !allowEdit && !user.isFinance
     },
     {
       title: 'Delete',
