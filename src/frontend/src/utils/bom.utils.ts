@@ -1,5 +1,6 @@
 import { Material } from 'shared';
 import { GridColDefStyle } from './tables';
+import { centsToDollar } from './pipes';
 
 export interface BomRow {
   id: string;
@@ -28,8 +29,8 @@ export const materialToRow = (material: Material, idx: number): BomRow => {
     manufacturerPN: material.manufacturerPartNumber,
     pdmFileName: material.pdmFileName ?? 'None',
     quantity: material.quantity + (material.unitName ?? ''),
-    price: material.price.toString(),
-    subtotal: material.subtotal.toString(),
+    price: `$${centsToDollar(material.price)}`,
+    subtotal: `$${centsToDollar(material.subtotal)}`,
     link: material.linkUrl,
     notes: material.notes
   };
