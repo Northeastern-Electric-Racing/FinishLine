@@ -54,7 +54,7 @@ export interface WorkPackageFormViewPayload {
   startDate: Date;
   duration: number;
   crId: string;
-  stage: string | undefined;
+  stage: string;
   blockedBy: string[];
   expectedActivities: {
     bulletId: number;
@@ -94,7 +94,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       blockedBy: defaultValues?.blockedBy ?? [],
       expectedActivities: defaultValues?.expectedActivities ?? [],
       deliverables: defaultValues?.deliverables ?? [],
-      stage: defaultValues?.stage
+      stage: defaultValues?.stage ?? 'NONE'
     }
   });
 
@@ -136,8 +136,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities,
-        deliverables,
+        expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
+        deliverables: createForm ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
         stage
       };
       await mutateAsync(payload);

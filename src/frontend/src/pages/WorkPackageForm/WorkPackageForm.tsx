@@ -44,7 +44,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
         ...workPackage!,
         workPackageId: workPackage!.id,
         crId: workPackage!.changes[0].changeRequestId.toString(),
-        stage: workPackage!.stage,
+        stage: workPackage!.stage ?? 'NONE',
         blockedBy: workPackage!.blockedBy.map(wbsPipe),
         expectedActivities: bulletsToObject(workPackage!.expectedActivities),
         deliverables: bulletsToObject(workPackage!.deliverables)
