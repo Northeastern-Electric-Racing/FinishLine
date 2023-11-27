@@ -120,18 +120,18 @@ model User {
 }
 
 model Team {
-  teamId       String    @id @default(uuid())
-  teamName     String
-  slackId      String
-  description  String    @default("")
-  projects     Project[] @relation(name: "assignedBy")
-  members      User[]    @relation(name: "teamsAsMember")
-  leads        User[]    @relation(name: "teamsAsLead")
-  headId       Int       @unique
-  head         User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
-  dateArchived DateTime?
-  userId       Int?
-  userArchived User?     @relation(fields: [userId], references: [userId])
+  teamId         String    @id @default(uuid())
+  teamName       String
+  slackId        String
+  description    String    @default("")
+  projects       Project[] @relation(name: "assignedBy")
+  members        User[]    @relation(name: "teamsAsMember")
+  leads          User[]    @relation(name: "teamsAsLead")
+  headId         Int       @unique
+  head           User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
+  dateArchived   DateTime?
+  userArchivedId Int?
+  userArchived   User?     @relation(fields: [userArchivedId], references: [userId])
 }
 
 model Session {
