@@ -103,7 +103,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const ReceiptFileInput = () => (
     <FormControl>
       <FormLabel>Receipts</FormLabel>
-      <ul>
+      <ul style={{ maxHeight: 100, overflow: 'auto' }}>
         {receiptFiles.map((receiptFile, index) => (
           <li key={index}>
             <Stack key={index} direction="row" justifyContent="space-between">
@@ -142,7 +142,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         </Snackbar>
       )}
       <Grid container spacing={2}>
-        <Grid item container maxHeight={375} spacing={2} md={6} xs={12}>
+        <Grid item container maxHeight={375} mb={5} spacing={2} md={6} xs={12}>
           <Grid item xs={12}>
             <FormControl fullWidth>
               <FormLabel>Purchased From</FormLabel>
@@ -292,10 +292,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <FormLabel>Total Cost</FormLabel>
-            <Typography variant="h6">${calculatedTotalCost}</Typography>
-          </Grid>
         </Grid>
         <Grid item md={6} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
           <FormControl fullWidth>
@@ -312,14 +308,18 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </FormControl>
         </Grid>
       </Grid>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-        <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
-          {submitText}
-        </NERSuccessButton>
-      </Box>
+      <Grid item xs={12}>
+        <FormLabel>Total Cost</FormLabel>
+        <Typography variant="h6">${calculatedTotalCost}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
+            {submitText}
+          </NERSuccessButton>
+        </Box>
+      </Grid>
     </form>
   );
 };
