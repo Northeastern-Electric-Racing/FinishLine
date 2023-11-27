@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import taskQueryArgs from './tasks.query-args';
 import linkQueryArgs from './links.query-args';
+import { assemblyQueryArgs, materialQueryArgs } from './bom.query-args';
 
 const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -10,7 +11,15 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         projectManager: true,
         tasks: { where: { dateDeleted: null }, ...taskQueryArgs },
         links: { ...linkQueryArgs },
-        changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
+        changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
+        materials: {
+          where: { dateDeleted: null },
+          ...materialQueryArgs
+        },
+        assemblies: {
+          where: { dateDeleted: null },
+          ...assemblyQueryArgs
+        }
       }
     },
     teams: { include: { members: true, head: true, leads: true } },
@@ -29,7 +38,13 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
             projectLead: true,
             projectManager: true,
             links: { ...linkQueryArgs },
-            changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } }
+            changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
+            materials: {
+              ...materialQueryArgs
+            },
+            assemblies: {
+              ...assemblyQueryArgs
+            }
           }
         },
         blockedBy: { where: { dateDeleted: null } },

@@ -16,6 +16,15 @@ export const bulletsToObject = (bullets: DescriptionBullet[]) =>
       return { bulletId: bullet.id, detail: bullet.detail };
     });
 
+/*
+ * maps a list of rules to the object needed for forms
+ * uses the index in the array as the bulletId
+ */
+export const rulesToObject = (rules: string[]) =>
+  rules.map((rule, bulletId) => {
+    return { bulletId: bulletId, detail: rule };
+  });
+
 // transforms the bullets made by react-hook-forms to the objects needed for the payload to the backend
 export const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) => {
   return ls.map((ele) => {
