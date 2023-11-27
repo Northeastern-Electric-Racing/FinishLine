@@ -9,4 +9,5 @@ export interface GridColDefStyle {
   flex: number;
   align: GridAlignment;
   headerAlign: GridAlignment;
+  headerClassName?: string;
 }

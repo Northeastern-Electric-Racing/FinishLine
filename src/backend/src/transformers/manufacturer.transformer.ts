@@ -3,15 +3,22 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Manufacturer, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { Manufacturer } from 'shared';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import { materialPreviewTransformer } from './material.transformer';
 
-export const manufacturerTransformer = (
+const manufacturerTransformer = (
   manufacturer: Prisma.ManufacturerGetPayload<typeof manufacturerQueryArgs>
 ): Manufacturer => {
   return {
     name: manufacturer.name,
     dateCreated: manufacturer.dateCreated,
-    creatorId: manufacturer.creatorId
+    userCreatedId: manufacturer.userCreatedId,
+    userCreated: manufacturer.userCreated,
+    dateDeleted: manufacturer.dateDeleted ?? undefined,
+    materials: manufacturer.materials.map(materialPreviewTransformer)
   };
 };
+
+export default manufacturerTransformer;

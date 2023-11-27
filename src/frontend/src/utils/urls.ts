@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { WbsNumber, wbsPipe } from 'shared';
+
 /**
  * This file centralizes URLs used to query the API.
  */
@@ -105,6 +107,24 @@ const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${e
 const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 
+/**************** Bill of Material Endpoints **************************/
+const bomEndpoints = () => `${API_URL}/projects/bom`;
+const materialEndpoints = () => `${bomEndpoints()}/material`;
+const assemblyEndpoints = () => `${bomEndpoints()}/assembly`;
+const bomGetMaterialsByWbsNum = (wbsNum: WbsNumber) => `${materialEndpoints}/${wbsPipe(wbsNum)}`;
+const bomGetAllUnits = () => `${bomEndpoints()}/units`;
+const bomGetAllMaterialTypes = () => `${bomEndpoints()}/material-type`;
+const bomGetAllManufacturers = () => `${bomEndpoints()}/manufacturer`;
+const bomGetAssembliesByWbsNum = (wbsNum: WbsNumber) => `${bomEndpoints()}/${wbsPipe(wbsNum)}/assemblies`;
+const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
+const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
+const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
+const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
+const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
+const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -189,6 +209,21 @@ export const apiUrls = {
   financeEditExpenseType,
   financeCreateExpenseType,
   financeCreateVendor,
+
+  bomEndpoints,
+  bomGetMaterialsByWbsNum,
+  bomGetAllUnits,
+  bomGetAllMaterialTypes,
+  bomGetAllManufacturers,
+  bomGetAssembliesByWbsNum,
+  bomCreateMaterial,
+  bomEditMaterial,
+  bomDeleteMaterial,
+  bomCreateAssembly,
+  bomAssignAssembly,
+  bomCreateManufacturer,
+  bomCreateMaterialType,
+  bomCreateUnit,
 
   version
 };

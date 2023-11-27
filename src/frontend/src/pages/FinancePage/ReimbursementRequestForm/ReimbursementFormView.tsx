@@ -18,7 +18,7 @@ import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue,
 import {
   ClubAccount,
   ExpenseType,
-  ReimbursementProductCreateArgs,
+  ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
   Vendor,
@@ -47,16 +47,16 @@ interface ReimbursementRequestFormViewProps {
     wbsName: string;
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
-  reimbursementProducts: ReimbursementProductCreateArgs[];
+  reimbursementProducts: ReimbursementProductFormArgs[];
   receiptAppend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
-  reimbursementProductAppend: (args: ReimbursementProductCreateArgs) => void;
+  reimbursementProductAppend: (args: ReimbursementProductFormArgs) => void;
   reimbursementProductRemove: (index: number) => void;
   onSubmit: (data: ReimbursementRequestFormInput) => void;
   handleSubmit: UseFormHandleSubmit<ReimbursementRequestFormInput>;
   errors: FieldErrors<ReimbursementRequestFormInput>;
   watch: UseFormWatch<ReimbursementRequestFormInput>;
-  submitText: string;
+  submitText: 'Save' | 'Submit';
   previousPage: string;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
   hasSecureSettingsSet: boolean;
