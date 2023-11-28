@@ -103,7 +103,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const ReceiptFileInput = () => (
     <FormControl>
       <FormLabel>Receipts</FormLabel>
-      <ul style={{ maxHeight: 100, overflow: 'auto' }}>
+      <ul>
         {receiptFiles.map((receiptFile, index) => (
           <li key={index}>
             <Stack key={index} direction="row" justifyContent="space-between">
@@ -142,15 +142,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         </Snackbar>
       )}
       <Grid container spacing={2}>
-        <Grid
-          item
-          container
-          maxHeight={375}
-          spacing={2}
-          md={6}
-          xs={12}
-          sx={{ '&.MuiGrid-item': { height: 'fit-content' }, mb: 5 }}
-        >
+        <Grid item container spacing={2} md={6} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
           <Grid item xs={12} sx={{}}>
             <FormControl fullWidth>
               <FormLabel>Purchased From</FormLabel>
