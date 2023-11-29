@@ -4,17 +4,19 @@ import { WbsElementStatus } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useState } from 'react';
 import { wbsPipe } from 'shared';
-import { Box, Alert, IconButton, Collapse, Link, Typography, AlertTitle } from '@mui/material';
+import { Box, Alert, IconButton, Collapse, Typography, AlertTitle, Grid } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { routes } from '../../utils/routes';
-import { Link as RouterLink } from 'react-router-dom';
 import { datePipe } from '../../utils/pipes';
+import { NERButton } from '../../components/NERButton';
+import { useHistory } from 'react-router-dom';
 
 const OverdueWorkPackageAlerts: React.FC = () => {
   const user = useCurrentUser();
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active });
   const currentDate = new Date();
   const [open, setOpen] = useState(true);
+  const history = useHistory();
 
   // Filter for work packages that are overdue and the user is the project lead
   const userOverdueWorkPackages = workPackages.data
@@ -31,6 +33,11 @@ const OverdueWorkPackageAlerts: React.FC = () => {
           <Alert
             variant="filled"
             severity="warning"
+            sx={{
+              '& .MuiAlert-message': {
+                width: '100%'
+              }
+            }}
             action={
               <IconButton
                 aria-label="close"
@@ -44,21 +51,28 @@ const OverdueWorkPackageAlerts: React.FC = () => {
               </IconButton>
             }
           >
-            <AlertTitle>
-              {userOverdueWorkPackages.length > 1 ? 'Overdue Work Packages:' : 'Overdue Work Package:'}
-            </AlertTitle>
-            {userOverdueWorkPackages.map((wp) => (
-              <React.Fragment key={wp.id}>
-                <Link color="inherit" component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`} noWrap>
-                  <Typography fontWeight={'regular'} variant="inherit">
+            <Box>
+              <AlertTitle>
+                {userOverdueWorkPackages.length > 1 ? 'Overdue Work Packages:' : 'Overdue Work Package:'}
+              </AlertTitle>
+              <Grid container spacing={2}>
+                {userOverdueWorkPackages.map((wp) => (
+                  <Grid item xs={6} md={3} key={wp.id}>
                     {wbsPipe(wp.wbsNum)} - {wp.name}
-                  </Typography>
-                </Link>
-                <Typography fontWeight={'regular'} variant="inherit" noWrap my={0.5}>
-                  {'Due: ' + datePipe(wp.endDate)}
-                </Typography>
-              </React.Fragment>
-            ))}
+                    <Typography fontWeight={'regular'} variant="inherit" noWrap my={0.5}>
+                      {'Due: ' + datePipe(wp.endDate)}
+                    </Typography>
+                    <NERButton
+                      variant="contained"
+                      size="small"
+                      onClick={() => history.push(`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`)}
+                    >
+                      Create Change Request
+                    </NERButton>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
           </Alert>
         </Collapse>
       </Box>
