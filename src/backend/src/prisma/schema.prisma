@@ -114,7 +114,7 @@ model User {
   createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
   deletedMaterials          Material[]              @relation(name: "materialDeleter")
   createdMaterials          Material[]              @relation(name: "materialCreator")
-  Team                      Team[]
+  archivedTeams             Team[]                  @relation(name: "userArchived")
   createdMaterialTypes      Material_Type[]         @relation(name: "materialTypeCreator")
   createdManufacturers      Manufacturer[]          @relation(name: "manufacturerCreator")
 }
@@ -131,7 +131,7 @@ model Team {
   head           User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
   dateArchived   DateTime?
   userArchivedId Int?
-  userArchived   User?     @relation(fields: [userArchivedId], references: [userId])
+  userArchived   User?     @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
 }
 
 model Session {
