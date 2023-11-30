@@ -38,7 +38,8 @@ import {
   imagePreviewUrl,
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestReimbursed,
-  isReimbursementRequestSaboSubmitted
+  isReimbursementRequestSaboSubmitted,
+  isReimbursementRequestDenied
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
@@ -258,13 +259,20 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Deny',
       onClick: () => setShowDenyModal(true),
       icon: <CloseIcon />,
-      disabled: !user.isFinance || isReimbursementRequestReimbursed(reimbursementRequest)
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestReimbursed(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
     }
   ];
 
   return (
     <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
+      title={`${
+        isReimbursementRequestDenied(reimbursementRequest)
+          ? `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request - Denied`
+          : `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`
+      }`}
       previousPages={[
         {
           name: 'Finance',

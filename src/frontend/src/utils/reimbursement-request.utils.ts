@@ -81,6 +81,10 @@ export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: Reimbu
     .includes(ReimbursementStatusType.SABO_SUBMITTED);
 };
 
+export const isReimbursementRequestDenied = (reimbursementRequest: ReimbursementRequest) => {
+  return reimbursementRequest.reimbursementStatuses.map((status) => status.type).includes(ReimbursementStatusType.DENIED);
+};
+
 export const isReimbursementRequestReimbursed = (reimbursementRequest: ReimbursementRequest) => {
   return reimbursementRequest.reimbursementStatuses
     .map((status) => status.type)
