@@ -317,7 +317,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           background: theme.palette.background.default,
           paddingY: 1,
           borderTop: `solid 1px ${theme.palette.divider}`,
-
           zIndex: 1,
           mt: 2
         }}
