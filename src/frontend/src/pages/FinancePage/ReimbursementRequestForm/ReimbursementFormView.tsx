@@ -130,6 +130,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         e.stopPropagation();
         handleSubmit(onSubmit)(e);
       }}
+      style={{ minHeight: 'calc(100vh - 161px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
     >
       {!hasSecureSettingsSet && (
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
@@ -315,15 +316,18 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           position: 'sticky',
           bottom: 0,
           background: theme.palette.background.default,
-          paddingY: 1,
+          p: 1,
           borderTop: `solid 1px ${theme.palette.divider}`,
           zIndex: 1,
-          mt: 2
+          display: 'flex',
+          justifyContent: 'space-between'
         }}
       >
-        <FormLabel>Total Cost</FormLabel>
-        <Typography variant="h6">${calculatedTotalCost}</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Box>
+          <FormLabel>Total Cost</FormLabel>
+          <Typography variant="h6">${calculatedTotalCost}</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignSelf: 'center' }}>
           <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
             Cancel
           </NERFailButton>
