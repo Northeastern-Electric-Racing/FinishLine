@@ -12,7 +12,8 @@ import {
   Typography,
   Snackbar,
   Alert,
-  Button
+  Button,
+  useTheme
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -86,6 +87,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
+  const theme = useTheme();
   const products = watch(`reimbursementProducts`);
   const expenseTypeId = watch('expenseTypeId');
   const selectedExpenseType = allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === expenseTypeId);
@@ -143,7 +145,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
       )}
       <Grid container spacing={2}>
         <Grid item container spacing={2} md={6} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
-          <Grid item xs={12} sx={{}}>
+          <Grid item xs={12}>
             <FormControl fullWidth>
               <FormLabel>Purchased From</FormLabel>
               <Controller
@@ -308,10 +310,21 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </FormControl>
         </Grid>
       </Grid>
-      <Grid item xs={12}>
+      <Box
+        sx={{
+          position: 'sticky',
+          bottom: 0,
+          background: theme.palette.background.default,
+          paddingY: 1,
+          borderTop: `solid 1px ${theme.palette.divider}`,
+
+          zIndex: 1,
+          mt: 2
+        }}
+      >
         <FormLabel>Total Cost</FormLabel>
         <Typography variant="h6">${calculatedTotalCost}</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
             Cancel
           </NERFailButton>
@@ -319,7 +332,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             {submitText}
           </NERSuccessButton>
         </Box>
-      </Grid>
+      </Box>
     </form>
   );
 };
