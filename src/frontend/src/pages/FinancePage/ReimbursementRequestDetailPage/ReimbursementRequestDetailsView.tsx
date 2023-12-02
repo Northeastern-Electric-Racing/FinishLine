@@ -253,7 +253,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Approve',
       onClick: () => setShowSubmitToSaboModal(true),
       icon: <CheckIcon />,
-      disabled: !user.isFinance || isReimbursementRequestSaboSubmitted(reimbursementRequest)
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestSaboSubmitted(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
     },
     {
       title: 'Deny',
