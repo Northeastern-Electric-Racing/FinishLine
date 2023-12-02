@@ -25,7 +25,6 @@ import { useState } from 'react';
 import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import DrawerHeader from '../components/DrawerHeader';
 import { Container } from '@mui/material';
 
 interface AppAuthenticatedProps {
@@ -49,11 +48,10 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
 
   return userSettingsData.slackId ? (
     <AppContextUser>
-      <NavTopBar handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
+      <NavTopBar />
       <Box display={'flex'}>
-        <Sidebar handleDrawerClose={handleDrawerClose} open={drawerOpen} />
+        <Sidebar handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
         <Container maxWidth={false}>
-          <DrawerHeader />
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />

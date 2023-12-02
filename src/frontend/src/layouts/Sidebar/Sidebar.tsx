@@ -19,12 +19,15 @@ import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import NERDrawer from '../../components/NERDrawer';
 import { LayoutProps } from '../LayoutProps';
+import { GridMenuIcon } from '@mui/x-data-grid';
 
 export interface SideBarProps extends LayoutProps {
+  open: boolean;
   handleDrawerClose: () => void;
+  handleDrawerOpen: () => void;
 }
 
-const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
+const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose, handleDrawerOpen }) => {
   const theme = useTheme();
 
   const linkItems: LinkItem[] = [
@@ -68,7 +71,22 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose }) => {
   return (
     <NERDrawer open={open} variant="permanent">
       <DrawerHeader>
-        <IconButton onClick={handleDrawerClose}>{theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}</IconButton>
+        {open ? (
+          <IconButton onClick={handleDrawerClose}>
+            {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
+          </IconButton>
+        ) : (
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            sx={{
+              marginRight: 0.5
+            }}
+          >
+            <GridMenuIcon />
+          </IconButton>
+        )}
       </DrawerHeader>
       <Divider />
       <Box

@@ -14,6 +14,7 @@ const openedMixin = (theme: Theme): CSSObject => ({
     duration: theme.transitions.duration.enteringScreen
   }),
   overflowX: 'hidden'
+  //backgroundColor: '#CF4345'
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
@@ -26,6 +27,7 @@ const closedMixin = (theme: Theme): CSSObject => ({
   [theme.breakpoints.up('sm')]: {
     width: `calc(${theme.spacing(8)} + 1px)`
   }
+  //backgroundColor: '#CF4345'
 });
 
 const NERDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
