@@ -14,10 +14,10 @@ import { Box } from '@mui/system';
 const TEXT_COLOR = 'white';
 
 const NavTopBar: React.FC = () => {
-  const [width, setWidth] = useState(window.innerWidth);
+  const setWidth = useState(window.innerWidth);
   useEffect(() => {
     window.addEventListener('resize', () => {
-      setWidth(window.innerWidth);
+      setWidth[1](window.innerWidth);
     });
   });
   const user = useCurrentUser();
