@@ -303,7 +303,7 @@ export default class TeamsService {
 
     team.userArchivedId = user.userId;
 
-    team.dateArchived = team.dateArchived !== null? new Date() : null
+    team.dateArchived = team.dateArchived !== null ? new Date() : null;
 
     return teamTransformer(team);
   }
