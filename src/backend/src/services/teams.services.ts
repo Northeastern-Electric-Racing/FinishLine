@@ -301,6 +301,10 @@ export default class TeamsService {
       throw new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects');
     }
 
+    team.userArchivedId = user.userId;
+
+    team.dateArchived = team.dateArchived !== null? new Date() : null
+
     return teamTransformer(team);
   }
 }
