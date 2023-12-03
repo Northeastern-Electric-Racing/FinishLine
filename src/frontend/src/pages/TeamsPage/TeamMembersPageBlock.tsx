@@ -43,6 +43,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     return <LoadingIndicator />;
 
   const hasPerms = isAdmin(user.role) || user.userId === team.head.userId;
+  const editMembersPerms = hasPerms || team.leads.map((lead) => lead.userId).includes(user.userId);
 
   const memberOptions = users
     .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
@@ -205,7 +206,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
         <DetailDisplay label="Members" content={team.members.map((member) => fullNamePipe(member)).join(', ')} />
       </Grid>
       <Grid item xs={1} mt={-1} display={'flex'} justifyContent={'flex-end'}>
-        {hasPerms && <IconButton children={<Edit />} onClick={() => setIsEditingMembers(true)} />}
+        {editMembersPerms && <IconButton children={<Edit />} onClick={() => setIsEditingMembers(true)} />}
       </Grid>
     </Grid>
   );
