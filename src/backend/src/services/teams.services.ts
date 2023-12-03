@@ -1,5 +1,5 @@
 import { isAdmin, isHead, Team } from 'shared';
-import { User } from '@prisma/client';
+import { User, WBS_Element_Status } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
@@ -283,5 +283,24 @@ export default class TeamsService {
     });
 
     return teamTransformer(updateTeam);
+  }
+
+  static async archiveTeam(user: User, teamId: string): Promise<Team> {
+    const team = await prisma.team.findFirst({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+
+    if (!isAdmin(user.role)) {
+      throw new AccessDeniedException('You must be an admin or above to archive a team');
+    }
+
+    if (team.projects.map((project) => project.wbsElement.status !== WBS_Element_Status.COMPLETE)) {
+      throw new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects');
+    }
+
+    return teamTransformer(team);
   }
 }
