@@ -104,7 +104,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const ReceiptFileInput = () => (
     <FormControl>
-      <FormLabel>Receipts</FormLabel>
       <ul>
         {receiptFiles.map((receiptFile, index) => (
           <li key={index}>
@@ -255,7 +254,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <ReceiptFileInput />
+              <FormLabel>Receipts</FormLabel>
               <Button
                 variant="contained"
                 color="success"
@@ -263,7 +262,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 startIcon={<FileUploadIcon />}
                 sx={{
                   width: 'fit-content',
-                  textTransform: 'none'
+                  textTransform: 'none',
+                  mt: '9.75px'
                 }}
               >
                 Upload
@@ -292,6 +292,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   hidden
                 />
               </Button>
+              <ReceiptFileInput />
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
             </FormControl>
           </Grid>

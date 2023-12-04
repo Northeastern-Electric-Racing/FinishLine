@@ -89,7 +89,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
 
   const {
     fields: receiptFiles,
-    append: receiptAppend,
+    prepend: receiptAppend,
     remove: receiptRemove
   } = useFieldArray({
     control,
