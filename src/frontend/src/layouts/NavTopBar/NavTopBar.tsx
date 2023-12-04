@@ -9,11 +9,10 @@ import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect, useState } from 'react';
-import { Box } from '@mui/system';
-
-const TEXT_COLOR = 'white';
+import { Box, useTheme } from '@mui/system';
 
 const NavTopBar: React.FC = () => {
+  const theme = useTheme();
   const setWidth = useState(window.innerWidth);
   useEffect(() => {
     window.addEventListener('resize', () => {
@@ -28,7 +27,7 @@ const NavTopBar: React.FC = () => {
           variant="body1"
           marginTop={2}
           sx={{
-            color: TEXT_COLOR,
+            color: theme.palette.text.primary,
             '@media (max-width: 600px)': {
               display: 'none' // Hide the text on screens with width less than 600 pixels
             }

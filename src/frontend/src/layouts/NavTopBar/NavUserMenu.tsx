@@ -18,6 +18,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { canAccessAdminTools } from '../../utils/users';
+import { useTheme } from '@mui/system';
 
 const NavUserMenu: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -69,6 +70,8 @@ const NavUserMenu: React.FC = () => {
     </MenuItem>
   );
 
+  const theme = useTheme();
+
   return (
     <>
       <IconButton
@@ -77,7 +80,7 @@ const NavUserMenu: React.FC = () => {
         aria-controls="menu-appbar"
         aria-haspopup="true"
         onClick={handleMenu}
-        color="inherit"
+        color={theme.palette.text.primary}
       >
         <AccountCircle sx={{ fontSize: 36 }} />
       </IconButton>
