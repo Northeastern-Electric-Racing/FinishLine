@@ -37,6 +37,7 @@ import NERSuccessButton from '../../components/NERSuccessButton';
 import { wbsNamePipe } from '../../utils/pipes';
 import PageLayout from '../../components/PageLayout';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
+import { useQuery } from '../../hooks/utils.hooks';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -78,6 +79,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   setProposedSolutions,
   handleCancel
 }) => {
+  const query = useQuery();
   const {
     handleSubmit,
     control,
@@ -86,11 +88,17 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     watch
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      what: crDesc,
-      why: [{ type: ChangeRequestReason.Other, explain: '' }],
-      type: ChangeRequestType.Issue
-    }
+    defaultValues: query.get('budgetChange')
+      ? {
+          what: 'Increase the budget to account for the cost of materials',
+          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
+          type: ChangeRequestType.Issue
+        }
+      : {
+          what: crDesc,
+          why: [{ type: ChangeRequestReason.Other, explain: '' }],
+          type: ChangeRequestType.Issue
+        }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 

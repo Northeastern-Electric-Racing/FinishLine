@@ -51,5 +51,7 @@ export const sharedWorkPackage: WorkPackage = {
   expectedProgress: 0,
   projectName: 'Project 1',
   timelineStatus: TimelineStatus.OnTrack,
-  endDate: new Date('10/20/2022')
+  endDate: new Date('10/20/2022'),
+  materials: [],
+  assemblies: []
 };

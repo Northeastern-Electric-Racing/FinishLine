@@ -70,7 +70,9 @@ export const exampleResearchWorkPackage: WorkPackage = {
     }
   ],
   projectName: 'project1',
-  stage: WorkPackageStage.Research
+  stage: WorkPackageStage.Research,
+  materials: [],
+  assemblies: []
 };
 
 export const exampleDesignWorkPackage: WorkPackage = {
@@ -136,7 +138,9 @@ export const exampleDesignWorkPackage: WorkPackage = {
     }
   ],
   projectName: 'project2',
-  stage: WorkPackageStage.Design
+  stage: WorkPackageStage.Design,
+  materials: [],
+  assemblies: []
 };
 
 export const exampleManufacturingWorkPackage: WorkPackage = {
@@ -197,7 +201,9 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
     }
   ],
   projectName: 'project3',
-  stage: WorkPackageStage.Manufacturing
+  stage: WorkPackageStage.Manufacturing,
+  materials: [],
+  assemblies: []
 };
 
 export const exampleInstallWorkPackage: WorkPackage = {
@@ -252,7 +258,9 @@ export const exampleInstallWorkPackage: WorkPackage = {
     }
   ],
   projectName: 'project3',
-  stage: WorkPackageStage.Install
+  stage: WorkPackageStage.Install,
+  materials: [],
+  assemblies: []
 };
 
 export const exampleWorkPackage5: WorkPackage = {
@@ -296,7 +304,9 @@ export const exampleWorkPackage5: WorkPackage = {
       dateImplemented: new Date('2022-02-21')
     }
   ],
-  projectName: 'project3'
+  projectName: 'project3',
+  materials: [],
+  assemblies: []
 };
 
 export const exampleAllWorkPackages: WorkPackage[] = [
