@@ -125,7 +125,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Typography>
           </Grid>
         </Grid>
-        <Grid container rowSpacing={2}>
+        <Grid container rowSpacing={2} columnSpacing={2}>
           <Grid item xs={12}>
             {buildDetails(changeRequest)}
           </Grid>
