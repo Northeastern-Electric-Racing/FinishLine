@@ -51,7 +51,7 @@ interface ReimbursementRequestFormViewProps {
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
   reimbursementProducts: ReimbursementProductCreateArgs[];
-  receiptAppend: (args: ReimbursementReceiptUploadArgs) => void;
+  receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
   reimbursementProductAppend: (args: ReimbursementProductCreateArgs) => void;
   reimbursementProductRemove: (index: number) => void;
@@ -72,7 +72,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   receiptFiles,
   reimbursementProducts,
   control,
-  receiptAppend,
+  receiptPrepend,
   receiptRemove,
   reimbursementProductAppend,
   reimbursementProductRemove,
@@ -272,7 +272,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     if (e.target.files) {
                       [...e.target.files].forEach((file) => {
                         if (file.size < 1000000) {
-                          receiptAppend({
+                          receiptPrepend({
                             file: file,
                             name: file.name,
                             googleFileId: ''
