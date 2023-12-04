@@ -107,11 +107,11 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         />
       }
     >
-      <Grid container rowGap={4}>
+      <Grid container rowGap={3}>
         <Grid container columnSpacing={3}>
           <Grid item xs={'auto'}>
-            <Typography sx={{ fontWeight: 'normal', fontSize: '24px' }}>
-              <b>WBS: </b>{' '}
+            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+              <b>WBS: </b>
               <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
                 {wbsPipe(changeRequest.wbsNum)} - {projectName}
                 {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
@@ -119,7 +119,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Typography>
           </Grid>
           <Grid item xs={'auto'}>
-            <Typography sx={{ fontWeight: 'normal', fontSize: '24px' }}>
+            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
               <b>Submitter: </b>
               {fullNamePipe(changeRequest.submitter)} on {datePipe(changeRequest.dateSubmitted)}
             </Typography>
@@ -132,14 +132,14 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={12}>
             {buildProposedSolutions(changeRequest)}
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={5}>
             <ReviewNotes
               reviewer={changeRequest.reviewer}
               reviewNotes={changeRequest.reviewNotes}
               dateReviewed={changeRequest.dateReviewed}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <ImplementedChangesList
               changes={changeRequest.implementedChanges || []}
               overallDateImplemented={changeRequest.dateImplemented}

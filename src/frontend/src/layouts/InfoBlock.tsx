@@ -6,7 +6,7 @@
 import Typography from '@mui/material/Typography';
 import { Grid } from '@mui/material';
 
-interface CRBlockProps {
+interface InfoBlockProps {
   title: string;
 }
 
@@ -15,17 +15,17 @@ interface CRBlockProps {
  * @param title The title of the block on the page
  * @param children The children of the block
  */
-const CRBlock: React.FC<CRBlockProps> = ({ title, children }) => {
+const InfoBlock: React.FC<InfoBlockProps> = ({ title, children }) => {
   return (
     <Grid container spacing={1}>
       <Grid item xs={12}>
-        <Typography sx={{ fontWeight: 'bold', fontSize: '22px' }}>{title}</Typography>
+        <Typography sx={{ fontWeight: 'bold', fontSize: '19px' }}>{title}</Typography>
       </Grid>
       <Grid item xs={12}>
-        <Typography sx={{ fontSize: '15px' }}>{children}</Typography>
+        {children}
       </Grid>
     </Grid>
   );
 };
 
-export default CRBlock;
+export default InfoBlock;

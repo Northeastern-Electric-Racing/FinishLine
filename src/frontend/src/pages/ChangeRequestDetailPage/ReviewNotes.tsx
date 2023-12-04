@@ -6,7 +6,7 @@
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
 import { Tooltip, Typography } from '@mui/material';
-import CRBlock from '../../layouts/CRBlock';
+import InfoBlock from '../../layouts/InfoBlock';
 
 interface ReviewNotesProps {
   reviewer?: User;
@@ -16,7 +16,7 @@ interface ReviewNotesProps {
 
 const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
-    <CRBlock
+    <InfoBlock
       title={'Review Notes'}
       children={
         <Typography>
@@ -36,10 +36,10 @@ const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateRe
           >
             <span>{fullNamePipe(reviewer)}— </span>
           </Tooltip>
-          {reviewNotes ? reviewNotes : 'There are no review notes for this change request.'}
+          {reviewNotes ?? 'There are no review notes for this change request.'}
         </Typography>
       }
-    ></CRBlock>
+    ></InfoBlock>
   );
 };
 

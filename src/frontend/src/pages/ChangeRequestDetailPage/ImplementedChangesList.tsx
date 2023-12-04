@@ -9,16 +9,16 @@ import { routes } from '../../utils/routes';
 import { Link, ListItem, List, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import DynamicTooltip from '../../components/DynamicTooltip';
-import CRBlock from '../../layouts/CRBlock';
+import InfoBlock from '../../layouts/InfoBlock';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
   overallDateImplemented?: Date;
 }
 
-const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
+const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes }) => {
   return (
-    <CRBlock
+    <InfoBlock
       title={'Implemented Changes'}
       children={
         <List>
@@ -45,7 +45,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
           )}
         </List>
       }
-    ></CRBlock>
+    ></InfoBlock>
   );
 };
 
