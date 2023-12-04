@@ -30,7 +30,5 @@ describe('Rendering Implemented Changes List Component', () => {
     expect(screen.getByText(/Increase budget to 200/i)).toBeInTheDocument();
     expect(screen.getByText('1.23.4')).toBeInTheDocument();
     expect(screen.getByText(/Adjust description/i)).toBeInTheDocument();
-
-    
   });
 });
