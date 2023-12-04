@@ -50,7 +50,7 @@ interface ReimbursementRequestFormViewProps {
     wbsName: string;
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
-  reimbursementProducts: ReimbursementProductCreateArgs[];
+  reimbursementProducts: ReimbursementProductFormArgs[];
   receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
   reimbursementProductAppend: (args: ReimbursementProductFormArgs) => void;
