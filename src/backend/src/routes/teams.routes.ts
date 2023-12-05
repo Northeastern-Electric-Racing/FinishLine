@@ -39,4 +39,6 @@ teamsRouter.post(
   TeamsController.createTeam
 );
 
+teamsRouter.delete('/:id/archive');
+
 export default teamsRouter;

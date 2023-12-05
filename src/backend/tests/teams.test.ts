@@ -14,7 +14,7 @@ import {
   wonderwoman
 } from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
-import { AccessDeniedException, HttpException } from '../src/utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import teamTransformer from '../src/transformers/teams.transformer';
 import { Role } from '@prisma/client';
 
@@ -324,6 +324,30 @@ describe('Teams', () => {
         ...teamQueryArgs
       });
       expect(res).toStrictEqual(sharedTeam1);
+    });
+  });
+
+  describe('Archive team', () => {
+    test('Archive team doesn`t work if the team is not found', async () => {
+      await expect(async () => await TeamsService.archiveTeam(batman, sharedTeam1.teamId)).rejects.toThrow(
+        new NotFoundException('Team', sharedTeam1.teamId)
+      );
+    });
+
+    test('Archive team doesn`t work if the user is not an admin or above', async () => {
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(sharedTeam1);
+      await expect(async () => await TeamsService.archiveTeam(theVisitor, sharedTeam1.teamId)).rejects.toThrow(
+        new AccessDeniedException('You must be an admin or above to archive a team')
+      );
+    });
+
+    test('Archive team works', async () => {
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(sharedTeam1);
+      const team = await TeamsService.archiveTeam(batman, sharedTeam1.teamId);
+
+      expect(prisma.team.findFirst).toBeCalledTimes(1);
+      expect(team.userArchivedId).toBe(batman.userId);
+      expect(team.dateArchived).not.toBeUndefined();
     });
   });
 });
