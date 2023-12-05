@@ -173,13 +173,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                       }
                     }}
                     startIcon={<Add />}
-                    onClick={() =>
+                    onClick={(e) => {
                       appendProduct({
                         wbsNum: validateWBS(key),
                         name: '',
                         cost: 0
-                      })
-                    }
+                      });
+                      e.currentTarget.blur();
+                    }}
                   >
                     Add Product
                   </Button>
