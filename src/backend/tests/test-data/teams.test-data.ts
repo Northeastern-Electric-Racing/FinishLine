@@ -20,7 +20,7 @@ export const prismaTeam1: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   members: [aquaman],
   leads: [wonderwoman, alfred],
   dateArchived: new Date('12/15/1985'),
-  userArchivedId: 2
+  userArchivedId: 3
 };
 
 export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {

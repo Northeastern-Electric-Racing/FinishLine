@@ -307,7 +307,7 @@ export default class TeamsService {
       throw new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects');
     }
 
-    prisma.team.update({
+    const updatedTeam = await prisma.team.update({
       where: { teamId },
       ...teamQueryArgs,
       data: {
@@ -316,6 +316,6 @@ export default class TeamsService {
       }
     });
 
-    return teamTransformer(team);
+    return teamTransformer(updatedTeam);
   }
 }
