@@ -19,7 +19,8 @@ interface OtherChangeRequestsPopupTabsProps {
 }
 
 const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> = ({
-  changeRequest, fromSubmitter
+  changeRequest,
+  fromSubmitter
 }: OtherChangeRequestsPopupTabsProps) => {
   const theme = useTheme();
   const [tab, setTab] = useState(0);
@@ -39,9 +40,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
-  const crsFromWbs = changeRequests?.filter((cr) => (cr.wbsName === changeRequest.wbsName));
-
-  console.log(changeRequest.wbsNum);
+  const crsFromWbs = changeRequests?.filter((cr) => cr.wbsName === changeRequest.wbsName);
 
   const displayTab = (value: number, title: string) => (
     <Tab
@@ -121,7 +120,9 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
         {displayTab(1, `Other CR's from ${wbsPipe(changeRequest.wbsNum)}`)}
         {displayTab(2, `Other CR's from ${fullNamePipe(changeRequest.submitter)}`)}
       </Tabs>
-      <Collapse in={tab !== 0}>{tab === 1 ? displayCRCards((crsFromWbs) || []) : (tab === 2 && displayCRCards((crsFromSubmitter) || []))}</Collapse>
+      <Collapse in={tab !== 0}>
+        {tab === 1 ? displayCRCards(crsFromWbs || []) : tab === 2 && displayCRCards(crsFromSubmitter || [])}
+      </Collapse>
     </Box>
   );
 };
