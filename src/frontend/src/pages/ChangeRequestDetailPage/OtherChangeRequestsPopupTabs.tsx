@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Box, useTheme, Collapse, Tabs, Tab, Typography } from '@mui/material';
-import { ChangeRequest } from 'shared';
+import { ChangeRequest, wbsPipe } from 'shared';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
@@ -15,10 +15,11 @@ import { fullNamePipe } from '../../utils/pipes';
 
 interface OtherChangeRequestsPopupTabsProps {
   changeRequest: ChangeRequest;
+  fromSubmitter: boolean;
 }
 
 const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> = ({
-  changeRequest
+  changeRequest, fromSubmitter
 }: OtherChangeRequestsPopupTabsProps) => {
   const theme = useTheme();
   const [tab, setTab] = useState(0);
@@ -37,6 +38,8 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
     .sort((a: ChangeRequest, b: ChangeRequest) => {
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
+
+  const crsFromWbs = changeRequests?.filter((cr) => (cr.wbsNum) === changeRequest.wbsNum);
 
   const displayTab = (value: number, title: string) => (
     <Tab
@@ -113,9 +116,10 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
           mb: '-1px'
         }}
       >
-        {displayTab(1, `Other CR's from ${fullNamePipe(changeRequest.submitter)}`)}
+        {displayTab(1, `Other CR's from ${wbsPipe(changeRequest.wbsNum)}`)}
+        {displayTab(2, `Other CR's from ${fullNamePipe(changeRequest.submitter)}`)}
       </Tabs>
-      <Collapse in={tab !== 0}>{tab === 1 && displayCRCards(crsFromSubmitter || [])}</Collapse>
+      <Collapse in={tab !== 0}>{tab === 1 ? displayCRCards((crsFromWbs) || []) : (tab === 2 && displayCRCards((crsFromSubmitter) || []))}</Collapse>
     </Box>
   );
 };
