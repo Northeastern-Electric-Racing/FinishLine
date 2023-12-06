@@ -236,7 +236,7 @@ export default class TeamsService {
     return teamTransformer(createdTeam);
   }
 
-  /*
+  /**
    * Update the given teamId's team's leads
    * @param submitter a user who's making this request
    * @param teamId a id of team to be updated
@@ -285,7 +285,13 @@ export default class TeamsService {
     return teamTransformer(updateTeam);
   }
 
-  static async archiveTeam(user: User, teamId: string): Promise<Team> {
+   /**
+   * @param submitter a user who's archiving the team
+   * @param teamId a id of team to be updated
+   * @returns the archived team
+   * @throws if the team is not found, the submitter has no privilege, the team has any projects that are not complete
+   */
+  static async archiveTeam(subimtter: User, teamId: string): Promise<Team> {
     const team = await prisma.team.findFirst({
       where: { teamId },
       ...teamQueryArgs
@@ -293,7 +299,7 @@ export default class TeamsService {
 
     if (!team) throw new NotFoundException('Team', teamId);
 
-    if (!isAdmin(user.role)) {
+    if (!isAdmin(subimtter.role)) {
       throw new AccessDeniedException('You must be an admin or above to archive a team');
     }
 
@@ -301,9 +307,14 @@ export default class TeamsService {
       throw new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects');
     }
 
-    team.userArchivedId = user.userId;
-
-    team.dateArchived = team.dateArchived !== null ? new Date() : null;
+    prisma.team.update({
+      where: { teamId },
+      ...teamQueryArgs,
+      data: {
+        userArchivedId: subimtter.userId,
+        dateArchived: team.dateArchived !== null ? new Date() : null
+      }
+    });
 
     return teamTransformer(team);
   }

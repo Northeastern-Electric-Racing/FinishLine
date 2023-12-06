@@ -335,19 +335,38 @@ describe('Teams', () => {
     });
 
     test('Archive team doesn`t work if the user is not an admin or above', async () => {
-      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(sharedTeam1);
-      await expect(async () => await TeamsService.archiveTeam(theVisitor, sharedTeam1.teamId)).rejects.toThrow(
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
+      await expect(async () => await TeamsService.archiveTeam(theVisitor, primsaTeam2.teamId)).rejects.toThrow(
         new AccessDeniedException('You must be an admin or above to archive a team')
       );
     });
 
+    test('Archive team doesn`t work if a project in the team is incomplete or active', async () => {
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(primsaTeam2);
+      await expect(async () => await TeamsService.archiveTeam(superman, primsaTeam2.teamId)).rejects.toThrow(
+        new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects')
+      );
+    });
+
     test('Archive team works', async () => {
-      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(sharedTeam1);
-      const team = await TeamsService.archiveTeam(batman, sharedTeam1.teamId);
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeague);
+      const res = await TeamsService.archiveTeam(superman, justiceLeague.teamId);
+      const { teamId } = justiceLeague;
 
       expect(prisma.team.findFirst).toBeCalledTimes(1);
-      expect(team.userArchivedId).toBe(batman.userId);
-      expect(team.dateArchived).not.toBeUndefined();
+      expect(prisma.team.update).toBeCalledTimes(1);
+      expect(prisma.team.update).toHaveBeenCalledWith({
+        where: { teamId },
+        ...teamQueryArgs,
+        data: {
+          userArchivedId: superman.userId,
+          dateArchived: justiceLeague.dateArchived !== null ? new Date() : null
+        }
+      });
+
+      expect(res.userArchivedId).toBe(prismaTeam1.userArchivedId);
+      expect(res.dateArchived).toBe(prismaTeam1.dateArchived);
     });
   });
 });
