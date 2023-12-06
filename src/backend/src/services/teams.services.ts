@@ -285,7 +285,7 @@ export default class TeamsService {
     return teamTransformer(updateTeam);
   }
 
-   /**
+  /**
    * @param submitter a user who's archiving the team
    * @param teamId a id of team to be updated
    * @returns the archived team
