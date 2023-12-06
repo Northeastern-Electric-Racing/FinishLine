@@ -39,7 +39,9 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
-  const crsFromWbs = changeRequests?.filter((cr) => (cr.wbsNum) === changeRequest.wbsNum);
+  const crsFromWbs = changeRequests?.filter((cr) => (cr.wbsName === changeRequest.wbsName));
+
+  console.log(changeRequest.wbsNum);
 
   const displayTab = (value: number, title: string) => (
     <Tab
