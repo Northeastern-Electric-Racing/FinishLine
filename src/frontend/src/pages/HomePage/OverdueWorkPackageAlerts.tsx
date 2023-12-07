@@ -5,7 +5,6 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { useState } from 'react';
 import { wbsPipe } from 'shared';
 import { Box, Alert, IconButton, Collapse, Typography, AlertTitle, Grid } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import { routes } from '../../utils/routes';
 import { datePipe } from '../../utils/pipes';
 import { NERButton } from '../../components/NERButton';
@@ -38,18 +37,6 @@ const OverdueWorkPackageAlerts: React.FC = () => {
                 width: '100%'
               }
             }}
-            action={
-              <IconButton
-                aria-label="close"
-                color="inherit"
-                size="small"
-                onClick={() => {
-                  setOpen(false);
-                }}
-              >
-                <CloseIcon fontSize="inherit" />
-              </IconButton>
-            }
           >
             <Box>
               <AlertTitle>
