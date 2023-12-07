@@ -24,7 +24,7 @@ const Home = () => {
 
   return (
     <PageLayout title="Home" hidePageTitle>
-      <Typography variant="h3" sx={{ textAlign: 'center', pt: 3 }}>
+      <Typography variant="h3" paddingTop={0} sx={{ marginTop: 0, paddingTop: 0, textAlign: 'center', pt: 3 }}>
         Welcome, {user.firstName}!
       </Typography>
       {!userSettingsData?.slackId && (
