@@ -694,6 +694,10 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'This reimbursement request has already been approved');
     }
 
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: ReimbursementStatusType.SABO_SUBMITTED,

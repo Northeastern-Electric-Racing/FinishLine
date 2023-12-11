@@ -6,6 +6,7 @@
 import { expenseTypePipe } from '../../../utils/pipes';
 import { Edit } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -18,7 +19,11 @@ import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
-import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
+import {
+  useDeleteReimbursementRequest,
+  useDenyReimbursementRequest,
+  useMarkReimbursementRequestAsDelivered
+} from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import {
@@ -33,7 +38,9 @@ import {
   imageDownloadUrl,
   imageFileUrl,
   isReimbursementRequestAdvisorApproved,
-  isReimbursementRequestSaboSubmitted
+  isReimbursementRequestReimbursed,
+  isReimbursementRequestSaboSubmitted,
+  isReimbursementRequestDenied
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
@@ -53,17 +60,30 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
   const toast = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDenyModal, setShowDenyModal] = useState(false);
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
   const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
+  const { mutateAsync: denyReimbursementRequest } = useDenyReimbursementRequest(reimbursementRequest.reimbursementRequestId);
   const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
 
   const handleDelete = () => {
     try {
       deleteReimbursementRequest();
       history.push(routes.FINANCE);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleDeny = () => {
+    try {
+      denyReimbursementRequest();
+      setShowDenyModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -93,6 +113,21 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         onSubmit={handleDelete}
       >
         <Typography>Are you sure you want to delete this reimbursement request?</Typography>
+      </NERModal>
+    );
+  };
+
+  const DenyModal = () => {
+    return (
+      <NERModal
+        open={showDenyModal}
+        onHide={() => setShowDenyModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleDeny}
+      >
+        <Typography>Are you sure you want to deny this reimbursement request?</Typography>
       </NERModal>
     );
   };
@@ -225,13 +260,29 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Approve',
       onClick: () => setShowSubmitToSaboModal(true),
       icon: <CheckIcon />,
-      disabled: !user.isFinance || isReimbursementRequestSaboSubmitted(reimbursementRequest)
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestSaboSubmitted(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
+    },
+    {
+      title: 'Deny',
+      onClick: () => setShowDenyModal(true),
+      icon: <CloseIcon />,
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestReimbursed(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
     }
   ];
 
   return (
     <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
+      title={`${
+        isReimbursementRequestDenied(reimbursementRequest)
+          ? `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request - Denied`
+          : `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`
+      }`}
       previousPages={[
         {
           name: 'Finance',
@@ -241,6 +292,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       headerRight={<ActionsMenu buttons={buttons} />}
     >
       <DeleteModal />
+      <DenyModal />
       <MarkDeliveredModal />
       <SubmitToSaboModal
         open={showSubmitToSaboModal}
