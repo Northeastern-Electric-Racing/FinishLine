@@ -61,7 +61,7 @@ export default class TeamsService {
     }
 
     const isTeamLead = team.leads.some((lead) => lead.userId === submitter.userId);
-   
+
     if (!isAdmin(submitter.role) && submitter.userId !== team.headId && !isTeamLead)
       throw new AccessDeniedException('you must be an admin, the team head, or a team lead to update the members!');
 
