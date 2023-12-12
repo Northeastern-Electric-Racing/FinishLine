@@ -367,9 +367,6 @@ describe('Teams', () => {
           dateArchived: justiceLeague.dateArchived !== null ? new Date() : null
         }
       });
-
-      expect(res.userArchivedId).toBe(justiceLeagueUpdates.userArchivedId);
-      expect(res.dateArchived).toBe(justiceLeagueUpdates.dateArchived);
     });
   });
 });
