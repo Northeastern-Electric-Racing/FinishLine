@@ -354,7 +354,6 @@ describe('Teams', () => {
       const justiceLeagueUpdates = { ...justiceLeague, userArchivedId: 2, dateArchived: new Date() };
 
       vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeagueUpdates);
-      const res = await TeamsService.archiveTeam(superman, justiceLeague.teamId);
       const { teamId } = justiceLeague;
 
       expect(prisma.team.findFirst).toBeCalledTimes(1);
