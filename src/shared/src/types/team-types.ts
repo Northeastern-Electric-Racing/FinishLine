@@ -15,7 +15,7 @@ export interface Team {
   members: User[];
   projects: ProjectPreview[];
   leads: User[];
-  userArchivedId?: number;
+  userArchived?: User;
   dateArchived?: Date;
 }
 
