@@ -7,9 +7,8 @@ import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
-import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Button } from '@mui/material';
+import { Button, Grid, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
 interface CreateProposedSolutionsListProps {
@@ -37,7 +36,28 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   return (
     <>
-      <div className={styles.proposedSolutionsList}>
+      {!isGuest(auth.user.role) ? (
+        <Grid container columnSpacing={5}>
+          <Grid item>
+            <Typography variant="h5" sx={{ mt: 2 }}>
+              Proposed Solutions
+            </Typography>
+          </Grid>
+          <Grid item>
+            <Button
+              onClick={() => setShowEditableForm(true)}
+              variant="contained"
+              color="success"
+              sx={{ mt: 2, maxHeight: '35px' }}
+            >
+              + Add Proposed Solution
+            </Button>
+          </Grid>
+        </Grid>
+      ) : (
+        ''
+      )}
+      <div style={{ marginTop: '30px' }}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView
             key={i}
@@ -47,13 +67,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
           />
         ))}
       </div>
-      {!isGuest(auth.user.role) ? (
-        <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
-          + Add Proposed Solution
-        </Button>
-      ) : (
-        ''
-      )}
+
       <ProposedSolutionForm onAdd={addProposedSolution} open={showEditableForm} onClose={() => setShowEditableForm(false)} />
     </>
   );
