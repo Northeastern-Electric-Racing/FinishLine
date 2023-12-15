@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { fullNamePipe } from '../../utils/pipes';
 import NavUserMenu from './NavUserMenu';
@@ -13,31 +12,30 @@ import { Box, useTheme } from '@mui/system';
 
 const NavTopBar: React.FC = () => {
   const theme = useTheme();
-  const setWidth = useState(window.innerWidth);
+  const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {
     window.addEventListener('resize', () => {
-      setWidth[1](window.innerWidth);
+      setWidth(window.innerWidth);
     });
   });
   const user = useCurrentUser();
   return (
-    <Toolbar disableGutters sx={{ height: 68, px: 1, background: 'transparent', color: 'white' }}>
-      <Box display="flex" flexDirection={'row'} marginLeft={'auto'} marginRight={0}>
+    <>
+      <Box display="flex" flexDirection={'row'} marginLeft={'auto'} marginBottom={1} width={'auto'}>
         <Typography
           variant="body1"
-          marginTop={2}
+          marginY={0.5}
+          marginLeft={'auto'}
+          marginRight={1}
           sx={{
-            color: theme.palette.text.primary,
-            '@media (max-width: 600px)': {
-              display: 'none' // Hide the text on screens with width less than 600 pixels
-            }
+            color: theme.palette.text.primary
           }}
         >
-          {fullNamePipe(user)}
+          {width < 600 ? '' : fullNamePipe(user)}
         </Typography>
         <NavUserMenu />
       </Box>
-    </Toolbar>
+    </>
   );
 };
 

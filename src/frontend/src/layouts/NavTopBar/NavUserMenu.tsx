@@ -81,6 +81,7 @@ const NavUserMenu: React.FC = () => {
         aria-haspopup="true"
         onClick={handleMenu}
         color={theme.palette.text.primary}
+        sx={{ padding: 0 }}
       >
         <AccountCircle sx={{ fontSize: 36 }} />
       </IconButton>

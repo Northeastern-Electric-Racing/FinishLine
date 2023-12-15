@@ -7,6 +7,7 @@ import { Typography, Box, Grid, useTheme } from '@mui/material';
 import { ReactElement, ReactNode } from 'react';
 import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
+import NavTopBar from '../NavTopBar/NavTopBar';
 
 interface PageTitleProps {
   title: string;
@@ -46,6 +47,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight
             </Typography>
           </Grid>
           <Grid item xs={6} md={4} textAlign={'right'}>
+            <NavTopBar />
             {headerRight}
           </Grid>
         </Grid>

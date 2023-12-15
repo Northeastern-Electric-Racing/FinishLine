@@ -22,7 +22,6 @@ import ErrorPage from '../pages/ErrorPage';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import { useState } from 'react';
-import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import { Container } from '@mui/material';
@@ -48,7 +47,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
 
   return userSettingsData.slackId ? (
     <AppContextUser>
-      <NavTopBar />
       <Box display={'flex'}>
         <Sidebar handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
         <Container maxWidth={false}>
