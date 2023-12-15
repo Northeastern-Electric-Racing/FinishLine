@@ -363,7 +363,7 @@ describe('Teams', () => {
         where: { teamId },
         ...teamQueryArgs,
         data: {
-          userArchivedId: superman.userId,
+          userArchived: superman,
           dateArchived: justiceLeague.dateArchived !== null ? new Date() : null
         }
       });

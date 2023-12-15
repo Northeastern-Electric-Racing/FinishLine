@@ -286,6 +286,7 @@ export default class TeamsService {
   }
 
   /**
+   * Archives/unarchives a given team
    * @param submitter a user who's archiving the team
    * @param teamId a id of team to be updated
    * @returns the archived team
@@ -311,7 +312,7 @@ export default class TeamsService {
       where: { teamId },
       ...teamQueryArgs,
       data: {
-        userArchivedId: subimtter.userId,
+        userArchived: subimtter,
         dateArchived: team.dateArchived !== null ? new Date() : null
       }
     });
