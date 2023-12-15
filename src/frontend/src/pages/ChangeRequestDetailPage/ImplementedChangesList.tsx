@@ -9,7 +9,7 @@ import { routes } from '../../utils/routes';
 import { Link, ListItem, List, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import DynamicTooltip from '../../components/DynamicTooltip';
-import InfoBlock from '../../layouts/InfoBlock';
+import InfoBlock from '../../components/InfoBlock';
 
 interface ImplementedChangesListProps {
   changes: ImplementedChange[];
@@ -18,34 +18,31 @@ interface ImplementedChangesListProps {
 
 const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes }) => {
   return (
-    <InfoBlock
-      title={'Implemented Changes'}
-      children={
-        <List>
-          {changes.length === 0 ? (
-            <Typography>—— There are no implemented changes for this change request.</Typography>
-          ) : (
-            changes.map((ic, idx) => (
-              <ListItem key={idx}>
-                <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
-                  {
-                    <Typography>
-                      [
-                      {
-                        <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
-                          {wbsPipe(ic.wbsNum)}
-                        </Link>
-                      }
-                      ] {ic.detail}
-                    </Typography>
-                  }
-                </DynamicTooltip>
-              </ListItem>
-            ))
-          )}
-        </List>
-      }
-    ></InfoBlock>
+    <InfoBlock title={'Implemented Changes'}>
+      <List>
+        {changes.length === 0 ? (
+          <Typography>—— There are no implemented changes for this change request.</Typography>
+        ) : (
+          changes.map((ic, idx) => (
+            <ListItem key={idx}>
+              <DynamicTooltip title={`${fullNamePipe(ic.implementer)} - ${datePipe(ic.dateImplemented)}`}>
+                {
+                  <Typography>
+                    [
+                    {
+                      <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(ic.wbsNum)}`}>
+                        {wbsPipe(ic.wbsNum)}
+                      </Link>
+                    }
+                    ] {ic.detail}
+                  </Typography>
+                }
+              </DynamicTooltip>
+            </ListItem>
+          ))
+        )}
+      </List>
+    </InfoBlock>
   );
 };
 

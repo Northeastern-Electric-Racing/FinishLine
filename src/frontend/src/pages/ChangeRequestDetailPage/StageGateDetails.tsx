@@ -5,7 +5,7 @@
 
 import { StageGateChangeRequest } from 'shared';
 import { booleanPipe } from '../../utils/pipes';
-import InfoBlock from '../../layouts/InfoBlock';
+import InfoBlock from '../../components/InfoBlock';
 import { Typography } from '@mui/material';
 
 interface StageGateDetailsProps {
@@ -14,7 +14,9 @@ interface StageGateDetailsProps {
 
 const StageGateDetails: React.FC<StageGateDetailsProps> = ({ cr }) => {
   return (
-    <InfoBlock title={'Confirm WP Completed'} children={<Typography>{booleanPipe(cr.confirmDone)}</Typography>}></InfoBlock>
+    <InfoBlock title={'Confirm WP Completed'}>
+      <Typography>{booleanPipe(cr.confirmDone)}</Typography>
+    </InfoBlock>
   );
 };
 

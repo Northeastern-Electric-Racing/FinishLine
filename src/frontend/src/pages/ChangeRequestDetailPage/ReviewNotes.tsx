@@ -6,7 +6,7 @@
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
 import { Tooltip, Typography } from '@mui/material';
-import InfoBlock from '../../layouts/InfoBlock';
+import InfoBlock from '../../components/InfoBlock';
 
 interface ReviewNotesProps {
   reviewer?: User;
@@ -16,30 +16,27 @@ interface ReviewNotesProps {
 
 const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
-    <InfoBlock
-      title={'Review Notes'}
-      children={
-        <Typography>
-          <Tooltip
-            id="tooltip"
-            arrow
-            placement="bottom"
-            title={
-              <Typography
-                sx={{
-                  fontSize: 14
-                }}
-              >
-                {'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}
-              </Typography>
-            }
-          >
-            <span>{fullNamePipe(reviewer)}— </span>
-          </Tooltip>
-          {reviewNotes ?? 'There are no review notes for this change request.'}
-        </Typography>
-      }
-    ></InfoBlock>
+    <InfoBlock title={'Review Notes'}>
+      <Typography>
+        <Tooltip
+          id="tooltip"
+          arrow
+          placement="bottom"
+          title={
+            <Typography
+              sx={{
+                fontSize: 14
+              }}
+            >
+              {'Reviewed on: ' + (dateReviewed ? datePipe(dateReviewed) : emDashPipe(''))}
+            </Typography>
+          }
+        >
+          <span>{fullNamePipe(reviewer)}— </span>
+        </Tooltip>
+        {reviewNotes ?? 'There are no review notes for this change request.'}
+      </Typography>
+    </InfoBlock>
   );
 };
 
