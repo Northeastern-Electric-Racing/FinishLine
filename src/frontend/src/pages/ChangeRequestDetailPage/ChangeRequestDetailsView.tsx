@@ -133,14 +133,14 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={12}>
             {buildProposedSolutions(changeRequest)}
           </Grid>
-          <Grid item xs={5}>
+          <Grid item md={5}>
             <ReviewNotes
               reviewer={changeRequest.reviewer}
               reviewNotes={changeRequest.reviewNotes}
               dateReviewed={changeRequest.dateReviewed}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item md={6}>
             <ImplementedChangesList
               changes={changeRequest.implementedChanges || []}
               overallDateImplemented={changeRequest.dateImplemented}
