@@ -5,6 +5,8 @@
 
 import { render, screen } from '../../test-support/test-utils';
 import PageTitle from '../../../layouts/PageTitle/PageTitle';
+import * as userHooks from '../../../hooks/users.hooks';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 
 vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
   return {
@@ -17,6 +19,7 @@ vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
 
 describe('error page', () => {
   it('renders title and breadcrumbs', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     render(<PageTitle title={'test'} previousPages={[]} />);
 
     expect(screen.getByText('test')).toBeInTheDocument();
