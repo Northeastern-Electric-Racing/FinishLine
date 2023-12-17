@@ -15,34 +15,42 @@ interface ActivationDetailsProps {
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
   return (
-    <PageBlock title={'Activation Change Request Details'}>
+    <h1> 
+      <Typography 
+      sx={{ fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}>Activation Change Request Details </Typography> 
       <Grid container>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Lead </Typography>
+        <Grid item xs={4} md={2}>
+          <Typography sx={{ fontWeight: 'bold' }}>Project Lead: </Typography>
         </Grid>
-        <Grid item xs={6} md={2}>
+        <Grid item xs={4} md={2}>
           <Typography>{fullNamePipe(cr.projectLead)}</Typography>
         </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Start Date </Typography>
+        <Grid item xs={2}>
         </Grid>
-        <Grid item xs={6} md={6}>
+        <Grid item xs={4} md={2}>
+          <Typography sx={{ fontWeight: 'bold' }}>Start Date: </Typography>
+        </Grid>
+        <Grid item xs={4} md={2}>
           <Typography>{datePipe(cr.startDate)}</Typography>
         </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Manager </Typography>
+        <Grid item xs={2}>
         </Grid>
-        <Grid item xs={6} md={2}>
+        <Grid item xs={4} md={1}>
+          <Typography sx={{ fontWeight: 'bold' }}>Project Manager: </Typography>
+        </Grid>
+        <Grid item xs={4} md={1}>
           <Typography>{fullNamePipe(cr.projectManager)}</Typography>
         </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details </Typography>
+        <Grid item xs={2}>
         </Grid>
-        <Grid item xs={6} md={6}>
+        <Grid item xs={4}>
+          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details: </Typography>
+        </Grid>
+        <Grid item xs={1}>
           <Typography>{booleanPipe(cr.confirmDetails)}</Typography>
         </Grid>
       </Grid>
-    </PageBlock>
+    </h1>
   );
 };
 

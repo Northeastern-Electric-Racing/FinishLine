@@ -107,34 +107,42 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         />
       }
     >
-      <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
+    <h1> 
+      <Typography 
+      sx={{ fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}>Change Request Details </Typography> 
         <Grid container spacing={1}>
-          <Grid item xs={2}>
+          <Grid item xs={4}>
             <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
           </Grid>
-          <Grid item xs={10}>
-            {changeRequest.type}
+          <Grid item xs={4}>
+            <Typography sx={{maxWidth: '140px'}}> {changeRequest.type} </Typography>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={4}>
+        </Grid>
+          <Grid item xs={4}>
             <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
           </Grid>
-          <Grid item xs={10}>
-            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+          <Grid item xs={6}>
+            <Link
+            position={'absolute'}
+            fontSize={15}
+            component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
               {wbsPipe(changeRequest.wbsNum)} - {projectName}
               {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
-            </Link>
-          </Grid>
-          <Grid item xs={3} md={2}>
+              </Link>         
+              </Grid>
+          <Grid item xs={4} md={2}>
             <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>
           </Grid>
+          
           <Grid item xs={2}>
             <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={4}>
             <Typography>{datePipe(changeRequest.dateSubmitted)}</Typography>
           </Grid>
         </Grid>
-      </PageBlock>
+      </h1>
       {buildDetails(changeRequest)}
       {buildProposedSolutions(changeRequest)}
       <ReviewNotes
