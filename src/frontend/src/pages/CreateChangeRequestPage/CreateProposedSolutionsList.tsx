@@ -48,7 +48,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
               onClick={() => setShowEditableForm(true)}
               variant="contained"
               color="success"
-              sx={{ mt: 2, maxHeight: '35px' }}
+              sx={{ mt: 2, maxHeight: { xs: 105, md: 35 }, height: {} }}
             >
               + Add Proposed Solution
             </Button>

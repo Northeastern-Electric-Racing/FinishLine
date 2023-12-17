@@ -216,9 +216,14 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   rules={{ required: true }}
                   render={({ field: { onChange, value } }) => (
                     <RadioGroup onChange={onChange} value={value}>
-                      <Grid display="flex" justifyContent="space-between">
+                      <Grid display="flex" flexDirection={{ xs: 'column', md: 'row' }}>
                         {permittedTypes.map((t) => (
                           <NERButton
+                            sx={{
+                              mr: { xs: 0, md: 2 },
+                              fontSize: { xs: '0.8rem', md: '1rem' },
+                              width: { xs: '83%', md: 'auto' }
+                            }}
                             key={t}
                             variant={value === t ? 'contained' : 'outlined'}
                             onClick={() => onChange(t as 'ISSUE' | ChangeEvent<Element>)}
@@ -241,7 +246,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   multiline
                   rows={4}
                   errorMessage={errors.what}
-                  placeholder="Explain"
+                  placeholder="Explain *"
                 />
               </FormControl>
             </Grid>
@@ -254,7 +259,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                       <Grid item xs={12}>
                         <Select
                           {...register(`why.${index}.type`)}
-                          sx={{ width: 200, mr: 2 }}
+                          sx={{ width: { sx: 'auto', md: 200 }, mr: 2 }}
                           defaultValue={element.type}
                           key={element.id}
                         >
