@@ -5,7 +5,6 @@
 
 import { ActivationChangeRequest } from 'shared';
 import { booleanPipe, datePipe, fullNamePipe } from '../../utils/pipes';
-import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
