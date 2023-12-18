@@ -5,9 +5,9 @@
 
 import { ActivationChangeRequest } from 'shared';
 import { booleanPipe, datePipe, fullNamePipe } from '../../utils/pipes';
-import PageBlock from '../../layouts/PageBlock';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import InfoBlock from '../../components/InfoBlock';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
@@ -15,7 +15,7 @@ interface ActivationDetailsProps {
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
   return (
-    <PageBlock title={'Activation Change Request Details'}>
+    <InfoBlock title={'Activation Change Request Details'}>
       <Grid container>
         <Grid item xs={6} md={2}>
           <Typography sx={{ fontWeight: 'bold' }}>Project Lead </Typography>
@@ -42,7 +42,7 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
           <Typography>{booleanPipe(cr.confirmDetails)}</Typography>
         </Grid>
       </Grid>
-    </PageBlock>
+    </InfoBlock>
   );
 };
 
