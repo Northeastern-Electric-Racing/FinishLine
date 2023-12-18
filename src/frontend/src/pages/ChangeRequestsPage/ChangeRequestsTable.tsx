@@ -50,9 +50,9 @@ const ChangeRequestsTable: React.FC = () => {
   const theme = useTheme();
 
   useEffect(() => {
-    function handleResize() {
+    const handleResize = () => {
       setWindowSize(window.innerWidth);
-    }
+    };
 
     // Attach the event listener to the window object
     window.addEventListener('resize', handleResize);
