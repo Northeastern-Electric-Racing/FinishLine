@@ -8,7 +8,6 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
-import PageBlock from '../../layouts/PageBlock';
 
 interface StandardDetailsProps {
   cr: StandardChangeRequest;
@@ -19,7 +18,8 @@ const style = {
 };
 const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetailsProps) => {
   return (
-    <PageBlock title={'Standard Change Request Details'}>
+    <h1> 
+      <Typography sx = {{fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}>Standard Change Request Details</Typography>
       <Grid container spacing={1}>
         <Grid item xs={2}>
           <Typography sx={style}>What</Typography>
@@ -42,7 +42,7 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
           </React.Fragment>
         ))}
       </Grid>
-    </PageBlock>
+    </h1>
   );
 };
 

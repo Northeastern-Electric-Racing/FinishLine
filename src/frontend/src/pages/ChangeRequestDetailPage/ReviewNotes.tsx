@@ -5,8 +5,8 @@
 
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
-import PageBlock from '../../layouts/PageBlock';
 import { Tooltip, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
 interface ReviewNotesProps {
   reviewer?: User;
@@ -33,9 +33,13 @@ const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateRe
             </Typography>
           }
         >
-          <span>{fullNamePipe(reviewer)}</span>
+          <Grid container>
+          <Grid item xs = {2}>
+            <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>{fullNamePipe(reviewer)}</Typography>
+            </Grid>
+            <Typography sx = {{fontSize:15}}>{reviewNotes ? reviewNotes : <Typography sx = {{ maxWidth: '375px'}}>There are no review notes for this change request. </Typography>}</Typography>
+            </Grid>
         </Tooltip>
-      {reviewNotes ? reviewNotes : <Typography sx = {{ maxWidth: '375px'}}>There are no review notes for this change request. </Typography>}
     </h1>
   );
 };

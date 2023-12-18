@@ -7,7 +7,6 @@ import { ImplementedChange } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { Link, ListItem, List, Typography } from '@mui/material';
-import PageBlock from '../../layouts/PageBlock';
 import { Link as RouterLink } from 'react-router-dom';
 import DynamicTooltip from '../../components/DynamicTooltip';
 
@@ -21,7 +20,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
     <h1>
     <Typography
     sx = {{fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}> Implemented Changes</Typography>
-          {<>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>}
+          <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>{<>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>}</Typography>
       <List>
         {changes.map((ic, idx) => (
           <ListItem key={idx}>

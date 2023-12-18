@@ -21,10 +21,10 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
         <Grid item xs={4} md={2}>
           <Typography sx={{ fontWeight: 'bold' }}>Project Lead: </Typography>
         </Grid>
-        <Grid item xs={4} md={2}>
+        <Grid item xs={2} md={2}>
           <Typography>{fullNamePipe(cr.projectLead)}</Typography>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={8}>
         </Grid>
         <Grid item xs={4} md={2}>
           <Typography sx={{ fontWeight: 'bold' }}>Start Date: </Typography>
@@ -32,17 +32,17 @@ const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
         <Grid item xs={4} md={2}>
           <Typography>{datePipe(cr.startDate)}</Typography>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={8}>
         </Grid>
-        <Grid item xs={4} md={1}>
+        <Grid item xs={4} md={2}>
           <Typography sx={{ fontWeight: 'bold' }}>Project Manager: </Typography>
         </Grid>
-        <Grid item xs={4} md={1}>
+        <Grid item xs={4} md={2}>
           <Typography>{fullNamePipe(cr.projectManager)}</Typography>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={8}>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={2}>
           <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details: </Typography>
         </Grid>
         <Grid item xs={1}>

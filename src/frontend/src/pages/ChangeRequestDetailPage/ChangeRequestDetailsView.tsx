@@ -111,18 +111,18 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       <Typography 
       sx={{ fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}>Change Request Details </Typography> 
         <Grid container spacing={1}>
-          <Grid item xs={4}>
+          <Grid item xs={2}>
             <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={2}>
             <Typography sx={{maxWidth: '140px'}}> {changeRequest.type} </Typography>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={8}>
         </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={2}>
             <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <Link
             position={'absolute'}
             fontSize={15}
@@ -131,14 +131,16 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
               </Link>         
               </Grid>
-          <Grid item xs={4} md={2}>
+              <Grid item xs = {6}>
+              </Grid>
+          <Grid item xs={2} md={2}>
             <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>
           </Grid>
           
-          <Grid item xs={2}>
+          <Grid item xs={4} md={1}>
             <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={1}>
             <Typography>{datePipe(changeRequest.dateSubmitted)}</Typography>
           </Grid>
         </Grid>
