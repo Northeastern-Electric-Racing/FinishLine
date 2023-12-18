@@ -16,9 +16,9 @@ interface ReviewNotesProps {
 
 const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
-    <PageBlock
-      title={'Review Notes'}
-      headerRight={
+    <h1>
+      <Typography 
+      sx={{ fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}>Review Notes </Typography> 
         <Tooltip
           id="tooltip"
           arrow
@@ -35,10 +35,8 @@ const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateRe
         >
           <span>{fullNamePipe(reviewer)}</span>
         </Tooltip>
-      }
-    >
-      {reviewNotes ? reviewNotes : 'There are no review notes for this change request.'}
-    </PageBlock>
+      {reviewNotes ? reviewNotes : <Typography sx = {{ maxWidth: '375px'}}>There are no review notes for this change request. </Typography>}
+    </h1>
   );
 };
 

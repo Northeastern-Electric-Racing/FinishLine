@@ -18,10 +18,10 @@ interface ImplementedChangesListProps {
 
 const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
   return (
-    <PageBlock
-      title={'Implemented Changes'}
-      headerRight={<>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>}
-    >
+    <h1>
+    <Typography
+    sx = {{fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}> Implemented Changes</Typography>
+          {<>{overallDateImplemented ? datePipe(overallDateImplemented) : emDashPipe('')}</>}
       <List>
         {changes.map((ic, idx) => (
           <ListItem key={idx}>
@@ -41,7 +41,7 @@ const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes
           </ListItem>
         ))}
       </List>
-    </PageBlock>
+      </h1>
   );
 };
 

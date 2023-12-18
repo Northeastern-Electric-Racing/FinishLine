@@ -14,16 +14,18 @@ interface StageGateDetailsProps {
 
 const StageGateDetails: React.FC<StageGateDetailsProps> = ({ cr }) => {
   return (
-    <PageBlock title={'Stage Gate Change Request Details'}>
+    <h1>
+      <Typography
+      sx = {{fontWeight: 'bold', fontSize: 30, fontFamily: 'oswald,sans-serif'}}>Stage Gate Change Request Details </Typography>
       <Grid container spacing={1}>
-        <Grid item xs={3}>
+        <Grid item xs={4}>
           <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Completed</Typography>
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={6}>
           <Typography>{booleanPipe(cr.confirmDone)}</Typography>
         </Grid>
       </Grid>
-    </PageBlock>
+    </h1>
   );
 };
 
