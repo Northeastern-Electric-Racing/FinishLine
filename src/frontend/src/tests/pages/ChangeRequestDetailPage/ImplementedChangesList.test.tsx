@@ -7,6 +7,7 @@ import { render, screen, routerWrapperBuilder } from '../../test-support/test-ut
 import { ImplementedChange } from 'shared';
 import { exampleStandardImplementedChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ImplementedChangesList from '../../../pages/ChangeRequestDetailPage/ImplementedChangesList';
+import { datePipe } from '../../../utils/pipes';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -25,7 +26,13 @@ describe('Rendering Implemented Changes List Component', () => {
     renderComponent(exampleStandardImplementedChangeRequest.implementedChanges);
 
     expect(
-      screen.getByText(`Implemented Changes — ${exampleStandardImplementedChangeRequest.dateImplemented ?? 'N/A'}`)
+      screen.getByText(
+        `Implemented Changes — ${
+          exampleStandardImplementedChangeRequest.dateImplemented
+            ? datePipe(exampleStandardImplementedChangeRequest.dateImplemented)
+            : 'N/A'
+        }`
+      )
     ).toBeInTheDocument();
     expect(screen.getByText('1.23.3')).toBeInTheDocument();
     expect(screen.getByText(/Increase budget to 200/i)).toBeInTheDocument();
