@@ -44,10 +44,10 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
       }}
     >
       <Grid container rowSpacing={1}>
-        <Grid item xs={12} sx={{ p: 2, mt: 1, border: 1, minHeight: 100, borderRadius: 1 }}>
+        <Grid item xs={12} sx={{ p: 2, mt: 1, minHeight: 100, borderRadius: 1, bgcolor: '#474848' }}>
           <DetailDisplay label="Description" content={proposedSolution.description} />
         </Grid>
-        <Grid item xs={12} sx={{ p: 2, mt: 2, minHeight: 100, border: 1, borderRadius: 1 }}>
+        <Grid item xs={12} sx={{ p: 2, mt: 2, minHeight: 100, borderRadius: 1, bgcolor: '#474848' }}>
           <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
         </Grid>
         <Grid item xs={7} display="flex" sx={{ marginTop: 0.5 }}>
@@ -59,7 +59,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
             <ScheduleIcon sx={{ mr: 1 }} />
             <Typography>{weeksPipe(proposedSolution.timelineImpact)}</Typography>
           </Grid>
-          <Grid item>{proposedSolution.approved ? <Chip label="Approved" color="success" /> : null}</Grid>
+          <Grid item>{proposedSolution.approved && <Chip label="Approved" color="success" />}</Grid>
           {showDeleteButton && onDelete !== undefined ? (
             <Grid item>
               <Button

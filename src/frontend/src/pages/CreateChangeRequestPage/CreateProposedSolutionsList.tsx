@@ -7,9 +7,9 @@ import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
-import { useAuth } from '../../hooks/auth.hooks';
 import { Button, Grid, Typography } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -20,10 +20,10 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   proposedSolutions,
   setProposedSolutions
 }) => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
 
-  if (!auth.user) return <LoadingIndicator />;
+  if (!user) return <LoadingIndicator />;
 
   const addProposedSolution = async (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
@@ -36,7 +36,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   return (
     <>
-      {!isGuest(auth.user.role) ? (
+      {!isGuest(user.role) && (
         <Grid container columnSpacing={5}>
           <Grid item>
             <Typography variant="h5" sx={{ mt: 2 }}>
@@ -54,8 +54,6 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
             </Button>
           </Grid>
         </Grid>
-      ) : (
-        ''
       )}
       <div style={{ marginTop: '30px' }}>
         {proposedSolutions.map((proposedSolution, i) => (
