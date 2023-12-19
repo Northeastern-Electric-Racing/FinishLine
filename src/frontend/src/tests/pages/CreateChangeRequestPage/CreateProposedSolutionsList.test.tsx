@@ -8,6 +8,8 @@ import CreateProposedSolutionsList from '../../../pages/CreateChangeRequestPage/
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import * as userHooks from '../../../hooks/users.hooks';
+import AppContextUser from '../../../app/AppContextUser';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -15,14 +17,17 @@ import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <RouterWrapper>
-      <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
-    </RouterWrapper>
+    <AppContextUser>
+      <RouterWrapper>
+        <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
+      </RouterWrapper>
+    </AppContextUser>
   );
 };
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
   });
 

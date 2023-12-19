@@ -175,6 +175,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
 
   return (
     <PageLayout
+      stickyHeader
       title="New Change Request"
       previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
       headerRight={
