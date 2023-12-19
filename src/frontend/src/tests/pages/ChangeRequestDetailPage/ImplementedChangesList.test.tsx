@@ -28,7 +28,7 @@ describe('Rendering Implemented Changes List Component', () => {
     expect(
       screen.getByText(
         `Implemented Changes — ${
-          exampleStandardImplementedChangeRequest.dateImplemented
+          exampleStandardImplementedChangeRequest.dateImplemented !== null
             ? datePipe(exampleStandardImplementedChangeRequest.dateImplemented)
             : 'N/A'
         }`
