@@ -67,61 +67,58 @@ const ChangeRequestsTable: React.FC = () => {
 
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const smallColumns: GridColDef[] = [
-    {
-      ...baseColDef,
-      field: 'crId',
-      type: 'number',
-      headerName: 'ID',
-      maxWidth: 75
-    },
-    {
-      ...baseColDef,
-      field: 'dateReviewed',
-      headerName: 'Date Reviewed',
-      type: 'date',
-      valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
-      maxWidth: 200
-    },
-    {
-      ...baseColDef,
-      field: 'wbs',
-      headerName: 'WBS',
-      filterable: true,
-      sortable: true,
-      maxWidth: 300,
-      valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
-      sortComparator: (_v1, _v2, param1, param2) => {
-        const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
-        const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
+  const idColumn: GridColDef = {
+    ...baseColDef,
+    field: 'crId',
+    type: 'number',
+    headerName: 'ID',
+    maxWidth: 75
+  };
 
-        if (wbs1.carNumber !== wbs2.carNumber) {
-          return wbs1.carNumber - wbs2.carNumber;
-        } else if (wbs1.projectNumber !== wbs2.projectNumber) {
-          return wbs1.projectNumber - wbs2.projectNumber;
-        } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
-          return wbs1.workPackageNumber - wbs2.workPackageNumber;
-        } else {
-          return 0;
-        }
+  const dateReviewedColumn: GridColDef = {
+    ...baseColDef,
+    field: 'dateReviewed',
+    headerName: 'Date Reviewed',
+    type: 'date',
+    valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
+    maxWidth: 200
+  };
+
+  const wbsColumn: GridColDef = {
+    ...baseColDef,
+    field: 'wbs',
+    headerName: 'WBS',
+    filterable: true,
+    sortable: true,
+    maxWidth: 300,
+    valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
+    sortComparator: (_v1, _v2, param1, param2) => {
+      const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
+      const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
+
+      if (wbs1.carNumber !== wbs2.carNumber) {
+        return wbs1.carNumber - wbs2.carNumber;
+      } else if (wbs1.projectNumber !== wbs2.projectNumber) {
+        return wbs1.projectNumber - wbs2.projectNumber;
+      } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
+        return wbs1.workPackageNumber - wbs2.workPackageNumber;
+      } else {
+        return 0;
       }
-    },
-    {
-      ...baseColDef,
-      field: 'submitter',
-      headerName: 'Submitter',
-      maxWidth: 200
     }
-  ];
+  };
+
+  const submitterColumn: GridColDef = {
+    ...baseColDef,
+    field: 'submitter',
+    headerName: 'Submitter',
+    maxWidth: 200
+  };
+
+  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, wbsColumn, submitterColumn];
 
   const columns: GridColDef[] = [
-    {
-      ...baseColDef,
-      field: 'crId',
-      type: 'number',
-      headerName: 'ID',
-      maxWidth: 75
-    },
+    idColumn,
     {
       ...baseColDef,
       field: 'type',
@@ -131,29 +128,7 @@ const ChangeRequestsTable: React.FC = () => {
       maxWidth: 150
     },
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
-    {
-      ...baseColDef,
-      field: 'wbs',
-      headerName: 'WBS',
-      filterable: true,
-      sortable: true,
-      maxWidth: 300,
-      valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
-      sortComparator: (_v1, _v2, param1, param2) => {
-        const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
-        const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
-
-        if (wbs1.carNumber !== wbs2.carNumber) {
-          return wbs1.carNumber - wbs2.carNumber;
-        } else if (wbs1.projectNumber !== wbs2.projectNumber) {
-          return wbs1.projectNumber - wbs2.projectNumber;
-        } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
-          return wbs1.workPackageNumber - wbs2.workPackageNumber;
-        } else {
-          return 0;
-        }
-      }
-    },
+    wbsColumn,
     {
       ...baseColDef,
       field: 'dateSubmitted',
@@ -162,20 +137,8 @@ const ChangeRequestsTable: React.FC = () => {
       valueFormatter: (params) => datePipe(params.value),
       maxWidth: 200
     },
-    {
-      ...baseColDef,
-      field: 'submitter',
-      headerName: 'Submitter',
-      maxWidth: 200
-    },
-    {
-      ...baseColDef,
-      field: 'dateReviewed',
-      headerName: 'Date Reviewed',
-      type: 'date',
-      valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
-      maxWidth: 200
-    },
+    submitterColumn,
+    dateReviewedColumn,
     {
       ...baseColDef,
       field: 'reviewer',

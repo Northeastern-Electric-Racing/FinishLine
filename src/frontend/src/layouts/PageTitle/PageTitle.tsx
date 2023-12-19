@@ -34,13 +34,13 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight
             </Typography>
           </Grid>
           <Grid item xs={0} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-            {tabs && <Box>{tabs}</Box>}
+            {tabs}
           </Grid>
           <Grid item xs={6} md={4} textAlign={['left', 'right']}>
             {headerRight}
           </Grid>
           <Grid item xs={12} md={0} justifyContent={'center'} sx={{ display: { xs: 'flex', md: 'none' } }}>
-            {tabs && <Box>{tabs}</Box>}
+            {tabs}
           </Grid>
         </Grid>
       </Box>
