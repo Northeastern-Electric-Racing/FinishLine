@@ -24,8 +24,6 @@ interface PageTitleProps {
  * @param tabs The tabs on the page to display.
  */
 const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs, sticky }) => {
-  const theme = useTheme();
-
   return (
     <>
       <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
