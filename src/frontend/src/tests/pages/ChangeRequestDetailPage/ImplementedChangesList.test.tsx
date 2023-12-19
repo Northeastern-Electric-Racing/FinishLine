@@ -7,7 +7,6 @@ import { render, screen, routerWrapperBuilder } from '../../test-support/test-ut
 import { ImplementedChange } from 'shared';
 import { exampleStandardImplementedChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ImplementedChangesList from '../../../pages/ChangeRequestDetailPage/ImplementedChangesList';
-import { datePipe } from '../../../utils/pipes';
 
 /**
  * Sets up the component under test with the desired values and renders it.
