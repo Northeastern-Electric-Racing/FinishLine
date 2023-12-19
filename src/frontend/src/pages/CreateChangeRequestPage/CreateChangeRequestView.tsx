@@ -182,31 +182,31 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   };
 
   return (
-    <PageLayout
-      stickyHeader
-      title="New Change Request"
-      previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
-      headerRight={
-        <Box textAlign="right" sx={{ mb: 2 }}>
-          <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
-      }
+    <form
+      id={'create-standard-change-request-form'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
     >
-      <form
-        id={'create-standard-change-request-form'}
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSubmit(onSubmit)(e);
-        }}
-        onKeyPress={(e) => {
-          e.key === 'Enter' && e.preventDefault();
-        }}
+      <PageLayout
+        stickyHeader
+        title="New Change Request"
+        previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
+        headerRight={
+          <Box textAlign="right" sx={{ mb: 2 }}>
+            <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+              Submit
+            </NERSuccessButton>
+          </Box>
+        }
       >
         <Grid container spacing={2} display="flex" justifyContent="space-between">
           <Grid container item spacing={2} xs={5} maxHeight={0} sx={{ mt: -5 }}>
@@ -313,8 +313,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
           </Grid>
         </Grid>
-      </form>
-    </PageLayout>
+      </PageLayout>
+    </form>
   );
 };
 
