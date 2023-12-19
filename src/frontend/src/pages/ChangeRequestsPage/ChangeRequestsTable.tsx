@@ -250,7 +250,7 @@ const ChangeRequestsTable: React.FC = () => {
             reviewer: fullNamePipe(v.reviewer)
           })) || []
         }
-        columns={windowSize < 1000 ? smallColumns : columns}
+        columns={windowSize < 900 ? smallColumns : columns}
         getRowId={(row) => row.crId}
         sx={{
           border: 0,

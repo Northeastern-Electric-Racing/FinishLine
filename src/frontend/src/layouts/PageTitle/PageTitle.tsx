@@ -28,16 +28,19 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight
       <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
       <Box sx={{ mb: 2 }}>
         <Grid container rowSpacing={1}>
-          <Grid item xs={4} md={4}>
+          <Grid item xs={6} md={4}>
             <Typography variant="h4" fontSize={30}>
               {title}
             </Typography>
           </Grid>
-          <Grid item xs={8} md={4}>
+          <Grid item xs={0} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
             {tabs && <Box>{tabs}</Box>}
           </Grid>
-          <Grid item xs={12} md={4} textAlign={['left', 'left', 'right']}>
+          <Grid item xs={6} md={4} textAlign={['left', 'right']}>
             {headerRight}
+          </Grid>
+          <Grid item xs={12} md={0} justifyContent={'center'} sx={{ display: { xs: 'flex', md: 'none' } }}>
+            {tabs && <Box>{tabs}</Box>}
           </Grid>
         </Grid>
       </Box>
