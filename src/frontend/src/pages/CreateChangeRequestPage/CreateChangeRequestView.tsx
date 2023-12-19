@@ -174,7 +174,20 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   };
 
   return (
-    <PageLayout title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}>
+    <PageLayout
+      title="New Change Request"
+      previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
+      headerRight={
+        <Box textAlign="right" sx={{ mb: 2 }}>
+          <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            Submit
+          </NERSuccessButton>
+        </Box>
+      }
+    >
       <form
         id={'create-standard-change-request-form'}
         onSubmit={(e) => {
@@ -186,14 +199,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           e.key === 'Enter' && e.preventDefault();
         }}
       >
-        <Box textAlign="right">
-          <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1, mt: -13 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1, mt: -13 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
         <Grid container spacing={2} display="flex" justifyContent="space-between">
           <Grid container item spacing={2} xs={5} maxHeight={0} sx={{ mt: -5 }}>
             <Grid item xs={12}>
