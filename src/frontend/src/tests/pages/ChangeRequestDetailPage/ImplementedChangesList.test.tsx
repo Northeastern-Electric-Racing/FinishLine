@@ -24,7 +24,7 @@ describe('Rendering Implemented Changes List Component', () => {
   it('renders everything', () => {
     renderComponent(exampleStandardImplementedChangeRequest.implementedChanges);
 
-    expect(screen.getByText(`Implemented Changes`)).toBeInTheDocument();
+    expect(screen.getByText(`Implemented Changes — 03/04/21`)).toBeInTheDocument();
 
     expect(screen.getByText('1.23.3')).toBeInTheDocument();
     expect(screen.getByText(/Increase budget to 200/i)).toBeInTheDocument();
