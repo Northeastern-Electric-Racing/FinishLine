@@ -24,10 +24,21 @@ interface PageTitleProps {
  * @param tabs The tabs on the page to display.
  */
 const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs, sticky }) => {
+  const theme = useTheme();
+
   return (
     <>
-      <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-      <Box sx={{ mb: 2 }}>
+      <Box mb={sticky ? -1 : 0}>
+        <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
+      </Box>
+      <Box
+        mb={2}
+        position={sticky ? 'sticky' : 'initial'}
+        top={65}
+        pt={sticky ? 1 : 0}
+        zIndex={1}
+        bgcolor={theme.palette.background.default}
+      >
         <Grid container rowSpacing={1}>
           <Grid item xs={6} md={4}>
             <Typography variant="h4" fontSize={30}>
