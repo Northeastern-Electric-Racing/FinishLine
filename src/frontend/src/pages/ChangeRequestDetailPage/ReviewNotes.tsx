@@ -32,7 +32,7 @@ const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateRe
             </Typography>
           }
         >
-          <span>{fullNamePipe(reviewer)}— </span>
+          <span>{fullNamePipe(reviewer)} — </span>
         </Tooltip>
         {reviewNotes ?? 'There are no review notes for this change request.'}
       </Typography>

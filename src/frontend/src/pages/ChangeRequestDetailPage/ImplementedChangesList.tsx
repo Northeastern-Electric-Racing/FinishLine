@@ -16,12 +16,12 @@ interface ImplementedChangesListProps {
   overallDateImplemented?: Date;
 }
 
-const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes }) => {
+const ImplementedChangesList: React.FC<ImplementedChangesListProps> = ({ changes, overallDateImplemented }) => {
   return (
-    <InfoBlock title={'Implemented Changes'}>
+    <InfoBlock title={`Implemented Changes — ${overallDateImplemented ? datePipe(overallDateImplemented) : 'N/A'}`}>
       <List>
         {changes.length === 0 ? (
-          <Typography>—— There are no implemented changes for this change request.</Typography>
+          <Typography>— — There are no implemented changes for this change request.</Typography>
         ) : (
           changes.map((ic, idx) => (
             <ListItem key={idx}>
