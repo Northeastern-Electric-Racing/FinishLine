@@ -41,7 +41,7 @@ describe('Change Requests', () => {
       return undefined;
     });
     vi.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
-      return undefined;
+      return [];
     });
     vi.spyOn(changeRequestUtils, 'updateBlocking').mockImplementation(async () => {});
     vi.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValueOnce(batmanSettings);
@@ -344,7 +344,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.scope_CR, 'findUnique').mockResolvedValue(prismaScopeChangeRequest1);
       vi.spyOn(prisma.proposed_Solution, 'create').mockResolvedValue(prismaProposedSolution1);
       const response = await ChangeRequestsService.addProposedSolution(aquaman, crId, 1000, description, 10, 'huge');
-      expect(response).toStrictEqual(prismaProposedSolution1.proposedSolutionId);
+      expect(response).toStrictEqual({ ...prismaProposedSolution1, id: prismaProposedSolution1.proposedSolutionId });
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.create).toHaveBeenCalledTimes(1);
@@ -457,9 +457,10 @@ describe('Change Requests', () => {
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
+    const changeRequest = { ...prismaChangeRequest1, requestedReviewers: [] };
     test('Change request successfully assigned reviewers', async () => {
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([batmanWithUserSettings]);
-      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(prismaChangeRequest1);
+      vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeRequest);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValue(prismaChangeRequest1);
 
       await ChangeRequestsService.requestCRReview(batman, [1], 1);

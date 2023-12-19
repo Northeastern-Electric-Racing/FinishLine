@@ -109,9 +109,55 @@ export default class WorkPackagesService {
   }
 
   /**
+   * Retrieve a subset of work packages.
+   * @param wbsNums the WBS numbers of the work packages to retrieve
+   * @returns the work packages with the given WBS numbers
+   * @throws if any of the work packages are not found
+   */
+  static async getManyWorkPackages(wbsNums: WbsNumber[]): Promise<WorkPackage[]> {
+    wbsNums.forEach((wbsNum) => {
+      if (isProject(wbsNum)) {
+        throw new HttpException(
+          404,
+          `WBS Number ${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber} is a project WBS#, not a Work Package WBS#`
+        );
+      }
+    });
+
+    const workPackagePromises = wbsNums.map(async (wbsNum) => {
+      const workPackage = await prisma.work_Package.findFirst({
+        where: {
+          AND: [
+            {
+              wbsElement: {
+                dateDeleted: null
+              }
+            },
+            {
+              wbsElement: {
+                carNumber: wbsNum.carNumber,
+                projectNumber: wbsNum.projectNumber,
+                workPackageNumber: wbsNum.workPackageNumber
+              }
+            }
+          ]
+        },
+        ...workPackageQueryArgs
+      });
+
+      if (!workPackage) {
+        throw new NotFoundException('Work Package', wbsPipe(wbsNum));
+      }
+      return workPackageTransformer(workPackage);
+    });
+
+    const resolvedWorkPackages = await Promise.all(workPackagePromises);
+    return resolvedWorkPackages;
+  }
+
+  /**
    * Creates a Work_Package in the database
    * @param user the user creating the work package
-   * @param projectWbsNum the WBS number of the attached project
    * @param name the name of the new work package
    * @param crId the id of the change request creating this work package
    * @param stage the stage of the work package
@@ -125,7 +171,6 @@ export default class WorkPackagesService {
    */
   static async createWorkPackage(
     user: User,
-    projectWbsNum: WbsNumber,
     name: string,
     crId: number,
     stage: WorkPackageStage | null,
@@ -137,11 +182,41 @@ export default class WorkPackagesService {
   ): Promise<string> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create work packages');
 
-    await validateChangeRequestAccepted(crId);
+    const changeRequest = await validateChangeRequestAccepted(crId);
+
+    blockedBy.forEach((dep: WbsNumber) => {
+      if (dep.workPackageNumber === 0) {
+        throw new HttpException(400, 'A Project cannot be a Blocker');
+      }
+    });
+
+    const wbsElem = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsElementId: changeRequest.wbsElementId
+      },
+      include: {
+        project: {
+          include: {
+            workPackages: { include: { wbsElement: true, blockedBy: true } }
+          }
+        }
+      }
+    });
+
+    if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
-    const { carNumber, projectNumber, workPackageNumber } = projectWbsNum;
+    const { carNumber, projectNumber, workPackageNumber } = wbsElem;
+
+    const projectWbsNum: WbsNumber = {
+      carNumber,
+      projectNumber,
+      workPackageNumber
+    };
+
+    if (wbsElem.dateDeleted)
+      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     if (workPackageNumber !== 0) {
       throw new HttpException(
@@ -153,33 +228,6 @@ export default class WorkPackagesService {
     if (blockedBy.find((dep: WbsNumber) => equalsWbsNumber(dep, projectWbsNum))) {
       throw new HttpException(400, 'A Work Package cannot have its own project as a blocker');
     }
-
-    blockedBy.forEach((dep: WbsNumber) => {
-      if (dep.workPackageNumber === 0) {
-        throw new HttpException(400, 'A Project cannot be a Blocker');
-      }
-    });
-
-    const wbsElem = await prisma.wBS_Element.findUnique({
-      where: {
-        wbsNumber: {
-          carNumber,
-          projectNumber,
-          workPackageNumber
-        }
-      },
-      include: {
-        project: {
-          include: {
-            workPackages: { include: { wbsElement: true, blockedBy: true } }
-          }
-        }
-      }
-    });
-
-    if (!wbsElem) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElem.dateDeleted)
-      throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const { project } = wbsElem;
 
@@ -273,8 +321,8 @@ export default class WorkPackagesService {
    * @param blockedBy the new WBS elements to be completed before this WP
    * @param expectedActivities the new expected activities descriptions for this WP
    * @param deliverables the new expected deliverables descriptions for this WP
-   * @param projectLead the new lead for this work package
-   * @param projectManager the new manager for this work package
+   * @param projectLeadId the new lead for this work package
+   * @param projectManagerId the new manager for this work package
    */
   static async editWorkPackage(
     user: User,
@@ -287,8 +335,8 @@ export default class WorkPackagesService {
     blockedBy: WbsNumber[],
     expectedActivities: DescriptionBullet[],
     deliverables: DescriptionBullet[],
-    projectLead: number,
-    projectManager: number
+    projectLeadId: number,
+    projectManagerId: number
   ): Promise<void> {
     // verify user is allowed to edit work packages
     if (isGuest(user.role)) throw new AccessDeniedGuestException('edit work packages');
@@ -419,7 +467,7 @@ export default class WorkPackagesService {
     const projectManagerChangeJson = createChange(
       'project manager',
       await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
-      await getUserFullName(projectManager),
+      await getUserFullName(projectManagerId),
       crId,
       userId,
       wbsElementId!
@@ -431,7 +479,7 @@ export default class WorkPackagesService {
     const projectLeadChangeJson = createChange(
       'project lead',
       await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
-      await getUserFullName(projectLead),
+      await getUserFullName(projectLeadId),
       crId,
       userId,
       wbsElementId!
@@ -459,8 +507,8 @@ export default class WorkPackagesService {
         wbsElement: {
           update: {
             name,
-            projectLeadId: projectLead,
-            projectManagerId: projectManager
+            projectLeadId,
+            projectManagerId
           }
         },
         stage,

@@ -91,6 +91,20 @@ export const getAllBlockingWorkPackages = (wbsNum: WbsNumber) => {
 };
 
 /**
+ * Gets the work package corresponding with each wbsNum in the submitted array.
+ * @param wbsNums the WBS Numbers of the work packages being fetched.
+ */
+export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
+  return axios.post<WorkPackage[]>(
+    apiUrls.workPackagesMany(),
+    { wbsNums },
+    {
+      transformResponse: (data) => JSON.parse(data).map(workPackageTransformer)
+    }
+  );
+};
+
+/**
  * Slack upcoming deadlines.
  */
 export const slackUpcomingDeadlines = (deadline: Date) => {

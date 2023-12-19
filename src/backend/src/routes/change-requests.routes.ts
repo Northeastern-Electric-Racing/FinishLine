@@ -61,6 +61,11 @@ changeRequestsRouter.post(
   body('why').isArray(),
   nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
+  body('proposedSolutions').isArray({ min: 1 }),
+  nonEmptyString(body('proposedSolutions.*.description')),
+  nonEmptyString(body('proposedSolutions.*.scopeImpact')),
+  body('proposedSolutions.*.timelineImpact').isInt(),
+  body('proposedSolutions.*.budgetImpact').isInt(),
   validateInputs,
   ChangeRequestsController.createStandardChangeRequest
 );

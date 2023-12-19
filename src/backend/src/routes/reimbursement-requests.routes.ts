@@ -5,7 +5,7 @@
 
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, isAccount, isDate, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isAccount, isDate, nonEmptyString, validateReimbursementProducts } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ReimbursementRequestController from '../controllers/reimbursement-requests.controllers';
 import multer, { memoryStorage } from 'multer';
@@ -25,18 +25,20 @@ reimbursementRequestsRouter.get('/reimbursements/current-user', ReimbursementReq
 reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestController.getAllReimbursements);
 
 reimbursementRequestsRouter.post(
+  '/:vendorId/vendors/edit',
+  nonEmptyString(body('name')),
+  validateInputs,
+  ReimbursementRequestController.editVendor
+);
+
+reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
-  body('reimbursementProducts').isArray(),
-  nonEmptyString(body('reimbursementProducts.*.name')),
-  intMinZero(body('reimbursementProducts.*.cost')),
-  intMinZero(body('reimbursementProducts.*.wbsNum.carNumber')),
-  intMinZero(body('reimbursementProducts.*.wbsNum.projectNumber')),
-  intMinZero(body('reimbursementProducts.*.wbsNum.workPackageNumber')),
   nonEmptyString(body('expenseTypeId')),
   intMinZero(body('totalCost')),
+  validateReimbursementProducts(),
   validateInputs,
   ReimbursementRequestController.createReimbursementRequest
 );
@@ -53,15 +55,9 @@ reimbursementRequestsRouter.post(
   body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*.name')),
   nonEmptyString(body('receiptPictures.*.googleFileId')),
-  body('reimbursementProducts').isArray(),
-  nonEmptyString(body('reimbursementProducts.*.id').optional()),
-  nonEmptyString(body('reimbursementProducts.*.name')),
-  intMinZero(body('reimbursementProducts.*.cost')),
-  intMinZero(body('reimbursementProducts.*.wbsNum.carNumber')),
-  intMinZero(body('reimbursementProducts.*.wbsNum.projectNumber')),
-  intMinZero(body('reimbursementProducts.*.wbsNum.workPackageNumber')),
   nonEmptyString(body('expenseTypeId')),
   intMinZero(body('totalCost')),
+  validateReimbursementProducts(),
   validateInputs,
   ReimbursementRequestController.editReimbursementRequest
 );
@@ -86,8 +82,6 @@ reimbursementRequestsRouter.post(
 reimbursementRequestsRouter.post(
   '/vendors/create',
   nonEmptyString(body('name')),
-  body('allowedRefundSources').isArray(),
-  isAccount(body('allowedRefundSources.*')),
   validateInputs,
   ReimbursementRequestController.createVendor
 );
@@ -128,6 +122,7 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
 reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
+reimbursementRequestsRouter.post('/:requestId/deny', ReimbursementRequestController.denyReimbursementRequest);
 
 reimbursementRequestsRouter.post(
   '/:requestId/delivered',
