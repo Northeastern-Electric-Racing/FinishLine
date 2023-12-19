@@ -153,9 +153,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
       {deleteModalShow && (
         <DeleteChangeRequest modalShow={deleteModalShow} handleClose={handleDeleteClose} cr={changeRequest} />
       )}
-      <Grid container spacing={1} style={{ display: 'flex' }}>
-        <OtherChangeRequestsPopupTabs changeRequest={changeRequest} fromSubmitter={true} />
-      </Grid>
+      <OtherChangeRequestsPopupTabs changeRequest={changeRequest} fromSubmitter={true} />
     </PageLayout>
   );
 };

@@ -8,7 +8,6 @@ import { Box, useTheme, Collapse, Tabs, Tab, Typography } from '@mui/material';
 import { ChangeRequest, wbsPipe } from 'shared';
 import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
@@ -19,8 +18,7 @@ interface OtherChangeRequestsPopupTabsProps {
 }
 
 const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> = ({
-  changeRequest,
-  fromSubmitter
+  changeRequest
 }: OtherChangeRequestsPopupTabsProps) => {
   const theme = useTheme();
   const [tab, setTab] = useState(0);
@@ -40,20 +38,14 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
       return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
     });
 
-  const crsFromWbs = changeRequests?.filter((cr) => cr.wbsName === changeRequest.wbsName);
+  const crsFromWbs = changeRequests
+    ?.filter((cr) => cr.wbsName === changeRequest.wbsName)
+    .sort((a: ChangeRequest, b: ChangeRequest) => {
+      return b.dateSubmitted.getTime() - a.dateSubmitted.getTime();
+    });
 
   const displayTab = (value: number, title: string) => (
-    <Tab
-      value={value}
-      sx={{ borderRadius: '16px 16px 0 0' }}
-      label={
-        <Typography sx={{ display: 'flex' }}>
-          {title}
-          {tab === value ? <ExpandMore sx={{ pl: 0.5 }} /> : <ExpandLess sx={{ pl: 0.5 }} />}
-        </Typography>
-      }
-      onClick={() => tab === value && setTab(0)}
-    />
+    <Tab value={value} sx={{ borderRadius: '16px 16px 0 0' }} label={title} onClick={() => tab === value && setTab(0)} />
   );
 
   const displayCRCards = (crList: ChangeRequest[]) => (
@@ -117,7 +109,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
           mb: '-1px'
         }}
       >
-        {displayTab(1, `Other CR's from ${wbsPipe(changeRequest.wbsNum)}`)}
+        {displayTab(1, `Other CR's on ${wbsPipe(changeRequest.wbsNum)}`)}
         {displayTab(2, `Other CR's from ${fullNamePipe(changeRequest.submitter)}`)}
       </Tabs>
       <Collapse in={tab !== 0}>
