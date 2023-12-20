@@ -40,7 +40,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight
         bgcolor={theme.palette.background.default}
       >
         <Grid container>
-          <Grid item xs={6} md={8}>
+          <Grid item xs={6} md={4}>
             <Typography variant="h4" fontSize={30}>
               {title}
             </Typography>
