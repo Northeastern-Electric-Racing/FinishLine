@@ -7,6 +7,7 @@ import {
   approveReimbursementRequest,
   createReimbursementRequest,
   deleteReimbursementRequest,
+  denyReimbursementRequest,
   downloadBlobsToPdf,
   downloadGoogleImage,
   editReimbursementRequest,
@@ -31,18 +32,20 @@ import {
   ClubAccount,
   ExpenseType,
   Reimbursement,
-  ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   Vendor,
-  ReimbursementStatus
+  ReimbursementStatus,
+  OtherReimbursementProductCreateArgs,
+  WbsReimbursementProductCreateArgs
 } from 'shared';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense: Date;
   expenseTypeId: string;
-  reimbursementProducts: ReimbursementProductCreateArgs[];
+  otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
+  wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
   account: ClubAccount;
 }
@@ -261,6 +264,28 @@ export const useApproveReimbursementRequest = (id: string) => {
 };
 
 /**
+ * Custom react hook to deny a reimbursement request for the finance team
+ *
+ * @param id id of the reimbursement request to deny
+ * @returns the denied reimbursement request status
+ */
+export const useDenyReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await denyReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to download images from google drive into a pdf
  *
  * @param fileIds The google file ids to fetch the images for
@@ -340,7 +365,7 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
  */
 export const useEditAccountCode = (expenseTypeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
     ['expense-types', 'edit'],
     async (accountCodeData: ExpenseTypePayload) => {
       const { data } = await editAccountCode(expenseTypeId, accountCodeData);
@@ -355,7 +380,7 @@ export const useEditAccountCode = (expenseTypeId: string) => {
  */
 export const useCreateAccountCode = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
     ['expense-types', 'create'],
     async (accountCodeData: ExpenseTypePayload) => {
       const { data } = await createAccountCode(accountCodeData);
@@ -370,7 +395,7 @@ export const useCreateAccountCode = () => {
  */
 export const useCreateVendor = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(['vendors', 'create'], async (vendorData: { name: string }) => {
+  return useMutation<Vendor, Error, { name: string }>(['vendors', 'create'], async (vendorData: { name: string }) => {
     const { data } = await createVendor(vendorData);
     queryClient.invalidateQueries(['vendors']);
     return data;
