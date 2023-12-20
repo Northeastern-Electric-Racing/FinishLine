@@ -1,4 +1,5 @@
 import { WebClient } from '@slack/web-api';
+import { HttpException } from '../utils/errors.utils';
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 
@@ -40,13 +41,17 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
           }
         };
 
-  await slack.chat.postMessage({
-    token: SLACK_BOT_TOKEN,
-    channel: slackId,
-    text: message,
-    blocks: [block],
-    unfurl_links: false
-  });
+  try {
+    await slack.chat.postMessage({
+      token: SLACK_BOT_TOKEN,
+      channel: slackId,
+      text: message,
+      blocks: [block],
+      unfurl_links: false
+    });
+  } catch (error) {
+    throw new HttpException(500, 'Error sending slack message, reason: ' + (error as any).data.error);
+  }
 };
 
 export default slack;

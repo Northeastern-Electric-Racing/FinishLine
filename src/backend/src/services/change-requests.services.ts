@@ -1,4 +1,14 @@
-import { ChangeRequest, isAdmin, isGuest, isLeadership, isNotLeadership, wbsPipe } from 'shared';
+import {
+  ChangeRequest,
+  isAdmin,
+  isGuest,
+  isLeadership,
+  isNotLeadership,
+  ProposedSolution,
+  ProposedSolutionCreateArgs,
+  StandardChangeRequest,
+  wbsPipe
+} from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import {
@@ -527,10 +537,14 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     what: string,
-    why: { type: Scope_CR_Why_Type; explain: string }[]
-  ): Promise<number> {
+    why: { type: Scope_CR_Why_Type; explain: string }[],
+    proposedSolutions: ProposedSolutionCreateArgs[]
+  ): Promise<StandardChangeRequest> {
     // verify user is allowed to create standard change requests
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
+
+    //verify proposed solutions length is greater than 0
+    if (proposedSolutions.length === 0) throw new HttpException(400, 'No proposed solutions provided');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -576,18 +590,38 @@ export default class ChangeRequestsService {
       }
     });
 
+    const proposedSolutionPromises = proposedSolutions.map(async (proposedSolution) => {
+      return await this.addProposedSolution(
+        submitter,
+        createdCR.crId,
+        proposedSolution.budgetImpact,
+        proposedSolution.description,
+        proposedSolution.timelineImpact,
+        proposedSolution.scopeImpact
+      );
+    });
+
+    await Promise.all(proposedSolutionPromises);
+
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
     if (teams && teams.length > 0) {
-      teams.forEach(async (team) => {
+      const completion: Promise<void>[] = teams.map(async (team) => {
         const slackMsg =
           `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
           `for the ${project.wbsElement.name} project`;
         await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
       });
+
+      await Promise.all(completion);
     }
 
-    return createdCR.crId;
+    const finishedCR = await prisma.change_Request.findUnique({
+      where: { crId: createdCR.crId },
+      ...changeRequestQueryArgs
+    });
+
+    return changeRequestTransformer(finishedCR!) as StandardChangeRequest;
   }
 
   /**
@@ -609,7 +643,7 @@ export default class ChangeRequestsService {
     description: string,
     timelineImpact: number,
     scopeImpact: string
-  ): Promise<string> {
+  ): Promise<ProposedSolution> {
     // verify user is allowed to add proposed solutions
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('add proposed solutions');
 
@@ -635,10 +669,11 @@ export default class ChangeRequestsService {
         budgetImpact,
         changeRequest: { connect: { scopeCrId: foundScopeCR.scopeCrId } },
         createdBy: { connect: { userId: submitter.userId } }
-      }
+      },
+      include: { createdBy: true }
     });
 
-    return createProposedSolution.proposedSolutionId;
+    return { ...createProposedSolution, id: createProposedSolution.proposedSolutionId };
   }
 
   /**
@@ -709,11 +744,15 @@ export default class ChangeRequestsService {
 
     if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);
 
+    const oldRequestedReviewersIds = foundCR.requestedReviewers.map((reviewer) => reviewer.userId);
+
     const reviewerIds = reviewers.map((reviewer) => {
       return {
         userId: reviewer.userId
       };
     });
+
+    const newReviewers = reviewers.filter((user) => !oldRequestedReviewersIds.includes(user.userId));
 
     await prisma.change_Request.update({
       where: { crId },
@@ -725,7 +764,7 @@ export default class ChangeRequestsService {
     });
 
     // send slack message to CR reviewers
-    reviewers.forEach(async (user) => {
+    newReviewers.forEach(async (user) => {
       await sendSlackRequestedReviewNotification(user.userSettings!.slackId, changeRequestTransformer(foundCR));
     });
   }

@@ -10,7 +10,7 @@ import {
 } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
-import { AccessDeniedException, NotFoundException } from '../src/utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import userTransformer from '../src/transformers/user.transformer';
 
 describe('Users', () => {
@@ -106,6 +106,7 @@ describe('Users', () => {
     });
 
     test('setUserSecureSettings works', async () => {
+      vi.spyOn(prisma.user_Secure_Settings, 'findFirst').mockResolvedValue(null);
       vi.spyOn(prisma.user_Secure_Settings, 'upsert').mockResolvedValue(batmanSecureSettings);
       const res = await UsersService.setUserSecureSettings(
         batman,
@@ -118,6 +119,21 @@ describe('Users', () => {
       );
 
       expect(res).toBe(batmanSecureSettings.userSecureSettingsId);
+    });
+
+    test('setting same phone number does not work', async () => {
+      vi.spyOn(prisma.user_Secure_Settings, 'findFirst').mockResolvedValue(batmanSecureSettings);
+      await expect(() =>
+        UsersService.setUserSecureSettings(
+          batman,
+          batmanSecureSettings.nuid,
+          batmanSecureSettings.street,
+          batmanSecureSettings.city,
+          batmanSecureSettings.state,
+          batmanSecureSettings.zipcode,
+          batmanSecureSettings.phoneNumber
+        )
+      ).rejects.toThrow(new HttpException(400, 'Phone number already in use'));
     });
   });
 });
