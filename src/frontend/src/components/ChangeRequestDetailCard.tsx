@@ -14,18 +14,15 @@ import { Link as RouterLink } from 'react-router-dom';
 import { fullNamePipe } from '../utils/pipes';
 import { ChangeRequestTypeTextPipe, ChangeRequestStatusTextPipe } from '../utils/enum-pipes';
 
-// Might not be the best way to do this. Open for suggestions.
 const determineChangeRequestTypeView = (cr: ChangeRequest) => {
-  switch (cr.type) {
-    case ChangeRequestType.Activation: // could just be done in an if with && let me know your thoughts
-    case ChangeRequestType.StageGate:
-      return cr.status === ChangeRequestStatus.Implemented ? (
-        <ImplementedCardDetails cr={cr} />
-      ) : (
-        <StageGateActivationCardDetails cr={cr} />
-      );
-    default:
-      return <StandardCardDetails cr={cr as StandardChangeRequest} />;
+  if (cr.type === ChangeRequestType.Activation || cr.type === ChangeRequestType.StageGate) {
+    return cr.status === ChangeRequestStatus.Implemented ? (
+      <ImplementedCardDetails cr={cr} />
+    ) : (
+      <StageGateActivationCardDetails cr={cr} />
+    );
+  } else {
+    return <StandardCardDetails cr={cr as StandardChangeRequest} />;
   }
 };
 
