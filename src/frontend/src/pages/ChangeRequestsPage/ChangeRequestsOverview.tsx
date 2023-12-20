@@ -107,24 +107,28 @@ const ChangeRequestsOverview: React.FC = () => {
     </Box>
   );
 
+  const renderChangeRequests = (title: string, crList: ChangeRequest[], emptyMessage: string) => {
+    return (
+      <>
+        <Typography variant="h5" gutterBottom>
+          {title}
+        </Typography>
+        {crList.length > 0 ? (
+          <Grid container>{displayCRCards(crList)}</Grid>
+        ) : (
+          <Typography variant="subtitle2" gutterBottom>
+            {emptyMessage}
+          </Typography>
+        )}
+      </>
+    );
+  };
+
   return (
     <Box>
-      {showToReview && (
-        <>
-          <Typography variant="h5" gutterBottom>
-            To Review
-          </Typography>
-          <Grid container>{displayCRCards(crToReview)}</Grid>
-        </>
-      )}
-      <Typography variant="h5" gutterBottom>
-        My Un-reviewed Change Requests
-      </Typography>
-      <Grid container>{displayCRCards(crUnreviewed)}</Grid>
-      <Typography variant="h5" gutterBottom>
-        My Recently Approved Change Requests
-      </Typography>
-      <Grid container>{displayCRCards(crApproved)}</Grid>
+      {showToReview && renderChangeRequests('To Review', crToReview, 'No change requests to review')}
+      {renderChangeRequests('My Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
+      {renderChangeRequests('My Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
     </Box>
   );
 };
