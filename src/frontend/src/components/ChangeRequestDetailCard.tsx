@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Card, CardContent, Grid, Hidden, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { green, blue, red, grey, purple } from '@mui/material/colors';
 import { Box, Stack } from '@mui/system';
