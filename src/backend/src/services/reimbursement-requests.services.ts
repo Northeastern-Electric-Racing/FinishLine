@@ -10,17 +10,20 @@ import {
   ClubAccount,
   ExpenseType,
   Reimbursement,
-  ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
   ReimbursementStatusType,
   Vendor,
   isAdmin,
   isGuest,
-  isHead
+  isHead,
+  WbsReimbursementProductCreateArgs,
+  OtherReimbursementProductCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  isUserAdminOrOnFinance,
+  createReimbursementProducts,
   isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
   updateReimbursementProducts,
@@ -111,7 +114,8 @@ export default class ReimbursementRequestService {
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
-    reimbursementProducts: ReimbursementProductCreateArgs[],
+    otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+    wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     expenseTypeId: string,
     totalCost: number
   ): Promise<Reimbursement_Request> {
@@ -137,7 +141,10 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
 
-    const validatedReimbursementProudcts = await validateReimbursementProducts(reimbursementProducts);
+    const validatedReimbursementProducts = await validateReimbursementProducts(
+      otherReimbursementProducts,
+      wbsReimbursementProducts
+    );
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
@@ -152,20 +159,15 @@ export default class ReimbursementRequestService {
             type: ReimbursementStatusType.PENDING_FINANCE,
             userId: recipient.userId
           }
-        },
-        reimbursementProducts: {
-          createMany: {
-            data: validatedReimbursementProudcts.map((reimbursementProductInfo) => {
-              return {
-                name: reimbursementProductInfo.name,
-                cost: reimbursementProductInfo.cost,
-                wbsElementId: reimbursementProductInfo.wbsElementId
-              };
-            })
-          }
         }
       }
     });
+
+    await createReimbursementProducts(
+      validatedReimbursementProducts.validatedOtherReimbursementProducts,
+      validatedReimbursementProducts.validatedWbsReimbursementProducts,
+      createdReimbursementRequest.reimbursementRequestId
+    );
 
     return createdReimbursementRequest;
   }
@@ -243,7 +245,8 @@ export default class ReimbursementRequestService {
     account: ClubAccount,
     expenseTypeId: string,
     totalCost: number,
-    reimbursementProducts: ReimbursementProductCreateArgs[],
+    otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
+    wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User
   ): Promise<Reimbursement_Request> {
@@ -277,7 +280,8 @@ export default class ReimbursementRequestService {
 
     await updateReimbursementProducts(
       oldReimbursementRequest.reimbursementProducts,
-      reimbursementProducts,
+      otherReimbursementProducts,
+      wbsReimbursementProducts,
       oldReimbursementRequest.reimbursementRequestId
     );
 
@@ -690,6 +694,10 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'This reimbursement request has already been approved');
     }
 
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: ReimbursementStatusType.SABO_SUBMITTED,
@@ -763,5 +771,30 @@ export default class ReimbursementRequestService {
 
     if (!fileData) throw new NotFoundException('Image File', fileId);
     return fileData;
+  }
+
+  /**
+   * Edits the vendor name
+   *
+   * @param name the new vendor name
+   * @param vendorId the requested vendor to be edited
+   * @param submitter the user editing the vendor name
+   * @returns the updated vendor
+   */
+  static async editVendors(name: string, vendorId: string, submitter: User) {
+    await isUserAdminOrOnFinance(submitter);
+
+    const vendorUniqueName = await prisma.vendor.findUnique({
+      where: { name }
+    });
+
+    if (!!vendorUniqueName) throw new HttpException(400, 'vendor name already exists');
+
+    const vendor = await prisma.vendor.update({
+      where: { vendorId },
+      data: { name }
+    });
+
+    return vendorTransformer(vendor);
   }
 }

@@ -1,7 +1,16 @@
 import { WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { WbsElementStatus } from 'shared';
-import { NotFoundException } from './errors.utils';
+import { LinkCreateArgs, WbsElementStatus } from 'shared';
+import { DeletedException, NotFoundException } from './errors.utils';
+import { ChangeCreateArgs, createChange, createListChanges } from './changes.utils';
+import {
+  DescriptionBulletPreview,
+  descriptionBulletToChangeListValue,
+  descriptionBulletsToChangeListValues
+} from './description-bullets.utils';
+import { linkToChangeListValue, updateLinks } from './links.utils';
+import linkQueryArgs from '../prisma-query-args/links.query-args';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -61,6 +70,204 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
   return `${user.firstName} ${user.lastName}`;
 };
 
+// Update a project and create changes together
+export const updateProjectAndCreateChanges = async (
+  projectId: number,
+  crId: number,
+  implementerId: number,
+  name: string,
+  budget: number | null,
+  summary: string,
+  newRules: string[] | null,
+  newGoals: { id: number; detail: string }[] | null,
+  newFeatures: { id: number; detail: string }[] | null,
+  newOtherConstraints: { id: number; detail: string }[] | null,
+  newLinkCreateArgs: LinkCreateArgs[] | null,
+  projectLeadId: number | null,
+  projectManagerId: number | null
+) => {
+  let changesJson: ChangeCreateArgs[] = [];
+
+  const originalProject = await prisma.project.findUnique({
+    where: {
+      projectId
+    },
+    include: {
+      wbsElement: { include: { links: { ...linkQueryArgs } } },
+      goals: true,
+      features: true,
+      otherConstraints: true
+    }
+  });
+
+  // if it doesn't exist we error
+  if (!originalProject) throw new NotFoundException('Project', projectId);
+  if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
+
+  const { wbsElementId } = originalProject;
+
+  const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, implementerId, wbsElementId);
+  const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId);
+  const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);
+  const projectManagerChangeJson = createChange(
+    'project manager',
+    await getUserFullName(originalProject.wbsElement.projectManagerId),
+    await getUserFullName(projectManagerId),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+  const projectLeadChangeJson = createChange(
+    'project lead',
+    await getUserFullName(originalProject.wbsElement.projectLeadId),
+    await getUserFullName(projectLeadId),
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  // Dealing with lists
+  const rulesChangeJson = createListChanges(
+    'rules',
+    originalProject.rules.map((rule) => {
+      return {
+        element: rule,
+        comparator: rule,
+        displayValue: rule
+      };
+    }),
+    newRules
+      ? newRules.map((rule) => {
+          return {
+            element: rule,
+            comparator: rule,
+            displayValue: rule
+          };
+        })
+      : [],
+    crId,
+    implementerId,
+    wbsElementId
+  );
+  if (nameChangeJson !== undefined) changesJson.push(nameChangeJson);
+  if (budgetChangeJson !== undefined) changesJson.push(budgetChangeJson);
+  if (summaryChangeJson !== undefined) changesJson.push(summaryChangeJson);
+  if (projectManagerChangeJson !== undefined) changesJson.push(projectManagerChangeJson);
+  if (projectLeadChangeJson !== undefined) changesJson.push(projectLeadChangeJson);
+
+  const goalsChangeJson = createListChanges(
+    'goals',
+    descriptionBulletsToChangeListValues(originalProject.goals),
+    newGoals ? newGoals.map((goal) => descriptionBulletToChangeListValue(goal)) : [],
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  const featuresChangeJson = createListChanges(
+    'features',
+    descriptionBulletsToChangeListValues(originalProject.features),
+    newFeatures ? newFeatures.map((feature) => descriptionBulletToChangeListValue(feature)) : [],
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  const otherConstraintsChangeJson = createListChanges(
+    'other constraints',
+    descriptionBulletsToChangeListValues(originalProject.otherConstraints),
+    newOtherConstraints ? newOtherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)) : [],
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  const linkChanges = createListChanges(
+    'link',
+    originalProject.wbsElement.links.map(linkToChangeListValue),
+    newLinkCreateArgs ? newLinkCreateArgs.map(linkToChangeListValue) : [],
+    crId,
+    implementerId,
+    wbsElementId
+  );
+
+  changesJson = changesJson
+    .concat(rulesChangeJson.changes)
+    .concat(goalsChangeJson.changes)
+    .concat(featuresChangeJson.changes)
+    .concat(otherConstraintsChangeJson.changes)
+    .concat(linkChanges.changes);
+
+  // update the project with the input fields
+  const updatedProject = await prisma.project.update({
+    where: {
+      wbsElementId
+    },
+    data: {
+      budget: budget ?? undefined,
+      summary,
+      rules: newRules ?? undefined,
+      wbsElement: {
+        update: {
+          name,
+          projectLeadId,
+          projectManagerId
+        }
+      }
+    },
+    ...projectQueryArgs
+  });
+
+  // Update any deleted description bullets to have their date deleted as right now
+  const deletedDescriptionBullets: DescriptionBulletPreview[] = goalsChangeJson.deletedElements
+    .concat(featuresChangeJson.deletedElements)
+    .concat(otherConstraintsChangeJson.deletedElements);
+
+  if (deletedDescriptionBullets.length > 0) {
+    await prisma.description_Bullet.updateMany({
+      where: {
+        descriptionId: {
+          in: deletedDescriptionBullets.map((descriptionBullet) => descriptionBullet.id)
+        }
+      },
+      data: {
+        dateDeleted: new Date()
+      }
+    });
+  }
+
+  await addDescriptionBullets(
+    goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    originalProject.projectId,
+    'projectIdGoals'
+  );
+  await addDescriptionBullets(
+    featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    originalProject.projectId,
+    'projectIdFeatures'
+  );
+  // Add the new other constraints
+  await addDescriptionBullets(
+    otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+    originalProject.projectId,
+    'projectIdOtherConstraints'
+  );
+  // Edit the existing description bullets
+  await editDescriptionBullets(
+    goalsChangeJson.editedElements
+      .concat(featuresChangeJson.editedElements)
+      .concat(otherConstraintsChangeJson.editedElements)
+  );
+
+  // Update links
+  await updateLinks(linkChanges, wbsElementId, implementerId);
+
+  await prisma.change.createMany({
+    data: changesJson
+  });
+
+  return { project: updatedProject, wbsElementId };
+};
 /**
  * Check if given assembly, material type, manufacturer, and unit exist in the app database
  * @param manufacturerName the manufacure of the material to check if it exists

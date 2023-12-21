@@ -29,11 +29,38 @@ export default class ProjectsController {
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);
-      const { crId, carNumber, name, summary, teamId } = req.body;
+      const {
+        name,
+        crId,
+        carNumber,
+        teamIds,
+        budget,
+        summary,
+        projectLeadId,
+        projectManagerId,
+        links,
+        goals,
+        features,
+        otherConstraints,
+        rules
+      } = req.body;
 
-      const createdWbsNumber: WbsNumber = await ProjectsService.createProject(user, crId, carNumber, name, summary, [
-        teamId
-      ]);
+      const createdWbsNumber: WbsNumber = await ProjectsService.createProject(
+        user,
+        crId,
+        carNumber,
+        name,
+        summary,
+        teamIds,
+        budget,
+        links,
+        rules,
+        goals,
+        features,
+        otherConstraints,
+        projectLeadId,
+        projectManagerId
+      );
 
       return res.status(200).json(wbsPipe(createdWbsNumber));
     } catch (error: unknown) {
@@ -317,6 +344,27 @@ export default class ProjectsController {
         pdmFileName
       );
       res.status(200).json(updatedMaterial);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllUnits(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const units = await ProjectsService.getAllUnits(user);
+      res.status(200).json(units);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createUnit(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+      const user = await getCurrentUser(res);
+      const createdUnit = await ProjectsService.createUnit(name, user);
+      res.status(200).json(createdUnit);
     } catch (error: unknown) {
       next(error);
     }

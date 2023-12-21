@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Box, Grid } from '@mui/material';
+import { Typography, Box, Grid, useTheme } from '@mui/material';
 import { ReactElement, ReactNode } from 'react';
 import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
@@ -13,6 +13,7 @@ interface PageTitleProps {
   previousPages: LinkItem[];
   headerRight?: ReactNode;
   tabs?: ReactElement;
+  sticky?: boolean;
 }
 
 /**
@@ -22,22 +23,38 @@ interface PageTitleProps {
  * @param headerRight The button to display on the right side of the page title
  * @param tabs The tabs on the page to display.
  */
-const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs }) => {
+const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs, sticky }) => {
+  const theme = useTheme();
+
   return (
     <>
-      <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
-      <Box sx={{ mb: 2 }}>
+      <Box mb={sticky ? -1 : 0}>
+        <PageBreadcrumbs currentPageTitle={title} previousPages={previousPages} />
+      </Box>
+      <Box
+        mb={2}
+        position={sticky ? 'sticky' : 'initial'}
+        top={65}
+        pt={sticky ? 1 : 0}
+        zIndex={1}
+        bgcolor={theme.palette.background.default}
+      >
         <Grid container>
-          <Grid item xs={6} md={8}>
+          <Grid item xs={6} md={4}>
             <Typography variant="h4" fontSize={30}>
               {title}
             </Typography>
           </Grid>
-          <Grid item xs={6} md={4} textAlign={'right'}>
+          <Grid item xs={0} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+            {tabs}
+          </Grid>
+          <Grid item xs={6} md={4} textAlign={['left', 'right']}>
             {headerRight}
           </Grid>
+          <Grid item xs={12} md={0} justifyContent={'center'} sx={{ display: { xs: 'flex', md: 'none' } }}>
+            {tabs}
+          </Grid>
         </Grid>
-        {tabs && <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>{tabs}</Box>}
       </Box>
     </>
   );

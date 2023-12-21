@@ -1,9 +1,13 @@
 import { Prisma } from '@prisma/client';
 
-const reimbursementProductQueryArgs = Prisma.validator<Prisma.Reimbursement_ProductArgs>()({
+export const reimbursementProductReasonQueryArgs = Prisma.validator<Prisma.Reimbursement_Product_ReasonArgs>()({
   include: {
     wbsElement: true
   }
 });
 
-export default reimbursementProductQueryArgs;
+export const reimbursementProductQueryArgs = Prisma.validator<Prisma.Reimbursement_ProductArgs>()({
+  include: {
+    reimbursementProductReason: { ...reimbursementProductReasonQueryArgs }
+  }
+});

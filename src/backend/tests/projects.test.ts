@@ -13,7 +13,8 @@ import {
   prismaMaterial,
   prismaMaterialType,
   prismaUnit,
-  prismaMaterial2
+  prismaMaterial2,
+  prismaProject2
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -92,16 +93,48 @@ describe('Projects', () => {
     vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
 
     await expect(
-      async () => await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', ['teamId'])
+      async () =>
+        await ProjectsService.createProject(
+          batman,
+          1,
+          2,
+          'name',
+          'summary',
+          ['teamId'],
+          10,
+          [],
+          [],
+          [],
+          [],
+          [],
+          1, //batman
+          2 //superman
+        )
     ).rejects.toThrow(new NotFoundException('Team', 'teamId'));
   });
 
   test('createProject works', async () => {
     mockGetHighestProjectNumber.mockResolvedValue(0);
     vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(prismaWbsElement1);
+    const projectCreateResult = { ...prismaWbsElement1, project: prismaProject2 };
+    vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(projectCreateResult);
 
-    const res = await ProjectsService.createProject(batman, 1, 2, 'name', 'summary', []);
+    const res = await ProjectsService.createProject(
+      batman,
+      1,
+      2,
+      'name',
+      'summary',
+      [],
+      10,
+      [],
+      [],
+      [],
+      [],
+      [],
+      1, //batman
+      2 //superman
+    );
 
     expect(res).toStrictEqual({
       carNumber: prismaWbsElement1.carNumber,
@@ -247,7 +280,6 @@ describe('Projects', () => {
 
     test('fails when project has been deleted', async () => {
       const deletedWbsElement = { ...prismaProject1.wbsElement, dateDeleted: new Date() };
-      // console.log(wbsElement);
       vi.spyOn(prisma.project, 'findFirst').mockResolvedValue({ ...prismaProject1, wbsElement: deletedWbsElement } as any);
 
       const query = '1.1.0';
@@ -343,7 +375,7 @@ describe('Projects', () => {
             },
             'file.txt'
           )
-      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly!`));
+      ).rejects.toThrow(new HttpException(400, `a1 already exists as an assembly on this project!`));
     });
 
     test('createAssembly fails when no permissions', async () => {
@@ -640,7 +672,7 @@ describe('Projects', () => {
       const manufacturer = await ProjectsService.createManufacturer(batman, 'Manufacturer1');
 
       expect(manufacturer.name).toBe(prismaManufacturer1.name);
-      expect(manufacturer.creatorId).toBe(prismaManufacturer1.creatorId);
+      expect(manufacturer.userCreatedId).toBe(prismaManufacturer1.userCreatedId);
     });
 
     test('deleteManufacturer works', async () => {

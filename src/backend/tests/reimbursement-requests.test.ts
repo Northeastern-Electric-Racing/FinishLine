@@ -22,7 +22,8 @@ import {
   prismaGiveMeMyMoney4,
   prismaGiveMeMyMoney5,
   prismaReimbursementStatus,
-  sharedGiveMeMyMoney
+  sharedGiveMeMyMoney,
+  KFC
 } from './test-data/reimbursement-requests.test-data';
 import {
   alfred,
@@ -225,6 +226,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -246,6 +248,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           batman
         )
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
@@ -263,6 +266,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           superman
         )
       ).rejects.toThrow(new AccessDeniedException('Only the creator or finance team can edit a reimbursement request'));
@@ -278,6 +282,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
+          [],
           [],
           [],
           alfred
@@ -299,6 +304,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.totalCost,
           [],
           [],
+          [],
           batman
         )
       ).rejects.toThrow(new NotFoundException('Vendor', GiveMeMyMoney.vendorId));
@@ -317,6 +323,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
+          [],
           [],
           [],
           batman
@@ -341,12 +348,13 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.account as ClubAccount,
           GiveMeMyMoney.expenseTypeId,
           GiveMeMyMoney.totalCost,
+          [],
           [
             {
               id: '1',
               name: 'test',
               cost: 1,
-              wbsNum: {
+              reason: {
                 carNumber: 1,
                 projectNumber: 1,
                 workPackageNumber: 1
@@ -375,12 +383,13 @@ describe('Reimbursement Requests', () => {
         GiveMeMyMoney.account as ClubAccount,
         GiveMeMyMoney.expenseTypeId,
         GiveMeMyMoney.totalCost,
+        [],
         [
           {
             id: '1',
             name: 'test',
             cost: 1,
-            wbsNum: {
+            reason: {
               carNumber: 1,
               projectNumber: 1,
               workPackageNumber: 1
@@ -748,6 +757,31 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
+    });
+  });
+
+  describe('Edit Vendor Tests', () => {
+    test('Throws error if user isnt an admin or lead/head of the finance', async () => {
+      await expect(
+        ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
+      ).rejects.toThrow(new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors'));
+    });
+
+    test('Throws error if the vendor name already exists', async () => {
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
+      await expect(ReimbursementRequestService.editVendors('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
+        new HttpException(400, 'vendor name already exists')
+      );
+    });
+
+    test('Successfuly changes Vendors name', async () => {
+      vi.spyOn(prisma.vendor, 'update').mockResolvedValue(KFC);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
+
+      const vendor = await ReimbursementRequestService.editVendors('kfc', PopEyes.vendorId, batman);
+
+      expect(vendor.name).toBe('kfc');
+      expect(prisma.vendor.update).toBeCalledTimes(1);
     });
   });
 });

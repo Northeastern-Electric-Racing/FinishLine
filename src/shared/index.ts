@@ -18,3 +18,4 @@ export * from './src/backend-supports/project-supports';
 export * from './src/word-count';
 
 export * from './src/permission-utils';
+export * from './src/types/bom-types';
