@@ -30,7 +30,6 @@ import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
-import InfoBlock from '../../components/InfoBlock';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
