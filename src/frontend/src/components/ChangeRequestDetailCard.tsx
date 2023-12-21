@@ -8,25 +8,19 @@ import Chip from '@mui/material/Chip';
 import { green, blue, red, grey, purple } from '@mui/material/colors';
 import { Box, Stack } from '@mui/system';
 import { Link } from '@mui/material';
-import { ChangeRequest, ChangeRequestStatus, ChangeRequestType, StandardChangeRequest, wbsPipe } from 'shared';
+import {
+  ActivationChangeRequest,
+  ChangeRequest,
+  ChangeRequestStatus,
+  ChangeRequestType,
+  StandardChangeRequest,
+  wbsPipe
+} from 'shared';
 import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { fullNamePipe } from '../utils/pipes';
 import { ChangeRequestTypeTextPipe, ChangeRequestStatusTextPipe } from '../utils/enum-pipes';
 
-const determineChangeRequestTypeView = (cr: ChangeRequest) => {
-  if (cr.type === ChangeRequestType.Activation || cr.type === ChangeRequestType.StageGate) {
-    return cr.status === ChangeRequestStatus.Implemented ? (
-      <ImplementedCardDetails cr={cr} />
-    ) : (
-      <StageGateActivationCardDetails cr={cr} />
-    );
-  } else {
-    return <StandardCardDetails cr={cr as StandardChangeRequest} />;
-  }
-};
-
-// should I use object mapping instead of switch statements?
 const determineChangeRequestStatusPillColor = (status: ChangeRequestStatus) => {
   switch (status) {
     case ChangeRequestStatus.Implemented:
@@ -42,89 +36,6 @@ const determineChangeRequestStatusPillColor = (status: ChangeRequestStatus) => {
   }
 };
 
-// same for here ^^
-const determineChangeRequestTypeDesc = (type: ChangeRequestType) => {
-  switch (type) {
-    case ChangeRequestType.StageGate:
-      return 'Stage Gate';
-    case ChangeRequestType.Activation:
-      return 'Activate';
-    default:
-      return 'Other';
-  }
-};
-
-// return the review notes for a change request if there are any otherwise display No notes
-const ImplementedCardDetails = ({ cr }: { cr: ChangeRequest }) => {
-  const theme = useTheme();
-  return (
-    <Box
-      sx={{
-        backgroundColor: theme.palette.divider,
-        width: '100%',
-        height: 75,
-        borderRadius: 1,
-        padding: 1,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
-      }}
-    >
-      <Typography variant="body1" fontSize={14}>
-        {cr.reviewNotes ? cr.reviewNotes : 'No review notes'}
-      </Typography>
-    </Box>
-  );
-};
-
-// could possibly abstract these as the contents are the only difference
-// non implemented change requests that are of stage gat and activation type
-const StageGateActivationCardDetails = ({ cr }: { cr: ChangeRequest }) => {
-  const theme = useTheme();
-  const descriptionType = determineChangeRequestTypeDesc(cr.type);
-  return (
-    <Box
-      sx={{
-        backgroundColor: theme.palette.divider,
-        width: '100%',
-        height: 75,
-        borderRadius: 1,
-        padding: 1,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
-      }}
-    >
-      <Typography variant="body1" fontSize={14}>
-        {descriptionType + ': '}
-        <Link color="inherit" component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(cr.wbsNum)}`}>
-          {wbsPipe(cr.wbsNum)}
-        </Link>
-      </Typography>
-    </Box>
-  );
-};
-
-const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
-  const theme = useTheme();
-  return (
-    <Box
-      sx={{
-        backgroundColor: theme.palette.divider,
-        width: '100%',
-        height: 75,
-        borderRadius: 1,
-        padding: 1,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
-      }}
-    >
-      <Typography variant="body1" fontSize={14}>
-        {cr.what}
-      </Typography>
-    </Box>
-  );
-};
-
-// I can abstract the two pills into one component but I'm not sure if it's worth it since the difference is the label and color
 const ChangeRequestTypePill = ({ type }: { type: ChangeRequestType }) => {
   return (
     <Chip
@@ -158,13 +69,54 @@ const ChangeRequestStatusPill = ({ status }: { status: ChangeRequestStatus }) =>
   );
 };
 
+const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
+  const theme = useTheme();
+  const isAccepted = cr.status === ChangeRequestStatus.Implemented || cr.status === ChangeRequestStatus.Accepted;
+  const isStageGate = cr.type === ChangeRequestType.StageGate;
+  const isActivation = cr.type === ChangeRequestType.Activation;
+  return (
+    <Box
+      sx={{
+        backgroundColor: theme.palette.divider,
+        width: '100%',
+        height: 75,
+        borderRadius: 1,
+        padding: 1,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }}
+    >
+      <Typography variant="body1" fontSize={14}>
+        {isAccepted ? (
+          cr.reviewNotes ? (
+            'Review Notes: ' + cr.reviewNotes
+          ) : (
+            'No review notes'
+          )
+        ) : isActivation ? (
+          <div>
+            <Typography variant="body1" fontSize={14}>
+              Lead: {fullNamePipe((cr as ActivationChangeRequest).projectLead)}
+            </Typography>
+            <Typography variant="body1" fontSize={14}>
+              Manager: {fullNamePipe((cr as ActivationChangeRequest).projectManager)}
+            </Typography>
+          </div>
+        ) : isStageGate ? (
+          'Stage Gate ' + wbsPipe(cr.wbsNum) + ' - ' + cr.wbsName
+        ) : (
+          (cr as StandardChangeRequest).what
+        )}
+      </Typography>
+    </Box>
+  );
+};
+
 interface ChangeRequestDetailCardProps {
   changeRequest: ChangeRequest;
 }
 
-// Convert work package stage into badge for display
 const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
-  const ChangeRequestTypeView = () => determineChangeRequestTypeView(changeRequest);
   return (
     <Card sx={{ width: 325, mr: 2, borderRadius: 3, mb: 2 }}>
       <CardContent>
@@ -180,13 +132,12 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
                 {'Change Request #' + changeRequest.crId}
               </Typography>
             </Link>
-            <Stack direction={'column'}>
+            <Stack direction={'column'} maxWidth={'195px'}>
               <Typography variant="body1" sx={{ mr: 2, fontWeight: 'bold', fontSize: 13 }}>
                 From: {fullNamePipe(changeRequest.submitter)}
               </Typography>
-              <Typography fontWeight={'bold'} variant="h1" fontSize={13} noWrap>
-                WBS:{' '}
-                <Link color={'inherit'} component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+              <Typography fontWeight={'bold'} fontSize={12} noWrap>
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
                   {wbsPipe(changeRequest.wbsNum)} {changeRequest.wbsName}
                 </Link>
               </Typography>
@@ -199,7 +150,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
             </Stack>
           </Grid>
         </Grid>
-        <ChangeRequestTypeView />
+        <CRCardDescription cr={changeRequest} />
       </CardContent>
     </Card>
   );

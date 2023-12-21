@@ -116,9 +116,7 @@ const ChangeRequestsOverview: React.FC = () => {
         {crList.length > 0 ? (
           <Grid container>{displayCRCards(crList)}</Grid>
         ) : (
-          <Typography variant="subtitle2" gutterBottom>
-            {emptyMessage}
-          </Typography>
+          <Typography gutterBottom>{emptyMessage}</Typography>
         )}
       </>
     );
