@@ -20,7 +20,6 @@ import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './StandardDetails';
 import ReviewChangeRequest from './ReviewChangeRequest';
-import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { Grid, Typography, Link } from '@mui/material';
@@ -46,13 +45,11 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
 const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
   if (cr.type !== ChangeRequestType.Activation && cr.type !== ChangeRequestType.StageGate) {
     return (
-      <PageBlock title={'Proposed Solutions'}>
-        <ProposedSolutionsList
-          proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
-          crReviewed={cr.accepted}
-          crId={cr.crId}
-        />
-      </PageBlock>
+      <ProposedSolutionsList
+        proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
+        crReviewed={cr.accepted}
+        crId={cr.crId}
+      />
     );
   } else {
     return <></>;
