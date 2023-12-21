@@ -5,8 +5,8 @@
 
 import { User } from 'shared';
 import { datePipe, emDashPipe, fullNamePipe } from '../../utils/pipes';
-import PageBlock from '../../layouts/PageBlock';
 import { Tooltip, Typography } from '@mui/material';
+import InfoBlock from '../../components/InfoBlock';
 
 interface ReviewNotesProps {
   reviewer?: User;
@@ -16,13 +16,12 @@ interface ReviewNotesProps {
 
 const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
-    <PageBlock
-      title={'Review Notes'}
-      headerRight={
+    <InfoBlock title={'Review Notes'}>
+      <Typography>
         <Tooltip
           id="tooltip"
           arrow
-          placement="left"
+          placement="bottom"
           title={
             <Typography
               sx={{
@@ -33,12 +32,11 @@ const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateRe
             </Typography>
           }
         >
-          <span>{fullNamePipe(reviewer)}</span>
+          <span>{fullNamePipe(reviewer)} — </span>
         </Tooltip>
-      }
-    >
-      {reviewNotes ? reviewNotes : 'There are no review notes for this change request.'}
-    </PageBlock>
+        {reviewNotes ?? 'There are no review notes for this change request.'}
+      </Typography>
+    </InfoBlock>
   );
 };
 
