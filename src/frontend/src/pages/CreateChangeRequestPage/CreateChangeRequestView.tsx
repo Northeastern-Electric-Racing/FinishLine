@@ -199,17 +199,17 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         headerRight={
           <Box textAlign="right" sx={{ mb: 2 }}>
-            <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
+            <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1, width: 90 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1, width: 90, mt: { xs: 1, md: 0 } }}>
               Submit
             </NERSuccessButton>
           </Box>
         }
       >
         <Grid container spacing={2} display="flex" justifyContent="space-between">
-          <Grid container item spacing={2} xs={5} maxHeight={0} sx={{ mt: -5 }}>
+          <Grid container item spacing={2} xs={12} md={6}>
             <Grid item xs={12}>
               <FormLabel>WBS</FormLabel>
               <NERAutocomplete
@@ -308,8 +308,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Button>
             </Grid>
           </Grid>
-          <Grid item xs={1} />
-          <Grid item xs={5} sx={{ mt: -2 }}>
+          <Grid item xs={12} md={5} sx={{ mt: -2 }}>
             <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
           </Grid>
         </Grid>

@@ -60,7 +60,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
             <Typography>{weeksPipe(proposedSolution.timelineImpact)}</Typography>
           </Grid>
           <Grid item>{proposedSolution.approved && <Chip label="Approved" color="success" />}</Grid>
-          {showDeleteButton && onDelete !== undefined ? (
+          {showDeleteButton && onDelete !== undefined && (
             <Grid item>
               <Button
                 color="error"
@@ -72,7 +72,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
                 <DeleteIcon />
               </Button>
             </Grid>
-          ) : null}
+          )}
         </Grid>
       </Grid>
     </Grid>

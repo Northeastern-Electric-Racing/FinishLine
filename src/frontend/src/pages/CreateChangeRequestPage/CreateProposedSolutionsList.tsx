@@ -23,8 +23,6 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   const user = useCurrentUser();
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
 
-  if (!user) return <LoadingIndicator />;
-
   const addProposedSolution = async (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
     setShowEditableForm(false);
