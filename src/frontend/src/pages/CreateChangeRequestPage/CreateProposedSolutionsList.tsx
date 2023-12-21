@@ -8,7 +8,6 @@ import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionFor
 import { useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
 import { Button, Grid, Typography } from '@mui/material';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface CreateProposedSolutionsListProps {
