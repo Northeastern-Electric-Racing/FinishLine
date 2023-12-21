@@ -7,9 +7,11 @@ import { Prisma } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
+  OtherProductReason,
   Receipt,
   Reimbursement,
   ReimbursementProduct,
+  ReimbursementProductReason,
   ReimbursementRequest,
   ReimbursementStatus,
   ReimbursementStatusType,
@@ -18,7 +20,10 @@ import {
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import userTransformer from './user.transformer';
 import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
-import reimbursementProductQueryArgs from '../prisma-query-args/reimbursement-products.query-args';
+import {
+  reimbursementProductReasonQueryArgs,
+  reimbursementProductQueryArgs
+} from '../prisma-query-args/reimbursement-products.query-args';
 import { wbsNumOf } from '../utils/utils';
 import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
@@ -73,9 +78,16 @@ export const reimbursementProductTransformer = (
     name: reimbursementProduct.name,
     dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
     cost: reimbursementProduct.cost,
-    wbsNum: wbsNumOf(reimbursementProduct.wbsElement),
-    wbsName: reimbursementProduct.wbsElement.name
+    reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
   };
+};
+
+const reimbursementProductReasonTransformer = (
+  reason: Prisma.Reimbursement_Product_ReasonGetPayload<typeof reimbursementProductReasonQueryArgs>
+): ReimbursementProductReason => {
+  return reason.wbsElement
+    ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
+    : (reason.otherReason! as OtherProductReason);
 };
 
 export const expenseTypeTransformer = (expenseType: Prisma.Expense_TypeGetPayload<null>): ExpenseType => {

@@ -29,10 +29,20 @@ export default class WorkPackagesController {
     }
   }
 
+  static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNums } = req.body;
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums);
+      res.status(200).json(workPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectWbsNum, name, crId, startDate, duration, blockedBy, expectedActivities, deliverables } = req.body;
+      const { name, crId, startDate, duration, blockedBy, expectedActivities, deliverables } = req.body;
 
       let { stage } = req.body;
       if (stage === 'NONE') {
@@ -43,7 +53,6 @@ export default class WorkPackagesController {
 
       const wbsString: string = await WorkPackagesService.createWorkPackage(
         user,
-        projectWbsNum,
         name,
         crId,
         stage,
@@ -72,8 +81,8 @@ export default class WorkPackagesController {
         blockedBy,
         expectedActivities,
         deliverables,
-        projectLead,
-        projectManager
+        projectLeadId,
+        projectManagerId
       } = req.body;
 
       let { stage } = req.body;
@@ -94,8 +103,8 @@ export default class WorkPackagesController {
         blockedBy,
         expectedActivities,
         deliverables,
-        projectLead,
-        projectManager
+        projectLeadId,
+        projectManagerId
       );
       return res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {

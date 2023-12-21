@@ -4,7 +4,7 @@
  */
 
 import { yellow, green, blue, purple, grey } from '@mui/material/colors';
-import { ChangeRequestType, WorkPackageStage } from 'shared';
+import { ChangeRequestStatus, ChangeRequestType, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
@@ -50,5 +50,18 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
       return 'Issue';
     case ChangeRequestType.Other:
       return 'Other';
+  }
+};
+
+export const ChangeRequestStatusTextPipe: (status: ChangeRequestStatus) => string = (status) => {
+  switch (status) {
+    case ChangeRequestStatus.Implemented:
+      return 'Implemented';
+    case ChangeRequestStatus.Accepted:
+      return 'Accepted';
+    case ChangeRequestStatus.Denied:
+      return 'Denied';
+    case ChangeRequestStatus.Open:
+      return 'Open';
   }
 };

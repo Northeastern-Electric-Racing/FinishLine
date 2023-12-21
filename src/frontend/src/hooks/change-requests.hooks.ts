@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ChangeRequest, ChangeRequestReason, ChangeRequestType, WbsNumber } from 'shared';
+import { ChangeRequest, ChangeRequestReason, ChangeRequestType, ProposedSolutionCreateArgs, WbsNumber } from 'shared';
 import {
   createActivationChangeRequest,
   createStandardChangeRequest,
@@ -87,6 +87,7 @@ export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
   why: { explain: string; type: ChangeRequestReason }[];
+  proposedSolutions: ProposedSolutionCreateArgs[];
 };
 
 /**

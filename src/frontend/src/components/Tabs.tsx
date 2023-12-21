@@ -36,14 +36,10 @@ const NERTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id }: TabProps) => {
   };
 
   return (
-    <Tabs
-      sx={{ borderBottom: 1, borderColor: 'divider' }}
-      value={tabValue}
-      onChange={handleTabChange}
-      aria-label={`${id}-tabs`}
-    >
+    <Tabs value={tabValue} onChange={handleTabChange} aria-label={`${id}-tabs`}>
       {tabsLabels.map((tab, idx) => (
         <Tab
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
           label={tab.tabName}
           aria-label={tab.tabUrlValue}
           value={idx}

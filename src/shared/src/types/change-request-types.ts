@@ -98,3 +98,10 @@ export interface ImplementedChange {
   detail: string;
   dateImplemented: Date;
 }
+
+export interface ProposedSolutionCreateArgs {
+  description: string;
+  scopeImpact: string;
+  budgetImpact: number;
+  timelineImpact: number;
+}

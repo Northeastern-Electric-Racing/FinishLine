@@ -12,7 +12,8 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
   const fiveDaysAgo = subDays(today, 5);
 
   const filteredRequests = changeRequests.filter(
-    (cr) => cr.dateImplemented && cr.accepted && isWithinInterval(cr.dateImplemented, { start: fiveDaysAgo, end: today })
+    (cr) =>
+      cr.accepted && (cr.dateImplemented ? isWithinInterval(cr.dateImplemented, { start: fiveDaysAgo, end: today }) : true)
   );
 
   // The current user's CRs should be at the top
@@ -48,9 +49,13 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
     value: cr.crId
   }));
 
+  const renderValues = new Map<number, string>();
+
+  changeRequests.forEach((cr) => renderValues.set(cr.crId, `${cr.crId} - ${wbsPipe(cr.wbsNum)}`));
+
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-      <FormControl>
+    <Box>
+      <FormControl fullWidth>
         <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
         <Controller
           control={control}
@@ -59,12 +64,12 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
             <Select
               id="cr-autocomplete"
               displayEmpty
-              renderValue={(value) => value}
+              renderValue={(value) => renderValues.get(Number(value))}
               value={value}
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}
               placeholder={'Change Request Id'}
-              sx={{ width: 200, textAlign: 'left' }}
+              sx={{ height: 56, width: '100%', textAlign: 'left' }}
               error={!!errors.crId}
               MenuProps={{
                 anchorOrigin: {
