@@ -46,13 +46,11 @@ const buildDetails = (cr: ChangeRequest): ReactElement => {
 const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
   if (cr.type !== ChangeRequestType.Activation && cr.type !== ChangeRequestType.StageGate) {
     return (
-      <InfoBlock title={'Proposed Solutions'}>
-        <ProposedSolutionsList
-          proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
-          crReviewed={cr.accepted}
-          crId={cr.crId}
-        />
-      </InfoBlock>
+      <ProposedSolutionsList
+        proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
+        crReviewed={cr.accepted}
+        crId={cr.crId}
+      />
     );
   } else {
     return <></>;

@@ -4,7 +4,7 @@
  */
 
 import { ActivationChangeRequest } from 'shared';
-import { booleanPipe, datePipe, fullNamePipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe } from '../../utils/pipes';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import InfoBlock from '../../components/InfoBlock';
@@ -15,34 +15,23 @@ interface ActivationDetailsProps {
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
   return (
-    <InfoBlock title={'Activation Change Request Details'}>
-      <Grid container>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Lead </Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
+    <Grid container>
+      <Grid item xs={6} md={2}>
+        <InfoBlock title={'Project Lead'}>
           <Typography>{fullNamePipe(cr.projectLead)}</Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Start Date </Typography>
-        </Grid>
-        <Grid item xs={6} md={6}>
-          <Typography>{datePipe(cr.startDate)}</Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Manager </Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details </Typography>
-        </Grid>
-        <Grid item xs={6} md={6}>
-          <Typography>{booleanPipe(cr.confirmDetails)}</Typography>
-        </Grid>
+        </InfoBlock>
       </Grid>
-    </InfoBlock>
+      <Grid item xs={6} md={2}>
+        <InfoBlock title={'Project Manager'}>
+          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
+        </InfoBlock>
+      </Grid>
+      <Grid item xs={6} md={2}>
+        <InfoBlock title={'Start Date'}>
+          <Typography>{datePipe(cr.startDate)}</Typography>
+        </InfoBlock>
+      </Grid>
+    </Grid>
   );
 };
 
