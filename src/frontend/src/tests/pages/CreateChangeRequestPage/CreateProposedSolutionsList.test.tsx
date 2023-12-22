@@ -33,7 +33,7 @@ describe('Proposed Solutions List Test Suite', () => {
 
   it('Renders correctly when empty', () => {
     renderComponent();
-    expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
+    expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);
     expect(screen.queryAllByText('Budget Impact').length).toBe(0);
@@ -47,7 +47,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryByText('Budget Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
-    screen.getByText('+ Add Proposed Solution').click();
+    screen.getByText('+ Add Solution').click();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();

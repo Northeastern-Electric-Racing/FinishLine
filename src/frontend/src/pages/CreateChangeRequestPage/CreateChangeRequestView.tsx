@@ -230,11 +230,11 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   rules={{ required: true }}
                   render={({ field: { onChange, value } }) => (
                     <RadioGroup onChange={onChange} value={value}>
-                      <Grid display="flex" flexDirection={{ xs: 'column', md: 'row' }}>
+                      <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} sx={{ gap: 2 }}>
                         {permittedTypes.map((t) => (
                           <NERButton
                             sx={{
-                              mr: { xs: 0, md: 2 },
+                              // mr: { xs: 0, md: 2 },
                               fontSize: { xs: '0.8rem', md: '1rem' },
                               width: { xs: '83%', md: 'auto' }
                             }}
@@ -245,7 +245,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                             {t}
                           </NERButton>
                         ))}
-                      </Grid>
+                      </Box>
                     </RadioGroup>
                   )}
                 />

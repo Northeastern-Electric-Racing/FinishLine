@@ -29,6 +29,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
 }) => {
   const faded = crReviewed != null && proposedSolution.approved === false;
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Grid
@@ -44,10 +45,10 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
       }}
     >
       <Grid container rowSpacing={1}>
-        <Grid item xs={12} sx={{ p: 2, mt: 1, minHeight: 100, borderRadius: 1, bgcolor: '#474848' }}>
+        <Grid item xs={12} sx={{ p: 2, mt: 1, minHeight: 100, borderRadius: 1, bgcolor: isDark ? '#474848' : 'white' }}>
           <DetailDisplay label="Description" content={proposedSolution.description} />
         </Grid>
-        <Grid item xs={12} sx={{ p: 2, mt: 2, minHeight: 100, borderRadius: 1, bgcolor: '#474848' }}>
+        <Grid item xs={12} sx={{ p: 2, mt: 2, minHeight: 100, borderRadius: 1, bgcolor: isDark ? '#474848' : 'white' }}>
           <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
         </Grid>
         <Grid item xs={7} display="flex" sx={{ marginTop: 0.5 }}>

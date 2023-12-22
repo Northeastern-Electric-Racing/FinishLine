@@ -7,8 +7,9 @@ import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
-import { Button, Grid, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { Box } from '@mui/system';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -34,23 +35,14 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   return (
     <>
       {!isGuest(user.role) && (
-        <Grid container columnSpacing={5}>
-          <Grid item>
-            <Typography variant="h5" sx={{ mt: 2 }}>
-              Proposed Solutions
-            </Typography>
-          </Grid>
-          <Grid item>
-            <Button
-              onClick={() => setShowEditableForm(true)}
-              variant="contained"
-              color="success"
-              sx={{ mt: 2, maxHeight: { xs: 105, md: 35 }, height: {} }}
-            >
-              + Add Proposed Solution
-            </Button>
-          </Grid>
-        </Grid>
+        <Box display="flex" justifyContent="space-between">
+          <Typography variant="h5" sx={{ mt: 2 }}>
+            Proposed Solutions
+          </Typography>
+          <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ mt: 2 }}>
+            + Add Solution
+          </Button>
+        </Box>
       )}
       <div style={{ marginTop: '30px' }}>
         {proposedSolutions.map((proposedSolution, i) => (
