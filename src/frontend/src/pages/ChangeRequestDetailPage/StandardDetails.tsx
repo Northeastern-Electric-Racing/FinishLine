@@ -28,7 +28,8 @@ const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetails
         {cr.why.map((ele: ChangeRequestExplanation, idx: number) => (
           <Box key={'CRExplanation' + idx} display="flex">
             <Typography sx={style}>{ele.type + ' '}</Typography>
-            <Typography sx={{ ml: '5px' }}>{' - ' + ele.explain}</Typography>
+            <Typography mx={'10px'}>{' - '}</Typography>
+            <Typography>{ele.explain}</Typography>
           </Box>
         ))}
       </InfoBlock>
