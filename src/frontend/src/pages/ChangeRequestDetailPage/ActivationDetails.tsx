@@ -8,6 +8,9 @@ import { datePipe, fullNamePipe } from '../../utils/pipes';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import InfoBlock from '../../components/InfoBlock';
+import HandymanIcon from '@mui/icons-material/Handyman';
+import WorkIcon from '@mui/icons-material/Work';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
@@ -15,19 +18,19 @@ interface ActivationDetailsProps {
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
   return (
-    <Grid container>
-      <Grid item xs={6} md={2}>
-        <InfoBlock title={'Project Lead'}>
+    <Grid container rowSpacing={'10px'} mb="10px">
+      <Grid item xs={6} md={3}>
+        <InfoBlock title={'Project Lead'} icon={<HandymanIcon />}>
           <Typography>{fullNamePipe(cr.projectLead)}</Typography>
         </InfoBlock>
       </Grid>
-      <Grid item xs={6} md={2}>
-        <InfoBlock title={'Project Manager'}>
+      <Grid item xs={6} md={3}>
+        <InfoBlock title={'Project Manager'} icon={<WorkIcon />}>
           <Typography>{fullNamePipe(cr.projectManager)}</Typography>
         </InfoBlock>
       </Grid>
-      <Grid item xs={6} md={2}>
-        <InfoBlock title={'Start Date'}>
+      <Grid item xs={6} md={3}>
+        <InfoBlock title={'Start Date'} icon={<CalendarTodayIcon />}>
           <Typography>{datePipe(cr.startDate)}</Typography>
         </InfoBlock>
       </Grid>

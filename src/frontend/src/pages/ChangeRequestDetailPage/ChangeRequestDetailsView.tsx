@@ -5,24 +5,16 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  ChangeRequestType,
-  StageGateChangeRequest,
-  StandardChangeRequest,
-  isProject
-} from 'shared';
+import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest, isProject } from 'shared';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
-import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './StandardDetails';
 import ReviewChangeRequest from './ReviewChangeRequest';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
-import { Grid, Typography, Link } from '@mui/material';
+import { Grid, Typography, Link, Box } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -30,32 +22,19 @@ import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
+import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
+import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
     case ChangeRequestType.Activation:
       return <ActivationDetails cr={cr as ActivationChangeRequest} />;
     case ChangeRequestType.StageGate:
-      return <StageGateDetails cr={cr as StageGateChangeRequest} />;
+      return <></>;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
   }
 };
-
-const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
-  if (cr.type !== ChangeRequestType.Activation && cr.type !== ChangeRequestType.StageGate) {
-    return (
-      <ProposedSolutionsList
-        proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
-        crReviewed={cr.accepted}
-        crId={cr.crId}
-      />
-    );
-  } else {
-    return <></>;
-  }
-};
-
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
   isUserAllowedToImplement: boolean;
@@ -90,9 +69,18 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const { name: projectName } = project;
 
+  const isStandard =
+    changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
+
   return (
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
+      chips={
+        <Box display="flex" mx="20px" gap="20px">
+          <ChangeRequestTypePill type={changeRequest.type} />
+          <ChangeRequestStatusPill status={changeRequest.status} />
+        </Box>
+      }
       previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
       headerRight={
         <ChangeRequestActionMenu
@@ -124,24 +112,30 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           </Grid>
         </Grid>
         <Grid container rowSpacing={2} columnSpacing={2}>
-          <Grid item xs={12}>
+          <Grid container item xs={isStandard ? 7 : 12}>
             {buildDetails(changeRequest)}
+            <Grid item md={isStandard ? 12 : 5}>
+              <ReviewNotes
+                reviewer={changeRequest.reviewer}
+                reviewNotes={changeRequest.reviewNotes}
+                dateReviewed={changeRequest.dateReviewed}
+              />
+            </Grid>
+            <Grid item md={isStandard ? 12 : 6}>
+              <ImplementedChangesList
+                changes={changeRequest.implementedChanges || []}
+                overallDateImplemented={changeRequest.dateImplemented}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12}>
-            {buildProposedSolutions(changeRequest)}
-          </Grid>
-          <Grid item md={5}>
-            <ReviewNotes
-              reviewer={changeRequest.reviewer}
-              reviewNotes={changeRequest.reviewNotes}
-              dateReviewed={changeRequest.dateReviewed}
-            />
-          </Grid>
-          <Grid item md={6}>
-            <ImplementedChangesList
-              changes={changeRequest.implementedChanges || []}
-              overallDateImplemented={changeRequest.dateImplemented}
-            />
+          <Grid item xs={isStandard ? 5 : 0}>
+            {isStandard && (
+              <ProposedSolutionsList
+                proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
+                crReviewed={changeRequest.accepted}
+                crId={changeRequest.crId}
+              />
+            )}
           </Grid>
         </Grid>
       </Grid>
