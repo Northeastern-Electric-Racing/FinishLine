@@ -56,7 +56,7 @@ describe('Proposed Solutions List Test Suite', () => {
 
   it('Renders correctly when not empty and CR is not reviewed', () => {
     renderComponent(exampleProposedSolutions);
-    expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
+    expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.getAllByText(/Description/).length).toBe(2);
     expect(screen.getAllByText(/Budget Impact/).length).toBe(2);
     expect(screen.getAllByText(/Timeline Impact/).length).toBe(2);
@@ -72,7 +72,7 @@ describe('Proposed Solutions List Test Suite', () => {
 
   it('Renders correctly when empty and CR is not reviewed', () => {
     renderComponent();
-    expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
+    expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);
     expect(screen.queryAllByText('Budget Impact').length).toBe(0);
@@ -94,7 +94,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryByText('Budget Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
-    screen.getByText('+ Add Proposed Solution').click();
+    screen.getByText('+ Add Solution').click();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();
@@ -104,11 +104,11 @@ describe('Proposed Solutions List Test Suite', () => {
 
   it('Renders correctly when not empty and CR is reviewed', () => {
     renderComponent(exampleProposedSolutions, true);
-    expect(screen.queryByText('+ Add Proposed Solution')).not.toBeInTheDocument();
+    expect(screen.queryByText('+ Add Solution')).not.toBeInTheDocument();
   });
 
   it('Renders correctly when empty and CR is reviewed', () => {
     renderComponent([], false);
-    expect(screen.queryByText('+ Add Proposed Solution')).not.toBeInTheDocument();
+    expect(screen.queryByText('+ Add Solution')).not.toBeInTheDocument();
   });
 });
