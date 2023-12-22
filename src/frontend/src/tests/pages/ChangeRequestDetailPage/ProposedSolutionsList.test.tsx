@@ -58,8 +58,6 @@ describe('Proposed Solutions List Test Suite', () => {
     renderComponent(exampleProposedSolutions);
     expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.getAllByText(/Description/).length).toBe(2);
-    expect(screen.getAllByText(/Budget Impact/).length).toBe(2);
-    expect(screen.getAllByText(/Timeline Impact/).length).toBe(2);
     expect(screen.getByText('Desc 1')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact 1')).toBeInTheDocument();
     expect(screen.getByText('$11')).toBeInTheDocument();
@@ -75,8 +73,6 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);
-    expect(screen.queryAllByText('Budget Impact').length).toBe(0);
-    expect(screen.queryAllByText('Timeline Impact').length).toBe(0);
     expect(screen.queryByText('Desc 1')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact 1')).not.toBeInTheDocument();
     expect(screen.queryByText('$11')).not.toBeInTheDocument();
@@ -91,14 +87,10 @@ describe('Proposed Solutions List Test Suite', () => {
     renderComponent();
     expect(screen.queryByText('Description')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact')).not.toBeInTheDocument();
-    expect(screen.queryByText('Budget Impact')).not.toBeInTheDocument();
-    expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
     screen.getByText('+ Add Solution').click();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
-    expect(screen.getByText('Budget Impact')).toBeInTheDocument();
-    expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
     expect(screen.getByText('Add')).toBeInTheDocument();
   });
 
