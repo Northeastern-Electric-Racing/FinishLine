@@ -7,9 +7,9 @@ import { render, routerWrapperBuilder, screen } from '../../test-support/test-ut
 import ProposedSolutionsList from '../../../pages/ChangeRequestDetailPage/ProposedSolutionsList';
 import { ProposedSolution } from 'shared';
 import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
-import * as authHooks from '../../../hooks/auth.hooks';
-import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
+import AppContextUser from '../../../app/AppContextUser';
+import * as userHooks from '../../../hooks/users.hooks';
 
 const exampleProposedSolution1: ProposedSolution = {
   id: '1',
@@ -41,17 +41,19 @@ const exampleProposedSolutions = [exampleProposedSolution1, exampleProposedSolut
 const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed: boolean | undefined = undefined) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <RouterWrapper>
-      <ToastProvider>
-        <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />{' '}
-      </ToastProvider>
-    </RouterWrapper>
+    <AppContextUser>
+      <RouterWrapper>
+        <ToastProvider>
+          <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />{' '}
+        </ToastProvider>
+      </RouterWrapper>
+    </AppContextUser>
   );
 };
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
   });
 
   it('Renders correctly when not empty and CR is not reviewed', () => {

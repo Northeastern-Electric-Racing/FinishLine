@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { useCreateProposeSolution } from '../../hooks/change-requests.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useAuth } from '../../hooks/auth.hooks';
 import { Box, Button, Chip, Grid, Typography, useTheme } from '@mui/material';
 import { useToast } from '../../hooks/toasts.hooks';
 import DetailDisplay from '../../components/DetailDisplay';
