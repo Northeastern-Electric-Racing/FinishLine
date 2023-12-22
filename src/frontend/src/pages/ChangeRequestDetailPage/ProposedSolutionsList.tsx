@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ProposedSolution } from 'shared';
+import { ProposedSolution, isGuest } from 'shared';
 import ProposedSolutionForm from './ProposedSolutionForm';
 import { useState } from 'react';
 import { useCreateProposeSolution } from '../../hooks/change-requests.hooks';
@@ -16,6 +16,7 @@ import DetailDisplay from '../../components/DetailDisplay';
 import { weeksPipe } from '../../utils/pipes';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -25,15 +26,15 @@ interface ProposedSolutionsListProps {
 
 const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedSolutions, crReviewed, crId }) => {
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
-  const auth = useAuth();
+  const user = useCurrentUser();
   const { isLoading, isError, error, mutateAsync } = useCreateProposeSolution();
   const toast = useToast();
   const theme = useTheme();
 
-  if (isLoading || !auth.user) return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const { userId } = auth.user;
+  const { userId } = user;
 
   const addProposedSolution = async (data: ProposedSolution) => {
     setShowEditableForm(false);
@@ -66,14 +67,16 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
       ) : null}
       <Box display="flex" justifyContent="space-between" mb="10px">
         <Typography variant="h5">Proposed Solutions</Typography>
-        <Button
-          onClick={() => setShowEditableForm(true)}
-          variant="contained"
-          color="success"
-          sx={{ maxHeight: { xs: 105, md: 35 }, height: {} }}
-        >
-          + Add Solution
-        </Button>
+        {crReviewed === undefined && !isGuest(user.role) && (
+          <Button
+            onClick={() => setShowEditableForm(true)}
+            variant="contained"
+            color="success"
+            sx={{ maxHeight: { xs: 105, md: 35 }, height: {} }}
+          >
+            + Add Solution
+          </Button>
+        )}
       </Box>
       {proposedSolutions.map((proposedSolution) => (
         <Grid
