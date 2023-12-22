@@ -14,7 +14,6 @@ import { fullNamePipe } from '../../utils/pipes';
 
 interface OtherChangeRequestsPopupTabsProps {
   changeRequest: ChangeRequest;
-  fromSubmitter: boolean;
 }
 
 const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> = ({
