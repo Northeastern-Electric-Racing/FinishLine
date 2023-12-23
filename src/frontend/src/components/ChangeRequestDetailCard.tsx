@@ -3,96 +3,62 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Card, CardContent, Grid, Typography } from '@mui/material';
-import Chip from '@mui/material/Chip';
-import { green, blue, red, grey, orange } from '@mui/material/colors';
+import { Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Link } from '@mui/material';
 import {
   ActivationChangeRequest,
   ChangeRequest,
+  ChangeRequestStatus,
   ChangeRequestType,
-  StageGateChangeRequest,
   StandardChangeRequest,
   wbsPipe
 } from 'shared';
 import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
-import { datePipe, fullNamePipe } from '../utils/pipes';
-import { Cancel, Construction, DateRange, Description, DoneAll, Person, Start, Work } from '@mui/icons-material';
-import { ChangeRequestTypeTextPipe } from '../utils/enum-pipes';
+import { fullNamePipe } from '../utils/pipes';
+import ChangeRequestTypePill from './ChangeRequestTypePill';
+import ChangeRequestStatusPill from './ChangeRequestStatusPill';
 
-const determineChangeRequestTypeView = (cr: ChangeRequest) => {
-  switch (cr.type) {
-    case 'STAGE_GATE':
-      return <StageGateCardDetails cr={cr as StageGateChangeRequest} />;
-    case 'ACTIVATION':
-      return <ActivationCardDetails cr={cr as ActivationChangeRequest} />;
-    default:
-      return <StandardCardDetails cr={cr as StandardChangeRequest} />;
-  }
-};
-
-const determineChangeRequestPillColor = (type: ChangeRequestType) => {
-  switch (type) {
-    case 'STAGE_GATE':
-      return orange[900];
-    case 'ACTIVATION':
-      return green[600];
-    case 'DEFINITION_CHANGE':
-      return blue[600];
-    case 'ISSUE':
-      return red[400];
-    default:
-      return grey[500];
-  }
-};
-
-const StandardCardDetails = ({ cr }: { cr: StandardChangeRequest }) => {
+const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
+  const theme = useTheme();
+  const isAccepted = cr.status === ChangeRequestStatus.Implemented || cr.status === ChangeRequestStatus.Accepted;
+  const isStageGate = cr.type === ChangeRequestType.StageGate;
+  const isActivation = cr.type === ChangeRequestType.Activation;
   return (
-    <Grid container mt={1} ml={'2px'}>
-      <Grid item>
-        <Description sx={{ ml: '-4px' }} display={'inline'} />
-      </Grid>
-      <Grid item xs>
-        <Typography ml={'4px'} display={'inline'}>
-          {cr.what}
-        </Typography>
-      </Grid>
-    </Grid>
-  );
-};
-
-const StageGateCardDetails = ({ cr }: { cr: StageGateChangeRequest }) => {
-  return (
-    <Box ml={-1}>
-      {cr.confirmDone ? (
-        <Chip icon={<DoneAll />} label={'Done'} sx={{ backgroundColor: 'transparent' }} />
-      ) : (
-        <Chip icon={<Cancel />} label={'Not Done'} sx={{ backgroundColor: 'transparent' }} />
-      )}
-    </Box>
-  );
-};
-
-const ActivationCardDetails = ({ cr }: { cr: ActivationChangeRequest }) => {
-  return (
-    <Box>
-      <Stack direction="row">
-        <Chip
-          icon={<Construction />}
-          label={fullNamePipe(cr.projectLead)}
-          sx={{ backgroundColor: 'transparent', mr: 2, ml: -1, maxWidth: '150' }}
-        />
-        <Chip
-          icon={<Work />}
-          label={fullNamePipe(cr.projectManager)}
-          sx={{ backgroundColor: 'transparent', maxWidth: '150' }}
-        />
-      </Stack>
-      <Stack direction="row" justifyContent={'space-between'}>
-        <Chip icon={<Start />} label={datePipe(cr.startDate)} sx={{ backgroundColor: 'transparent', ml: -1 }} />
-      </Stack>
+    <Box
+      sx={{
+        backgroundColor: theme.palette.divider,
+        width: '100%',
+        height: 75,
+        borderRadius: 1,
+        padding: 1,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }}
+    >
+      <Typography variant="body1" fontSize={14}>
+        {isAccepted ? (
+          cr.reviewNotes ? (
+            'Review Notes: ' + cr.reviewNotes
+          ) : (
+            'No review notes'
+          )
+        ) : isActivation ? (
+          <div>
+            <Typography variant="body1" fontSize={14}>
+              Lead: {fullNamePipe((cr as ActivationChangeRequest).projectLead)}
+            </Typography>
+            <Typography variant="body1" fontSize={14}>
+              Manager: {fullNamePipe((cr as ActivationChangeRequest).projectManager)}
+            </Typography>
+          </div>
+        ) : isStageGate ? (
+          'Stage Gate ' + wbsPipe(cr.wbsNum) + ' - ' + cr.wbsName
+        ) : (
+          (cr as StandardChangeRequest).what
+        )}
+      </Typography>
     </Box>
   );
 };
@@ -101,49 +67,41 @@ interface ChangeRequestDetailCardProps {
   changeRequest: ChangeRequest;
 }
 
-// Convert work package stage into badge for display
 const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
-  const ChangeRequestTypeView = () => determineChangeRequestTypeView(changeRequest);
-  const pillColor = determineChangeRequestPillColor(changeRequest.type);
   return (
-    <Card sx={{ width: 300, mr: 1, mb: 1, borderRadius: 5 }}>
+    <Card sx={{ minWidth: 325, maxWidth: 325, mr: 2, borderRadius: 3, mb: 2 }}>
       <CardContent>
-        <Grid container justifyContent="space-between" alignItems="center">
-          <Grid item>
-            <Link component={RouterLink} to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`} noWrap>
+        <Grid container justifyContent="space-between" alignItems="flex-start">
+          <Grid item xs mb={1} mt={-1.5}>
+            <Link
+              underline={'none'}
+              color={'inherit'}
+              component={RouterLink}
+              to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`}
+            >
               <Typography variant="h6" sx={{ mb: 0.5 }}>
-                {'CR #' + changeRequest.crId}
+                {'Change Request #' + changeRequest.crId}
               </Typography>
             </Link>
+            <Stack direction={'column'} maxWidth={'195px'}>
+              <Typography variant="body1" sx={{ mr: 2, fontWeight: 'bold', fontSize: 13 }}>
+                From: {fullNamePipe(changeRequest.submitter)}
+              </Typography>
+              <Typography fontWeight={'bold'} fontSize={12} noWrap>
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                  {wbsPipe(changeRequest.wbsNum)} {changeRequest.wbsName}
+                </Link>
+              </Typography>
+            </Stack>
           </Grid>
-          <Grid item display="flex" justifyContent="flex-end">
-            <Chip
-              size="small"
-              label={ChangeRequestTypeTextPipe(changeRequest.type)}
-              variant="outlined"
-              sx={{
-                fontSize: 12,
-                color: pillColor,
-                borderColor: pillColor,
-                mb: 0.5
-              }}
-            />
+          <Grid item xs="auto" mb={1}>
+            <Stack direction={'column'} spacing={1}>
+              <ChangeRequestTypePill type={changeRequest.type} />
+              <ChangeRequestStatusPill status={changeRequest.status} />
+            </Stack>
           </Grid>
         </Grid>
-        <Stack direction="row">
-          <Chip
-            icon={<Person />}
-            label={fullNamePipe(changeRequest.submitter)}
-            sx={{ mr: 2, ml: -1, backgroundColor: 'transparent', maxWidth: '150' }}
-          />
-          <Chip icon={<DateRange />} label={datePipe(changeRequest.dateSubmitted)} sx={{ backgroundColor: 'transparent' }} />
-        </Stack>
-        <Typography fontWeight={'regular'} variant="h6" fontSize={16} noWrap>
-          <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-            {wbsPipe(changeRequest.wbsNum)} - {changeRequest.wbsName}
-          </Link>
-        </Typography>
-        <ChangeRequestTypeView />
+        <CRCardDescription cr={changeRequest} />
       </CardContent>
     </Card>
   );

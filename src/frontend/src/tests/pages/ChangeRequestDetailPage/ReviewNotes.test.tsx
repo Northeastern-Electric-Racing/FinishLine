@@ -28,7 +28,7 @@ describe('Change request review notes test', () => {
 
     expect(screen.getByText('Review Notes')).toBeInTheDocument();
     expect(screen.getByText(cr[0].reviewNotes ? cr[0].reviewNotes! : NO_REVIEW_NOTES_MSG)).toBeInTheDocument();
-    expect(screen.getByText(fullNamePipe(exampleAppAdminUser))).toBeInTheDocument();
+    expect(screen.getByText(`${fullNamePipe(exampleAppAdminUser)} —`)).toBeInTheDocument();
   });
 
   it('activation change request render review notes', () => {
@@ -47,21 +47,21 @@ describe('Change request review notes test', () => {
 
   it('renders tooltip on hover', async () => {
     renderComponent(cr[0]);
-    fireEvent.mouseOver(screen.getByText(fullNamePipe(exampleAppAdminUser)));
+    fireEvent.mouseOver(screen.getByText(`${fullNamePipe(exampleAppAdminUser)} —`));
 
     expect(await screen.findByText(/Reviewed On: /i)).toBeInTheDocument();
   });
 
   it('renders no date tooltip on hover', async () => {
     renderComponent(cr[2]);
-    fireEvent.mouseOver(screen.getByText('—'));
+    fireEvent.mouseOver(screen.getByText('— —'));
 
     expect(await screen.findByText('Reviewed on: —')).toBeInTheDocument();
   });
 
   it('renders review date tooltip on hover', async () => {
     renderComponent(cr[0]);
-    fireEvent.mouseOver(screen.getByText(fullNamePipe(exampleAppAdminUser)));
+    fireEvent.mouseOver(screen.getByText(`${fullNamePipe(exampleAppAdminUser)} —`));
 
     expect(
       await screen.findByText(`Reviewed on: ${datePipe(exampleStandardChangeRequest.dateReviewed!)}`)

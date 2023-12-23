@@ -8,6 +8,8 @@ import CreateProposedSolutionsList from '../../../pages/CreateChangeRequestPage/
 import * as authHooks from '../../../hooks/auth.hooks';
 import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
+import * as userHooks from '../../../hooks/users.hooks';
+import AppContextUser from '../../../app/AppContextUser';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -15,20 +17,23 @@ import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <RouterWrapper>
-      <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
-    </RouterWrapper>
+    <AppContextUser>
+      <RouterWrapper>
+        <CreateProposedSolutionsList proposedSolutions={[]} setProposedSolutions={() => {}} />
+      </RouterWrapper>
+    </AppContextUser>
   );
 };
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
   });
 
   it('Renders correctly when empty', () => {
     renderComponent();
-    expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
+    expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);
     expect(screen.queryAllByText('Budget Impact').length).toBe(0);
@@ -42,7 +47,7 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryByText('Budget Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
-    screen.getByText('+ Add Proposed Solution').click();
+    screen.getByText('+ Add Solution').click();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();
