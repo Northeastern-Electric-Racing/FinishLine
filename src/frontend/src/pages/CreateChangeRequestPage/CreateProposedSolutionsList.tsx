@@ -7,10 +7,9 @@ import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
 import { useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
-import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
-import { useAuth } from '../../hooks/auth.hooks';
-import { Button } from '@mui/material';
-import LoadingIndicator from '../../components/LoadingIndicator';
+import { Button, Typography } from '@mui/material';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { Box } from '@mui/system';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -21,10 +20,8 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   proposedSolutions,
   setProposedSolutions
 }) => {
-  const auth = useAuth();
+  const user = useCurrentUser();
   const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
-
-  if (!auth.user) return <LoadingIndicator />;
 
   const addProposedSolution = async (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
@@ -37,7 +34,17 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   return (
     <>
-      <div className={styles.proposedSolutionsList}>
+      {!isGuest(user.role) && (
+        <Box display="flex" justifyContent="space-between">
+          <Typography variant="h5" sx={{ mt: 2 }}>
+            Proposed Solutions
+          </Typography>
+          <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ mt: 2 }}>
+            + Add Solution
+          </Button>
+        </Box>
+      )}
+      <div style={{ marginTop: '30px' }}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView
             key={i}
@@ -47,13 +54,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
           />
         ))}
       </div>
-      {!isGuest(auth.user.role) ? (
-        <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
-          + Add Proposed Solution
-        </Button>
-      ) : (
-        ''
-      )}
+
       <ProposedSolutionForm onAdd={addProposedSolution} open={showEditableForm} onClose={() => setShowEditableForm(false)} />
     </>
   );
