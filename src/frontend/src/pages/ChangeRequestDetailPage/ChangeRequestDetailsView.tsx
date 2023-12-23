@@ -72,11 +72,13 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const isStandard =
     changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
 
+  const isActivation = changeRequest.type === ChangeRequestType.Activation;
+
   return (
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
       chips={
-        <Box display="flex" mx="20px" gap="20px">
+        <Box display="flex" gap="20px">
           <ChangeRequestTypePill type={changeRequest.type} />
           <ChangeRequestStatusPill status={changeRequest.status} />
         </Box>
@@ -111,21 +113,23 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Typography>
           </Grid>
         </Grid>
-        <Grid container rowSpacing={2} columnSpacing={2}>
-          <Grid container item xs={isStandard ? 7 : 12}>
+        <Grid container rowSpacing={2}>
+          <Grid container rowSpacing={1} item xs={isStandard ? 7 : isActivation ? 6 : 12}>
             {buildDetails(changeRequest)}
-            <Grid item md={isStandard ? 12 : 5}>
+            <Grid item md={isStandard ? 12 : isActivation ? 12 : 5}>
               <ReviewNotes
                 reviewer={changeRequest.reviewer}
                 reviewNotes={changeRequest.reviewNotes}
                 dateReviewed={changeRequest.dateReviewed}
               />
             </Grid>
-            <Grid item md={isStandard ? 12 : 6}>
-              <ImplementedChangesList
-                changes={changeRequest.implementedChanges || []}
-                overallDateImplemented={changeRequest.dateImplemented}
-              />
+            <Grid item md={isStandard ? 12 : isActivation ? 0 : 6}>
+              {!isActivation && (
+                <ImplementedChangesList
+                  changes={changeRequest.implementedChanges || []}
+                  overallDateImplemented={changeRequest.dateImplemented}
+                />
+              )}
             </Grid>
           </Grid>
           <Grid item xs={isStandard ? 5 : 0}>
@@ -134,6 +138,14 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
                 proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
                 crReviewed={changeRequest.accepted}
                 crId={changeRequest.crId}
+              />
+            )}
+          </Grid>
+          <Grid item xs={isActivation ? 6 : 0}>
+            {isActivation && (
+              <ImplementedChangesList
+                changes={changeRequest.implementedChanges || []}
+                overallDateImplemented={changeRequest.dateImplemented}
               />
             )}
           </Grid>

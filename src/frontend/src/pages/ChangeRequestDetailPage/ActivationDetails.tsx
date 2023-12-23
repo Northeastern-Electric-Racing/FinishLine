@@ -18,18 +18,18 @@ interface ActivationDetailsProps {
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
   return (
-    <Grid container rowSpacing={'10px'} mb="10px">
-      <Grid item xs={6} md={3}>
+    <Grid container rowSpacing={'10px'} mb="40px">
+      <Grid item xs={6} md={6}>
         <InfoBlock title={'Project Lead'} icon={<HandymanIcon />}>
           <Typography>{fullNamePipe(cr.projectLead)}</Typography>
         </InfoBlock>
       </Grid>
-      <Grid item xs={6} md={3}>
+      <Grid item xs={6} md={6}>
         <InfoBlock title={'Project Manager'} icon={<WorkIcon />}>
           <Typography>{fullNamePipe(cr.projectManager)}</Typography>
         </InfoBlock>
       </Grid>
-      <Grid item xs={6} md={3}>
+      <Grid item xs={6} md={6}>
         <InfoBlock title={'Start Date'} icon={<CalendarTodayIcon />}>
           <Typography>{datePipe(cr.startDate)}</Typography>
         </InfoBlock>

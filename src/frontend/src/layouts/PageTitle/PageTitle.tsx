@@ -41,11 +41,15 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, chips, previousPages, head
         bgcolor={theme.palette.background.default}
       >
         <Grid container>
-          <Grid item xs={6} md={tabs ? 4 : 8} display="flex" alignItems={'center'}>
-            <Typography variant="h4" fontSize={30}>
-              {title}
-            </Typography>
-            {chips}
+          <Grid container item xs={6} md={tabs ? 4 : 8} display="flex" alignItems={'center'} rowGap={2}>
+            <Grid item xs={12} md={chips ? 4.2 : 12}>
+              <Typography variant="h4" fontSize={30}>
+                {title}
+              </Typography>
+            </Grid>
+            <Grid item xs={chips ? 12 : 0} md={chips ? 6 : 0}>
+              {chips}
+            </Grid>
           </Grid>
           <Grid item xs={0} md={tabs ? 4 : 0} sx={{ display: { xs: 'none', md: 'block' } }}>
             {tabs}
