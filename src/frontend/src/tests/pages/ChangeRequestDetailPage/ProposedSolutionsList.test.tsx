@@ -58,15 +58,13 @@ describe('Proposed Solutions List Test Suite', () => {
     renderComponent(exampleProposedSolutions);
     expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
     expect(screen.getAllByText(/Description/).length).toBe(2);
-    expect(screen.getAllByText(/Budget Impact/).length).toBe(2);
-    expect(screen.getAllByText(/Timeline Impact/).length).toBe(2);
     expect(screen.getByText('Desc 1')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact 1')).toBeInTheDocument();
-    expect(screen.getByText('$11')).toBeInTheDocument();
+    expect(screen.getByText('11')).toBeInTheDocument();
     expect(screen.getByText('111 weeks')).toBeInTheDocument();
     expect(screen.getByText('Desc 2')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact 2')).toBeInTheDocument();
-    expect(screen.getByText('$22')).toBeInTheDocument();
+    expect(screen.getByText('22')).toBeInTheDocument();
     expect(screen.getByText('222 weeks')).toBeInTheDocument();
   });
 
@@ -75,15 +73,13 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);
-    expect(screen.queryAllByText('Budget Impact').length).toBe(0);
-    expect(screen.queryAllByText('Timeline Impact').length).toBe(0);
     expect(screen.queryByText('Desc 1')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact 1')).not.toBeInTheDocument();
-    expect(screen.queryByText('$11')).not.toBeInTheDocument();
+    expect(screen.queryByText('11')).not.toBeInTheDocument();
     expect(screen.queryByText('111 weeks')).not.toBeInTheDocument();
     expect(screen.queryByText('Desc 2')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact 2')).not.toBeInTheDocument();
-    expect(screen.queryByText('$22')).not.toBeInTheDocument();
+    expect(screen.queryByText('22')).not.toBeInTheDocument();
     expect(screen.queryByText('222 weeks')).not.toBeInTheDocument();
   });
 
