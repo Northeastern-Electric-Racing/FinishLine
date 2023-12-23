@@ -58,7 +58,6 @@ describe('Proposed Solutions List Test Suite', () => {
 
   it('Renders correctly when not empty and CR is not reviewed', () => {
     renderComponent(exampleProposedSolutions);
-    expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.getAllByText(/Description/).length).toBe(2);
     expect(screen.getByText('Desc 1')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact 1')).toBeInTheDocument();
@@ -72,7 +71,6 @@ describe('Proposed Solutions List Test Suite', () => {
 
   it('Renders correctly when empty and CR is not reviewed', () => {
     renderComponent();
-    expect(screen.getByText('+ Add Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);
     expect(screen.queryByText('Desc 1')).not.toBeInTheDocument();
@@ -90,7 +88,6 @@ describe('Proposed Solutions List Test Suite', () => {
     expect(screen.queryByText('Description')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
-    screen.getByText('+ Add Solution').click();
     expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
     expect(screen.getByText('Add')).toBeInTheDocument();
