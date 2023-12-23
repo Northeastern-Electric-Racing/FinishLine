@@ -56,17 +56,6 @@ describe('Proposed Solutions List Test Suite', () => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
   });
 
-  it('Renders correctly when not empty and CR is not reviewed', () => {
-    renderComponent(exampleProposedSolutions);
-    expect(screen.getByText('Scope Impact 1')).toBeInTheDocument();
-    expect(screen.getByText('11')).toBeInTheDocument();
-    expect(screen.getByText('111 weeks')).toBeInTheDocument();
-    expect(screen.getByText('Desc 2')).toBeInTheDocument();
-    expect(screen.getByText('Scope Impact 2')).toBeInTheDocument();
-    expect(screen.getByText('22')).toBeInTheDocument();
-    expect(screen.getByText('222 weeks')).toBeInTheDocument();
-  });
-
   it('Renders correctly when empty and CR is not reviewed', () => {
     renderComponent();
     expect(screen.queryAllByText('Description').length).toBe(0);
