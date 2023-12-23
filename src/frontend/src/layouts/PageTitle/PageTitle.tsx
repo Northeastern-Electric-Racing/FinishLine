@@ -42,7 +42,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, chips, previousPages, head
       >
         <Grid container>
           <Grid container item xs={6} md={tabs ? 4 : 8} display="flex" alignItems={'center'} rowGap={2}>
-            <Grid item xs={12} md={chips ? 4.2 : 12}>
+            <Grid item xs={12} md={chips ? 4 : 12}>
               <Typography variant="h4" fontSize={30}>
                 {title}
               </Typography>

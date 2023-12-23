@@ -69,7 +69,7 @@ interface ChangeRequestDetailCardProps {
 
 const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
   return (
-    <Card sx={{ width: 325, mr: 2, borderRadius: 3, mb: 2 }}>
+    <Card sx={{ minWidth: 325, maxWidth: 325, mr: 2, borderRadius: 3, mb: 2 }}>
       <CardContent>
         <Grid container justifyContent="space-between" alignItems="flex-start">
           <Grid item xs mb={1} mt={-1.5}>

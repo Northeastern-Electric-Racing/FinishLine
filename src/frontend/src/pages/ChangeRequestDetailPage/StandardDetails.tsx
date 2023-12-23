@@ -20,20 +20,24 @@ const style = {
 };
 const StandardDetails: React.FC<StandardDetailsProps> = ({ cr }: StandardDetailsProps) => {
   return (
-    <Grid container spacing={1}>
-      <InfoBlock title={'What'}>
-        <Typography>{cr.what}</Typography>
-      </InfoBlock>
-      <InfoBlock title="Why">
-        {cr.why.map((ele: ChangeRequestExplanation, idx: number) => (
-          <Box key={'CRExplanation' + idx} display="flex">
-            <Typography sx={style}>{ele.type + ' '}</Typography>
-            <Typography mx={'10px'}>{' - '}</Typography>
-            <Typography>{ele.explain}</Typography>
-          </Box>
-        ))}
-      </InfoBlock>
-    </Grid>
+    <Box>
+      <Box my={1}>
+        <InfoBlock title={'What'}>
+          <Typography>{cr.what}</Typography>
+        </InfoBlock>
+      </Box>
+      <Box my={3}>
+        <InfoBlock title="Why">
+          {cr.why.map((ele: ChangeRequestExplanation, idx: number) => (
+            <Box key={'CRExplanation' + idx} display="flex">
+              <Typography sx={style}>{ele.type + ' '}</Typography>
+              <Typography mx={'10px'}>{' - '}</Typography>
+              <Typography>{ele.explain}</Typography>
+            </Box>
+          ))}
+        </InfoBlock>
+      </Box>
+    </Box>
   );
 };
 

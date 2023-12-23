@@ -114,16 +114,16 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           </Grid>
         </Grid>
         <Grid container rowSpacing={2}>
-          <Grid container rowSpacing={1} item xs={isStandard ? 7 : isActivation ? 6 : 12}>
+          <Grid container item xs={12} md={isStandard ? 7 : isActivation ? 6 : 12} height={'fit-content'}>
             {buildDetails(changeRequest)}
-            <Grid item md={isStandard ? 12 : isActivation ? 12 : 5}>
+            <Grid item xs={12} md={isStandard ? 12 : isActivation ? 12 : 5} height={'fit-content'}>
               <ReviewNotes
                 reviewer={changeRequest.reviewer}
                 reviewNotes={changeRequest.reviewNotes}
                 dateReviewed={changeRequest.dateReviewed}
               />
             </Grid>
-            <Grid item md={isStandard ? 12 : isActivation ? 0 : 6}>
+            <Grid item md={isStandard ? 12 : isActivation ? 0 : 6} sx={{ mt: { xs: 2, md: isStandard ? 2 : 0 } }}>
               {!isActivation && (
                 <ImplementedChangesList
                   changes={changeRequest.implementedChanges || []}
@@ -132,7 +132,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               )}
             </Grid>
           </Grid>
-          <Grid item xs={isStandard ? 5 : 0}>
+          <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 5 : 0}>
             {isStandard && (
               <ProposedSolutionsList
                 proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
@@ -141,7 +141,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               />
             )}
           </Grid>
-          <Grid item xs={isActivation ? 6 : 0}>
+          <Grid item xs={isActivation ? 12 : 0} md={isActivation ? 6 : 0}>
             {isActivation && (
               <ImplementedChangesList
                 changes={changeRequest.implementedChanges || []}

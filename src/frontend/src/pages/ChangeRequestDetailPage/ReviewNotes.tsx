@@ -17,7 +17,7 @@ interface ReviewNotesProps {
 const ReviewNotes: React.FC<ReviewNotesProps> = ({ reviewer, reviewNotes, dateReviewed }: ReviewNotesProps) => {
   return (
     <InfoBlock title={'Review Notes'}>
-      <Typography>
+      <Typography sx={{ py: '8px' }}>
         <Tooltip
           id="tooltip"
           arrow
