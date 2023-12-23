@@ -4,8 +4,6 @@
  */
 
 import { Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
-import Chip from '@mui/material/Chip';
-import { green, blue, red, grey, purple } from '@mui/material/colors';
 import { Box, Stack } from '@mui/system';
 import { Link } from '@mui/material';
 import {
@@ -19,55 +17,8 @@ import {
 import { routes } from '../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { fullNamePipe } from '../utils/pipes';
-import { ChangeRequestTypeTextPipe, ChangeRequestStatusTextPipe } from '../utils/enum-pipes';
-
-const determineChangeRequestStatusPillColor = (status: ChangeRequestStatus) => {
-  switch (status) {
-    case ChangeRequestStatus.Implemented:
-      return blue[600];
-    case ChangeRequestStatus.Accepted:
-      return green[600];
-    case ChangeRequestStatus.Denied:
-      return red[400];
-    case ChangeRequestStatus.Open:
-      return purple[400];
-    default:
-      return grey[500];
-  }
-};
-
-const ChangeRequestTypePill = ({ type }: { type: ChangeRequestType }) => {
-  return (
-    <Chip
-      size="small"
-      label={ChangeRequestTypeTextPipe(type)}
-      variant="filled"
-      sx={{
-        fontSize: 12,
-        color: 'white',
-        backgroundColor: red[600],
-        width: 100
-      }}
-    />
-  );
-};
-
-const ChangeRequestStatusPill = ({ status }: { status: ChangeRequestStatus }) => {
-  const statusPillColor = determineChangeRequestStatusPillColor(status);
-  return (
-    <Chip
-      size="small"
-      label={ChangeRequestStatusTextPipe(status)}
-      variant="filled"
-      sx={{
-        fontSize: 12,
-        color: 'white',
-        backgroundColor: statusPillColor,
-        width: 100
-      }}
-    />
-  );
-};
+import ChangeRequestTypePill from './ChangeRequestTypePill';
+import ChangeRequestStatusPill from './ChangeRequestStatusPill';
 
 const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
   const theme = useTheme();
@@ -118,7 +69,7 @@ interface ChangeRequestDetailCardProps {
 
 const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ changeRequest }) => {
   return (
-    <Card sx={{ width: 325, mr: 2, borderRadius: 3, mb: 2 }}>
+    <Card sx={{ minWidth: 325, maxWidth: 325, mr: 2, borderRadius: 3, mb: 2 }}>
       <CardContent>
         <Grid container justifyContent="space-between" alignItems="flex-start">
           <Grid item xs mb={1} mt={-1.5}>

@@ -10,6 +10,7 @@ import PageBreadcrumbs from './PageBreadcrumbs';
 
 interface PageTitleProps {
   title: string;
+  chips?: ReactNode;
   previousPages: LinkItem[];
   headerRight?: ReactNode;
   tabs?: ReactElement;
@@ -23,7 +24,7 @@ interface PageTitleProps {
  * @param headerRight The button to display on the right side of the page title
  * @param tabs The tabs on the page to display.
  */
-const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs, sticky }) => {
+const PageTitle: React.FC<PageTitleProps> = ({ title, chips, previousPages, headerRight, tabs, sticky }) => {
   const theme = useTheme();
 
   return (
@@ -39,13 +40,18 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight
         zIndex={1}
         bgcolor={theme.palette.background.default}
       >
-        <Grid container rowSpacing={1}>
-          <Grid item xs={6} md={4}>
-            <Typography variant="h4" fontSize={30}>
-              {title}
-            </Typography>
+        <Grid container>
+          <Grid container item xs={6} md={tabs ? 4 : 8} display="flex" alignItems={'center'} rowGap={2}>
+            <Grid item xs={12} md={chips ? 4 : 12}>
+              <Typography variant="h4" fontSize={30}>
+                {title}
+              </Typography>
+            </Grid>
+            <Grid item xs={chips ? 12 : 0} md={chips ? 6 : 0}>
+              {chips}
+            </Grid>
           </Grid>
-          <Grid item xs={0} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Grid item xs={0} md={tabs ? 4 : 0} sx={{ display: { xs: 'none', md: 'block' } }}>
             {tabs}
           </Grid>
           <Grid item xs={6} md={4} textAlign={['left', 'right']}>

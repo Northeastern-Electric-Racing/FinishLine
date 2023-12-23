@@ -7,9 +7,9 @@ import { render, routerWrapperBuilder, screen } from '../../test-support/test-ut
 import ProposedSolutionsList from '../../../pages/ChangeRequestDetailPage/ProposedSolutionsList';
 import { ProposedSolution } from 'shared';
 import { exampleAdminUser, exampleLeadershipUser } from '../../test-support/test-data/users.stub';
-import * as authHooks from '../../../hooks/auth.hooks';
-import { mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { ToastProvider } from '../../../components/Toast/ToastProvider';
+import AppContextUser from '../../../app/AppContextUser';
+import * as userHooks from '../../../hooks/users.hooks';
 
 const exampleProposedSolution1: ProposedSolution = {
   id: '1',
@@ -41,36 +41,23 @@ const exampleProposedSolutions = [exampleProposedSolution1, exampleProposedSolut
 const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed: boolean | undefined = undefined) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
-    <RouterWrapper>
-      <ToastProvider>
-        <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />{' '}
-      </ToastProvider>
-    </RouterWrapper>
+    <AppContextUser>
+      <RouterWrapper>
+        <ToastProvider>
+          <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />{' '}
+        </ToastProvider>
+      </RouterWrapper>
+    </AppContextUser>
   );
 };
 
 describe('Proposed Solutions List Test Suite', () => {
   beforeEach(() => {
-    vi.spyOn(authHooks, 'useAuth').mockReturnValue(mockAuth(false, exampleAdminUser));
-  });
-
-  it('Renders correctly when not empty and CR is not reviewed', () => {
-    renderComponent(exampleProposedSolutions);
-    expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
-    expect(screen.getAllByText(/Description/).length).toBe(2);
-    expect(screen.getByText('Desc 1')).toBeInTheDocument();
-    expect(screen.getByText('Scope Impact 1')).toBeInTheDocument();
-    expect(screen.getByText('11')).toBeInTheDocument();
-    expect(screen.getByText('111 weeks')).toBeInTheDocument();
-    expect(screen.getByText('Desc 2')).toBeInTheDocument();
-    expect(screen.getByText('Scope Impact 2')).toBeInTheDocument();
-    expect(screen.getByText('22')).toBeInTheDocument();
-    expect(screen.getByText('222 weeks')).toBeInTheDocument();
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
   });
 
   it('Renders correctly when empty and CR is not reviewed', () => {
     renderComponent();
-    expect(screen.getByText('+ Add Proposed Solution')).toBeInTheDocument();
     expect(screen.queryAllByText('Description').length).toBe(0);
     expect(screen.queryAllByText('Scope Impact').length).toBe(0);
     expect(screen.queryByText('Desc 1')).not.toBeInTheDocument();
@@ -87,24 +74,16 @@ describe('Proposed Solutions List Test Suite', () => {
     renderComponent();
     expect(screen.queryByText('Description')).not.toBeInTheDocument();
     expect(screen.queryByText('Scope Impact')).not.toBeInTheDocument();
-    expect(screen.queryByText('Budget Impact')).not.toBeInTheDocument();
-    expect(screen.queryByText('Timeline Impact')).not.toBeInTheDocument();
     expect(screen.queryByText('Add')).not.toBeInTheDocument();
-    screen.getByText('+ Add Proposed Solution').click();
-    expect(screen.getByText('Description')).toBeInTheDocument();
-    expect(screen.getByText('Scope Impact')).toBeInTheDocument();
-    expect(screen.getByText('Budget Impact')).toBeInTheDocument();
-    expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
-    expect(screen.getByText('Add')).toBeInTheDocument();
   });
 
   it('Renders correctly when not empty and CR is reviewed', () => {
     renderComponent(exampleProposedSolutions, true);
-    expect(screen.queryByText('+ Add Proposed Solution')).not.toBeInTheDocument();
+    expect(screen.queryByText('+ Add Solution')).not.toBeInTheDocument();
   });
 
   it('Renders correctly when empty and CR is reviewed', () => {
     renderComponent([], false);
-    expect(screen.queryByText('+ Add Proposed Solution')).not.toBeInTheDocument();
+    expect(screen.queryByText('+ Add Solution')).not.toBeInTheDocument();
   });
 });

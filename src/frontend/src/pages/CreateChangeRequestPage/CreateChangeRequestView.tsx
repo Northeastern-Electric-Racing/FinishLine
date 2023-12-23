@@ -209,7 +209,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         }
       >
         <Grid container spacing={2} display="flex" justifyContent="space-between">
-          <Grid container item spacing={2} xs={12} md={6}>
+          <Grid container item spacing={2} xs={12} md={6} height="fit-content">
             <Grid item xs={12}>
               <FormLabel>WBS</FormLabel>
               <NERAutocomplete
