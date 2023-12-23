@@ -3,10 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-
 import { ChangeRequestExplanation, StandardChangeRequest } from 'shared';
 import InfoBlock from '../../components/InfoBlock';
 import { Box } from '@mui/material';
