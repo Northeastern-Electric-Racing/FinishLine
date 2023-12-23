@@ -234,7 +234,6 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                         {permittedTypes.map((t) => (
                           <NERButton
                             sx={{
-                              // mr: { xs: 0, md: 2 },
                               fontSize: { xs: '0.8rem', md: '1rem' },
                               width: { xs: '83%', md: 'auto' }
                             }}
