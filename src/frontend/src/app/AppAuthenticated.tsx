@@ -18,7 +18,7 @@ import Credits from '../pages/CreditsPage/Credits';
 import AppContextUser from './AppContextUser';
 import { useSingleUserSettings } from '../hooks/users.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
-import ErrorPage from '../pages/ErrorPage';
+import SessionTimeoutAlert from './SessionTimeoutAlert';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import { useState } from 'react';
@@ -45,7 +45,8 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
   };
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
+
+  if (isError && error) return <SessionTimeoutAlert />;
 
   return userSettingsData.slackId ? (
     <AppContextUser>
