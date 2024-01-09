@@ -21,7 +21,6 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
-import { useState } from 'react';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import { Container } from '@mui/material';
@@ -32,15 +31,6 @@ interface AppAuthenticatedProps {
 
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const handleDrawerOpen = () => {
-    setDrawerOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setDrawerOpen(false);
-  };
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -48,7 +38,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
   return userSettingsData.slackId ? (
     <AppContextUser>
       <Box display={'flex'}>
-        <Sidebar handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
+        <Sidebar />
         <Container maxWidth={false}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />

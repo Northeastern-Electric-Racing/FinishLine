@@ -4,10 +4,12 @@
  */
 
 import { Typography, Box, Grid, useTheme } from '@mui/material';
-import { ReactElement, ReactNode } from 'react';
+import { ReactElement, ReactNode, useEffect, useState } from 'react';
 import { LinkItem } from '../../utils/types';
 import PageBreadcrumbs from './PageBreadcrumbs';
-import NavTopBar from '../NavTopBar/NavTopBar';
+import NavUserMenu from './NavUserMenu';
+import { fullNamePipe } from '../../utils/pipes';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface PageTitleProps {
   title: string;
@@ -26,6 +28,13 @@ interface PageTitleProps {
  */
 const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight, tabs, sticky }) => {
   const theme = useTheme();
+  const user = useCurrentUser();
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    window.addEventListener('resize', () => {
+      setWidth(window.innerWidth);
+    });
+  });
 
   return (
     <>
@@ -47,7 +56,20 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, previousPages, headerRight
             </Typography>
           </Grid>
           <Grid item xs={6} md={4} textAlign={'right'}>
-            <NavTopBar />
+            <Box display="flex" flexDirection={'row'} marginLeft={'auto'} marginBottom={1} width={'auto'}>
+              <Typography
+                variant="body1"
+                marginY={0.5}
+                marginLeft={'auto'}
+                marginRight={1}
+                sx={{
+                  color: theme.palette.text.primary
+                }}
+              >
+                {width < 600 ? '' : fullNamePipe(user)}
+              </Typography>
+              <NavUserMenu />
+            </Box>
             {headerRight}
           </Grid>
         </Grid>

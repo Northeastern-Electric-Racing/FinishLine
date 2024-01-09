@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Alert, Link, Box } from '@mui/material';
+import { Typography, Alert, Link } from '@mui/material';
 import { routes } from '../../utils/routes';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
@@ -13,7 +13,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHistory } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
-import NavTopBar from '../../layouts/NavTopBar/NavTopBar';
 
 const Home = () => {
   const user = useCurrentUser();
@@ -25,9 +24,6 @@ const Home = () => {
 
   return (
     <PageLayout title="Home" hidePageTitle>
-      <Box marginTop={2}>
-        <NavTopBar />
-      </Box>
       <Typography variant="h3" sx={{ marginTop: 0, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>

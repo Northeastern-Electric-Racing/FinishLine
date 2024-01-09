@@ -18,17 +18,13 @@ import NavPageLink from './NavPageLink';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import NERDrawer from '../../components/NERDrawer';
-import { LayoutProps } from '../LayoutProps';
 import { GridMenuIcon } from '@mui/x-data-grid';
+import { useState } from 'react';
 
-export interface SideBarProps extends LayoutProps {
-  open: boolean;
-  handleDrawerClose: () => void;
-  handleDrawerOpen: () => void;
-}
-
-const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose, handleDrawerOpen }) => {
+const Sidebar: React.FC = () => {
   const theme = useTheme();
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const linkItems: LinkItem[] = [
     {
@@ -69,17 +65,17 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose, handleDrawer
   ];
 
   return (
-    <NERDrawer open={open} variant="permanent">
+    <NERDrawer open={drawerOpen} variant="permanent">
       <DrawerHeader>
-        {open ? (
-          <IconButton onClick={handleDrawerClose}>
+        {drawerOpen ? (
+          <IconButton onClick={() => setDrawerOpen(false)}>
             {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
           </IconButton>
         ) : (
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            onClick={() => setDrawerOpen(true)}
             sx={{
               marginRight: 0.5
             }}
@@ -99,7 +95,7 @@ const Sidebar: React.FC<SideBarProps> = ({ open, handleDrawerClose, handleDrawer
       >
         <Box>
           {linkItems.map((linkItem) => (
-            <NavPageLink {...linkItem} open={open} />
+            <NavPageLink {...linkItem} open={drawerOpen} />
           ))}
         </Box>
         <Typography className={styles.versionNumber}>4.1.0</Typography>
