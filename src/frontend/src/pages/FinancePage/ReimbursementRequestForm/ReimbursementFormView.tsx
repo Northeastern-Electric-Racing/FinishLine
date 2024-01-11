@@ -11,7 +11,9 @@ import {
   TextField,
   Typography,
   Snackbar,
-  Alert
+  Alert,
+  Button,
+  useTheme
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
@@ -37,6 +39,7 @@ import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -48,7 +51,7 @@ interface ReimbursementRequestFormViewProps {
   }[];
   control: Control<ReimbursementRequestFormInput, any>;
   reimbursementProducts: ReimbursementProductFormArgs[];
-  receiptAppend: (args: ReimbursementReceiptUploadArgs) => void;
+  receiptPrepend: (args: ReimbursementReceiptUploadArgs) => void;
   receiptRemove: (index: number) => void;
   reimbursementProductAppend: (args: ReimbursementProductFormArgs) => void;
   reimbursementProductRemove: (index: number) => void;
@@ -69,7 +72,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   receiptFiles,
   reimbursementProducts,
   control,
-  receiptAppend,
+  receiptPrepend,
   receiptRemove,
   reimbursementProductAppend,
   reimbursementProductRemove,
@@ -84,6 +87,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const toast = useToast();
+  const theme = useTheme();
   const products = watch(`reimbursementProducts`);
   const expenseTypeId = watch('expenseTypeId');
   const selectedExpenseType = allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === expenseTypeId);
@@ -100,7 +104,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
   const ReceiptFileInput = () => (
     <FormControl>
-      <FormLabel>Receipts</FormLabel>
       <ul>
         {receiptFiles.map((receiptFile, index) => (
           <li key={index}>
@@ -126,6 +129,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         e.stopPropagation();
         handleSubmit(onSubmit)(e);
       }}
+      style={{ minHeight: 'calc(100vh - 161px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
     >
       {!hasSecureSettingsSet && (
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
@@ -140,7 +144,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         </Snackbar>
       )}
       <Grid container spacing={2}>
-        <Grid item container maxHeight={375} spacing={2} md={6} xs={12}>
+        <Grid item container spacing={2} md={6} xs={12} sx={{ '&.MuiGrid-item': { height: 'fit-content' } }}>
           <Grid item xs={12}>
             <FormControl fullWidth>
               <FormLabel>Purchased From</FormLabel>
@@ -250,34 +254,47 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <ReceiptFileInput />
-              <input
-                onChange={(e) => {
-                  if (e.target.files) {
-                    const file = e.target.files[0];
-                    if (file.size < 1000000) {
-                      receiptAppend({
-                        file: e.target.files[0],
-                        name: e.target.files[0].name,
-                        googleFileId: ''
-                      });
-                    } else {
-                      toast.error('File must be less than 1 MB', 5000);
-                      document.getElementById('receipt-image')!.innerHTML = '';
-                    }
-                  }
+              <FormLabel>Receipts</FormLabel>
+              <Button
+                variant="contained"
+                color="success"
+                component="label"
+                startIcon={<FileUploadIcon />}
+                sx={{
+                  width: 'fit-content',
+                  textTransform: 'none',
+                  mt: '9.75px'
                 }}
-                type="file"
-                id="receipt-image"
-                accept="image/png, image/jpeg, .pdf"
-                name="receiptFiles"
-              />
+              >
+                Upload
+                <input
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      [...e.target.files].forEach((file) => {
+                        if (file.size < 1000000) {
+                          receiptPrepend({
+                            file: file,
+                            name: file.name,
+                            googleFileId: ''
+                          });
+                        } else {
+                          toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+                          document.getElementById('receipt-image')!.innerHTML = '';
+                        }
+                      });
+                    }
+                  }}
+                  type="file"
+                  id="receipt-image"
+                  accept="image/png, image/jpeg, .pdf"
+                  name="receiptFiles"
+                  multiple
+                  hidden
+                />
+              </Button>
+              <ReceiptFileInput />
               <FormHelperText error>{errors.receiptFiles?.message}</FormHelperText>
             </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <FormLabel>Total Cost</FormLabel>
-            <Typography variant="h6">${calculatedTotalCost}</Typography>
           </Grid>
         </Grid>
         <Grid item md={6} xs={12} sx={{ '&.MuiGrid-item': { paddingTop: '4px' } }}>
@@ -295,13 +312,30 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </FormControl>
         </Grid>
       </Grid>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-        <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
-          Cancel
-        </NERFailButton>
-        <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
-          {submitText}
-        </NERSuccessButton>
+      <Box
+        sx={{
+          position: 'sticky',
+          bottom: 0,
+          background: theme.palette.background.default,
+          p: 1,
+          borderTop: `solid 1px ${theme.palette.divider}`,
+          zIndex: 1,
+          display: 'flex',
+          justifyContent: 'space-between'
+        }}
+      >
+        <Box>
+          <FormLabel>Total Cost</FormLabel>
+          <Typography variant="h6">${calculatedTotalCost}</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignSelf: 'center' }}>
+          <NERFailButton variant="contained" href={previousPage} sx={{ mx: 1 }}>
+            Cancel
+          </NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" disabled={!hasSecureSettingsSet}>
+            {submitText}
+          </NERSuccessButton>
+        </Box>
       </Box>
     </form>
   );

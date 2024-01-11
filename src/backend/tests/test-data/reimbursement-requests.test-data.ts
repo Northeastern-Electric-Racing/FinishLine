@@ -23,6 +23,12 @@ export const PopEyes: PrismaVendor = {
   name: 'Pop Eyes'
 };
 
+export const KFC: PrismaVendor = {
+  vendorId: 'CHICKEN',
+  dateCreated: new Date('12/22/203'),
+  name: 'kfc'
+};
+
 export const Parts: PrismaExpenseType = {
   expenseTypeId: 'PARTS',
   name: 'hammer',

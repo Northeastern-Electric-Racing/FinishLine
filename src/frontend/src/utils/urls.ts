@@ -101,6 +101,7 @@ const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sa
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
+const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
@@ -204,6 +205,7 @@ export const apiUrls = {
   financeDeleteReimbursement,
   financeMarkAsDelivered,
   financeApproveReimbursementRequest,
+  financeDenyReimbursementRequest,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditExpenseType,

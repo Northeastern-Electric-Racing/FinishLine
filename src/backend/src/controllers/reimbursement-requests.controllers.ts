@@ -319,4 +319,16 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async editVendor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { vendorId } = req.params;
+      const { name } = req.body;
+      const submitter = await getCurrentUser(res);
+      const editVendors = await ReimbursementRequestService.editVendors(name, vendorId, submitter);
+      res.status(200).json(editVendors);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
