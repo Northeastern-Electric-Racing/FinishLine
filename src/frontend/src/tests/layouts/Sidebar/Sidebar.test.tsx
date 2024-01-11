@@ -15,7 +15,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <Sidebar />
+      <Sidebar open={true} />
     </RouterWrapper>
   );
 };
@@ -24,7 +24,7 @@ describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
     vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     renderComponent();
-    expect(screen.getByText(/Gantt/i)).toBeInTheDocument();
+    expect(screen.getByText(/Home/i)).toBeInTheDocument();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();
     expect(screen.getByText(/Change Requests/i)).toBeInTheDocument();
   });

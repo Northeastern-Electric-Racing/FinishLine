@@ -21,10 +21,14 @@ import NERDrawer from '../../components/NERDrawer';
 import { GridMenuIcon } from '@mui/x-data-grid';
 import { useState } from 'react';
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  open?: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = (open?) => {
   const theme = useTheme();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(open?.open || false);
 
   const linkItems: LinkItem[] = [
     {
