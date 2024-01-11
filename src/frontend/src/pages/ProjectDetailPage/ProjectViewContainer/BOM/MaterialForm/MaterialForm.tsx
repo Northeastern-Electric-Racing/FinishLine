@@ -4,6 +4,7 @@ import { MaterialStatus, WbsElement } from 'shared';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
+  useCreateManufacturer,
   useCreateUnit,
   useGetAllManufacturers,
   useGetAllMaterialTypes,
@@ -15,7 +16,8 @@ import MaterialFormView from './MaterialFormView';
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
   status: yup.string().required('Select a status!'),
-  materialTypeName: yup.string().required('Select a material type!'),
+  materialTypeName: yup.string().required('Select a Material Type!'),
+  manufacturerName: yup.string().required('Select a Manufacturer'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
   nerPartNumber: yup.string().optional(),
   quantity: yup.number().required('Enter a quantity!'),
@@ -79,6 +81,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   });
 
   const { mutateAsync: createUnit, isLoading: isLoadingCreateUnit } = useCreateUnit();
+  const { mutateAsync: createManufacturer, isLoading: isLoadingCreateManufacturer } = useCreateManufacturer();
 
   const {
     data: materialTypes,
@@ -108,7 +111,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     !materialTypes ||
     !units ||
     !manufactuers ||
-    isLoadingCreateUnit
+    isLoadingCreateUnit ||
+    isLoadingCreateManufacturer
   ) {
     return <LoadingIndicator />;
   }
@@ -123,6 +127,17 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     try {
       const createdUnit = await createUnit({ name: unitName });
       setValue('unitName', createdUnit.name);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
+  };
+
+  const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
+    try {
+      const createdManufacturer = await createManufacturer({ name: manufacturerName });
+      setValue('manufacturerName', createdManufacturer.name);
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error(error.message);
@@ -145,6 +160,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       open={open}
       watch={watch}
       createUnit={createUnitWrapper}
+      createManufacturer={createManufacturerWrapper}
       setValue={setValue}
     />
   );
