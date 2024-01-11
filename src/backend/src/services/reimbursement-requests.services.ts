@@ -22,6 +22,7 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
+  isUserAdminOrOnFinance,
   createReimbursementProducts,
   isUserLeadOrHeadOfFinanceTeam,
   removeDeletedReceiptPictures,
@@ -693,6 +694,10 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'This reimbursement request has already been approved');
     }
 
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: ReimbursementStatusType.SABO_SUBMITTED,
@@ -766,5 +771,30 @@ export default class ReimbursementRequestService {
 
     if (!fileData) throw new NotFoundException('Image File', fileId);
     return fileData;
+  }
+
+  /**
+   * Edits the vendor name
+   *
+   * @param name the new vendor name
+   * @param vendorId the requested vendor to be edited
+   * @param submitter the user editing the vendor name
+   * @returns the updated vendor
+   */
+  static async editVendors(name: string, vendorId: string, submitter: User) {
+    await isUserAdminOrOnFinance(submitter);
+
+    const vendorUniqueName = await prisma.vendor.findUnique({
+      where: { name }
+    });
+
+    if (!!vendorUniqueName) throw new HttpException(400, 'vendor name already exists');
+
+    const vendor = await prisma.vendor.update({
+      where: { vendorId },
+      data: { name }
+    });
+
+    return vendorTransformer(vendor);
   }
 }

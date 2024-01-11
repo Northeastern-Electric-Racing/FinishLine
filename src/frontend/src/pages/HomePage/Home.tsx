@@ -5,6 +5,7 @@
 
 import { Typography, Alert, Link, Grid, Box } from '@mui/material';
 import { routes } from '../../utils/routes';
+import OverdueWorkPackageAlerts from './OverdueWorkPackageAlerts';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
 import UpcomingDeadlines from './UpcomingDeadlines';
@@ -47,6 +48,7 @@ const Home = () => {
           .
         </Alert>
       )}
+      <OverdueWorkPackageAlerts />
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />

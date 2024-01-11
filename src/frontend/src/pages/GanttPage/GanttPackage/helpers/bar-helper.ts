@@ -261,10 +261,14 @@ const convertToMilestone = (
 
 const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
   const index = dates.findIndex((d) => d.getTime() >= xDate.getTime()) - 1;
-
-  const remainderMillis = xDate.getTime() - dates[index].getTime();
-  const percentOfInterval = remainderMillis / (dates[index + 1].getTime() - dates[index].getTime());
-  const x = index * columnWidth + percentOfInterval * columnWidth;
+  let x;
+  if (dates[index]) {
+    const remainderMillis = dates[index] ? xDate.getTime() - dates[index].getTime() : xDate.getTime();
+    const percentOfInterval = remainderMillis / (dates[index + 1].getTime() - dates[index].getTime());
+    x = index * columnWidth + percentOfInterval * columnWidth;
+  } else {
+    x = index * columnWidth + columnWidth;
+  }
   return x;
 };
 const taskXCoordinateRTL = (xDate: Date, dates: Date[], columnWidth: number) => {

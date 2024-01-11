@@ -9,6 +9,7 @@ import {
   ReimbursementProductCreateArgs,
   ReimbursementReceiptCreateArgs,
   ValidatedWbsReimbursementProductCreateArgs,
+  isAdmin,
   wbsPipe,
   WbsReimbursementProductCreateArgs
 } from 'shared';
@@ -364,6 +365,16 @@ export const isAuthUserAtLeastLeadForFinance = (user: Prisma.UserGetPayload<type
 
 export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
   return user.teamAsHead?.teamId === process.env.FINANCE_TEAM_ID;
+};
+
+export const isUserAdminOrOnFinance = async (submitter: User) => {
+  try {
+    await validateUserIsPartOfFinanceTeam(submitter);
+  } catch (error) {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors');
+    }
+  }
 };
 
 const isTeamIdInList = (teamId: string, teamsList: Team[]) => {

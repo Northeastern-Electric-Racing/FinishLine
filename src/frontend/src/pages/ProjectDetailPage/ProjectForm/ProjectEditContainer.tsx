@@ -14,6 +14,7 @@ import { ProjectFormInput } from './ProjectForm';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -22,6 +23,7 @@ interface ProjectEditContainerProps {
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const toast = useToast();
+  const query = useQuery();
 
   const { name, budget, summary } = project;
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
@@ -30,7 +32,6 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const features = bulletsToObject(project.features);
   const constraints = bulletsToObject(project.otherConstraints);
   const rules = rulesToObject(project.rules);
-  const crId = project.changes[0].changeRequestId;
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const {
@@ -74,7 +75,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     teamId: '',
     carNumber: 0,
     links,
-    crId,
+    crId: query.get('crId') || project.changes[0].changeRequestId.toString(),
     goals,
     features,
     constraints,
@@ -99,7 +100,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         summary,
         links,
         projectId: project.id,
-        crId,
+        crId: Number(crId),
         rules,
         goals,
         features,

@@ -114,20 +114,24 @@ model User {
   createdAssemblies         Assembly[]              @relation(name: "assemblyCreator")
   deletedMaterials          Material[]              @relation(name: "materialDeleter")
   createdMaterials          Material[]              @relation(name: "materialCreator")
+  archivedTeams             Team[]                  @relation(name: "userArchived")
   createdMaterialTypes      Material_Type[]         @relation(name: "materialTypeCreator")
   createdManufacturers      Manufacturer[]          @relation(name: "manufacturerCreator")
 }
 
 model Team {
-  teamId      String    @id @default(uuid())
-  teamName    String
-  slackId     String
-  description String    @default("")
-  projects    Project[] @relation(name: "assignedBy")
-  members     User[]    @relation(name: "teamsAsMember")
-  leads       User[]    @relation(name: "teamsAsLead")
-  headId      Int       @unique
-  head        User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
+  teamId         String    @id @default(uuid())
+  teamName       String
+  slackId        String
+  description    String    @default("")
+  projects       Project[] @relation(name: "assignedBy")
+  members        User[]    @relation(name: "teamsAsMember")
+  leads          User[]    @relation(name: "teamsAsLead")
+  headId         Int       @unique
+  head           User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
+  dateArchived   DateTime?
+  userArchivedId Int?
+  userArchived   User?     @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
 }
 
 model Session {
@@ -492,7 +496,7 @@ model Unit {
 
 model Assembly {
   assemblyId    String      @id @default(uuid())
-  name          String      
+  name          String
   pdmFileName   String?
   dateDeleted   DateTime?
   userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "assemblyDeleter")
@@ -537,7 +541,7 @@ model Material {
 model Material_Type {
   name          String     @id
   dateCreated   DateTime
-  dateDeleted DateTime?
+  dateDeleted   DateTime?
   userCreatedId Int
   userCreated   User       @relation(name: "materialTypeCreator", fields: [userCreatedId], references: [userId])
   materials     Material[]
@@ -548,6 +552,6 @@ model Manufacturer {
   dateCreated   DateTime
   userCreatedId Int
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
-  dateDeleted DateTime?
+  dateDeleted   DateTime?
   materials     Material[]
 }
