@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { GoogleLogout } from 'react-google-login';
 import IconButton from '@mui/material/IconButton';
@@ -18,16 +18,16 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { canAccessAdminTools } from '../../utils/users';
-import { Box, useTheme } from '@mui/system';
+import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
 import { fullNamePipe } from '../../utils/pipes';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface NavUserMenuProps {
-  widthLimit?: number;
+  showName?: boolean;
 }
 
-const NavUserMenu: React.FC<NavUserMenuProps> = (widthLimit?) => {
+const NavUserMenu: React.FC<NavUserMenuProps> = (showName?) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
@@ -35,13 +35,6 @@ const NavUserMenu: React.FC<NavUserMenuProps> = (widthLimit?) => {
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
-  const [width, setWidth] = useState(window.innerWidth);
-  useEffect(() => {
-    window.addEventListener('resize', () => {
-      setWidth(window.innerWidth);
-    });
-  });
 
   const googleAuthClientId = import.meta.env.VITE_REACT_APP_GOOGLE_AUTH_CLIENT_ID;
 
@@ -88,29 +81,29 @@ const NavUserMenu: React.FC<NavUserMenuProps> = (widthLimit?) => {
   const theme = useTheme();
 
   return (
-    <Box display="flex" flexDirection={'row'} marginLeft={'auto'} marginBottom={1} width={'auto'}>
-      <Typography
-        variant="body1"
-        marginY={0.5}
-        marginLeft={'auto'}
-        marginRight={1}
-        sx={{
-          color: theme.palette.text.primary
-        }}
-      >
-        {width < (widthLimit?.widthLimit || 600) ? '' : fullNamePipe(user)}
-      </Typography>
+    <Stack direction={'row'}>
       <IconButton
-        size="large"
+        size="medium"
         aria-label="account of current user"
         aria-controls="menu-appbar"
         aria-haspopup="true"
         onClick={handleMenu}
         color={theme.palette.text.primary}
-        sx={{ padding: 0 }}
+        sx={{ padding: 0.5, marginLeft: 1, marginRight: 0.25 }}
       >
         <AccountCircle sx={{ fontSize: 36 }} />
       </IconButton>
+      {showName && (
+        <Typography
+          variant="body1"
+          marginTop={1.1}
+          sx={{
+            color: theme.palette.text.primary
+          }}
+        >
+          {fullNamePipe(user)}
+        </Typography>
+      )}
       <Menu
         id="menu-appbar"
         anchorEl={anchorEl}
@@ -148,7 +141,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = (widthLimit?) => {
         {canAccessAdminTools(auth.user) && <AdminTools />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
-    </Box>
+    </Stack>
   );
 };
 

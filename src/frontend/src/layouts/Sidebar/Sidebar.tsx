@@ -20,6 +20,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import NERDrawer from '../../components/NERDrawer';
 import { GridMenuIcon } from '@mui/x-data-grid';
 import { useState } from 'react';
+import NavUserMenu from '../PageTitle/NavUserMenu';
 
 interface SidebarProps {
   open?: boolean;
@@ -102,7 +103,10 @@ const Sidebar: React.FC<SidebarProps> = (open?) => {
             <NavPageLink {...linkItem} open={drawerOpen} />
           ))}
         </Box>
-        <Typography className={styles.versionNumber}>4.1.0</Typography>
+        <Box>
+          <NavUserMenu showName={drawerOpen} />
+          <Typography className={styles.versionNumber}>4.1.0</Typography>
+        </Box>
       </Box>
     </NERDrawer>
   );
