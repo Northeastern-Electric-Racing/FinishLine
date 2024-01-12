@@ -18,11 +18,10 @@ vi.mock('../../../layouts/PageTitle/PageBreadcrumbs', () => {
 });
 
 describe('error page', () => {
-  it('renders title and breadcrumbs', () => {
+  it('renders title', () => {
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
-    render(<PageTitle title={'test'} previousPages={[]} />);
+    render(<PageTitle title={'test'} />);
 
     expect(screen.getByText('test')).toBeInTheDocument();
-    expect(screen.getByText('page-breadcrumbs')).toBeInTheDocument();
   });
 });
