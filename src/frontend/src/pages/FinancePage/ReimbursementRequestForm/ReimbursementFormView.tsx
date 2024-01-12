@@ -123,6 +123,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     return { label: expenseTypePipe(expenseType), id: expenseType.expenseTypeId };
   };
 
+  const vendorsToAutocomplete = (vendorName: Vendor): { label: string; id: string } => {
+    return { label: vendorName.name, id: vendorName.vendorId };
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -151,17 +155,27 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <Controller
                 name="vendorId"
                 control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Select onChange={(newValue) => onChange(newValue.target.value)} value={value} error={!!errors.vendorId}>
-                    {allVendors
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((vendor) => (
-                        <MenuItem key={vendor.vendorId} value={vendor.vendorId}>
-                          {vendor.name}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                )}
+                render={({ field: { onChange, value } }) => {
+                  const mappedVendors = allVendors.sort((a, b) => a.name.localeCompare(b.name)).map(vendorsToAutocomplete);
+
+                  const onClear = () => {
+                    setValue('vendorId', '');
+                    onChange('');
+                  };
+
+                  return (
+                    <NERAutocomplete
+                      id={'vendorName'}
+                      size="medium"
+                      options={mappedVendors}
+                      value={mappedVendors.find((vendorName) => vendorName.id === value) || null}
+                      placeholder=""
+                      onChange={(_event, newValue) => {
+                        newValue ? onChange(newValue.id) : onClear();
+                      }}
+                    />
+                  );
+                }}
               />
               <FormHelperText error>{errors.vendorId?.message}</FormHelperText>
             </FormControl>
