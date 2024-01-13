@@ -123,8 +123,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     return { label: expenseTypePipe(expenseType), id: expenseType.expenseTypeId };
   };
 
-  const vendorsToAutocomplete = (vendorName: Vendor): { label: string; id: string } => {
-    return { label: vendorName.name, id: vendorName.vendorId };
+  const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
+    return { label: vendor.name, id: vendor.vendorId };
   };
 
   return (
@@ -157,7 +157,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                 control={control}
                 render={({ field: { onChange, value } }) => {
                   const mappedVendors = allVendors.sort((a, b) => a.name.localeCompare(b.name)).map(vendorsToAutocomplete);
-
                   const onClear = () => {
                     setValue('vendorId', '');
                     onChange('');
@@ -165,11 +164,11 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
                   return (
                     <NERAutocomplete
-                      id={'vendorName'}
+                      id={'vendor'}
                       size="medium"
                       options={mappedVendors}
-                      value={mappedVendors.find((vendorName) => vendorName.id === value) || null}
-                      placeholder=""
+                      value={mappedVendors.find((vendor) => vendor.id === value)}
+                      placeholder="Select Vendor"
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
                       }}
