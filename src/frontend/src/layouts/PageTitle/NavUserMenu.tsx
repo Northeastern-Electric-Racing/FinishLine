@@ -89,11 +89,24 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         aria-haspopup="true"
         onClick={handleMenu}
         color={theme.palette.text.primary}
-        sx={{ padding: 0.5, marginLeft: open ? 1 : 1.5, marginRight: 0.25 }}
+        sx={{ padding: 0.5, marginLeft: open ? 1 : 1.5 }}
+        style={{ borderRadius: 0 }}
       >
         <AccountCircle sx={{ fontSize: 36 }} />
+        {open && (
+          <Typography
+            variant="body1"
+            marginBottom={0.2}
+            marginLeft={0.6}
+            sx={{
+              color: theme.palette.text.primary
+            }}
+          >
+            {fullNamePipe(user)}
+          </Typography>
+        )}
       </IconButton>
-      {open && (
+      {/*open && (
         <Typography
           variant="body1"
           marginTop={1.1}
@@ -103,7 +116,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         >
           {fullNamePipe(user)}
         </Typography>
-      )}
+      )*/}
       <Menu
         id="menu-appbar"
         anchorEl={anchorEl}
