@@ -24,10 +24,10 @@ import { fullNamePipe } from '../../utils/pipes';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface NavUserMenuProps {
-  showName?: boolean;
+  open?: boolean;
 }
 
-const NavUserMenu: React.FC<NavUserMenuProps> = (showName?) => {
+const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
@@ -89,11 +89,11 @@ const NavUserMenu: React.FC<NavUserMenuProps> = (showName?) => {
         aria-haspopup="true"
         onClick={handleMenu}
         color={theme.palette.text.primary}
-        sx={{ padding: 0.5, marginLeft: 1, marginRight: 0.25 }}
+        sx={{ padding: 0.5, marginLeft: open ? 1 : 1.5, marginRight: 0.25 }}
       >
         <AccountCircle sx={{ fontSize: 36 }} />
       </IconButton>
-      {showName && (
+      {open && (
         <Typography
           variant="body1"
           marginTop={1.1}

@@ -104,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = (open?) => {
           ))}
         </Box>
         <Box>
-          <NavUserMenu showName={drawerOpen} />
+          <NavUserMenu open={drawerOpen} />
           <Typography className={styles.versionNumber}>4.1.0</Typography>
         </Box>
       </Box>
