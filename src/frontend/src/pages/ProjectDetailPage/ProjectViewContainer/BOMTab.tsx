@@ -43,7 +43,7 @@ const BOMTab = ({ project }: { project: Project }) => {
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
               Total Cost: ${centsToDollar(totalCost)}
             </Box>
-            {totalCost > project.budget && (
+            {totalCost > project.budget * 100 && (
               <Tooltip title="Current Total Cost Exceeds Budget!" placement="top" arrow>
                 <WarningIcon color="warning" fontSize="large" />
               </Tooltip>
