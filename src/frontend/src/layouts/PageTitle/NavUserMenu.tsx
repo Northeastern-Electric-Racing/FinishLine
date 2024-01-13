@@ -106,17 +106,6 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
           </Typography>
         )}
       </IconButton>
-      {/*open && (
-        <Typography
-          variant="body1"
-          marginTop={1.1}
-          sx={{
-            color: theme.palette.text.primary
-          }}
-        >
-          {fullNamePipe(user)}
-        </Typography>
-      )*/}
       <Menu
         id="menu-appbar"
         anchorEl={anchorEl}
