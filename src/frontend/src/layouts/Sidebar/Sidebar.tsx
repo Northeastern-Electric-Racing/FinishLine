@@ -23,13 +23,13 @@ import { useState } from 'react';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 
 interface SidebarProps {
-  open?: boolean;
+  defaultOpen?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = (open?) => {
+const Sidebar: React.FC<SidebarProps> = (defaultOpen?) => {
   const theme = useTheme();
 
-  const [drawerOpen, setDrawerOpen] = useState(open?.open || false);
+  const [drawerOpen, setDrawerOpen] = useState(defaultOpen?.defaultOpen || false);
 
   const linkItems: LinkItem[] = [
     {
@@ -102,9 +102,17 @@ const Sidebar: React.FC<SidebarProps> = (open?) => {
           {linkItems.map((linkItem) => (
             <NavPageLink {...linkItem} open={drawerOpen} />
           ))}
+          <NavUserMenu open={drawerOpen} />
         </Box>
         <Box>
-          <NavUserMenu open={drawerOpen} />
+          {drawerOpen ? (
+            <Box marginLeft={1.1}>
+              <Typography marginLeft={1.1}>Sponsored By:</Typography>
+              <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
+            </Box>
+          ) : (
+            <Box component="img" sx={{ height: 40, marginLeft: 1.8 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo.svg" />
+          )}
           <Typography className={styles.versionNumber}>4.1.0</Typography>
         </Box>
       </Box>

@@ -83,13 +83,13 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   return (
     <Stack direction={'row'}>
       <IconButton
-        size="medium"
+        size="small"
         aria-label="account of current user"
         aria-controls="menu-appbar"
         aria-haspopup="true"
         onClick={handleMenu}
         color={theme.palette.text.primary}
-        sx={{ padding: 0.5, marginLeft: open ? 1 : 1.5 }}
+        sx={{ padding: 0.5, marginLeft: open ? 0.8 : 1.2 }}
         style={{ borderRadius: 0 }}
       >
         <AccountCircle sx={{ fontSize: 36 }} />
