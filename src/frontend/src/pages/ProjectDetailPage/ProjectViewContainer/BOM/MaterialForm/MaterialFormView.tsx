@@ -170,9 +170,9 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <FormLabel>PDM File Name (optional)</FormLabel>
             <ReactHookTextField
               required={false}
-              name="nerPartNumber"
+              name="pdmFileName"
               control={control}
-              errorMessage={errors.nerPartNumber}
+              errorMessage={errors.pdmFileName}
               placeholder="Enter PDM File Name"
             />
           </FormControl>

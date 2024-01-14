@@ -40,6 +40,7 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<typeof m
     materialTypeName: material.materialTypeName,
     manufacturerName: material.manufacturerName,
     manufacturerPartNumber: material.manufacturerPartNumber,
+    pdmFileName: material.pdmFileName ?? undefined,
     price: material.price,
     subtotal: material.subtotal,
     quantity: material.quantity,

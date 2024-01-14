@@ -13,6 +13,7 @@ interface BOMTableProps {
 
 const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
+  console.log(materials);
 
   const rows: BomRow[] = noAssemblyMaterials.map(materialToRow);
 
