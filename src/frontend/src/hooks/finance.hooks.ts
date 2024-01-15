@@ -167,13 +167,10 @@ export const useGetAllVendors = () => {
  * @returns the edited reimbursement request
  */
 export const useEditVendor = (vendorId: string) => {
-  return useMutation<Vendor, Error, VendorTypePayload>(
-    ['vendor', 'edit'],
-    async (formData: VendorTypePayload) => {
-      const { data } = await editVendor(vendorId, formData);
-      return data;
-    }
-  );
+  return useMutation<Vendor, Error, VendorTypePayload>(['vendor', 'edit'], async (formData: VendorTypePayload) => {
+    const { data } = await editVendor(vendorId, formData);
+    return data;
+  });
 };
 
 /**
@@ -423,5 +420,3 @@ export const useCreateVendor = () => {
     return data;
   });
 };
-
-

@@ -36,11 +36,11 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
 
   const onFormSubmit = async (data: VendorTypePayload) => {
     try {
-        await onSubmit(data);
+      await onSubmit(data);
     } catch (error: unknown) {
-        if (error instanceof Error) {
-            toast.error(error.message);
-        }
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
     }
     handleClose();
   };

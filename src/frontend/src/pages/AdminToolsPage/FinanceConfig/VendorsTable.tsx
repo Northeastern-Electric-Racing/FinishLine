@@ -29,8 +29,8 @@ const VendorsTable = () => {
         setClickedVendor(vendor);
         setShowEditModal(true);
       }}
-      sx={{ cursor: 'pointer'}}
-      >
+      sx={{ cursor: 'pointer' }}
+    >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {datePipe(vendor.dateCreated)}
       </TableCell>
@@ -42,14 +42,14 @@ const VendorsTable = () => {
     <Box>
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
       {clickedVendor && (
-        <EditVendorModal 
+        <EditVendorModal
           showModal={showEditModal}
           handleClose={() => {
             setShowEditModal(false);
             setClickedVendor(undefined);
           }}
           vendor={clickedVendor}
-          />
+        />
       )}
       <Typography variant="subtitle1">Registered Vendors</Typography>
       <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Vendor Name' }]} rows={vendorTableRows} />
@@ -61,7 +61,7 @@ const VendorsTable = () => {
           }}
         >
           New Vendor
-        </NERButton> 
+        </NERButton>
       </Box>
     </Box>
   );
