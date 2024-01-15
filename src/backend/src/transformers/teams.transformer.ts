@@ -20,7 +20,7 @@ const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Tea
       status: calculateProjectStatus(project)
     })),
     leads: team.leads.map(userTransformer),
-    userArchived: team.userArchived ?? undefined,
+    userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,
     dateArchived: team.dateArchived ?? undefined
   };
 };

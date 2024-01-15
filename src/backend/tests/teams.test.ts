@@ -28,13 +28,13 @@ describe('Teams', () => {
   });
 
   test('getAllTeams works', async () => {
-    vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1]);
+    vi.spyOn(prisma.team, 'findMany').mockResolvedValue([justiceLeague]);
 
     const teams = await TeamsService.getAllTeams();
 
     expect(teams).toStrictEqual([sharedTeam1]);
     expect(prisma.team.findMany).toHaveBeenCalledTimes(1);
-    expect(prisma.team.findMany).toHaveBeenCalledWith({ ...teamQueryArgs });
+    expect(prisma.team.findMany).toHaveBeenCalledWith({ ...teamQueryArgs, where: { dateArchived: null } });
   });
 
   test('getSingleTeam works', async () => {
@@ -73,8 +73,8 @@ describe('Teams', () => {
     });
 
     test('setTeamMembers works', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-      vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeague);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([greenlantern, theVisitor]);
 
       const teamId = 'id1';
@@ -86,6 +86,7 @@ describe('Teams', () => {
           userId: 7
         }
       ];
+
       const res = await TeamsService.setTeamMembers(flash, sharedTeam1.teamId, [5, 7]);
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
@@ -131,7 +132,7 @@ describe('Teams', () => {
   describe('setTeamHead', () => {
     test('setTeamHead head not found', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
       const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 122);
 
@@ -152,7 +153,7 @@ describe('Teams', () => {
     });
 
     test(`setTeamHead head's role is not at least head role`, async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(wonderwoman);
 
       const callSetTeamHead = async () => await TeamsService.setTeamHead(flash, sharedTeam1.teamId, 3);
@@ -163,7 +164,7 @@ describe('Teams', () => {
     });
 
     test('setTeamHead new head is already a head of another team', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
       vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
 
@@ -178,7 +179,8 @@ describe('Teams', () => {
     });
 
     test('setTeamHead new head is already a lead of another team', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      const unArchivedTeam = { ...prismaTeam1, dateArchived: null };
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(unArchivedTeam);
       vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue({ ...wonderwoman, role: Role.HEAD });
 
@@ -193,8 +195,8 @@ describe('Teams', () => {
     });
 
     test('setTeamHead works', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-      vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeague);
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(superman);
       vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(null);
 
@@ -296,10 +298,12 @@ describe('Teams', () => {
     });
 
     test('setTeamLeads works', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-      vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeam1);
+      const prisma1Unarchived = { ...prismaTeam1, dateArchived: null };
+      const prisma2Unarchived = { ...primsaTeam2, dateArchived: null };
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prisma1Unarchived);
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(prisma1Unarchived);
       vi.spyOn(userUtils, 'getUsers').mockResolvedValue([greenlantern, theVisitor]);
-      vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1, primsaTeam2, justiceLeague]);
+      vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prisma1Unarchived, prisma2Unarchived, justiceLeague]);
 
       const teamId = 'id1';
       const userIds = [
@@ -310,6 +314,7 @@ describe('Teams', () => {
           userId: 7
         }
       ];
+
       const res = await TeamsService.setTeamLeads(flash, sharedTeam1.teamId, [5, 7]);
 
       expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
@@ -348,25 +353,35 @@ describe('Teams', () => {
       );
     });
 
-    test('Archive team works', async () => {
-      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
+    test('Archive team works on an archived team', async () => {
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(prismaTeam1);
 
-      const justiceLeagueUpdates = { ...justiceLeague, userArchivedId: 2, dateArchived: new Date() };
+      const prismaTeamUpdates = { ...prismaTeam1, userArchivedId: null, userArchived: null, dateArchived: null };
 
-      vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeagueUpdates);
-      const { teamId } = justiceLeague;
-      await TeamsService.archiveTeam(superman, justiceLeague.teamId);
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeamUpdates);
+      const { teamId } = prismaTeam1;
+      const archivedTeam = await TeamsService.archiveTeam(superman, prismaTeam1.teamId);
 
+      expect(archivedTeam.dateArchived).toBe(undefined);
+      expect(archivedTeam.userArchived).toBe(undefined);
       expect(prisma.team.findFirst).toBeCalledTimes(1);
       expect(prisma.team.update).toBeCalledTimes(1);
-      expect(prisma.team.update).toHaveBeenCalledWith({
-        where: { teamId },
-        ...teamQueryArgs,
-        data: {
-          userArchived: superman,
-          dateArchived: justiceLeague.dateArchived !== null ? new Date() : null
-        }
-      });
+    });
+
+    test('Archive team works for a non archived team', async () => {
+      vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
+      const dateArchived = new Date();
+      const justiceLeagueUpdates = { ...justiceLeague, userArchivedId: 2, userArchived: superman, dateArchived };
+
+      vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeagueUpdates);
+      vi.spyOn(teamsTransformer, 'default').mockReturnValue(justiceLeagueUpdates);
+      const { teamId } = justiceLeague;
+      const archivedTeam = await TeamsService.archiveTeam(superman, justiceLeague.teamId);
+
+      expect(archivedTeam.dateArchived).toBe(dateArchived);
+      expect(archivedTeam.userArchived).toBe(superman);
+      expect(prisma.team.findFirst).toBeCalledTimes(1);
+      expect(prisma.team.update).toBeCalledTimes(1);
     });
   });
 });
