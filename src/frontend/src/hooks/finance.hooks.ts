@@ -26,7 +26,8 @@ import {
   uploadSingleReceipt,
   editAccountCode,
   createAccountCode,
-  createVendor
+  createVendor,
+  editVendor
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -59,6 +60,10 @@ export interface ExpenseTypePayload {
   name: string;
   allowed: boolean;
   allowedRefundSources: ClubAccount[];
+}
+
+export interface VendorTypePayload {
+  name: string;
 }
 
 /**
@@ -154,6 +159,23 @@ export const useGetAllVendors = () => {
     return data;
   });
 };
+
+/**
+ * Custom React Hook to edit a vendor.
+ *
+ * @param reimbursementRequestId The id of the reimbursement request being edited
+ * @returns the edited reimbursement request
+ */
+export const useEditVendor = (vendorId: string) => {
+  return useMutation<Vendor, Error, VendorTypePayload>(
+    ['vendor', 'edit'],
+    async (formData: VendorTypePayload) => {
+      const { data } = await editVendor(vendorId, formData);
+      return data;
+    }
+  );
+};
+
 /**
  * Custom React Hook to get all the reimbursement requests
  */
@@ -401,3 +423,5 @@ export const useCreateVendor = () => {
     return data;
   });
 };
+
+

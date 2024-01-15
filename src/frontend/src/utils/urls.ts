@@ -107,6 +107,7 @@ const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advis
 const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
 const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
+const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}vendors/edit`
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -211,6 +212,7 @@ export const apiUrls = {
   financeEditExpenseType,
   financeCreateExpenseType,
   financeCreateVendor,
+  financeEditVendor,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
