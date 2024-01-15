@@ -9,7 +9,6 @@ import { GoogleLogout } from 'react-google-login';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
@@ -20,8 +19,6 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { canAccessAdminTools } from '../../utils/users';
 import { Stack, useTheme } from '@mui/system';
 import { Typography } from '@mui/material';
-import { fullNamePipe } from '../../utils/pipes';
-import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface NavUserMenuProps {
   open?: boolean;
@@ -31,7 +28,6 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
-  const user = useCurrentUser();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -81,7 +77,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const theme = useTheme();
 
   return (
-    <Stack direction={'row'}>
+    <Stack direction={'row'} justifyContent={open ? 'flex-start' : 'center'}>
       <IconButton
         size="small"
         aria-label="account of current user"
@@ -89,20 +85,20 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         aria-haspopup="true"
         onClick={handleMenu}
         color={theme.palette.text.primary}
-        sx={{ padding: 0.5, marginLeft: open ? 0.8 : 1.2 }}
+        sx={{ padding: 0.5, marginLeft: open ? 1.1 : 0 }}
         style={{ borderRadius: 0 }}
       >
-        <AccountCircle sx={{ fontSize: 36 }} />
+        <SettingsIcon sx={{ fontSize: 30 }} />
         {open && (
           <Typography
             variant="body1"
             marginBottom={0.2}
-            marginLeft={0.6}
+            marginLeft={1}
             sx={{
               color: theme.palette.text.primary
             }}
           >
-            {fullNamePipe(user)}
+            Settings
           </Typography>
         )}
       </IconButton>
@@ -115,7 +111,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         }}
         PaperProps={{
           style: {
-            transform: 'translateX(-10%) translateY(35%)'
+            transform: open ? 'translateX(60%) translateY(0%)' : 'translateX(20%) translateY(0%)'
           }
         }}
         transformOrigin={{

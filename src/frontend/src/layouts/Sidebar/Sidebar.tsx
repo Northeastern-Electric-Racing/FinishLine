@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, useTheme, IconButton, Divider } from '@mui/material';
+import { Typography, Box, useTheme, IconButton, Divider, Stack } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -102,18 +102,20 @@ const Sidebar: React.FC<SidebarProps> = (defaultOpen?) => {
           {linkItems.map((linkItem) => (
             <NavPageLink {...linkItem} open={drawerOpen} />
           ))}
-          <NavUserMenu open={drawerOpen} />
+          {<NavUserMenu open={drawerOpen} />}
         </Box>
-        <Box>
+        <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
           {drawerOpen ? (
             <Box marginLeft={1.1}>
               <Typography marginLeft={1.1}>Sponsored By:</Typography>
               <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
             </Box>
           ) : (
-            <Box component="img" sx={{ height: 40, marginLeft: 1.8 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo.svg" />
+            <Stack direction={'row'} justifyContent={'center'}>
+              <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo.svg" />
+            </Stack>
           )}
-          <Typography className={styles.versionNumber}>4.1.0</Typography>
+          <Typography className={styles.versionNumber}>v4.3.0</Typography>
         </Box>
       </Box>
     </NERDrawer>
