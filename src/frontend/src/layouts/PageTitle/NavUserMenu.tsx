@@ -98,7 +98,7 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
               color: theme.palette.text.primary
             }}
           >
-            Settings
+            My Account
           </Typography>
         )}
       </IconButton>
