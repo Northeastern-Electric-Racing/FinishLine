@@ -21,6 +21,7 @@ export interface MaterialFormViewProps {
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
   createUnit: (name: string) => void;
+  createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
 }
 
@@ -38,6 +39,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   open,
   watch,
   createUnit,
+  createManufacturer,
   setValue
 }) => {
   const quantity = watch('quantity');
@@ -128,14 +130,25 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   {...field}
                   select
                   variant="outlined"
-                  error={!!errors.materialTypeName}
-                  helperText={errors.materialTypeName?.message}
+                  error={!!errors.manufacturerName}
+                  helperText={errors.manufacturerName?.message}
                 >
                   {allManufacturers.map((manufacturer) => (
                     <MenuItem key={manufacturer.name} value={manufacturer.name}>
                       {manufacturer.name}
                     </MenuItem>
                   ))}
+                  <MenuItem
+                    value="createManufacturer"
+                    onClick={() => {
+                      const manufacturerName = prompt('Enter Manufacturer Name');
+                      if (manufacturerName) {
+                        createManufacturer(manufacturerName);
+                      }
+                    }}
+                  >
+                    + Create Manufacturer
+                  </MenuItem>
                 </TextField>
               )}
             />

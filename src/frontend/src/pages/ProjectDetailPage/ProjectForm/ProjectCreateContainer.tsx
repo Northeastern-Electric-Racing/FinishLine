@@ -14,16 +14,13 @@ import { routes } from '../../../utils/routes';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 const ProjectCreateContainer: React.FC = () => {
   const toast = useToast();
   const history = useHistory();
+  const query = useQuery();
 
-  //const links: { linkId: string; url: string; linkTypeName: string }[] = [];
-  //const goals: { bulletId: number; detail: string }[] = [];
-  //const features: { bulletId: number; detail: string }[] = [];
-  //const rules: { bulletId: number; detail: string }[] = [];
-  //const constraints: { bulletId: number; detail: string }[] = [];
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
 
@@ -48,7 +45,7 @@ const ProjectCreateContainer: React.FC = () => {
     teamId: String(),
     carNumber: 0,
     links: [],
-    crId: 0,
+    crId: query.get('crId') || '',
     goals: [],
     features: [],
     constraints: [],
@@ -67,7 +64,7 @@ const ProjectCreateContainer: React.FC = () => {
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId,
+        crId: Number(crId),
         name,
         carNumber,
         summary,

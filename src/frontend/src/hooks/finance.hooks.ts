@@ -7,6 +7,7 @@ import {
   approveReimbursementRequest,
   createReimbursementRequest,
   deleteReimbursementRequest,
+  denyReimbursementRequest,
   downloadBlobsToPdf,
   downloadGoogleImage,
   editReimbursementRequest,
@@ -252,6 +253,28 @@ export const useApproveReimbursementRequest = (id: string) => {
     ['reimbursement-requests', 'edit'],
     async () => {
       const { data } = await approveReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to deny a reimbursement request for the finance team
+ *
+ * @param id id of the reimbursement request to deny
+ * @returns the denied reimbursement request status
+ */
+export const useDenyReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await denyReimbursementRequest(id);
       return data;
     },
     {

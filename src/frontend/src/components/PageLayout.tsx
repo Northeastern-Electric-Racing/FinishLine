@@ -11,6 +11,7 @@ import { Box } from '@mui/system';
 
 interface PageLayoutProps {
   title?: string;
+  chips?: ReactNode;
   hidePageTitle?: boolean;
   previousPages?: LinkItem[];
   headerRight?: ReactNode;
@@ -21,6 +22,7 @@ interface PageLayoutProps {
 const PageLayout: React.FC<PageLayoutProps> = ({
   children,
   title,
+  chips,
   hidePageTitle = false,
   previousPages = [],
   headerRight,
@@ -33,7 +35,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         <title>{`FinishLine ${title && `| ${title}`}`}</title>
         <meta name="description" content="FinishLine Project Management Dashboard" />
       </Helmet>
-      {!hidePageTitle && title && <PageTitle sticky={stickyHeader} {...{ title, previousPages, headerRight, tabs }} />}
+      {!hidePageTitle && title && (
+        <PageTitle sticky={stickyHeader} {...{ title, chips, previousPages, headerRight, tabs }} />
+      )}
       {children}
     </Box>
   );

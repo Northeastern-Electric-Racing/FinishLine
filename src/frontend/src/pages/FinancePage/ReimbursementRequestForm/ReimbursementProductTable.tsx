@@ -25,6 +25,7 @@ import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProdu
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
+import { useTheme } from '@mui/system';
 
 const otherCategoryOptions = [
   { label: 'Competition', id: 'COMPETITION' },
@@ -82,6 +83,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
   const onCostBlurHandler = (value: number, index: number) => {
     setValue(`reimbursementProducts.${index}.cost`, parseFloat(value.toFixed(2)));
   };
+
+  const userTheme = useTheme();
+  const hoverColor = userTheme.palette.action.hover;
 
   return (
     <TableContainer>
@@ -155,7 +159,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                               {errors.reimbursementProducts?.[product.index]?.cost?.message}
                             </FormHelperText>
                           </FormControl>
-                          <IconButton onClick={() => removeProduct(product.index)}>
+                          <IconButton
+                            sx={{
+                              '&:focus': {
+                                backgroundColor: hoverColor
+                              }
+                            }}
+                            onClick={() => removeProduct(product.index)}
+                          >
                             <Delete />
                           </IconButton>
                         </Box>
@@ -163,15 +174,24 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                     ))}
                   </Box>
                   <Button
-                    sx={{ margin: '4px' }}
+                    sx={{
+                      margin: '4px',
+                      '&:focus': {
+                        backgroundColor: hoverColor
+                      },
+                      '&:hover': {
+                        backgroundColor: hoverColor
+                      }
+                    }}
                     startIcon={<Add />}
-                    onClick={() =>
+                    onClick={(e) => {
                       appendProduct({
                         reason: key.includes('.') ? validateWBS(key) : (key as OtherProductReason),
                         name: '',
                         cost: 0
-                      })
-                    }
+                      });
+                      e.currentTarget.blur();
+                    }}
                   >
                     Add Product
                   </Button>

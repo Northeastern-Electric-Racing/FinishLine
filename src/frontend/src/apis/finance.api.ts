@@ -159,6 +159,16 @@ export const approveReimbursementRequest = (id: string) => {
 };
 
 /**
+ * Deny Reimbursement Request
+ *
+ * @param id of the reimbursement request being denied by finance
+ * @returns the denied reimbursement status
+ */
+export const denyReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeDenyReimbursementRequest(id));
+};
+
+/**
  * Downloads a given fileId from google drive into a blob
  *
  * @param fileId the google id of the file to download

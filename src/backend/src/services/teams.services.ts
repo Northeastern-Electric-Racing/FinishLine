@@ -56,9 +56,14 @@ export default class TeamsService {
       ...teamQueryArgs
     });
 
-    if (!team) throw new NotFoundException('Team', teamId);
-    if (!isAdmin(submitter.role) && submitter.userId !== team.headId)
-      throw new AccessDeniedException('you must be an admin or the team head to update the members!');
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    const isTeamLead = team.leads.some((lead) => lead.userId === submitter.userId);
+
+    if (!isAdmin(submitter.role) && submitter.userId !== team.headId && !isTeamLead)
+      throw new AccessDeniedException('you must be an admin, the team head, or a team lead to update the members!');
 
     // this throws if any of the users aren't found
     const users = await getUsers(userIds);

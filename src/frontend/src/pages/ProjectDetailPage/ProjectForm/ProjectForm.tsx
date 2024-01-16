@@ -24,7 +24,7 @@ export interface ProjectFormInput {
   budget: number;
   summary: string;
   links: LinkCreateArgs[];
-  crId: number;
+  crId: string;
   carNumber: number;
   goals: {
     bulletId: number;
