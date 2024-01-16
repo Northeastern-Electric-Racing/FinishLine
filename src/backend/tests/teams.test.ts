@@ -359,7 +359,6 @@ describe('Teams', () => {
       const prismaTeamUpdates = { ...prismaTeam1, userArchivedId: null, userArchived: null, dateArchived: null };
 
       vi.spyOn(prisma.team, 'update').mockResolvedValue(prismaTeamUpdates);
-      const { teamId } = prismaTeam1;
       const archivedTeam = await TeamsService.archiveTeam(superman, prismaTeam1.teamId);
 
       expect(archivedTeam.dateArchived).toBe(undefined);
@@ -375,7 +374,6 @@ describe('Teams', () => {
 
       vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeagueUpdates);
       vi.spyOn(teamsTransformer, 'default').mockReturnValue(justiceLeagueUpdates);
-      const { teamId } = justiceLeague;
       const archivedTeam = await TeamsService.archiveTeam(superman, justiceLeague.teamId);
 
       expect(archivedTeam.dateArchived).toBe(dateArchived);
