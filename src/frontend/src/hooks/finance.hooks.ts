@@ -167,8 +167,10 @@ export const useGetAllVendors = () => {
  * @returns the edited reimbursement request
  */
 export const useEditVendor = (vendorId: string) => {
-  return useMutation<Vendor, Error, VendorTypePayload>(['vendor', 'edit'], async (formData: VendorTypePayload) => {
+  const queryClient = useQueryClient();
+  return useMutation<Vendor, Error, VendorTypePayload>(['vendors', 'edit'], async (formData: VendorTypePayload) => {
     const { data } = await editVendor(vendorId, formData);
+    queryClient.invalidateQueries(['vendors']);
     return data;
   });
 };
