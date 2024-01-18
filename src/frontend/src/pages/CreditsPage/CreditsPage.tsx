@@ -158,7 +158,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
-    { name: 'Rebecca Lee', color: '#87c2fa'}
+    { name: 'Rebecca Lee', color: '#87c2fa' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
