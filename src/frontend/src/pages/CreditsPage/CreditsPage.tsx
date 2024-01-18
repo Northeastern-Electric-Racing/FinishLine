@@ -151,6 +151,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Lauren Phan', color: '#F3A7C0' },
     { name: 'Vidyuth Ramkumar', color: '#800000' },
     { name: 'Jake Hensley', color: '#FFA500' },
+    { name: 'Emma Shum', color: '#d4878f' },
     {
       name: 'Wyatt Bracy',
       color: '#080808',
