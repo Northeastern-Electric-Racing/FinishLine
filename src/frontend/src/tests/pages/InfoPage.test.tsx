@@ -6,6 +6,8 @@
 import { render, screen, routerWrapperBuilder } from '../test-support/test-utils';
 import { routes } from '../../utils/routes';
 import InfoPage from '../../pages/InfoPage';
+import * as userHooks from '../../hooks/users.hooks';
+import { exampleAdminUser } from '../test-support/test-data/users.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -21,6 +23,7 @@ const renderComponent = () => {
 
 describe('help page component', () => {
   it('renders everything', () => {
+    vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
     renderComponent();
     expect(screen.getAllByText('Information').length).toEqual(1);
     expect(screen.getByText(/Resources/)).toBeInTheDocument();
