@@ -157,6 +157,10 @@ const CreditsPage: React.FC = () => {
       sx: {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
+    },
+    {
+      name: 'Alan Eng',
+      color: '#0B66E4'
     }
   ];
 
