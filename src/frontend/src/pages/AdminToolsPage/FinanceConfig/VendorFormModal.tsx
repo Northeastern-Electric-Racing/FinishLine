@@ -6,7 +6,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Vendor } from 'shared';
-import { VendorTypePayload } from '../../../hooks/finance.hooks';
+import { EditVendorTypePayload } from '../../../hooks/finance.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Vendor Name is Required')
@@ -16,7 +16,7 @@ interface VenderFormModalProps {
   showModal: boolean;
   handleClose: () => void;
   defaultValues?: Vendor;
-  onSubmit: (data: VendorTypePayload) => void;
+  onSubmit: (data: EditVendorTypePayload) => void;
 }
 
 const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: VenderFormModalProps) => {
@@ -34,7 +34,7 @@ const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: Ve
     }
   });
 
-  const onFormSubmit = async (data: VendorTypePayload) => {
+  const onFormSubmit = async (data: EditVendorTypePayload) => {
     try {
       await onSubmit(data);
     } catch (error: unknown) {

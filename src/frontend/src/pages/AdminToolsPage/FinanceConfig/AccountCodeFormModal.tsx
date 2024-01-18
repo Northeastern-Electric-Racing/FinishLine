@@ -58,7 +58,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       reset={() => reset({ name: '', code: undefined, allowed: false, allowedRefundSources: [] })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!defaultValues ? 'edit-vendor-form' : 'create-vendor-form'}
+      formId={!!defaultValues ? 'edit-account-code-form' : 'create-account-code-form'}
       showCloseButton
     >
       <FormControl fullWidth>

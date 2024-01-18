@@ -62,7 +62,7 @@ export interface ExpenseTypePayload {
   allowedRefundSources: ClubAccount[];
 }
 
-export interface VendorTypePayload {
+export interface EditVendorTypePayload {
   name: string;
 }
 
@@ -168,7 +168,7 @@ export const useGetAllVendors = () => {
  */
 export const useEditVendor = (vendorId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Vendor, Error, VendorTypePayload>(['vendors', 'edit'], async (formData: VendorTypePayload) => {
+  return useMutation<Vendor, Error, EditVendorTypePayload>(['vendors', 'edit'], async (formData: EditVendorTypePayload) => {
     const { data } = await editVendor(vendorId, formData);
     queryClient.invalidateQueries(['vendors']);
     return data;
