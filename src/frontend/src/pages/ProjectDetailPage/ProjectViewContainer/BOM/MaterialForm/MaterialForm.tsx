@@ -20,7 +20,7 @@ const schema = yup.object().shape({
   manufacturerName: yup.string().required('Select a Manufacturer'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
   nerPartNumber: yup.string().optional(),
-  quantity: yup.number().required('Enter a quantity!'),
+  quantity: yup.number().integer().required('Enter a quantity!'),
   price: yup.number().required('Price is required!'),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
@@ -33,7 +33,7 @@ export interface MaterialFormInput {
   materialTypeName: string;
   manufacturerName: string;
   manufacturerPartNumber: string;
-  nerPartNumber?: string;
+  pdmFileName?: string;
   price: number;
   quantity: number;
   unitName?: string;
@@ -70,7 +70,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
       quantity: defaultValues?.quantity ?? 0,
       manufacturerName: defaultValues?.manufacturerName ?? '',
-      nerPartNumber: defaultValues?.nerPartNumber ?? '',
+      pdmFileName: defaultValues?.pdmFileName ?? '',
       price: defaultValues?.price ?? 0,
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
@@ -118,7 +118,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   }
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
-    const price = data.price * 100;
+    const price = Math.round(data.price * 100);
     const subtotal = data.unitName ? price : data.quantity * price;
     onSubmit({ ...data, subtotal: subtotal, price: price });
   };
