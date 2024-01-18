@@ -6,7 +6,6 @@
 !.yarn/releases
 !.yarn/plugins
 .pnp.*
-yarn.lock
 
 # dependencies
 /node_modules
