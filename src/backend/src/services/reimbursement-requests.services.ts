@@ -640,6 +640,51 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Adds a reimbursement status with type reimbursed to the given reimbursement request
+   *
+   * @param reimbursementRequestId the id of the reimbursement request to mark reimbursed
+   * @param submitter the user who is marking the reimbursement request as reimbursed
+   * @returns the created reimbursment status
+   */
+  static async markReimbursementRequestAsReimbursed(reimbursementRequestId: string, submitter: User) {
+    await validateUserIsPartOfFinanceTeam(submitter);
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
+      throw new HttpException(400, 'This reimbursement request has already been marked as reimbursed');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.REIMBURSED,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      include: {
+        user: true
+      }
+    });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
    * Gets a single reimbursement request for the given id
    * @param user the user getting the reimbursement request
    * @param reimbursementRequestId the id of thereimbursement request to get
