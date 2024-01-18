@@ -26,10 +26,10 @@ interface SidebarProps {
   defaultOpen?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = (defaultOpen?) => {
+const Sidebar = ({ defaultOpen = false }: SidebarProps) => {
   const theme = useTheme();
 
-  const [drawerOpen, setDrawerOpen] = useState(defaultOpen?.defaultOpen || false);
+  const [drawerOpen, setDrawerOpen] = useState(defaultOpen);
 
   const linkItems: LinkItem[] = [
     {

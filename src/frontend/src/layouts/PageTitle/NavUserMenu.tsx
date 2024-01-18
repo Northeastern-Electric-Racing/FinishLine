@@ -85,10 +85,10 @@ const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
         aria-haspopup="true"
         onClick={handleMenu}
         color={theme.palette.text.primary}
-        sx={{ padding: 0.5, marginLeft: open ? 1.1 : 0 }}
+        sx={{ padding: 0.5, marginLeft: open ? 1.2 : 0 }}
         style={{ borderRadius: 0 }}
       >
-        <SettingsIcon sx={{ fontSize: 30 }} />
+        <SettingsIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />
         {open && (
           <Typography
             variant="body1"
