@@ -167,7 +167,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       id={'vendor'}
                       size="medium"
                       options={mappedVendors}
-                      value={mappedVendors.find((vendor) => vendor.id === value)}
+                      value={mappedVendors.find((vendor) => vendor.id === value) || null}
                       placeholder="Select Vendor"
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
