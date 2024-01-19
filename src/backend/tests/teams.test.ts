@@ -370,7 +370,13 @@ describe('Teams', () => {
     test('Archive team works for a non archived team', async () => {
       vi.spyOn(prisma.team, 'findFirst').mockResolvedValue(justiceLeague);
       const dateArchived = new Date();
-      const justiceLeagueUpdates = { ...justiceLeague, userArchivedId: 2, userArchived: superman, dateArchived, projects: [] };
+      const justiceLeagueUpdates = {
+        ...justiceLeague,
+        userArchivedId: 2,
+        userArchived: superman,
+        dateArchived,
+        projects: []
+      };
 
       vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeagueUpdates);
       vi.spyOn(teamsTransformer, 'default').mockReturnValue(justiceLeagueUpdates);
