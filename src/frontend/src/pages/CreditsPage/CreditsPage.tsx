@@ -124,6 +124,15 @@ const CreditsPage: React.FC = () => {
     { name: 'Anika Sharma', color: '#ff0000' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
     {
+      name: 'Dao Ho',
+      color: 'white',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        px: 1.5,
+        borderRadius: 3
+      }
+    },
+    {
       name: 'Kaan Tural',
       color: 'transparent',
       sx: {
