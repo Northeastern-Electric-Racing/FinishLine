@@ -160,6 +160,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
+    { name: 'Aahil Nishad', color: '#5E9E82' },
     { name: 'Anya Dasgupta', color: '#e37fc0' },
     { name: 'Ben Marler', color: '#a300a3' },
     { name: 'Alan Eng', color: '#0B66E4' },
