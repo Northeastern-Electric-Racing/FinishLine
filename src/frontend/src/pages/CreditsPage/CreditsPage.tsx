@@ -151,6 +151,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Lauren Phan', color: '#F3A7C0' },
     { name: 'Vidyuth Ramkumar', color: '#800000' },
     { name: 'Jake Hensley', color: '#FFA500' },
+    { name: 'Matthew Egg', color: '#7E1B2F' },
     {
       name: 'Wyatt Bracy',
       color: '#080808',
@@ -158,7 +159,9 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
-    { name: 'Alan Eng', color: '#0B66E4' }
+    { name: 'Alan Eng', color: '#0B66E4' },
+    { name: 'Alexander Schinkmann-Bonias', color: '#d3d3d3' },
+    { name: 'Aditya Boddepalli', color: '#00FFFF' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

@@ -9,7 +9,6 @@ import { GoogleLogout } from 'react-google-login';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
 import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
@@ -18,8 +17,14 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { canAccessAdminTools } from '../../utils/users';
+import { Stack, useTheme } from '@mui/system';
+import { Typography } from '@mui/material';
 
-const NavUserMenu: React.FC = () => {
+interface NavUserMenuProps {
+  open?: boolean;
+}
+
+const NavUserMenu: React.FC<NavUserMenuProps> = ({ open }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const history = useHistory();
   const auth = useAuth();
@@ -69,17 +74,33 @@ const NavUserMenu: React.FC = () => {
     </MenuItem>
   );
 
+  const theme = useTheme();
+
   return (
-    <>
+    <Stack direction={'row'} justifyContent={open ? 'flex-start' : 'center'}>
       <IconButton
-        size="large"
+        size="small"
         aria-label="account of current user"
         aria-controls="menu-appbar"
         aria-haspopup="true"
         onClick={handleMenu}
-        color="inherit"
+        color={theme.palette.text.primary}
+        sx={{ padding: 0.5, marginLeft: open ? 1.2 : 0 }}
+        style={{ borderRadius: 0 }}
       >
-        <AccountCircle sx={{ fontSize: 36 }} />
+        <SettingsIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />
+        {open && (
+          <Typography
+            variant="body1"
+            marginBottom={0.2}
+            marginLeft={1}
+            sx={{
+              color: theme.palette.text.primary
+            }}
+          >
+            My Account
+          </Typography>
+        )}
       </IconButton>
       <Menu
         id="menu-appbar"
@@ -90,7 +111,7 @@ const NavUserMenu: React.FC = () => {
         }}
         PaperProps={{
           style: {
-            transform: 'translateX(-10%) translateY(35%)'
+            transform: open ? 'translateX(60%) translateY(0%)' : 'translateX(20%) translateY(0%)'
           }
         }}
         transformOrigin={{
@@ -118,7 +139,7 @@ const NavUserMenu: React.FC = () => {
         {canAccessAdminTools(auth.user) && <AdminTools />}
         {import.meta.env.MODE === 'development' ? <DevLogout /> : <ProdLogout />}
       </Menu>
-    </>
+    </Stack>
   );
 };
 

@@ -13,7 +13,8 @@ const openedMixin = (theme: Theme): CSSObject => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen
   }),
-  overflowX: 'hidden'
+  overflowX: 'hidden',
+  backgroundColor: '#ef4345'
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
@@ -25,7 +26,8 @@ const closedMixin = (theme: Theme): CSSObject => ({
   width: `calc(${theme.spacing(7)} + 1px)`,
   [theme.breakpoints.up('sm')]: {
     width: `calc(${theme.spacing(8)} + 1px)`
-  }
+  },
+  backgroundColor: '#ef4345'
 });
 
 const NERDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
