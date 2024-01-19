@@ -112,16 +112,28 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row, index) => (
-                <TableRow
-                  key={`${row.date}-$${row.amount}-${index}`}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell align="center">{datePipe(row.date)}</TableCell>
-                  <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
-                  {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
-                </TableRow>
-              ))}
+              {rows
+                .reverse()
+                .sort((a, b) => {
+                  const dateA = new Date(a.date);
+                  const dateB = new Date(b.date);
+
+                  //leave out time (real time taken care of by order in database)
+                  const dayA = new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+                  const dayB = new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+
+                  return dayB.valueOf() - dayA.valueOf();
+                })
+                .map((row, index) => (
+                  <TableRow
+                    key={`${row.date}-$${row.amount}-${index}`}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell align="center">{datePipe(row.date)}</TableCell>
+                    <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
+                    {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
