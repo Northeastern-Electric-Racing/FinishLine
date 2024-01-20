@@ -40,6 +40,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
     { name: 'Tucker Gwertzman', color: '#25e6e2' },
+    { name: 'Donny Le', color: '#03fcf4' },
     { name: 'Ryan Howe', color: '#3cce20' },
     { name: 'Ethan Szeto', color: '#404040' },
     { name: 'Adarsh Jayaram', color: '#ff0000' },
@@ -151,6 +152,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Lauren Phan', color: '#F3A7C0' },
     { name: 'Vidyuth Ramkumar', color: '#800000' },
     { name: 'Jake Hensley', color: '#FFA500' },
+    { name: 'Emma Shum', color: '#d4878f' },
     { name: 'Matthew Egg', color: '#7E1B2F' },
     {
       name: 'Wyatt Bracy',
@@ -160,6 +162,14 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Waverly Hassman', color: '#CBC3E3' },
+    { name: 'Akul Aggarwal', color: '#cc34eb' },
+    { name: 'Rebecca Lee', color: '#87c2fa' },
+    { name: 'Jake Langlois', color: '#588BAE' },
+    { name: 'Caio DaSilva', color: '#290ED2' },
+    { name: 'Aahil Nishad', color: '#5E9E82' },
+    { name: 'Anya Dasgupta', color: '#e37fc0' },
+    { name: 'Ben Marler', color: '#a300a3' },
+    { name: 'Alan Eng', color: '#0B66E4' },
     { name: 'Alexander Schinkmann-Bonias', color: '#d3d3d3' },
     { name: 'Aditya Boddepalli', color: '#00FFFF' }
   ];
