@@ -7,10 +7,14 @@ import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
 import CreateVendorModal from './CreateVendorModal';
 import AdminToolTable from '../AdminToolTable';
+import { Vendor } from 'shared';
+import EditVendorModal from './EditVendorModal';
 
 const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [clickedVendor, setClickedVendor] = useState<Vendor>();
 
   if (!vendors || vendorIsLoading) {
     return <LoadingIndicator />;
@@ -20,7 +24,13 @@ const VendorsTable = () => {
   }
 
   const vendorTableRows = vendors.map((vendor) => (
-    <TableRow>
+    <TableRow
+      onClick={() => {
+        setClickedVendor(vendor);
+        setShowEditModal(true);
+      }}
+      sx={{ cursor: 'pointer' }}
+    >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {datePipe(vendor.dateCreated)}
       </TableCell>
@@ -31,6 +41,16 @@ const VendorsTable = () => {
   return (
     <Box>
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      {clickedVendor && (
+        <EditVendorModal
+          showModal={showEditModal}
+          handleClose={() => {
+            setShowEditModal(false);
+            setClickedVendor(undefined);
+          }}
+          vendor={clickedVendor}
+        />
+      )}
       <Typography variant="subtitle1">Registered Vendors</Typography>
       <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Vendor Name' }]} rows={vendorTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
