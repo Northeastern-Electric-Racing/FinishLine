@@ -529,7 +529,7 @@ model Material {
   manufacturerName       String
   manufacturerPartNumber String
   pdmFileName            String?
-  quantity               Int
+  quantity               Decimal
   quantityUnit           Unit?           @relation(fields: [unitName], references: [name])
   unitName               String?
   price                  Int

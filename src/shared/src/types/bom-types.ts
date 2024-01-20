@@ -1,4 +1,5 @@
 import { User, UserPreview } from './user-types';
+import { Decimal } from 'decimal.js'
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
@@ -69,7 +70,7 @@ export interface Material {
   manufacturer: ManufacturerPreview;
   manufacturerPartNumber: string;
   pdmFileName?: string;
-  quantity: number;
+  quantity: Decimal;
   unitName?: string;
   quantityUnit?: UnitPreview;
   price: number;
