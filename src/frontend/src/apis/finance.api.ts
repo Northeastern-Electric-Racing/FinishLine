@@ -6,7 +6,7 @@ import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
   ExpenseTypePayload,
-  EditVendorTypePayload
+  EditVendorPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -325,6 +325,6 @@ export const createVendor = async (vendorData: { name: string }) => {
  * @param vendorData the edited data of the vendor
  * @returns the updated vendor
  */
-export const editVendor = async (id: string, vendorData: EditVendorTypePayload) => {
+export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
   return axios.post(apiUrls.financeEditVendor(id), vendorData);
 };
