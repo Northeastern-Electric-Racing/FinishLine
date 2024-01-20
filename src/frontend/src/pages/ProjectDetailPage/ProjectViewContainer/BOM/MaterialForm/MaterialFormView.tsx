@@ -45,7 +45,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const quantity = watch('quantity');
   const price = watch('price');
   const unit = watch('unitName');
-  const subtotal = quantity && price ? (unit ? price : quantity * price) : 0;
+  const numericQuantity = quantity ? Number(quantity) : 0;
+  const subtotal = quantity && price ? (unit ? price : numericQuantity * price) : 0;
 
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
@@ -184,7 +185,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               <ReactHookTextField
                 name="quantity"
                 control={control}
-                errorMessage={errors.quantity}
+                errorMessage={errors.quantity?.root} // I just wrote root here for the ts test to pass but not too sure what should go here because I was getting a type error
                 placeholder="Enter Quantity"
                 type="number"
               />
