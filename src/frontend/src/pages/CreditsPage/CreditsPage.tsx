@@ -170,6 +170,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
+    { name: 'Waverly Hassman', color: '#CBC3E3' },
     { name: 'Akul Aggarwal', color: '#cc34eb' },
     { name: 'Rebecca Lee', color: '#87c2fa' },
     { name: 'Jake Langlois', color: '#588BAE' },
