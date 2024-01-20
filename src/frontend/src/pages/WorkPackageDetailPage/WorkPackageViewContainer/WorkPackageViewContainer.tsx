@@ -14,7 +14,7 @@ import ChangesList from '../../../components/ChangesList';
 import StageGateWorkPackageModalContainer from '../StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import { NERButton } from '../../../components/NERButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem } from '@mui/material';
+import { Box, Menu, MenuItem } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -28,6 +28,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
 import NERTabs from '../../../components/Tabs';
+import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -157,56 +158,67 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
   const projectWbsString: string = wbsPipe({ ...workPackage.wbsNum, workPackageNumber: 0 });
 
   return (
-    <PageLayout
-      title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
-      previousPages={[
-        { name: 'Projects', route: routes.PROJECTS },
-        { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
-      ]}
-      headerRight={projectActionsDropdown}
-      tabs={
-        <NERTabs
-          setTab={setTabValue}
-          tabsLabels={[
-            { tabUrlValue: 'overview', tabName: 'Overview' },
-            { tabUrlValue: 'scope', tabName: 'Scope' },
-            { tabUrlValue: 'changes', tabName: 'Changes' }
+    <>
+      <Box mb={-1}>
+        <PageBreadcrumbs
+          currentPageTitle={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+          previousPages={[
+            { name: 'Projects', route: routes.PROJECTS },
+            { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
           ]}
-          baseUrl={`${routes.PROJECTS}/${wbsNum}`}
-          defaultTab="overview"
-          id="wp-detail-tabs"
         />
-      }
-    >
-      {tabValue === 0 ? (
-        <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
-      ) : tabValue === 1 ? (
-        <ScopeTab workPackage={workPackage} />
-      ) : (
-        <ChangesList changes={workPackage.changes} />
-      )}
-      {showActivateModal && (
-        <ActivateWorkPackageModalContainer
-          wbsNum={workPackage.wbsNum}
-          modalShow={showActivateModal}
-          handleClose={() => setShowActivateModal(false)}
-        />
-      )}
-      {showStageGateModal && (
-        <StageGateWorkPackageModalContainer
-          wbsNum={workPackage.wbsNum}
-          modalShow={showStageGateModal}
-          handleClose={() => setShowStageGateModal(false)}
-        />
-      )}
-      {showDeleteModal && (
-        <DeleteWorkPackage
-          wbsNum={workPackage.wbsNum}
-          modalShow={showDeleteModal}
-          handleClose={() => setShowDeleteModal(false)}
-        />
-      )}
-    </PageLayout>
+      </Box>
+      <PageLayout
+        title={`${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}`}
+        previousPages={[
+          { name: 'Projects', route: routes.PROJECTS },
+          { name: `${projectWbsString} - ${workPackage.projectName}`, route: `${routes.PROJECTS}/${projectWbsString}` }
+        ]}
+        headerRight={projectActionsDropdown}
+        tabs={
+          <NERTabs
+            setTab={setTabValue}
+            tabsLabels={[
+              { tabUrlValue: 'overview', tabName: 'Overview' },
+              { tabUrlValue: 'scope', tabName: 'Scope' },
+              { tabUrlValue: 'changes', tabName: 'Changes' }
+            ]}
+            baseUrl={`${routes.PROJECTS}/${wbsNum}`}
+            defaultTab="overview"
+            id="wp-detail-tabs"
+          />
+        }
+      >
+        {tabValue === 0 ? (
+          <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
+        ) : tabValue === 1 ? (
+          <ScopeTab workPackage={workPackage} />
+        ) : (
+          <ChangesList changes={workPackage.changes} />
+        )}
+        {showActivateModal && (
+          <ActivateWorkPackageModalContainer
+            wbsNum={workPackage.wbsNum}
+            modalShow={showActivateModal}
+            handleClose={() => setShowActivateModal(false)}
+          />
+        )}
+        {showStageGateModal && (
+          <StageGateWorkPackageModalContainer
+            wbsNum={workPackage.wbsNum}
+            modalShow={showStageGateModal}
+            handleClose={() => setShowStageGateModal(false)}
+          />
+        )}
+        {showDeleteModal && (
+          <DeleteWorkPackage
+            wbsNum={workPackage.wbsNum}
+            modalShow={showDeleteModal}
+            handleClose={() => setShowDeleteModal(false)}
+          />
+        )}
+      </PageLayout>
+    </>
   );
 };
 
