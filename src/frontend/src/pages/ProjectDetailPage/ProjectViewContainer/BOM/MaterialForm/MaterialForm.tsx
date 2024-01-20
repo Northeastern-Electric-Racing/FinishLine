@@ -12,6 +12,7 @@ import {
 } from '../../../../../hooks/bom.hooks';
 import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
+import { Decimal } from 'decimal.js';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -35,7 +36,7 @@ export interface MaterialFormInput {
   manufacturerPartNumber: string;
   pdmFileName?: string;
   price: number;
-  quantity: number;
+  quantity: Decimal;
   unitName?: string;
   linkUrl: string;
   notes: string;
@@ -119,7 +120,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     const price = Math.round(data.price * 100);
-    const subtotal = data.unitName ? price : data.quantity * price;
+    const quantity = data.quantity ? Number(data.quantity) : 0;
+    const subtotal = data.unitName ? price : quantity * price;
     onSubmit({ ...data, subtotal: subtotal, price: price });
   };
 
