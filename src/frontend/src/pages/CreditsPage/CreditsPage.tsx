@@ -157,7 +157,8 @@ const CreditsPage: React.FC = () => {
       sx: {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
-    }
+    },
+    { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
