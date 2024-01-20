@@ -40,6 +40,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
     { name: 'Tucker Gwertzman', color: '#25e6e2' },
+    { name: 'Donny Le', color: '#03fcf4' },
     { name: 'Ryan Howe', color: '#3cce20' },
     { name: 'Ethan Szeto', color: '#404040' },
     { name: 'Adarsh Jayaram', color: '#ff0000' },
@@ -124,6 +125,15 @@ const CreditsPage: React.FC = () => {
     { name: 'Anika Sharma', color: '#ff0000' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
     {
+      name: 'Dao Ho',
+      color: 'white',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        px: 1.5,
+        borderRadius: 3
+      }
+    },
+    {
       name: 'Kaan Tural',
       color: 'transparent',
       sx: {
@@ -151,6 +161,8 @@ const CreditsPage: React.FC = () => {
     { name: 'Lauren Phan', color: '#F3A7C0' },
     { name: 'Vidyuth Ramkumar', color: '#800000' },
     { name: 'Jake Hensley', color: '#FFA500' },
+    { name: 'Emma Shum', color: '#d4878f' },
+    { name: 'Matthew Egg', color: '#7E1B2F' },
     {
       name: 'Wyatt Bracy',
       color: '#080808',
@@ -158,7 +170,19 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
-    { name: 'Yulan Wang', color: '#D4E6F1' }
+    { name: 'Yulan Wang', color: '#D4E6F1' },
+    { name: 'Aarush Garg', color: '#40E0D0' },
+    { name: 'Waverly Hassman', color: '#CBC3E3' },
+    { name: 'Akul Aggarwal', color: '#cc34eb' },
+    { name: 'Rebecca Lee', color: '#87c2fa' },
+    { name: 'Jake Langlois', color: '#588BAE' },
+    { name: 'Caio DaSilva', color: '#290ED2' },
+    { name: 'Aahil Nishad', color: '#5E9E82' },
+    { name: 'Anya Dasgupta', color: '#e37fc0' },
+    { name: 'Ben Marler', color: '#a300a3' },
+    { name: 'Alan Eng', color: '#0B66E4' },
+    { name: 'Alexander Schinkmann-Bonias', color: '#d3d3d3' },
+    { name: 'Aditya Boddepalli', color: '#00FFFF' }
 
   ];
 
