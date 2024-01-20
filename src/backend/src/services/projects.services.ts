@@ -38,7 +38,7 @@ import { materialTypeTransformer } from '../transformers/material-type.transform
 import { materialPreviewTransformer } from '../transformers/material.transformer';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import manufacturerTransformer from '../transformers/manufacturer.transformer';
-
+import { Decimal } from 'decimal.js';
 export default class ProjectsService {
   /**
    * Get all the projects in the database.
@@ -953,7 +953,7 @@ export default class ProjectsService {
     materialTypeName: string,
     manufacturerName: string,
     manufacturerPartNumber: string,
-    quantity: number,
+    quantity: Decimal,
     price: number,
     subtotal: number,
     linkUrl: string,

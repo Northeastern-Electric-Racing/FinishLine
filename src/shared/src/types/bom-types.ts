@@ -1,5 +1,5 @@
 import { User, UserPreview } from './user-types';
-import { Decimal } from 'decimal.js'
+import { Decimal } from 'decimal.js';
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
