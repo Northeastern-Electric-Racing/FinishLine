@@ -38,7 +38,7 @@ describe('Rendering Project View Container', () => {
   });
 
   it('renders the provided project', () => {
-    expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(2);
+    expect(screen.getAllByText('1.1.0 - Impact Attenuator').length).toEqual(1);
     expect(screen.getByText('Details')).toBeInTheDocument();
     expect(screen.getByText('Work Packages')).toBeInTheDocument();
     expect(screen.getByText('Bodywork Concept of Design')).toBeInTheDocument();
