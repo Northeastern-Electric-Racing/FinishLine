@@ -575,7 +575,7 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been marked as reimbursed'));
     });
 
-    test('Mark Reimbursement Request as Reimbursed fails if the request has not been denied', async () => {
+    test('Mark Reimbursement Request as Reimbursed fails if the request has been denied', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney4);
 
