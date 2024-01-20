@@ -644,6 +644,10 @@ export default class ReimbursementRequestService {
    *
    * @param reimbursementRequestId the id of the reimbursement request to mark reimbursed
    * @param submitter the user who is marking the reimbursement request as reimbursed
+   * @throws AccessDeniedException if the submitter of the request is not on the finance team
+   * @throws HttpException if the finance team does not exist
+   * @throws NotFoundException if the id is invalid or not there
+   * @throws HttpException if the reimbursement request is already marked as reimbursed or has been denied
    * @returns the created reimbursment status
    */
   static async markReimbursementRequestAsReimbursed(reimbursementRequestId: string, submitter: User) {
