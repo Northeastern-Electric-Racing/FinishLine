@@ -170,7 +170,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
-    { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' }
+    { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' },
     { name: 'Aarush Garg', color: '#40E0D0' },
     { name: 'Waverly Hassman', color: '#CBC3E3' },
     { name: 'Akul Aggarwal', color: '#cc34eb' },
