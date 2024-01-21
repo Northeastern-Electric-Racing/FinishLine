@@ -170,6 +170,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
+    { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' },
     { name: 'Vincent Demaisip', color: '#ebb135' },
     { name: 'Daniel Ma', color: '#ffb4e8' },
     { name: 'Yulan Wang', color: '#D4E6F1' },
