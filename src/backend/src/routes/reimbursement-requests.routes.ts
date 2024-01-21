@@ -129,6 +129,11 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.markReimbursementRequestAsDelivered
 );
 
+reimbursementRequestsRouter.post(
+  '/:requestId/reimbursed',
+  ReimbursementRequestController.markReimbursementRequestAsReimbursed
+);
+
 reimbursementRequestsRouter.get('/receipt-image/:fileId', ReimbursementRequestController.downloadReceiptImage);
 
 export default reimbursementRequestsRouter;

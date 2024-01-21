@@ -26,6 +26,7 @@ import { routes } from '../../utils/routes';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
+import { isGuest } from 'shared';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -101,6 +102,7 @@ const FinancePage = () => {
             setAccountCreditModalShow(true);
             handleDropdownClose();
           }}
+          disabled={isGuest(user.role)}
         >
           <ListItemIcon>
             <AttachMoneyIcon fontSize="small" />
