@@ -20,6 +20,7 @@ import {
   getPendingAdvisorList,
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
+  markReimbursementRequestAsReimbursed,
   reportRefund,
   sendPendingAdvisorList,
   setSaboNumber,
@@ -217,6 +218,28 @@ export const useMarkReimbursementRequestAsDelivered = (id: string) => {
     ['reimbursement-requests', 'edit'],
     async () => {
       const { data } = await markReimbursementRequestAsDelivered(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to mark a reimbursement request as Reimbursed
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created reimbursed reimbursement status
+ */
+export const useMarkReimbursementRequestAsReimbursed = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsReimbursed(id);
       return data;
     },
     {
