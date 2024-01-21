@@ -183,7 +183,6 @@ const CreditsPage: React.FC = () => {
     { name: 'Alan Eng', color: '#0B66E4' },
     { name: 'Alexander Schinkmann-Bonias', color: '#d3d3d3' },
     { name: 'Aditya Boddepalli', color: '#00FFFF' }
-
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
