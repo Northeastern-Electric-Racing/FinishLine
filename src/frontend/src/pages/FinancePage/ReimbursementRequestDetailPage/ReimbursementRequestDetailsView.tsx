@@ -193,7 +193,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={expenseTypePipe(reimbursementRequest.expenseType)} />
+            <VerticalDetailDisplay label="Account Code" content={expenseTypePipe(reimbursementRequest.expenseType)} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay
