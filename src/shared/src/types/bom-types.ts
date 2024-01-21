@@ -70,7 +70,7 @@ export interface Material {
   manufacturer: ManufacturerPreview;
   manufacturerPartNumber: string;
   pdmFileName?: string;
-  quantity: Decimal;
+  quantity: number;
   unitName?: string;
   quantityUnit?: UnitPreview;
   price: number;

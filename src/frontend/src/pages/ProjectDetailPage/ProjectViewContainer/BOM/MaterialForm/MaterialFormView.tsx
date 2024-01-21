@@ -185,7 +185,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               <ReactHookTextField
                 name="quantity"
                 control={control}
-                errorMessage={errors.quantity?.root} // I just wrote root here for the ts test to pass but not too sure what should go here because I was getting a type error
+                errorMessage={errors.quantity}
                 placeholder="Enter Quantity"
                 type="number"
               />

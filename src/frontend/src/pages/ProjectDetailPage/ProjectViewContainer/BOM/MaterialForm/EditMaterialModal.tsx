@@ -5,7 +5,6 @@ import { useToast } from '../../../../../hooks/toasts.hooks';
 import ErrorPage from '../../../../ErrorPage';
 import MaterialForm, { MaterialDataSubmission } from './MaterialForm';
 import React from 'react';
-import { Decimal } from 'decimal.js';
 
 export interface EditMaterialModalProps {
   open: boolean;
@@ -39,7 +38,7 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
       onSubmit={onSubmit}
       defaultValues={{
         ...material,
-        quantity: new Decimal(material.quantity),
+        quantity: material.quantity,
         pdmFileName: material.pdmFileName,
         price: material.price / 100
       }}

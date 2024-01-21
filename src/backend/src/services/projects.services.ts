@@ -510,7 +510,7 @@ export default class ProjectsService {
     materialTypeName: string,
     manufacturerName: string,
     manufacturerPartNumber: string,
-    quantity: number,
+    quantity: Decimal,
     price: number,
     subtotal: number,
     linkUrl: string,
