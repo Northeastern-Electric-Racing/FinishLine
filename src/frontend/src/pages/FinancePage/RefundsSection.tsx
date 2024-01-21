@@ -70,7 +70,9 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const displayedReimbursementRequests =
     allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests;
 
-  const rows = displayedReimbursements.map(getRefundRowData);
+  const rows = displayedReimbursements.map(getRefundRowData).sort((a, b) => {
+    return b.date.valueOf() - a.date.valueOf();
+  });
 
   const totalReceived = displayedReimbursements.reduce(
     (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
