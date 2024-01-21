@@ -182,7 +182,8 @@ const CreditsPage: React.FC = () => {
     { name: 'Ben Marler', color: '#a300a3' },
     { name: 'Alan Eng', color: '#0B66E4' },
     { name: 'Alexander Schinkmann-Bonias', color: '#d3d3d3' },
-    { name: 'Aditya Boddepalli', color: '#00FFFF' }
+    { name: 'Aditya Boddepalli', color: '#00FFFF' },
+    { name: 'Jack Dreifus', color: '#014421' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
