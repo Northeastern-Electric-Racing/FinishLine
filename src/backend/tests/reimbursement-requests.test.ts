@@ -110,14 +110,14 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Expense Tests', () => {
-    test('Create Expense Type fails for non admins', async () => {
+    test('Create Account Code fails for non admins', async () => {
       await expect(
         ReimbursementRequestService.createAccountCode(wonderwoman, Parts.name, Parts.code, Parts.allowed, [ClubAccount.CASH])
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create expense types'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create account codes'));
     });
 
-    test('Create Expense Type Successfully returns expense type Id', async () => {
-      vi.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
+    test('Create Account Code Successfully returns account code Id', async () => {
+      vi.spyOn(prisma.account_Code, 'create').mockResolvedValue(Parts);
 
       const accountCode = await ReimbursementRequestService.createAccountCode(
         batman,
@@ -311,10 +311,10 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new NotFoundException('Vendor', GiveMeMyMoney.vendorId));
     });
 
-    test('Edit Reimbursement Request Fails When Expense Type does not exist', async () => {
+    test('Edit Reimbursement Request Fails When Account Code does not exist', async () => {
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      vi.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.account_Code, 'findUnique').mockResolvedValue(null);
 
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
@@ -322,7 +322,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.accountCountId,
+          GiveMeMyMoney.accountCodeId,
           GiveMeMyMoney.totalCost,
           [],
           [],
@@ -339,7 +339,7 @@ describe('Reimbursement Requests', () => {
       };
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithoutProduct);
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      vi.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(Parts);
+      vi.spyOn(prisma.account_Code, 'findUnique').mockResolvedValue(Parts);
 
       await expect(() =>
         ReimbursementRequestService.editReimbursementRequest(
@@ -469,13 +469,13 @@ describe('Reimbursement Requests', () => {
     });
   });
 
-  describe('Get All Expense Types Tests', () => {
-    test('Get all Expense Types works', async () => {
-      vi.spyOn(prisma.expense_Type, 'findMany').mockResolvedValue([Parts]);
+  describe('Get All Account Codes Tests', () => {
+    test('Get all Account Codes works', async () => {
+      vi.spyOn(prisma.account_Code, 'findMany').mockResolvedValue([Parts]);
 
       const res = await ReimbursementRequestService.getAllAccountCodes();
 
-      expect(prisma.expense_Type.findMany).toHaveBeenCalledTimes(1);
+      expect(prisma.account_Code.findMany).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual([Parts]);
     });
   });
