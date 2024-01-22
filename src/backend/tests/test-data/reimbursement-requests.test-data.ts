@@ -1,7 +1,7 @@
 import {
   Vendor as PrismaVendor,
   Reimbursement_Request as PrismaReimbursementRequest,
-  Expense_Type as PrismaExpenseType,
+  Account_Code as PrismaAccountCode,
   Reimbursement_Product as PrismaReimbursementProduct,
   Reimbursement_Status as PrismaReimbursementStatus,
   Reimbursement_Status_Type as PrismaReimbursementStatusType,
@@ -13,7 +13,7 @@ import {
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { alfred, batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import { ClubAccount, ExpenseType, ReimbursementRequest } from 'shared';
+import { ClubAccount, AccountCode, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
 
@@ -29,8 +29,8 @@ export const KFC: PrismaVendor = {
   name: 'kfc'
 };
 
-export const Parts: PrismaExpenseType = {
-  expenseTypeId: 'PARTS',
+export const Parts: PrismaAccountCode = {
+  accountCodeId: 'PARTS',
   name: 'hammer',
   code: 12245,
   allowed: true,
@@ -48,7 +48,7 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
   account: Club_Accounts.CASH,
   totalCost: 0,
   dateDelivered: null,
-  expenseTypeId: ''
+  accountCodeId: ''
 };
 
 export const GiveMeMyMoney2: PrismaReimbursementRequest = {
@@ -62,7 +62,7 @@ export const GiveMeMyMoney2: PrismaReimbursementRequest = {
   account: Club_Accounts.CASH,
   totalCost: 0,
   dateDelivered: null,
-  expenseTypeId: ''
+  accountCodeId: ''
 };
 
 export const GiveMeMoneyProduct: PrismaReimbursementProduct = {
@@ -105,7 +105,7 @@ export const prismaGiveMeMyMoney: Prisma.Reimbursement_RequestGetPayload<typeof 
   reimbursementProducts: [
     { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
-  expenseType: Parts
+  accountCode: Parts
 };
 
 export const prismaReimbursementStatus: PrismaReimbursementStatus & { user: User } = {
@@ -153,7 +153,7 @@ export const prismaGiveMeMyMoney2: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementProducts: [
     { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
-  expenseType: Parts
+  accountCode: Parts
 };
 
 export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
@@ -165,7 +165,7 @@ export const prismaGiveMeMyMoney3: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementProducts: [
     { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
-  expenseType: Parts
+  accountCode: Parts
 };
 
 export const prismaGiveMeMyMoney4: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
@@ -177,7 +177,7 @@ export const prismaGiveMeMyMoney4: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementProducts: [
     { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
-  expenseType: Parts
+  accountCode: Parts
 };
 
 export const prismaGiveMeMyMoney5: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
@@ -189,7 +189,7 @@ export const prismaGiveMeMyMoney5: Prisma.Reimbursement_RequestGetPayload<typeof
   reimbursementProducts: [
     { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
-  expenseType: Parts
+  accountCode: Parts
 };
 
 export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayload<typeof reimbursementRequestQueryArgs> = {
@@ -201,7 +201,7 @@ export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayloa
   reimbursementProducts: [
     { ...GiveMeMoneyProduct, reimbursementProductReason: { ...GiveMeMoneyProductReason, wbsElement: prismaWbsElement1 } }
   ],
-  expenseType: Parts
+  accountCode: Parts
 };
 
 export const sharedGiveMeMyMoney: ReimbursementRequest = {
@@ -210,7 +210,7 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   dateOfExpense: GiveMeMyMoney.dateOfExpense,
   totalCost: GiveMeMyMoney.totalCost,
   receiptPictures: [],
-  expenseType: Parts as ExpenseType,
+  accountCode: Parts as AccountCode,
   vendor: PopEyes,
   recipient: userTransformer(batman),
   saboId: undefined,

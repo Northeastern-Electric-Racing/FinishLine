@@ -6,7 +6,7 @@
 import { Prisma } from '@prisma/client';
 import {
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   OtherProductReason,
   Receipt,
   Reimbursement,
@@ -55,7 +55,7 @@ export const reimbursementRequestTransformer = (
     receiptPictures: reimbursementRequest.receiptPictures.filter((receipt) => !receipt.dateDeleted).map(receiptTransformer),
     reimbursementProducts: reimbursementRequest.reimbursementProducts.map(reimbursementProductTransformer),
     dateDelivered: reimbursementRequest.dateDelivered ?? undefined,
-    expenseType: expenseTypeTransformer(reimbursementRequest.expenseType)
+    accountCode: accountCodeTransformer(reimbursementRequest.accountCode)
   };
 };
 
@@ -90,13 +90,13 @@ const reimbursementProductReasonTransformer = (
     : (reason.otherReason! as OtherProductReason);
 };
 
-export const expenseTypeTransformer = (expenseType: Prisma.Expense_TypeGetPayload<null>): ExpenseType => {
+export const accountCodeTransformer = (accountCode: Prisma.Account_CodeGetPayload<null>): AccountCode => {
   return {
-    expenseTypeId: expenseType.expenseTypeId,
-    name: expenseType.name,
-    code: expenseType.code,
-    allowed: expenseType.allowed,
-    allowedRefundSources: expenseType.allowedRefundSources as ClubAccount[]
+    accountCodeId: accountCode.accountCodeId,
+    name: accountCode.name,
+    code: accountCode.code,
+    allowed: accountCode.allowed,
+    allowedRefundSources: accountCode.allowedRefundSources as ClubAccount[]
   };
 };
 

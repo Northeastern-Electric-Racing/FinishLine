@@ -112,14 +112,14 @@ describe('Reimbursement Requests', () => {
   describe('Expense Tests', () => {
     test('Create Expense Type fails for non admins', async () => {
       await expect(
-        ReimbursementRequestService.createExpenseType(wonderwoman, Parts.name, Parts.code, Parts.allowed, [ClubAccount.CASH])
+        ReimbursementRequestService.createAccountCode(wonderwoman, Parts.name, Parts.code, Parts.allowed, [ClubAccount.CASH])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create expense types'));
     });
 
     test('Create Expense Type Successfully returns expense type Id', async () => {
       vi.spyOn(prisma.expense_Type, 'create').mockResolvedValue(Parts);
 
-      const expenseType = await ReimbursementRequestService.createExpenseType(
+      const accountCode = await ReimbursementRequestService.createAccountCode(
         batman,
         Parts.name,
         Parts.code,
@@ -127,7 +127,7 @@ describe('Reimbursement Requests', () => {
         [ClubAccount.BUDGET]
       );
 
-      expect(expenseType.expenseTypeId).toBe(Parts.expenseTypeId);
+      expect(accountCode.accountCodeId).toBe(Parts.accountCodeId);
     });
   });
 
@@ -223,7 +223,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.accountCodeId,
           GiveMeMyMoney.totalCost,
           [],
           [],
@@ -245,7 +245,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.accountCodeId,
           GiveMeMyMoney.totalCost,
           [],
           [],
@@ -263,7 +263,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.accountCodeId,
           GiveMeMyMoney.totalCost,
           [],
           [],
@@ -281,7 +281,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.accountCodeId,
           GiveMeMyMoney.totalCost,
           [],
           [],
@@ -301,7 +301,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.accountCodeId,
           GiveMeMyMoney.totalCost,
           [],
           [],
@@ -322,14 +322,14 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.accountCountId,
           GiveMeMyMoney.totalCost,
           [],
           [],
           [],
           batman
         )
-      ).rejects.toThrow(new NotFoundException('Expense Type', GiveMeMyMoney.expenseTypeId));
+      ).rejects.toThrow(new NotFoundException('Expense Type', GiveMeMyMoney.accountCodeId));
     });
 
     test('Edit Reimbursement Request Fails When Product Has An Id but does not already exist of reimbursement request', async () => {
@@ -347,7 +347,7 @@ describe('Reimbursement Requests', () => {
           GiveMeMyMoney.dateOfExpense,
           GiveMeMyMoney.vendorId,
           GiveMeMyMoney.account as ClubAccount,
-          GiveMeMyMoney.expenseTypeId,
+          GiveMeMyMoney.accountCodeId,
           GiveMeMyMoney.totalCost,
           [],
           [
@@ -382,7 +382,7 @@ describe('Reimbursement Requests', () => {
         GiveMeMyMoney.dateOfExpense,
         GiveMeMyMoney.vendorId,
         GiveMeMyMoney.account as ClubAccount,
-        GiveMeMyMoney.expenseTypeId,
+        GiveMeMyMoney.accountCodeId,
         GiveMeMyMoney.totalCost,
         [],
         [
@@ -473,7 +473,7 @@ describe('Reimbursement Requests', () => {
     test('Get all Expense Types works', async () => {
       vi.spyOn(prisma.expense_Type, 'findMany').mockResolvedValue([Parts]);
 
-      const res = await ReimbursementRequestService.getAllExpenseTypes();
+      const res = await ReimbursementRequestService.getAllAccountCodes();
 
       expect(prisma.expense_Type.findMany).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual([Parts]);

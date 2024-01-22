@@ -58,7 +58,7 @@ export default class ReimbursementRequestsController {
         account,
         otherReimbursementProducts,
         wbsReimbursementProducts,
-        expenseTypeId,
+        accountCodeId,
         totalCost
       } = req.body;
       const user = await getCurrentUserWithUserSettings(res);
@@ -69,7 +69,7 @@ export default class ReimbursementRequestsController {
         account,
         otherReimbursementProducts,
         wbsReimbursementProducts,
-        expenseTypeId,
+        accountCodeId,
         totalCost
       );
       res.status(200).json(createdReimbursementRequest);
@@ -97,7 +97,7 @@ export default class ReimbursementRequestsController {
         dateOfExpense,
         vendorId,
         account,
-        expenseTypeId,
+        accountCodeId,
         totalCost,
         otherReimbursementProducts,
         wbsReimbursementProducts,
@@ -109,7 +109,7 @@ export default class ReimbursementRequestsController {
         dateOfExpense,
         vendorId,
         account,
-        expenseTypeId,
+        accountCodeId,
         totalCost,
         otherReimbursementProducts,
         wbsReimbursementProducts,
@@ -178,18 +178,18 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async createExpenseType(req: Request, res: Response, next: NextFunction) {
+  static async createAccountCode(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, code, allowed, allowedRefundSources } = req.body;
       const user = await getCurrentUser(res);
-      const createdExpenseType = await ReimbursementRequestService.createExpenseType(
+      const createdAccountCode = await ReimbursementRequestService.createAccountCode(
         user,
         name,
         code,
         allowed,
         allowedRefundSources
       );
-      res.status(200).json(createdExpenseType);
+      res.status(200).json(createdAccountCode);
     } catch (error: unknown) {
       next(error);
     }
@@ -216,10 +216,10 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async getAllExpenseTypes(_req: Request, res: Response, next: NextFunction) {
+  static async getAllAccountCodes(_req: Request, res: Response, next: NextFunction) {
     try {
-      const expenseTypes = await ReimbursementRequestService.getAllExpenseTypes();
-      res.status(200).json(expenseTypes);
+      const accountCodes = await ReimbursementRequestService.getAllAccountCodes();
+      res.status(200).json(accountCodes);
     } catch (error: unknown) {
       next(error);
     }
@@ -312,20 +312,20 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async editExpenseTypeCode(req: Request, res: Response, next: NextFunction) {
+  static async editAccountCodeEdit(req: Request, res: Response, next: NextFunction) {
     try {
-      const { expenseTypeId } = req.params;
+      const { accountCodeId } = req.params;
       const { name, code, allowed, allowedRefundSources } = req.body;
       const submitter = await getCurrentUser(res);
-      const expenseTypeUpdated = await ReimbursementRequestService.editExpenseType(
-        expenseTypeId,
+      const accountCodeUpdated = await ReimbursementRequestService.editAccountCode(
+        accountCodeId,
         code,
         name,
         allowed,
         submitter,
         allowedRefundSources
       );
-      res.status(200).json(expenseTypeUpdated);
+      res.status(200).json(accountCodeUpdated);
     } catch (error: unknown) {
       next(error);
     }

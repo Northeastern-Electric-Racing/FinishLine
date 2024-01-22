@@ -8,7 +8,7 @@ import type { Multer } from 'multer';
 import { Club_Accounts, Reimbursement_Request, Reimbursement_Status_Type, User } from '@prisma/client';
 import {
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -43,7 +43,7 @@ import vendorTransformer from '../transformers/vendor.transformer';
 import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
-  expenseTypeTransformer,
+  accountCodeTransformer,
   reimbursementRequestTransformer,
   reimbursementStatusTransformer,
   reimbursementTransformer
@@ -105,7 +105,7 @@ export default class ReimbursementRequestService {
    * @param vendorId the id of the vendor that the expense was made for
    * @param account the account to be reimbursed from
    * @param reimbursementProducts the products that the user bought
-   * @param expenseTypeId the id of the expense type the user made
+   * @param accountCodeId the id of the expense type the user made
    * @param totalCost the total cost of the reimbursement with tax
    * @returns the created reimbursement request
    */
@@ -116,7 +116,7 @@ export default class ReimbursementRequestService {
     account: ClubAccount,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
-    expenseTypeId: string,
+    accountCodeId: string,
     totalCost: number
   ): Promise<Reimbursement_Request> {
     if (isGuest(recipient.role)) throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
@@ -129,15 +129,15 @@ export default class ReimbursementRequestService {
 
     if (!vendor) throw new NotFoundException('Vendor', vendorId);
 
-    const expenseType = await prisma.expense_Type.findUnique({
-      where: { expenseTypeId }
+    const accountCode = await prisma.account_Code.findUnique({
+      where: { accountCodeId }
     });
 
-    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
+    if (!accountCode) throw new NotFoundException('Expense Type', accountCodeId);
 
-    if (!expenseType.allowed) throw new HttpException(400, `The expense type ${expenseType.name} is not allowed!`);
+    if (!accountCode.allowed) throw new HttpException(400, `The expense type ${accountCode.name} is not allowed!`);
 
-    if (!expenseType.allowedRefundSources.includes(account)) {
+    if (!accountCode.allowedRefundSources.includes(account)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
 
@@ -152,7 +152,7 @@ export default class ReimbursementRequestService {
         dateOfExpense,
         vendorId: vendor.vendorId,
         account,
-        expenseTypeId: expenseType.expenseTypeId,
+        accountCodeId: accountCode.accountCodeId,
         totalCost,
         reimbursementStatuses: {
           create: {
@@ -230,7 +230,7 @@ export default class ReimbursementRequestService {
    * @param dateOfExpense the updated date of expense
    * @param vendorId the updated vendor id
    * @param account the updated account
-   * @param expenseTypeId the updated expense type id
+   * @param accountCodeId the updated expense type id
    * @param totalCost the updated total cost
    * @param reimbursementProducts the updated reimbursement products
    * @param saboId the updated saboId
@@ -243,7 +243,7 @@ export default class ReimbursementRequestService {
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
-    expenseTypeId: string,
+    accountCodeId: string,
     totalCost: number,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
@@ -268,13 +268,13 @@ export default class ReimbursementRequestService {
 
     if (!vendor) throw new NotFoundException('Vendor', vendorId);
 
-    const expenseType = await prisma.expense_Type.findUnique({
-      where: { expenseTypeId }
+    const accountCode = await prisma.account_Code.findUnique({
+      where: { accountCodeId }
     });
 
-    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
-    if (!expenseType.allowed) throw new HttpException(400, 'Expense Type Not Allowed');
-    if (!expenseType.allowedRefundSources.includes(account)) {
+    if (!accountCode) throw new NotFoundException('Expense Type', accountCodeId);
+    if (!accountCode.allowed) throw new HttpException(400, 'Expense Type Not Allowed');
+    if (!accountCode.allowedRefundSources.includes(account)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted expense type');
     }
 
@@ -291,7 +291,7 @@ export default class ReimbursementRequestService {
         dateOfExpense,
         account,
         totalCost,
-        expenseTypeId,
+        accountCodeId,
         vendorId
       }
     });
@@ -481,15 +481,15 @@ export default class ReimbursementRequestService {
    * @param allowedRefundSources an array of Club_Accounts representing allowed refund sources
    * @returns the created expense type
    */
-  static async createExpenseType(
+  static async createAccountCode(
     submitter: User,
     name: string,
     code: number,
     allowed: boolean,
     allowedRefundSources: Club_Accounts[]
   ) {
-    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create expense types');
-    const expense = await prisma.expense_Type.create({
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('create account codes');
+    const expense = await prisma.account_Code.create({
       data: {
         name,
         allowed,
@@ -503,15 +503,15 @@ export default class ReimbursementRequestService {
 
   /**
    * Edits an expense type
-   * @param expenseTypeId the requested expense type to be edited
+   * @param accountCodeId the requested expense type to be edited
    * @param code the new expense type code number
    * @param name the new expense type code name
    * @param allowed the new expense type allowed value
    * @param submitter the person editing expense type code number
    * @returns the updated expense type
    */
-  static async editExpenseType(
-    expenseTypeId: string,
+  static async editAccountCode(
+    accountCodeId: string,
     code: number,
     name: string,
     allowed: boolean,
@@ -521,14 +521,14 @@ export default class ReimbursementRequestService {
     if (!isHead(submitter.role))
       throw new AccessDeniedException('Only the head or admin can update account code number and name');
 
-    const expenseType = await prisma.expense_Type.findUnique({
-      where: { expenseTypeId }
+    const accountCode = await prisma.account_Code.findUnique({
+      where: { accountCodeId }
     });
 
-    if (!expenseType) throw new NotFoundException('Expense Type', expenseTypeId);
+    if (!accountCode) throw new NotFoundException('Expense Type', accountCodeId);
 
-    const expenseTypeUpdated = await prisma.expense_Type.update({
-      where: { expenseTypeId },
+    const accountCodeUpdated = await prisma.account_Code.update({
+      where: { accountCodeId },
       data: {
         name,
         code,
@@ -537,7 +537,7 @@ export default class ReimbursementRequestService {
       }
     });
 
-    return expenseTypeUpdated;
+    return accountCodeUpdated;
   }
 
   /**
@@ -588,9 +588,9 @@ export default class ReimbursementRequestService {
    * Gets all the expense types in the database
    * @returns all the expense types in the database
    */
-  static async getAllExpenseTypes(): Promise<ExpenseType[]> {
-    const expenseTypes = await prisma.expense_Type.findMany();
-    return expenseTypes.map(expenseTypeTransformer);
+  static async getAllAccountCodes(): Promise<AccountCode[]> {
+    const accountCodes = await prisma.account_Code.findMany();
+    return accountCodes.map(accountCodeTransformer);
   }
 
   /**

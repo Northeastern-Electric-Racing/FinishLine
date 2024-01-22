@@ -5,7 +5,7 @@
 import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
-  ExpenseTypePayload,
+  AccountCodePayload,
   EditVendorPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
@@ -17,7 +17,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { ExpenseType } from 'shared';
+import { AccountCode } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -92,10 +92,10 @@ export const deleteReimbursementRequest = (id: string) => {
  *
  * @returns all the expense types
  */
-export const getAllExpenseTypes = () => {
-  return axios.get(apiUrls.getAllExpenseTypes(), {
+export const getAllAccountCodes = () => {
+  return axios.get(apiUrls.getAllAccountCodes(), {
     transformResponse: (data) => {
-      return JSON.parse(data) as ExpenseType[];
+      return JSON.parse(data) as AccountCode[];
     }
   });
 };
@@ -307,8 +307,8 @@ export const reportRefund = (amount: number, dateReceived: string) => {
  * @param accountCodeData the edited data of the expense type
  * @returns the updated expense type
  */
-export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePayload) => {
-  return axios.post(apiUrls.financeEditExpenseType(id), accountCodeData);
+export const editAccountCode = async (id: string, accountCodeData: AccountCodePayload) => {
+  return axios.post(apiUrls.financeEditAccountCode(id), accountCodeData);
 };
 
 /**
@@ -316,8 +316,8 @@ export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePa
  * @param accountCodeData the data for the expense type
  * @returns the new expense type
  */
-export const createAccountCode = async (accountCodeData: ExpenseTypePayload) => {
-  return axios.post(apiUrls.financeCreateExpenseType(), accountCodeData);
+export const createAccountCode = async (accountCodeData: AccountCodePayload) => {
+  return axios.post(apiUrls.financeCreateAccountCode(), accountCodeData);
 };
 
 /**

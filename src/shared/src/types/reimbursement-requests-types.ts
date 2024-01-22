@@ -43,7 +43,7 @@ export interface ReimbursementRequest {
   receiptPictures: Receipt[];
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
-  expenseType: ExpenseType;
+  accountCode: AccountCode;
 }
 
 export enum OtherProductReason {
@@ -71,8 +71,8 @@ export interface Vendor {
   name: string;
 }
 
-export interface ExpenseType {
-  expenseTypeId: string;
+export interface AccountCode {
+  accountCodeId: string;
   name: string;
   code: number;
   allowed: boolean;

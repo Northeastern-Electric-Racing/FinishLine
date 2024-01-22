@@ -930,7 +930,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const vendors: Vendor[] = [vendor, vendor2, vendor3];
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
+  const accountCode = await ReimbursementRequestService.createAccountCode(thomasEmrax, 'Equipment', 123, true, [
     Club_Accounts.CASH,
     Club_Accounts.BUDGET
   ]);
@@ -952,7 +952,7 @@ const performSeed: () => Promise<void> = async () => {
         cost: 200000
       }
     ],
-    expenseType.expenseTypeId,
+    accountCode.accountCodeId,
     100
   );
 

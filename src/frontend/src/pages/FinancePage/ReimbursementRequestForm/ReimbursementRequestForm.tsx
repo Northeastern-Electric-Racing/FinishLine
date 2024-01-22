@@ -12,7 +12,7 @@ import {
   WbsNumber,
   WbsReimbursementProductCreateArgs
 } from 'shared';
-import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
+import { useGetAllAccountCodes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -27,7 +27,7 @@ import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 export interface ReimbursementRequestInformation {
   vendorId: string;
   dateOfExpense: Date;
-  expenseTypeId: string;
+  accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
   account: ClubAccount | undefined;
 }
@@ -52,7 +52,7 @@ const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
   dateOfExpense: yup.date().required('Date of Expense is required'),
-  expenseTypeId: yup.string().required('Expense Type is required'),
+  accountCodeId: yup.string().required('Account Code is required'),
   reimbursementProducts: yup
     .array()
     .of(
@@ -92,7 +92,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       vendorId: defaultValues?.vendorId ?? '',
       account: defaultValues?.account,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
-      expenseTypeId: defaultValues?.expenseTypeId ?? '',
+      accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
@@ -122,11 +122,11 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     data: allVendors
   } = useGetAllVendors();
   const {
-    isLoading: allExpenseTypesIsLoading,
-    isError: allExpenseTypesIsError,
-    error: allExpenseTypesError,
-    data: allExpenseTypes
-  } = useGetAllExpenseTypes();
+    isLoading: allAccountCodesIsLoading,
+    isError: allAccountCodesIsError,
+    error: allAccountCodesError,
+    data: allAccountCodes
+  } = useGetAllAccountCodes();
 
   const {
     isLoading: allProjectsIsLoading,
@@ -145,15 +145,15 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   const history = useHistory();
 
   if (allVendorsIsError) return <ErrorPage message={allVendorsError?.message} />;
-  if (allExpenseTypesIsError) return <ErrorPage message={allExpenseTypesError?.message} />;
+  if (allAccountCodesIsError) return <ErrorPage message={allAccountCodesError?.message} />;
   if (allProjectsIsError) return <ErrorPage message={allProjectsError?.message} />;
 
   if (
-    allExpenseTypesIsLoading ||
+    allAccountCodesIsLoading ||
     allVendorsIsLoading ||
     allProjectsIsLoading ||
     !allVendors ||
-    !allExpenseTypes ||
+    !allAccountCodes ||
     !allProjects ||
     checkSecureSettingsIsLoading
   )
@@ -212,7 +212,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       watch={watch}
       errors={errors}
       allVendors={allVendors}
-      allExpenseTypes={allExpenseTypes}
+      allAccountCodes={allAccountCodes}
       receiptFiles={receiptFiles}
       control={control}
       reimbursementProducts={reimbursementProducts}
