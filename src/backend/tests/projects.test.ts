@@ -311,16 +311,15 @@ describe('Projects', () => {
     });
 
     test('Create LinkType Type fails if LinkType with name already exists', async () => {
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...prismaLinkType2, creatorId: batman.userId });
       await expect(
         ProjectsService.createLinkType(batman, prismaLinkType1.name, prismaLinkType1.iconName, prismaLinkType1.required)
       ).rejects.toThrow(new HttpException(400, 'LinkType with that name already exists'));
     });
 
     test('Create LinkType successfully returns new LinkType', async () => {
-      vi.spyOn(prisma.linkType, 'create').mockResolvedValue({
-        ...prismaLinkType2,
-        creatorId: batman.userId
-      });
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.linkType, 'create').mockResolvedValue({ ...prismaLinkType2, creatorId: batman.userId });
 
       const linkType = await ProjectsService.createLinkType(
         batman,
