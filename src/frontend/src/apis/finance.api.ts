@@ -57,6 +57,16 @@ export const markReimbursementRequestAsDelivered = (id: string) => {
 };
 
 /**
+ * Mark a Reimbursement Request as Reimbursed
+ *
+ * @param id id of the reimbursement request being marked as reimbursed
+ * @returns the reimbursed reimbursement status
+ */
+export const markReimbursementRequestAsReimbursed = (id: string) => {
+  return axios.post(apiUrls.financeMarkAsReimbursed(id));
+};
+
+/**
  * Edits a reimbursment request
  *
  * @param id the id of the reimbursement request to edit

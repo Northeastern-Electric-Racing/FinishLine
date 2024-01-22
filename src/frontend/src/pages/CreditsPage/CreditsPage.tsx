@@ -170,6 +170,9 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
+    { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' },
+    { name: 'Vincent Demaisip', color: '#ebb135' },
+    { name: 'Daniel Ma', color: '#ffb4e8' },
     { name: 'Yulan Wang', color: '#D4E6F1' },
     { name: 'Aarush Garg', color: '#40E0D0' },
     { name: 'Waverly Hassman', color: '#CBC3E3' },
@@ -183,7 +186,10 @@ const CreditsPage: React.FC = () => {
     { name: 'Alan Eng', color: '#0B66E4' },
     { name: 'Alexander Schinkmann-Bonias', color: '#d3d3d3' },
     { name: 'Aditya Boddepalli', color: '#00FFFF' },
-    { name: 'Sarah Zhang', color: '#8477F1' }
+    { name: 'Sarah Zhang', color: '#8477F1' },
+    { name: 'Rup Jaisinghani', color: '#065535' },
+    { name: 'Jack Dreifus', color: '#014421' },
+    { name: 'Vinay Pillai', color: '#42458e' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
