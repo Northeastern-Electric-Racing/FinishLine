@@ -32,7 +32,14 @@ const projectValidators = [
   intMinZero(body('projectManagerId').optional())
 ];
 
-projectRouter.post('/link-types/create', ProjectsController.createLinkType);
+projectRouter.post(
+  '/link-types/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.createLinkType
+);
 
 projectRouter.post(
   '/create',
