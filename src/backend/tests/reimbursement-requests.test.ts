@@ -372,7 +372,7 @@ describe('Reimbursement Requests', () => {
       const GiveMeMyMoneyWithProduct = { ...GiveMeMyMoney, reimbursementProducts: [GiveMeMoneyProduct] };
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoneyWithProduct);
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      vi.spyOn(prisma.expense_Type, 'findUnique').mockResolvedValue(Parts);
+      vi.spyOn(prisma.account_Code, 'findUnique').mockResolvedValue(Parts);
       vi.spyOn(prisma.reimbursement_Request, 'update').mockResolvedValue(GiveMeMyMoney);
       vi.spyOn(prisma.reimbursement_Product, 'updateMany').mockResolvedValue({ count: 1 });
       vi.spyOn(prisma.reimbursement_Product, 'update').mockResolvedValue(GiveMeMoneyProduct);
