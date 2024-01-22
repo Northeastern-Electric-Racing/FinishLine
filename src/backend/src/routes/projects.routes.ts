@@ -32,6 +32,8 @@ const projectValidators = [
   intMinZero(body('projectManagerId').optional())
 ];
 
+projectRouter.post('/link-types/create', ProjectsController.createLinkType);
+
 projectRouter.post(
   '/create',
   intMinZero(body('carNumber')),

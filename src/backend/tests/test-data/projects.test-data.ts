@@ -8,7 +8,7 @@ import {
   Manufacturer,
   Unit
 } from '@prisma/client';
-import { Project as SharedProject, WbsElementStatus } from 'shared';
+import { Project as SharedProject, WbsElementStatus, LinkType } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
@@ -125,6 +125,22 @@ export const sharedProject1: SharedProject = {
   teams: [],
   materials: [],
   assemblies: []
+};
+
+export const prismaLinkType1: LinkType = {
+  name: 'Confluence',
+  dateCreated: new Date('01-21-2024'),
+  creator: batman,
+  required: true,
+  iconName: 'ConfluenceIcon'
+};
+
+export const prismaLinkType2: LinkType = {
+  name: 'YouTube',
+  dateCreated: new Date('01-21-2024'),
+  creator: batman,
+  required: true,
+  iconName: 'YouTubeIcon'
 };
 
 export const prismaAssembly1: Assembly = {
