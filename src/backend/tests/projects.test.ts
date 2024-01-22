@@ -317,7 +317,10 @@ describe('Projects', () => {
     });
 
     test('Create LinkType successfully returns new LinkType', async () => {
-      vi.spyOn(prisma.linkType, 'create').mockResolvedValue(prismaLinkType2);
+      vi.spyOn(prisma.linkType, 'create').mockResolvedValue({
+        ...prismaLinkType2,
+        creatorId: batman.userId
+      });
 
       const linkType = await ProjectsService.createLinkType(
         batman,
