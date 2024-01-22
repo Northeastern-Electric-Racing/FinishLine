@@ -490,7 +490,7 @@ export default class ProjectsService {
    * @param name the name of the new LinkType
    * @param iconName the name of the icon for the new LinkType
    * @param required is the new LinkType required
-   * @param user the user who is marking the reimbursement request as reimbursed
+   * @param user the user who is creating the new LinkType
    * @throws AccessDeniedException if the submitter of the request is not an admin or head
    * @throws HttpException if a LinkType of the given name already exists
    * @returns the created LinkType
