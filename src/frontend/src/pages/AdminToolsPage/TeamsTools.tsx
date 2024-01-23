@@ -1,4 +1,6 @@
-import { Box, FormControl, FormLabel, Grid, TableCell, TableRow } from '@mui/material';
+import { Box, FormControl, FormLabel, Grid, Link, TableCell, TableRow } from '@mui/material';
+import { routes } from '../../utils/routes';
+import { Link as RouterLink } from 'react-router-dom';
 import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
 import { useAllTeams, useCreateTeam } from '../../hooks/teams.hooks';
@@ -79,7 +81,11 @@ const TeamsTools = () => {
 
   const teamTableRows = allTeams.map((team) => (
     <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>
+        <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
+          {team.teamName}
+        </Link>
+      </TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black' }}>
         {team.members.length}
