@@ -117,6 +117,14 @@ model User {
   archivedTeams             Team[]                  @relation(name: "userArchived")
   createdMaterialTypes      Material_Type[]         @relation(name: "materialTypeCreator")
   createdManufacturers      Manufacturer[]          @relation(name: "manufacturerCreator")
+  requiredDesignReviews     Design_Review[]         @relation(name: "requiredAttendee")
+  optionalDesignReviews     Design_Review[]         @relation(name: "optionalAttendee")
+  confirmedDesignReviews    Design_Review[]         @relation(name: "confirmedAttendee")
+  deniedDesignReviews       Design_Review[]         @relation(name: "deniedAttendee")
+  attendedDesignReviews     Design_Review[]         @relation(name: "userAttended")
+  drScheduleSettings        Schedule_Settings[]     @relation(name: "settingsUser")
+  createdDesignReviews      Design_Review[]         @relation(name: "designReviewCreator")
+  deletedDesignReviews      Design_Review[]         @relation(name: "designReviewDeleter")
 }
 
 model Team {
@@ -554,4 +562,68 @@ model Manufacturer {
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
   dateDeleted   DateTime?
   materials     Material[]
+}
+
+model Calendar {
+  name          String          @id
+  designReviews Design_Review[]
+}
+
+enum Design_Review_Status {
+  UNCONFIRMED
+  CONFIRMED
+  SCHEDULED
+  DONE
+}
+
+enum Design_Review_Team {
+  ELECTRICAL
+  SOFTWARE
+  MECHANICAL
+}
+
+model Design_Review {
+  designReviewId   Int                  @id @default(autoincrement())
+  dateScheduled    DateTime
+  dateCreated      DateTime
+  userCreated      User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
+  userCreatedId    Int
+  status           Design_Review_Status
+  teamType         Design_Review_Team
+  requiredMembers  User[]               @relation(name: "requiredAttendee")
+  optionalMembers  User[]               @relation(name: "optionalAttendee")
+  confirmedMembers User[]               @relation(name: "confirmedAttendee")
+  deniedMembers    User[]               @relation(name: "deniedAttendee")
+  location         String?
+  online           Boolean
+  inPerson         Boolean
+  zoomLink         String?
+  attendees        User[]               @relation(name: "userAttended")
+  dateDeleted      DateTime?
+  userDeleted      User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
+  userDeletedId    Int?
+  docTemplateLink  String?
+  Calendar         Calendar             @relation(fields: [calendarName], references: [name])
+  calendarName     String
+}
+
+model Schedule_Settings {
+  drScheduleSettingsId Int          @id @default(autoincrement())
+  personalGmail        String
+  personalZoomLink     String
+  availability         Availability @relation(fields: [availabilityId], references: [availabilityId])
+  availabilityId       Int
+  User                 User[]       @relation(name: "settingsUser")
+}
+
+model Availability {
+  availabilityId        Int                 @id @default(autoincrement())
+  mondayAvailability    DateTime[]
+  tuesdayAvailability   DateTime[]
+  wednesdayAvailability DateTime[]
+  thursdayAvailability  DateTime[]
+  fridayAvailability    DateTime[]
+  saturdayAvailability  DateTime[]
+  sundayAvailability    DateTime[]
+  Schedule_Settings     Schedule_Settings[]
 }
