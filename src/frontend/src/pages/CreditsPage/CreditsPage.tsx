@@ -91,7 +91,6 @@ const CreditsPage: React.FC = () => {
     { name: 'William Seward', color: '#e53774' },
     { name: 'Quinn Louie', color: '#3281a8' },
     { name: 'Liu von Engelbrechten', color: '#2969f2' },
-    { name: 'Matthew Tung', color: '#EE4B2B' },
     {
       name: 'Zach Norman',
       color: 'transparent',
@@ -124,6 +123,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Aarav Shyamkumar', color: '#FF0000' },
     { name: 'Raghav Mathur', color: '#009933' },
     { name: 'Anika Sharma', color: '#ff0000' },
+    { name: 'Matthew Tung', color: '#ccccff' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
     {
       name: 'Dao Ho',
