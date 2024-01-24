@@ -6,7 +6,8 @@ import {
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
   Manufacturer,
-  Unit
+  Unit,
+  LinkType
 } from '@prisma/client';
 import { Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
@@ -233,4 +234,19 @@ export const prismaMaterial1: Material = {
   wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null
+};
+
+export const mockLinkType1: LinkType = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creatorId: 1,
+  iconName: 'file',
+  required: true
+};
+export const mockLinkType2: LinkType = {
+  name: 'Tutorial1',
+  dateCreated: new Date('2024-01-23'),
+  creatorId: 1,
+  iconName: 'video',
+  required: true
 };

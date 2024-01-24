@@ -118,4 +118,5 @@ type ExceptionObjectNames =
   | 'Material Type'
   | 'Manufacturer'
   | 'Unit'
-  | 'Material';
+  | 'Material'
+  | 'Link Type';
