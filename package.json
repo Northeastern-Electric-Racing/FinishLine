@@ -136,5 +136,8 @@
     ]
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "shared": "^1.0.0"
+  }
 }
