@@ -59,9 +59,9 @@ export const useGetAllUnits = () => {
  */
 export const useEditMaterial = (materialId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Material, Error, MaterialFormInput>(
+  return useMutation<Material, Error, MaterialDataSubmission>(
     ['materials', 'edit'],
-    async (editPayload: MaterialFormInput) => {
+    async (editPayload: MaterialDataSubmission) => {
       const data = await editMaterial(materialId, editPayload);
       return data;
     },

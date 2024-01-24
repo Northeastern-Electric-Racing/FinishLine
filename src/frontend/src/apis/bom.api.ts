@@ -83,7 +83,7 @@ export const createMaterial = async (wbsNum: WbsNumber, material: MaterialDataSu
  * @param material The material to edit
  * @returns The edited material
  */
-export const editMaterial = async (materialId: string, material: MaterialFormInput) => {
+export const editMaterial = async (materialId: string, material: MaterialDataSubmission) => {
   const { data } = await axios.post(apiUrls.bomEditMaterial(materialId), material);
   return data;
 };

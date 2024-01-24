@@ -38,7 +38,7 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
       onSubmit={onSubmit}
       defaultValues={{
         ...material,
-        quantity: material.quantity,
+        quantity: Number(material.quantity),
         pdmFileName: material.pdmFileName,
         price: material.price / 100
       }}
