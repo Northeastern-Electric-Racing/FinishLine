@@ -307,7 +307,7 @@ describe('Projects', () => {
     test('Create LinkType Type fails for non heads or admins', async () => {
       await expect(
         ProjectsService.createLinkType(wonderwoman, prismaLinkType1.name, prismaLinkType1.iconName, prismaLinkType1.required)
-      ).rejects.toThrow(new AccessDeniedException('Only heads and above can create link types'));
+      ).rejects.toThrow(new AccessDeniedException('Only admins can create link types'));
     });
 
     test('Create LinkType Type fails if LinkType with name already exists', async () => {
