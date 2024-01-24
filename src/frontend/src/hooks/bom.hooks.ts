@@ -13,10 +13,7 @@ import {
   getAllMaterialTypes,
   getAllUnits
 } from '../apis/bom.api';
-import {
-  MaterialDataSubmission,
-  MaterialFormInput
-} from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
+import { MaterialDataSubmission } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
 
 /**

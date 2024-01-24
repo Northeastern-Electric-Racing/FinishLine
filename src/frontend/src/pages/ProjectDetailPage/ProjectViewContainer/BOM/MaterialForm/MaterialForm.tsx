@@ -58,8 +58,6 @@ export interface MaterialDataSubmission {
   subtotal: number;
 }
 
-
-
 export interface MaterialFormProps {
   submitText: 'Add' | 'Edit';
   onSubmit: (payload: MaterialDataSubmission) => void;
@@ -137,7 +135,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     const subtotal = data.unitName ? price : quantity * price;
     onSubmit({ ...data, subtotal: subtotal, price: price, quantity: new Decimal(quantity) });
   };
-  
+
   const createUnitWrapper = async (unitName: string): Promise<void> => {
     try {
       const createdUnit = await createUnit({ name: unitName });

@@ -2,10 +2,7 @@ import { Material, WbsNumber } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { manufacturerTransformer, materialTypeTransformer } from './transformers/bom.transformers';
-import {
-  MaterialDataSubmission,
-  MaterialFormInput
-} from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
+import { MaterialDataSubmission } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
 
 /**
