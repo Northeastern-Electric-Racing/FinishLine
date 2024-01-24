@@ -124,6 +124,16 @@ const CreditsPage: React.FC = () => {
     { name: 'Aarav Shyamkumar', color: '#FF0000' },
     { name: 'Raghav Mathur', color: '#009933' },
     { name: 'Anika Sharma', color: '#ff0000' },
+    {
+      name: 'Samson Ajayi',
+      color: '6a0dad',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(245,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        px: 1.5,
+        borderRadius: 2.5,
+        textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
+      }
+    },
     { name: 'Christian Bacalhau', color: '#6a0dad' },
     { name: 'Gurshan Sidhu', color: '#487c90' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
