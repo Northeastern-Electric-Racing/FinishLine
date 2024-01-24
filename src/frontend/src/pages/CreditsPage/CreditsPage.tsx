@@ -207,7 +207,14 @@ const CreditsPage: React.FC = () => {
     { name: 'Vinay Pillai', color: '#42458e' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
-    { name: 'Chris Pyle', color: '#ADD8E6' }
+    { name: 'Chris Pyle', color: '#ADD8E6' },
+    {
+      name: 'Tanisha Rajgor',
+      color: '#e3ddfb',
+      sx: {
+        textShadow: '0 0 2px rgba(0, 0, 0, 0.4), 0 0 5px rgba(180, 160, 255, 0.8)'
+      }
+    }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
