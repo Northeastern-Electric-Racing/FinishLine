@@ -29,7 +29,8 @@ import {
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserEditRRPermissions,
-  validateUserIsPartOfFinanceTeam
+  validateUserIsPartOfFinanceTeam,
+  isUserOnFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -656,7 +657,7 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
 
     try {
-      await isUserAdminOrOnFinance(user);
+      await isUserOnFinanceTeam(user);
     } catch {
       if (user.userId !== reimbursementRequest.recipientId)
         throw new AccessDeniedException('You do not have access to this reimbursement request');
