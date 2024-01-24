@@ -100,6 +100,7 @@ const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
 const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
+const financeMarkAsReimbursed = (id: string) => `${financeEndpoints()}/${id}/reimbursed`;
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
@@ -107,6 +108,7 @@ const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advis
 const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
 const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
+const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -204,6 +206,7 @@ export const apiUrls = {
   financeImageById,
   financeDeleteReimbursement,
   financeMarkAsDelivered,
+  financeMarkAsReimbursed,
   financeApproveReimbursementRequest,
   financeDenyReimbursementRequest,
   financeGetPendingAdvisorList,
@@ -211,6 +214,7 @@ export const apiUrls = {
   financeEditExpenseType,
   financeCreateExpenseType,
   financeCreateVendor,
+  financeEditVendor,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
