@@ -96,4 +96,15 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async archiveTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamId } = req.params;
+      const user = await getCurrentUser(res);
+      const archivedTeam = await TeamsService.archiveTeam(user, teamId);
+      return res.status(200).json(archivedTeam);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
