@@ -17,7 +17,15 @@ const CreateVendorModal = ({ showModal, handleClose, vendor, vendors }: EditVend
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return <VendorFormModal showModal={showModal} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={vendor} vendors={vendors} />;
+  return (
+    <VendorFormModal
+      showModal={showModal}
+      handleClose={handleClose}
+      onSubmit={mutateAsync}
+      defaultValues={vendor}
+      vendors={vendors}
+    />
+  );
 };
 
 export default CreateVendorModal;
