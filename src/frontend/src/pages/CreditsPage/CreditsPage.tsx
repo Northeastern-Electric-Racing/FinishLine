@@ -123,6 +123,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Aarav Shyamkumar', color: '#FF0000' },
     { name: 'Raghav Mathur', color: '#009933' },
     { name: 'Anika Sharma', color: '#ff0000' },
+    { name: 'Gurshan Sidhu', color: '#487c90' },
     { name: 'William (Jack) Turner', color: '#ff5733' },
     {
       name: 'Dao Ho',
