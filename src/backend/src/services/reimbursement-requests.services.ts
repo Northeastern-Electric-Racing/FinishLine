@@ -83,7 +83,7 @@ export default class ReimbursementRequestService {
    * @returns all the reimbursements in the database
    */
   static async getAllReimbursements(user: User): Promise<Reimbursement[]> {
-    await validateUserIsPartOfFinanceTeam(user);
+    await isUserAdminOrOnFinance(user);
 
     const reimbursements = await prisma.reimbursement.findMany({ ...reimbursementQueryArgs });
     return reimbursements.map(reimbursementTransformer);
@@ -599,7 +599,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User): Promise<ReimbursementRequest[]> {
-    await validateUserIsPartOfFinanceTeam(user);
+    await isUserAdminOrOnFinance(user);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null },
@@ -656,7 +656,7 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
 
     try {
-      await validateUserIsPartOfFinanceTeam(user);
+      await isUserAdminOrOnFinance(user);
     } catch {
       if (user.userId !== reimbursementRequest.recipientId)
         throw new AccessDeniedException('You do not have access to this reimbursement request');

@@ -26,6 +26,7 @@ import { routes } from '../../utils/routes';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
+import { isAdmin } from 'shared';
 
 const FinancePage = () => {
   const user = useCurrentUser();

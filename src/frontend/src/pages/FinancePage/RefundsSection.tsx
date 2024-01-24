@@ -57,10 +57,13 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   } = useAllReimbursements();
   const theme = useTheme();
 
-  if (user.isFinance && allReimbursementsIsError) return <ErrorPage message={allReimbursementsError?.message} />;
+  const canViewReimbursementRequests = user.isFinance || isAdmin(user.role);
+
+  if (canViewReimbursementRequests && allReimbursementsIsError)
+    return <ErrorPage message={allReimbursementsError?.message} />;
   if (userReimbursementsIsError) return <ErrorPage message={userReimbursementError?.message} />;
   if (
-    (user.isFinance && (allReimbursementsIsLoading || !allReimbursements)) ||
+    (canViewReimbursementRequests && (allReimbursementsIsLoading || !allReimbursements)) ||
     userReimbursementsIsLoading ||
     !userReimbursements
   )
@@ -84,7 +87,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const percentRefunded = (totalReceived / currentlyOwed) * 100;
 
   const tabs = [{ label: 'My Refunds', value: 0 }];
-  if (user.isFinance || isAdmin(user.role)) tabs.push({ label: 'All Club Refunds', value: 1 });
+  if (canViewReimbursementRequests) tabs.push({ label: 'All Club Refunds', value: 1 });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
