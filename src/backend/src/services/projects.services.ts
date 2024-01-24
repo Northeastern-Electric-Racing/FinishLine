@@ -491,12 +491,12 @@ export default class ProjectsService {
    * @param iconName the name of the icon for the new LinkType
    * @param required is the new LinkType required
    * @param user the user who is creating the new LinkType
-   * @throws AccessDeniedException if the submitter of the request is not an admin or head
+   * @throws AccessDeniedException if the submitter of the request is not an admin
    * @throws HttpException if a LinkType of the given name already exists
    * @returns the created LinkType
    */
   static async createLinkType(user: User, name: string, iconName: string, required: boolean): Promise<LinkType> {
-    if (!isHead(user.role)) throw new AccessDeniedException('Only heads and above can create link types');
+    if (!isAdmin(user.role)) throw new AccessDeniedException('Only admins can create link types');
 
     const existingLinkType = await prisma.linkType.findUnique({
       where: { name }
