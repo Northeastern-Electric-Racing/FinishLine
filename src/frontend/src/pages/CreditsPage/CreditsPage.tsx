@@ -193,6 +193,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Rup Jaisinghani', color: '#065535' },
     { name: 'Jack Dreifus', color: '#014421' },
     { name: 'Vinay Pillai', color: '#42458e' },
+    { name: 'Benjamin Kataoka', color: '#38FF87' },
     { name: 'Will Anderson', color: '#ebb145' }
   ];
 
