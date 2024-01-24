@@ -16,7 +16,8 @@ import {
   prismaMaterial2,
   prismaProject2,
   mockLinkType1,
-  mockLinkType2
+  mockLinkType2,
+  transformedMockLinkType1
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -34,6 +35,7 @@ import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { Material, Material_Status, User } from '@prisma/client';
+import linkTypeQueryArgs from '../src/prisma-query-args/link-types.query-args';
 
 vi.mock('../src/utils/projects.utils');
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
@@ -1128,7 +1130,7 @@ describe('Projects', () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(mockLinkType1);
       vi.spyOn(prisma.linkType, 'update').mockResolvedValue({ ...mockLinkType1, name: 'Doc2' });
       vi.spyOn(prisma.link, 'updateMany').mockResolvedValue({ count: 5 });
-      vi.spyOn(prisma, '$transaction').mockImplementation((callback) => {
+      vi.spyOn(prisma, '$transaction').mockImplementation(async (callback) => {
         return callback(prisma);
       });
 
@@ -1140,14 +1142,15 @@ describe('Projects', () => {
         batman
       );
 
-      expect(updated).toEqual({ ...mockLinkType1, name: 'Doc2' });
+      expect(updated).toEqual(transformedMockLinkType1);
       expect(prisma.linkType.update).toHaveBeenCalledWith({
         where: { name: mockLinkType1.name },
         data: {
           name: 'Doc2',
           iconName: mockLinkType1.iconName,
           required: mockLinkType1.required
-        }
+        },
+        ...linkTypeQueryArgs
       });
       expect(prisma.link.updateMany).toHaveBeenCalledWith({
         where: { linkTypeName: mockLinkType1.name },

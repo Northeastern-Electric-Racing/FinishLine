@@ -1,4 +1,4 @@
-import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import { Role, Material_Type, User, Assembly, Material_Status, Material, Prisma } from '@prisma/client';
 import {
   isAdmin,
   isGuest,
@@ -1098,7 +1098,7 @@ export default class ProjectsService {
       throw new Error(`A linkType with the name '${name}' already exists.`);
     }
 
-    let linkTypeUpdated;
+    let linkTypeUpdated: Prisma.LinkTypeGetPayload<typeof linkTypeQueryArgs> | null = null;
 
     await prisma.$transaction(async (prisma) => {
       // update the LinkType
@@ -1108,7 +1108,8 @@ export default class ProjectsService {
           name,
           iconName,
           required
-        }
+        },
+        ...linkTypeQueryArgs
       });
       // update the foreign key references in the Link table if the name changed
       if (linkTypeId !== name) {
@@ -1118,6 +1119,9 @@ export default class ProjectsService {
         });
       }
     });
-    return linkTypeUpdated;
+    if (linkTypeUpdated) {
+      return linkTypeTransformer(linkTypeUpdated);
+    }
+    throw new Error('LinkType update failed');
   }
 }

@@ -243,6 +243,13 @@ export const mockLinkType1: LinkType = {
   iconName: 'file',
   required: true
 };
+export const transformedMockLinkType1 = {
+  name: 'Doc2',
+  dateCreated: new Date('2024-01-23'),
+  creator: undefined,
+  iconName: 'file',
+  required: true
+};
 export const mockLinkType2: LinkType = {
   name: 'Tutorial1',
   dateCreated: new Date('2024-01-23'),
