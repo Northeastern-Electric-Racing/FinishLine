@@ -49,6 +49,7 @@ const VendorsTable = () => {
             setClickedVendor(undefined);
           }}
           vendor={clickedVendor}
+          vendors={vendors}
         />
       )}
       <Typography variant="subtitle1">Registered Vendors</Typography>
