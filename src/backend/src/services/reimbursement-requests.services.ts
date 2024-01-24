@@ -29,8 +29,7 @@ import {
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserEditRRPermissions,
-  validateUserIsPartOfFinanceTeam,
-  isUserOnFinanceTeam
+  validateUserIsPartOfFinanceTeam
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
