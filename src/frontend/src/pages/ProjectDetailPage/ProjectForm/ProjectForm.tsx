@@ -255,6 +255,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               bulletName="Rule"
             />
           </Box>
+          }
         </Stack>
       </PageLayout>
     </form>
