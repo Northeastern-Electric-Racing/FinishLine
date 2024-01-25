@@ -146,7 +146,7 @@ const Settings: React.FC = () => {
           <Grid item xs={12} sm={6} md={3} lg={2}>
             <DetailDisplay label="Last Name" content={user.lastName} />
           </Grid>
-          <Grid item xs={12} sm={6} md={5} lg={3}>
+          <Grid item xs={12} sm={7} md={5} lg={3}>
             <DetailDisplay label="Email" content={user.email} />
           </Grid>
           <Grid item xs={12} sm={6} md={4} lg={2}>
