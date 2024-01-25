@@ -88,7 +88,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Liam Kosar', color: '#eb66ff' },
     { name: 'Daniel Yu', color: '#bdc0c7' },
     { name: 'Jake Wu-Chen', color: '#bdc0c7' },
-    { name: 'Matthew Tung', color: '#ccccff' },
+    { name: 'Matthew Tung', color: '##FF00FF' },
     { name: 'William Seward', color: '#e53774' },
     { name: 'Quinn Louie', color: '#3281a8' },
     { name: 'Liu von Engelbrechten', color: '#2969f2' },
