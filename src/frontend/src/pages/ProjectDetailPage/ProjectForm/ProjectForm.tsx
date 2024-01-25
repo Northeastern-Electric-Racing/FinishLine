@@ -195,8 +195,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
-          </Box>        }
-      >
+          </Box>
         <ProjectFormDetails
           users={users}
           control={control}
