@@ -18,6 +18,11 @@ import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { useCreateSingleProject } from '../../../hooks/projects.hooks';
+import CreateChangeRequest from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { createSingleProject } from '../../../apis/projects.api';
+import CreateChangeRequestsView from '../../CreateChangeRequestPage/CreateChangeRequestView';
+import { getSingleChangeRequest } from '../../../apis/change-requests.api';
 
 export interface ProjectFormInput {
   name: string;
@@ -27,19 +32,19 @@ export interface ProjectFormInput {
   crId: string;
   carNumber: number;
   goals: {
-    bulletId: number;
+    id: number;
     detail: string;
   }[];
   features: {
-    bulletId: number;
+    id: number;
     detail: string;
   }[];
   constraints: {
-    bulletId: number;
+    id: number;
     detail: string;
   }[];
   rules: {
-    bulletId: number;
+    id: number;
     detail: string;
   }[];
   teamId: string;
@@ -164,7 +169,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Box textAlign="right"><NERSuccessButton variant="contained" onClick={() => createSingleProject({
+          <Box textAlign="right">
+            <NERSuccessButton variant="contained" onClick={() => createSingleProject({
                 crId: parseInt(defaultValues.crId),
                 name: defaultValues.name,
                 carNumber: defaultValues.carNumber || 0,
@@ -178,17 +184,18 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                 links: defaultValues.links || [],
                 projectLeadId: parseInt(projectLeadId),
                 projectManagerId: parseInt(projectManagerId)
+                crStatus: 'pending' // Set the crStatus to 'pending'
               })}>
               Create Change Request
             </NERSuccessButton>
-            <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+            <NERFailButton variant="contained" onClick={exitEditMode}
+              sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
             <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
-          </Box>
-        }
+          </Box>        }
       >
         <ProjectFormDetails
           users={users}
@@ -234,8 +241,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <ReactHookEditableList
               name="constraints"
               register={register}
-              ls={constraints}
-              append={appendConstraint}
+              ls={constraints}              append={appendConstraint}
               remove={removeConstraint}
               bulletName="Constraint"
             />
@@ -258,3 +264,4 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 };
 
 export default ProjectFormContainer;
+type undefined is not assignable to type string
