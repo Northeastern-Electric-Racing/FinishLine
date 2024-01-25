@@ -20,13 +20,15 @@ import userTransformer from '../../src/transformers/user.transformer';
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
-  name: 'Pop Eyes'
+  name: 'Pop Eyes',
+  dateDeleted: null
 };
 
 export const KFC: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
-  name: 'kfc'
+  name: 'kfc',
+  dateDeleted: null
 };
 
 export const Parts: PrismaExpenseType = {
@@ -34,7 +36,8 @@ export const Parts: PrismaExpenseType = {
   name: 'hammer',
   code: 12245,
   allowed: true,
-  allowedRefundSources: [Club_Accounts.CASH, Club_Accounts.BUDGET]
+  allowedRefundSources: [Club_Accounts.CASH, Club_Accounts.BUDGET],
+  dateDeleted: null
 };
 
 export const GiveMeMyMoney: PrismaReimbursementRequest = {
