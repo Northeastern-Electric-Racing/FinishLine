@@ -16,13 +16,13 @@ export const renderStatusBOM = (params: GridRenderCellParams) => {
   const status = params.value;
   const color =
     status === MaterialStatus.Ordered
-      ? 'orange'
+      ? '#dba63e'
       : status === MaterialStatus.Unordered
-      ? 'red'
+      ? '#ba782a'
       : status === MaterialStatus.Received
-      ? 'green'
+      ? '#2a712a'
       : status === MaterialStatus.Shipped
-      ? 'yellow'
+      ? '#1b537a'
       : 'grey';
   return (
     <Box sx={{ backgroundColor: color, padding: '6px 10px 6px 10px', borderRadius: '6px' }}>
