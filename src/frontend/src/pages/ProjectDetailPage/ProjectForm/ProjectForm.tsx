@@ -185,8 +185,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                 projectLeadId: parseInt(projectLeadId),
                 projectManagerId: parseInt(projectManagerId),
                 crStatus: 'pending' // Set the crStatus to 'pending'
-              })}>
-              Create Change Request
+              })}>  Create Change Request
             </NERSuccessButton>
             <NERFailButton variant="contained" onClick={exitEditMode}
               sx={{ mx: 1 }}>
