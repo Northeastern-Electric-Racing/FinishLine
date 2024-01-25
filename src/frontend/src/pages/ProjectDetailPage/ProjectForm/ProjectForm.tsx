@@ -183,7 +183,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                 otherConstraints: defaultValues.constraints || [{ bulletId: 0, detail: 'string' }],
                 links: defaultValues.links || [],
                 projectLeadId: parseInt(projectLeadId),
-                projectManagerId: parseInt(projectManagerId)
+                projectManagerId: parseInt(projectManagerId),
                 crStatus: 'pending' // Set the crStatus to 'pending'
               })}>
               Create Change Request
@@ -262,6 +262,3 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     </form>
   );
 };
-
-export default ProjectFormContainer;
-type undefined is not assignable to type string
