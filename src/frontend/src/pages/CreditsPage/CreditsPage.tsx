@@ -158,7 +158,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
-    { name: 'Xavier Galanes', color:'#6c25be'}
+    { name: 'Xavier Galanes', color: '#6c25be' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
