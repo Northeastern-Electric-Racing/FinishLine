@@ -164,10 +164,23 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Box textAlign="right">
-            <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+          <Box textAlign="right"><NERSuccessButton variant="contained" onClick={() => createSingleProject({
+                crId: parseInt(defaultValues.crId),
+                name: defaultValues.name,
+                carNumber: defaultValues.carNumber || 0,
+                summary: defaultValues.summary,
+                teamIds: [],
+                budget: defaultValues.budget || 0,
+                rules: defaultValues.rules.map(rule => rule.detail.toString()),
+                goals: defaultValues.goals,
+                features: defaultValues.features || [{ bulletId: 0, detail: 'string' }],
+                otherConstraints: defaultValues.constraints || [{ bulletId: 0, detail: 'string' }],
+                links: defaultValues.links || [],
+                projectLeadId: parseInt(projectLeadId),
+                projectManagerId: parseInt(projectManagerId)
+              })}>
               Create Change Request
-            </NERFailButton>
+            </NERSuccessButton>
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
