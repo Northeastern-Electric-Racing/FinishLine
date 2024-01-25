@@ -42,6 +42,16 @@ const CreditsPage: React.FC = () => {
     { name: 'Tucker Gwertzman', color: '#25e6e2' },
     { name: 'Donny Le', color: '#03fcf4' },
     { name: 'Ryan Howe', color: '#3cce20' },
+    {
+      name: 'Benjamin Meyer',
+      color: '6a0dad',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(245,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        px: 1.5,
+        borderRadius: 2.5,
+        textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
+      }
+    },
     { name: 'Ethan Szeto', color: '#404040' },
     { name: 'Adarsh Jayaram', color: '#ff0000' },
     { name: 'Harish Sundar', color: '#7f00ff' },
