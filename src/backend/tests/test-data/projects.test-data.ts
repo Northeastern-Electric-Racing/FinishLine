@@ -162,7 +162,8 @@ export const prismaMaterialType: PrismaMaterialType = {
 };
 
 export const prismaUnit: Unit = {
-  name: 'FT'
+  name: 'FT',
+  dateDeleted: null
 };
 
 export const prismaMaterial: Material = {
