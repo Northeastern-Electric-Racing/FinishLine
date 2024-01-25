@@ -117,6 +117,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
           )
         }
+        divider={true}
         disabled={!isLeadership(user.role) || budgetIncrease <= 0}
       >
         <ListItemIcon>
@@ -176,8 +177,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       >
         <EditButton />
         <CreateChangeRequestButton />
-        <SuggestBudgetIncreaseButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
+        <SuggestBudgetIncreaseButton />
         <DeleteButton />
       </Menu>
     </Box>
