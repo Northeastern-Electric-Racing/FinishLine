@@ -208,7 +208,8 @@ const CreditsPage: React.FC = () => {
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
-    { name: 'Chris Pyle', color: '#ADD8E6' }
+    { name: 'Chris Pyle', color: '#ADD8E6' },
+    { name: 'Zachary Wen', color: '#4169e1' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
