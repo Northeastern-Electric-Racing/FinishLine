@@ -166,6 +166,9 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+              Create Change Request
+            </NERFailButton>
+            <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
             <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
