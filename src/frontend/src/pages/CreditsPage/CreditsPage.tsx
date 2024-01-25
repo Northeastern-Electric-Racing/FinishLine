@@ -36,14 +36,6 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Kevin Chen', color: '#00A36C' },
     { name: 'Ji-min Kim', color: '#7ae0c1' },
-    {
-      name: ' Yipeng (Andrew) Wang',
-      color: 'transparent',
-      sx: {
-        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
-        '-webkit-background-clip': 'text'
-      }
-    },
     { name: 'Zack Roth', color: '#4a6741', sx: { px: 1, backgroundColor: '#E8D8CC', borderRadius: 2 } },
     { name: 'Megan Liu', color: '#3d609e' },
     { name: 'Peyton McKee', color: '#6a3941' },
@@ -215,6 +207,14 @@ const CreditsPage: React.FC = () => {
     { name: 'Vinay Pillai', color: '#42458e' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
+    {
+      name: ' Yipeng (Andrew) Wang',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        '-webkit-background-clip': 'text'
+      }
+    },
     { name: 'Chris Pyle', color: '#ADD8E6' }
   ];
 
