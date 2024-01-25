@@ -490,8 +490,9 @@ enum Material_Status {
 }
 
 model Unit {
-  name      String     @id
-  materials Material[]
+  name        String     @id
+  materials   Material[]
+  dateDeleted DateTime?
 }
 
 model Assembly {
