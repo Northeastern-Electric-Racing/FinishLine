@@ -27,6 +27,7 @@ import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import DrawerHeader from '../components/DrawerHeader';
 import { Container } from '@mui/material';
+import ErrorPage from '../pages/ErrorPage';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -46,7 +47,13 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
-  if (isError && error) return <SessionTimeoutAlert />;
+  if (isError) {
+    if ((error as Error).message === 'Authentication Failed: Invalid JWT!') {
+      return <SessionTimeoutAlert />;
+    } else {
+      return <ErrorPage error={error as Error} message={(error as Error).message} />;
+    }
+  }
 
   return userSettingsData.slackId ? (
     <AppContextUser>
