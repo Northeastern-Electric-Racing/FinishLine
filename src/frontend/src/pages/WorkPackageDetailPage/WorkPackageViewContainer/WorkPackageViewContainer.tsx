@@ -128,6 +128,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(workPackage.wbsNum)}
       disabled={!allowRequestChange}
       onClick={handleDropdownClose}
+      divider={true}
     >
       <ListItemIcon>
         <SyncAltIcon fontSize="small" />
@@ -145,7 +146,19 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
       >
         Actions
       </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+        onClose={handleDropdownClose}
+      >
         {editButton}
         {workPackage.status === WbsElementStatus.Inactive ? activateButton : ''}
         {workPackage.status === WbsElementStatus.Active ? stageGateButton : ''}
