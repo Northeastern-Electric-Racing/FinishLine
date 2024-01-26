@@ -81,7 +81,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
       (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
       0
     ) - totalReceived;
-  const percentRefunded = (totalReceived / currentlyOwed) * 100;
+  const percentRefunded = (totalReceived / (currentlyOwed + totalReceived)) * 100;
 
   const tabs = [{ label: 'My Refunds', value: 0 }];
   if (user.isFinance) tabs.push({ label: 'All Club Refunds', value: 1 });
