@@ -16,6 +16,8 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import UserSecureSettingsView from './UserSecureSettingsView';
 import UserSecureSettingsEdit from './UserSecureSettingsEdit';
 import { UserSecureSettings as UserSecureSettingsType } from 'shared';
+import { useAuth } from '../../../hooks/auth.hooks';
+import { Auth } from '../../../utils/types';
 
 interface SecureSettingsProps {
   currentSettings: UserSecureSettingsType;
@@ -31,14 +33,20 @@ export interface SecureSettingsFormInput {
 }
 
 const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) => {
-  const [edit, setEdit] = useState(false);
+  const auth: Auth = useAuth();
+
   const {
     mutateAsync: updateSecureUserSettings,
     isLoading: updateUserSettingsIsLoading,
     isError: updateUserSettingsIsError,
     error: updateUserSettingsError
   } = useUpdateUserSecureSettings();
+
   const toast = useToast();
+  const [edit, setEdit] = useState(false);
+
+  const { user } = auth;
+  if (!user) return <LoadingIndicator />;
 
   if (updateUserSettingsIsLoading) return <LoadingIndicator />;
   if (updateUserSettingsIsError) return <ErrorPage error={updateUserSettingsError!} />;
@@ -66,11 +74,11 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
     <PageBlock
       title="User Secure Settings"
       headerRight={
-        !edit ? (
+        !edit && user.role !== 'GUEST' ? (
           <IconButton onClick={() => setEdit(true)}>
             <EditIcon fontSize="small" />
           </IconButton>
-        ) : (
+        ) : user.role !== 'GUEST' ? (
           <Box
             className="d-flex flex-row"
             sx={{
@@ -82,7 +90,7 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
               Save
             </NERSuccessButton>
           </Box>
-        )
+        ) : null
       }
     >
       <Grid container>
