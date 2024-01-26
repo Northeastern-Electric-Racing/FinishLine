@@ -114,6 +114,22 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Expense Type" content={`${expenseType.code} - ${expenseType.name}`} />
         </Grid>
       </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={12}>
+          <DetailDisplay label="Head Of Finance" content="Brody Pearlman" />
+        </Grid>
+        <Grid item xs={12}>
+          <DetailDisplay label="Email" content="pearlman.br@northeastern.edu" />
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={12}>
+          <DetailDisplay label="Club Advisor" content="Professor Gouldstone" />
+        </Grid>
+        <Grid item xs={12}>
+          <DetailDisplay label="Email" content="gouldstone.a@northeastern.edu" />
+        </Grid>
+      </Grid>
       <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>
         <Typography variant="h5">Receipts</Typography>
         {receiptPictures.map((receipt) => {
