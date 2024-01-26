@@ -9,7 +9,9 @@ import AppContext from '../../app/AppContext';
 vi.mock('../../app/AppContextQuery', () => {
   return {
     __esModule: true,
-    default: (props: { children: string | number | boolean | {} | React.ReactNodeArray | React.ReactPortal | null | undefined; }) => {
+    default: (props: {
+      children: string | number | boolean | {} | React.ReactNodeArray | React.ReactPortal | null | undefined;
+    }) => {
       return <div>app context query {props.children}</div>;
     }
   };
@@ -18,7 +20,9 @@ vi.mock('../../app/AppContextQuery', () => {
 vi.mock('../../app/AppContextAuth', () => {
   return {
     __esModule: true,
-    default: (props: { children: string | number | boolean | {} | React.ReactNodeArray | React.ReactPortal | null | undefined; }) => {
+    default: (props: {
+      children: string | number | boolean | {} | React.ReactNodeArray | React.ReactPortal | null | undefined;
+    }) => {
       return <div>app context auth {props.children}</div>;
     }
   };
@@ -27,7 +31,9 @@ vi.mock('../../app/AppContextAuth', () => {
 vi.mock('../../app/AppContextTheme', () => {
   return {
     __esModule: true,
-    default: (props: { children: string | number | boolean | {} | React.ReactNodeArray | React.ReactPortal | null | undefined; }) => {
+    default: (props: {
+      children: string | number | boolean | {} | React.ReactNodeArray | React.ReactPortal | null | undefined;
+    }) => {
       return <div>app context theme {props.children}</div>;
     }
   };
