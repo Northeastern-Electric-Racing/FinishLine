@@ -210,6 +210,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
     { name: 'Chris Pyle', color: '#ADD8E6' },
+    { name: 'Caden Weaver', color: '#E6FFFD' },
     {
       name: 'Tanisha Rajgor',
       color: '#e3ddfb',
