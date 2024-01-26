@@ -485,6 +485,39 @@ export default class ProjectsService {
   }
 
   /**
+   * Creates a new LinkType with the given information
+   *
+   * @param name the name of the new LinkType
+   * @param iconName the name of the icon for the new LinkType
+   * @param required is the new LinkType required
+   * @param user the user who is creating the new LinkType
+   * @throws AccessDeniedException if the submitter of the request is not an admin
+   * @throws HttpException if a LinkType of the given name already exists
+   * @returns the created LinkType
+   */
+  static async createLinkType(user: User, name: string, iconName: string, required: boolean): Promise<LinkType> {
+    if (!isAdmin(user.role)) throw new AccessDeniedException('Only admins can create link types');
+
+    const existingLinkType = await prisma.linkType.findUnique({
+      where: { name }
+    });
+
+    if (existingLinkType) throw new HttpException(400, 'LinkType with that name already exists');
+
+    const linkType = await prisma.linkType.create({
+      data: {
+        name,
+        creatorId: user.userId,
+        iconName,
+        required
+      },
+      ...linkTypeQueryArgs
+    });
+
+    return linkTypeTransformer(linkType);
+  }
+
+  /**
    * Creates a new Material
    * @param creator the user creating the material
    * @param name the name of the material
