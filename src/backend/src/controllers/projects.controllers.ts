@@ -155,6 +155,18 @@ export default class ProjectsController {
     }
   }
 
+  static async createLinkType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { name, iconName, required } = req.body;
+
+      const newLinkType = await ProjectsService.createLinkType(user, name, iconName, required);
+      res.status(200).json(newLinkType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createAssembly(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);

@@ -5,6 +5,8 @@ import { aquaman, batman, wonderwoman, superman, theVisitor } from './test-data/
 import {
   prismaProject1,
   sharedProject1,
+  prismaLinkType1,
+  prismaLinkType2,
   prismaAssembly1,
   toolMaterial,
   prismaManufacturer1,
@@ -298,6 +300,35 @@ describe('Projects', () => {
       expect(res).toBe(sharedProject1);
       expect(prisma.project.findFirst).toBeCalledTimes(1);
       expect(prisma.user.update).toBeCalledTimes(1);
+    });
+  });
+
+  describe('Create LinkType', () => {
+    test('Create LinkType Type fails for non heads or admins', async () => {
+      await expect(
+        ProjectsService.createLinkType(wonderwoman, prismaLinkType1.name, prismaLinkType1.iconName, prismaLinkType1.required)
+      ).rejects.toThrow(new AccessDeniedException('Only admins can create link types'));
+    });
+
+    test('Create LinkType Type fails if LinkType with name already exists', async () => {
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...prismaLinkType2, creatorId: batman.userId });
+      await expect(
+        ProjectsService.createLinkType(batman, prismaLinkType1.name, prismaLinkType1.iconName, prismaLinkType1.required)
+      ).rejects.toThrow(new HttpException(400, 'LinkType with that name already exists'));
+    });
+
+    test('Create LinkType successfully returns new LinkType', async () => {
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.linkType, 'create').mockResolvedValue({ ...prismaLinkType2, creatorId: batman.userId });
+
+      const linkType = await ProjectsService.createLinkType(
+        batman,
+        prismaLinkType2.name,
+        prismaLinkType2.iconName,
+        prismaLinkType2.required
+      );
+
+      expect(linkType).toStrictEqual(prismaLinkType2);
     });
   });
 
