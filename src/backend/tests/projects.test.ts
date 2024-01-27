@@ -1103,7 +1103,11 @@ describe('Projects', () => {
     });
     test('LinkType edits successfully, changes its foreign key in Link objects as well', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
-      vi.spyOn(prisma.linkType, 'update').mockResolvedValue({ ...mockLinkType1, iconName: 'Doc2' });
+      vi.spyOn(prisma.linkType, 'update').mockResolvedValue({
+        ...mockLinkType1,
+        creatorId: batman.userId,
+        iconName: 'Doc2'
+      });
 
       const updated = await ProjectsService.editLinkType(mockLinkType1.name, 'Doc2', mockLinkType1.required, batman);
 
