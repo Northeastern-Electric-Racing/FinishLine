@@ -21,7 +21,7 @@ const BOMTab = ({ project }: { project: Project }) => {
 
   const totalCost = project.materials.reduce(addMaterialCosts, 0);
 
-  let isGuestUser = isGuest(useCurrentUser().role);
+  const user = useCurrentUser();
 
   return (
     <Box>
@@ -35,7 +35,7 @@ const BOMTab = ({ project }: { project: Project }) => {
               variant="contained"
               onClick={() => setShowAddMaterial(true)}
               sx={{ textTransform: 'none' }}
-              disabled={isGuestUser}
+              disabled={isGuest(user.role)}
             >
               New Entry
             </NERSuccessButton>
