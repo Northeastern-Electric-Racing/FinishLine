@@ -1090,7 +1090,7 @@ describe('Projects', () => {
   });
   describe('editLinkTypes', () => {
     test('Edit LinkType fails if the submitter is not an admin or a head', async () => {
-      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(mockLinkType1);
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
       await expect(
         ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, aquaman)
       ).rejects.toThrow(new AccessDeniedException('Only the head or admin can update the linkType'));
@@ -1102,7 +1102,7 @@ describe('Projects', () => {
       ).rejects.toThrow(new NotFoundException('Link Type', mockLinkType1.name));
     });
     test('LinkType edits successfully, changes its foreign key in Link objects as well', async () => {
-      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(mockLinkType1);
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
       vi.spyOn(prisma.linkType, 'update').mockResolvedValue({ ...mockLinkType1, iconName: 'Doc2' });
 
       const updated = await ProjectsService.editLinkType(mockLinkType1.name, 'Doc2', mockLinkType1.required, batman);
