@@ -943,7 +943,7 @@ describe('Projects', () => {
     test('Delete Unit works', async () => {
       vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(toolMaterial);
       vi.spyOn(prisma.unit, 'delete');
-      const deletedUnit = await ProjectsService.deleteUnit(superman, 'NERSoftwareTools');
+      await ProjectsService.deleteUnit(superman, 'NERSoftwareTools');
       expect(prisma.unit.delete).toBeCalledTimes(1);
     });
   });
