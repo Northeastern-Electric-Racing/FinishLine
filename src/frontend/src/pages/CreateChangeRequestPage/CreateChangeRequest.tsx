@@ -52,7 +52,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const handleConfirm = async (data: FormInput) => {
     const requestHasASolution: boolean = proposedSolutions.length !== 0;
     try {
-      if (!requestHasASolution) throw new Error('Error: You must have at least one Proposed Solution Added');
+      if (!requestHasASolution) throw new Error('You must have at least one proposed solution added!');
       await mutateAsync({
         ...data,
         wbsNum: validateWBS(wbsNum),
