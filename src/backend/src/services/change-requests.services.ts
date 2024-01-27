@@ -372,7 +372,6 @@ export default class ChangeRequestsService {
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
-
     const { changeRequests } = wbsElement;
     const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
     if (!allChangeRequestsReviewed(nonDeletedChangeRequests)) {
@@ -381,6 +380,14 @@ export default class ChangeRequestsService {
         `Please resolve all change requests related to ${wbsPipe({ carNumber, projectNumber, workPackageNumber })} - ${
           wbsElement.name
         } before proceeding`
+      );
+    }
+
+    const reviewedProject = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
+    if (reviewedProject.length > 0) {
+      throw new HttpException(
+        400,
+        `Cannot create activation change request because there is an unreviewed change request open.`
       );
     }
 
@@ -456,7 +463,16 @@ export default class ChangeRequestsService {
           workPackageNumber
         }
       },
-      include: { workPackage: { include: { expectedActivities: true, deliverables: true } }, changeRequests: true }
+      include: {
+        workPackage: {
+          include: {
+            expectedActivities: true,
+            deliverables: true,
+            project: { include: { teams: true, wbsElement: true } }
+          }
+        },
+        changeRequests: true
+      }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
@@ -514,6 +530,14 @@ export default class ChangeRequestsService {
       });
     }
 
+    const reviewedProject = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
+    if (reviewedProject.length > 0) {
+      throw new HttpException(
+        400,
+        `Cannot create stage gate change request because there is an unreviewed change request open.`
+      );
+    }
+
     return createdChangeRequest.crId;
   }
 
@@ -554,6 +578,9 @@ export default class ChangeRequestsService {
           projectNumber,
           workPackageNumber
         }
+      },
+      include: {
+        changeRequests: true
       }
     });
 
@@ -620,6 +647,14 @@ export default class ChangeRequestsService {
       where: { crId: createdCR.crId },
       ...changeRequestQueryArgs
     });
+
+    const reviewedProject = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
+    if (reviewedProject.length > 0) {
+      throw new HttpException(
+        400,
+        `Cannot create activation change request because there is an unreviewed change request open.`
+      );
+    }
 
     return changeRequestTransformer(finishedCR!) as StandardChangeRequest;
   }
