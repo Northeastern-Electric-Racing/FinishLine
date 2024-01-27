@@ -925,6 +925,35 @@ describe('Projects', () => {
     });
   });
 
+  describe('Deleting unit', () => {
+    test('Delete unit does not work if user is not an admin or head', async () => {
+      await expect(ProjectsService.deleteUnit('NERSoftwareTools', theVisitor)).rejects.toThrow(
+        new AccessDeniedException('Only heads and above can delete a unit')
+      );
+    });
+
+    test('Delete unit does not work if unit does not exist', async () => {
+      await expect(ProjectsService.deleteUnit('NERSoftwareTools', batman)).rejects.toThrow(
+        new NotFoundException('Unit', 'NERSoftwareTools')
+      );
+    });
+
+    test('Deleted unit does not work if the unit is already deleted', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue({ ...toolMaterial });
+      await expect(ProjectsService.deleteUnit('NERSoftwareTools', batman)).rejects.toThrow(
+        new DeletedException('Unit', 'NERSoftwareTools')
+      );
+    });
+
+    test('Delete Unit works', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.unit, 'update').mockResolvedValue({ ...toolMaterial });
+      const deletedUnit = await ProjectsService.deleteUnit('NERSoftwareTools', superman);
+      expect(deletedUnit.name).toBe('NERSoftwareTools');
+      expect(prisma.unit.update).toBeCalledTimes(1);
+    });
+  });
+
   describe('updateMaterial', () => {
     test('Update material fails if the given material does not exists', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
