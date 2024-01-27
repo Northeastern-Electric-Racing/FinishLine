@@ -8,7 +8,7 @@ import {
   Manufacturer,
   Unit
 } from '@prisma/client';
-import { LinkType, Project as SharedProject, WbsElementStatus } from 'shared';
+import { Project as SharedProject, WbsElementStatus, LinkType } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
