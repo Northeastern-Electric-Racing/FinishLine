@@ -40,6 +40,7 @@ import {
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import {
+  expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementTransformer
 } from '../src/transformers/reimbursement-requests.transformer';
@@ -476,7 +477,7 @@ describe('Reimbursement Requests', () => {
       const res = await ReimbursementRequestService.getAllExpenseTypes();
 
       expect(prisma.expense_Type.findMany).toHaveBeenCalledTimes(1);
-      expect(res).toStrictEqual([Parts]);
+      expect(res).toStrictEqual([expenseTypeTransformer(Parts)]);
     });
   });
 

@@ -39,14 +39,14 @@ import {
   HttpException,
   NotFoundException
 } from '../utils/errors.utils';
-import vendorTransformer from '../transformers/vendor.transformer';
 import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementStatusTransformer,
-  reimbursementTransformer
+  reimbursementTransformer,
+  vendorTransformer
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
