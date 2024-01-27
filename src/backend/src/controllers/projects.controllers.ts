@@ -373,9 +373,9 @@ export default class ProjectsController {
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
       const { linkTypeId } = req.params;
-      const { name, iconName, required } = req.body;
+      const { iconName, required } = req.body;
       const submitter = await getCurrentUser(res);
-      const linkTypeUpdated = await ProjectsService.editLinkType(linkTypeId, name, iconName, required, submitter);
+      const linkTypeUpdated = await ProjectsService.editLinkType(linkTypeId, iconName, required, submitter);
       res.status(200).json(linkTypeUpdated);
     } catch (error: unknown) {
       next(error);

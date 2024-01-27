@@ -1093,68 +1093,29 @@ describe('Projects', () => {
     test('Edit LinkType fails if the submitter is not an admin or a head', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(mockLinkType1);
       await expect(
-        ProjectsService.editLinkType(
-          mockLinkType1.name,
-          mockLinkType1.name,
-          mockLinkType1.iconName,
-          !mockLinkType1.required,
-          aquaman
-        )
+        ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, aquaman)
       ).rejects.toThrow(new AccessDeniedException('Only the head or admin can update the linkType'));
     });
     test('Throws error if linkType not found', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);
       await expect(
-        ProjectsService.editLinkType(
-          mockLinkType1.name,
-          mockLinkType1.name,
-          mockLinkType1.iconName,
-          !mockLinkType1.required,
-          batman
-        )
+        ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, batman)
       ).rejects.toThrow(new NotFoundException('Link Type', mockLinkType1.name));
-    });
-    test('Throws error if a linktype with the new name already exists', async () => {
-      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValueOnce(mockLinkType1).mockResolvedValueOnce(mockLinkType2);
-      await expect(
-        ProjectsService.editLinkType(
-          mockLinkType1.name,
-          mockLinkType2.name,
-          mockLinkType1.iconName,
-          !mockLinkType1.required,
-          batman
-        )
-      ).rejects.toThrow(new Error(`A linkType with the name 'Tutorial1' already exists.`));
     });
     test('LinkType edits successfully, changes its foreign key in Link objects as well', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(mockLinkType1);
-      vi.spyOn(prisma.linkType, 'update').mockResolvedValue({ ...mockLinkType1, name: 'Doc2' });
-      vi.spyOn(prisma.link, 'updateMany').mockResolvedValue({ count: 5 });
-      vi.spyOn(prisma, '$transaction').mockImplementation(async (callback) => {
-        return callback(prisma);
-      });
+      vi.spyOn(prisma.linkType, 'update').mockResolvedValue({ ...mockLinkType1, iconName: 'Doc2' });
 
-      const updated = await ProjectsService.editLinkType(
-        mockLinkType1.name,
-        'Doc2',
-        mockLinkType1.iconName,
-        mockLinkType1.required,
-        batman
-      );
+      const updated = await ProjectsService.editLinkType(mockLinkType1.name, 'Doc2', mockLinkType1.required, batman);
 
       expect(updated).toEqual(transformedMockLinkType1);
       expect(prisma.linkType.update).toHaveBeenCalledWith({
         where: { name: mockLinkType1.name },
         data: {
-          name: 'Doc2',
-          iconName: mockLinkType1.iconName,
+          iconName: 'Doc2',
           required: mockLinkType1.required
         },
         ...linkTypeQueryArgs
-      });
-      expect(prisma.link.updateMany).toHaveBeenCalledWith({
-        where: { linkTypeName: mockLinkType1.name },
-        data: { linkTypeName: 'Doc2' }
       });
     });
   });

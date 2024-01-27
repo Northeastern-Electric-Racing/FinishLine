@@ -1075,12 +1075,11 @@ export default class ProjectsService {
   /**
    * Updates the linkType's name, iconName, or required.
    * @param linkTypeId the current name/id of the linkType
-   * @param name the new name/id of the linkType
    * @param iconName the new iconName
    * @param required the new required status
    * @param submitter user requesting the edit
    */
-  static async editLinkType(linkTypeId: string, name: string, iconName: string, required: boolean, submitter: User) {
+  static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
     if (!isHead(submitter.role)) throw new AccessDeniedException('Only the head or admin can update the linkType');
 
     // check if the linkType we are trying to update exists
@@ -1090,34 +1089,14 @@ export default class ProjectsService {
 
     if (!linkType) throw new NotFoundException('Link Type', linkTypeId);
 
-    // check if the new name already exists in the databse
-    const existingLinkType = await prisma.linkType.findUnique({
-      where: { name }
-    });
-    if (existingLinkType && existingLinkType.name !== linkTypeId) {
-      throw new Error(`A linkType with the name '${name}' already exists.`);
-    }
-
-    let linkTypeUpdated: Prisma.LinkTypeGetPayload<typeof linkTypeQueryArgs> | null = null;
-
-    await prisma.$transaction(async (prisma) => {
-      // update the LinkType
-      linkTypeUpdated = await prisma.linkType.update({
-        where: { name: linkTypeId },
-        data: {
-          name,
-          iconName,
-          required
-        },
-        ...linkTypeQueryArgs
-      });
-      // update the foreign key references in the Link table if the name changed
-      if (linkTypeId !== name) {
-        await prisma.link.updateMany({
-          where: { linkTypeName: linkTypeId },
-          data: { linkTypeName: name }
-        });
-      }
+    // update the LinkType
+    const linkTypeUpdated = await prisma.linkType.update({
+      where: { name: linkTypeId },
+      data: {
+        iconName,
+        required
+      },
+      ...linkTypeQueryArgs
     });
     if (linkTypeUpdated) {
       return linkTypeTransformer(linkTypeUpdated);

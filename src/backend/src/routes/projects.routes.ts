@@ -124,7 +124,6 @@ projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
 projectRouter.post(
   '/link-types/:linkTypeId/edit',
-  nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
   validateInputs,
