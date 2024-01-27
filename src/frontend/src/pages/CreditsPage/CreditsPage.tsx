@@ -88,6 +88,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Liam Kosar', color: '#eb66ff' },
     { name: 'Daniel Yu', color: '#bdc0c7' },
     { name: 'Jake Wu-Chen', color: '#bdc0c7' },
+    { name: 'Matthew Tung', color: '#C0C0C0' },
     { name: 'William Seward', color: '#e53774' },
     { name: 'Quinn Louie', color: '#3281a8' },
     { name: 'Pierre Dang', color: '#31875a' },
@@ -124,6 +125,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Aarav Shyamkumar', color: '#FF0000' },
     { name: 'Raghav Mathur', color: '#009933' },
     { name: 'Anika Sharma', color: '#ff0000' },
+    { name: 'William (Jack) Turner', color: '#ff5733' },
     {
       name: 'Samson Ajayi',
       color: '6a0dad',
@@ -136,7 +138,6 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Christian Bacalhau', color: '#6a0dad' },
     { name: 'Gurshan Sidhu', color: '#487c90' },
-    { name: 'William (Jack) Turner', color: '#ff5733' },
     {
       name: 'Dao Ho',
       color: 'white',
