@@ -718,15 +718,9 @@ export default class ProjectsService {
       throw new NotFoundException('Unit', name);
     }
 
-    if (unit.dateDeleted) throw new DeletedException('Manufacturer', unit.name);
-
-    const dateDeleted: Date = new Date();
-    const deletedUnit = await prisma.unit.update({
+    const deletedUnit = await prisma.unit.findUnique({
       where: {
         name: unit.name
-      },
-      data: {
-        dateDeleted
       }
     });
 
