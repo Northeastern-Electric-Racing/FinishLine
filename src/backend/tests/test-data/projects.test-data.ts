@@ -6,10 +6,9 @@ import {
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
   Manufacturer,
-  Unit,
-  LinkType
+  Unit
 } from '@prisma/client';
-import { Project as SharedProject, WbsElementStatus } from 'shared';
+import { LinkType, Project as SharedProject, WbsElementStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
@@ -239,14 +238,14 @@ export const prismaMaterial1: Material = {
 export const mockLinkType1: LinkType = {
   name: 'Doc1',
   dateCreated: new Date('2024-01-23'),
-  creatorId: 1,
+  creator: batman,
   iconName: 'file',
   required: true
 };
 export const transformedMockLinkType1 = {
   name: 'Doc1',
   dateCreated: new Date('2024-01-23'),
-  creator: undefined,
+  creator: batman,
   iconName: 'Doc2',
   required: true
 };
