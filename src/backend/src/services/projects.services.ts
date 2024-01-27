@@ -705,10 +705,10 @@ export default class ProjectsService {
    */
   static async deleteUnit(user: User, name: string) {
     if (!isHead(user.role)) {
-      throw new AccessDeniedException('Only heads and above can delete a manufacturer');
+      throw new AccessDeniedException('Only heads and above can delete a unit');
     }
 
-    const unit = await prisma.manufacturer.findFirst({
+    const unit = await prisma.unit.findUnique({
       where: {
         name
       }
@@ -718,19 +718,11 @@ export default class ProjectsService {
       throw new NotFoundException('Unit', name);
     }
 
-    if (unit.dateDeleted) throw new DeletedException('Unit', unit.name);
-
-    const dateDeleted: Date = new Date();
-    const deletedManufacturer = await prisma.unit.update({
+    const deletedUnit = await prisma.unit.delete({
       where: {
         name: unit.name
-      },
-      data: {
-        dateDeleted
       }
     });
-
-    return deletedManufacturer;
   }
 
   /**
