@@ -80,12 +80,8 @@ const TeamsTools = () => {
     .map(userToAutocompleteOption);
 
   const teamTableRows = allTeams.map((team) => (
-    <TableRow>
-      <TableCell sx={{ border: '2px solid black' }}>
-        <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
-          {team.teamName}
-        </Link>
-      </TableCell>
+    <TableRow component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
+      <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black' }}>
         {team.members.length}
