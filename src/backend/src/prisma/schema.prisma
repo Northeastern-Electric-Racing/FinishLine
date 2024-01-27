@@ -122,9 +122,9 @@ model User {
   confirmedDesignReviews    Design_Review[]         @relation(name: "confirmedAttendee")
   deniedDesignReviews       Design_Review[]         @relation(name: "deniedAttendee")
   attendedDesignReviews     Design_Review[]         @relation(name: "userAttended")
-  drScheduleSettings        Schedule_Settings[]     @relation(name: "settingsUser")
   createdDesignReviews      Design_Review[]         @relation(name: "designReviewCreator")
   deletedDesignReviews      Design_Review[]         @relation(name: "designReviewDeleter")
+  drScheduleSettings        Schedule_Settings?
 }
 
 model Team {
@@ -564,11 +564,6 @@ model Manufacturer {
   materials     Material[]
 }
 
-model Calendar {
-  name          String          @id
-  designReviews Design_Review[]
-}
-
 enum Design_Review_Status {
   UNCONFIRMED
   CONFIRMED
@@ -603,8 +598,6 @@ model Design_Review {
   userDeleted      User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
   userDeletedId    Int?
   docTemplateLink  String?
-  Calendar         Calendar             @relation(fields: [calendarName], references: [name])
-  calendarName     String
 }
 
 model Schedule_Settings {
@@ -612,12 +605,13 @@ model Schedule_Settings {
   personalGmail        String
   personalZoomLink     String
   availability         Availability @relation(fields: [availabilityId], references: [availabilityId])
-  availabilityId       Int
-  User                 User[]       @relation(name: "settingsUser")
+  availabilityId       Int          @unique
+  User                 User         @relation(fields: [userId], references: [userId])
+  userId               Int          @unique
 }
 
 model Availability {
-  availabilityId        Int                 @id @default(autoincrement())
+  availabilityId        Int                @id @default(autoincrement())
   mondayAvailability    DateTime[]
   tuesdayAvailability   DateTime[]
   wednesdayAvailability DateTime[]
@@ -625,5 +619,5 @@ model Availability {
   fridayAvailability    DateTime[]
   saturdayAvailability  DateTime[]
   sundayAvailability    DateTime[]
-  Schedule_Settings     Schedule_Settings[]
+  Schedule_Settings     Schedule_Settings?
 }

@@ -5,13 +5,6 @@ CREATE TYPE "Design_Review_Status" AS ENUM ('UNCONFIRMED', 'CONFIRMED', 'SCHEDUL
 CREATE TYPE "Design_Review_Team" AS ENUM ('ELECTRICAL', 'SOFTWARE', 'MECHANICAL');
 
 -- CreateTable
-CREATE TABLE "Calendar" (
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "Calendar_pkey" PRIMARY KEY ("name")
-);
-
--- CreateTable
 CREATE TABLE "Design_Review" (
     "designReviewId" SERIAL NOT NULL,
     "dateScheduled" TIMESTAMP(3) NOT NULL,
@@ -26,7 +19,6 @@ CREATE TABLE "Design_Review" (
     "dateDeleted" TIMESTAMP(3),
     "userDeletedId" INTEGER,
     "docTemplateLink" TEXT,
-    "calendarName" TEXT NOT NULL,
 
     CONSTRAINT "Design_Review_pkey" PRIMARY KEY ("designReviewId")
 );
@@ -37,6 +29,7 @@ CREATE TABLE "Schedule_Settings" (
     "personalGmail" TEXT NOT NULL,
     "personalZoomLink" TEXT NOT NULL,
     "availabilityId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Schedule_Settings_pkey" PRIMARY KEY ("drScheduleSettingsId")
 );
@@ -85,11 +78,11 @@ CREATE TABLE "_userAttended" (
     "B" INTEGER NOT NULL
 );
 
--- CreateTable
-CREATE TABLE "_settingsUser" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
-);
+-- CreateIndex
+CREATE UNIQUE INDEX "Schedule_Settings_availabilityId_key" ON "Schedule_Settings"("availabilityId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Schedule_Settings_userId_key" ON "Schedule_Settings"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_requiredAttendee_AB_unique" ON "_requiredAttendee"("A", "B");
@@ -121,12 +114,6 @@ CREATE UNIQUE INDEX "_userAttended_AB_unique" ON "_userAttended"("A", "B");
 -- CreateIndex
 CREATE INDEX "_userAttended_B_index" ON "_userAttended"("B");
 
--- CreateIndex
-CREATE UNIQUE INDEX "_settingsUser_AB_unique" ON "_settingsUser"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_settingsUser_B_index" ON "_settingsUser"("B");
-
 -- AddForeignKey
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -134,10 +121,10 @@ ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userCreatedId_fkey" FO
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_calendarName_fkey" FOREIGN KEY ("calendarName") REFERENCES "Calendar"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Schedule_Settings" ADD CONSTRAINT "Schedule_Settings_availabilityId_fkey" FOREIGN KEY ("availabilityId") REFERENCES "Availability"("availabilityId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Schedule_Settings" ADD CONSTRAINT "Schedule_Settings_availabilityId_fkey" FOREIGN KEY ("availabilityId") REFERENCES "Availability"("availabilityId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Schedule_Settings" ADD CONSTRAINT "Schedule_Settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_requiredAttendee" ADD CONSTRAINT "_requiredAttendee_A_fkey" FOREIGN KEY ("A") REFERENCES "Design_Review"("designReviewId") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -168,9 +155,3 @@ ALTER TABLE "_userAttended" ADD CONSTRAINT "_userAttended_A_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "_userAttended" ADD CONSTRAINT "_userAttended_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_settingsUser" ADD CONSTRAINT "_settingsUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Schedule_Settings"("drScheduleSettingsId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_settingsUser" ADD CONSTRAINT "_settingsUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
