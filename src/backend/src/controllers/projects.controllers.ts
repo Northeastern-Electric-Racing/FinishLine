@@ -243,6 +243,17 @@ export default class ProjectsController {
     }
   }
 
+  static async deleteUnit(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { unitName } = req.params;
+      const deletedUnit = await ProjectsService.deleteUnit(user, unitName);
+      res.status(200).json(deletedUnit);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
