@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { Reimbursement, ReimbursementRequest } from 'shared';
+import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
@@ -57,10 +57,13 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   } = useAllReimbursements();
   const theme = useTheme();
 
-  if (user.isFinance && allReimbursementsIsError) return <ErrorPage message={allReimbursementsError?.message} />;
+  const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
+
+  if (canViewAllReimbursementRequests && allReimbursementsIsError)
+    return <ErrorPage message={allReimbursementsError?.message} />;
   if (userReimbursementsIsError) return <ErrorPage message={userReimbursementError?.message} />;
   if (
-    (user.isFinance && (allReimbursementsIsLoading || !allReimbursements)) ||
+    (canViewAllReimbursementRequests && (allReimbursementsIsLoading || !allReimbursements)) ||
     userReimbursementsIsLoading ||
     !userReimbursements
   )
@@ -84,7 +87,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const percentRefunded = (totalReceived / currentlyOwed) * 100;
 
   const tabs = [{ label: 'My Refunds', value: 0 }];
-  if (user.isFinance) tabs.push({ label: 'All Club Refunds', value: 1 });
+  if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Refunds', value: 1 });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>

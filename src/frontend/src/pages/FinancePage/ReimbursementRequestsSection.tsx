@@ -1,7 +1,7 @@
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
@@ -21,6 +21,7 @@ const ReimbursementRequestTable = ({
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
+  const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
 
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
@@ -30,7 +31,7 @@ const ReimbursementRequestTable = ({
     .sort((a, b) => (a.dateSubmitted > b.dateSubmitted ? -1 : 1));
 
   const tabs = [{ label: 'My Requests', value: 0 }];
-  if (user.isFinance) tabs.push({ label: 'All Club Requests', value: 1 });
+  if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Requests', value: 1 });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
