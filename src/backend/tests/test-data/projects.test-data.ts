@@ -250,10 +250,3 @@ export const transformedMockLinkType1 = {
   iconName: 'Doc2',
   required: true
 };
-export const mockLinkType2: LinkType = {
-  name: 'Tutorial1',
-  dateCreated: new Date('2024-01-23'),
-  creatorId: 1,
-  iconName: 'video',
-  required: true
-};

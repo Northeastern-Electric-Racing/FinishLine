@@ -16,7 +16,6 @@ import {
   prismaMaterial2,
   prismaProject2,
   mockLinkType1,
-  mockLinkType2,
   transformedMockLinkType1
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';

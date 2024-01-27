@@ -1,4 +1,4 @@
-import { Role, Material_Type, User, Assembly, Material_Status, Material, Prisma } from '@prisma/client';
+import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
 import {
   isAdmin,
   isGuest,
