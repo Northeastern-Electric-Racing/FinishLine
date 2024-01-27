@@ -19,7 +19,7 @@ interface SubmitToSaboModalProps {
 const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSaboModalProps) => {
   const user = useCurrentUser();
   const { mutateAsync: submitToSabo } = useApproveReimbursementRequest(reimbursementRequest.reimbursementRequestId);
-  const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
+  const { recipient, dateOfExpense, totalCost, vendor, accountCode, reimbursementProducts, receiptPictures } =
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
@@ -111,7 +111,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="SABO Form Index" content="800462" />
         </Grid>
         <Grid item xs={6}>
-          <DetailDisplay label="Expense Type" content={`${expenseType.code} - ${expenseType.name}`} />
+          <DetailDisplay label="Expense Type" content={`${accountCode.code} - ${accountCode.name}`} />
         </Grid>
       </Grid>
       <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>

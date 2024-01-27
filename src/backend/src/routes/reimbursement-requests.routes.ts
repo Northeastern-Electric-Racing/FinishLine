@@ -16,7 +16,7 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 
 reimbursementRequestsRouter.get('/vendors', ReimbursementRequestController.getAllVendors);
 
-reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllExpenseTypes);
+reimbursementRequestsRouter.get('/expense-types', ReimbursementRequestController.getAllAccountCodes);
 
 reimbursementRequestsRouter.get('/current-user', ReimbursementRequestController.getCurrentUserReimbursementRequests);
 
@@ -36,7 +36,7 @@ reimbursementRequestsRouter.post(
   isDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
-  nonEmptyString(body('expenseTypeId')),
+  nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
   validateReimbursementProducts(),
   validateInputs,
@@ -55,7 +55,7 @@ reimbursementRequestsRouter.post(
   body('receiptPictures').isArray(),
   nonEmptyString(body('receiptPictures.*.name')),
   nonEmptyString(body('receiptPictures.*.googleFileId')),
-  nonEmptyString(body('expenseTypeId')),
+  nonEmptyString(body('accountCodeId')),
   intMinZero(body('totalCost')),
   validateReimbursementProducts(),
   validateInputs,
@@ -94,16 +94,16 @@ reimbursementRequestsRouter.post(
   body('allowedRefundSources').isArray(),
   isAccount(body('allowedRefundSources.*')),
   validateInputs,
-  ReimbursementRequestController.createExpenseType
+  ReimbursementRequestController.createAccountCode
 );
 
 reimbursementRequestsRouter.post(
-  '/:expenseTypeId/expense-types/edit',
+  '/:accountCodeId/expense-types/edit',
   nonEmptyString(body('name')),
   intMinZero(body('code')),
   body('allowed').isBoolean(),
   validateInputs,
-  ReimbursementRequestController.editExpenseTypeCode
+  ReimbursementRequestController.editAccountCodeEdit
 );
 
 reimbursementRequestsRouter.post(

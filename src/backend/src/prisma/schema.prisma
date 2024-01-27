@@ -413,8 +413,8 @@ model Reimbursement_Request {
   receiptPictures        Receipt[]
   reimbursementProducts  Reimbursement_Product[]
   dateDelivered          DateTime?
-  expenseTypeId          String
-  expenseType            Expense_Type            @relation(fields: [expenseTypeId], references: [expenseTypeId])
+  accountCodeId          String
+  accountCode            Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
 }
 
 enum Other_Reimbursement_Product_Reason {
@@ -451,8 +451,8 @@ model Vendor {
   requests    Reimbursement_Request[]
 }
 
-model Expense_Type {
-  expenseTypeId        String                  @id @default(uuid())
+model Account_Code {
+  accountCodeId        String                  @id @default(uuid())
   name                 String
   code                 Int
   allowed              Boolean

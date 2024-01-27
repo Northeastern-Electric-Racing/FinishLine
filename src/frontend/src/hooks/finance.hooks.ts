@@ -11,7 +11,7 @@ import {
   downloadBlobsToPdf,
   downloadGoogleImage,
   editReimbursementRequest,
-  getAllExpenseTypes,
+  getAllAccountCodes,
   getAllReimbursementRequests,
   getAllReimbursements,
   getAllVendors,
@@ -32,7 +32,7 @@ import {
 } from '../apis/finance.api';
 import {
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -45,7 +45,7 @@ import {
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense: Date;
-  expenseTypeId: string;
+  accountCodeId: string;
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
@@ -56,7 +56,7 @@ export interface EditReimbursementRequestPayload extends CreateReimbursementRequ
   receiptPictures: ReimbursementReceiptCreateArgs[];
 }
 
-export interface ExpenseTypePayload {
+export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
@@ -132,9 +132,9 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
  *
  * @returns all the expense types
  */
-export const useGetAllExpenseTypes = () => {
-  return useQuery<ExpenseType[], Error>(['expense-types'], async () => {
-    const { data } = await getAllExpenseTypes();
+export const useGetAllAccountCodes = () => {
+  return useQuery<AccountCode[], Error>(['account-codes'], async () => {
+    const { data } = await getAllAccountCodes();
     return data;
   });
 };
@@ -407,12 +407,12 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
  *
  * @param expenseId The id of the expense type
  */
-export const useEditAccountCode = (expenseTypeId: string) => {
+export const useEditAccountCode = (accountCodeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'edit'],
-    async (accountCodeData: ExpenseTypePayload) => {
-      const { data } = await editAccountCode(expenseTypeId, accountCodeData);
+    async (accountCodeData: AccountCodePayload) => {
+      const { data } = await editAccountCode(accountCodeId, accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;
     }
@@ -424,9 +424,9 @@ export const useEditAccountCode = (expenseTypeId: string) => {
  */
 export const useCreateAccountCode = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'create'],
-    async (accountCodeData: ExpenseTypePayload) => {
+    async (accountCodeData: AccountCodePayload) => {
       const { data } = await createAccountCode(accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;

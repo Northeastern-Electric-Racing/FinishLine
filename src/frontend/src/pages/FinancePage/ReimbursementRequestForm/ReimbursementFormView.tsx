@@ -19,7 +19,7 @@ import { Box, Stack } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import {
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   ReimbursementProductFormArgs,
   ReimbursementReceiptCreateArgs,
   ReimbursementReceiptUploadArgs,
@@ -37,13 +37,13 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
-import { codeAndRefundSourceName, expenseTypePipe } from '../../../utils/pipes';
+import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
-  allExpenseTypes: ExpenseType[];
+  allAccountCodes: AccountCode[];
   receiptFiles: ReimbursementReceiptCreateArgs[];
   allWbsElements: {
     wbsNum: WbsNumber;
@@ -67,7 +67,7 @@ interface ReimbursementRequestFormViewProps {
 
 const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> = ({
   allVendors,
-  allExpenseTypes,
+  allAccountCodes,
   allWbsElements,
   receiptFiles,
   reimbursementProducts,
@@ -89,9 +89,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const toast = useToast();
   const theme = useTheme();
   const products = watch(`reimbursementProducts`);
-  const expenseTypeId = watch('expenseTypeId');
-  const selectedExpenseType = allExpenseTypes.find((expenseType) => expenseType.expenseTypeId === expenseTypeId);
-  const refundSources = selectedExpenseType?.allowedRefundSources || [];
+  const accountCodeId = watch('accountCodeId');
+  const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
+  const refundSources = selectedAccountCode?.allowedRefundSources || [];
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
 
@@ -119,8 +119,8 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     </FormControl>
   );
 
-  const expenseTypesToAutocomplete = (expenseType: ExpenseType): { label: string; id: string } => {
-    return { label: expenseTypePipe(expenseType), id: expenseType.expenseTypeId };
+  const accountCodesToAutocomplete = (accountCode: AccountCode): { label: string; id: string } => {
+    return { label: accountCodePipe(accountCode), id: accountCode.accountCodeId };
   };
 
   const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
@@ -183,12 +183,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <FormControl fullWidth>
               <FormLabel>Account Code</FormLabel>
               <Controller
-                name="expenseTypeId"
+                name="accountCodeId"
                 control={control}
                 render={({ field: { onChange, value } }) => {
-                  const mappedExpenseTypes = allExpenseTypes
-                    .filter((expenseType) => expenseType.allowed)
-                    .map(expenseTypesToAutocomplete);
+                  const mappedAccountCodes = allAccountCodes
+                    .filter((accountCode) => accountCode.allowed)
+                    .map(accountCodesToAutocomplete);
 
                   const onClear = () => {
                     setValue('account', undefined);
@@ -197,10 +197,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
                   return (
                     <NERAutocomplete
-                      id={'expenseType'}
+                      id={'accountCode'}
                       size="medium"
-                      options={mappedExpenseTypes}
-                      value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
+                      options={mappedAccountCodes}
+                      value={mappedAccountCodes.find((accountCode) => accountCode.id === value) || null}
                       placeholder=""
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
@@ -209,7 +209,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   );
                 }}
               />
-              <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
+              <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={6}>
@@ -251,7 +251,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <Select
                     onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
                     value={value}
-                    disabled={!selectedExpenseType}
+                    disabled={!selectedAccountCode}
                     error={!!errors.account}
                   >
                     {refundSources.map((refundSource) => (

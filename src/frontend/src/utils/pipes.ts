@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, ClubAccount, ExpenseType } from 'shared';
+import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, ClubAccount, AccountCode } from 'shared';
 
 /**
  * Pipes:
@@ -85,8 +85,8 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
-export const expenseTypePipe = (expenseType: ExpenseType) => {
-  return `${expenseType.code} - ${expenseType.name}`;
+export const accountCodePipe = (accountCode: AccountCode) => {
+  return `${accountCode.code} - ${accountCode.name}`;
 };
 
 /** Display timeline status in readable form
