@@ -127,7 +127,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Club Advisor" content="Professor Gouldstone" />
         </Grid>
         <Grid item xs={12}>
-          <DetailDisplay label="Email" content="gouldstone.a@northeastern.edu" />
+          <DetailDisplay label="Email" content="a.gouldstone@northeastern.edu" />
         </Grid>
       </Grid>
       <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>
