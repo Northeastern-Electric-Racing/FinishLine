@@ -383,8 +383,8 @@ export default class ChangeRequestsService {
       );
     }
 
-    const reviewedProject = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
-    if (reviewedProject.length > 0) {
+    const unreviewedCR = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
+    if (unreviewedCR.length > 0) {
       throw new HttpException(
         400,
         `Cannot create activation change request because there is an unreviewed change request open.`
@@ -467,8 +467,7 @@ export default class ChangeRequestsService {
         workPackage: {
           include: {
             expectedActivities: true,
-            deliverables: true,
-            project: { include: { teams: true, wbsElement: true } }
+            deliverables: true
           }
         },
         changeRequests: true
@@ -530,8 +529,8 @@ export default class ChangeRequestsService {
       });
     }
 
-    const reviewedProject = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
-    if (reviewedProject.length > 0) {
+    const unreviewedCR = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
+    if (unreviewedCR.length > 0) {
       throw new HttpException(
         400,
         `Cannot create stage gate change request because there is an unreviewed change request open.`
@@ -648,8 +647,8 @@ export default class ChangeRequestsService {
       ...changeRequestQueryArgs
     });
 
-    const reviewedProject = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
-    if (reviewedProject.length > 0) {
+    const unreviewedCR = wbsElement.changeRequests.filter((cr) => cr.dateReviewed === null);
+    if (unreviewedCR.length > 0) {
       throw new HttpException(
         400,
         `Cannot create standard change request because there is an unreviewed change request open.`
