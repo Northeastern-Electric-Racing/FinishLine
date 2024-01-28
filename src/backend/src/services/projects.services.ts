@@ -1098,9 +1098,6 @@ export default class ProjectsService {
       },
       ...linkTypeQueryArgs
     });
-    if (linkTypeUpdated) {
-      return linkTypeTransformer(linkTypeUpdated);
-    }
-    throw new Error('LinkType update failed');
+    return linkTypeTransformer(linkTypeUpdated);
   }
 }
