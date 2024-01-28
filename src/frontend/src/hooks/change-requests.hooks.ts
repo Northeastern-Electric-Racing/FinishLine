@@ -90,6 +90,14 @@ export type CreateStandardChangeRequestPayload = {
   proposedSolutions: ProposedSolutionCreateArgs[];
 };
 
+export type CreateStandardChangeRequestWP = {
+  wbsNum: WbsNumber;
+  type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
+  why: { explain: "Create new Work Package for this project."; type: ChangeRequestReason.Initialization }[];
+  proposedSolutions: ProposedSolutionCreateArgs[];
+};
+
+
 /**
  * Custom React Hook to create a standard change request.
  */

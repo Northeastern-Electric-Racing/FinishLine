@@ -32,6 +32,7 @@ import NERTabs from '../../../components/Tabs';
 import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -142,6 +143,20 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     );
   };
 
+  const CreateWorkPackageButton = () => (
+    <MenuItem
+      component={Link}
+      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS_WORKPACKAGE + wbsPipe(project.wbsNum)}
+      disabled={isGuest(user.role)}
+      onClick={handleDropdownClose}
+    >
+      <ListItemIcon>
+        <ContentPasteIcon fontSize="small" />
+      </ListItemIcon>
+      Create Work Package 
+    </MenuItem>
+  );
+
   const DeleteButton = () => (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
       <ListItemIcon>
@@ -178,6 +193,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <CreateChangeRequestButton />
         <SuggestBudgetIncreaseButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
+        <CreateWorkPackageButton />
         <DeleteButton />
       </Menu>
     </Box>
