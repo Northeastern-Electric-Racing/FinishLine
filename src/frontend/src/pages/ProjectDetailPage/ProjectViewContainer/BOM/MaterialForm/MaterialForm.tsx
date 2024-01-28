@@ -131,9 +131,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     const price = Math.round(data.price * 100);
-    const quantity = Number(data.quantity);
-    const subtotal = data.unitName ? price : quantity * price;
-    onSubmit({ ...data, subtotal: subtotal, price: price, quantity: new Decimal(quantity) });
+    const subtotal = data.quantity * price;
+    onSubmit({ ...data, subtotal: subtotal, price: price, quantity: new Decimal(data.quantity) });
   };
 
   const createUnitWrapper = async (unitName: string): Promise<void> => {

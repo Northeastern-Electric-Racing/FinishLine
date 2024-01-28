@@ -45,8 +45,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const quantity = watch('quantity');
   const price = watch('price');
   const unit = watch('unitName');
-  const numericQuantity = quantity ? Number(quantity) : 0;
-  const subtotal = quantity && price ? (unit ? price : numericQuantity * price) : 0;
+  const subtotal = quantity && price ? (unit ? price : quantity * price) : 0;
 
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
