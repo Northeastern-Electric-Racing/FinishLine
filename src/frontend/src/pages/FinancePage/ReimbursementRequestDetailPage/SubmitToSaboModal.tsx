@@ -115,19 +115,29 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
-        <Grid item xs={12}>
-          <DetailDisplay label="Head Of Finance" content="Brody Pearlman" />
+        <Grid item xs={3}>
+          <DetailDisplay label="Treasurer" content="" />
         </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Email" content="pearlman.br@northeastern.edu" />
+        <Grid item xs={6}>
+          <div style={{ marginLeft: '20px' }}>
+            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>Brody Pearlman</Typography>
+          </div>
+          <div style={{ marginLeft: '20px' }}>
+            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>pearlman.edu@northeastern.edu</Typography>
+          </div>
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
-        <Grid item xs={12}>
-          <DetailDisplay label="Club Advisor" content="Professor Gouldstone" />
+        <Grid item xs={3}>
+          <DetailDisplay label="Club Adivsor" content="" />
         </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Email" content="a.gouldstone@northeastern.edu" />
+        <Grid item xs={6}>
+          <div style={{ marginLeft: '20px' }}>
+            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>Andrew Gouldstone</Typography>
+          </div>
+          <div style={{ marginLeft: '20px' }}>
+            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>a.gouldstone@northeastern.edu</Typography>
+          </div>
         </Grid>
       </Grid>
       <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>
