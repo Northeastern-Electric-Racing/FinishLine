@@ -97,7 +97,6 @@ export type CreateStandardChangeRequestWP = {
   proposedSolutions: ProposedSolutionCreateArgs[];
 };
 
-
 /**
  * Custom React Hook to create a standard change request.
  */
