@@ -15,7 +15,7 @@ interface LoginPageProps {
   devSetUser: (userId: number) => void;
   devFormSubmit: (e: FormEvent) => void;
   prodSuccess: (res: GoogleLoginResponse | GoogleLoginResponseOffline) => void;
-  prodFailure: (res: any) => void;
+  prodFailure: (res: GoogleLoginResponse | GoogleLoginResponseOffline) => void;
 }
 
 /**
