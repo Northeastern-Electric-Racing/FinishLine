@@ -724,7 +724,7 @@ export default class ProjectsService {
       }
     });
 
-    return deletedUnit
+    return deletedUnit;
   }
 
   /**
