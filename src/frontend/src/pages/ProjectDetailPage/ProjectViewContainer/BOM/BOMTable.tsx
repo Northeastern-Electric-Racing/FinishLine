@@ -4,6 +4,7 @@ import { Assembly, Material } from 'shared';
 import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
 import { addMaterialCosts } from '../BOMTab';
 import { centsToDollar } from '../../../../utils/pipes';
+import { useTheme } from '@mui/material';
 
 interface BOMTableProps {
   columns: GridColumns<BomRow>;
@@ -13,7 +14,7 @@ interface BOMTableProps {
 
 const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
-
+  const theme = useTheme();
   const rows: BomRow[] = noAssemblyMaterials.map(materialToRow);
 
   assemblies.forEach((assembly) => {
@@ -45,9 +46,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
           backgroundColor: '#ef4345'
         },
         '& .super-app-theme--assembly': {
-          backgroundColor: '#997570',
+          backgroundColor: theme.palette.grey[600],
           '&:hover': {
-            backgroundColor: '#997570'
+            backgroundColor: theme.palette.grey[700]
           },
           '&:focus': {
             backgroundColor: '#997570'
