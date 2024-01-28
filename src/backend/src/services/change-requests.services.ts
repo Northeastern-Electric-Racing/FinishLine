@@ -652,7 +652,7 @@ export default class ChangeRequestsService {
     if (reviewedProject.length > 0) {
       throw new HttpException(
         400,
-        `Cannot create activation change request because there is an unreviewed change request open.`
+        `Cannot create standard change request because there is an unreviewed change request open.`
       );
     }
 
