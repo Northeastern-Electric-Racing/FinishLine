@@ -146,14 +146,14 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const CreateWorkPackageButton = () => (
     <MenuItem
       component={Link}
-      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS_WORKPACKAGE + wbsPipe(project.wbsNum)}
+      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)}
       disabled={isGuest(user.role)}
       onClick={handleDropdownClose}
     >
       <ListItemIcon>
         <ContentPasteIcon fontSize="small" />
       </ListItemIcon>
-      Create Work Package 
+      Create Work Package
     </MenuItem>
   );
 
