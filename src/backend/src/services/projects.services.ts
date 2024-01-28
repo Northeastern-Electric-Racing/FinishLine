@@ -718,11 +718,13 @@ export default class ProjectsService {
       throw new NotFoundException('Unit', name);
     }
 
-    await prisma.unit.delete({
+    const deletedUnit = await prisma.unit.delete({
       where: {
         name: unit.name
       }
     });
+
+    return deletedUnit
   }
 
   /**
