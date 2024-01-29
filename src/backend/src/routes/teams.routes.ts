@@ -38,5 +38,6 @@ teamsRouter.post(
   nonEmptyString(body('description')),
   TeamsController.createTeam
 );
+teamsRouter.post('/:teamId/archive');
 
 export default teamsRouter;

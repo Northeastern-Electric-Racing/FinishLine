@@ -15,6 +15,8 @@ export interface Team {
   members: User[];
   projects: ProjectPreview[];
   leads: User[];
+  userArchived?: User;
+  dateArchived?: Date;
 }
 
 export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads'>;
