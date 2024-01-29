@@ -81,7 +81,7 @@ describe('Reimbursement Requests', () => {
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(KFC);
       vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
       await expect(ReimbursementRequestService.createVendor(flash, 'kfc')).rejects.toThrow(
-        new HttpException(400,'This vendor already exists')
+        new HttpException(400, 'This vendor already exists')
       );
     });
 
