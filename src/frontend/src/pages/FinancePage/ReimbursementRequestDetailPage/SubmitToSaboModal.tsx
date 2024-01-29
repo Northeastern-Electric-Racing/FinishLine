@@ -1,5 +1,5 @@
 import NERModal from '../../../components/NERModal';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, Stack } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
@@ -115,29 +115,25 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
-        <Grid item xs={3}>
+        <Grid item xs={4}>
           <DetailDisplay label="Treasurer" content="" />
         </Grid>
-        <Grid item xs={6}>
-          <div>
+        <Grid item xs={8}>
+          <Stack>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>Brody Pearlman</Typography>
-          </div>
-          <div>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>pearlman.edu@northeastern.edu</Typography>
-          </div>
+          </Stack>
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
-        <Grid item xs={3}>
-          <DetailDisplay label="Club Adivsor" content="" />
+        <Grid item xs={4}>
+          <DetailDisplay label="Club Advisor" content="" />
         </Grid>
-        <Grid item xs={6}>
-          <div>
+        <Grid item xs={8}>
+          <Stack>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>Andrew Gouldstone</Typography>
-          </div>
-          <div>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>a.gouldstone@northeastern.edu</Typography>
-          </div>
+          </Stack>
         </Grid>
       </Grid>
       <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>
