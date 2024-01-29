@@ -6,6 +6,7 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
+import NERAutocomplete from '../../../../../components/NERAutocomplete';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -24,6 +25,14 @@ export interface MaterialFormViewProps {
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
 }
+
+export const manufacturerPipe = (manufacturer: Manufacturer) => {
+  return `${manufacturer.name}`;
+};
+
+const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
+  return { label: manufacturer.name, id: manufacturerPipe(manufacturer) };
+};
 
 const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   submitText,
@@ -118,39 +127,34 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={8}>
           <FormControl fullWidth>
             <FormLabel>Manufacturer</FormLabel>
             <Controller
               name="manufacturerName"
               control={control}
-              defaultValue={control._defaultValues.manufacturerName}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  variant="outlined"
-                  error={!!errors.manufacturerName}
-                  helperText={errors.manufacturerName?.message}
-                >
-                  {allManufacturers.map((manufacturer) => (
-                    <MenuItem key={manufacturer.name} value={manufacturer.name}>
-                      {manufacturer.name}
-                    </MenuItem>
-                  ))}
-                  <MenuItem
-                    value="createManufacturer"
-                    onClick={() => {
-                      const manufacturerName = prompt('Enter Manufacturer Name');
-                      if (manufacturerName) {
-                        createManufacturer(manufacturerName);
-                      }
+              render={({ field: { onChange, value } }) => {
+                const mappedManufacturers = allManufacturers
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map(manufacturersToAutocomplete);
+                const onClear = () => {
+                  setValue('manufacturerName', '');
+                  onChange('');
+                };
+
+                return (
+                  <NERAutocomplete
+                    id={'manufacturer'}
+                    size="medium"
+                    options={mappedManufacturers}
+                    value={mappedManufacturers.find((manufacturer) => manufacturer.label === value) || null}
+                    placeholder="Select Manufacturer"
+                    onChange={(_event, newValue) => {
+                      newValue ? onChange(newValue.id) : onClear();
                     }}
-                  >
-                    + Create Manufacturer
-                  </MenuItem>
-                </TextField>
-              )}
+                  />
+                );
+              }}
             />
           </FormControl>
         </Grid>
