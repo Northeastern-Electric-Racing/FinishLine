@@ -75,7 +75,7 @@ const Login = () => {
     redirectAfterLogin();
   };
 
-  const handleFailure = (response: any) => {
+  const handleFailure = (response: { children: React.ReactNode }) => {
     console.log(response);
   };
 
