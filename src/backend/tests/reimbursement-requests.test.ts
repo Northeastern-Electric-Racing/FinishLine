@@ -71,13 +71,24 @@ describe('Reimbursement Requests', () => {
 
     test('Create Vendor throws error if user is not admin or finance lead', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
       await expect(ReimbursementRequestService.createVendor(aquaman, 'HOLA BUDDY')).rejects.toThrow(
         new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
       );
     });
 
+    test('Create Vendor throws error if vendor already exists', async () => {
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(KFC);
+      vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
+      await expect(ReimbursementRequestService.createVendor(flash, 'kfc')).rejects.toThrow(
+        new HttpException(400, 'This vendor already exists')
+      );
+    });
+
     test('Create Vendor works for finance leads', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
       vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
       await expect(ReimbursementRequestService.createVendor(wonderwoman, 'HOLA BUDDY')).resolves.not.toThrow(
         new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
@@ -86,6 +97,7 @@ describe('Reimbursement Requests', () => {
 
     test('Create Vendor works for finance head', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue({ ...primsaTeam2, headId: 5 });
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
       vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
       await expect(ReimbursementRequestService.createVendor(greenlantern, 'HOLA BUDDY')).resolves.not.toThrow(
         new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
@@ -94,6 +106,7 @@ describe('Reimbursement Requests', () => {
 
     test('Create Vendor works for admin', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
+      vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
       vi.spyOn(prisma.vendor, 'create').mockResolvedValue(PopEyes);
       await expect(ReimbursementRequestService.createVendor(flash, 'HOLA BUDDY')).resolves.not.toThrow(
         new AccessDeniedException('Only admins, finance leads, and finance heads can create vendors.')
