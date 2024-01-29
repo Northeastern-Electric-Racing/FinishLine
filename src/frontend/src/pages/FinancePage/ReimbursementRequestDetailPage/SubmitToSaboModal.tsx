@@ -119,10 +119,10 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Treasurer" content="" />
         </Grid>
         <Grid item xs={6}>
-          <div style={{ marginLeft: '20px' }}>
+          <div>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>Brody Pearlman</Typography>
           </div>
-          <div style={{ marginLeft: '20px' }}>
+          <div>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>pearlman.edu@northeastern.edu</Typography>
           </div>
         </Grid>
@@ -132,10 +132,10 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Club Adivsor" content="" />
         </Grid>
         <Grid item xs={6}>
-          <div style={{ marginLeft: '20px' }}>
+          <div>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>Andrew Gouldstone</Typography>
           </div>
-          <div style={{ marginLeft: '20px' }}>
+          <div>
             <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>a.gouldstone@northeastern.edu</Typography>
           </div>
         </Grid>
