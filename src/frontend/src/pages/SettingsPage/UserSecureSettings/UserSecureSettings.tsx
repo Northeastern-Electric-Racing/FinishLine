@@ -71,11 +71,12 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
     <PageBlock
       title="User Secure Settings"
       headerRight={
-        !edit && !isGuest(user.role) ? (
+        !isGuest(user.role) &&
+        (!edit ? (
           <IconButton onClick={() => setEdit(true)}>
             <EditIcon fontSize="small" />
           </IconButton>
-        ) : !isGuest(user.role) ? (
+        ) : (
           <Box
             className="d-flex flex-row"
             sx={{
@@ -87,17 +88,17 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
               Save
             </NERSuccessButton>
           </Box>
-        ) : null
+        ))
       }
     >
       <Grid container>
         {!edit ? (
           <UserSecureSettingsView settings={currentSettings} />
         ) : (
-          <UserSecureSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
+          !isGuest(user.role) && <UserSecureSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
         )}
       </Grid>
-      {edit && (
+      {!isGuest(user.role) && edit && (
         <Box
           sx={{
             display: { xs: 'flex', sm: 'none' },
