@@ -460,6 +460,12 @@ export default class ReimbursementRequestService {
       'Only admins, finance leads, and finance heads can create vendors.'
     );
 
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { name }
+    });
+
+    if (existingVendor != null) throw new HttpException(400, 'This vendor already exists');
+
     const isAuthorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
     if (!isAuthorized) throw failedAuthorizationException;
 
