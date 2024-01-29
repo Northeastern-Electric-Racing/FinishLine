@@ -131,4 +131,12 @@ projectRouter.post('/bom/material/:materialId/delete', ProjectsController.delete
 projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
+projectRouter.post(
+  '/link-types/:linkTypeId/edit',
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.editLinkType
+);
+
 export default projectRouter;
