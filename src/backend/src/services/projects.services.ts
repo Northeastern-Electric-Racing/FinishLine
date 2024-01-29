@@ -1135,4 +1135,33 @@ export default class ProjectsService {
 
     return { ...newUnit, materials: [] };
   }
+
+  /**
+   * Updates the linkType's name, iconName, or required.
+   * @param linkTypeId the current name/id of the linkType
+   * @param iconName the new iconName
+   * @param required the new required status
+   * @param submitter user requesting the edit
+   */
+  static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
+    if (!isHead(submitter.role)) throw new AccessDeniedException('Only the head or admin can update the linkType');
+
+    // check if the linkType we are trying to update exists
+    const linkType = await prisma.linkType.findUnique({
+      where: { name: linkTypeId }
+    });
+
+    if (!linkType) throw new NotFoundException('Link Type', linkTypeId);
+
+    // update the LinkType
+    const linkTypeUpdated = await prisma.linkType.update({
+      where: { name: linkTypeId },
+      data: {
+        iconName,
+        required
+      },
+      ...linkTypeQueryArgs
+    });
+    return linkTypeTransformer(linkTypeUpdated);
+  }
 }

@@ -250,3 +250,18 @@ export const prismaMaterial1: Material = {
   dateDeleted: null,
   userDeletedId: null
 };
+
+export const mockLinkType1: LinkType = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'file',
+  required: true
+};
+export const transformedMockLinkType1 = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'Doc2',
+  required: true
+};

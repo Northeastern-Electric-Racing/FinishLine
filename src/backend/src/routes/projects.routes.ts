@@ -133,4 +133,12 @@ projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
 
+projectRouter.post(
+  '/link-types/:linkTypeId/edit',
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.editLinkType
+);
+
 export default projectRouter;
