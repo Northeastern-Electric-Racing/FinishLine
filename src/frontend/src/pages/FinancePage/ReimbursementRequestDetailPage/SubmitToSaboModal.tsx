@@ -131,8 +131,8 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         </Grid>
         <Grid item xs={8}>
           <Stack>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>Andrew Gouldstone</Typography>
-            <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>a.gouldstone@northeastern.edu</Typography>
+            <Typography>Andrew Gouldstone</Typography>
+            <Typography>a.gouldstone@northeastern.edu</Typography>
           </Stack>
         </Grid>
       </Grid>
