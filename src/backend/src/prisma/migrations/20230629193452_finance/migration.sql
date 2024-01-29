@@ -32,6 +32,7 @@ CREATE TABLE "Receipt" (
 -- CreateTable
 CREATE TABLE "Reimbursement_Request" (
     "reimbursementRequestId" TEXT NOT NULL,
+    "identifier" SERIAL NOT NULL,
     "saboId" INTEGER,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
