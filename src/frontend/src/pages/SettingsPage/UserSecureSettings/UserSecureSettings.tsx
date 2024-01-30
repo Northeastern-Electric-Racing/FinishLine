@@ -95,10 +95,10 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
         {!edit ? (
           <UserSecureSettingsView settings={currentSettings} />
         ) : (
-          !isGuest(user.role) && <UserSecureSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
+          <UserSecureSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
         )}
       </Grid>
-      {!isGuest(user.role) && edit && (
+      {edit && (
         <Box
           sx={{
             display: { xs: 'flex', sm: 'none' },
