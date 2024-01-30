@@ -157,7 +157,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
         variant="contained"
         id="project-actions-dropdown"
-        onClick={handleClick} disabled={isGuest(user.role)}
+        onClick={handleClick}
+        disabled={isGuest(user.role)}
       >
         Actions
       </NERButton>
