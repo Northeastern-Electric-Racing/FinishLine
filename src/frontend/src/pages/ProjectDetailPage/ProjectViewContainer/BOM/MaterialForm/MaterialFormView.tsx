@@ -2,6 +2,7 @@ import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem,
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
+import { manufacturerPipe } from '../../../../../utils/pipes';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
@@ -25,10 +26,6 @@ export interface MaterialFormViewProps {
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
 }
-
-export const manufacturerPipe = (manufacturer: Manufacturer) => {
-  return `${manufacturer.name}`;
-};
 
 const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
   return { label: manufacturer.name, id: manufacturerPipe(manufacturer) };
