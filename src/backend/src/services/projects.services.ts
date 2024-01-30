@@ -485,6 +485,39 @@ export default class ProjectsService {
   }
 
   /**
+   * Creates a new LinkType with the given information
+   *
+   * @param name the name of the new LinkType
+   * @param iconName the name of the icon for the new LinkType
+   * @param required is the new LinkType required
+   * @param user the user who is creating the new LinkType
+   * @throws AccessDeniedException if the submitter of the request is not an admin
+   * @throws HttpException if a LinkType of the given name already exists
+   * @returns the created LinkType
+   */
+  static async createLinkType(user: User, name: string, iconName: string, required: boolean): Promise<LinkType> {
+    if (!isAdmin(user.role)) throw new AccessDeniedException('Only admins can create link types');
+
+    const existingLinkType = await prisma.linkType.findUnique({
+      where: { name }
+    });
+
+    if (existingLinkType) throw new HttpException(400, 'LinkType with that name already exists');
+
+    const linkType = await prisma.linkType.create({
+      data: {
+        name,
+        creatorId: user.userId,
+        iconName,
+        required
+      },
+      ...linkTypeQueryArgs
+    });
+
+    return linkTypeTransformer(linkType);
+  }
+
+  /**
    * Creates a new Material
    * @param creator the user creating the material
    * @param name the name of the material
@@ -1070,5 +1103,34 @@ export default class ProjectsService {
     });
 
     return { ...newUnit, materials: [] };
+  }
+
+  /**
+   * Updates the linkType's name, iconName, or required.
+   * @param linkTypeId the current name/id of the linkType
+   * @param iconName the new iconName
+   * @param required the new required status
+   * @param submitter user requesting the edit
+   */
+  static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
+    if (!isHead(submitter.role)) throw new AccessDeniedException('Only the head or admin can update the linkType');
+
+    // check if the linkType we are trying to update exists
+    const linkType = await prisma.linkType.findUnique({
+      where: { name: linkTypeId }
+    });
+
+    if (!linkType) throw new NotFoundException('Link Type', linkTypeId);
+
+    // update the LinkType
+    const linkTypeUpdated = await prisma.linkType.update({
+      where: { name: linkTypeId },
+      data: {
+        iconName,
+        required
+      },
+      ...linkTypeQueryArgs
+    });
+    return linkTypeTransformer(linkTypeUpdated);
   }
 }

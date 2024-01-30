@@ -33,6 +33,15 @@ const projectValidators = [
 ];
 
 projectRouter.post(
+  '/link-types/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.createLinkType
+);
+
+projectRouter.post(
   '/create',
   intMinZero(body('carNumber')),
   body('teamIds').isArray(),
@@ -121,5 +130,13 @@ projectRouter.post('/bom/material/:materialId/delete', ProjectsController.delete
 
 projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
+
+projectRouter.post(
+  '/link-types/:linkTypeId/edit',
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.editLinkType
+);
 
 export default projectRouter;

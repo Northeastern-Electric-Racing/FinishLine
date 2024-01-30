@@ -8,7 +8,7 @@ import {
   Manufacturer,
   Unit
 } from '@prisma/client';
-import { Project as SharedProject, WbsElementStatus } from 'shared';
+import { Project as SharedProject, WbsElementStatus, LinkType } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
@@ -127,6 +127,22 @@ export const sharedProject1: SharedProject = {
   assemblies: []
 };
 
+export const prismaLinkType1: LinkType = {
+  name: 'Confluence',
+  dateCreated: new Date('01-21-2024'),
+  creator: batman,
+  required: true,
+  iconName: 'ConfluenceIcon'
+};
+
+export const prismaLinkType2: LinkType = {
+  name: 'YouTube',
+  dateCreated: new Date('01-21-2024'),
+  creator: batman,
+  required: true,
+  iconName: 'YouTubeIcon'
+};
+
 export const prismaAssembly1: Assembly = {
   name: 'New Assembly',
   pdmFileName: 'file.txt',
@@ -233,4 +249,19 @@ export const prismaMaterial1: Material = {
   wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null
+};
+
+export const mockLinkType1: LinkType = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'file',
+  required: true
+};
+export const transformedMockLinkType1 = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'Doc2',
+  required: true
 };
