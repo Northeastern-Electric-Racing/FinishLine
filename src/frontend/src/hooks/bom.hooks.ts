@@ -13,10 +13,7 @@ import {
   getAllMaterialTypes,
   getAllUnits
 } from '../apis/bom.api';
-import {
-  MaterialDataSubmission,
-  MaterialFormInput
-} from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
+import { MaterialDataSubmission } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
 
 /**
@@ -59,9 +56,9 @@ export const useGetAllUnits = () => {
  */
 export const useEditMaterial = (materialId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Material, Error, MaterialFormInput>(
+  return useMutation<Material, Error, MaterialDataSubmission>(
     ['materials', 'edit'],
-    async (editPayload: MaterialFormInput) => {
+    async (editPayload: MaterialDataSubmission) => {
       const data = await editMaterial(materialId, editPayload);
       return data;
     },

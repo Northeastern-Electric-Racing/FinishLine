@@ -36,6 +36,7 @@ import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { Material, Material_Status, User } from '@prisma/client';
+import { Decimal } from 'decimal.js';
 import linkTypeQueryArgs from '../src/prisma-query-args/link-types.query-args';
 
 vi.mock('../src/utils/projects.utils');
@@ -510,7 +511,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -534,7 +535,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -559,7 +560,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -585,7 +586,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -612,7 +613,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -641,7 +642,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -669,7 +670,7 @@ describe('Projects', () => {
         prismaMaterialType.name,
         prismaManufacturer2.name,
         'partNum',
-        6,
+        new Decimal(6),
         800,
         400,
         'https://www.google.com',
