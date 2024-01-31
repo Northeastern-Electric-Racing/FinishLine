@@ -131,6 +131,8 @@ projectRouter.post('/bom/material/:materialId/delete', ProjectsController.delete
 projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
+projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
+
 projectRouter.post(
   '/link-types/:linkTypeId/edit',
   nonEmptyString(body('iconName')),

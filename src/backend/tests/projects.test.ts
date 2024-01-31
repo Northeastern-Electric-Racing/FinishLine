@@ -929,6 +929,29 @@ describe('Projects', () => {
     });
   });
 
+  describe('Deleting unit', () => {
+    test('Delete unit does not work if user is not an admin or head', async () => {
+      await expect(ProjectsService.deleteUnit(theVisitor, 'NERSoftwareTools')).rejects.toThrow(
+        new AccessDeniedException('Only heads and above can delete a unit')
+      );
+    });
+
+    test('Deleting unit fails if unit does not exist', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(null);
+
+      await expect(ProjectsService.deleteUnit(batman, 'New Unit')).rejects.toThrow(
+        new NotFoundException('Unit', 'New Unit')
+      );
+    });
+
+    test('Delete Unit works', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.unit, 'delete');
+      await ProjectsService.deleteUnit(superman, 'NERSoftwareTools');
+      expect(prisma.unit.delete).toBeCalledTimes(1);
+    });
+  });
+
   describe('updateMaterial', () => {
     test('Update material fails if the given material does not exists', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);

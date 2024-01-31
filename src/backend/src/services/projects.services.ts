@@ -697,6 +697,37 @@ export default class ProjectsService {
   }
 
   /**
+   * Deletes a unit
+   * @param user the user who's deleting the unit
+   * @param name the name of the unit
+   * @throws if the user is not at least a head, or if the provided name isn't a unit
+   * @returns the deleted unit
+   */
+  static async deleteUnit(user: User, name: string) {
+    if (!isHead(user.role)) {
+      throw new AccessDeniedException('Only heads and above can delete a unit');
+    }
+
+    const unit = await prisma.unit.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (!unit) {
+      throw new NotFoundException('Unit', name);
+    }
+
+    const deletedUnit = await prisma.unit.delete({
+      where: {
+        name: unit.name
+      }
+    });
+
+    return deletedUnit;
+  }
+
+  /**
    * Deletes a manufacturer
    * @param user the user who's deleting the manufacturer
    * @param name the name of the manufacturer
