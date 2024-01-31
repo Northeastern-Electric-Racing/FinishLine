@@ -65,7 +65,7 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
               onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
               options={approvedChangeRequestOptions}
               size={'small'}
-              placeholder={'Change Request Id'}
+              placeholder={'Change Request ID'}
               value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
             />
           )}
