@@ -136,6 +136,7 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Christian Bacalhau', color: '#6a0dad' },
     { name: 'Gurshan Sidhu', color: '#487c90' },
+    { name: 'Robel Wondwosen', color: '#289cab'}
     { name: 'William (Jack) Turner', color: '#ff5733' },
     {
       name: 'Dao Ho',
