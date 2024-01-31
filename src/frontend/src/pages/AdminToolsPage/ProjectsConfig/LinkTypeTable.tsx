@@ -49,7 +49,7 @@ const LinkTypeTable = () => {
     <Box>
       <CreateLinkTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} linkTypes={linkTypes} />
       <Typography variant="subtitle1">Registered LinkTypes</Typography>
-      <AdminToolTable columns={[{ name: 'Name' }, { name: 'iconName' }, { name: 'required' }]} rows={linkTypeTableRows} />
+      <AdminToolTable columns={[{ name: 'Name' }, { name: 'Icon Name' }, { name: 'Required' }]} rows={linkTypeTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (
           <NERButton
@@ -58,7 +58,7 @@ const LinkTypeTable = () => {
               setCreateModalShow(true);
             }}
           >
-            New linkType
+            New LinkType
           </NERButton>
         )}
       </Box>
