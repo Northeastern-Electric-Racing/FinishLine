@@ -18,12 +18,13 @@ import Credits from '../pages/CreditsPage/Credits';
 import AppContextUser from './AppContextUser';
 import { useSingleUserSettings } from '../hooks/users.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
-import ErrorPage from '../pages/ErrorPage';
+import SessionTimeoutAlert from './SessionTimeoutAlert';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import { Container } from '@mui/material';
+import ErrorPage from '../pages/ErrorPage';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -33,7 +34,14 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
+
+  if (isError) {
+    if ((error as Error).message === 'Authentication Failed: Invalid JWT!') {
+      return <SessionTimeoutAlert />;
+    } else {
+      return <ErrorPage error={error as Error} message={(error as Error).message} />;
+    }
+  }
 
   return userSettingsData.slackId ? (
     <AppContextUser>
