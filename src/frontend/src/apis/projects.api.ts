@@ -89,3 +89,12 @@ export const getAllLinkTypes = () => {
     transformResponse: (data) => JSON.parse(data).map(linkTypeTransformer)
   });
 };
+
+/**
+ * Creates a linkType in the database
+ * @param linkType the data for the linkType
+ * @returns the new linkType
+ */
+export const createLinkType = async (linkTypeData: { name: string }) => {
+  return axios.post(apiUrls.projectsCreateLinkTypes(), linkTypeData);
+};

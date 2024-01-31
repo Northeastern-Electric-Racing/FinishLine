@@ -13,7 +13,8 @@ import {
   setProjectTeam,
   deleteProject,
   toggleProjectFavorite,
-  getAllLinkTypes
+  getAllLinkTypes,
+  createLinkType
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -146,3 +147,19 @@ export const useAllLinkTypes = () => {
     return data;
   });
 };
+
+/**
+ * Custom React Hook to create a link type
+ */
+export const useCreateLinkType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<LinkType, Error, { name: string }>(['linkTypes', 'create'], async (linkTypeData: { name: string }) => {
+    const { data } = await createLinkType(linkTypeData);
+    queryClient.invalidateQueries(['linkTypes']);
+    return data;
+  });
+};
+
+export interface EditLinkTypePayload {
+  name: string;
+}
