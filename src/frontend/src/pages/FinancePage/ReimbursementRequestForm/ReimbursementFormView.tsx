@@ -1,4 +1,6 @@
-import { Delete } from '@mui/icons-material';
+// The reimbursement form code just redo this.
+import { Delete, Help } from '@mui/icons-material';
+import HelpIcon from '@mui/icons-material/Help';
 import {
   FormControl,
   FormHelperText,
@@ -120,7 +122,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   );
 
   const expenseTypesToAutocomplete = (expenseType: ExpenseType): { label: string; id: string } => {
-    return { label: expenseTypePipe(expenseType), id: expenseType.expenseTypeId };
+    return {
+      label: expenseTypePipe(expenseType),
+      id: expenseType.expenseTypeId
+    };
   };
 
   const vendorsToAutocomplete = (vendor: Vendor): { label: string; id: string } => {
@@ -133,7 +138,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         e.stopPropagation();
         handleSubmit(onSubmit)(e);
       }}
-      style={{ minHeight: 'calc(100vh - 161px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+      style={{
+        minHeight: 'calc(100vh - 161px)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
+      }}
     >
       {!hasSecureSettingsSet && (
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
@@ -214,7 +224,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth>
-              <FormLabel>Date of Expense</FormLabel>
+              <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
+                <FormLabel>Date of Expense</FormLabel>
+                <HelpIcon style={{ fontSize: 'medium', color: '#939393', marginLeft: '8px' }} />
+              </Box>
               <Controller
                 name="dateOfExpense"
                 control={control}
