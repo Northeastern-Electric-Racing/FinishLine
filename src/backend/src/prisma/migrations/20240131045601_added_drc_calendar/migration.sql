@@ -13,12 +13,13 @@ CREATE TABLE "Design_Review" (
     "status" "Design_Review_Status" NOT NULL,
     "teamType" "Design_Review_Team" NOT NULL,
     "location" TEXT,
-    "online" BOOLEAN NOT NULL,
-    "inPerson" BOOLEAN NOT NULL,
+    "isOnline" BOOLEAN NOT NULL,
+    "isInPerson" BOOLEAN NOT NULL,
     "zoomLink" TEXT,
     "dateDeleted" TIMESTAMP(3),
     "userDeletedId" INTEGER,
     "docTemplateLink" TEXT,
+    "wbsElementId" INTEGER NOT NULL,
 
     CONSTRAINT "Design_Review_pkey" PRIMARY KEY ("designReviewId")
 );
@@ -119,6 +120,9 @@ ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userCreatedId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Schedule_Settings" ADD CONSTRAINT "Schedule_Settings_availabilityId_fkey" FOREIGN KEY ("availabilityId") REFERENCES "Availability"("availabilityId") ON DELETE RESTRICT ON UPDATE CASCADE;

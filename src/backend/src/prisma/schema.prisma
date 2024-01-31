@@ -272,6 +272,7 @@ model WBS_Element {
   assemblies                  Assembly[]
   materials                   Material[]
   reimbursementProductReasons Reimbursement_Product_Reason[]
+  designReviews               Design_Review[]
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -590,14 +591,16 @@ model Design_Review {
   confirmedMembers User[]               @relation(name: "confirmedAttendee")
   deniedMembers    User[]               @relation(name: "deniedAttendee")
   location         String?
-  online           Boolean
-  inPerson         Boolean
+  isOnline         Boolean
+  isInPerson       Boolean
   zoomLink         String?
   attendees        User[]               @relation(name: "userAttended")
   dateDeleted      DateTime?
   userDeleted      User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
   userDeletedId    Int?
   docTemplateLink  String?
+  wbsElementId     Int
+  wbsElement       WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
 }
 
 model Schedule_Settings {
