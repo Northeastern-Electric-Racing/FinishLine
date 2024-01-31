@@ -116,7 +116,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={4}>
-          <DetailDisplay label="Treasurer" content="" />
+          <Typography sx={{ fontWeight: 'bold' }}>Treasurer:</Typography>
         </Grid>
         <Grid item xs={8}>
           <Stack>
@@ -127,7 +127,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={4}>
-          <DetailDisplay label="Club Advisor" content="" />
+          <Typography sx={{ fontWeight: 'bold' }}>Club Advisor:</Typography>
         </Grid>
         <Grid item xs={8}>
           <Stack>
