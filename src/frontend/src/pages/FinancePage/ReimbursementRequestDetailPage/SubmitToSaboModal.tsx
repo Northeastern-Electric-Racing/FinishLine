@@ -9,6 +9,7 @@ import { centsToDollar, datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -108,7 +109,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Business Purpose" content={filteredProductsNames} />
         </Grid>
         <Grid item xs={6}>
-          <DetailDisplay label="SABO Form Index" content="800462" />
+          <DetailDisplay label="SABO Form Index" content={codeAndRefundSourceName(reimbursementRequest.account)} />
         </Grid>
         <Grid item xs={6}>
           <DetailDisplay label="Expense Type" content={`${expenseType.code} - ${expenseType.name}`} />
