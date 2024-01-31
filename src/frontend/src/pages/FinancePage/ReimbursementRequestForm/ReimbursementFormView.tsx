@@ -11,6 +11,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  Tooltip,
   Typography,
   Snackbar,
   Alert,
@@ -226,7 +227,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <FormControl fullWidth>
               <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
                 <FormLabel>Date of Expense</FormLabel>
-                <HelpIcon style={{ fontSize: 'medium', color: '#939393', marginLeft: '8px' }} />
+                <Tooltip
+                  title="Reimbursement with Different Purchase Dates Should be on Different Requests"
+                  placement="right"
+                >
+                  <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
+                </Tooltip>
               </Box>
               <Controller
                 name="dateOfExpense"
