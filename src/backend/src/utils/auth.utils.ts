@@ -1,4 +1,4 @@
-import jwt, { JwtPayload, VerifyOptions, Jwt } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma';
 import { NotFoundException } from './errors.utils';
@@ -36,10 +36,10 @@ export const requireJwtProd = (req: Request, res: Response, next: any) => {
 
     if (!token) return res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
 
-    jwt.verify(token, TOKEN_SECRET, (err: any, decoded: string | JwtPayload | undefined) => {
+    jwt.verify(token, TOKEN_SECRET, (err: any, decoded: any) => {
       if (err) return res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
-      const decode = decoded as JwtPayload
-      res.locals.userId = parseInt(decode.userId);
+
+      res.locals.userId = parseInt(decoded.userId);
 
       next();
     });
