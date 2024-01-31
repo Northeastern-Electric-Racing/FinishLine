@@ -1,5 +1,5 @@
 // The reimbursement form code just redo this.
-import { Delete, Help } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 import HelpIcon from '@mui/icons-material/Help';
 import {
   FormControl,
