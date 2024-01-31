@@ -1,5 +1,5 @@
 import NERModal from '../../../components/NERModal';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, Stack } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
@@ -112,6 +112,28 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         </Grid>
         <Grid item xs={6}>
           <DetailDisplay label="Expense Type" content={`${expenseType.code} - ${expenseType.name}`} />
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={4}>
+          <Typography sx={{ fontWeight: 'bold' }}>Treasurer:</Typography>
+        </Grid>
+        <Grid item xs={8}>
+          <Stack>
+            <Typography>Brody Pearlman</Typography>
+            <Typography>pearlman.edu@northeastern.edu</Typography>
+          </Stack>
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={4}>
+          <Typography sx={{ fontWeight: 'bold' }}>Club Advisor:</Typography>
+        </Grid>
+        <Grid item xs={8}>
+          <Stack>
+            <Typography>Andrew Gouldstone</Typography>
+            <Typography>a.gouldstone@northeastern.edu</Typography>
+          </Stack>
         </Grid>
       </Grid>
       <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>
