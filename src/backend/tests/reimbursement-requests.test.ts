@@ -828,15 +828,54 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Edit Reimbursement', () => {
-    test('Throws error is user isnt creator of reimbursement', async () => {
-      const reimbursementMock = {
+    const reimbursementMock = {
+      reimbursementId: 'reimbursementMockId',
+      purchaserId: batman.userId,
+      amount: 12,
+      dateCreated: new Date('2023-01-01'),
+      userSubmitted: batman,
+      userSubmittedId: batman.userId
+    };
+    test('Throws error is user isnt submitter of the reimbursement', async () => {
+      await expect(
+        ReimbursementRequestService.editReimbursement(
+          reimbursementMock.reimbursementId,
+          superman,
+          reimbursementMock.amount,
+          reimbursementMock.dateCreated
+        )
+      ).rejects.toThrow(new AccessDeniedException('Only the submitter can edit their refunds'));
+    });
+
+    test('Throws error if reimbursement doesnt exist', async () => {
+      vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(null);
+      await expect(
+        ReimbursementRequestService.editReimbursement(
+          'fakeId',
+          reimbursementMock.userSubmitted,
+          reimbursementMock.amount,
+          reimbursementMock.dateCreated
+        )
+      ).rejects.toThrow(new NotFoundException('Reimbursement', 'fakeId'));
+    });
+
+    test('Successfully edits a reimbursement', async () => {
+      vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
+      const editedReimbursement = await ReimbursementRequestService.editReimbursement(
+        reimbursementMock.reimbursementId,
+        reimbursementMock.userSubmitted,
+        reimbursementMock.amount + 1,
+        reimbursementMock.dateCreated
+      );
+
+      expect(editedReimbursement).toStrictEqual({
         reimbursementId: 'reimbursementMockId',
         purchaserId: batman.userId,
-        amount: 12,
+        amount: 13,
         dateCreated: new Date('2023-01-01'),
         userSubmitted: batman,
         userSubmittedId: batman.userId
-      };
+      });
     });
   });
 
