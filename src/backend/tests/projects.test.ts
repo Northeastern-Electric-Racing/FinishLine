@@ -712,13 +712,13 @@ describe('Projects', () => {
 
     test('deleteManufacturer works', async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(prismaManufacturer1);
 
       const manufacturer = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
+      expect(prisma.manufacturer.delete).toBeCalledTimes(1);
 
       expect(manufacturer).toStrictEqual(prismaManufacturer1);
       expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
-      expect(prisma.manufacturer.update).toHaveBeenCalledTimes(1);
     });
 
     test('deleteManufacturer fails when user is not at least Head', async () => {
