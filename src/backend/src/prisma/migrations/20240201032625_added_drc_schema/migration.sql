@@ -29,24 +29,17 @@ CREATE TABLE "Schedule_Settings" (
     "drScheduleSettingsId" SERIAL NOT NULL,
     "personalGmail" TEXT NOT NULL,
     "personalZoomLink" TEXT NOT NULL,
-    "availabilityId" INTEGER NOT NULL,
+    "availability" INTEGER[],
     "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Schedule_Settings_pkey" PRIMARY KEY ("drScheduleSettingsId")
 );
 
 -- CreateTable
-CREATE TABLE "Availability" (
-    "availabilityId" SERIAL NOT NULL,
-    "mondayAvailability" TIMESTAMP(3)[],
-    "tuesdayAvailability" TIMESTAMP(3)[],
-    "wednesdayAvailability" TIMESTAMP(3)[],
-    "thursdayAvailability" TIMESTAMP(3)[],
-    "fridayAvailability" TIMESTAMP(3)[],
-    "saturdayAvailability" TIMESTAMP(3)[],
-    "sundayAvailability" TIMESTAMP(3)[],
-
-    CONSTRAINT "Availability_pkey" PRIMARY KEY ("availabilityId")
+CREATE TABLE "Meeting" (
+    "title" TEXT NOT NULL,
+    "meetingTimes" INTEGER[],
+    "teamId" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -80,10 +73,10 @@ CREATE TABLE "_userAttended" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Schedule_Settings_availabilityId_key" ON "Schedule_Settings"("availabilityId");
+CREATE UNIQUE INDEX "Schedule_Settings_userId_key" ON "Schedule_Settings"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Schedule_Settings_userId_key" ON "Schedule_Settings"("userId");
+CREATE UNIQUE INDEX "Meeting_title_key" ON "Meeting"("title");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_requiredAttendee_AB_unique" ON "_requiredAttendee"("A", "B");
@@ -125,10 +118,10 @@ ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userDeletedId_fkey" FO
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Schedule_Settings" ADD CONSTRAINT "Schedule_Settings_availabilityId_fkey" FOREIGN KEY ("availabilityId") REFERENCES "Availability"("availabilityId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Schedule_Settings" ADD CONSTRAINT "Schedule_Settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Schedule_Settings" ADD CONSTRAINT "Schedule_Settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Meeting" ADD CONSTRAINT "Meeting_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("teamId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_requiredAttendee" ADD CONSTRAINT "_requiredAttendee_A_fkey" FOREIGN KEY ("A") REFERENCES "Design_Review"("designReviewId") ON DELETE CASCADE ON UPDATE CASCADE;
