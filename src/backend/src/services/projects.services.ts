@@ -749,9 +749,6 @@ export default class ProjectsService {
       throw new NotFoundException('Manufacturer', name);
     }
 
-    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
-
-    //const dateDeleted: Date = new Date();
     const deletedManufacturer = await prisma.manufacturer.delete({
       where: {
         name: manufacturer.name
