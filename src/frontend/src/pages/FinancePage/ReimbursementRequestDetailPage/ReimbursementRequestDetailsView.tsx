@@ -15,7 +15,7 @@ import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequest, ReimbursementStatusType } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
@@ -49,6 +49,7 @@ import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
+import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -315,6 +316,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   ];
 
+  const statuses = reimbursementRequest.reimbursementStatuses.map((status) => status.type);
+  const recentStatus = statuses[-1];
   return (
     <PageLayout
       title={`${
@@ -322,6 +325,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           ? `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request - Denied`
           : `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`
       }`}
+      chips={
+        <Box id="status" display="flex" gap="20px">
+          {statuses.length > 0 ? <ReimbursementRequestStatusPill status={recentStatus} /> : <br></br>}
+        </Box>
+      }
       previousPages={[
         {
           name: 'Finance',

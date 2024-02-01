@@ -4,7 +4,7 @@
  */
 
 import { yellow, green, blue, purple, grey } from '@mui/material/colors';
-import { ChangeRequestStatus, ChangeRequestType, WorkPackageStage } from 'shared';
+import { ChangeRequestStatus, ChangeRequestType, ReimbursementStatusType, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
@@ -63,5 +63,20 @@ export const ChangeRequestStatusTextPipe: (status: ChangeRequestStatus) => strin
       return 'Denied';
     case ChangeRequestStatus.Open:
       return 'Open';
+  }
+};
+
+export const ReimbursementRequestTypeTextPipe: (type: ReimbursementStatusType) => string = (type) => {
+  switch (type) {
+    case ReimbursementStatusType.ADVISOR_APPROVED:
+      return 'Advisor Approved';
+    case ReimbursementStatusType.DENIED:
+      return 'Denied';
+    case ReimbursementStatusType.PENDING_FINANCE:
+      return 'Pending Finance';
+    case ReimbursementStatusType.REIMBURSED:
+      return 'Reimbursed';
+    case ReimbursementStatusType.SABO_SUBMITTED:
+      return 'Sabo Submitted';
   }
 };
