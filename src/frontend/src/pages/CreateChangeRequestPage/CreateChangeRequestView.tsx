@@ -103,9 +103,9 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           type: ChangeRequestType.Issue
         }
       : {
-        what: crDesc,
-        why: [{ type: ChangeRequestReason.Other, explain: '' }],
-        type: ChangeRequestType.Issue
+          what: crDesc,
+          why: [{ type: ChangeRequestReason.Other, explain: '' }],
+          type: ChangeRequestType.Issue
         }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
