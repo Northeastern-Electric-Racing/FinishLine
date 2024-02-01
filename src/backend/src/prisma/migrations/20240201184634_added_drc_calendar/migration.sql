@@ -8,7 +8,7 @@ CREATE TYPE "Design_Review_Team" AS ENUM ('ELECTRICAL', 'SOFTWARE', 'MECHANICAL'
 CREATE TABLE "Design_Review" (
     "designReviewId" SERIAL NOT NULL,
     "dateScheduled" TIMESTAMP(3) NOT NULL,
-    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" INTEGER NOT NULL,
     "status" "Design_Review_Status" NOT NULL,
     "teamType" "Design_Review_Team" NOT NULL,

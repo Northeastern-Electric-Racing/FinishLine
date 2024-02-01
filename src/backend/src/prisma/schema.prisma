@@ -581,8 +581,8 @@ enum Design_Review_Team {
 
 model Design_Review {
   designReviewId   Int                  @id @default(autoincrement())
-  dateScheduled    DateTime
-  dateCreated      DateTime
+  dateScheduled    DateTime             @db.Timestamp(3)
+  dateCreated      DateTime             @default(now()) @db.Timestamp(3)
   userCreated      User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
   userCreatedId    Int
   status           Design_Review_Status
@@ -596,7 +596,7 @@ model Design_Review {
   isInPerson       Boolean
   zoomLink         String?
   attendees        User[]               @relation(name: "userAttended")
-  dateDeleted      DateTime?
+  dateDeleted      DateTime?            @db.Timestamp(3)
   userDeleted      User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
   userDeletedId    Int?
   docTemplateLink  String?
