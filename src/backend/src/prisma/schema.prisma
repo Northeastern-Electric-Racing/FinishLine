@@ -140,6 +140,7 @@ model Team {
   dateArchived   DateTime?
   userArchivedId Int?
   userArchived   User?     @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
+  meetings       Meeting[]
 }
 
 model Session {
@@ -604,23 +605,17 @@ model Design_Review {
 }
 
 model Schedule_Settings {
-  drScheduleSettingsId Int          @id @default(autoincrement())
+  drScheduleSettingsId Int    @id @default(autoincrement())
   personalGmail        String
   personalZoomLink     String
-  availability         Availability @relation(fields: [availabilityId], references: [availabilityId])
-  availabilityId       Int          @unique
-  User                 User         @relation(fields: [userId], references: [userId])
-  userId               Int          @unique
+  availability         Int[]
+  User                 User   @relation(fields: [userId], references: [userId])
+  userId               Int    @unique
 }
 
-model Availability {
-  availabilityId        Int                @id @default(autoincrement())
-  mondayAvailability    DateTime[]
-  tuesdayAvailability   DateTime[]
-  wednesdayAvailability DateTime[]
-  thursdayAvailability  DateTime[]
-  fridayAvailability    DateTime[]
-  saturdayAvailability  DateTime[]
-  sundayAvailability    DateTime[]
-  Schedule_Settings     Schedule_Settings?
+model Meeting {
+  title        String @unique
+  meetingTimes Int[]
+  team         Team?  @relation(fields: [teamId], references: [teamId])
+  teamId       String
 }
