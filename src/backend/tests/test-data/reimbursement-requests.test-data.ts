@@ -8,8 +8,7 @@ import {
   Reimbursement_Product_Reason as PrismaReimbursementProductReason,
   Prisma,
   Club_Accounts,
-  User,
-  Reimbursement
+  User
 } from '@prisma/client';
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { alfred, batman } from './users.test-data';

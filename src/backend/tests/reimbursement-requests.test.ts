@@ -844,7 +844,9 @@ describe('Reimbursement Requests', () => {
           reimbursementMock.amount,
           reimbursementMock.dateCreated
         )
-      ).rejects.toThrow(new AccessDeniedException('Only the submitter can edit their refunds'));
+      ).rejects.toThrow(
+        new AccessDeniedException('You do not have access to edit this refund, only the submitter can edit their refund')
+      );
     });
 
     test('Throws error if reimbursement doesnt exist', async () => {

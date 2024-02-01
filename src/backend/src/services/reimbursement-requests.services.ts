@@ -307,9 +307,11 @@ export default class ReimbursementRequestService {
       where: { reimbursementId }
     });
 
-    if (!request) throw new NotFoundException('Reimbursement Request', reimbursementId);
+    if (!request) throw new NotFoundException('Reimbursement', reimbursementId);
     if (request.userSubmittedId !== user.userId)
-      throw new AccessDeniedException('You do not have access to edit this refund, only the creator can edit their refund');
+      throw new AccessDeniedException(
+        'You do not have access to edit this refund, only the submitter can edit their refund'
+      );
 
     const updatedReimbursement = await prisma.reimbursement.update({
       where: { reimbursementId },
