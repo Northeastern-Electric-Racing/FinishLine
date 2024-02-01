@@ -15,7 +15,7 @@ import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ReimbursementRequest, ReimbursementStatusType } from 'shared';
+import { ReimbursementRequest } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
