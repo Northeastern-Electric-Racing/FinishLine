@@ -222,7 +222,8 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0, 0, 0, 0.4), 0 0 5px rgba(180, 160, 255, 0.8)'
       }
     },
-    { name: 'Jhonyel Galvis', color: '#00FFF' }
+    { name: 'Jhonyel Galvis', color: '#00FFF' },
+    { name: 'Chris Li', color: '#00FFF' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
