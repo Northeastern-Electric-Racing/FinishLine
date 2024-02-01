@@ -3,17 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  WbsNumber,
-  User,
-  wbsPipe,
-  WbsElement,
-  isProject,
-  WorkPackage,
-  ClubAccount,
-  ExpenseType,
-  Manufacturer
-} from 'shared';
+import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, ClubAccount, ExpenseType } from 'shared';
 
 /**
  * Pipes:
@@ -22,11 +12,6 @@ import {
  * Only string-based stuff basically.
  * Pipe is a term / tool from Angular.
  */
-
-/** Display the manufacturer's name as the ID for the autocomplete */
-export const manufacturerPipe = (manufacturer: Manufacturer) => {
-  return `${manufacturer.name}`;
-};
 
 /** Display number as "4 weeks" or "1 week" */
 export const weeksPipe = (weeks: number) => {
