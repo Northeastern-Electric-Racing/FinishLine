@@ -122,6 +122,23 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async editReimbursement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reimbursementId } = req.params;
+      const { amount, dateReceived } = req.body;
+      const user = await getCurrentUser(res);
+      const updatedReimbursement = await ReimbursementRequestService.editReimbursement(
+        reimbursementId,
+        user,
+        amount,
+        dateReceived
+      );
+      res.status(200).json(updatedReimbursement);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;

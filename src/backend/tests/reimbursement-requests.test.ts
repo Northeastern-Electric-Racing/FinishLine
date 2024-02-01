@@ -827,6 +827,19 @@ describe('Reimbursement Requests', () => {
     });
   });
 
+  describe('Edit Reimbursement', () => {
+    test('Throws error is user isnt creator of reimbursement', async () => {
+      const reimbursementMock = {
+        reimbursementId: 'reimbursementMockId',
+        purchaserId: batman.userId,
+        amount: 12,
+        dateCreated: new Date('2023-01-01'),
+        userSubmitted: batman,
+        userSubmittedId: batman.userId
+      };
+    });
+  });
+
   describe('Edit Vendor Tests', () => {
     test('Throws error if user isnt an admin or lead/head of the finance', async () => {
       await expect(

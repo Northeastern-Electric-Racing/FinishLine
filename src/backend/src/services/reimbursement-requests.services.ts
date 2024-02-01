@@ -302,6 +302,23 @@ export default class ReimbursementRequestService {
     return updatedReimbursementRequest;
   }
 
+  static async editReimbursement(reimbursementId: string, user: User, amount: number, dateCreated: Date) {
+    const request = await prisma.reimbursement.findUnique({
+      where: { reimbursementId }
+    });
+
+    if (!request) throw new NotFoundException('Reimbursement Request', reimbursementId);
+    if (request.userSubmittedId !== user.userId)
+      throw new AccessDeniedException('You do not have access to edit this refund, only the creator can edit their refund');
+
+    const updatedReimbursement = await prisma.reimbursement.update({
+      where: { reimbursementId },
+      data: { dateCreated, amount }
+    });
+
+    return updatedReimbursement;
+  }
+
   /**
    * Soft-deletes the given reimbursement request
    *
