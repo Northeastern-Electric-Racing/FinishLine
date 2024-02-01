@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, Typography, useTheme } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -301,10 +301,9 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       editable: true
     },
     {
-      flex: 2,
+      flex: 1,
       field: 'actions',
       type: 'actions',
-      headerName: 'Actions',
       width: 70,
       getActions
     }
