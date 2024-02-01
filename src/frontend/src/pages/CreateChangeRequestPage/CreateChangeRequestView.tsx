@@ -96,10 +96,16 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
           why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
           type: ChangeRequestType.Issue
         }
-      : {
+      : query.get('createWP')
+      ? {
           what: crDesc,
-          why: [{ type: ChangeRequestReason.Other, explain: '' }],
+          why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
           type: ChangeRequestType.Issue
+        }
+      : {
+        what: crDesc,
+        why: [{ type: ChangeRequestReason.Other, explain: '' }],
+        type: ChangeRequestType.Issue
         }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });

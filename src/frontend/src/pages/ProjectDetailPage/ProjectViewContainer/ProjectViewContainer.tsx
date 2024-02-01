@@ -145,10 +145,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
 
   const CreateWorkPackageButton = () => (
     <MenuItem
-      component={Link}
-      to={routes.CHANGE_REQUESTS_NEW_WITH_WBS + wbsPipe(project.wbsNum)}
-      disabled={isGuest(user.role)}
-      onClick={handleDropdownClose}
+      onClick={() => history.push(`${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`)}
+      disabled={!isLeadership(user.role)}
     >
       <ListItemIcon>
         <ContentPasteIcon fontSize="small" />
