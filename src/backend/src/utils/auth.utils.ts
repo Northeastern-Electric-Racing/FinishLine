@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import prisma from '../prisma/prisma';
 import { NotFoundException } from './errors.utils';
 import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
@@ -24,7 +25,7 @@ export const prodHeaders = [
 ];
 
 // middleware function for production that will enforce jwt authorization
-export const requireJwtProd = (req: Request, res: Response, next: any) => {
+export const requireJwtProd = (req: Request, res: Response, next: NextFunction) => {
   if (
     req.path === '/users/auth/login' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
@@ -36,9 +37,12 @@ export const requireJwtProd = (req: Request, res: Response, next: any) => {
 
     if (!token) return res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
 
-    jwt.verify(token, TOKEN_SECRET, (err: any, decoded: any) => {
+    jwt.verify(token, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
       if (err) return res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
 
+      if (typeof decoded === 'undefined' || typeof decoded === 'string') {
+        return res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });
+      }
       res.locals.userId = parseInt(decoded.userId);
 
       next();
@@ -47,7 +51,7 @@ export const requireJwtProd = (req: Request, res: Response, next: any) => {
 };
 
 // middleware function for development that will enforce jwt authorization
-export const requireJwtDev = (req: Request, res: Response, next: any) => {
+export const requireJwtDev = (req: Request, res: Response, next: NextFunction) => {
   if (
     req.path === '/users/auth/login/dev' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
