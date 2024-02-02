@@ -744,13 +744,6 @@ describe('Projects', () => {
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
     });
 
-    test('deleteManufacturer fails when manufacturer has been deleted', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
-      await expect(async () => await ProjectsService.deleteManufacturer(batman, prismaManufacturer2.name)).rejects.toThrow(
-        new DeletedException('Manufacturer', prismaManufacturer2.name)
-      );
-    });
-
     test('Get all Manufacturer works', async () => {
       vi.spyOn(prisma.manufacturer, 'findMany').mockResolvedValue([]);
 

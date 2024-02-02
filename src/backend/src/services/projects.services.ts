@@ -1039,6 +1039,10 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', material.wbsElementId);
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
+    const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update material');
+
     if (assemblyId) {
       const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
       if (!assembly) throw new NotFoundException('Assembly', assemblyId);
@@ -1049,21 +1053,12 @@ export default class ProjectsService {
     });
     if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
 
-    const manufacturer = await prisma.manufacturer.findFirst({
-      where: { name: manufacturerName }
-    });
-    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
-
     if (unitName) {
       const unit = await prisma.unit.findFirst({
         where: { name: unitName }
       });
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
-
-    const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
-
-    if (!perms) throw new AccessDeniedException('update material');
 
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
