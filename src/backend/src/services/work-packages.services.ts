@@ -599,7 +599,7 @@ export default class WorkPackagesService {
                   wbsElementId
                 },
                 data: {
-                  accepted: true,
+                  accepted: false,
                   dateReviewed: dateDeleted
                 }
               }
