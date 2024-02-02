@@ -83,7 +83,7 @@ export const findMessagesChannelIdTs = async (query: string) => {
       return result.messages.matches.map((match) => ({ channelId: match.channel?.id, ts: match.ts }));
     return [];
   } catch (error) {
-    throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
+    throw new HttpException(500, 'Error searching slack messages, reason: ' + (error as any).data.error);
   }
 };
 
