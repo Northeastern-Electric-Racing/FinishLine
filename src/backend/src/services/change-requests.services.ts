@@ -25,7 +25,8 @@ import {
   updateBlocking,
   sendSlackChangeRequestNotification,
   sendSlackCRReviewedNotification,
-  allChangeRequestsReviewed
+  allChangeRequestsReviewed,
+  sendSlackCRStatusToThread
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
@@ -33,6 +34,7 @@ import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail, createChange } from '../utils/changes.utils';
 import { sendSlackRequestedReviewNotification } from '../utils/slack.utils';
+import { findMessagesChannelIdTs } from '../integrations/slack';
 
 export default class ChangeRequestsService {
   /**
@@ -321,6 +323,19 @@ export default class ChangeRequestsService {
         if (err instanceof Error) {
           throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
         }
+      }
+    }
+
+    // send a reply to a CR notification of its updated status
+    try {
+      const relevantThreads = await findMessagesChannelIdTs(foundCR.crId.toString());
+      relevantThreads?.forEach(async (thread) => {
+        if (thread.channelId && thread.ts)
+          await sendSlackCRStatusToThread(thread.channelId, foundCR.crId, thread.ts, accepted);
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
       }
     }
 

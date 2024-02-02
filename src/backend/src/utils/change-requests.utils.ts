@@ -1,7 +1,7 @@
 import prisma from '../prisma/prisma';
 import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request, Change } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
-import { sendMessage } from '../integrations/slack';
+import { replyToMessageInThread, sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
@@ -46,10 +46,21 @@ export const sendSlackChangeRequestNotification = async (
 export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
-  const fullMsg = `:tada: Your Change Request was just reviewed! Clink the link to view! :tada:`;
+  const fullMsg = `:tada: Your Change Request was just reviewed! Click the link to view! :tada:`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR#${crId}`;
   msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
+
+  return Promise.all(msgs);
+};
+
+export const sendSlackCRStatusToThread = async (slackId: string, crId: number, ts: string, approved: boolean) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const msgs = [];
+  const fullMsg = `This Change Request was ${approved ? 'approved! :tada:' : 'denied.'} Click the link to view.`;
+  const fullLink = `https://finishlinebyner.com/cr/${crId}`;
+  const btnText = `View CR#${crId}`;
+  msgs.push(replyToMessageInThread(slackId, ts, fullMsg, fullLink, btnText));
 
   return Promise.all(msgs);
 };
