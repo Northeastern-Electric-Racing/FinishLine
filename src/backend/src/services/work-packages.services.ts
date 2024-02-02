@@ -599,8 +599,8 @@ export default class WorkPackagesService {
                   wbsElementId
                 },
                 data: {
-                  dateDeleted,
-                  deletedByUserId
+                  accepted: true,
+                  dateReviewed: dateDeleted
                 }
               }
             },
