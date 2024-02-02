@@ -33,6 +33,8 @@ export const WorkPackageStageTextPipe: (stage: WorkPackageStage | undefined) => 
       return 'Manufacturing';
     case WorkPackageStage.Install:
       return 'Install';
+    case WorkPackageStage.Testing:
+      return 'Testing';
     default:
       return 'No Stage';
   }

@@ -68,6 +68,7 @@ enum Work_Package_Stage {
   DESIGN
   MANUFACTURING
   INSTALL
+  TESTING
 }
 
 model User {
