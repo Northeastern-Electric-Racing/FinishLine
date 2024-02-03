@@ -447,6 +447,7 @@ model Reimbursement_Product {
 model Vendor {
   vendorId    String                  @id @default(uuid())
   dateCreated DateTime                @default(now())
+  dateDeleted DateTime?
   name        String                  @unique
   requests    Reimbursement_Request[]
 }
@@ -458,6 +459,7 @@ model Expense_Type {
   allowed              Boolean
   allowedRefundSources Club_Accounts[]
   requests             Reimbursement_Request[]
+  dateDeleted          DateTime?
 }
 
 model Reimbursement {
@@ -529,7 +531,7 @@ model Material {
   manufacturerName       String
   manufacturerPartNumber String
   pdmFileName            String?
-  quantity               Int
+  quantity               Decimal
   quantityUnit           Unit?           @relation(fields: [unitName], references: [name])
   unitName               String?
   price                  Int

@@ -40,7 +40,7 @@ const VendorsTable = () => {
 
   return (
     <Box>
-      <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
       {clickedVendor && (
         <EditVendorModal
           showModal={showEditModal}
@@ -49,6 +49,7 @@ const VendorsTable = () => {
             setClickedVendor(undefined);
           }}
           vendor={clickedVendor}
+          vendors={vendors}
         />
       )}
       <Typography variant="subtitle1">Registered Vendors</Typography>
