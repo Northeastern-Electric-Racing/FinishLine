@@ -1,4 +1,3 @@
-// The reimbursement form code just redo this.
 import { Delete } from '@mui/icons-material';
 import HelpIcon from '@mui/icons-material/Help';
 import {
@@ -228,7 +227,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
                 <FormLabel>Date of Expense</FormLabel>
                 <Tooltip
-                  title="Reimbursement with Different Purchase Dates Should be on Different Requests"
+                  title="Reimbursements with Different Purchase Dates Should be on Different Requests"
                   placement="right"
                 >
                   <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
