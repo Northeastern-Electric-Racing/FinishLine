@@ -212,6 +212,14 @@ const CreditsPage: React.FC = () => {
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
+    {
+      name: 'Yipeng (Andrew) Wang',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        '-webkit-background-clip': 'text'
+      }
+    },
     { name: 'Chris Pyle', color: '#ADD8E6' },
     { name: 'Zachary Wen', color: '#4169e1' },
     { name: 'Armaan Mehra', color: '#0B66E5' },
