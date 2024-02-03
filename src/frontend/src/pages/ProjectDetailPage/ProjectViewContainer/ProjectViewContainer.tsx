@@ -117,7 +117,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
           )
         }
-        divider={true}
         disabled={!isLeadership(user.role) || budgetIncrease <= 0}
       >
         <ListItemIcon>
@@ -159,6 +158,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
+        disabled={isGuest(user.role)}
       >
         Actions
       </NERButton>
@@ -177,8 +177,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       >
         <EditButton />
         <CreateChangeRequestButton />
-        {teamAsHeadId && <AssignToMyTeamButton />}
         <SuggestBudgetIncreaseButton />
+        {teamAsHeadId && <AssignToMyTeamButton />}
         <DeleteButton />
       </Menu>
     </Box>

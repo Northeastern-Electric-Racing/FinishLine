@@ -8,19 +8,26 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Vendor } from 'shared';
 import { EditVendorPayload } from '../../../hooks/finance.hooks';
 
-const schema = yup.object().shape({
-  name: yup.string().required('Vendor Name is Required')
-});
-
 interface VenderFormModalProps {
   showModal: boolean;
   handleClose: () => void;
   defaultValues?: Vendor;
   onSubmit: (data: EditVendorPayload) => void;
+  vendors: Vendor[];
 }
 
-const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: VenderFormModalProps) => {
+const VendorFormModal = ({ showModal, handleClose, defaultValues, onSubmit, vendors }: VenderFormModalProps) => {
   const toast = useToast();
+
+  const uniqueVendorTest = (name: string | undefined) =>
+    name !== undefined && vendors !== undefined && !vendors.map((v) => v.name).includes(name);
+
+  const schema = yup.object().shape({
+    name: yup
+      .string()
+      .required('Vendor Name is Required')
+      .test('unique-vendor-test', 'Vendor name must be unique', uniqueVendorTest)
+  });
 
   const {
     handleSubmit,

@@ -40,19 +40,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
       >
         {title}
       </NERButton>
-      <Menu
-        open={dropdownOpen}
-        anchorEl={anchorEl}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        onClose={handleDropdownClose}
-      >
+      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
         {buttons.flatMap((button, index) => {
           return [
             button.dividerTop && <Divider key={`${index}-divider`} />,

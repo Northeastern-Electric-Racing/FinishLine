@@ -39,14 +39,14 @@ import {
   HttpException,
   NotFoundException
 } from '../utils/errors.utils';
-import vendorTransformer from '../transformers/vendor.transformer';
 import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementStatusTransformer,
-  reimbursementTransformer
+  reimbursementTransformer,
+  vendorTransformer
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
@@ -83,7 +83,7 @@ export default class ReimbursementRequestService {
    * @returns all the reimbursements in the database
    */
   static async getAllReimbursements(user: User): Promise<Reimbursement[]> {
-    await validateUserIsPartOfFinanceTeam(user);
+    await isUserAdminOrOnFinance(user);
 
     const reimbursements = await prisma.reimbursement.findMany({ ...reimbursementQueryArgs });
     return reimbursements.map(reimbursementTransformer);
@@ -460,6 +460,12 @@ export default class ReimbursementRequestService {
       'Only admins, finance leads, and finance heads can create vendors.'
     );
 
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { name }
+    });
+
+    if (existingVendor != null) throw new HttpException(400, 'This vendor already exists');
+
     const isAuthorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
     if (!isAuthorized) throw failedAuthorizationException;
 
@@ -599,7 +605,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User): Promise<ReimbursementRequest[]> {
-    await validateUserIsPartOfFinanceTeam(user);
+    await isUserAdminOrOnFinance(user);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null },
