@@ -185,6 +185,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
+    { name: 'Xavier Galanes', color: '#6c25be' },
     { name: 'Jaden Zhou', color: '#34568B' },
     { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' },
     { name: 'Vincent Demaisip', color: '#ebb135' },
