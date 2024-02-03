@@ -1,17 +1,22 @@
 -- CreateEnum
 CREATE TYPE "Design_Review_Status" AS ENUM ('UNCONFIRMED', 'CONFIRMED', 'SCHEDULED', 'DONE');
 
--- CreateEnum
-CREATE TYPE "Design_Review_Team" AS ENUM ('ELECTRICAL', 'SOFTWARE', 'MECHANICAL');
+-- CreateTable
+CREATE TABLE "TeamType" (
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "TeamType_pkey" PRIMARY KEY ("name")
+);
 
 -- CreateTable
 CREATE TABLE "Design_Review" (
-    "designReviewId" SERIAL NOT NULL,
-    "dateScheduled" TIMESTAMP(3) NOT NULL,
+    "designReviewId" TEXT NOT NULL,
+    "dateScheduled" DATE NOT NULL,
+    "meetingTime" INTEGER NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" INTEGER NOT NULL,
     "status" "Design_Review_Status" NOT NULL,
-    "teamType" "Design_Review_Team" NOT NULL,
+    "teamName" TEXT NOT NULL,
     "location" TEXT,
     "isOnline" BOOLEAN NOT NULL,
     "isInPerson" BOOLEAN NOT NULL,
@@ -26,7 +31,7 @@ CREATE TABLE "Design_Review" (
 
 -- CreateTable
 CREATE TABLE "Schedule_Settings" (
-    "drScheduleSettingsId" SERIAL NOT NULL,
+    "drScheduleSettingsId" TEXT NOT NULL,
     "personalGmail" TEXT NOT NULL,
     "personalZoomLink" TEXT NOT NULL,
     "availability" INTEGER[],
@@ -37,46 +42,46 @@ CREATE TABLE "Schedule_Settings" (
 
 -- CreateTable
 CREATE TABLE "Meeting" (
+    "meetingId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "meetingTimes" INTEGER[],
-    "teamId" TEXT NOT NULL
+    "teamId" TEXT NOT NULL,
+
+    CONSTRAINT "Meeting_pkey" PRIMARY KEY ("meetingId")
 );
 
 -- CreateTable
 CREATE TABLE "_requiredAttendee" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_optionalAttendee" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_confirmedAttendee" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_deniedAttendee" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_userAttended" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Schedule_Settings_userId_key" ON "Schedule_Settings"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Meeting_title_key" ON "Meeting"("title");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_requiredAttendee_AB_unique" ON "_requiredAttendee"("A", "B");
@@ -110,6 +115,9 @@ CREATE INDEX "_userAttended_B_index" ON "_userAttended"("B");
 
 -- AddForeignKey
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_teamName_fkey" FOREIGN KEY ("teamName") REFERENCES "TeamType"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
