@@ -328,6 +328,7 @@ export default class ChangeRequestsService {
 
     // send a reply to a CR notification of its updated status
     try {
+      // to be changed
       const relevantThreads = await findMessagesChannelIdTs(foundCR.crId.toString());
       relevantThreads?.forEach(async (thread) => {
         if (thread.channelId && thread.ts)

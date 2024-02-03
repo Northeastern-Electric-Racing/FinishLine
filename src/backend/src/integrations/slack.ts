@@ -63,6 +63,7 @@ export const replyToMessageInThread = async (
   }
 };
 
+// to be changed or removed
 /**
  * Finds all messages with the search query from the slack bot
  * @param query - the query to search messages for
