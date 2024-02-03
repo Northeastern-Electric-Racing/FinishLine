@@ -232,7 +232,7 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Jhonyel Galvis', color: '#00FFF' },
-    { name: 'Claire Hendershot', color: '#008080'},
+    { name: 'Claire Hendershot', color: '#008080' },
     { name: 'Arav Goyal', color: '#6223de' }
   ];
 
