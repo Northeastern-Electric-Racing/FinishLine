@@ -232,7 +232,8 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Jhonyel Galvis', color: '#00FFF' },
-    { name: 'Arav Goyal', color: '#6223de' }
+    { name: 'Arav Goyal', color: '#6223de' },
+    { name: 'Xander Hoke', color: '#C50D93' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
