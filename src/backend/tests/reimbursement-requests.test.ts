@@ -836,6 +836,15 @@ describe('Reimbursement Requests', () => {
       userSubmitted: batman,
       userSubmittedId: batman.userId
     };
+
+    const updatedReimbursementMock = {
+      reimbursementId: 'reimbursementMockId',
+      purchaserId: batman.userId,
+      amount: 17,
+      dateCreated: new Date('2023-01-01'),
+      userSubmitted: batman,
+      userSubmittedId: batman.userId
+    };
     test('Throws error is user isnt submitter of the reimbursement', async () => {
       await expect(
         ReimbursementRequestService.editReimbursement(
@@ -863,21 +872,16 @@ describe('Reimbursement Requests', () => {
 
     test('Successfully edits a reimbursement', async () => {
       vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
+      vi.spyOn(prisma.reimbursement, 'update').mockResolvedValue(reimbursementMock);
       const editedReimbursement = await ReimbursementRequestService.editReimbursement(
         reimbursementMock.reimbursementId,
         reimbursementMock.userSubmitted,
-        reimbursementMock.amount + 1,
+        17,
         reimbursementMock.dateCreated
       );
-
-      expect(editedReimbursement).toStrictEqual({
-        reimbursementId: 'reimbursementMockId',
-        purchaserId: batman.userId,
-        amount: 13,
-        dateCreated: new Date('2023-01-01'),
-        userSubmitted: batman,
-        userSubmittedId: batman.userId
-      });
+      expect(editedReimbursement).toStrictEqual(updatedReimbursementMock);
+      expect(editedReimbursement.amount).toBe(17);
+      expect(prisma.reimbursement.update).toBeCalledTimes(1);
     });
   });
 
