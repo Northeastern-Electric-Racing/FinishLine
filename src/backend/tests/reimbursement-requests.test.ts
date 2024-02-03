@@ -846,6 +846,7 @@ describe('Reimbursement Requests', () => {
       userSubmittedId: batman.userId
     };
     test('Throws error is user isnt submitter of the reimbursement', async () => {
+      vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
       await expect(
         ReimbursementRequestService.editReimbursement(
           reimbursementMock.reimbursementId,
@@ -872,7 +873,7 @@ describe('Reimbursement Requests', () => {
 
     test('Successfully edits a reimbursement', async () => {
       vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
-      vi.spyOn(prisma.reimbursement, 'update').mockResolvedValue(reimbursementMock);
+      vi.spyOn(prisma.reimbursement, 'update').mockResolvedValue(updatedReimbursementMock);
       const editedReimbursement = await ReimbursementRequestService.editReimbursement(
         reimbursementMock.reimbursementId,
         reimbursementMock.userSubmitted,
