@@ -38,7 +38,7 @@ describe('Change Requests', () => {
   beforeEach(() => {
     vi.spyOn(changeRequestTransformer, 'default').mockReturnValue(sharedChangeRequest);
     vi.spyOn(changeRequestUtils, 'sendSlackCRReviewedNotification').mockImplementation(async (_slackId, _crId) => {
-      return undefined;
+      return [];
     });
     vi.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
       return [];

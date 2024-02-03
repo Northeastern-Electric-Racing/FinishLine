@@ -27,20 +27,26 @@ export const sendSlackChangeRequestNotification = async (
   message: string,
   crId: number,
   budgetImpact?: number
-) => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msgs = [];
+): Promise<{ channelId: string; ts: string }[]> => {
+  if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
+  const msgs: { channelId: string; ts: string }[] = [];
   const fullMsg = `:tada: New Change Request! :tada: ${message}`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR #${crId}`;
-  msgs.push(sendMessage(team.slackId, fullMsg, fullLink, btnText));
+  const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
+  if (notification) msgs.push(notification);
 
   if (budgetImpact && budgetImpact > 100) {
-    msgs.push(
-      sendMessage(process.env.SLACK_EBOARD_CHANNEL!, `${fullMsg} with $${budgetImpact} requested`, fullLink, btnText)
+    const importantNotification = await sendMessage(
+      process.env.SLACK_EBOARD_CHANNEL!,
+      `${fullMsg} with $${budgetImpact} requested`,
+      fullLink,
+      btnText
     );
+    if (importantNotification) msgs.push(importantNotification);
   }
-  return Promise.all(msgs);
+
+  return msgs;
 };
 
 export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
@@ -63,6 +69,27 @@ export const sendSlackCRStatusToThread = async (slackId: string, crId: number, t
   msgs.push(replyToMessageInThread(slackId, ts, fullMsg, fullLink, btnText));
 
   return Promise.all(msgs);
+};
+
+/**
+ * Adds the relevant slack notifications for a change request to the change request
+ *
+ * @param crId the change request to add the slack threads to
+ * @param notifications the slack threads to add to the change request
+ */
+export const addSlackThreadsToChangeRequest = async (crId: number, threads: { channelId: string; ts: string }[]) => {
+  threads.forEach(async (notification: { channelId: string; ts: string }) => {
+    await prisma.message_Info.create({
+      data: {
+        changeRequestId: crId,
+        channelId: notification.channelId,
+        timestamp: notification.ts
+      },
+      include: {
+        changeRequest: true
+      }
+    });
+  });
 };
 
 /**

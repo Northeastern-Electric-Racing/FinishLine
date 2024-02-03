@@ -1,4 +1,4 @@
-import { WebClient } from '@slack/web-api';
+import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
 import { HttpException } from '../utils/errors.utils';
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
@@ -9,6 +9,7 @@ const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
  * @param message - the text content of the message being sent
  * @param link - the link for the button on the message
  * @param linkButtonText - the text for the button on the message
+ * @returns the channel id and timestamp of the created slack message
  */
 export const sendMessage = async (slackId: string, message: string, link?: string, linkButtonText?: string) => {
   const { SLACK_BOT_TOKEN } = process.env;
@@ -17,13 +18,15 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
-    await slack.chat.postMessage({
+    const response: ChatPostMessageResponse = await slack.chat.postMessage({
       token: SLACK_BOT_TOKEN,
       channel: slackId,
       text: message,
       blocks: [block],
       unfurl_links: false
     });
+
+    return response && response.channel && response.ts ? { channelId: response.channel, ts: response.ts } : null;
   } catch (error) {
     throw new HttpException(500, 'Error sending slack message, reason: ' + (error as any).data.error);
   }
@@ -60,31 +63,6 @@ export const replyToMessageInThread = async (
     });
   } catch (error) {
     throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
-  }
-};
-
-// to be changed or removed
-/**
- * Finds all messages with the search query from the slack bot
- * @param query - the query to search messages for
- * @returns an array of matches with the channel id and timestamp of each match
- */
-export const findMessagesChannelIdTs = async (query: string) => {
-  const { SLACK_BOT_TOKEN } = process.env;
-  if (!SLACK_BOT_TOKEN) return;
-
-  try {
-    const result = await slack.search.messages({
-      token: SLACK_BOT_TOKEN,
-      query: `from:@finishline_by_ner ${query}`,
-      sort: 'timestamp',
-      sort_dir: 'asc'
-    });
-    if (result.ok && result.messages?.matches)
-      return result.messages.matches.map((match) => ({ channelId: match.channel?.id, ts: match.ts }));
-    return [];
-  } catch (error) {
-    throw new HttpException(500, 'Error searching slack messages, reason: ' + (error as any).data.error);
   }
 };
 

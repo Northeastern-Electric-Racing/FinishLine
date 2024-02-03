@@ -26,7 +26,8 @@ import {
   sendSlackChangeRequestNotification,
   sendSlackCRReviewedNotification,
   allChangeRequestsReviewed,
-  sendSlackCRStatusToThread
+  sendSlackCRStatusToThread,
+  addSlackThreadsToChangeRequest
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
@@ -34,7 +35,6 @@ import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail, createChange } from '../utils/changes.utils';
 import { sendSlackRequestedReviewNotification } from '../utils/slack.utils';
-import { findMessagesChannelIdTs } from '../integrations/slack';
 
 export default class ChangeRequestsService {
   /**
@@ -326,13 +326,11 @@ export default class ChangeRequestsService {
       }
     }
 
-    // send a reply to a CR notification of its updated status
+    // send a reply to a CR's notifications of its updated status
     try {
-      // to be changed
-      const relevantThreads = await findMessagesChannelIdTs(foundCR.crId.toString());
+      const relevantThreads = await prisma.message_Info.findMany({ where: { changeRequestId: foundCR.crId } });
       relevantThreads?.forEach(async (thread) => {
-        if (thread.channelId && thread.ts)
-          await sendSlackCRStatusToThread(thread.channelId, foundCR.crId, thread.ts, accepted);
+        await sendSlackCRStatusToThread(thread.channelId, foundCR.crId, thread.timestamp, accepted);
       });
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -428,15 +426,23 @@ export default class ChangeRequestsService {
     });
 
     const teams = createdCR.wbsElement.workPackage?.project.teams;
-
+    const notifications: { channelId: string; ts: string }[] = [];
     if (teams && teams.length > 0) {
       teams.forEach(async (team) => {
         const slackMsg =
           `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
           ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
-        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+        const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
+          team,
+          slackMsg,
+          createdCR.crId
+        );
+        if (sentNotifications) notifications.push(...sentNotifications);
       });
     }
+
+    // save the slack references to the change request
+    await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
 
     return createdCR.crId;
   }
@@ -521,14 +527,23 @@ export default class ChangeRequestsService {
     });
 
     const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
+    const notifications: { channelId: string; ts: string }[] = [];
     if (teams && teams.length > 0) {
       teams.forEach(async (team) => {
         const slackMsg =
           `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
           ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-        await sendSlackChangeRequestNotification(team, slackMsg, createdChangeRequest.crId);
+        const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
+          team,
+          slackMsg,
+          createdChangeRequest.crId
+        );
+        if (sentNotifications) notifications.push(...sentNotifications);
       });
     }
+
+    // save the slack references to the change request
+    await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
 
     return createdChangeRequest.crId;
   }
@@ -621,16 +636,25 @@ export default class ChangeRequestsService {
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
+    const notifications: { channelId: string; ts: string }[] = [];
     if (teams && teams.length > 0) {
       const completion: Promise<void>[] = teams.map(async (team) => {
         const slackMsg =
           `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
           `for the ${project.wbsElement.name} project`;
-        await sendSlackChangeRequestNotification(team, slackMsg, createdCR.crId);
+        const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
+          team,
+          slackMsg,
+          createdCR.crId
+        );
+        if (sentNotifications) notifications.push(...sentNotifications);
       });
 
       await Promise.all(completion);
     }
+
+    // save the slack references to the change request
+    await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
 
     const finishedCR = await prisma.change_Request.findUnique({
       where: { crId: createdCR.crId },
