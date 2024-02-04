@@ -91,7 +91,7 @@ const FinancePage = () => {
         Actions
       </NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)}>
+        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={!isFinance}>
           <ListItemIcon>
             <NoteAddIcon fontSize="small" />
           </ListItemIcon>
