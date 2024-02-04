@@ -574,7 +574,8 @@ enum Design_Review_Status {
 }
 
 model TeamType {
-  name           String          @id
+  teamTypeId     String          @id @default(uuid())
+  name           String          @unique
   Design_Reviews Design_Review[]
 }
 

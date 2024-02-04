@@ -3,9 +3,10 @@ CREATE TYPE "Design_Review_Status" AS ENUM ('UNCONFIRMED', 'CONFIRMED', 'SCHEDUL
 
 -- CreateTable
 CREATE TABLE "TeamType" (
+    "teamTypeId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
-    CONSTRAINT "TeamType_pkey" PRIMARY KEY ("name")
+    CONSTRAINT "TeamType_pkey" PRIMARY KEY ("teamTypeId")
 );
 
 -- CreateTable
@@ -79,6 +80,9 @@ CREATE TABLE "_userAttended" (
     "A" TEXT NOT NULL,
     "B" INTEGER NOT NULL
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TeamType_name_key" ON "TeamType"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Schedule_Settings_userId_key" ON "Schedule_Settings"("userId");
