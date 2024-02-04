@@ -60,15 +60,32 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
   return Promise.all(msgs);
 };
 
-export const sendSlackCRStatusToThread = async (slackId: string, crId: number, ts: string, approved: boolean) => {
+export const sendSlackCRStatusToThread = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number;
+  }[],
+  crId: number,
+  approved: boolean
+) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msgs = [];
   const fullMsg = `This Change Request was ${approved ? 'approved! :tada:' : 'denied.'} Click the link to view.`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR#${crId}`;
-  msgs.push(replyToMessageInThread(slackId, ts, fullMsg, fullLink, btnText));
-
-  return Promise.all(msgs);
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) =>
+        replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, fullLink, btnText)
+      );
+      await Promise.all(msgs);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
 };
 
 /**
@@ -78,8 +95,8 @@ export const sendSlackCRStatusToThread = async (slackId: string, crId: number, t
  * @param notifications the slack threads to add to the change request
  */
 export const addSlackThreadsToChangeRequest = async (crId: number, threads: { channelId: string; ts: string }[]) => {
-  threads.forEach(async (notification: { channelId: string; ts: string }) => {
-    await prisma.message_Info.create({
+  const promises = threads.map((notification) =>
+    prisma.message_Info.create({
       data: {
         changeRequestId: crId,
         channelId: notification.channelId,
@@ -88,8 +105,9 @@ export const addSlackThreadsToChangeRequest = async (crId: number, threads: { ch
       include: {
         changeRequest: true
       }
-    });
-  });
+    })
+  );
+  await Promise.all(promises);
 };
 
 /**

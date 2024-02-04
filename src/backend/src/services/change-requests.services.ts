@@ -327,16 +327,8 @@ export default class ChangeRequestsService {
     }
 
     // send a reply to a CR's notifications of its updated status
-    try {
-      const relevantThreads = await prisma.message_Info.findMany({ where: { changeRequestId: foundCR.crId } });
-      relevantThreads?.forEach(async (thread) => {
-        await sendSlackCRStatusToThread(thread.channelId, foundCR.crId, thread.timestamp, accepted);
-      });
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
-      }
-    }
+    const relevantThreads = await prisma.message_Info.findMany({ where: { changeRequestId: foundCR.crId } });
+    await sendSlackCRStatusToThread(relevantThreads, foundCR.crId, accepted);
 
     return updated.crId;
   }

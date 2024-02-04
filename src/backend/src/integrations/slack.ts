@@ -26,7 +26,7 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
       unfurl_links: false
     });
 
-    return response && response.channel && response.ts ? { channelId: response.channel, ts: response.ts } : null;
+    return response && response.channel && response.ts && { channelId: response.channel, ts: response.ts };
   } catch (error) {
     throw new HttpException(500, 'Error sending slack message, reason: ' + (error as any).data.error);
   }
