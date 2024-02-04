@@ -59,6 +59,7 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
       WorkPackageStage.Design,
       WorkPackageStage.Manufacturing,
       WorkPackageStage.Install,
+      WorkPackageStage.Testing,
       'NONE'
     ]);
 };
