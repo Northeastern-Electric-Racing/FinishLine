@@ -146,7 +146,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   const CreateWorkPackageButton = () => (
     <MenuItem
       onClick={() => history.push(`${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`)}
-      disabled={!isLeadership(user.role)}
+      disabled={isGuest(user.role)}
     >
       <ListItemIcon>
         <ContentPasteIcon fontSize="small" />
