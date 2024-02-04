@@ -1,4 +1,4 @@
-import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
+import { ChangeRequest, daysBetween, ReimbursementRequest, Task, User, wbsPipe, WorkPackage } from 'shared';
 import { sendMessage } from '../integrations/slack';
 import { getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
@@ -65,5 +65,20 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
   const msg = `You have been assigned to a task: ${task.title} on project ${wbsPipe(task.wbsNum)} - ${project?.name}`;
   const link = `https://finishlinebyner.com/projects/${wbsPipe(task.wbsNum)}/tasks`;
   const linkButtonText = 'View Task';
+  await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+/**
+ * Send a notification to users that reimbursement request is denied on Slack
+ * @param slackId the slack id of the assignee
+ * @param denial the denial if the reimbursement request
+ */
+export const sendReimburseDeniedNotificationToUser = async (slackId: string, requestId: string): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `Your reimbursement request has been denied.`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const linkButtonText = 'View Reimbursement Request';
+
   await sendMessage(slackId, msg, link, linkButtonText);
 };
