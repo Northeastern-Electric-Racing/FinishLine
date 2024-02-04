@@ -59,6 +59,9 @@ const FinancePage = () => {
   const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
 
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
   if (isFinance && allPendingAdvisorListIsError) return <ErrorPage message={allPendingAdvisorListError?.message} />;
@@ -145,6 +148,10 @@ const FinancePage = () => {
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}
         allReimbursementRequests={allReimbursementRequests}
+        startDate={startDate}
+        endDate={endDate}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
       />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>

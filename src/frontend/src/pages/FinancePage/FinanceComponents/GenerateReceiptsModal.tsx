@@ -24,14 +24,18 @@ interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   allReimbursementRequests?: ReimbursementRequest[];
+  startDate: Date
+  endDate: Date
+  setStartDate: (val: Date) => void;
+  setEndDate: (val: Date) => void;
 }
 
-const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: GenerateReceiptsModalProps) => {
+const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests, startDate, setStartDate, endDate, setEndDate }: GenerateReceiptsModalProps) => {
   const toast = useToast();
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
-  const { mutateAsync, isLoading } = useDownloadPDFOfImages();
+  const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate);
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
@@ -92,7 +96,9 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                   onClose={() => setStartDatePickerOpen(false)}
                   onOpen={() => setStartDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    onChange(newValue ?? new Date());
+                    const newDate = newValue ?? new Date();
+                    setStartDate(newDate)
+                    onChange(newDate);
                   }}
                   PopperProps={{
                     placement: 'right'
@@ -122,7 +128,9 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                   onClose={() => setEndDatePickerOpen(false)}
                   onOpen={() => setEndDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    onChange(newValue ?? new Date());
+                    const newDate = newValue ?? new Date();
+                    setEndDate(newDate)
+                    onChange(newDate);
                   }}
                   PopperProps={{
                     placement: 'right'
