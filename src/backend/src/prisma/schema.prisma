@@ -538,7 +538,7 @@ model Material {
   price                  Int
   subtotal               Int
   linkUrl                String
-  notes                  String
+  notes                  String?
 }
 
 model Material_Type {

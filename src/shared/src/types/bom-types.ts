@@ -76,7 +76,7 @@ export interface Material {
   price: number;
   subtotal: number;
   linkUrl: string;
-  notes: string;
+  notes?: string;
 }
 
 export type MaterialPreview = Omit<

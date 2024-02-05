@@ -261,7 +261,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Notes</FormLabel>
+            <FormLabel>Notes (Optional)</FormLabel>
             <ReactHookTextField
               name="notes"
               control={control}

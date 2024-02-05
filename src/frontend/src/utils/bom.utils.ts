@@ -15,7 +15,7 @@ export interface BomRow {
   price: string;
   subtotal: string;
   link: string;
-  notes: string;
+  notes?: string;
 }
 
 export const materialToRow = (material: Material, idx: number): BomRow => {

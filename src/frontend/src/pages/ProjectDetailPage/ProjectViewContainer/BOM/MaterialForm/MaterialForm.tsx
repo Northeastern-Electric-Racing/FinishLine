@@ -38,7 +38,7 @@ export interface MaterialFormInput {
   quantity: number;
   unitName?: string;
   linkUrl: string;
-  notes: string;
+  notes?: string;
   assemblyId?: string;
 }
 
@@ -86,7 +86,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       price: defaultValues?.price ?? 0,
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
-      notes: defaultValues?.notes ?? '',
+      notes: defaultValues?.notes,
       assemblyId: defaultValues?.assemblyId
     },
     resolver: yupResolver(schema)

@@ -515,8 +515,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -539,8 +539,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -564,8 +564,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -590,8 +590,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -617,8 +617,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -646,8 +646,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -674,8 +674,8 @@ describe('Projects', () => {
         800,
         400,
         'https://www.google.com',
-        'none',
         { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+        'none',
         'assemblyName',
         'file',
         'FT'
