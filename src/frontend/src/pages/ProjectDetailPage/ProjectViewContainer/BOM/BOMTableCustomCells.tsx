@@ -18,14 +18,22 @@ export const renderStatusBOM = (params: GridRenderCellParams) => {
     status === MaterialStatus.Ordered
       ? '#dba63e'
       : status === MaterialStatus.Unordered
-      ? '#ba782a'
+      ? '#a63737'
       : status === MaterialStatus.Received
       ? '#2a712a'
       : status === MaterialStatus.Shipped
       ? '#1b537a'
       : 'grey';
+
+  const boxStyle = {
+    backgroundColor: color,
+    padding: '6px 10px 6px 10px',
+    borderRadius: '6px',
+    width: '95px',
+    textAlign: 'center'
+  };
   return (
-    <Box sx={{ backgroundColor: color, padding: '6px 10px 6px 10px', borderRadius: '6px' }}>
+    <Box sx={boxStyle}>
       <Typography fontSize="14px" color="black">
         {displayEnum(status)}
       </Typography>
