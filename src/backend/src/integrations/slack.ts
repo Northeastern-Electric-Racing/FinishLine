@@ -58,8 +58,7 @@ export const replyToMessageInThread = async (
       channel: slackId,
       thread_ts: parentTs,
       text: message,
-      blocks: [block],
-      unfurl_links: false
+      blocks: [block]
     });
   } catch (error) {
     throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
