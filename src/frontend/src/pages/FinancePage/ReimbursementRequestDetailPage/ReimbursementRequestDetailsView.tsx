@@ -316,8 +316,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   ];
 
-  const statuses = reimbursementRequest.reimbursementStatuses.map((status) => status.type);
-  const recentStatus = statuses[-1];
+  const statusTypes = reimbursementRequest.reimbursementStatuses.map((status) => status.type);
+  const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
       title={`${
@@ -327,7 +327,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       }`}
       chips={
         <Box id="status" display="flex" gap="20px">
-          {statuses.length > 0 ? <ReimbursementRequestStatusPill status={recentStatus} /> : <br></br>}
+          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
         </Box>
       }
       previousPages={[
