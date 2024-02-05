@@ -583,13 +583,13 @@ model Design_Review {
   designReviewId   String               @id @default(uuid())
   dateScheduled    DateTime             @db.Date
   // Meeting times are an integer between 0 and 48 representing time after 9am in 15 minute increments, eg. 0 = 9:00am, 5 = 10:15 am
-  meetingTime      Int
+  meetingTime      Int[]
   dateCreated      DateTime             @default(now()) @db.Timestamp(3)
   userCreated      User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
   userCreatedId    Int
   status           Design_Review_Status
-  teamType         TeamType             @relation(fields: [teamName], references: [name])
-  teamName         String
+  teamType         TeamType             @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId       String
   requiredMembers  User[]               @relation(name: "requiredAttendee")
   optionalMembers  User[]               @relation(name: "optionalAttendee")
   confirmedMembers User[]               @relation(name: "confirmedAttendee")

@@ -13,11 +13,11 @@ CREATE TABLE "TeamType" (
 CREATE TABLE "Design_Review" (
     "designReviewId" TEXT NOT NULL,
     "dateScheduled" DATE NOT NULL,
-    "meetingTime" INTEGER NOT NULL,
+    "meetingTime" INTEGER[],
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" INTEGER NOT NULL,
     "status" "Design_Review_Status" NOT NULL,
-    "teamName" TEXT NOT NULL,
+    "teamTypeId" TEXT NOT NULL,
     "location" TEXT,
     "isOnline" BOOLEAN NOT NULL,
     "isInPerson" BOOLEAN NOT NULL,
@@ -121,7 +121,7 @@ CREATE INDEX "_userAttended_B_index" ON "_userAttended"("B");
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userCreatedId_fkey" FOREIGN KEY ("userCreatedId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_teamName_fkey" FOREIGN KEY ("teamName") REFERENCES "TeamType"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_teamTypeId_fkey" FOREIGN KEY ("teamTypeId") REFERENCES "TeamType"("teamTypeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Design_Review" ADD CONSTRAINT "Design_Review_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
