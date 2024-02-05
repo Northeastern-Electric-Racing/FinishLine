@@ -27,6 +27,8 @@ import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 import { isGuest } from 'shared';
+import WorkIcon from '@mui/icons-material/Work';
+import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -58,6 +60,7 @@ const FinancePage = () => {
 
   const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
+  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -127,6 +130,12 @@ const FinancePage = () => {
           </ListItemIcon>
           Generate All Receipts
         </MenuItem>
+        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
+          <ListItemIcon>
+            <WorkIcon fontSize="small" />
+          </ListItemIcon>
+          Total Amount Spent
+        </MenuItem>
       </Menu>
     </>
   );
@@ -138,6 +147,13 @@ const FinancePage = () => {
           open={showPendingAdvisorListModal}
           saboNumbers={allPendingAdvisorList!.map((reimbursementRequest) => reimbursementRequest.saboId!)}
           onHide={() => setShowPendingAdvisorListModal(false)}
+        />
+      )}
+      {isFinance && (
+        <TotalAmountSpentModal
+          open={showTotalAmountSpent}
+          allReimbursementRequests={allReimbursementRequests!}
+          onHide={() => setShowTotalAmountSpent(false)}
         />
       )}
       <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
