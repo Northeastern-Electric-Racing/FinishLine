@@ -27,12 +27,14 @@ import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import DrawerHeader from '../components/DrawerHeader';
 import { Container } from '@mui/material';
+import { Role, isGuest } from 'shared';
 
 interface AppAuthenticatedProps {
   userId: number;
+  userRole: Role;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -47,7 +49,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  return userSettingsData.slackId ? (
+  return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
       <NavTopBar handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
       <Box display={'flex'}>
