@@ -66,6 +66,28 @@ export const replyToMessageInThread = async (
 };
 
 /**
+ * Reacts to a slack message
+ * @param slackId - the channel id of the channel of the message to reply to
+ * @param parentTs - the timestamp of the message to reply to in a thread
+ * @param emoji - the emoji to react with
+ */
+export const reactToMessage = async (slackId: string, parentTs: string, emoji: string) => {
+  const { SLACK_BOT_TOKEN } = process.env;
+  if (!SLACK_BOT_TOKEN) return;
+
+  try {
+    await slack.reactions.add({
+      token: SLACK_BOT_TOKEN,
+      channel: slackId,
+      timestamp: parentTs,
+      name: emoji
+    });
+  } catch (error) {
+    throw new HttpException(500, 'Error reacting to slack message, reason: ' + (error as any).data.error);
+  }
+};
+
+/**
  * Generates a slack text block with message and optional button
  * @param message - the text content of the message being sent
  * @param link - the link for the button on the message

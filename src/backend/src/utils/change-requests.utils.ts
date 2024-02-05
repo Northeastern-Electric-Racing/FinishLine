@@ -1,7 +1,7 @@
 import prisma from '../prisma/prisma';
 import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request, Change } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
-import { replyToMessageInThread, sendMessage } from '../integrations/slack';
+import { reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
 import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
@@ -95,7 +95,10 @@ export const sendSlackCRStatusToThread = async (
       const msgs = threads.map((thread) =>
         replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, fullLink, btnText)
       );
-      await Promise.all(msgs);
+      const reactions = threads.map((thread) =>
+        reactToMessage(thread.channelId, thread.timestamp, approved ? 'white_check_mark' : 'x')
+      );
+      await Promise.all([...msgs, ...reactions]);
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
