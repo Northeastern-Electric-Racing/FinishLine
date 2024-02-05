@@ -24,13 +24,21 @@ interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   allReimbursementRequests?: ReimbursementRequest[];
-  startDate: Date
-  endDate: Date
+  startDate: Date;
+  endDate: Date;
   setStartDate: (val: Date) => void;
   setEndDate: (val: Date) => void;
 }
 
-const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests, startDate, setStartDate, endDate, setEndDate }: GenerateReceiptsModalProps) => {
+const GenerateReceiptsModal = ({
+  open,
+  setOpen,
+  allReimbursementRequests,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate
+}: GenerateReceiptsModalProps) => {
   const toast = useToast();
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
@@ -97,7 +105,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests, startD
                   onOpen={() => setStartDatePickerOpen(true)}
                   onChange={(newValue) => {
                     const newDate = newValue ?? new Date();
-                    setStartDate(newDate)
+                    setStartDate(newDate);
                     onChange(newDate);
                   }}
                   PopperProps={{
@@ -129,7 +137,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests, startD
                   onOpen={() => setEndDatePickerOpen(true)}
                   onChange={(newValue) => {
                     const newDate = newValue ?? new Date();
-                    setEndDate(newDate)
+                    setEndDate(newDate);
                     onChange(newDate);
                   }}
                   PopperProps={{
