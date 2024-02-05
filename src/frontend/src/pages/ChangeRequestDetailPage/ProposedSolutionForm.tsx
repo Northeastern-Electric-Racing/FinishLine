@@ -48,10 +48,15 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   open,
   onClose
 }) => {
-  const { formState, handleSubmit, control } = useForm<ProposedSolution>({
+  const { formState, handleSubmit, control, reset } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
     defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }
   });
+
+  const handleAdd = (data: ProposedSolution) => {
+    onAdd(data);
+    reset();
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -80,7 +85,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleSubmit(onAdd)(e);
+            handleSubmit(handleAdd)(e);
           }}
         >
           <Controller

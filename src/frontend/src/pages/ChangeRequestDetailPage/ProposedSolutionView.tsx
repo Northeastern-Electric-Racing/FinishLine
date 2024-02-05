@@ -39,75 +39,76 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
 
   return (
     <>
-      {showEditModal ? (
-        <ProposedSolutionForm
-          open={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onAdd={(data) => {
-            if (onEdit) {
-              onEdit(data, proposedSolution);
-            }
-            setShowEditModal(false);
-          }}
-        />
-      ) : (
-        <Grid
-          style={{ opacity: faded ? 0.5 : 1 }}
-          sx={{
-            minHeight: 300,
-            p: 2,
-            mb: 5,
-            bgcolor: theme.palette.background.paper,
-            width: '100%',
-            borderRadius: '8px 8px 8px 8px',
-            boxShadow: 1
-          }}
-        >
-          <Grid container rowSpacing={1}>
-            <Grid item xs={12} sx={{ p: 2, mt: 1, minHeight: 100, borderRadius: 1, bgcolor: isDark ? '#474848' : 'white' }}>
-              <DetailDisplay label="Description" content={proposedSolution.description} />
+      <ProposedSolutionForm
+        description={proposedSolution.description}
+        budgetImpact={proposedSolution.budgetImpact}
+        timelineImpact={proposedSolution.timelineImpact}
+        scopeImpact={proposedSolution.scopeImpact}
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onAdd={(data) => {
+          if (onEdit) {
+            onEdit(data, proposedSolution);
+          }
+          setShowEditModal(false);
+        }}
+      />
+      <Grid
+        style={{ opacity: faded ? 0.5 : 1 }}
+        sx={{
+          minHeight: 300,
+          p: 2,
+          mb: 5,
+          bgcolor: theme.palette.background.paper,
+          width: '100%',
+          borderRadius: '8px 8px 8px 8px',
+          boxShadow: 1
+        }}
+      >
+        <Grid container rowSpacing={1}>
+          <Grid item xs={12} sx={{ p: 2, mt: 1, minHeight: 100, borderRadius: 1, bgcolor: isDark ? '#474848' : 'white' }}>
+            <DetailDisplay label="Description" content={proposedSolution.description} />
+          </Grid>
+          <Grid item xs={12} sx={{ p: 2, mt: 2, minHeight: 100, borderRadius: 1, bgcolor: isDark ? '#474848' : 'white' }}>
+            <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
+          </Grid>
+          <Grid item xs={7} display="flex" sx={{ marginTop: 0.5 }}>
+            <AttachMoneyIcon sx={{ mr: 1 }} />
+            <Typography>{proposedSolution.budgetImpact}</Typography>
+          </Grid>
+          <Grid item xs={12} display="flex" justifyContent="space-between">
+            <Grid display="flex" sx={{ marginTop: 0.5 }}>
+              <ScheduleIcon sx={{ mr: 1 }} />
+              <Typography>{weeksPipe(proposedSolution.timelineImpact)}</Typography>
             </Grid>
-            <Grid item xs={12} sx={{ p: 2, mt: 2, minHeight: 100, borderRadius: 1, bgcolor: isDark ? '#474848' : 'white' }}>
-              <DetailDisplay label="Scope Impact" content={proposedSolution.scopeImpact} />
-            </Grid>
-            <Grid item xs={7} display="flex" sx={{ marginTop: 0.5 }}>
-              <AttachMoneyIcon sx={{ mr: 1 }} />
-              <Typography>{proposedSolution.budgetImpact}</Typography>
-            </Grid>
-            <Grid item xs={12} display="flex" justifyContent="space-between">
-              <Grid display="flex" sx={{ marginTop: 0.5 }}>
-                <ScheduleIcon sx={{ mr: 1 }} />
-                <Typography>{weeksPipe(proposedSolution.timelineImpact)}</Typography>
-              </Grid>
-              <Grid item>{proposedSolution.approved && <Chip label="Approved" color="success" />}</Grid>
-              <Grid display="flex" gap={1.5}>
-                <Button
-                  color="error"
-                  variant="outlined"
-                  onClick={() => {
-                    setShowEditModal(true);
-                  }}
-                >
-                  <EditIcon />
-                </Button>
-                {showDeleteButton && onDelete !== undefined && (
-                  <Grid item>
-                    <Button
-                      color="error"
-                      variant="outlined"
-                      onClick={() => {
-                        onDelete(proposedSolution);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </Button>
-                  </Grid>
-                )}
-              </Grid>
+            <Grid item>{proposedSolution.approved && <Chip label="Approved" color="success" />}</Grid>
+            <Grid display="flex" gap={1.5}>
+              <Button
+                color="error"
+                variant="outlined"
+                onClick={() => {
+                  setShowEditModal(true);
+                }}
+              >
+                <EditIcon />
+              </Button>
+              {showDeleteButton && onDelete !== undefined && (
+                <Grid item>
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    onClick={() => {
+                      onDelete(proposedSolution);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </Grid>
+              )}
             </Grid>
           </Grid>
         </Grid>
-      )}
+      </Grid>
     </>
   );
 };
