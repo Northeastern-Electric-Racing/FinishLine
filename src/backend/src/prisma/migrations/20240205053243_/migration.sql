@@ -13,7 +13,7 @@ CREATE TABLE "TeamType" (
 CREATE TABLE "Design_Review" (
     "designReviewId" TEXT NOT NULL,
     "dateScheduled" DATE NOT NULL,
-    "meetingTime" INTEGER[],
+    "meetingTimes" INTEGER[],
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" INTEGER NOT NULL,
     "status" "Design_Review_Status" NOT NULL,
