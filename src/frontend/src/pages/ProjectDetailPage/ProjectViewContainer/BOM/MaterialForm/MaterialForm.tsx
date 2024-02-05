@@ -53,7 +53,7 @@ export interface MaterialDataSubmission {
   quantity: Decimal;
   unitName?: string;
   linkUrl: string;
-  notes: string;
+  notes?: string;
   assemblyId?: string;
   subtotal: number;
 }
