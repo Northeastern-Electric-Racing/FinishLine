@@ -49,6 +49,22 @@ export const sendSlackChangeRequestNotification = async (
   return msgs;
 };
 
+export const sendAndGetSlackCRNotifications = async (teams: Team[], message: string, crId: number) => {
+  const notifications: { channelId: string; ts: string }[] = [];
+
+  const completion: Promise<void>[] = teams.map(async (team) => {
+    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
+      team,
+      message,
+      crId
+    );
+    if (sentNotifications) notifications.push(...sentNotifications);
+  });
+  await Promise.all(completion);
+
+  return notifications;
+};
+
 export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];

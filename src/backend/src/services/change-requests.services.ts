@@ -23,11 +23,11 @@ import {
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import {
   updateBlocking,
-  sendSlackChangeRequestNotification,
   sendSlackCRReviewedNotification,
   allChangeRequestsReviewed,
   sendSlackCRStatusToThread,
-  addSlackThreadsToChangeRequest
+  addSlackThreadsToChangeRequest,
+  sendAndGetSlackCRNotifications
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
@@ -418,20 +418,15 @@ export default class ChangeRequestsService {
     });
 
     const teams = createdCR.wbsElement.workPackage?.project.teams;
-    const notifications: { channelId: string; ts: string }[] = [];
-    if (teams && teams.length > 0) {
-      teams.forEach(async (team) => {
-        const slackMsg =
-          `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
-          ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`;
-        const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
-          team,
-          slackMsg,
-          createdCR.crId
-        );
-        if (sentNotifications) notifications.push(...sentNotifications);
-      });
-    }
+    const notifications: { channelId: string; ts: string }[] =
+      teams && teams.length > 0
+        ? await sendAndGetSlackCRNotifications(
+            teams,
+            `${submitter.firstName} ${submitter.lastName} wants to activate ${createdCR.wbsElement.name}` +
+              ` in ${createdCR.wbsElement.workPackage?.project.wbsElement.name}`,
+            createdCR.crId
+          )
+        : [];
 
     // save the slack references to the change request
     await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
@@ -519,20 +514,15 @@ export default class ChangeRequestsService {
     });
 
     const teams = createdChangeRequest.wbsElement.workPackage?.project.teams;
-    const notifications: { channelId: string; ts: string }[] = [];
-    if (teams && teams.length > 0) {
-      teams.forEach(async (team) => {
-        const slackMsg =
-          `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
-          ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`;
-        const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
-          team,
-          slackMsg,
-          createdChangeRequest.crId
-        );
-        if (sentNotifications) notifications.push(...sentNotifications);
-      });
-    }
+    const notifications: { channelId: string; ts: string }[] =
+      teams && teams.length > 0
+        ? await sendAndGetSlackCRNotifications(
+            teams,
+            `${submitter.firstName} ${submitter.lastName} wants to stage gate ${createdChangeRequest.wbsElement.name}` +
+              ` in ${createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name}`,
+            createdChangeRequest.crId
+          )
+        : [];
 
     // save the slack references to the change request
     await addSlackThreadsToChangeRequest(createdChangeRequest.crId, notifications);
@@ -628,22 +618,15 @@ export default class ChangeRequestsService {
 
     const project = createdCR.wbsElement.workPackage?.project || createdCR.wbsElement.project;
     const teams = project?.teams;
-    const notifications: { channelId: string; ts: string }[] = [];
-    if (teams && teams.length > 0) {
-      const completion: Promise<void>[] = teams.map(async (team) => {
-        const slackMsg =
-          `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
-          `for the ${project.wbsElement.name} project`;
-        const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
-          team,
-          slackMsg,
-          createdCR.crId
-        );
-        if (sentNotifications) notifications.push(...sentNotifications);
-      });
-
-      await Promise.all(completion);
-    }
+    const notifications: { channelId: string; ts: string }[] =
+      teams && teams.length > 0
+        ? await sendAndGetSlackCRNotifications(
+            teams,
+            `${type} CR submitted by ${submitter.firstName} ${submitter.lastName} ` +
+              `for the ${project.wbsElement.name} project`,
+            createdCR.crId
+          )
+        : [];
 
     // save the slack references to the change request
     await addSlackThreadsToChangeRequest(createdCR.crId, notifications);
