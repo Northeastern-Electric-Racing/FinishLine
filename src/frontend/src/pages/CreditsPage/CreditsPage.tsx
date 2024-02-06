@@ -212,6 +212,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
+    { name: 'Alex Park', color: '#CCCCFF' },
     {
       name: 'Yipeng (Andrew) Wang',
       color: 'transparent',
