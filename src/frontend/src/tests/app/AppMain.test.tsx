@@ -16,7 +16,7 @@ vi.mock('../../app/AppPublic', () => {
 vi.mock('../../app/AppContext', () => {
   return {
     __esModule: true,
-    default: (props: any) => (
+    default: (props: { children: React.ReactNode }) => (
       <div>
         context
         <div>{props.children}</div>

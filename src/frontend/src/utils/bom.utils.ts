@@ -28,7 +28,7 @@ export const materialToRow = (material: Material, idx: number): BomRow => {
     manufacturer: material.manufacturerName,
     manufacturerPN: material.manufacturerPartNumber,
     pdmFileName: material.pdmFileName ?? 'None',
-    quantity: material.quantity + (material.unitName ?? ''),
+    quantity: material.quantity + (material.unitName ? ' ' + material.unitName : ''),
     price: `$${centsToDollar(material.price)}`,
     subtotal: `$${centsToDollar(material.subtotal)}`,
     link: material.linkUrl,

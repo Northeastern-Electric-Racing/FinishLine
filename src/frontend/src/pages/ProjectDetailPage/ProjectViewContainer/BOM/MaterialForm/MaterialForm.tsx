@@ -12,6 +12,7 @@ import {
 } from '../../../../../hooks/bom.hooks';
 import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
+import { Decimal } from 'decimal.js';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -19,8 +20,7 @@ const schema = yup.object().shape({
   materialTypeName: yup.string().required('Select a Material Type!'),
   manufacturerName: yup.string().required('Select a Manufacturer'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
-  nerPartNumber: yup.string().optional(),
-  quantity: yup.number().integer().required('Enter a quantity!'),
+  quantity: yup.number().required('Enter a quantity!'),
   price: yup.number().required('Price is required!'),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
@@ -42,7 +42,19 @@ export interface MaterialFormInput {
   assemblyId?: string;
 }
 
-export interface MaterialDataSubmission extends MaterialFormInput {
+export interface MaterialDataSubmission {
+  name: string;
+  status: MaterialStatus;
+  materialTypeName: string;
+  manufacturerName: string;
+  manufacturerPartNumber: string;
+  pdmFileName?: string;
+  price: number;
+  quantity: Decimal;
+  unitName?: string;
+  linkUrl: string;
+  notes: string;
+  assemblyId?: string;
   subtotal: number;
 }
 
@@ -70,7 +82,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
       quantity: defaultValues?.quantity ?? 0,
       manufacturerName: defaultValues?.manufacturerName ?? '',
-      pdmFileName: defaultValues?.pdmFileName ?? '',
+      pdmFileName: defaultValues?.pdmFileName,
       price: defaultValues?.price ?? 0,
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
@@ -119,8 +131,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
 
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     const price = Math.round(data.price * 100);
-    const subtotal = data.unitName ? price : data.quantity * price;
-    onSubmit({ ...data, subtotal: subtotal, price: price });
+    const subtotal = parseFloat((data.quantity * price).toFixed(2));
+    onSubmit({ ...data, subtotal: subtotal, price: price, quantity: new Decimal(data.quantity) });
   };
 
   const createUnitWrapper = async (unitName: string): Promise<void> => {
