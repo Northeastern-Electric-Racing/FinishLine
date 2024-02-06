@@ -25,8 +25,7 @@ import {
   prismaReimbursementStatus4,
   sharedGiveMeMyMoney,
   KFC,
-  reimbursementMock,
-  updatedReimbursementMock
+  reimbursementMock
 } from './test-data/reimbursement-requests.test-data';
 import {
   alfred,
@@ -858,14 +857,14 @@ describe('Reimbursement Requests', () => {
 
     test('Successfully edits a reimbursement', async () => {
       vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
-      vi.spyOn(prisma.reimbursement, 'update').mockResolvedValue(updatedReimbursementMock);
+      vi.spyOn(prisma.reimbursement, 'update').mockResolvedValue({ ...reimbursementMock, amount: 17 });
       const editedReimbursement = await ReimbursementRequestService.editReimbursement(
         reimbursementMock.reimbursementId,
         reimbursementMock.userSubmitted,
         17,
         reimbursementMock.dateCreated
       );
-      expect(editedReimbursement).toStrictEqual(updatedReimbursementMock);
+      expect(editedReimbursement).toStrictEqual({ ...reimbursementMock, amount: 17 });
       expect(editedReimbursement.amount).toBe(17);
       expect(prisma.reimbursement.update).toBeCalledTimes(1);
     });

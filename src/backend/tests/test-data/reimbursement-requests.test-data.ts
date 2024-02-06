@@ -241,8 +241,3 @@ export const reimbursementMock = {
   userSubmitted: batman,
   userSubmittedId: batman.userId
 };
-
-export const updatedReimbursementMock = {
-  ...reimbursementMock,
-  amount: 17
-};
