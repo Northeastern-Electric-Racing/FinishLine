@@ -42,11 +42,13 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
   const handleConfirm = async ({ defaultTheme, slackId }: SettingsFormInput) => {
     setEdit(false);
     try {
+      const refreshOnNewTheme: boolean = currentSettings.defaultTheme !== defaultTheme;
       await updateUserSettings({
         id: currentSettings.id,
         defaultTheme,
         slackId
       });
+      if (refreshOnNewTheme) window.location.reload();
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);

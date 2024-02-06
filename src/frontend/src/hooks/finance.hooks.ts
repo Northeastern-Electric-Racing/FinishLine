@@ -20,13 +20,15 @@ import {
   getPendingAdvisorList,
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
+  markReimbursementRequestAsReimbursed,
   reportRefund,
   sendPendingAdvisorList,
   setSaboNumber,
   uploadSingleReceipt,
   editAccountCode,
   createAccountCode,
-  createVendor
+  createVendor,
+  editVendor
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -59,6 +61,10 @@ export interface ExpenseTypePayload {
   name: string;
   allowed: boolean;
   allowedRefundSources: ClubAccount[];
+}
+
+export interface EditVendorPayload {
+  name: string;
 }
 
 /**
@@ -154,6 +160,22 @@ export const useGetAllVendors = () => {
     return data;
   });
 };
+
+/**
+ * Custom React Hook to edit a vendor.
+ *
+ * @param reimbursementRequestId The id of the reimbursement request being edited
+ * @returns the edited reimbursement request
+ */
+export const useEditVendor = (vendorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Vendor, Error, EditVendorPayload>(['vendors', 'edit'], async (formData: EditVendorPayload) => {
+    const { data } = await editVendor(vendorId, formData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
+  });
+};
+
 /**
  * Custom React Hook to get all the reimbursement requests
  */
@@ -196,6 +218,28 @@ export const useMarkReimbursementRequestAsDelivered = (id: string) => {
     ['reimbursement-requests', 'edit'],
     async () => {
       const { data } = await markReimbursementRequestAsDelivered(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to mark a reimbursement request as Reimbursed
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created reimbursed reimbursement status
+ */
+export const useMarkReimbursementRequestAsReimbursed = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsReimbursed(id);
       return data;
     },
     {

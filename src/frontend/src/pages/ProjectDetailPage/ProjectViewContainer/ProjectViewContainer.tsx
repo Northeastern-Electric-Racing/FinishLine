@@ -158,6 +158,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
+        disabled={isGuest(user.role)}
       >
         Actions
       </NERButton>
