@@ -13,7 +13,7 @@ import {
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { alfred, batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import { ClubAccount, Reimbursement, ReimbursementRequest } from 'shared';
+import { ClubAccount, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
 import { vendorTransformer, expenseTypeTransformer } from '../../src/transformers/reimbursement-requests.transformer';
