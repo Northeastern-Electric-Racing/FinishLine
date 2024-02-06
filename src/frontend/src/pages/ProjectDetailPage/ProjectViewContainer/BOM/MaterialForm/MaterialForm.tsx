@@ -24,7 +24,7 @@ const schema = yup.object().shape({
   price: yup.number().required('Price is required!'),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
-  notes: yup.string().required('Notes are required!')
+  notes: yup.string().optional()
 });
 
 export interface MaterialFormInput {
