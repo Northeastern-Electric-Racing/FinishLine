@@ -969,7 +969,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -994,7 +994,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1019,7 +1019,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1045,7 +1045,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1071,7 +1071,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1096,7 +1096,7 @@ describe('Projects', () => {
         prismaMaterial2.price,
         prismaMaterial2.subtotal,
         prismaMaterial2.linkUrl,
-        prismaMaterial2.notes,
+        prismaMaterial2.notes || undefined,
         prismaMaterial2.unitName || undefined,
         prismaMaterial2.assemblyId || undefined,
         prismaMaterial2.pdmFileName || undefined
