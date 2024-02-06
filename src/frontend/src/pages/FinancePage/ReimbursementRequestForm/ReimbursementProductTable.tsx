@@ -113,15 +113,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <ListItem key={product.index}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: {
-                              xs: 'column',
-                              sm: 'row'
-                            }
-                          }}
-                        >
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
                           <FormControl sx={{ width: '50%', marginRight: '4px' }}>
                             <Controller
                               name={`reimbursementProducts.${product.index}.name`}
@@ -142,7 +134,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                               {errors.reimbursementProducts?.[product.index]?.name?.message}
                             </FormHelperText>
                           </FormControl>
-                          <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                          <Box sx={{ marginTop: { xs: '6px', sm: '0px' }, display: 'flex', flexDirection: 'row' }}>
                             <FormControl sx={{ width: '50%' }}>
                               <Controller
                                 name={`reimbursementProducts.${product.index}.cost`}
