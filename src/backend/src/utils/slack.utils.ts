@@ -1,4 +1,4 @@
-import { ChangeRequest, daysBetween, ReimbursementRequest, Task, User, wbsPipe, WorkPackage } from 'shared';
+import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
 import { sendMessage } from '../integrations/slack';
 import { getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';

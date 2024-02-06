@@ -732,12 +732,6 @@ export default class ReimbursementRequestService {
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 
-    const recipientSettings = await prisma.user_Settings.findUnique({
-      where: { userId: reimbursementRequest.recipientId }
-    });
-
-    if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
-
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
@@ -761,6 +755,12 @@ export default class ReimbursementRequestService {
       }
     });
 
+    const recipientSettings = await prisma.user_Settings.findUnique({
+      where: { userId: reimbursementRequest.recipientId }
+    });
+
+    if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    
     sendReimburseDeniedNotificationToUser(recipientSettings?.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
