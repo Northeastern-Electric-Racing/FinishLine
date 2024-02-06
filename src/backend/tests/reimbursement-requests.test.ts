@@ -24,7 +24,9 @@ import {
   prismaReimbursementStatus,
   prismaReimbursementStatus4,
   sharedGiveMeMyMoney,
-  KFC
+  KFC,
+  reimbursementMock,
+  updatedReimbursementMock
 } from './test-data/reimbursement-requests.test-data';
 import {
   alfred,
@@ -828,23 +830,6 @@ describe('Reimbursement Requests', () => {
   });
 
   describe('Edit Reimbursement', () => {
-    const reimbursementMock = {
-      reimbursementId: 'reimbursementMockId',
-      purchaserId: batman.userId,
-      amount: 12,
-      dateCreated: new Date('2023-01-01'),
-      userSubmitted: batman,
-      userSubmittedId: batman.userId
-    };
-
-    const updatedReimbursementMock = {
-      reimbursementId: 'reimbursementMockId',
-      purchaserId: batman.userId,
-      amount: 17,
-      dateCreated: new Date('2023-01-01'),
-      userSubmitted: batman,
-      userSubmittedId: batman.userId
-    };
     test('Throws error is user isnt submitter of the reimbursement', async () => {
       vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
       await expect(

@@ -302,13 +302,13 @@ export default class ReimbursementRequestService {
     return updatedReimbursementRequest;
   }
 
-  static async editReimbursement(reimbursementId: string, user: User, amount: number, dateCreated: Date) {
+  static async editReimbursement(reimbursementId: string, editor: User, amount: number, dateCreated: Date) {
     const request = await prisma.reimbursement.findUnique({
       where: { reimbursementId }
     });
 
     if (!request) throw new NotFoundException('Reimbursement', reimbursementId);
-    if (request.userSubmittedId !== user.userId)
+    if (request.userSubmittedId !== editor.userId)
       throw new AccessDeniedException(
         'You do not have access to edit this refund, only the submitter can edit their refund'
       );

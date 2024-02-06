@@ -126,10 +126,10 @@ export default class ReimbursementRequestsController {
     try {
       const { reimbursementId } = req.params;
       const { amount, dateReceived } = req.body;
-      const user = await getCurrentUser(res);
+      const editor = await getCurrentUser(res);
       const updatedReimbursement = await ReimbursementRequestService.editReimbursement(
         reimbursementId,
-        user,
+        editor,
         amount,
         dateReceived
       );
