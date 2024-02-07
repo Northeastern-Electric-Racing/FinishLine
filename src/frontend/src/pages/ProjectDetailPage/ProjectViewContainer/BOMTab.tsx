@@ -9,6 +9,8 @@ import CreateMaterialModal from './BOM/MaterialForm/CreateMaterialModal';
 import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { centsToDollar } from '../../../utils/pipes';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import { isGuest } from 'shared'; 
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
   currentMaterial.subtotal + accumulator;
@@ -17,6 +19,7 @@ const BOMTab = ({ project }: { project: Project }) => {
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAddAssembly, setShowAddAssembly] = useState(false);
   const theme = useTheme();
+  const user = useCurrentUser();
 
   const totalCost = project.materials.reduce(addMaterialCosts, 0);
 
@@ -31,7 +34,7 @@ const BOMTab = ({ project }: { project: Project }) => {
             <NERSuccessButton variant="contained" onClick={() => setShowAddMaterial(true)} sx={{ textTransform: 'none' }}>
               New Entry
             </NERSuccessButton>
-            <NERButton variant="contained" onClick={() => setShowAddAssembly(true)}>
+            <NERButton variant="contained" onClick={() => setShowAddAssembly(true)} disabled={isGuest(user.role)}>
               New Assembly
             </NERButton>
           </Box>
