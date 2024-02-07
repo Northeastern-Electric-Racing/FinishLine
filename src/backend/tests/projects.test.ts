@@ -18,7 +18,9 @@ import {
   prismaMaterial2,
   prismaProject2,
   mockLinkType1,
-  transformedMockLinkType1
+  transformedMockLinkType1,
+  manufacturer1,
+  manufacturer2
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -710,24 +712,33 @@ describe('Projects', () => {
       expect(manufacturer.userCreatedId).toBe(prismaManufacturer1.userCreatedId);
     });
 
-    test('deleteManufacturer works', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(prismaManufacturer1);
+    test('deleteManufacturer fails when there is materials in it', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer2);
+  
+      await expect(ProjectsService.deleteManufacturer(batman, 'Manufacturer2')).rejects.toThrow(
+        new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it')
+      );
+    });
 
-      const manufacturer = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
+    test('deleteManufacturer works', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer1);
+      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(manufacturer1);
+
+      const manufacturer = await ProjectsService.deleteManufacturer(batman, manufacturer1.name);
       expect(prisma.manufacturer.delete).toBeCalledTimes(1);
 
-      expect(manufacturer).toStrictEqual(prismaManufacturer1);
+      expect(manufacturer).toStrictEqual(manufacturer1);
       expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.manufacturer.delete).toHaveBeenCalledTimes(1);
     });
 
     test('deleteManufacturer fails when user is not at least Head', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer1);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(manufacturer1);
 
-      await expect(
-        async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
-      ).rejects.toThrow(new AccessDeniedException('Only heads and above can delete a manufacturer'));
+      await expect(async () => await ProjectsService.deleteManufacturer(wonderwoman, manufacturer1.name)).rejects.toThrow(
+        new AccessDeniedException('Only heads and above can delete a manufacturer')
+      );
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);

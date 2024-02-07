@@ -742,20 +742,26 @@ export default class ProjectsService {
     const manufacturer = await prisma.manufacturer.findFirst({
       where: {
         name
-      }
+      },
+      ...manufacturerQueryArgs
     });
 
     if (!manufacturer) {
       throw new NotFoundException('Manufacturer', name);
     }
 
+    if (manufacturer.materials.length > 0) {
+      throw new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it');
+    }
+
     const deletedManufacturer = await prisma.manufacturer.delete({
       where: {
         name: manufacturer.name
-      }
+      },
+      ...manufacturerQueryArgs
     });
 
-    return deletedManufacturer;
+    return manufacturerTransformer(deletedManufacturer);
   }
   /**
    * Get all the manufacturers in the database.
