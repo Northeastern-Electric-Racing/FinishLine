@@ -212,6 +212,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
+    { name: 'Alex Park', color: '#CCCCFF' },
     {
       name: 'Yipeng (Andrew) Wang',
       color: 'transparent',
@@ -234,8 +235,10 @@ const CreditsPage: React.FC = () => {
     { name: 'Jhonyel Galvis', color: '#00FFF' },
     { name: 'Arav Goyal', color: '#6223de' },
     { name: 'Gayathri Ramakrishnan', color: '#47186e' },
+    { name: 'Xander Hoke', color: '#C50D93' },
     { name: 'Claire Hendershot', color: '#008080' },
-    { name: 'Arav Goyal', color: '#6223de' }
+    { name: 'Arav Goyal', color: '#6223de' },
+    { name: 'Alex Dong', color: '#5d42f5' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];
