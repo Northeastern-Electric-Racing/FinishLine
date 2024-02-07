@@ -38,7 +38,7 @@ import { materialTypeTransformer } from '../transformers/material-type.transform
 import { materialPreviewTransformer } from '../transformers/material.transformer';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import manufacturerTransformer from '../transformers/manufacturer.transformer';
-
+import { Decimal } from 'decimal.js';
 export default class ProjectsService {
   /**
    * Get all the projects in the database.
@@ -543,7 +543,7 @@ export default class ProjectsService {
     materialTypeName: string,
     manufacturerName: string,
     manufacturerPartNumber: string,
-    quantity: number,
+    quantity: Decimal,
     price: number,
     subtotal: number,
     linkUrl: string,
@@ -694,6 +694,37 @@ export default class ProjectsService {
     });
 
     return newManufacturer;
+  }
+
+  /**
+   * Deletes a unit
+   * @param user the user who's deleting the unit
+   * @param name the name of the unit
+   * @throws if the user is not at least a head, or if the provided name isn't a unit
+   * @returns the deleted unit
+   */
+  static async deleteUnit(user: User, name: string) {
+    if (!isHead(user.role)) {
+      throw new AccessDeniedException('Only heads and above can delete a unit');
+    }
+
+    const unit = await prisma.unit.findUnique({
+      where: {
+        name
+      }
+    });
+
+    if (!unit) {
+      throw new NotFoundException('Unit', name);
+    }
+
+    const deletedUnit = await prisma.unit.delete({
+      where: {
+        name: unit.name
+      }
+    });
+
+    return deletedUnit;
   }
 
   /**
@@ -986,7 +1017,7 @@ export default class ProjectsService {
     materialTypeName: string,
     manufacturerName: string,
     manufacturerPartNumber: string,
-    quantity: number,
+    quantity: Decimal,
     price: number,
     subtotal: number,
     linkUrl: string,
@@ -1103,5 +1134,34 @@ export default class ProjectsService {
     });
 
     return { ...newUnit, materials: [] };
+  }
+
+  /**
+   * Updates the linkType's name, iconName, or required.
+   * @param linkTypeId the current name/id of the linkType
+   * @param iconName the new iconName
+   * @param required the new required status
+   * @param submitter user requesting the edit
+   */
+  static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
+    if (!isHead(submitter.role)) throw new AccessDeniedException('Only the head or admin can update the linkType');
+
+    // check if the linkType we are trying to update exists
+    const linkType = await prisma.linkType.findUnique({
+      where: { name: linkTypeId }
+    });
+
+    if (!linkType) throw new NotFoundException('Link Type', linkTypeId);
+
+    // update the LinkType
+    const linkTypeUpdated = await prisma.linkType.update({
+      where: { name: linkTypeId },
+      data: {
+        iconName,
+        required
+      },
+      ...linkTypeQueryArgs
+    });
+    return linkTypeTransformer(linkTypeUpdated);
   }
 }

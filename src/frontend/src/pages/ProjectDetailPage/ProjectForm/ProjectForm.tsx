@@ -72,7 +72,11 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   const schema = !project
     ? yup.object().shape({
         name: yup.string().required('Name is required!'),
-        crId: yup.number().min(1).required('crId must be a non-zero number!'),
+        crId: yup
+          .number()
+          .min(1)
+          .typeError('Change Request ID cannot be empty!')
+          .required('crId must be a non-zero number!'),
         carNumber: yup.number().min(0).required('A car number is required!'),
         teamId: yup.string().required('A Team Id is required'),
         budget: yup.number().optional(),
@@ -94,7 +98,11 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       })
     : yup.object().shape({
         name: yup.string().required('Name is required!'),
-        crId: yup.number().min(1).required('crId must be a non-zero number!'),
+        crId: yup
+          .number()
+          .min(1)
+          .typeError('Change Request ID cannot be empty!')
+          .required('crId must be a non-zero number!'),
         budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
         summary: yup.string().required('Summary is required!'),
         links: yup.array().of(
