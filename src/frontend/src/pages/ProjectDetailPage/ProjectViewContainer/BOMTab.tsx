@@ -10,7 +10,7 @@ import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { centsToDollar } from '../../../utils/pipes';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { isGuest } from 'shared'; 
+import { isGuest } from 'shared';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
   currentMaterial.subtotal + accumulator;
