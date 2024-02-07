@@ -1,20 +1,11 @@
 import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField } from '@mui/material';
-import { Box, getValue } from '@mui/system';
-import {
-  Control,
-  Controller,
-  FieldErrors,
-  UseFormHandleSubmit,
-  UseFormSetValue,
-  UseFormWatch,
-  useForm
-} from 'react-hook-form';
+import { Box } from '@mui/system';
+import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
-import { useState } from 'react';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
