@@ -8,7 +8,7 @@ import {
   Manufacturer as PrismaManufacturer,
   Unit
 } from '@prisma/client';
-import { Project as SharedProject, WbsElementStatus, LinkType, Manufacturer, Material, MaterialStatus} from 'shared';
+import { Project as SharedProject, WbsElementStatus, LinkType, Manufacturer, Material, MaterialStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
@@ -198,7 +198,7 @@ export const material1: Material = {
   status: MaterialStatus.Ordered,
   materialTypeName: 'logs',
   materialType: {
-    name: "material",
+    name: 'material',
     dateCreated: new Date('2022-12-22'),
     userCreatedId: 4
   },
@@ -208,26 +208,26 @@ export const material1: Material = {
     dateCreated: new Date('2024-01-05'),
     userCreatedId: 6
   },
-  manufacturerPartNumber: "11223",
+  manufacturerPartNumber: '11223',
   quantity: new Decimal(8),
   price: 20,
   subtotal: 2000,
   linkUrl: 'https://example.com',
-  notes: "IDK",
-}
+  notes: 'IDK'
+};
 
 export const prismaManufacturer1: PrismaManufacturer = {
   name: 'PrismaManufacturer1',
   dateCreated: new Date('10-1-2023'),
   userCreatedId: 1,
-  dateDeleted: null,
+  dateDeleted: null
 };
 
 export const prismaManufacturer2: PrismaManufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
   userCreatedId: 1,
-  dateDeleted: new Date('10-18-2023'),
+  dateDeleted: new Date('10-18-2023')
 };
 
 export const manufacturer1: Manufacturer = {
@@ -236,7 +236,7 @@ export const manufacturer1: Manufacturer = {
   userCreatedId: 1,
   userCreated: batman,
   dateDeleted: new Date('02-19-2023'),
-  materials: [],
+  materials: []
 };
 
 export const manufacturer2: Manufacturer = {
@@ -245,7 +245,7 @@ export const manufacturer2: Manufacturer = {
   userCreatedId: 1,
   userCreated: batman,
   dateDeleted: new Date('02-19-2023'),
-  materials: [material1],
+  materials: [material1]
 };
 
 export const toolMaterial: PrismaMaterialType = {

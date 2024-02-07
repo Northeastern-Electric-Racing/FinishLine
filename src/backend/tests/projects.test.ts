@@ -714,7 +714,7 @@ describe('Projects', () => {
 
     test('deleteManufacturer fails when there is materials in it', async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer2);
-  
+
       await expect(ProjectsService.deleteManufacturer(batman, 'Manufacturer2')).rejects.toThrow(
         new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it')
       );
