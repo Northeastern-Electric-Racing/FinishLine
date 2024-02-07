@@ -16,7 +16,9 @@ import {
   prismaMaterialType,
   prismaUnit,
   prismaMaterial2,
-  prismaProject2
+  prismaProject2,
+  mockLinkType1,
+  transformedMockLinkType1
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -34,6 +36,8 @@ import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { Material, Material_Status, User } from '@prisma/client';
+import { Decimal } from 'decimal.js';
+import linkTypeQueryArgs from '../src/prisma-query-args/link-types.query-args';
 
 vi.mock('../src/utils/projects.utils');
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
@@ -507,7 +511,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -531,7 +535,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -556,7 +560,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -582,7 +586,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -609,7 +613,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -638,7 +642,7 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
@@ -666,7 +670,7 @@ describe('Projects', () => {
         prismaMaterialType.name,
         prismaManufacturer2.name,
         'partNum',
-        6,
+        new Decimal(6),
         800,
         400,
         'https://www.google.com',
@@ -925,6 +929,29 @@ describe('Projects', () => {
     });
   });
 
+  describe('Deleting unit', () => {
+    test('Delete unit does not work if user is not an admin or head', async () => {
+      await expect(ProjectsService.deleteUnit(theVisitor, 'NERSoftwareTools')).rejects.toThrow(
+        new AccessDeniedException('Only heads and above can delete a unit')
+      );
+    });
+
+    test('Deleting unit fails if unit does not exist', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(null);
+
+      await expect(ProjectsService.deleteUnit(batman, 'New Unit')).rejects.toThrow(
+        new NotFoundException('Unit', 'New Unit')
+      );
+    });
+
+    test('Delete Unit works', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.unit, 'delete');
+      await ProjectsService.deleteUnit(superman, 'NERSoftwareTools');
+      expect(prisma.unit.delete).toBeCalledTimes(1);
+    });
+  });
+
   describe('updateMaterial', () => {
     test('Update material fails if the given material does not exists', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
@@ -1114,6 +1141,40 @@ describe('Projects', () => {
       await expect(async () => await ProjectsService.deleteMaterial(batman, prismaMaterial.materialId)).rejects.toThrow(
         new DeletedException('Material', prismaMaterial.materialId)
       );
+    });
+  });
+  describe('editLinkTypes', () => {
+    test('Edit LinkType fails if the submitter is not an admin or a head', async () => {
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
+      await expect(
+        ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, aquaman)
+      ).rejects.toThrow(new AccessDeniedException('Only the head or admin can update the linkType'));
+    });
+    test('Throws error if linkType not found', async () => {
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);
+      await expect(
+        ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, batman)
+      ).rejects.toThrow(new NotFoundException('Link Type', mockLinkType1.name));
+    });
+    test('LinkType edits successfully, changes its foreign key in Link objects as well', async () => {
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
+      vi.spyOn(prisma.linkType, 'update').mockResolvedValue({
+        ...mockLinkType1,
+        creatorId: batman.userId,
+        iconName: 'Doc2'
+      });
+
+      const updated = await ProjectsService.editLinkType(mockLinkType1.name, 'Doc2', mockLinkType1.required, batman);
+
+      expect(updated).toEqual(transformedMockLinkType1);
+      expect(prisma.linkType.update).toHaveBeenCalledWith({
+        where: { name: mockLinkType1.name },
+        data: {
+          iconName: 'Doc2',
+          required: mockLinkType1.required
+        },
+        ...linkTypeQueryArgs
+      });
     });
   });
 });

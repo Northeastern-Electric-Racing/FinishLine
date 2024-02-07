@@ -12,6 +12,7 @@ import { Project as SharedProject, WbsElementStatus, LinkType } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
+import { Decimal } from 'decimal.js';
 
 export const prismaProject2: Project = {
   projectId: 2,
@@ -182,7 +183,7 @@ export const prismaMaterial: Material = {
   manufacturerPartNumber: 'partNum',
   price: 800,
   subtotal: 400,
-  quantity: 6,
+  quantity: new Decimal(6),
   unitName: 'FT',
   linkUrl: 'https://www.google.com'
 };
@@ -224,7 +225,7 @@ export const prismaMaterial2: Material = {
   manufacturerPartNumber: 'partNum',
   price: 1000,
   subtotal: 500,
-  quantity: 8,
+  quantity: new Decimal(8),
   unitName: 'FT',
   linkUrl: 'https://www.google.com'
 };
@@ -241,7 +242,7 @@ export const prismaMaterial1: Material = {
   notes: 'Sample notes',
   pdmFileName: 'pdmname',
   price: 10,
-  quantity: 89,
+  quantity: new Decimal(89),
   status: 'ORDERED',
   subtotal: 1,
   unitName: 'Unit',
@@ -249,4 +250,19 @@ export const prismaMaterial1: Material = {
   wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null
+};
+
+export const mockLinkType1: LinkType = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'file',
+  required: true
+};
+export const transformedMockLinkType1 = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'Doc2',
+  required: true
 };

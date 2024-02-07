@@ -21,6 +21,8 @@ const BOMTab = ({ project }: { project: Project }) => {
 
   const totalCost = project.materials.reduce(addMaterialCosts, 0);
 
+  const user = useCurrentUser();
+
   return (
     <Box>
       <CreateMaterialModal open={showAddMaterial} onHide={() => setShowAddMaterial(false)} wbsElement={project} />
@@ -29,7 +31,12 @@ const BOMTab = ({ project }: { project: Project }) => {
         <BOMTableWrapper project={project} />
         <Box justifyContent="space-between" display="flex" flexDirection="row">
           <Box display="flex" gap="20px">
-            <NERSuccessButton variant="contained" onClick={() => setShowAddMaterial(true)} sx={{ textTransform: 'none' }}>
+            <NERSuccessButton
+              variant="contained"
+              onClick={() => setShowAddMaterial(true)}
+              sx={{ textTransform: 'none' }}
+              disabled={isGuest(user.role)}
+            >
               New Entry
             </NERSuccessButton>
             <NERButton variant="contained" onClick={() => setShowAddAssembly(true)} disabled={isGuest(useCurrentUser().role)}>
