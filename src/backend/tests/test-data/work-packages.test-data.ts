@@ -14,8 +14,8 @@ export const prismaWorkPackage1: Prisma.Work_PackageGetPayload<typeof workPackag
   duration: 10,
   wbsElement: {
     ...prismaWbsElement1,
-    projectLead: batman,
-    projectManager: batman,
+    lead: batman,
+    manager: batman,
     changes: [],
     tasks: [],
     blocking: []

@@ -10,8 +10,8 @@ export const prismaWbsElement1: PrismaWbsElement = {
   dateDeleted: null,
   name: 'car',
   deletedByUserId: null,
-  projectLeadId: 4,
-  projectManagerId: 5
+  leadId: 4,
+  managerId: 5
 };
 
 export const prismaWbsElement2: PrismaWbsElement = {
@@ -24,6 +24,6 @@ export const prismaWbsElement2: PrismaWbsElement = {
   dateDeleted: null,
   name: 'car',
   deletedByUserId: null,
-  projectLeadId: 4,
-  projectManagerId: 5
+  leadId: 4,
+  managerId: 5
 };

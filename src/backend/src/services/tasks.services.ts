@@ -58,10 +58,7 @@ export default class TasksService {
     const curWorkPackages = project.workPackages;
 
     const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
-      return (
-        workPackage.wbsElement.leadId === createdBy.userId ||
-        workPackage.wbsElement.managerId === createdBy.userId
-      );
+      return workPackage.wbsElement.leadId === createdBy.userId || workPackage.wbsElement.managerId === createdBy.userId;
     });
 
     if (

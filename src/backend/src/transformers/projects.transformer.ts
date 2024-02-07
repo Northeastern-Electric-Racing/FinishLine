@@ -73,9 +73,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         links: workPackage.wbsElement.links.map(linkTransformer),
         status: workPackage.wbsElement.status as WbsElementStatus,
         projectLead: workPackage.wbsElement.lead ? userTransformer(workPackage.wbsElement.lead) : undefined,
-        projectManager: workPackage.wbsElement.manager
-          ? userTransformer(workPackage.wbsElement.manager)
-          : undefined,
+        projectManager: workPackage.wbsElement.manager ? userTransformer(workPackage.wbsElement.manager) : undefined,
         changes: workPackage.wbsElement.changes.map((change) => ({
           changeId: change.changeId,
           changeRequestId: change.changeRequestId,
