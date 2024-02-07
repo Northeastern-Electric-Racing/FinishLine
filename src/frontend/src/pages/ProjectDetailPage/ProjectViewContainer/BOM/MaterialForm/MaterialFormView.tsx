@@ -1,11 +1,20 @@
 import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField } from '@mui/material';
-import { Box } from '@mui/system';
-import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
+import { Box, getValue } from '@mui/system';
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  UseFormHandleSubmit,
+  UseFormSetValue,
+  UseFormWatch,
+  useForm
+} from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
 import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
+import { useState } from 'react';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -107,6 +116,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   variant="outlined"
                   error={!!errors.materialTypeName}
                   helperText={errors.materialTypeName?.message}
+                  value={field.value}
                 >
                   {allMaterialTypes.map((type) => (
                     <MenuItem key={type.name} value={type.name}>
@@ -132,23 +142,27 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   variant="outlined"
                   error={!!errors.manufacturerName}
                   helperText={errors.manufacturerName?.message}
+                  key={field.value}
+                  onChange={(event) => {
+                    const selectedValue = event.target.value;
+                    if (selectedValue === 'createManufacturer') {
+                      const manufacturerName = prompt('Enter Manufacturer Name');
+                      if (manufacturerName) {
+                        createManufacturer(manufacturerName);
+                      } else {
+                        event.target.value = field.value;
+                      }
+                    } else {
+                      field.onChange(event);
+                    }
+                  }}
                 >
                   {allManufacturers.map((manufacturer) => (
                     <MenuItem key={manufacturer.name} value={manufacturer.name}>
                       {manufacturer.name}
                     </MenuItem>
                   ))}
-                  <MenuItem
-                    value="createManufacturer"
-                    onClick={() => {
-                      const manufacturerName = prompt('Enter Manufacturer Name');
-                      if (manufacturerName) {
-                        createManufacturer(manufacturerName);
-                      }
-                    }}
-                  >
-                    + Create Manufacturer
-                  </MenuItem>
+                  <MenuItem value="createManufacturer">+ Create Manufacturer</MenuItem>
                 </TextField>
               )}
             />
@@ -202,23 +216,27 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     variant="outlined"
                     error={!!errors.unitName}
                     helperText={errors.unitName?.message}
+                    key={field.value}
+                    onChange={(event) => {
+                      const selectedValue = event.target.value;
+                      if (selectedValue === 'createUnit') {
+                        const unitName = prompt('Enter Unit Name');
+                        if (unitName) {
+                          createUnit(unitName);
+                        } else {
+                          event.target.value = field.value === undefined ? '' : field.value;
+                        }
+                      } else {
+                        field.onChange(event);
+                      }
+                    }}
                   >
                     {allUnits.map((unit) => (
                       <MenuItem key={unit.name} value={unit.name}>
                         {unit.name}
                       </MenuItem>
                     ))}
-                    <MenuItem
-                      value="createUnit"
-                      onClick={() => {
-                        const unitName = prompt('Enter Unit Name');
-                        if (unitName) {
-                          createUnit(unitName);
-                        }
-                      }}
-                    >
-                      + Create Unit
-                    </MenuItem>
+                    <MenuItem value="createUnit">+ Create Unit</MenuItem>
                   </TextField>
                 )}
               />
