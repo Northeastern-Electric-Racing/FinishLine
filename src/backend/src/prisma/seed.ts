@@ -133,8 +133,8 @@ const performSeed: () => Promise<void> = async () => {
           dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
-          projectLeadId: batman.userId,
-          projectManagerId: cyborg.userId
+          leadId: batman.userId,
+          managerId: cyborg.userId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
@@ -564,8 +564,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1.wbsElement.projectNumber,
     workPackage1.wbsElement.workPackageNumber,
     'ACTIVATION',
-    workPackage1.project.wbsElement.projectLeadId!,
-    workPackage1.project.wbsElement.projectManagerId!,
+    workPackage1.project.wbsElement.leadId!,
+    workPackage1.project.wbsElement.managerId!,
     new Date(),
     true
   );

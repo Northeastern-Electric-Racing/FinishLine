@@ -53,14 +53,14 @@ export default class TasksService {
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
     const isProjectLeadOrManager =
-      createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
+      createdBy.userId === requestedWbsElement.leadId || createdBy.userId === requestedWbsElement.managerId;
 
     const curWorkPackages = project.workPackages;
 
     const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
       return (
-        workPackage.wbsElement.projectLeadId === createdBy.userId ||
-        workPackage.wbsElement.projectManagerId === createdBy.userId
+        workPackage.wbsElement.leadId === createdBy.userId ||
+        workPackage.wbsElement.managerId === createdBy.userId
       );
     });
 
@@ -246,7 +246,7 @@ export default class TasksService {
     }
 
     // this checks the current users permissions
-    const isLead = wbsElement.projectLeadId === currentUser.userId || wbsElement.projectManagerId === currentUser.userId;
+    const isLead = wbsElement.leadId === currentUser.userId || wbsElement.managerId === currentUser.userId;
     if (!isAdmin(currentUser.role) && !isLead) {
       throw new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks');
     }

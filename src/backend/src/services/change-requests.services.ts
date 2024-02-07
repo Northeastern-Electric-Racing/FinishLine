@@ -239,14 +239,14 @@ export default class ChangeRequestsService {
     // if it's an activation cr and being accepted, we can do some stuff to the associated work package
     if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       const { activationChangeRequest: actCr } = foundCR;
-      const shouldUpdateProjLead = actCr.projectLeadId !== foundCR.wbsElement.projectLeadId;
-      const shouldUpdateProjManager = actCr.projectManagerId !== foundCR.wbsElement.projectManagerId;
+      const shouldUpdateProjLead = actCr.projectLeadId !== foundCR.wbsElement.leadId;
+      const shouldUpdateProjManager = actCr.projectManagerId !== foundCR.wbsElement.managerId;
       const shouldChangeStartDate =
         actCr.startDate.setHours(0, 0, 0, 0) !== foundCR.wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
       const changes = [];
 
       if (shouldUpdateProjLead) {
-        const oldPL = await getUserFullName(foundCR.wbsElement.projectLeadId);
+        const oldPL = await getUserFullName(foundCR.wbsElement.leadId);
         const newPL = await getUserFullName(actCr.projectLeadId);
         changes.push({
           changeRequestId: foundCR.crId,
@@ -257,7 +257,7 @@ export default class ChangeRequestsService {
       }
 
       if (shouldUpdateProjManager) {
-        const oldPM = await getUserFullName(foundCR.wbsElement.projectManagerId);
+        const oldPM = await getUserFullName(foundCR.wbsElement.managerId);
         const newPM = await getUserFullName(actCr.projectManagerId);
         changes.push({
           changeRequestId: foundCR.crId,
@@ -292,8 +292,8 @@ export default class ChangeRequestsService {
       await prisma.wBS_Element.update({
         where: { wbsElementId: foundCR.wbsElementId },
         data: {
-          projectLeadId: actCr.projectLeadId,
-          projectManagerId: actCr.projectManagerId,
+          leadId: actCr.projectLeadId,
+          managerId: actCr.projectManagerId,
           workPackage: { update: { startDate: actCr.startDate } },
           status: WBS_Element_Status.ACTIVE
         }
