@@ -1,5 +1,5 @@
 import { Box } from '@mui/system';
-import { MaterialPreview, Project } from 'shared';
+import { MaterialPreview, Project, isGuest } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import WarningIcon from '@mui/icons-material/Warning';
 import { Tooltip, useTheme } from '@mui/material';
@@ -10,7 +10,6 @@ import CreateAssemblyModal from './BOM/AssemblyForm/CreateAssemblyModal';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { centsToDollar } from '../../../utils/pipes';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { isGuest } from 'shared';
 
 export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialPreview) =>
   currentMaterial.subtotal + accumulator;
@@ -19,7 +18,6 @@ const BOMTab = ({ project }: { project: Project }) => {
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAddAssembly, setShowAddAssembly] = useState(false);
   const theme = useTheme();
-  const user = useCurrentUser();
 
   const totalCost = project.materials.reduce(addMaterialCosts, 0);
 
@@ -34,7 +32,7 @@ const BOMTab = ({ project }: { project: Project }) => {
             <NERSuccessButton variant="contained" onClick={() => setShowAddMaterial(true)} sx={{ textTransform: 'none' }}>
               New Entry
             </NERSuccessButton>
-            <NERButton variant="contained" onClick={() => setShowAddAssembly(true)} disabled={isGuest(user.role)}>
+            <NERButton variant="contained" onClick={() => setShowAddAssembly(true)} disabled={isGuest(useCurrentUser().role)}>
               New Assembly
             </NERButton>
           </Box>
