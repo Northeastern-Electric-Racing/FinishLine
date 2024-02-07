@@ -100,7 +100,7 @@ projectRouter.post(
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),
-  body('notes').optional(),
+  body('notes').isString().optional(),
   validateInputs,
   ProjectsController.createMaterial
 );

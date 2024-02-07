@@ -15,7 +15,7 @@ export interface BomRow {
   price: string;
   subtotal: string;
   link: string;
-  notes: string;
+  notes: string | undefined;
 }
 
 export const materialToRow = (material: Material, idx: number): BomRow => {
@@ -32,7 +32,7 @@ export const materialToRow = (material: Material, idx: number): BomRow => {
     price: `$${centsToDollar(material.price)}`,
     subtotal: `$${centsToDollar(material.subtotal)}`,
     link: material.linkUrl,
-    notes: material.notes ?? 'None'
+    notes: material.notes
   };
 };
 
