@@ -16,7 +16,7 @@ import {
   getAllLinkTypes,
   createLinkType
 } from '../apis/projects.api';
-import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
+import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
 
 /**
@@ -153,13 +153,16 @@ export const useAllLinkTypes = () => {
  */
 export const useCreateLinkType = () => {
   const queryClient = useQueryClient();
-  return useMutation<LinkType, Error, { name: string }>(['linkTypes', 'create'], async (linkTypeData: { name: string }) => {
-    const { data } = await createLinkType(linkTypeData);
-    queryClient.invalidateQueries(['linkTypes']);
-    return data;
-  });
+  return useMutation<LinkType, Error, LinkTypeCreatePayload>(
+    ['linkTypes', 'create'],
+    async (linkTypeData: LinkTypeCreatePayload) => {
+      const { data } = await createLinkType(linkTypeData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['linkTypes']);
+      }
+    }
+  );
 };
-
-export interface EditLinkTypePayload {
-  name: string;
-}

@@ -1,26 +1,27 @@
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel, FormHelperText, Switch, Stack } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText, Switch, Stack, Box, Typography, Tooltip, Link } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LinkType } from 'shared';
-import { EditLinkTypePayload } from '../../../hooks/projects.hooks';
+import { LinkTypeCreatePayload } from '../../../utils/types';
+import Icon from '@mui/material/Icon';
+import HelpIcon from '@mui/icons-material/Help';
 
 interface LinkTypeFormModalProps {
   showModal: boolean;
   handleClose: () => void;
   defaultValues?: LinkType;
-  onSubmit: (data: EditLinkTypePayload) => void;
+  onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
 }
 
 const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
   const toast = useToast();
 
-  const uniqueLinkTypeTest = (name: string | undefined) =>
-    name !== undefined && linkTypes !== undefined && !linkTypes.map((v) => v.name).includes(name);
+  const uniqueLinkTypeTest = (name?: string) => !!name && linkTypes && !linkTypes.map((v) => v.name).includes(name);
 
   const schema = yup.object().shape({
     name: yup
@@ -35,7 +36,8 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors },
+    watch
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -45,7 +47,9 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
     }
   });
 
-  const onFormSubmit = async (data: EditLinkTypePayload) => {
+  const iconNameWatch = watch('iconName');
+
+  const onFormSubmit = async (data: LinkTypeCreatePayload) => {
     try {
       await onSubmit(data);
     } catch (error: unknown) {
@@ -55,7 +59,11 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
     }
     handleClose();
   };
-
+  const tooltipMessage = (
+    <Typography sx={{ fontSize: 14 }}>
+      Click to view possible icon names. For names with multiple words, seperate them with an _. AttachMoney = attach_money
+    </Typography>
+  );
   return (
     <NERFormModal
       open={showModal}
@@ -74,11 +82,27 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
           <FormHelperText error>{errors.name?.message}</FormHelperText>
         </FormControl>
         <FormControl>
-          <FormLabel>Icon Name</FormLabel>
-          <ReactHookTextField name="iconName" control={control} sx={{ width: 1 }} />
+          <FormLabel>
+            Icon Name
+            <Tooltip title={tooltipMessage} placement="right" arrow sx={{ fontSize: 20 }}>
+              <Link href="https://mui.com/components/material-icons/" target="_blank" rel="noopener noreferrer">
+                <HelpIcon sx={{ mr: 2, height: 15 }} />
+              </Link>
+            </Tooltip>
+          </FormLabel>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <ReactHookTextField name="iconName" control={control} sx={{ flexGrow: 1 }} />
+          </Box>
           <FormHelperText error>{errors.iconName?.message}</FormHelperText>
         </FormControl>
-
+        {iconNameWatch && (
+          <FormControl>
+            <FormLabel>Icon Preview:</FormLabel>
+            <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
+              <Icon>{iconNameWatch}</Icon>
+            </Box>
+          </FormControl>
+        )}
         <FormControl>
           <FormLabel>Required</FormLabel>
           <Controller

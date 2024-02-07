@@ -1120,11 +1120,11 @@ describe('Projects', () => {
     });
   });
   describe('editLinkTypes', () => {
-    test('Edit LinkType fails if the submitter is not an admin or a head', async () => {
+    test('Edit LinkType fails if the submitter is not an admin', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
       await expect(
         ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, aquaman)
-      ).rejects.toThrow(new AccessDeniedException('Only the head or admin can update the linkType'));
+      ).rejects.toThrow(new AccessDeniedException('Only an admin can update the linkType'));
     });
     test('Throws error if linkType not found', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);

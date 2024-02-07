@@ -19,19 +19,14 @@ const LinkTypeTable = () => {
   } = useAllLinkTypes();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
 
-  if (!linkTypes || linkTypeIsLoading) {
-    return <LoadingIndicator />;
-  }
-  if (linkTypeIsError) {
-    return <ErrorPage message={linkTypeError.message} />;
-  }
+  if (!linkTypes || linkTypeIsLoading) return <LoadingIndicator />;
+  if (linkTypeIsError) return <ErrorPage message={linkTypeError.message} />;
 
   const linkTypeTableRows = linkTypes.map((linkType) => (
     <TableRow sx={{ cursor: 'pointer' }}>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {linkType.name}
       </TableCell>
-
       <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Icon>{linkType.iconName}</Icon>
@@ -40,8 +35,7 @@ const LinkTypeTable = () => {
           </Typography>
         </Box>
       </TableCell>
-
-      <TableCell sx={{ border: '2px solid black' }}>{linkType.required ? 'True' : 'False'}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>{linkType.required ? 'Yes' : 'No'}</TableCell>
     </TableRow>
   ));
 
