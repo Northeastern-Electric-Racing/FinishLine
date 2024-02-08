@@ -37,10 +37,12 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
 
     if (!token) return res.status(401).json({ message: 'Authentication Failed: Cookie not found!' });
 
+    //uses the VerifyCallback type in the index.d.ts file for err and decoded types.
+    //Only jwtPayload of the decoded types has a userID, so other types throw an error
     jwt.verify(token, TOKEN_SECRET, (err: VerifyErrors | null, decoded: string | JwtPayload | undefined) => {
       if (err) return res.status(401).json({ message: 'Authentication Failed: Invalid JWT!' });
 
-      if (typeof decoded === 'undefined' || typeof decoded === 'string') {
+      if (!decoded || typeof decoded === 'string') {
         return res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });
       }
       res.locals.userId = parseInt(decoded.userId);
