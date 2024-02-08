@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, TextField } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, Select, TextField } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -139,6 +139,28 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                 />
               )}
             />
+          </FormControl>
+          <FormControl fullWidth>
+            <FormLabel>Refund Source</FormLabel>
+            <Controller
+              name="account"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select
+                  onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
+                  value={value}
+                  disabled={!selectedExpenseType}
+                  error={!!errors.account}
+                >
+                  {refundSources.map((refundSource) => (
+                    <MenuItem key={refundSource} value={refundSource}>
+                      {codeAndRefundSourceName(refundSource)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            />
+            <FormHelperText error>{errors.account?.message}</FormHelperText>
           </FormControl>
         </>
       )}
