@@ -42,7 +42,8 @@ export default class ProjectsController {
         goals,
         features,
         otherConstraints,
-        rules
+        rules,
+        crStatus
       } = req.body;
 
       const createdWbsNumber: WbsNumber = await ProjectsService.createProject(
@@ -59,7 +60,8 @@ export default class ProjectsController {
         features,
         otherConstraints,
         projectLeadId,
-        projectManagerId
+        projectManagerId,
+        crStatus
       );
 
       return res.status(200).json(wbsPipe(createdWbsNumber));
@@ -83,7 +85,8 @@ export default class ProjectsController {
         otherConstraints,
         links,
         projectLeadId,
-        projectManagerId
+        projectManagerId,
+        crStatus
       } = req.body;
 
       const editedProject: Project = await ProjectsService.editProject(
@@ -99,7 +102,8 @@ export default class ProjectsController {
         otherConstraints,
         links,
         projectLeadId || null,
-        projectManagerId || null
+        projectManagerId || null,
+        crStatus
       );
 
       return res.status(200).json(editedProject);

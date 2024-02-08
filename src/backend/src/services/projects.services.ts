@@ -1,4 +1,4 @@
-import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import { Role, Material_Type, User, Assembly, Material_Status, Material, WBS_Element_Status } from '@prisma/client';
 import {
   isAdmin,
   isGuest,
@@ -94,6 +94,7 @@ export default class ProjectsService {
    * @param otherConstraints the new otherConstraints of the project
    * @param projectLeadId the new projectLead of the project
    * @param projectManagerId the new projectManager of the project
+   * @param crStatus the status of the change request
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
@@ -111,7 +112,8 @@ export default class ProjectsService {
     features: { id: number; detail: string }[] | null,
     otherConstraints: { id: number; detail: string }[] | null,
     projectLeadId: number | null,
-    projectManagerId: number | null
+    projectManagerId: number | null,
+    crStatus: WBS_Element_Status
   ): Promise<WbsNumber> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create projects');
     const { userId } = user;
@@ -171,7 +173,8 @@ export default class ProjectsService {
       otherConstraints,
       linkCreateArgs,
       projectLeadId,
-      projectManagerId
+      projectManagerId,
+      crStatus
     );
 
     return wbsNumOf(createdWbsElement);
@@ -195,6 +198,7 @@ export default class ProjectsService {
    * @param taskListLink the new taskListLink of the project
    * @param projectLeadId the new projectLead of the project
    * @param projectManagerId the new projectManager of the project
+   * @param crStatus the status of the change request
    * @returns the edited project
    */
   static async editProject(
@@ -210,7 +214,8 @@ export default class ProjectsService {
     otherConstraints: { id: number; detail: string }[],
     linkCreateArgs: LinkCreateArgs[],
     projectLeadId: number | null,
-    projectManagerId: number | null
+    projectManagerId: number | null,
+    crStatus: WBS_Element_Status
   ): Promise<Project> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('edit projects');
     const { userId } = user;
@@ -253,7 +258,8 @@ export default class ProjectsService {
       otherConstraints,
       linkCreateArgs,
       projectLeadId,
-      projectManagerId
+      projectManagerId,
+      crStatus
     );
 
     // return the updated work package

@@ -27,9 +27,9 @@ export const isRole = (validationObject: ValidationChain): ValidationChain => {
 
 export const isWbsElementStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
-  .isString()
-  .isIn([WBS_Element_Status.ACTIVE, WBS_Element_Status.INACTIVE, WBS_Element_Status.COMPLETE]);
-}
+    .isString()
+    .isIn([WBS_Element_Status.ACTIVE, WBS_Element_Status.INACTIVE, WBS_Element_Status.COMPLETE]);
+};
 
 export const validateReimbursementProducts = () => {
   return [

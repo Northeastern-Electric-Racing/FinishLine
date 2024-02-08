@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString, isWbsElementStatus } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ProjectsController from '../controllers/projects.controllers';
 
@@ -47,14 +47,17 @@ projectRouter.post(
   body('teamIds').isArray(),
   nonEmptyString(body('teamIds.*')),
   body('budget').optional().isInt({ min: 0 }).default(0),
+  isWbsElementStatus(body('crStatus')),
   ...projectValidators,
   validateInputs,
   ProjectsController.createProject
 );
+
 projectRouter.post(
   '/edit',
   intMinZero(body('projectId')),
   intMinZero(body('budget')),
+  isWbsElementStatus(body('crStatus')),
   ...projectValidators,
   validateInputs,
   ProjectsController.editProject
