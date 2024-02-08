@@ -90,9 +90,7 @@ const FinancePage = () => {
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
-      >
-        Actions
-      </NERButton>
+      ></NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
         <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
           <ListItemIcon>
