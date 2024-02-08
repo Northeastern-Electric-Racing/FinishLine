@@ -1,3 +1,4 @@
+import { WBS_Element_Status } from '@prisma/client';
 import { body, ValidationChain } from 'express-validator';
 import { ClubAccount, MaterialStatus } from 'shared';
 import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
@@ -23,6 +24,12 @@ export const isRole = (validationObject: ValidationChain): ValidationChain => {
     .isString()
     .isIn([RoleEnum.APP_ADMIN, RoleEnum.ADMIN, RoleEnum.HEAD, RoleEnum.LEADERSHIP, RoleEnum.MEMBER, RoleEnum.GUEST]);
 };
+
+export const isWbsElementStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+  .isString()
+  .isIn([WBS_Element_Status.ACTIVE, WBS_Element_Status.INACTIVE, WBS_Element_Status.COMPLETE]);
+}
 
 export const validateReimbursementProducts = () => {
   return [

@@ -84,7 +84,8 @@ export const updateProjectAndCreateChanges = async (
   newOtherConstraints: { id: number; detail: string }[] | null,
   newLinkCreateArgs: LinkCreateArgs[] | null,
   projectLeadId: number | null,
-  projectManagerId: number | null
+  projectManagerId: number | null,
+  crStatus: WBS_Element_Status
 ) => {
   let changesJson: ChangeCreateArgs[] = [];
 
