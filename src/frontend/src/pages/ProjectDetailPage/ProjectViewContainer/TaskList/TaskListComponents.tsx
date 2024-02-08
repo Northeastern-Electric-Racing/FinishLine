@@ -128,7 +128,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
       options={autocompleteOptions}
       getOptionLabel={(option) => option.label}
       onChange={(_, value) => handleValueChange(value)}
-      value={assignees.map((u: UserPreview) => autocompleteOptions.find((o: any) => o.id === u.userId)!)}
+      value={assignees.map((u: UserPreview) => autocompleteOptions.find((o) => o.id === u.userId)!)}
       // TODO: make assignees an array with a custom method
       renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
       ref={handleRef}
