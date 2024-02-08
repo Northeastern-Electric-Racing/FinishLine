@@ -143,17 +143,20 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     );
   };
 
-  const CreateWorkPackageButton = () => (
-    <MenuItem
-      onClick={() => history.push(`${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`)}
-      disabled={isGuest(user.role)}
-    >
-      <ListItemIcon>
-        <ContentPasteIcon fontSize="small" />
-      </ListItemIcon>
-      Create Work Package
-    </MenuItem>
-  );
+  const BuildURLForCreateWorkPackage = () => {
+    return `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`;
+  };
+
+  const CreateWorkPackageButton = () => {
+    return (
+      <MenuItem onClick={() => history.push(BuildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
+        <ListItemIcon>
+          <ContentPasteIcon fontSize="small" />
+        </ListItemIcon>
+        Create Work Package
+      </MenuItem>
+    );
+  };
 
   const DeleteButton = () => (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>

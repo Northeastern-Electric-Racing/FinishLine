@@ -100,7 +100,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       ? {
           what: crDesc,
           why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
-          type: ChangeRequestType.Issue
+          type: ChangeRequestType.Redefinition
         }
       : {
           what: crDesc,
