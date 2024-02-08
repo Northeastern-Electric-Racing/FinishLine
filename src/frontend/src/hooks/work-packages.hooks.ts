@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WbsNumber} from 'shared';
+import { WorkPackage, WbsNumber } from 'shared';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
