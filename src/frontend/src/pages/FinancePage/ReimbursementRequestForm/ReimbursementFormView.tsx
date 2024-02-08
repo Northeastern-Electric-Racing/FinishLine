@@ -211,7 +211,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       size="medium"
                       options={mappedExpenseTypes}
                       value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
-                      placeholder=""
+                      placeholder="Select Account Code"
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
                       }}
