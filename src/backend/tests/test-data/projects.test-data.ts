@@ -219,15 +219,13 @@ export const material1: Material = {
 export const prismaManufacturer1: PrismaManufacturer = {
   name: 'PrismaManufacturer1',
   dateCreated: new Date('10-1-2023'),
-  userCreatedId: 1,
-  dateDeleted: null
+  userCreatedId: 1
 };
 
 export const prismaManufacturer2: PrismaManufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
   userCreatedId: 1,
-  dateDeleted: new Date('10-18-2023')
 };
 
 export const manufacturer1: Manufacturer = {
@@ -235,7 +233,6 @@ export const manufacturer1: Manufacturer = {
   dateCreated: new Date('02-19-2023'),
   userCreatedId: 1,
   userCreated: batman,
-  dateDeleted: new Date('02-19-2023'),
   materials: []
 };
 
@@ -244,7 +241,6 @@ export const manufacturer2: Manufacturer = {
   dateCreated: new Date('02-19-2023'),
   userCreatedId: 1,
   userCreated: batman,
-  dateDeleted: new Date('02-19-2023'),
   materials: [material1]
 };
 

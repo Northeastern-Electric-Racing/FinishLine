@@ -565,7 +565,6 @@ model Manufacturer {
   dateCreated   DateTime
   userCreatedId Int
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
-  dateDeleted   DateTime?
   materials     Material[]
 }
 
