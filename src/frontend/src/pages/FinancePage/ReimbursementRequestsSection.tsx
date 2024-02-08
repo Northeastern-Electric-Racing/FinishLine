@@ -47,6 +47,7 @@ const ReimbursementRequestTable = ({
               <ColumnHeader title="Date Submitted To Sabo" />
               <ColumnHeader title="Vendor" />
               <ColumnHeader title="Status" />
+              <ColumnHeader title="Refund Source" />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -64,6 +65,7 @@ const ReimbursementRequestTable = ({
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
                 <TableCell align="center">{row.vendor.name}</TableCell>
                 <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
+                <TableCell align="center">{row.refundSource}</TableCell>
               </TableRow>
             ))}
           </TableBody>
