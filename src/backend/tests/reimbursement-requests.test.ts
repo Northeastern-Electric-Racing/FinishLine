@@ -34,7 +34,8 @@ import {
   wonderwoman,
   theVisitor,
   aquaman,
-  greenlantern
+  greenlantern,
+  batmanSettings
 } from './test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
@@ -692,6 +693,7 @@ describe('Reimbursement Requests', () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
       vi.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);
+      vi.spyOn(prisma.user_Settings, 'findUnique').mockResolvedValue(batmanSettings);
 
       const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(
         prismaGiveMeMyMoney3.reimbursementRequestId,

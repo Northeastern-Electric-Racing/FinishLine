@@ -760,7 +760,7 @@ export default class ReimbursementRequestService {
     });
 
     if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
-    
+
     sendReimburseDeniedNotificationToUser(recipientSettings?.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
