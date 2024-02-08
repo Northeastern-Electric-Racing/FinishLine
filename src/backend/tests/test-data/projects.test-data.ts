@@ -225,7 +225,7 @@ export const prismaManufacturer1: PrismaManufacturer = {
 export const prismaManufacturer2: PrismaManufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  userCreatedId: 1,
+  userCreatedId: 1
 };
 
 export const manufacturer1: Manufacturer = {
