@@ -44,6 +44,8 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param wpPayload Payload containing all information needed to create a work package.
  */
+
+// Replaced 'any' types with CreateWorkPackageApiInputs from work-packages.api.ts
 export const useCreateSingleWorkPackage = () => {
   return useMutation<{ message: string }, Error, CreateWorkPackageApiInputs>(['work packages', 'create'], async (wpPayload: CreateWorkPackageApiInputs) => {
     const { data } = await createSingleWorkPackage(wpPayload);
@@ -56,6 +58,8 @@ export const useCreateSingleWorkPackage = () => {
  *
  * @returns React-query tility functions exposed by the useMutation hook
  */
+
+// Replaced 'any' types with CreateWorkPackageApiInputs from work-packages.api.ts
 export const useEditWorkPackage = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CreateWorkPackageApiInputs>(
