@@ -110,10 +110,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Box
-                    sx={{ backgroundColor: 'blue', display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }}
-                    component={'ul'}
-                  >
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <ListItem key={product.index}>
                         <Box
@@ -132,10 +129,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                               <Controller
                                 name={`reimbursementProducts.${product.index}.name`}
                                 control={control}
-                                render={({ field, fieldState: { error } }) => (
+                                render={({ fieldState: { error } }) => (
                                   <TextField
-                                    {...field}
-                                    label="Description"
+                                    placeholder="Description"
                                     error={!!error}
                                     helperText={error ? error.message : null}
                                     variant="outlined"
@@ -151,11 +147,11 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                               <Controller
                                 name={`reimbursementProducts.${product.index}.cost`}
                                 control={control}
-                                render={({ field, fieldState: { error } }) => (
+                                render={({ fieldState: { error } }) => (
                                   <TextField
-                                    {...field}
-                                    label="Cost"
+                                    placeholder="Cost"
                                     type="number"
+                                    InputLabelProps={{ shrink: true }}
                                     InputProps={{
                                       startAdornment: <InputAdornment position="start">$</InputAdornment>
                                     }}
