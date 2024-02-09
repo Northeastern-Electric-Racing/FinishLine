@@ -45,7 +45,6 @@ export interface Manufacturer {
   dateCreated: Date;
   userCreatedId: number;
   userCreated: User;
-  dateDeleted?: Date;
   materials: MaterialPreview[];
 }
 

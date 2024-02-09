@@ -16,7 +16,6 @@ const manufacturerTransformer = (
     dateCreated: manufacturer.dateCreated,
     userCreatedId: manufacturer.userCreatedId,
     userCreated: manufacturer.userCreated,
-    dateDeleted: manufacturer.dateDeleted ?? undefined,
     materials: manufacturer.materials.map(materialPreviewTransformer)
   };
 };
