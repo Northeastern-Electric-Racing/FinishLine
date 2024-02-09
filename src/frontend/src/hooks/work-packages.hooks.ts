@@ -48,6 +48,9 @@ export const useCreateSingleWorkPackage = () => {
   return useMutation<{ message: string }, Error>(
     ['work packages', 'create'],
     async (wpPayload: CreateWorkPackageApiInputs | void) => {
+      if (!wpPayload) {
+        throw new Error('Invalid work package payload');
+      }
       const { data } = await createSingleWorkPackage(wpPayload);
       return data;
     }
@@ -64,6 +67,9 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
   return useMutation<{ message: string }, Error>(
     ['work packages', 'edit'],
     async (wpPayload: CreateWorkPackageApiInputs | void) => {
+      if (!wpPayload) {
+        throw new Error('Invalid work package payload');
+      }
       const { data } = await editWorkPackage(wpPayload);
       return data;
     },

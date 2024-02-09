@@ -54,8 +54,8 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param payload Payload containing all the necessary data to create a work package.
  */
 export const createSingleWorkPackage = (payload: CreateWorkPackageApiInputs | void) => {
-  if (payload === undefined) {
-    throw new Error('Invalid payload');
+  if (!payload) {
+    throw new Error('Invalid work package payload');
   }
   return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
     ...payload
