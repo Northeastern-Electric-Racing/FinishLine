@@ -7,6 +7,8 @@ import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -79,7 +81,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={8}>
           <FormControl fullWidth>
             <FormLabel>Status</FormLabel>
             <Controller
@@ -98,7 +100,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={8}>
           <FormControl fullWidth>
             <FormLabel>Type</FormLabel>
             <Controller
@@ -137,18 +139,30 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   setValue('manufacturerName', '');
                   onChange('');
                 };
-
                 return (
-                  <NERAutocomplete
-                    id={'manufacturer'}
-                    size="medium"
-                    options={mappedManufacturers}
-                    value={mappedManufacturers.find((manufacturer) => manufacturer.label === value) || null}
-                    placeholder="Select Manufacturer"
-                    onChange={(_event, newValue) => {
-                      newValue ? onChange(newValue.id) : onClear();
-                    }}
-                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <NERAutocomplete
+                      id={'manufacturer'}
+                      size="medium"
+                      options={mappedManufacturers}
+                      value={mappedManufacturers.find((manufacturer) => manufacturer.label === value) || null}
+                      placeholder="Select Manufacturer"
+                      onChange={(_event, newValue) => {
+                        newValue ? onChange(newValue.id) : onClear();
+                      }}
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        const newManufacturerName = prompt('Enter New Manufacturer Name');
+                        if (newManufacturerName !== null) {
+                          createManufacturer(newManufacturerName);
+                        }
+                      }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
                 );
               }}
             />
