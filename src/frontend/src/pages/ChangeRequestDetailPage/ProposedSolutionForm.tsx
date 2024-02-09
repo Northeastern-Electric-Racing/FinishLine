@@ -18,6 +18,7 @@ interface ProposedSolutionFormProps {
   timelineImpact?: number;
   scopeImpact?: string;
   readOnly?: boolean;
+  isEditing?: boolean;
   onAdd: (data: ProposedSolution) => void;
   open: boolean;
   onClose: () => void;
@@ -44,6 +45,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   timelineImpact,
   scopeImpact,
   readOnly,
+  isEditing = false,
   onAdd,
   open,
   onClose
@@ -203,7 +205,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                Add
+                {isEditing ? 'Save' : 'Add'}
               </NERSuccessButton>
             </Box>
           )}

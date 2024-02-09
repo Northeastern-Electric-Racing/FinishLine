@@ -45,6 +45,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
         timelineImpact={proposedSolution.timelineImpact}
         scopeImpact={proposedSolution.scopeImpact}
         open={showEditModal}
+        isEditing={showEditModal}
         onClose={() => setShowEditModal(false)}
         onAdd={(data) => {
           if (onEdit) {
