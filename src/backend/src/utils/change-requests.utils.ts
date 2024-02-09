@@ -1,5 +1,5 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request, Change } from '@prisma/client';
+import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request, Change, WBS_Element } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
 import { reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
@@ -22,6 +22,15 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
     OTHER: ChangeRequestReason.Other
   }[whyType]);
 
+/**
+ * Sends slack notifications to teams for new CRs and returns the messages sent in slack
+ *
+ * @param team the teams of the cr to notify
+ * @param message the message to send to the teams
+ * @param crId the cr id
+ * @param budgetImpact the amount of budget requested for the cr
+ * @returns the channelId and timestamp of the messages sent in slack
+ */
 export const sendSlackChangeRequestNotification = async (
   team: Team,
   message: string,
@@ -49,14 +58,31 @@ export const sendSlackChangeRequestNotification = async (
   return msgs;
 };
 
-export const sendAndGetSlackCRNotifications = async (teams: Team[], message: string, crId: number) => {
+export const sendAndGetSlackCRNotifications = async (
+  teams: Team[],
+  changeRequest: Change_Request,
+  submitter: User,
+  wbsElement: WBS_Element,
+  projectWbsName: string
+) => {
   const notifications: { channelId: string; ts: string }[] = [];
+  let message = '';
+  switch (changeRequest.type) {
+    case 'ACTIVATION':
+      message = `${submitter.firstName} ${submitter.lastName} wants to activate ${wbsElement.name} in ${projectWbsName}`;
+      break;
+    case 'STAGE_GATE':
+      message = `${submitter.firstName} ${submitter.lastName} wants to stage gate ${wbsElement.name} in ${projectWbsName}`;
+      break;
+    default:
+      message = `${changeRequest.type} CR submitted by ${submitter.firstName} ${submitter.lastName} for the ${projectWbsName} project`;
+  }
 
   const completion: Promise<void>[] = teams.map(async (team) => {
     const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
       team,
       message,
-      crId
+      changeRequest.crId
     );
     if (sentNotifications) notifications.push(...sentNotifications);
   });
@@ -76,6 +102,13 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: num
   return Promise.all(msgs);
 };
 
+/**
+ * Replies and reacts to slack messages with the new change request status
+ *
+ * @param threads the threads of cr slack notifications to reply/react to
+ * @param crId the cr id
+ * @param approved is the cr approved
+ */
 export const sendSlackCRStatusToThread = async (
   threads: {
     messageInfoId: string;
