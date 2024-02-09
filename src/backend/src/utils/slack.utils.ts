@@ -73,7 +73,7 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
  * @param slackId the slack id of the assignee
  * @param denial the denial if the reimbursement request
  */
-export const sendReimburseDeniedNotificationToUser = async (slackId: string, requestId: string): Promise<void> => {
+export const sendReimbursementRequestDeniedNotification = async (slackId: string, requestId: string): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const msg = `Your reimbursement request has been denied.`;

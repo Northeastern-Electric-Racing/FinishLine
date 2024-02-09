@@ -50,7 +50,7 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
-import { sendReimburseDeniedNotificationToUser } from '../utils/slack.utils';
+import { sendReimbursementRequestDeniedNotification } from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -761,7 +761,7 @@ export default class ReimbursementRequestService {
 
     if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 
-    sendReimburseDeniedNotificationToUser(recipientSettings?.slackId, reimbursementRequestId);
+    sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
