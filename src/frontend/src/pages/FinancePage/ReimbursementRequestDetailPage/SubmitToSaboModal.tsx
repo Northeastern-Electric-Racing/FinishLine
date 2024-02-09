@@ -122,7 +122,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Typography>Brody Pearlman</Typography>
-            <Typography>pearlman.edu@northeastern.edu</Typography>
+            <Typography>pearlman.br@northeastern.edu</Typography>
           </Stack>
         </Grid>
       </Grid>
