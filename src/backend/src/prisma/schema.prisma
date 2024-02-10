@@ -161,26 +161,35 @@ model User_Settings {
 }
 
 model Change_Request {
-  crId                    Int            @id @default(autoincrement())
-  submitterId             Int
-  submitter               User           @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
-  dateSubmitted           DateTime       @default(now())
-  dateDeleted             DateTime?
-  wbsElementId            Int
-  wbsElement              WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  type                    CR_Type
-  reviewerId              Int?
-  reviewer                User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
-  requestedReviewers      User[]         @relation(name: "requestedChangeRequestReviewers")
-  deletedByUserId         Int?
-  deletedBy               User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
-  dateReviewed            DateTime?
-  accepted                Boolean?
-  reviewNotes             String?
-  changes                 Change[]
-  scopeChangeRequest      Scope_CR?
-  stageGateChangeRequest  Stage_Gate_CR?
-  activationChangeRequest Activation_CR?
+  crId                     Int            @id @default(autoincrement())
+  submitterId              Int
+  submitter                User           @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
+  dateSubmitted            DateTime       @default(now())
+  dateDeleted              DateTime?
+  wbsElementId             Int
+  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  type                     CR_Type
+  reviewerId               Int?
+  reviewer                 User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
+  requestedReviewers       User[]         @relation(name: "requestedChangeRequestReviewers")
+  deletedByUserId          Int?
+  deletedBy                User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
+  dateReviewed             DateTime?
+  accepted                 Boolean?
+  reviewNotes              String?
+  changes                  Change[]
+  scopeChangeRequest       Scope_CR?
+  stageGateChangeRequest   Stage_Gate_CR?
+  activationChangeRequest  Activation_CR?
+  notificationSlackThreads Message_Info[]
+}
+
+model Message_Info {
+  messageInfoId   String         @id @default(uuid())
+  channelId       String
+  timestamp       String
+  changeRequestId Int
+  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
 }
 
 model Scope_CR {
