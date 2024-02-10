@@ -547,8 +547,8 @@ export default class ProjectsService {
     price: number,
     subtotal: number,
     linkUrl: string,
-    notes: string,
     wbsNumber: WbsNumber,
+    notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
     unitName?: string
@@ -1021,7 +1021,7 @@ export default class ProjectsService {
     price: number,
     subtotal: number,
     linkUrl: string,
-    notes: string,
+    notes?: string,
     unitName?: string,
     assemblyId?: string,
     pdmFileName?: string

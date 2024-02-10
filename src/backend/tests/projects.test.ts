@@ -517,8 +517,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -541,8 +541,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -566,8 +566,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -592,8 +592,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -619,8 +619,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -648,8 +648,8 @@ describe('Projects', () => {
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -676,8 +676,8 @@ describe('Projects', () => {
         800,
         400,
         'https://www.google.com',
-        'none',
         { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+        'none',
         'assemblyName',
         'file',
         'FT'
@@ -973,7 +973,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -998,7 +998,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1023,7 +1023,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1049,7 +1049,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1075,7 +1075,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1100,7 +1100,7 @@ describe('Projects', () => {
         prismaMaterial2.price,
         prismaMaterial2.subtotal,
         prismaMaterial2.linkUrl,
-        prismaMaterial2.notes,
+        prismaMaterial2.notes || undefined,
         prismaMaterial2.unitName || undefined,
         prismaMaterial2.assemblyId || undefined,
         prismaMaterial2.pdmFileName || undefined
