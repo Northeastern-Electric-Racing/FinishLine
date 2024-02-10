@@ -13,20 +13,23 @@ import {
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { alfred, batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import { ClubAccount, ExpenseType, ReimbursementRequest } from 'shared';
+import { ClubAccount, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
 import userTransformer from '../../src/transformers/user.transformer';
+import { vendorTransformer, expenseTypeTransformer } from '../../src/transformers/reimbursement-requests.transformer';
 
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
-  name: 'Pop Eyes'
+  name: 'Pop Eyes',
+  dateDeleted: null
 };
 
 export const KFC: PrismaVendor = {
   vendorId: 'CHICKEN',
   dateCreated: new Date('12/22/203'),
-  name: 'kfc'
+  name: 'kfc',
+  dateDeleted: null
 };
 
 export const Parts: PrismaExpenseType = {
@@ -34,7 +37,8 @@ export const Parts: PrismaExpenseType = {
   name: 'hammer',
   code: 12245,
   allowed: true,
-  allowedRefundSources: [Club_Accounts.CASH, Club_Accounts.BUDGET]
+  allowedRefundSources: [Club_Accounts.CASH, Club_Accounts.BUDGET],
+  dateDeleted: null
 };
 
 export const GiveMeMyMoney: PrismaReimbursementRequest = {
@@ -210,8 +214,8 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
   dateOfExpense: GiveMeMyMoney.dateOfExpense,
   totalCost: GiveMeMyMoney.totalCost,
   receiptPictures: [],
-  expenseType: Parts as ExpenseType,
-  vendor: PopEyes,
+  expenseType: expenseTypeTransformer(Parts),
+  vendor: vendorTransformer(PopEyes),
   recipient: userTransformer(batman),
   saboId: undefined,
   dateDeleted: undefined,
@@ -227,4 +231,13 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
       reimbursementProductId: GiveMeMoneyProduct.reimbursementProductId
     }
   ]
+};
+
+export const reimbursementMock = {
+  reimbursementId: 'reimbursementMockId',
+  purchaserId: batman.userId,
+  amount: 12,
+  dateCreated: new Date('2023-01-01'),
+  userSubmitted: batman,
+  userSubmittedId: batman.userId
 };

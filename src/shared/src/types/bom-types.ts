@@ -1,4 +1,5 @@
 import { User, UserPreview } from './user-types';
+import { Decimal } from 'decimal.js';
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
@@ -44,7 +45,6 @@ export interface Manufacturer {
   dateCreated: Date;
   userCreatedId: number;
   userCreated: User;
-  dateDeleted?: Date;
   materials: MaterialPreview[];
 }
 
@@ -69,13 +69,13 @@ export interface Material {
   manufacturer: ManufacturerPreview;
   manufacturerPartNumber: string;
   pdmFileName?: string;
-  quantity: number;
+  quantity: Decimal;
   unitName?: string;
   quantityUnit?: UnitPreview;
   price: number;
   subtotal: number;
   linkUrl: string;
-  notes: string;
+  notes?: string;
 }
 
 export type MaterialPreview = Omit<

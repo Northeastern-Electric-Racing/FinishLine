@@ -18,7 +18,7 @@ interface TaskListProps {
   project: Project;
 }
 
-//used two sort two Tasks based on ascending times
+// used two sort two Tasks based on ascending times
 const sortAscendingDate = (task1: Task, task2: Task) => {
   const deadLine1 = task1.deadline.getTime();
   const deadLine2 = task2.deadline.getTime();
