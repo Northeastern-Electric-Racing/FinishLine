@@ -1,4 +1,5 @@
 import {
+  ClubAccount,
   Project,
   Reimbursement,
   ReimbursementProduct,
@@ -9,6 +10,9 @@ import {
   WbsNumber,
   wbsPipe
 } from 'shared';
+import { ReimbursementRequestFormInput } from '../pages/FinancePage/ReimbursementRequestForm/ReimbursementRequestForm';
+import ReimbursementRequestFormView from '../pages/FinancePage/ReimbursementRequestForm/ReimbursementFormView';
+import { CloudUpload } from '@mui/icons-material';
 
 export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
   reimbursementRequest: ReimbursementRequest
@@ -70,6 +74,17 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
   }
 };
 
+export const cleanReimbursementRequestRefundSource = (refundSource: ClubAccount) => {
+  switch (refundSource) {
+    case ClubAccount.BUDGET: {
+      return 'Budget';
+    }
+    case ClubAccount.CASH: {
+      return 'Cash';
+    }
+  }
+};
+
 export const getCurrentReimbursementStatus = (statuses: ReimbursementStatus[]) => {
   return statuses.sort((a: ReimbursementStatus, b: ReimbursementStatus) => (a.dateCreated > b.dateCreated ? -1 : 1))[0];
 };
@@ -121,6 +136,7 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     dateSubmitted: reimbursementRequest.dateCreated,
     status: getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type,
     dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
-    submitter: reimbursementRequest.recipient
+    submitter: reimbursementRequest.recipient,
+    refundSource: reimbursementRequest.account
   };
 };

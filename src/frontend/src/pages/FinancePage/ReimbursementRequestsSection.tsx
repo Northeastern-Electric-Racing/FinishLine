@@ -7,7 +7,11 @@ import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
-import { cleanReimbursementRequestStatus, createReimbursementRequestRowData } from '../../utils/reimbursement-request.utils';
+import {
+  cleanReimbursementRequestStatus,
+  createReimbursementRequestRowData,
+  cleanReimbursementRequestRefundSource
+} from '../../utils/reimbursement-request.utils';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -45,6 +49,7 @@ const ReimbursementRequestTable = ({
               <ColumnHeader title="Date Submitted" />
               <ColumnHeader title="Date Submitted To Sabo" />
               <ColumnHeader title="Status" />
+              <ColumnHeader title="Refund Source" />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -61,6 +66,7 @@ const ReimbursementRequestTable = ({
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
                 <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
+                <TableCell align="center">{cleanReimbursementRequestRefundSource(row.refundSource)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
