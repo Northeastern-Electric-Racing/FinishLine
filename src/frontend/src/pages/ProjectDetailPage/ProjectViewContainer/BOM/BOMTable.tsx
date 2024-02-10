@@ -1,9 +1,10 @@
 import { Box } from '@mui/system';
-import { DataGrid, GridColumns } from '@mui/x-data-grid';
+import { DataGrid, GridColumns, GridRowParams } from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
 import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
 import { addMaterialCosts } from '../BOMTab';
 import { centsToDollar } from '../../../../utils/pipes';
+import { useState } from 'react';
 
 interface BOMTableProps {
   columns: GridColumns<BomRow>;
@@ -13,8 +14,41 @@ interface BOMTableProps {
 
 const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
+  const miscAssembly = {
+    id: `assembly-misc`,
+    materialId: '',
+    status: '',
+    type: '',
+    name: '',
+    manufacturer: '',
+    manufacturerPN: `Miscellaneous Materials: $${centsToDollar(noAssemblyMaterials.reduce(addMaterialCosts, 0))}`,
+    pdmFileName: '',
+    quantity: '',
+    price: '',
+    subtotal: '',
+    link: '',
+    notes: '',
+    assemblyId: 'assembly-misc'
+  } as BomRow;
 
-  const rows: BomRow[] = noAssemblyMaterials.map(materialToRow);
+  const rows: BomRow[] = [miscAssembly].concat(
+    noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx))
+  );
+
+  const defaultOpen: string[] = [];
+  const [openRows, setOpenRows] = useState(defaultOpen);
+
+  const isAssemblyOpen = (row: BomRow) => {
+    return !row.assemblyId || row.assemblyId === '' || openRows.includes(row.assemblyId) || row.id.startsWith('assembly');
+  };
+
+  const openAssembly = (event: GridRowParams) => {
+    if (openRows.includes(event.row.assemblyId)) {
+      setOpenRows(openRows.filter((e) => e !== event.row.assemblyId));
+    } else {
+      setOpenRows(openRows.concat([event.row.assemblyId]));
+    }
+  };
 
   assemblies.forEach((assembly) => {
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
@@ -31,7 +65,8 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
       price: '',
       subtotal: '',
       link: '',
-      notes: ''
+      notes: '',
+      assemblyId: assembly.assemblyId
     });
     assemblyMaterials.forEach((material, indx) => rows.push(materialToRow(material, indx)));
   });
@@ -57,14 +92,15 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
     >
       <DataGrid
         columns={columns}
-        rows={rows}
+        rows={rows.filter(isAssemblyOpen)}
         getRowClassName={(params) =>
           `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
         }
-        rowsPerPageOptions={[]}
+        rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
         autoHeight={false}
+        onRowClick={openAssembly}
       />
     </Box>
   );
