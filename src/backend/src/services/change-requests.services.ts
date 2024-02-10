@@ -424,7 +424,7 @@ export default class ChangeRequestsService {
         createdCR,
         submitter,
         wbsElement,
-        createdCR.wbsElement.workPackage?.project.wbsElement.name as string
+        createdCR.wbsElement.workPackage?.project.wbsElement.name || ''
       );
 
       // save the slack references to the change request
@@ -520,7 +520,7 @@ export default class ChangeRequestsService {
         createdChangeRequest,
         submitter,
         wbsElement,
-        createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name as string
+        createdChangeRequest.wbsElement.workPackage?.project.wbsElement.name || ''
       );
 
       // save the slack references to the change request
