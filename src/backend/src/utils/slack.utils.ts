@@ -2,6 +2,7 @@ import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'sh
 import { sendMessage } from '../integrations/slack';
 import { getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
+import { HttpException } from './errors.utils';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -80,5 +81,11 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
-  await sendMessage(slackId, msg, link, linkButtonText);
+  try {
+    await sendMessage(slackId, msg, link, linkButtonText);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
+    }
+  }
 };
