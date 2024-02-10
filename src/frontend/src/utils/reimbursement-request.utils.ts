@@ -137,7 +137,7 @@ export const createReimbursementRequestRowData = (reimbursementRequest: Reimburs
     status: getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type,
     dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
     submitter: reimbursementRequest.recipient,
-    refundSource: reimbursementRequest.account,
-    vendor: reimbursementRequest.vendor
+    vendor: reimbursementRequest.vendor,
+    refundSource: reimbursementRequest.account
   };
 };
