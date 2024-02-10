@@ -81,7 +81,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>Status</FormLabel>
             <Controller
@@ -100,7 +100,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>Type</FormLabel>
             <Controller
@@ -125,7 +125,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={12}>
           <FormControl fullWidth>
             <FormLabel>Manufacturer</FormLabel>
             <Controller
@@ -142,6 +142,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 return (
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <NERAutocomplete
+                      sx={{ bgcolor: 'rgb(77, 77, 77)' }}
                       id={'manufacturer'}
                       size="medium"
                       options={mappedManufacturers}
