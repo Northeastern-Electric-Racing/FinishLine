@@ -151,6 +151,7 @@ export const batmanScheduleSettings: Schedule_Settings = {
 
 export const batmanWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
   ...batman,
+  userId: 696,
   scheduleSettings: {
     ...batmanScheduleSettings
   }

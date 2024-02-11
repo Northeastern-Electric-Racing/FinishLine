@@ -6,7 +6,9 @@ import {
   superman,
   batmanSecureSettings,
   sharedBatman,
-  theVisitor
+  theVisitor,
+  batmanWithScheduleSettings,
+  batmanScheduleSettings
 } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
@@ -134,6 +136,25 @@ describe('Users', () => {
           batmanSecureSettings.phoneNumber
         )
       ).rejects.toThrow(new HttpException(400, 'Phone number already in use'));
+    });
+  });
+
+  describe('getUserScheduleSettings', () => {
+    test('getUserScheduleSettings for user with no settings', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+      await expect(() => UsersService.getUserScheduleSetting(404)).rejects.toThrow(
+        new HttpException(404, 'User Schedule Settings Not Found')
+      );
+    });
+
+    test('getUserScheduleSettings runs', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
+      vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
+      const res = await UsersService.getUserScheduleSetting(batmanWithScheduleSettings.userId);
+
+      //expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual(batmanScheduleSettings);
     });
   });
 });
