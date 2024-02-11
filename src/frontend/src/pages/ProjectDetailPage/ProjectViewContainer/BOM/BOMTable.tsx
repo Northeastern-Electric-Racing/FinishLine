@@ -5,7 +5,6 @@ import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.uti
 import { addMaterialCosts } from '../BOMTab';
 import { centsToDollar } from '../../../../utils/pipes';
 import { useState } from 'react';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 interface BOMTableProps {
   columns: GridColumns<BomRow>;
