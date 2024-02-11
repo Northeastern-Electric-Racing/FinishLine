@@ -5,6 +5,7 @@ import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.uti
 import { addMaterialCosts } from '../BOMTab';
 import { centsToDollar } from '../../../../utils/pipes';
 import { useState } from 'react';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 interface BOMTableProps {
   columns: GridColumns<BomRow>;
@@ -13,6 +14,9 @@ interface BOMTableProps {
 }
 
 const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
+  const defaultOpen: string[] = [];
+  const [openRows, setOpenRows] = useState(defaultOpen);
+
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
   const miscAssembly = {
     id: `assembly-misc`,
@@ -21,7 +25,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
     type: '',
     name: '',
     manufacturer: '',
-    manufacturerPN: `Miscellaneous Materials: $${centsToDollar(noAssemblyMaterials.reduce(addMaterialCosts, 0))}`,
+    manufacturerPN: `${openRows.includes('assembly-misc') ? '🠝' : '🠟'}  Miscellaneous Materials: $${centsToDollar(
+      noAssemblyMaterials.reduce(addMaterialCosts, 0)
+    )}`,
     pdmFileName: '',
     quantity: '',
     price: '',
@@ -34,9 +40,6 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
   const rows: BomRow[] = [miscAssembly].concat(
     noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx))
   );
-
-  const defaultOpen: string[] = [];
-  const [openRows, setOpenRows] = useState(defaultOpen);
 
   const isAssemblyOpen = (row: BomRow) => {
     return !row.assemblyId || row.assemblyId === '' || openRows.includes(row.assemblyId) || row.id.startsWith('assembly');
@@ -60,7 +63,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
       type: '',
       name: '',
       manufacturer: '',
-      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(assembly.materials.reduce(addMaterialCosts, 0))}`,
+      manufacturerPN: `${openRows.includes(assembly.assemblyId) ? '🠝' : '🠟'}  Assembly - ${assembly.name}: $${centsToDollar(
+        assembly.materials.reduce(addMaterialCosts, 0)
+      )}`,
       pdmFileName: '',
       quantity: '',
       price: '',
