@@ -145,4 +145,14 @@ export default class UsersController {
       next(error);
     }
   }
+
+  static async getUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId: number = parseInt(req.params.userId);
+      const userScheduleSettings = await UsersService.getUserScheduleSetting(userId);
+      res.status(200).json(userScheduleSettings);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

@@ -9,7 +9,8 @@ import {
   Project,
   RoleEnum,
   isHead,
-  UserSecureSettings
+  UserSecureSettings,
+  userScheduleSettings
 } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
@@ -21,6 +22,7 @@ import projectTransformer from '../transformers/projects.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
+import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
 
 export default class UsersService {
   /**
@@ -319,5 +321,19 @@ export default class UsersService {
     });
 
     return newUserSecureSettings.userSecureSettingsId;
+  }
+
+  /**
+   * Gets a user's schedule settings
+   * @param userId the id of the user who's schedule settings are being returned
+   * @returns
+   */
+  static async getUserScheduleSetting(userId: number): Promise<userScheduleSettings> {
+    const scheduleSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId }
+    });
+    if (!scheduleSettings) throw new HttpException(404, 'User Schedule Settings Not Found');
+
+    return userScheduleSettingsTransformer(scheduleSettings);
   }
 }
