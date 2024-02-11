@@ -7,7 +7,7 @@ import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
-import IconButton from '@mui/material/IconButton';
+import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
 
 export interface MaterialFormViewProps {
@@ -142,7 +142,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 return (
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <NERAutocomplete
-                      sx={{ bgcolor: 'rgb(77, 77, 77)' }}
+                      sx={{ bgcolor: 'inherit' }}
                       id={'manufacturer'}
                       size="medium"
                       options={mappedManufacturers}
@@ -152,8 +152,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                         newValue ? onChange(newValue.id) : onClear();
                       }}
                     />
-                    <IconButton
-                      size="small"
+                    <NERButton
+                      sx={{ color: 'white' }}
                       onClick={() => {
                         const newManufacturerName = prompt('Enter New Manufacturer Name');
                         if (newManufacturerName !== null) {
@@ -161,8 +161,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                         }
                       }}
                     >
-                      <AddIcon />
-                    </IconButton>
+                      Add New <AddIcon></AddIcon>
+                    </NERButton>
                   </Box>
                 );
               }}
