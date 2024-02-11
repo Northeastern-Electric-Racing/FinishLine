@@ -1,5 +1,4 @@
 import {
-  ClubAccount,
   Project,
   Reimbursement,
   ReimbursementProduct,
@@ -67,17 +66,6 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
     }
     case ReimbursementStatusType.DENIED: {
       return 'Denied';
-    }
-  }
-};
-
-export const cleanReimbursementRequestRefundSource = (refundSource: ClubAccount) => {
-  switch (refundSource) {
-    case ClubAccount.BUDGET: {
-      return 'Budget';
-    }
-    case ClubAccount.CASH: {
-      return 'Cash';
     }
   }
 };
