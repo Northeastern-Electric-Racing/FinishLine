@@ -19,6 +19,7 @@ import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
@@ -142,6 +143,21 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     );
   };
 
+  const buildURLForCreateWorkPackage = () => {
+    return `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`;
+  };
+
+  const CreateWorkPackageButton = () => {
+    return (
+      <MenuItem onClick={() => history.push(buildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
+        <ListItemIcon>
+          <ContentPasteIcon fontSize="small" />
+        </ListItemIcon>
+        Create Work Package
+      </MenuItem>
+    );
+  };
+
   const DeleteButton = () => (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
       <ListItemIcon>
@@ -179,6 +195,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <CreateChangeRequestButton />
         <SuggestBudgetIncreaseButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
+        <CreateWorkPackageButton />
         <DeleteButton />
       </Menu>
     </Box>

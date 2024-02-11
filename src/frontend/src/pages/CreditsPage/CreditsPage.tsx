@@ -223,6 +223,7 @@ const CreditsPage: React.FC = () => {
     },
     { name: 'Chris Pyle', color: '#ADD8E6' },
     { name: 'Zachary Wen', color: '#4169e1' },
+    { name: 'Abner Solomon', color: '#9B5BE3' },
     { name: 'Armaan Mehra', color: '#0B66E5' },
     { name: 'Caden Weaver', color: '#E6FFFD' },
     {
@@ -233,9 +234,10 @@ const CreditsPage: React.FC = () => {
       }
     },
     { name: 'Jhonyel Galvis', color: '#00FFF' },
+    { name: 'Arav Goyal', color: '#6223de' },
+    { name: 'Gayathri Ramakrishnan', color: '#47186e' },
     { name: 'Xander Hoke', color: '#C50D93' },
     { name: 'Claire Hendershot', color: '#008080' },
-    { name: 'Arav Goyal', color: '#6223de' },
     { name: 'Alex Dong', color: '#5d42f5' }
   ];
 

@@ -24,7 +24,8 @@ import {
   prismaReimbursementStatus,
   prismaReimbursementStatus4,
   sharedGiveMeMyMoney,
-  KFC
+  KFC,
+  reimbursementMock
 } from './test-data/reimbursement-requests.test-data';
 import {
   alfred,
@@ -837,6 +838,48 @@ describe('Reimbursement Requests', () => {
       );
 
       expect(newReimbursement).toStrictEqual(reimbursementTransformer(reimbursementMock));
+    });
+  });
+
+  describe('Edit Reimbursement', () => {
+    test('Throws error is user isnt submitter of the reimbursement', async () => {
+      vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
+      await expect(
+        ReimbursementRequestService.editReimbursement(
+          reimbursementMock.reimbursementId,
+          superman,
+          reimbursementMock.amount,
+          reimbursementMock.dateCreated
+        )
+      ).rejects.toThrow(
+        new AccessDeniedException('You do not have access to edit this refund, only the submitter can edit their refund')
+      );
+    });
+
+    test('Throws error if reimbursement doesnt exist', async () => {
+      vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(null);
+      await expect(
+        ReimbursementRequestService.editReimbursement(
+          'fakeId',
+          reimbursementMock.userSubmitted,
+          reimbursementMock.amount,
+          reimbursementMock.dateCreated
+        )
+      ).rejects.toThrow(new NotFoundException('Reimbursement', 'fakeId'));
+    });
+
+    test('Successfully edits a reimbursement', async () => {
+      vi.spyOn(prisma.reimbursement, 'findUnique').mockResolvedValue(reimbursementMock);
+      vi.spyOn(prisma.reimbursement, 'update').mockResolvedValue({ ...reimbursementMock, amount: 17 });
+      const editedReimbursement = await ReimbursementRequestService.editReimbursement(
+        reimbursementMock.reimbursementId,
+        reimbursementMock.userSubmitted,
+        17,
+        reimbursementMock.dateCreated
+      );
+      expect(editedReimbursement).toStrictEqual({ ...reimbursementMock, amount: 17 });
+      expect(editedReimbursement.amount).toBe(17);
+      expect(prisma.reimbursement.update).toBeCalledTimes(1);
     });
   });
 

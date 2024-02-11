@@ -45,7 +45,6 @@ export interface Manufacturer {
   dateCreated: Date;
   userCreatedId: number;
   userCreated: User;
-  dateDeleted?: Date;
   materials: MaterialPreview[];
 }
 
@@ -76,7 +75,7 @@ export interface Material {
   price: number;
   subtotal: number;
   linkUrl: string;
-  notes: string;
+  notes?: string;
 }
 
 export type MaterialPreview = Omit<
