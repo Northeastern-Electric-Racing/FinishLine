@@ -6,7 +6,6 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
-import { useState } from 'react';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -47,8 +46,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const price = watch('price');
   const unit = watch('unitName');
   const subtotal = quantity && price ? (unit ? price : quantity * price) : 0;
-
-  const [prevSelectedUnitVal, setPrevSelectedUnitVal] = useState('');
 
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
