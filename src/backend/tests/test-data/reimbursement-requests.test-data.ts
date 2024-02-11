@@ -232,3 +232,12 @@ export const sharedGiveMeMyMoney: ReimbursementRequest = {
     }
   ]
 };
+
+export const reimbursementMock = {
+  reimbursementId: 'reimbursementMockId',
+  purchaserId: batman.userId,
+  amount: 12,
+  dateCreated: new Date('2023-01-01'),
+  userSubmitted: batman,
+  userSubmittedId: batman.userId
+};
