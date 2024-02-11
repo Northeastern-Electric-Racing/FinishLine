@@ -218,7 +218,7 @@ const ChangeRequestsTable: React.FC = () => {
         sx={{
           border: 0,
           '& .MuiDataGrid-row:hover': {
-            backgroundColor: '#7a2122'
+            backgroundColor: 'rgba(239, 67, 69, 0.6)'
           },
           '& .MuiDataGrid-columnHeader': {
             borderRight: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`,
