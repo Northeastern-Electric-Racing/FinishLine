@@ -43,6 +43,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
   };
 
   const openAssembly = (event: GridRowParams) => {
+    if (!event.row.id.startsWith('assembly')) return;
     if (openRows.includes(event.row.assemblyId)) {
       setOpenRows(openRows.filter((e) => e !== event.row.assemblyId));
     } else {
