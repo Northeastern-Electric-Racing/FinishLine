@@ -142,7 +142,7 @@ describe('Users', () => {
   describe('getUserScheduleSettings', () => {
     test('getUserScheduleSettings for user with no settings', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
-      await expect(() => UsersService.getUserScheduleSetting(404)).rejects.toThrow(
+      await expect(() => UsersService.getUserScheduleSetting).rejects.toThrow(
         new HttpException(404, 'User Schedule Settings Not Found')
       );
     });
@@ -152,7 +152,7 @@ describe('Users', () => {
       vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
       const res = await UsersService.getUserScheduleSetting(batmanWithScheduleSettings.userId);
 
-      //expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual(batmanScheduleSettings);
     });
