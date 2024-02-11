@@ -70,7 +70,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
       quantity: defaultValues?.quantity ?? 0,
       manufacturerName: defaultValues?.manufacturerName ?? '',
-      pdmFileName: defaultValues?.pdmFileName ?? '',
+      pdmFileName: defaultValues?.pdmFileName,
       price: defaultValues?.price ?? 0,
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',

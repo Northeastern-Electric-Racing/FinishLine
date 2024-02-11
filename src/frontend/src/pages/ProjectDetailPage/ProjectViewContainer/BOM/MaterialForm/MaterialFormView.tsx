@@ -6,6 +6,7 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
+import { useState } from 'react';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -46,6 +47,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const price = watch('price');
   const unit = watch('unitName');
   const subtotal = quantity && price ? (unit ? price : quantity * price) : 0;
+
+  const [prevSelectedUnitVal, setPrevSelectedUnitVal] = useState('');
 
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
@@ -107,7 +110,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   variant="outlined"
                   error={!!errors.materialTypeName}
                   helperText={errors.materialTypeName?.message}
-                  value={field.value}
                 >
                   {allMaterialTypes.map((type) => (
                     <MenuItem key={type.name} value={type.name}>
@@ -133,7 +135,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   variant="outlined"
                   error={!!errors.manufacturerName}
                   helperText={errors.manufacturerName?.message}
-                  key={field.value}
                   onChange={(event) => {
                     const selectedValue = event.target.value;
                     if (selectedValue === 'createManufacturer') {
@@ -207,7 +208,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     variant="outlined"
                     error={!!errors.unitName}
                     helperText={errors.unitName?.message}
-                    key={field.value}
+                    value={field.value || ''}
                     onChange={(event) => {
                       const selectedValue = event.target.value;
                       if (selectedValue === 'createUnit') {
