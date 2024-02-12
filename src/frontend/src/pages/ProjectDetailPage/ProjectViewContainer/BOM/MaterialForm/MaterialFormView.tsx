@@ -141,9 +141,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                       } else {
                         event.target.value = field.value;
                       }
-                    } else {
-                      field.onChange(event);
                     }
+                    field.onChange(event);
                   }}
                 >
                   {allManufacturers.map((manufacturer) => (
@@ -215,9 +214,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                         } else {
                           event.target.value = field.value === undefined ? '' : field.value;
                         }
-                      } else {
-                        field.onChange(event);
                       }
+                      field.onChange(event);
                     }}
                   >
                     {allUnits.map((unit) => (
