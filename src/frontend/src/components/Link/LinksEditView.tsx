@@ -13,7 +13,7 @@ const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
   register: UseFormRegister<ProjectFormInput>;
   watch: UseFormWatch<ProjectFormInput>;
-  append: UseFieldArrayAppend<any, any>;
+  append: UseFieldArrayAppend<ProjectFormInput, 'links'>;
   remove: UseFieldArrayRemove;
 }> = ({ ls, register, append, remove, watch }) => {
   const { isLoading, isError, error, data: linkTypes } = useAllLinkTypes();
