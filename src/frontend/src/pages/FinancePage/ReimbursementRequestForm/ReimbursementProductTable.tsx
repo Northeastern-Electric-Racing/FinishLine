@@ -160,7 +160,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                                     helperText={error ? error.message : null}
                                     variant="outlined"
                                     fullWidth
-                                    autoCapitalize="off"
+                                    autoComplete="off"
                                     onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
                                   />
                                 )}
