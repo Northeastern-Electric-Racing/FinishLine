@@ -36,7 +36,12 @@ const EditMaterialModal: React.FC<EditMaterialModalProps> = ({ open, onHide, mat
     <MaterialForm
       submitText="Edit"
       onSubmit={onSubmit}
-      defaultValues={{ ...material, pdmFileName: material.pdmFileName, price: material.price / 100 }}
+      defaultValues={{
+        ...material,
+        quantity: Number(material.quantity),
+        pdmFileName: material.pdmFileName,
+        price: material.price / 100
+      }}
       wbsElement={wbsElement}
       onHide={onHide}
       open={open}

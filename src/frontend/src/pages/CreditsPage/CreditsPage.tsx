@@ -185,6 +185,7 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0,0,0), 0 0 20px rgba(220,220,220,1)'
       }
     },
+    { name: 'Xavier Galanes', color: '#6c25be' },
     { name: 'Jaden Zhou', color: '#34568B' },
     { name: 'Alexander Kylander-Kreiner', color: '#82EEFD' },
     { name: 'Vincent Demaisip', color: '#ebb135' },
@@ -206,12 +207,23 @@ const CreditsPage: React.FC = () => {
     { name: 'Rup Jaisinghani', color: '#065535' },
     { name: 'Jack Dreifus', color: '#014421' },
     { name: 'Vinay Pillai', color: '#42458e' },
+    { name: 'Benjamin Kataoka', color: '#38FF87' },
     { name: 'Meggan Shvartsberg', color: '#00DBFF' },
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
     { name: 'Will Anderson', color: '#ebb145' },
+    { name: 'Alex Park', color: '#CCCCFF' },
+    {
+      name: 'Yipeng (Andrew) Wang',
+      color: 'transparent',
+      sx: {
+        background: 'linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,0,243,1) 50%, rgba(164,0,255,1) 100%);',
+        '-webkit-background-clip': 'text'
+      }
+    },
     { name: 'Chris Pyle', color: '#ADD8E6' },
     { name: 'Zachary Wen', color: '#4169e1' },
+    { name: 'Abner Solomon', color: '#9B5BE3' },
     { name: 'Armaan Mehra', color: '#0B66E5' },
     { name: 'Caden Weaver', color: '#E6FFFD' },
     {
@@ -221,7 +233,12 @@ const CreditsPage: React.FC = () => {
         textShadow: '0 0 2px rgba(0, 0, 0, 0.4), 0 0 5px rgba(180, 160, 255, 0.8)'
       }
     },
-    { name: 'Jhonyel Galvis', color: '#00FFF' }
+    { name: 'Jhonyel Galvis', color: '#00FFF' },
+    { name: 'Arav Goyal', color: '#6223de' },
+    { name: 'Gayathri Ramakrishnan', color: '#47186e' },
+    { name: 'Xander Hoke', color: '#C50D93' },
+    { name: 'Claire Hendershot', color: '#008080' },
+    { name: 'Alex Dong', color: '#5d42f5' }
   ];
 
   const snark = ['Add your name!', "Shouldn't you do it yourself?", 'Seriously', 'go', 'do', 'it'];

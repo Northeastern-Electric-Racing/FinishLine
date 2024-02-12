@@ -5478,6 +5478,7 @@ __metadata:
     concat-stream: ^2.0.0
     cookie-parser: ^1.4.5
     cors: ^2.8.5
+    decimal.js: ^10.4.3
     dotenv: ^16.0.1
     express: ^4.17.1
     express-jwt: ^7.7.5
@@ -7497,7 +7498,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decimal.js@npm:^10.2.1":
+"decimal.js@npm:^10.2.1, decimal.js@npm:^10.4.3":
   version: 10.4.3
   resolution: "decimal.js@npm:10.4.3"
   checksum: 796404dcfa9d1dbfdc48870229d57f788b48c21c603c3f6554a1c17c10195fc1024de338b0cf9e1efe0c7c167eeb18f04548979bcc5fdfabebb7cc0ae3287bae
