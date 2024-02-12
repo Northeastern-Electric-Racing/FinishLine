@@ -153,7 +153,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                       }}
                     />
                     <NERButton
-                      sx={{ color: 'white' }}
+                      variant="contained"
                       onClick={() => {
                         const newManufacturerName = prompt('Enter New Manufacturer Name');
                         if (newManufacturerName !== null) {
