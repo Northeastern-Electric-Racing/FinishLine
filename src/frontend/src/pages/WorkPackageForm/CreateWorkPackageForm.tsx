@@ -5,6 +5,7 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsPipe } from '../../utils/pipes';
+import { MutationFunction } from 'react-query/types/core/types';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
@@ -20,7 +21,7 @@ const CreateWorkPackageForm: React.FC = () => {
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
-      mutateAsync={mutateAsync}
+      mutateAsync={mutateAsync as MutationFunction}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       crId={crId}
       createForm
