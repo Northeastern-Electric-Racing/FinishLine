@@ -103,8 +103,14 @@ const WorkPackageFormDetails: React.FC<Props> = ({
                     onChange={(date) => onChange(date ?? new Date())}
                     className={'padding: 10'}
                     value={value}
-                    shouldDisableDate={disableStartDate}
-                    renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                    renderInput={(params) => (
+                      <TextField
+                        autoComplete="off"
+                        {...params}
+                        error={!!errors.startDate}
+                        helperText={errors.startDate?.message}
+                      />
+                    )}
                   />
                 </>
               )}
