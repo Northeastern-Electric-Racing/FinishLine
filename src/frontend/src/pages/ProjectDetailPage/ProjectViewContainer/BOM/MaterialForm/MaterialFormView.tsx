@@ -215,7 +215,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                           event.target.value = field.value === undefined ? '' : field.value;
                         }
                       }
-                      field.onChange(event);
+                      if (event.target.value !== '') field.onChange(event);
                     }}
                   >
                     {allUnits.map((unit) => (
