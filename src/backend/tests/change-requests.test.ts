@@ -349,6 +349,7 @@ describe('Change Requests', () => {
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.create).toHaveBeenCalledTimes(1);
     });
+  });
 
   describe('Delete Change Request', () => {
     test('User does not have permissions', async () => {
