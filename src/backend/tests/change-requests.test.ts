@@ -349,6 +349,10 @@ describe('Change Requests', () => {
       expect(prisma.scope_CR.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.proposed_Solution.create).toHaveBeenCalledTimes(1);
     });
+
+    test('the associated scope cr does not exist'), async() => {
+      // finish later lol
+    }
   });
 
   describe('Delete Change Request', () => {
