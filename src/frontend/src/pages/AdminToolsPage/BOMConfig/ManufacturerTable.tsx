@@ -1,11 +1,12 @@
-import { TableRow, TableCell, Typography, Box } from '@mui/material';
+import { Box, Grid, TableCell, TableRow, Typography } from '@mui/material';
+import { useState } from 'react';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import ManufacturerDeleteButton from '../../../components/ManufacturerDeleteButton';
+import { NERButton } from '../../../components/NERButton';
+import { useGetAllManufacturers } from '../../../hooks/bom.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
-import { NERButton } from '../../../components/NERButton';
-import { useState } from 'react';
 import AdminToolTable from '../AdminToolTable';
-import { useGetAllManufacturers } from '../../../hooks/bom.hooks';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
 
 const ManufacturerTable: React.FC = () => {
@@ -29,7 +30,14 @@ const ManufacturerTable: React.FC = () => {
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {datePipe(manufacturer.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{manufacturer.name}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>
+        <Grid container justifyContent="space-between">
+          <Grid sx={{ align: 'left' }}>{manufacturer.name}</Grid>
+          <Grid>
+            <ManufacturerDeleteButton />
+          </Grid>
+        </Grid>
+      </TableCell>
     </TableRow>
   ));
 
