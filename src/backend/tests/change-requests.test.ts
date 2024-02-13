@@ -350,11 +350,6 @@ describe('Change Requests', () => {
       expect(prisma.proposed_Solution.create).toHaveBeenCalledTimes(1);
     });
 
-    test('the associated scope cr does not exist'), async() => {
-      // finish later lol
-    }
-  });
-
   describe('Delete Change Request', () => {
     test('User does not have permissions', async () => {
       await expect(() => ChangeRequestsService.deleteChangeRequest(wonderwoman, 1)).rejects.toThrow(
