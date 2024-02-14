@@ -3,8 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Alert, Link } from '@mui/material';
-import { routes } from '../../utils/routes';
+import { Typography } from '@mui/material';
 import OverdueWorkPackageAlerts from './OverdueWorkPackageAlerts';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
@@ -12,12 +11,10 @@ import UpcomingDeadlines from './UpcomingDeadlines';
 import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { useHistory } from 'react-router-dom';
 import PageLayout from '../../components/PageLayout';
 
 const Home = () => {
   const user = useCurrentUser();
-  const history = useHistory();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
