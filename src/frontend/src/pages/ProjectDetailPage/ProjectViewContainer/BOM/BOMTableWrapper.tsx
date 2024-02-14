@@ -259,8 +259,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
           open={modalShow}
           title={`${selectedMaterial?.name} Material Notes`}
           onHide={() => setModalShow(false)}
-          cancelText='Cancel'
-          submitText='Submit'
+          cancelText="Cancel"
+          submitText="Submit"
           hideFormButtons
           showCloseButton
         >
