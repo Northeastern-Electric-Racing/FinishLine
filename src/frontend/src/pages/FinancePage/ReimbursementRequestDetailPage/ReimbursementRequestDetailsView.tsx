@@ -299,8 +299,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: isReimbursementRequestSaboSubmitted(reimbursementRequest) ? 'Sabo Info' : 'Submit to Sabo',
       onClick: () => setShowSubmitToSaboModal(true),
       icon: <CheckIcon />,
-      disabled:
-        !user.isFinance
+      disabled: !user.isFinance
     },
     {
       title: 'Deny',
