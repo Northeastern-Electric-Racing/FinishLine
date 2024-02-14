@@ -124,16 +124,17 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: '#EF4345',
+                border: 1,
+                borderColor: 'rgb(118, 118, 118)',
                 padding: '8px',
                 borderRadius: '6px',
-                marginTop: '0.25em',
+                marginTop: '1px',
                 marginLeft: '0.25em',
-                height: '48px',
+                height: '56px',
                 width: '84px'
               }}
             >
-              {currentIconName && <Icon sx={{ color: 'white', fontSize: '2em' }}>{currentIconName}</Icon>}
+              {currentIconName && <Icon sx={{ color: 'white', fontSize: '2.75em' }}>{currentIconName}</Icon>}
             </Box>
           </FormControl>
         </Grid>
