@@ -1,6 +1,6 @@
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel, FormHelperText, Switch, Stack, Box, Typography, Tooltip, Link } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText, Switch, Box, Typography, Tooltip, Link, Grid } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -9,6 +9,7 @@ import { LinkType } from 'shared';
 import { LinkTypeCreatePayload } from '../../../utils/types';
 import Icon from '@mui/material/Icon';
 import HelpIcon from '@mui/icons-material/Help';
+import { useTheme } from '@mui/material/styles';
 
 interface LinkTypeFormModalProps {
   showModal: boolean;
@@ -32,6 +33,8 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
     required: yup.boolean().required('Required field must be specified')
   });
 
+  const theme = useTheme();
+
   const {
     handleSubmit,
     control,
@@ -47,7 +50,7 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
     }
   });
 
-  const iconNameWatch = watch('iconName');
+  const currentIconName = watch('iconName');
 
   const onFormSubmit = async (data: LinkTypeCreatePayload) => {
     try {
@@ -75,44 +78,46 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
       formId={!!defaultValues ? 'edit-LinkType-form' : 'create-LinkType-form'}
       showCloseButton
     >
-      <Stack spacing={2} sx={{ width: '100%' }}>
-        <FormControl>
-          <FormLabel>LinkType Name</FormLabel>
-          <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
-          <FormHelperText error>{errors.name?.message}</FormHelperText>
-        </FormControl>
-        <FormControl>
-          <FormLabel>
-            Icon Name
-            <Tooltip title={tooltipMessage} placement="right" arrow sx={{ fontSize: 20 }}>
-              <Link href="https://mui.com/components/material-icons/" target="_blank" rel="noopener noreferrer">
-                <HelpIcon sx={{ mr: 2, height: 15 }} />
-              </Link>
-            </Tooltip>
-          </FormLabel>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <ReactHookTextField name="iconName" control={control} sx={{ flexGrow: 1 }} />
-          </Box>
-          <FormHelperText error>{errors.iconName?.message}</FormHelperText>
-        </FormControl>
-        {iconNameWatch && (
-          <FormControl>
-            <FormLabel>Icon Preview:</FormLabel>
-            <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
-              <Icon>{iconNameWatch}</Icon>
-            </Box>
+      <Grid container spacing={2} alignItems="flex-start">
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>LinkType Name</FormLabel>
+            <ReactHookTextField name="name" control={control} />
+            <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
-        )}
-        <FormControl>
-          <FormLabel>Required</FormLabel>
-          <Controller
-            name="required"
-            control={control}
-            render={({ field }) => <Switch {...field} checked={field.value} />}
-          />
-          <FormHelperText error>{errors.required?.message}</FormHelperText>
-        </FormControl>
-      </Stack>
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel sx={{ '&.Mui-focused': { color: theme.palette.text.secondary } }}>Required</FormLabel>
+            <Controller
+              name="required"
+              control={control}
+              render={({ field }) => <Switch {...field} checked={field.value} />}
+            />
+            <FormHelperText error>{errors.required?.message}</FormHelperText>
+          </FormControl>
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>
+              Icon Name
+              <Tooltip title={tooltipMessage} placement="right" arrow>
+                <Link href="https://mui.com/components/material-icons/" target="_blank" rel="noopener noreferrer">
+                  <HelpIcon sx={{ marginBottom: '-0.2em', marginLeft: '0.3em' }} />
+                </Link>
+              </Tooltip>
+            </FormLabel>
+            <ReactHookTextField name="iconName" control={control} />
+            <FormHelperText error>{errors.iconName?.message}</FormHelperText>
+          </FormControl>
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>Icon Preview</FormLabel>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>{currentIconName && <Icon>{currentIconName}</Icon>}</Box>
+          </FormControl>
+        </Grid>
+      </Grid>
     </NERFormModal>
   );
 };
