@@ -13,8 +13,7 @@ interface BOMTableProps {
 }
 
 const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
-  const defaultOpen: string[] = [];
-  const [openRows, setOpenRows] = useState(defaultOpen);
+  const [openRows, setOpenRows] = useState<String[]>([]);
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
   const miscAssembly = {
