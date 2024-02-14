@@ -15,9 +15,11 @@ interface SubmitToSaboModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   reimbursementRequest: ReimbursementRequest;
+  isSaboSubmitted: boolean;
+  setIsSaboSubmitted: (val: boolean) => void;
 }
 
-const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSaboModalProps) => {
+const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest, isSaboSubmitted, setIsSaboSubmitted }: SubmitToSaboModalProps) => {
   const user = useCurrentUser();
   const { mutateAsync: submitToSabo } = useApproveReimbursementRequest(reimbursementRequest.reimbursementRequestId);
   const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
@@ -43,6 +45,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
 
   const handleSubmitToSabo = () => {
     try {
+      setIsSaboSubmitted(true);
       submitToSabo();
     } catch (e) {
       if (e instanceof Error) {
@@ -58,8 +61,8 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       open={open}
       onHide={() => setOpen(false)}
       title="Input these fields into the Sabo Form"
-      cancelText="Cancel"
-      submitText="Submit to Sabo"
+      cancelText={isSaboSubmitted ? "" : "Cancel"}
+      submitText={isSaboSubmitted ? "" : "Submit to Sabo"}
       onSubmit={() => handleSubmitToSabo()}
     >
       <Grid container spacing={1}>

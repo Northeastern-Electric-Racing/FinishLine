@@ -70,12 +70,16 @@ const NERModal = ({
       {!hideFormButtons && (
         <DialogActions>
           <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
-            <NERFailButton sx={{ mx: 1 }} form={formId} onClick={onHide}>
-              {cancelText || 'Cancel'}
-            </NERFailButton>
-            <NERSuccessButton sx={{ mx: 1 }} type="submit" form={formId} onClick={onSubmit} disabled={disabled}>
-              {submitText || 'Submit'}
-            </NERSuccessButton>
+            {cancelText && (
+              <NERFailButton sx={{ mx: 1 }} form={formId} onClick={onHide}>
+                {cancelText}
+              </NERFailButton>
+            )}
+            {submitText && (
+              <NERSuccessButton sx={{ mx: 1 }} type="submit" form={formId} onClick={onSubmit} disabled={disabled}>
+                {submitText || 'Submit'}
+              </NERSuccessButton>
+            )}
           </Box>
         </DialogActions>
       )}

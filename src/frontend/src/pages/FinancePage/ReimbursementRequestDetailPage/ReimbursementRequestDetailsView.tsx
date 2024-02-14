@@ -66,6 +66,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
   const [showMarkReimbursed, setShowMarkReimbursed] = useState(false);
   const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
+  const [isSaboSubmitted, setIsSaboSubmitted] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
@@ -296,13 +297,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         isReimbursementRequestDenied(reimbursementRequest)
     },
     {
-      title: 'Approve',
+      title: isSaboSubmitted ? 'Sabo Info' : 'Submit to Sabo',
       onClick: () => setShowSubmitToSaboModal(true),
       icon: <CheckIcon />,
       disabled:
-        !user.isFinance ||
-        isReimbursementRequestSaboSubmitted(reimbursementRequest) ||
-        isReimbursementRequestDenied(reimbursementRequest)
+        !user.isFinance
     },
     {
       title: 'Deny',
@@ -338,6 +337,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         open={showSubmitToSaboModal}
         setOpen={setShowSubmitToSaboModal}
         reimbursementRequest={reimbursementRequest}
+        isSaboSubmitted={isSaboSubmitted}
+        setIsSaboSubmitted={setIsSaboSubmitted}
       />
       <AddSABONumberModal
         modalShow={addSaboNumberModalShow}
