@@ -700,6 +700,50 @@ const snowBite: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
+// Finance team users
+
+const monopolyman: Prisma.UserCreateInput = {
+  firstName: 'Milburn',
+  lastName: 'Pennybags',
+  email: 'donotpassgo@northeastern.edu',
+  role: Role.ADMIN,
+  googleAuthId: 'monopoly',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'monopolyman'
+    }
+  }
+};
+
+const mrkrabs: Prisma.UserCreateInput = {
+  firstName: 'Eugene',
+  lastName: 'Krabs',
+  email: 'mrkrabs@krustykrabs.com',
+  role: Role.ADMIN,
+  googleAuthId: 'krabs',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'mrkrabs'
+    }
+  }
+};
+
+const richierich: Prisma.UserCreateInput = {
+  firstName: 'Richie',
+  lastName: 'Rich',
+  email: 'richerich@harveycomics.com',
+  role: Role.ADMIN,
+  googleAuthId: 'rich',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'richietherich'
+    }
+  }
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -781,5 +825,8 @@ export const dbSeedAllUsers = {
   whiteTail,
   husky,
   howler,
-  snowBite
+  snowBite,
+  monopolyman,
+  mrkrabs,
+  richierich
 };
