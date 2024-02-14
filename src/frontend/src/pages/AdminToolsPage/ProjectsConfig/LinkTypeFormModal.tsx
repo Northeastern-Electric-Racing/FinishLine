@@ -129,9 +129,8 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
                 padding: '8px',
                 borderRadius: '6px',
                 marginTop: '1px',
-                marginLeft: '0.25em',
                 height: '56px',
-                width: '84px'
+                width: '96px'
               }}
             >
               {currentIconName && <Icon sx={{ color: 'white', fontSize: '2.75em' }}>{currentIconName}</Icon>}
