@@ -16,7 +16,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
   const [openRows, setOpenRows] = useState<String[]>([]);
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
-  const miscAssembly = {
+  const miscAssembly: BomRow = {
     id: `assembly-misc`,
     materialId: '',
     status: '',
@@ -33,7 +33,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
     link: '',
     notes: '',
     assemblyId: 'assembly-misc'
-  } as BomRow;
+  };
 
   const rows: BomRow[] = [miscAssembly].concat(
     noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx))
