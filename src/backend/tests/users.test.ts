@@ -148,7 +148,7 @@ describe('Users', () => {
       );
     });
 
-    test('getUserScheduleSettings runs', async () => {
+    test('getUserScheduleSettings works successfully', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
       vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
       const res = await UsersService.getUserScheduleSetting(batmanWithScheduleSettings.userId);

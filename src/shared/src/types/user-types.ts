@@ -66,10 +66,9 @@ export interface UpdateUserRolePayload {
   role: string;
 }
 
-export interface userScheduleSettings {
+export interface UserScheduleSettings {
   drScheduleSettingsId: string;
   personalGmail: string;
   personalZoomLink: string;
   availability: number[];
-  userId: number;
 }

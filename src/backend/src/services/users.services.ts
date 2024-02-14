@@ -10,7 +10,7 @@ import {
   RoleEnum,
   isHead,
   UserSecureSettings,
-  userScheduleSettings
+  UserScheduleSettings
 } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
@@ -326,9 +326,10 @@ export default class UsersService {
   /**
    * Gets a user's schedule settings
    * @param userId the id of the user who's schedule settings are being returned
-   * @returns
+   * @returns the user's schedule settings
+   * @throws if the user doesn't have schedule settings
    */
-  static async getUserScheduleSetting(userId: number): Promise<userScheduleSettings> {
+  static async getUserScheduleSetting(userId: number): Promise<UserScheduleSettings> {
     const scheduleSettings = await prisma.schedule_Settings.findUnique({
       where: { userId }
     });
