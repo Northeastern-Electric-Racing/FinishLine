@@ -138,11 +138,11 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                       const manufacturerName = prompt('Enter Manufacturer Name');
                       if (manufacturerName) {
                         createManufacturer(manufacturerName);
-                      } else {
-                        event.target.value = field.value;
+                        field.onChange(event);
                       }
+                    } else {
+                      field.onChange(event);
                     }
-                    field.onChange(event);
                   }}
                 >
                   {allManufacturers.map((manufacturer) => (
@@ -211,11 +211,10 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                         const unitName = prompt('Enter Unit Name');
                         if (unitName) {
                           createUnit(unitName);
-                        } else {
-                          event.target.value = field.value === undefined ? '' : field.value;
                         }
+                      } else {
+                        field.onChange(event);
                       }
-                      if (event.target.value !== '') field.onChange(event);
                     }}
                   >
                     {allUnits.map((unit) => (
