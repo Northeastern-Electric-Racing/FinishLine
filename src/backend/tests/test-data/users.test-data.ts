@@ -146,12 +146,11 @@ export const batmanScheduleSettings: Schedule_Settings = {
   personalGmail: 'brucewayne@gmail.com',
   personalZoomLink: 'https://zoom.us/j/gotham',
   availability: [],
-  userId: 1
+  userId: batman.userId
 };
 
 export const batmanWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
   ...batman,
-  userId: 696,
   scheduleSettings: {
     ...batmanScheduleSettings
   }
