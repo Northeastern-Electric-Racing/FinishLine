@@ -99,14 +99,19 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>
-              Icon Name
-              <Tooltip title={tooltipMessage} placement="right" arrow>
-                <Link href="https://mui.com/components/material-icons/" target="_blank" rel="noopener noreferrer">
-                  <HelpIcon sx={{ marginBottom: '-0.2em', marginLeft: '0.3em' }} />
-                </Link>
+            <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
+              <FormLabel>Icon Name</FormLabel>
+              <Tooltip title={tooltipMessage} placement="right">
+                <a
+                  href="https://mui.com/components/material-icons/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+                </a>
               </Tooltip>
-            </FormLabel>
+            </Box>
             <ReactHookTextField name="iconName" control={control} />
             <FormHelperText error>{errors.iconName?.message}</FormHelperText>
           </FormControl>
@@ -114,7 +119,22 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>Icon Preview</FormLabel>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>{currentIconName && <Icon>{currentIconName}</Icon>}</Box>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: '#EF4345',
+                padding: '8px',
+                borderRadius: '6px',
+                marginTop: '0.25em',
+                marginLeft: '0.25em',
+                height: '48px',
+                width: '84px'
+              }}
+            >
+              {currentIconName && <Icon sx={{ color: 'white', fontSize: '2em' }}>{currentIconName}</Icon>}
+            </Box>
           </FormControl>
         </Grid>
       </Grid>
