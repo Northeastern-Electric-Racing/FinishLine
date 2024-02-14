@@ -353,7 +353,11 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
     ['reimbursement-requests', 'edit'],
     async (formData: { saboNumber: number }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
-      queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
+      }
     }
   );
 };
