@@ -25,12 +25,14 @@ import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
+import { Role, isGuest } from 'shared';
 
 interface AppAuthenticatedProps {
   userId: number;
+  userRole: Role;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
@@ -43,7 +45,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
     }
   }
 
-  return userSettingsData.slackId ? (
+  return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
       <Box display={'flex'}>
         <Sidebar />
