@@ -28,15 +28,6 @@ const Home = () => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      {!userSettingsData?.slackId && user.role !== 'GUEST' && (
-        <Alert variant="filled" severity="warning" onClose={() => history.push(routes.SETTINGS)}>
-          You don't have a slack id set! Without it, you won't be able to get important updates from us. You can set it{' '}
-          <Link href={routes.SETTINGS} sx={{ color: 'blue' }}>
-            here
-          </Link>
-          .
-        </Alert>
-      )}
       <OverdueWorkPackageAlerts />
       <UsefulLinks />
       <UpcomingDeadlines />
