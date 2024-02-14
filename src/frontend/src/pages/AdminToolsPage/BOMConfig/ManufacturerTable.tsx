@@ -1,5 +1,6 @@
 import { Box, Grid, TableCell, TableRow, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Manufacturer } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ManufacturerDeleteButton from '../../../components/ManufacturerDeleteButton';
 import { NERButton } from '../../../components/NERButton';
@@ -17,6 +18,13 @@ const ManufacturerTable: React.FC = () => {
     error: manufacturersError
   } = useGetAllManufacturers();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
+  const [manufacturerList, setManufacturerList] = useState<Manufacturer[]>([]);
+
+  useEffect(() => {
+    if (manufactureres) {
+      setManufacturerList(manufactureres);
+    }
+  }, [manufactureres]);
 
   if (!manufactureres || manufactureresIsLoading) {
     return <LoadingIndicator />;
@@ -25,7 +33,18 @@ const ManufacturerTable: React.FC = () => {
     return <ErrorPage message={manufacturersError?.message} />;
   }
 
-  const manufacturersTableRows = manufactureres.map((manufacturer) => (
+  const handleDeleteManufacturer = async (manufacturerName: String) => {
+    try {
+      const updatedManufacturersTableRows = manufacturerList.filter(
+        (manufacturer) => manufacturer.name !== manufacturerName
+      );
+      setManufacturerList(updatedManufacturersTableRows);
+    } catch (error) {
+      console.error('Error deleting manufacturer:', error);
+    }
+  };
+
+  const manufacturersTableRows = manufacturerList.map((manufacturer) => (
     <TableRow>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {datePipe(manufacturer.dateCreated)}
@@ -34,7 +53,7 @@ const ManufacturerTable: React.FC = () => {
         <Grid container justifyContent="space-between">
           <Grid sx={{ align: 'left' }}>{manufacturer.name}</Grid>
           <Grid>
-            <ManufacturerDeleteButton />
+            <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
           </Grid>
         </Grid>
       </TableCell>

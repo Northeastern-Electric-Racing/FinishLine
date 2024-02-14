@@ -1,41 +1,63 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Grid, IconButton } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
+import { useState } from 'react';
+import ManufacturerDeleteButtonBlocker from '../components/ManufacturerDeleteButtonBlocker';
 
-const FavoriteProjectButton = () => {
-  const onClick = async () => {
-    try {
-      //pops up a warning box
-    } catch (e) {
-      //error
-    }
+interface ManufacturerDeleteButtonProps {
+  name: String;
+  onDelete: (name: String) => void;
+}
+
+const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
+  name,
+  onDelete
+}: ManufacturerDeleteButtonProps) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleDeleteButtonClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+  };
+
+  const handleDeleteSubmit = async () => {
+    onDelete(name);
+    setShowDeleteDialog(false);
   };
 
   return (
-    <IconButton
-      onClick={onClick}
-      sx={{
-        color: 'Red',
-        width: 'auto', // Set width to auto to fit the content
-        height: 'auto', // Set height to auto to fit the content
-        padding: 0.1,
-        borderRadius: '5px' // to make it circular
-      }}
-    >
-      <Box
+    <>
+      <IconButton
+        onClick={handleDeleteButtonClick}
         sx={{
-          border: '2px solid red',
-          borderRadius: '5px', // to make it circular
-          width: '24px',
-          height: '24px',
-          display: 'flex', // Set display to flex
-          justifyContent: 'center', // Align content horizontally center
-          alignItems: 'center' // Align content vertically center
+          color: 'Red',
+          width: 'auto',
+          height: 'auto',
+          padding: 0.1,
+          borderRadius: '5px'
         }}
       >
-        <DeleteIcon sx={{ fontSize: 'small' }} />
-      </Box>
-    </IconButton>
+        <Box
+          sx={{
+            border: '2px solid red',
+            borderRadius: '5px',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <DeleteIcon sx={{ fontSize: 'small' }} />
+        </Box>
+      </IconButton>
+      {showDeleteDialog && (
+        <ManufacturerDeleteButtonBlocker name={name} onHide={handleDeleteCancel} onSubmit={handleDeleteSubmit} />
+      )}
+    </>
   );
 };
 
-export default FavoriteProjectButton;
+export default ManufacturerDeleteButton;
