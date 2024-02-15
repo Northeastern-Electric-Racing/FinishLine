@@ -3,7 +3,6 @@ import WorkPackageForm from './WorkPackageForm';
 import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { MutationFunction } from 'react-query';
 
 interface EditWorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -20,7 +19,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
   return (
     <WorkPackageForm
       wbsNum={wbsNum}
-      mutateAsync={mutateAsync as MutationFunction}
+      mutateAsync={mutateAsync}
       exitActiveMode={() => {
         setPageMode(false);
         history.push(`${history.location.pathname}`);

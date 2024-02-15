@@ -22,6 +22,7 @@ import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -40,7 +41,7 @@ const schema = yup.object().shape({
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: UseMutateAsyncFunction<unknown, unknown, unknown>;
+  mutateAsync: (data: WorkPackageApiInputs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
@@ -134,7 +135,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         userId,
         name,
         crId: parseInt(crId),
-        startDate: transformDate(startDate),
+        startDate: startDate,
         duration,
         blockedBy: blockedByWbsNums,
         expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
