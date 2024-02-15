@@ -199,21 +199,6 @@ const performSeed: () => Promise<void> = async () => {
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
 
-  // /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
-  // const financeTeamId = justiceLeague.teamId;
-  // /** Gets the current content of the .env file */
-  // const currentEnv = require('dotenv').config().parsed;
-  // /** If the .env file exists, set the FINANCE_TEAM_ID */
-  // if (currentEnv) {
-  //   currentEnv.FINANCE_TEAM_ID = financeTeamId;
-  //   /** Write the new .env file */
-  //   let stringifiedEnv = '';
-  //   Object.keys(currentEnv).forEach((key) => {
-  //     stringifiedEnv += `${key}=${currentEnv[key]}\n`;
-  //   });
-  //   writeFileSync('.env', stringifiedEnv);
-  // }
-
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
     batman,
