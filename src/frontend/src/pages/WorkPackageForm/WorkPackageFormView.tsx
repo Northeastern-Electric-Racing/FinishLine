@@ -9,7 +9,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import { useState } from 'react';
-import { UseMutateAsyncFunction } from 'react-query';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
@@ -116,12 +115,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   } = useFieldArray({ control, name: 'deliverables' });
 
   const { userId } = user;
-
-  const transformDate = (date: Date) => {
-    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-    const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
-    return `${date.getFullYear().toString()}-${month}-${day}`;
-  };
+  
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);

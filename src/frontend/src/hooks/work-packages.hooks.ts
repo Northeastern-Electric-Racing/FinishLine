@@ -14,7 +14,6 @@ import {
   getSingleWorkPackage,
   slackUpcomingDeadlines,
   getManyWorkPackages,
-  CreateWorkPackageApiInputs,
   WorkPackageApiInputs
 } from '../apis/work-packages.api';
 

@@ -1,4 +1,3 @@
-import { UseMutateAsyncFunction } from 'react-query';
 import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
