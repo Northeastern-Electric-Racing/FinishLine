@@ -4,7 +4,7 @@
  */
 
 import { expenseTypePipe } from '../../../utils/pipes';
-import { Edit } from '@mui/icons-material';
+import { Assignment, Edit } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -298,7 +298,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     {
       title: isReimbursementRequestSaboSubmitted(reimbursementRequest) ? 'Sabo Info' : 'Submit to Sabo',
       onClick: () => setShowSubmitToSaboModal(true),
-      icon: isReimbursementRequestSaboSubmitted(reimbursementRequest) ? <CheckIcon /> : <CheckIcon />,
+      icon: isReimbursementRequestSaboSubmitted(reimbursementRequest) ? <Assignment /> : <CheckIcon />,
       disabled: !user.isFinance
     },
     {
