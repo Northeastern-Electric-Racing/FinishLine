@@ -115,7 +115,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   } = useFieldArray({ control, name: 'deliverables' });
 
   const { userId } = user;
-  
+
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
