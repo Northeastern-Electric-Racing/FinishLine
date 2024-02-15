@@ -21,14 +21,7 @@ import {
   styled,
   Box
 } from '@mui/material';
-import {
-  OtherProductReason,
-  WbsNumber,
-  validateWBS,
-  wbsPipe,
-  ReimbursementProductFormArgs,
-  ReimbursementProductCreateArgs
-} from 'shared';
+import { OtherProductReason, WbsNumber, validateWBS, wbsPipe, ReimbursementProductFormArgs } from 'shared';
 import { Add, Delete } from '@mui/icons-material';
 import { Control, Controller, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { ReimbursementRequestFormInput } from './ReimbursementRequestForm';
@@ -51,7 +44,7 @@ interface ReimbursementProductTableProps {
     id: string;
   }[];
   errors: FieldErrors<ReimbursementRequestFormInput>;
-  control: Control<ReimbursementRequestFormInput, ReimbursementProductCreateArgs>;
+  control: Control<ReimbursementRequestFormInput, ReimbursementProductFormArgs>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
 }
 
