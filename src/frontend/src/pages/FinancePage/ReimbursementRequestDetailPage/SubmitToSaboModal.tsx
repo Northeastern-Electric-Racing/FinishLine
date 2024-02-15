@@ -60,6 +60,8 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       title="Input these fields into the Sabo Form"
       cancelText={isReimbursementRequestSaboSubmitted(reimbursementRequest) ? '' : 'Cancel'}
       submitText={isReimbursementRequestSaboSubmitted(reimbursementRequest) ? '' : 'Submit to Sabo'}
+      showCloseButton={isReimbursementRequestSaboSubmitted(reimbursementRequest)}
+      hideFormButtons={isReimbursementRequestSaboSubmitted(reimbursementRequest)}
       onSubmit={() => handleSubmitToSabo()}
     >
       <Grid container spacing={1}>
