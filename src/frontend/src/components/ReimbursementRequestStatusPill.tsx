@@ -5,13 +5,14 @@
 
 import Chip from '@mui/material/Chip';
 import { green, red, grey, purple, yellow, orange } from '@mui/material/colors';
+import { borderColor } from '@mui/system';
 import { ReimbursementStatusType } from 'shared';
-import { ReimbursementRequestTypeTextPipe } from '../utils/enum-pipes';
+import { displayEnum } from '../utils/pipes';
 
 const determineStatusPillColor = (status: ReimbursementStatusType) => {
   switch (status) {
     case ReimbursementStatusType.PENDING_FINANCE:
-      return yellow[600];
+      return yellow[700];
     case ReimbursementStatusType.SABO_SUBMITTED:
       return orange[600];
     case ReimbursementStatusType.ADVISOR_APPROVED:
@@ -30,7 +31,7 @@ const ReimbursementRequestStatusPill = ({ status }: { status: ReimbursementStatu
   return (
     <Chip
       size="small"
-      label={ReimbursementRequestTypeTextPipe(status)}
+      label={displayEnum(status)}
       variant="filled"
       sx={{
         fontSize: 12,

@@ -68,18 +68,3 @@ export const ChangeRequestStatusTextPipe: (status: ChangeRequestStatus) => strin
       return 'Open';
   }
 };
-
-export const ReimbursementRequestTypeTextPipe: (type: ReimbursementStatusType) => string = (type) => {
-  switch (type) {
-    case ReimbursementStatusType.ADVISOR_APPROVED:
-      return 'Advisor Approved';
-    case ReimbursementStatusType.DENIED:
-      return 'Denied';
-    case ReimbursementStatusType.PENDING_FINANCE:
-      return 'Pending Finance';
-    case ReimbursementStatusType.REIMBURSED:
-      return 'Reimbursed';
-    case ReimbursementStatusType.SABO_SUBMITTED:
-      return 'Sabo Submitted';
-  }
-};

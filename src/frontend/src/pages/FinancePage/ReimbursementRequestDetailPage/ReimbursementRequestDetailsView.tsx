@@ -316,7 +316,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   ];
 
-  const statusTypes = reimbursementRequest.reimbursementStatuses.map((status) => status.type);
+  const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
+  const statusTypes = sortedStatus.map((status) => status.type);
   const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
@@ -326,7 +327,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           : `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`
       }`}
       chips={
-        <Box id="status" display="flex" gap="20px">
+        <Box id="status" display="flex">
           {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
         </Box>
       }
