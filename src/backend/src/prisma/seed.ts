@@ -119,10 +119,14 @@ const performSeed: () => Promise<void> = async () => {
   const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
-
-  const monopolyman = await prisma.user.create({ data: dbSeedAllUsers.monopolyman });
-  const mrkrabs = await prisma.user.create({ data: dbSeedAllUsers.mrkrabs });
-  const richierich = await prisma.user.create({ data: dbSeedAllUsers.richierich });
+  const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
+  const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
+  const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
+  const johnBoddy = await prisma.user.create({ data: dbSeedAllUsers.johnBoddy });
+  const villager = await prisma.user.create({ data: dbSeedAllUsers.villager });
+  const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
+  const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
+  const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -193,22 +197,22 @@ const performSeed: () => Promise<void> = async () => {
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
-  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyman.userId));
+  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
 
-  /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
-  const financeTeamId = justiceLeague.teamId;
-  /** Gets the current content of the .env file */
-  const currentEnv = require('dotenv').config().parsed;
-  /** If the .env file exists, set the FINANCE_TEAM_ID */
-  if (currentEnv) {
-    currentEnv.FINANCE_TEAM_ID = financeTeamId;
-    /** Write the new .env file */
-    let stringifiedEnv = '';
-    Object.keys(currentEnv).forEach((key) => {
-      stringifiedEnv += `${key}=${currentEnv[key]}\n`;
-    });
-    writeFileSync('.env', stringifiedEnv);
-  }
+  // /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
+  // const financeTeamId = justiceLeague.teamId;
+  // /** Gets the current content of the .env file */
+  // const currentEnv = require('dotenv').config().parsed;
+  // /** If the .env file exists, set the FINANCE_TEAM_ID */
+  // if (currentEnv) {
+  //   currentEnv.FINANCE_TEAM_ID = financeTeamId;
+  //   /** Write the new .env file */
+  //   let stringifiedEnv = '';
+  //   Object.keys(currentEnv).forEach((key) => {
+  //     stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  //   });
+  //   writeFileSync('.env', stringifiedEnv);
+  // }
 
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
@@ -237,11 +241,15 @@ const performSeed: () => Promise<void> = async () => {
     [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
   );
 
-  // Finance Team (maybe do a members version too)
-  await TeamsService.setTeamLeads(
-    monopolyman,
+  await TeamsService.setTeamMembers(
+    monopolyMan,
     financeTeam.teamId,
-    [mrkrabs, richierich].map((user) => user.userId)
+    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    monopolyMan,
+    financeTeam.teamId,
+    [mrKrabs, richieRich].map((user) => user.userId)
   );
 
   await TeamsService.setTeamMembers(

@@ -700,9 +700,7 @@ const snowBite: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
-// Finance team users
-
-const monopolyman: Prisma.UserCreateInput = {
+const monopolyMan: Prisma.UserCreateInput = {
   firstName: 'Milburn',
   lastName: 'Pennybags',
   email: 'donotpassgo@northeastern.edu',
@@ -716,7 +714,7 @@ const monopolyman: Prisma.UserCreateInput = {
   }
 };
 
-const mrkrabs: Prisma.UserCreateInput = {
+const mrKrabs: Prisma.UserCreateInput = {
   firstName: 'Eugene',
   lastName: 'Krabs',
   email: 'mrkrabs@krustykrabs.com',
@@ -730,7 +728,7 @@ const mrkrabs: Prisma.UserCreateInput = {
   }
 };
 
-const richierich: Prisma.UserCreateInput = {
+const richieRich: Prisma.UserCreateInput = {
   firstName: 'Richie',
   lastName: 'Rich',
   email: 'richerich@harveycomics.com',
@@ -742,6 +740,46 @@ const richierich: Prisma.UserCreateInput = {
       slackId: 'richietherich'
     }
   }
+};
+
+const johnBoddy: Prisma.UserCreateInput = {
+  firstName: 'John',
+  lastName: 'Boddy',
+  googleAuthId: 'deadmillionaire',
+  email: 'johnboddy@clue.com',
+  role: Role.MEMBER
+};
+
+const villager: Prisma.UserCreateInput = {
+  firstName: 'Minecraft',
+  lastName: 'Villager',
+  googleAuthId: 'villager',
+  email: 'hrmmm@minecraft.com',
+  role: Role.MEMBER
+};
+
+const francis: Prisma.UserCreateInput = {
+  firstName: 'Francis',
+  lastName: 'Francis',
+  googleAuthId: 'francis',
+  email: 'ffrancis@puppyco.com',
+  role: Role.MEMBER
+};
+
+const victorPerkins: Prisma.UserCreateInput = {
+  firstName: 'Victor',
+  lastName: 'Perkins',
+  googleAuthId: 'victorperkins',
+  email: 'mysonstolethemoon@evilbank.com',
+  role: Role.MEMBER
+};
+
+const kingJulian: Prisma.UserCreateInput = {
+  firstName: 'King',
+  lastName: 'Julian',
+  googleAuthId: 'kingjulian',
+  email: 'iliketomoveit@jungle.net',
+  role: Role.MEMBER
 };
 
 export const dbSeedAllUsers = {
@@ -826,7 +864,12 @@ export const dbSeedAllUsers = {
   husky,
   howler,
   snowBite,
-  monopolyman,
-  mrkrabs,
-  richierich
+  monopolyMan,
+  mrKrabs,
+  richieRich,
+  johnBoddy,
+  villager,
+  francis,
+  victorPerkins,
+  kingJulian
 };
