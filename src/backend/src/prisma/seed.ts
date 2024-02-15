@@ -120,6 +120,10 @@ const performSeed: () => Promise<void> = async () => {
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
 
+  const monopolyman = await prisma.user.create({ data: dbSeedAllUsers.monopolyman });
+  const mrkrabs = await prisma.user.create({ data: dbSeedAllUsers.mrkrabs });
+  const richierich = await prisma.user.create({ data: dbSeedAllUsers.richierich });
+
   /**
    * Make initial project so that we can start to create other stuff
    */
@@ -189,6 +193,7 @@ const performSeed: () => Promise<void> = async () => {
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
+  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyman.userId));
 
   /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
   const financeTeamId = justiceLeague.teamId;
@@ -231,6 +236,14 @@ const performSeed: () => Promise<void> = async () => {
     justiceLeague.teamId,
     [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
   );
+
+  // Finance Team (maybe do a members version too)
+  await TeamsService.setTeamLeads(
+    monopolyman,
+    financeTeam.teamId,
+    [mrkrabs, richierich].map((user) => user.userId)
+  );
+
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
