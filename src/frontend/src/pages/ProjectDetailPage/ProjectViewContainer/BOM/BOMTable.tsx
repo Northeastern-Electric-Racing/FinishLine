@@ -1,4 +1,4 @@
-import { Box } from '@mui/system';
+import { Box, useTheme } from '@mui/system';
 import { DataGrid, GridColumns, GridRowParams } from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
 import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
@@ -75,13 +75,24 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
     assemblyMaterials.forEach((material, indx) => rows.push(materialToRow(material, indx)));
   });
 
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 260px)',
+        height: 'calc(100vh - 180px)',
         width: '100%',
         '& .super-app-theme--header': {
           backgroundColor: '#ef4345'
+        },
+        '& .super-app-theme--material': {
+          backgroundColor: theme.palette.background.default,
+          '&:hover': {
+            backgroundColor: theme.palette.background.default
+          },
+          '&:focus': {
+            backgroundColor: theme.palette.background.default
+          }
         },
         '& .super-app-theme--assembly': {
           backgroundColor: '#997570',
