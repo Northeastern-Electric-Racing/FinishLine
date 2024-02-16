@@ -27,15 +27,7 @@ const TotalAmountSpentModal: React.FC<TotalAmountSpentModalProps> = ({ open, all
   );
 
   return (
-    <NERModal
-      open={open}
-      title={'Total Amount Spent'}
-      onHide={onHide}
-      cancelText="Cancel"
-      submitText="Submit"
-      hideFormButtons
-      showCloseButton
-    >
+    <NERModal open={open} title={'Total Amount Spent'} onHide={onHide} hideFormButtons showCloseButton>
       <Box display={'flex'} gap={2}>
         <DetailDisplay label={'Cash (830667)'} content={'$' + cashAccountSpent} />
         <DetailDisplay label={'Budget (800462)'} content={'$' + budgetAccountSpent} />

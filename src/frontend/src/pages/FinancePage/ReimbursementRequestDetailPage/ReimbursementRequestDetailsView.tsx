@@ -74,6 +74,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const { mutateAsync: markReimbursed } = useMarkReimbursementRequestAsReimbursed(
     reimbursementRequest.reimbursementRequestId
   );
+  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
 
   const handleDelete = () => {
     try {
@@ -296,9 +297,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         isReimbursementRequestDenied(reimbursementRequest)
     },
     {
-      title: isReimbursementRequestSaboSubmitted(reimbursementRequest) ? 'Sabo Info' : 'Submit to Sabo',
+      title: isSaboSubmitted ? 'Sabo Info' : 'Submit to Sabo',
       onClick: () => setShowSubmitToSaboModal(true),
-      icon: isReimbursementRequestSaboSubmitted(reimbursementRequest) ? <Assignment /> : <CheckIcon />,
+      icon: isSaboSubmitted ? <Assignment /> : <CheckIcon />,
       disabled: !user.isFinance
     },
     {

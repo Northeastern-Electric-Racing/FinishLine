@@ -24,7 +24,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
-
+  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest)
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -58,10 +58,9 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       open={open}
       onHide={() => setOpen(false)}
       title="Input these fields into the Sabo Form"
-      cancelText={isReimbursementRequestSaboSubmitted(reimbursementRequest) ? '' : 'Cancel'}
-      submitText={isReimbursementRequestSaboSubmitted(reimbursementRequest) ? '' : 'Submit to Sabo'}
-      showCloseButton={isReimbursementRequestSaboSubmitted(reimbursementRequest)}
-      hideFormButtons={isReimbursementRequestSaboSubmitted(reimbursementRequest)}
+      submitText={isSaboSubmitted ? '' : 'Submit to Sabo'}
+      showCloseButton={isSaboSubmitted}
+      hideFormButtons={isSaboSubmitted}
       onSubmit={() => handleSubmitToSabo()}
     >
       <Grid container spacing={1}>
