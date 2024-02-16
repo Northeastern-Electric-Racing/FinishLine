@@ -24,7 +24,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
-  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest)
+  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
