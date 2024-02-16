@@ -1,9 +1,10 @@
 import { Box } from '@mui/system';
-import { DataGrid, GridColumns } from '@mui/x-data-grid';
+import { GridColumns, GridRowParams, GridValidRowModel } from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
-import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
+import { BomRow, bomTableStyles, materialToRow, BomStyledDataGrid } from '../../../../utils/bom.utils';
 import { addMaterialCosts } from '../BOMTab';
 import { centsToDollar } from '../../../../utils/pipes';
+import { useState } from 'react';
 
 interface BOMTableProps {
   columns: GridColumns<BomRow>;
@@ -12,9 +13,48 @@ interface BOMTableProps {
 }
 
 const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
-  const noAssemblyMaterials = materials.filter((material) => !material.assembly);
+  const [openRows, setOpenRows] = useState<String[]>([]);
 
-  const rows: BomRow[] = noAssemblyMaterials.map(materialToRow);
+  const arrowSymbol = (rowId: string) => {
+    return openRows.includes(rowId) ? '⮝' : '⮟';
+  };
+
+  const noAssemblyMaterials = materials.filter((material) => !material.assembly);
+  const miscAssembly: BomRow = {
+    id: `assembly-misc`,
+    materialId: '',
+    status: '',
+    type: '',
+    name: '',
+    manufacturer: '',
+    manufacturerPN: `Miscellaneous Materials: $${centsToDollar(
+      noAssemblyMaterials.reduce(addMaterialCosts, 0)
+    )}  ${arrowSymbol('assembly-misc')}`,
+    pdmFileName: '',
+    quantity: '',
+    price: '',
+    subtotal: '',
+    link: '',
+    notes: '',
+    assemblyId: 'assembly-misc'
+  };
+
+  const rows: BomRow[] = [miscAssembly].concat(
+    noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx))
+  );
+
+  const isAssemblyOpen = (row: BomRow) => {
+    return !row.assemblyId || row.assemblyId === '' || openRows.includes(row.assemblyId) || row.id.startsWith('assembly');
+  };
+
+  const openAssembly = (event: GridRowParams) => {
+    if (!event.row.id.startsWith('assembly')) return;
+    if (openRows.includes(event.row.assemblyId)) {
+      setOpenRows(openRows.filter((e) => e !== event.row.assemblyId));
+    } else {
+      setOpenRows(openRows.concat([event.row.assemblyId]));
+    }
+  };
 
   assemblies.forEach((assembly) => {
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
@@ -25,13 +65,16 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
       type: '',
       name: '',
       manufacturer: '',
-      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(assembly.materials.reduce(addMaterialCosts, 0))}`,
+      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(
+        assembly.materials.reduce(addMaterialCosts, 0)
+      )}  ${arrowSymbol(assembly.assemblyId)}`,
       pdmFileName: '',
       quantity: '',
       price: '',
       subtotal: '',
       link: '',
-      notes: ''
+      notes: '',
+      assemblyId: assembly.assemblyId
     });
     assemblyMaterials.forEach((material, indx) => rows.push(materialToRow(material, indx)));
   });
@@ -39,32 +82,20 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 260px)',
-        width: '100%',
-        '& .super-app-theme--header': {
-          backgroundColor: '#ef4345'
-        },
-        '& .super-app-theme--assembly': {
-          backgroundColor: '#997570',
-          '&:hover': {
-            backgroundColor: '#997570'
-          },
-          '&:focus': {
-            backgroundColor: '#997570'
-          }
-        }
+        height: 'calc(100vh - 180px)'
       }}
     >
-      <DataGrid
-        columns={columns}
-        rows={rows}
+      <BomStyledDataGrid
+        columns={columns as GridColumns<GridValidRowModel>}
+        rows={rows.filter(isAssemblyOpen)}
         getRowClassName={(params) =>
           `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
         }
-        rowsPerPageOptions={[]}
+        rowsPerPageOptions={[100]}
         sx={bomTableStyles.datagrid}
         disableSelectionOnClick
         autoHeight={false}
+        onRowClick={openAssembly}
       />
     </Box>
   );
