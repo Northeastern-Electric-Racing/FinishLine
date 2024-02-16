@@ -2,8 +2,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, IconButton } from '@mui/material';
 import { useState } from 'react';
 import ManufacturerDeleteButtonBlocker from '../components/ManufacturerDeleteButtonBlocker';
-import { useToast } from '../hooks/toasts.hooks';
 import { useDeleteManufacturer } from '../hooks/bom.hooks';
+import { useToast } from '../hooks/toasts.hooks';
 
 interface ManufacturerDeleteButtonProps {
   name: string;
@@ -16,7 +16,7 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
 }: ManufacturerDeleteButtonProps) => {
   const toast = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { mutateAsync: deleteManufacturerMutateAsync, isLoading } = useDeleteManufacturer();
+  const { mutateAsync: deleteManufacturerMutateAsync } = useDeleteManufacturer();
 
   const handleDeleteButtonClick = () => {
     setShowDeleteDialog(true);
@@ -27,6 +27,7 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
   };
 
   const handleDeleteSubmit = async () => {
+    onDelete(name);
     deleteManufacturer(name);
     setShowDeleteDialog(false);
   };
