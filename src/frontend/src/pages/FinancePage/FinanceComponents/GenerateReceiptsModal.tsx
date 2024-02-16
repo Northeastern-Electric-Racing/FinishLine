@@ -1,23 +1,29 @@
-import { FormControl, FormLabel, MenuItem, Select, TextField } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, MenuItem, Select, TextField } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useDownloadPDFOfImages } from '../../../hooks/finance.hooks';
+import { useDownloadPDFOfImages, useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { ReimbursementRequest } from 'shared';
+import { ClubAccount, ExpenseType, ReimbursementRequest } from 'shared';
+import ReimbursementProductTable from '../ReimbursementRequestForm/ReimbursementProductTable';
+import { expenseTypeTransformer } from '../../../../../backend/src/transformers/reimbursement-requests.transformer';
+import { expenseTypePipe } from '../../../utils/pipes';
 
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
-  endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required')
+  endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required'),
+  receiptType: yup.string().required('Receipt Type')
 });
 
 interface GenerateReceiptsFormInput {
   startDate: Date;
   endDate: Date;
+  receiptType: String;
+  setReceiptType: (val: String) => void;
 }
 
 interface GenerateReceiptsModalProps {
@@ -29,21 +35,25 @@ interface GenerateReceiptsModalProps {
 const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: GenerateReceiptsModalProps) => {
   const toast = useToast();
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+  const [endDatePickerOpen, setEndDatfePickerOpen] = useState(false);
+  const receiptType = use;
 
-  const { mutateAsync, isLoading } = useDownloadPDFOfImages();
+  const { mutateAsync, isLoading } = useDownloadPDFOfImages(receiptType);
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
-    const filteredRequests = allReimbursementRequests
+    let filteredRequests = allReimbursementRequests
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) >= new Date(data.startDate.toDateString())
       )
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) <= new Date(data.endDate.toDateString())
       )
-      .filter((val: ReimbursementRequest) => !val.dateDeleted);
+      .filter((val: ReimbursementRequest) => !val.dateDeleted)
+      .filter((val: ReimbursementRequest) => val.expenseType.name === data.receiptType);
+
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
+
     try {
       await mutateAsync({
         fileIds: receipts.map((receipt) => receipt.googleFileId)
@@ -141,26 +151,27 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
             />
           </FormControl>
           <FormControl fullWidth>
-            <FormLabel>Refund Source</FormLabel>
+            <FormLabel>Receipt Type</FormLabel>
             <Controller
-              name="account"
+              name="receiptType"
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Select
-                  onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
                   value={value}
-                  disabled={!selectedExpenseType}
-                  error={!!errors.account}
+                  onChange={(newValue) => {
+                    const newReceiptType = newValue;
+                    setReceiptType(newReceiptType);
+                    onChange(newReceiptType);
+                  }}
                 >
-                  {refundSources.map((refundSource) => (
-                    <MenuItem key={refundSource} value={refundSource}>
-                      {codeAndRefundSourceName(refundSource)}
+                  {['Budget', 'Cash', 'Both'].map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status}
                     </MenuItem>
                   ))}
                 </Select>
               )}
             />
-            <FormHelperText error>{errors.account?.message}</FormHelperText>
           </FormControl>
         </>
       )}

@@ -334,13 +334,13 @@ export const useDenyReimbursementRequest = (id: string) => {
  *
  * @param fileIds The google file ids to fetch the images for
  */
-export const useDownloadPDFOfImages = () => {
+export const useDownloadPDFOfImages = (receiptType: String) => {
   return useMutation(['reimbursement-requests'], async (formData: { fileIds: string[] }) => {
     const promises = formData.fileIds.map((fileId) => {
       return downloadGoogleImage(fileId);
     });
     const blobs = await Promise.all(promises);
-    await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
+    await downloadBlobsToPdf(blobs, `receipts-${receiptType}.pdf`);
   });
 };
 
