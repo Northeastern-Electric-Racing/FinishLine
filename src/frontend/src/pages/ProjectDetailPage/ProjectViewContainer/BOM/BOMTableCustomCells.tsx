@@ -3,6 +3,7 @@ import { GridRenderCellParams } from '@mui/x-data-grid';
 import { MaterialStatus } from 'shared';
 import { Link, Typography } from '@mui/material';
 import { displayEnum } from '../../../../utils/pipes';
+import { stat } from 'fs';
 
 export const renderLinkBOM = (params: GridRenderCellParams) =>
   params.value && (
@@ -11,30 +12,46 @@ export const renderLinkBOM = (params: GridRenderCellParams) =>
     </Link>
   );
 
+const getStatusColor = (status: MaterialStatus) => {
+  switch (status) {
+    case MaterialStatus.Ordered:
+      return '#dba63e';
+    case MaterialStatus.Unordered:
+      return '#a63737';
+    case MaterialStatus.Received:
+      return '#2a712a';
+    case MaterialStatus.Shipped:
+      return '#1b537a';
+    default:
+      return 'grey';
+  }
+};
+
+const bomStatusChipStyle = (status: MaterialStatus) => ({
+  backgroundColor: getStatusColor(status),
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '4px',
+  borderRadius: '6px',
+  minWidth: '85px',
+  height: '36px',
+  textAlign: 'center'
+});
+
 export const renderStatusBOM = (params: GridRenderCellParams) => {
   if (!params.value) return;
-  const status = params.value;
-  const color =
-    status === MaterialStatus.Ordered
-      ? '#dba63e'
-      : status === MaterialStatus.Unordered
-      ? '#a63737'
-      : status === MaterialStatus.Received
-      ? '#2a712a'
-      : status === MaterialStatus.Shipped
-      ? '#1b537a'
-      : 'grey';
+  const status = params.value as MaterialStatus;
 
-  const boxStyle = {
-    backgroundColor: color,
-    padding: '6px 10px 6px 10px',
-    borderRadius: '6px',
-    width: '95px',
-    textAlign: 'center'
-  };
   return (
-    <Box sx={boxStyle}>
-      <Typography fontSize="14px" color="black">
+    <Box sx={bomStatusChipStyle(status)}>
+      <Typography
+        fontSize={{
+          xs: '11px',
+          sm: '14px'
+        }}
+        color="black"
+      >
         {displayEnum(status)}
       </Typography>
     </Box>
