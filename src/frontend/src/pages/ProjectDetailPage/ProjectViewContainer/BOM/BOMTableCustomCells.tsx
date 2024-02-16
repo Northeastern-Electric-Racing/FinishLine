@@ -3,7 +3,6 @@ import { GridRenderCellParams } from '@mui/x-data-grid';
 import { MaterialStatus } from 'shared';
 import { Link, Typography } from '@mui/material';
 import { displayEnum } from '../../../../utils/pipes';
-import { stat } from 'fs';
 
 export const renderLinkBOM = (params: GridRenderCellParams) =>
   params.value && (
