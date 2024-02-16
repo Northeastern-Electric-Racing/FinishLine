@@ -125,6 +125,7 @@ const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${mate
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
 const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
+const bomDeleteManufacturer = (manufacturerName: string) => `${bomEndpoints()}/manufacturer/${manufacturerName}/delete`;
 const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
 const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 
@@ -228,6 +229,7 @@ export const apiUrls = {
   bomCreateAssembly,
   bomAssignAssembly,
   bomCreateManufacturer,
+  bomDeleteManufacturer,
   bomCreateMaterialType,
   bomCreateUnit,
 

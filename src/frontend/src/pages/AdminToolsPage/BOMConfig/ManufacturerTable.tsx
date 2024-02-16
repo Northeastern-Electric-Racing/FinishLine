@@ -33,7 +33,7 @@ const ManufacturerTable: React.FC = () => {
     return <ErrorPage message={manufacturersError?.message} />;
   }
 
-  const handleDeleteManufacturer = async (manufacturerName: String) => {
+  const handleDeleteManufacturer = async (manufacturerName: string) => {
     try {
       const updatedManufacturersTableRows = manufacturerList.filter(
         (manufacturer) => manufacturer.name !== manufacturerName
