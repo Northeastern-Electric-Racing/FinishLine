@@ -1,8 +1,10 @@
 import { Material } from 'shared';
 import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
+import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
+import { styled } from '@mui/system';
 
-export interface BomRow {
+export interface BomRow extends GridValidRowModel {
   id: string;
   materialId: string;
   status: string;
@@ -63,6 +65,36 @@ export const bomTableStyles = {
     }
   }
 };
+
+export const BomStyledDataGrid = styled(DataGrid)(({ theme }) => ({
+  '& .super-app-theme--header': {
+    backgroundColor: '#ef4345'
+  },
+  '& .super-app-theme--assembly': {
+    backgroundColor: '#997570',
+    '&:hover': {
+      backgroundColor: '#997570'
+    },
+    '&.Mui-selected': {
+      backgroundColor: '#997570',
+      '&:hover': {
+        backgroundColor: '#997570'
+      }
+    }
+  },
+  '& .super-app-theme--material': {
+    backgroundColor: theme.palette.background.default,
+    '&:hover': {
+      backgroundColor: theme.palette.background.default
+    },
+    '&.Mui-selected': {
+      backgroundColor: theme.palette.background.default,
+      '&:hover': {
+        backgroundColor: theme.palette.background.default
+      }
+    }
+  }
+}));
 
 export const BOM_TABLE_ROW_COUNT = 'tl-table-row-count';
 

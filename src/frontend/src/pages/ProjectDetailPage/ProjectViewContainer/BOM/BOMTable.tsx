@@ -1,7 +1,7 @@
-import { Box, useTheme } from '@mui/system';
-import { DataGrid, GridColumns, GridRowParams } from '@mui/x-data-grid';
+import { Box } from '@mui/system';
+import { GridColumns, GridRowParams, GridValidRowModel } from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
-import { BomRow, bomTableStyles, materialToRow } from '../../../../utils/bom.utils';
+import { BomRow, bomTableStyles, materialToRow, BomStyledDataGrid } from '../../../../utils/bom.utils';
 import { addMaterialCosts } from '../BOMTab';
 import { centsToDollar } from '../../../../utils/pipes';
 import { useState } from 'react';
@@ -15,6 +15,10 @@ interface BOMTableProps {
 const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
 
+  const arrowSymbol = (rowId: string) => {
+    return openRows.includes(rowId) ? '⮝' : '⮟';
+  };
+
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
   const miscAssembly: BomRow = {
     id: `assembly-misc`,
@@ -23,9 +27,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
     type: '',
     name: '',
     manufacturer: '',
-    manufacturerPN: `${openRows.includes('assembly-misc') ? '🠝' : '🠟'}  Miscellaneous Materials: $${centsToDollar(
+    manufacturerPN: `Miscellaneous Materials: $${centsToDollar(
       noAssemblyMaterials.reduce(addMaterialCosts, 0)
-    )}`,
+    )}  ${arrowSymbol('assembly-misc')}`,
     pdmFileName: '',
     quantity: '',
     price: '',
@@ -61,9 +65,9 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
       type: '',
       name: '',
       manufacturer: '',
-      manufacturerPN: `${openRows.includes(assembly.assemblyId) ? '🠝' : '🠟'}  Assembly - ${assembly.name}: $${centsToDollar(
+      manufacturerPN: `Assembly - ${assembly.name}: $${centsToDollar(
         assembly.materials.reduce(addMaterialCosts, 0)
-      )}`,
+      )}  ${arrowSymbol(assembly.assemblyId)}`,
       pdmFileName: '',
       quantity: '',
       price: '',
@@ -75,38 +79,14 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
     assemblyMaterials.forEach((material, indx) => rows.push(materialToRow(material, indx)));
   });
 
-  const theme = useTheme();
-
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 180px)',
-        width: '100%',
-        '& .super-app-theme--header': {
-          backgroundColor: '#ef4345'
-        },
-        '& .super-app-theme--material': {
-          backgroundColor: theme.palette.background.default,
-          '&:hover': {
-            backgroundColor: theme.palette.background.default
-          },
-          '&:focus': {
-            backgroundColor: theme.palette.background.default
-          }
-        },
-        '& .super-app-theme--assembly': {
-          backgroundColor: '#997570',
-          '&:hover': {
-            backgroundColor: '#997570'
-          },
-          '&:focus': {
-            backgroundColor: '#997570'
-          }
-        }
+        height: 'calc(100vh - 180px)'
       }}
     >
-      <DataGrid
-        columns={columns}
+      <BomStyledDataGrid
+        columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.filter(isAssemblyOpen)}
         getRowClassName={(params) =>
           `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
