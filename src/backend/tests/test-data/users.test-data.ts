@@ -1,4 +1,12 @@
-import { Role as PrismaRole, Theme, User as PrismaUser, User_Settings, User_Secure_Settings, Team } from '@prisma/client';
+import {
+  Role as PrismaRole,
+  Theme,
+  User as PrismaUser,
+  User_Settings,
+  User_Secure_Settings,
+  Team,
+  Schedule_Settings
+} from '@prisma/client';
 import { User as SharedUser, UserScheduleSettings } from 'shared';
 
 export const batman: PrismaUser = {
@@ -133,14 +141,15 @@ export const supermanWithUserSettings: PrismaUser & { userSettings: User_Setting
   }
 };
 
-export const batmanScheduleSettings: UserScheduleSettings = {
+export const batmanScheduleSettings: Schedule_Settings = {
   drScheduleSettingsId: 'bmschedule',
   personalGmail: 'brucewayne@gmail.com',
   personalZoomLink: 'https://zoom.us/j/gotham',
-  availability: []
+  availability: [],
+  userId: batman.userId
 };
 
-export const batmanWithScheduleSettings: PrismaUser & { scheduleSettings: UserScheduleSettings } = {
+export const batmanWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
   ...batman,
   scheduleSettings: {
     ...batmanScheduleSettings
