@@ -71,5 +71,4 @@ export interface UserScheduleSettings {
   personalGmail: string;
   personalZoomLink: string;
   availability: number[];
-  userId: number;
 }
