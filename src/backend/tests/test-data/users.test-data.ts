@@ -7,7 +7,7 @@ import {
   Team,
   Schedule_Settings
 } from '@prisma/client';
-import { User as SharedUser, UserScheduleSettings } from 'shared';
+import { User as SharedUser } from 'shared';
 
 export const batman: PrismaUser = {
   userId: 1,
