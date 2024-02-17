@@ -27,6 +27,8 @@ import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 import { isGuest } from 'shared';
+import WorkIcon from '@mui/icons-material/Work';
+import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -58,6 +60,10 @@ const FinancePage = () => {
 
   const [showPendingAdvisorListModal, setShowPendingAdvisorListModal] = useState(false);
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
+  const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
+
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -91,7 +97,7 @@ const FinancePage = () => {
         Actions
       </NERButton>
       <Menu open={!!anchorEl} anchorEl={anchorEl} onClose={handleDropdownClose}>
-        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)}>
+        <MenuItem onClick={() => history.push(routes.NEW_REIMBURSEMENT_REQUEST)} disabled={isGuest(user.role)}>
           <ListItemIcon>
             <NoteAddIcon fontSize="small" />
           </ListItemIcon>
@@ -127,6 +133,12 @@ const FinancePage = () => {
           </ListItemIcon>
           Generate All Receipts
         </MenuItem>
+        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
+          <ListItemIcon>
+            <WorkIcon fontSize="small" />
+          </ListItemIcon>
+          Total Amount Spent
+        </MenuItem>
       </Menu>
     </>
   );
@@ -140,11 +152,22 @@ const FinancePage = () => {
           onHide={() => setShowPendingAdvisorListModal(false)}
         />
       )}
+      {isFinance && (
+        <TotalAmountSpentModal
+          open={showTotalAmountSpent}
+          allReimbursementRequests={allReimbursementRequests!}
+          onHide={() => setShowTotalAmountSpent(false)}
+        />
+      )}
       <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}
         allReimbursementRequests={allReimbursementRequests}
+        startDate={startDate}
+        endDate={endDate}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
       />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>

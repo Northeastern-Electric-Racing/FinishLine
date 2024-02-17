@@ -39,17 +39,18 @@ import {
   HttpException,
   NotFoundException
 } from '../utils/errors.utils';
-import vendorTransformer from '../transformers/vendor.transformer';
 import { downloadImageFile, sendMailToAdvisor, uploadFile } from '../utils/google-integration.utils';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementStatusTransformer,
-  reimbursementTransformer
+  reimbursementTransformer,
+  vendorTransformer
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import { sendReimbursementRequestDeniedNotification } from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -83,7 +84,7 @@ export default class ReimbursementRequestService {
    * @returns all the reimbursements in the database
    */
   static async getAllReimbursements(user: User): Promise<Reimbursement[]> {
-    await validateUserIsPartOfFinanceTeam(user);
+    await isUserAdminOrOnFinance(user);
 
     const reimbursements = await prisma.reimbursement.findMany({ ...reimbursementQueryArgs });
     return reimbursements.map(reimbursementTransformer);
@@ -302,6 +303,25 @@ export default class ReimbursementRequestService {
     return updatedReimbursementRequest;
   }
 
+  static async editReimbursement(reimbursementId: string, editor: User, amount: number, dateCreated: Date) {
+    const request = await prisma.reimbursement.findUnique({
+      where: { reimbursementId }
+    });
+
+    if (!request) throw new NotFoundException('Reimbursement', reimbursementId);
+    if (request.userSubmittedId !== editor.userId)
+      throw new AccessDeniedException(
+        'You do not have access to edit this refund, only the submitter can edit their refund'
+      );
+
+    const updatedReimbursement = await prisma.reimbursement.update({
+      where: { reimbursementId },
+      data: { dateCreated, amount }
+    });
+
+    return updatedReimbursement;
+  }
+
   /**
    * Soft-deletes the given reimbursement request
    *
@@ -460,6 +480,12 @@ export default class ReimbursementRequestService {
       'Only admins, finance leads, and finance heads can create vendors.'
     );
 
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { name }
+    });
+
+    if (existingVendor != null) throw new HttpException(400, 'This vendor already exists');
+
     const isAuthorized = isAdmin(submitter.role) || (await isUserLeadOrHeadOfFinanceTeam(submitter));
     if (!isAuthorized) throw failedAuthorizationException;
 
@@ -599,7 +625,7 @@ export default class ReimbursementRequestService {
    * @returns an array of the prisma version of the reimbursement requests transformed to the shared version
    */
   static async getAllReimbursementRequests(user: User): Promise<ReimbursementRequest[]> {
-    await validateUserIsPartOfFinanceTeam(user);
+    await isUserAdminOrOnFinance(user);
 
     const reimbursementRequests = await prisma.reimbursement_Request.findMany({
       where: { dateDeleted: null },
@@ -802,6 +828,14 @@ export default class ReimbursementRequestService {
         user: true
       }
     });
+
+    const recipientSettings = await prisma.user_Settings.findUnique({
+      where: { userId: reimbursementRequest.recipientId }
+    });
+
+    if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }

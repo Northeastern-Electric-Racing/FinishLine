@@ -75,7 +75,8 @@ describe('Rendering Project View Container', () => {
         [WorkPackageStage.Research]: 'Research',
         [WorkPackageStage.Design]: 'Design',
         [WorkPackageStage.Manufacturing]: 'Manufacturing',
-        [WorkPackageStage.Install]: 'Install'
+        [WorkPackageStage.Install]: 'Install',
+        [WorkPackageStage.Testing]: 'Testing'
       };
 
       exampleProject1.workPackages.forEach((wp) => {

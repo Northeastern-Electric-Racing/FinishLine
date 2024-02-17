@@ -30,6 +30,7 @@ import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
+import { Decimal } from 'decimal.js';
 
 const prisma = new PrismaClient();
 
@@ -975,16 +976,16 @@ const performSeed: () => Promise<void> = async () => {
     'Resistor',
     'Digikey',
     'abcdef',
-    20,
+    new Decimal(20),
     30,
     600,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    'Here are some notes',
     {
       carNumber: 1,
       projectNumber: 1,
       workPackageNumber: 0
-    }
+    },
+    'Here are some notes'
   );
 
   await ProjectsService.createMaterial(
@@ -994,16 +995,16 @@ const performSeed: () => Promise<void> = async () => {
     'Resistor',
     'Digikey',
     'bacfed',
-    10,
+    new Decimal(10),
     7,
     70,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    'Here are some more notes',
     {
       carNumber: 1,
       projectNumber: 1,
       workPackageNumber: 0
     },
+    'Here are some more notes',
     assembly1.assemblyId
   );
 };

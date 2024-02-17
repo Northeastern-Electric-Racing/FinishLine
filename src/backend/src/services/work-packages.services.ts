@@ -590,7 +590,7 @@ export default class WorkPackagesService {
         workPackageId
       },
       data: {
-        // Soft delete the given wp's wbs by soft deleting crs and task
+        // Soft delete the given wp's wbs by setting crs to denied and soft deleting tasks
         wbsElement: {
           update: {
             changeRequests: {
@@ -599,8 +599,8 @@ export default class WorkPackagesService {
                   wbsElementId
                 },
                 data: {
-                  dateDeleted,
-                  deletedByUserId
+                  accepted: false,
+                  dateReviewed: dateDeleted
                 }
               }
             },

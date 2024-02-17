@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ProjectsController from '../controllers/projects.controllers';
 
@@ -95,12 +95,12 @@ projectRouter.post(
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
-  intMinZero(body('quantity')),
+  decimalMinZero(body('quantity')),
   nonEmptyString(body('unitName')).optional(),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString(),
+  body('notes').isString().optional(),
   validateInputs,
   ProjectsController.createMaterial
 );
@@ -113,7 +113,7 @@ projectRouter.post(
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
-  intMinZero(body('quantity')),
+  decimalMinZero(body('quantity')),
   body('unitName').optional(),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
@@ -130,5 +130,15 @@ projectRouter.post('/bom/material/:materialId/delete', ProjectsController.delete
 
 projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
+
+projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
+
+projectRouter.post(
+  '/link-types/:linkTypeId/edit',
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.editLinkType
+);
 
 export default projectRouter;

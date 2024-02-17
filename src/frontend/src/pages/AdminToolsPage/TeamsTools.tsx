@@ -1,4 +1,6 @@
 import { Box, FormControl, FormLabel, Grid, TableCell, TableRow } from '@mui/material';
+import { routes } from '../../utils/routes';
+import { Link as RouterLink } from 'react-router-dom';
 import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
 import { useAllTeams, useCreateTeam } from '../../hooks/teams.hooks';
@@ -78,7 +80,7 @@ const TeamsTools = () => {
     .map(userToAutocompleteOption);
 
   const teamTableRows = allTeams.map((team) => (
-    <TableRow>
+    <TableRow component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
       <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black' }}>
