@@ -154,7 +154,7 @@ describe('Users', () => {
       const res = await UsersService.getUserScheduleSetting(batmanWithScheduleSettings.userId);
 
       expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
-      //expect(res).toStrictEqual(batmanScheduleSettings);
+      expect(res).toStrictEqual(batmanScheduleSettings);
     });
   });
 });
