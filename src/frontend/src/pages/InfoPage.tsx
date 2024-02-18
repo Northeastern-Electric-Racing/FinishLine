@@ -12,10 +12,19 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
+import { GanttChart } from '../components/GanttChart/GanttChart';
 
 const InfoPage: React.FC = () => {
+  const data = [
+    { id: '1', start: new Date('2024-01-04'), end: new Date('2024-01-15'), title: 'First event' },
+    { id: '2', start: new Date('2024-01-12'), end: new Date('2024-01-31'), title: 'Second event' }
+  ];
+
   return (
     <PageLayout title="Information">
+      <div className="mt-5">
+        <GanttChart start={new Date('2023-12-25')} end={new Date('2024-02-5')} data={data} />
+      </div>
       <PageBlock title="Resources">
         <Box>
           <Typography>Check out these helpful resources:</Typography>
