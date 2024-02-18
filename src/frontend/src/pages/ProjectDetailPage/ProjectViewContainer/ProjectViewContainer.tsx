@@ -94,6 +94,24 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
+  const LinkButton = () => (
+    <MenuItem onClick={handleClickEdit} disabled={isGuest(user.role)}>
+      <ListItemIcon>
+        <EditIcon fontSize="small" />
+      </ListItemIcon>
+      Link
+    </MenuItem>
+  );
+
+  const NotesButton = () => (
+    <MenuItem onClick={handleClickEdit} disabled={isGuest(user.role)}>
+      <ListItemIcon>
+        <EditIcon fontSize="small" />
+      </ListItemIcon>
+      Notes
+    </MenuItem>
+  );
+
   const CreateChangeRequestButton = () => (
     <MenuItem
       component={Link}
