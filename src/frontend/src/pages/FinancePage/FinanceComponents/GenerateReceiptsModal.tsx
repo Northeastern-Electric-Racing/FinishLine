@@ -1,17 +1,14 @@
-import { FormControl, FormHelperText, FormLabel, MenuItem, Select, TextField } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, Select, TextField } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useDownloadPDFOfImages, useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
+import { useDownloadPDFOfImages } from '../../../hooks/finance.hooks';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { ClubAccount, ExpenseType, ReimbursementRequest } from 'shared';
-import ReimbursementProductTable from '../ReimbursementRequestForm/ReimbursementProductTable';
-import { expenseTypeTransformer } from '../../../../../backend/src/transformers/reimbursement-requests.transformer';
-import { expenseTypePipe } from '../../../utils/pipes';
+import { ReimbursementRequest } from 'shared';
 
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
