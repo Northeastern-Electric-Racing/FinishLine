@@ -42,13 +42,17 @@ const GenerateReceiptsModal = ({
   setOpen,
   allReimbursementRequests,
   receiptType,
-  setReceiptType
+  setReceiptType,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate
 }: GenerateReceiptsModalProps) => {
   const toast = useToast();
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
-  const { mutateAsync, isLoading } = useDownloadPDFOfImages(receiptType);
+  const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate, receiptType);
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
