@@ -152,8 +152,15 @@ export default class TeamsService {
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
 
-    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId))
-      throw new HttpException(400, 'Error: Team head cannot be a member');
+    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId)) {
+      const newTeamArr: number[] = [];
+      for (let i = 0; i < team.members.length; i++) {
+        if (team.members[i].userId !== newHead.userId) {
+          newTeamArr.push(userId);
+        }
+      }
+      this.setTeamMembers(submitter, teamId, newTeamArr);
+    }
 
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
