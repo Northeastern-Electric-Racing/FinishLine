@@ -62,7 +62,7 @@ const FinancePage = () => {
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
   const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
 
-  const [receiptType, setReceiptType] = useState(false);
+  const [receiptType, setReceiptType] = useState('');
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -163,6 +163,8 @@ const FinancePage = () => {
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}
         allReimbursementRequests={allReimbursementRequests}
+        setReceiptType={setReceiptType}
+        receiptType={receiptType}
       />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>

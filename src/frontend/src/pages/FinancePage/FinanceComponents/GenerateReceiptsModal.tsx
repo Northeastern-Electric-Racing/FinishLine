@@ -16,27 +16,33 @@ import { expenseTypePipe } from '../../../utils/pipes';
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
   endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required'),
-  receiptType: yup.string().required('Receipt Type')
+  receiptType: yup.string().required('Receipt Type is required')
 });
 
 interface GenerateReceiptsFormInput {
   startDate: Date;
   endDate: Date;
-  receiptType: String;
-  setReceiptType: (val: String) => void;
+  receiptType: string;
 }
 
 interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   allReimbursementRequests?: ReimbursementRequest[];
+  setReceiptType: (val: string) => void;
+  receiptType: string;
 }
 
-const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: GenerateReceiptsModalProps) => {
+const GenerateReceiptsModal = ({
+  open,
+  setOpen,
+  allReimbursementRequests,
+  receiptType,
+  setReceiptType
+}: GenerateReceiptsModalProps) => {
   const toast = useToast();
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatfePickerOpen] = useState(false);
-  const receiptType = use;
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   const { mutateAsync, isLoading } = useDownloadPDFOfImages(receiptType);
 
@@ -158,8 +164,8 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
               render={({ field: { onChange, value } }) => (
                 <Select
                   value={value}
-                  onChange={(newValue) => {
-                    const newReceiptType = newValue;
+                  onChange={(event) => {
+                    const newReceiptType = event.target.value;
                     setReceiptType(newReceiptType);
                     onChange(newReceiptType);
                   }}
