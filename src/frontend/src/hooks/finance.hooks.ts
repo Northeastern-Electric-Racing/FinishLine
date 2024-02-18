@@ -340,7 +340,10 @@ export const useDownloadPDFOfImages = (startDate: Date, endDate: Date, receiptTy
       return downloadGoogleImage(fileId);
     });
     const blobs = await Promise.all(promises);
-    await downloadBlobsToPdf(blobs, `receipts-${receiptType}-${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.pdf`);
+    await downloadBlobsToPdf(
+      blobs,
+      `receipts-${receiptType}-${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.pdf`
+    );
   });
 };
 
