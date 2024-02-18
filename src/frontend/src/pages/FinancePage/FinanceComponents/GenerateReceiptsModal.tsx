@@ -31,6 +31,10 @@ interface GenerateReceiptsModalProps {
   allReimbursementRequests?: ReimbursementRequest[];
   setReceiptType: (val: string) => void;
   receiptType: string;
+  startDate: Date;
+  endDate: Date;
+  setStartDate: (val: Date) => void;
+  setEndDate: (val: Date) => void;
 }
 
 const GenerateReceiptsModal = ({
