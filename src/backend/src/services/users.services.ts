@@ -290,7 +290,7 @@ export default class UsersService {
     phoneNumber: string
   ): Promise<string> {
     const existingUser = await prisma.user_Secure_Settings.findFirst({
-      where: { phoneNumber }
+      where: { phoneNumber, userId: { not: user.userId } } // excludes the current user from check
     });
 
     if (existingUser) {

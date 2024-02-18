@@ -980,12 +980,12 @@ const performSeed: () => Promise<void> = async () => {
     30,
     600,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    'Here are some notes',
     {
       carNumber: 1,
       projectNumber: 1,
       workPackageNumber: 0
-    }
+    },
+    'Here are some notes'
   );
 
   await ProjectsService.createMaterial(
@@ -999,12 +999,12 @@ const performSeed: () => Promise<void> = async () => {
     7,
     70,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    'Here are some more notes',
     {
       carNumber: 1,
       projectNumber: 1,
       workPackageNumber: 0
     },
+    'Here are some more notes',
     assembly1.assemblyId
   );
 };
