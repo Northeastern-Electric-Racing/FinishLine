@@ -116,6 +116,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const { userId } = user;
 
+  const transformDate = (date: Date) => {
+    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
+    const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
+    return new Date(date.getFullYear(), Number(month), Number(day));
+  };
+
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
@@ -129,7 +135,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         userId,
         name,
         crId: parseInt(crId),
-        startDate: startDate,
+        startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
         expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
