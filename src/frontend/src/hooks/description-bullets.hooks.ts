@@ -12,7 +12,7 @@ import { DescriptionBullet } from 'shared';
  */
 export const useCheckDescriptionBullet = () => {
   const queryClient = useQueryClient();
-  return useMutation<DescriptionBullet, Error, any>(
+  return useMutation<DescriptionBullet, Error, {userId: number, descriptionId: number}>(
     ['description bullets', 'check'],
     async (payload: { userId: number; descriptionId: number }) => {
       const { data } = await checkDescriptionBullet(payload.userId, payload.descriptionId);
