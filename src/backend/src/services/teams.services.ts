@@ -157,7 +157,7 @@ export default class TeamsService {
       const newTeamArr: number[] = [];
       for (let i = 0; i < team.members.length; i++) {
         if (team.members[i].userId !== newHead.userId) {
-          newTeamArr.push(userId);
+          newTeamArr.push(team.members[i].userId);
         }
       }
       this.setTeamMembers(submitter, teamId, newTeamArr);
@@ -167,8 +167,8 @@ export default class TeamsService {
     if (newHead && team.leads.map((user) => user.userId).includes(newHead?.userId)) {
       const newLeadsArr: number[] = [];
       for (let i = 0; i < team.leads.length; i++) {
-        if (team.members[i].userId !== newHead.userId) {
-          newLeadsArr.push(userId);
+        if (team.leads[i].userId !== newHead.userId) {
+          newLeadsArr.push(team.leads[i].userId);
         }
       }
       this.setTeamLeads(submitter, teamId, newLeadsArr);
@@ -291,9 +291,18 @@ export default class TeamsService {
       throw new HttpException(400, 'A lead cannot be the head of the team!');
     }
 
-    if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
+    /*if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
       throw new HttpException(400, 'A lead cannot be a member of the team!');
+    }*/
+
+    // removes the new leads from the current members of the given team
+    const newMembersArr: number[] = [];
+    for (let i = 0; i < team.members.length; i++) {
+      if (!userIds.includes(team.members[i].userId)) {
+        newMembersArr.push(team.members[i].userId);
+      }
     }
+    this.setTeamMembers(submitter, teamId, newMembersArr);
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
 
