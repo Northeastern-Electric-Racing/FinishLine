@@ -8,7 +8,8 @@ import {
   sharedBatman,
   theVisitor,
   batmanWithScheduleSettings,
-  batmanScheduleSettings
+  batmanScheduleSettings,
+  batmanUserScheduleSettings
 } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
@@ -162,7 +163,7 @@ describe('Users', () => {
       const res = await UsersService.getUserScheduleSetting(batmanWithScheduleSettings.userId, batmanWithScheduleSettings);
 
       expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
-      expect(res).toStrictEqual(batmanScheduleSettings);
+      expect(res).toStrictEqual(batmanUserScheduleSettings);
     });
   });
 });
