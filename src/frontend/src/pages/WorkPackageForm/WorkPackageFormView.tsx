@@ -117,7 +117,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const { userId } = user;
 
   const transformDate = (date: Date) => {
-    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth()}` : (date.getMonth()).toString();
+    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth()}` : date.getMonth().toString();
     const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
     return new Date(date.getFullYear(), Number(month), Number(day));
   };
