@@ -152,6 +152,7 @@ export default class TeamsService {
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
 
+    // if the new head is a current member on the team, this will remove them as a member
     if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId)) {
       const newTeamArr: number[] = [];
       for (let i = 0; i < team.members.length; i++) {
@@ -160,6 +161,17 @@ export default class TeamsService {
         }
       }
       this.setTeamMembers(submitter, teamId, newTeamArr);
+    }
+
+    // if the new head is a current leader on the team, they will be removed as a leader
+    if (newHead && team.leads.map((user) => user.userId).includes(newHead?.userId)) {
+      const newLeadsArr: number[] = [];
+      for (let i = 0; i < team.leads.length; i++) {
+        if (team.members[i].userId !== newHead.userId) {
+          newLeadsArr.push(userId);
+        }
+      }
+      this.setTeamLeads(submitter, teamId, newLeadsArr);
     }
 
     if (!newHead) throw new NotFoundException('User', userId);
