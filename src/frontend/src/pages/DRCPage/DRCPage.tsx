@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
+import { Grid, ListItemIcon, Menu, MenuItem, Stack, Typography } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -13,6 +13,7 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { isGuest } from 'shared';
 import MonthSelector from './MonthSelector';
+import DayCard from './DayCard';
 
 const DRCPage = () => {
   const user = useCurrentUser();
@@ -28,6 +29,18 @@ const DRCPage = () => {
   const handleDropdownClose = () => {
     setAnchorEl(null);
   };
+
+  const daysInMonth = (month: number, year: number) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const paddingDays = (month: number, year: number) => {
+    return new Date(year, month, 0).getDay() - 1 > 0 ? new Date(year, month, 0).getDay() - 1 : 0;
+  };
+
+  const daysThisMonth = Array<number>(paddingDays(displayMonth.getMonth(), displayMonth.getFullYear()))
+    .fill(0)
+    .concat([...Array(daysInMonth(displayMonth.getMonth(), displayMonth.getFullYear())).keys()]);
 
   const unconfirmedDRSDropdown = (
     <>
@@ -55,11 +68,62 @@ const DRCPage = () => {
       <MonthSelector
         displayMonth={displayMonth}
         setDisplayMonth={(date) => {
-          console.log(date);
           setDisplayMonth(date);
         }}
       ></MonthSelector>
-      <Typography>{displayMonth.toString()}</Typography>
+      <Grid container>
+        <Grid container>
+          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+            <Grid item xs={12 / 7}>
+              <Typography>{day}</Typography>
+            </Grid>
+          ))}
+        </Grid>
+        <Grid container>
+          {daysThisMonth.slice(0, 7).map((day) => {
+            const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
+            console.log(myDate);
+            return (
+              <Grid item xs={12 / 7}>
+                <DayCard myDate={myDate} events={[]}></DayCard>
+              </Grid>
+            );
+          })}
+        </Grid>
+        <Grid container>
+          {daysThisMonth.slice(7, 14).map((day) => {
+            const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
+            console.log(myDate);
+            return (
+              <Grid item xs={12 / 7}>
+                <DayCard myDate={myDate} events={[]}></DayCard>
+              </Grid>
+            );
+          })}
+        </Grid>
+        <Grid container>
+          {daysThisMonth.slice(14, 21).map((day) => {
+            const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
+            console.log(myDate);
+            return (
+              <Grid item xs={12 / 7}>
+                <DayCard myDate={myDate} events={[]}></DayCard>
+              </Grid>
+            );
+          })}
+        </Grid>
+        <Grid container>
+          {daysThisMonth.slice(21, 28).map((day) => {
+            const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
+            console.log(myDate);
+            return (
+              <Grid item xs={12 / 7}>
+                <DayCard myDate={myDate} events={[]}></DayCard>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </Grid>
     </PageLayout>
   );
 };
