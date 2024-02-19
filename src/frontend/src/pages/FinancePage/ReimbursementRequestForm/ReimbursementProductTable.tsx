@@ -113,55 +113,67 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
                     {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
                       <ListItem key={product.index}>
-                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                          <FormControl sx={{ width: '50%', marginRight: '4px' }}>
-                            <Controller
-                              name={`reimbursementProducts.${product.index}.name`}
-                              control={control}
-                              render={({ field }) => (
-                                <TextField
-                                  {...field}
-                                  label={'Description'}
-                                  autoComplete="off"
-                                  size={'small'}
-                                  variant={'outlined'}
-                                  sx={{ width: '100%' }}
-                                  error={!!errors.reimbursementProducts?.[product.index]?.name}
-                                />
-                              )}
-                            />
-                            <FormHelperText error>
-                              {errors.reimbursementProducts?.[product.index]?.name?.message}
-                            </FormHelperText>
-                          </FormControl>
-                          <FormControl sx={{ width: '50%' }}>
-                            <Controller
-                              name={`reimbursementProducts.${product.index}.cost`}
-                              control={control}
-                              render={({ field }) => (
-                                <TextField
-                                  {...field}
-                                  label={'Cost'}
-                                  size={'small'}
-                                  variant={'outlined'}
-                                  type="number"
-                                  autoComplete="off"
-                                  InputProps={{
-                                    startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                  }}
-                                  onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
-                                  sx={{ width: '100%' }}
-                                  error={!!errors.reimbursementProducts?.[product.index]?.cost}
-                                />
-                              )}
-                            />
-                            <FormHelperText error>
-                              {errors.reimbursementProducts?.[product.index]?.cost?.message}
-                            </FormHelperText>
-                          </FormControl>
+                        <Box
+                          sx={{
+                            display: 'flex'
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: { xs: 'column', sm: 'row' },
+                              gap: { xs: '0', sm: '8px' }
+                            }}
+                          >
+                            <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                              <Controller
+                                name={`reimbursementProducts.${product.index}.name`}
+                                control={control}
+                                render={({ fieldState: { error } }) => (
+                                  <TextField
+                                    placeholder="Description"
+                                    error={!!error}
+                                    helperText={error ? error.message : null}
+                                    variant="outlined"
+                                    fullWidth
+                                    autoComplete="off"
+                                  />
+                                )}
+                              />
+                              <FormHelperText error>
+                                {errors.reimbursementProducts?.[product.index]?.name?.message}
+                              </FormHelperText>
+                            </FormControl>
+                            <FormControl fullWidth margin="dense" variant="outlined" size="small">
+                              <Controller
+                                name={`reimbursementProducts.${product.index}.cost`}
+                                control={control}
+                                render={({ fieldState: { error } }) => (
+                                  <TextField
+                                    placeholder="Cost"
+                                    type="number"
+                                    InputLabelProps={{ shrink: true }}
+                                    InputProps={{
+                                      startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                    }}
+                                    error={!!error}
+                                    helperText={error ? error.message : null}
+                                    variant="outlined"
+                                    fullWidth
+                                    autoComplete="off"
+                                    onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                  />
+                                )}
+                              />
+                              <FormHelperText error>
+                                {errors.reimbursementProducts?.[product.index]?.cost?.message}
+                              </FormHelperText>
+                            </FormControl>
+                          </Box>
                           <IconButton
                             sx={{
-                              '&:focus': {
+                              alignSelf: 'center',
+                              '&:hover': {
                                 backgroundColor: hoverColor
                               }
                             }}
@@ -248,5 +260,4 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     </TableContainer>
   );
 };
-
 export default ReimbursementProductTable;
