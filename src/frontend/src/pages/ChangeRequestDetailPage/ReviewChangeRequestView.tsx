@@ -65,6 +65,8 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
    * @param value true if review accepted, false if denied
    */
   const handleAcceptDeny = (value: boolean) => {
+    if (value === true) {
+    }
     getFieldState('accepted') ? setValue('accepted', value) : register('accepted', { value });
     if (selected !== -1) {
       setValue('psId', (cr as StandardChangeRequest).proposedSolutions[selected].id);
@@ -86,7 +88,12 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     }
     const standardChangeRequest = cr as StandardChangeRequest;
     const selectedProposedSolution = standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!;
-    if (selectedProposedSolution.timelineImpact > 0 && blockingWorkPackages && blockingWorkPackages.length > 0) {
+    if (
+      data.accepted &&
+      selectedProposedSolution.timelineImpact > 0 &&
+      blockingWorkPackages &&
+      blockingWorkPackages.length > 0
+    ) {
       setSelectedTimelineImpact(selectedProposedSolution.timelineImpact);
       setShowWarning(true);
     } else {
