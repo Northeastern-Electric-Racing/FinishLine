@@ -86,7 +86,12 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     }
     const standardChangeRequest = cr as StandardChangeRequest;
     const selectedProposedSolution = standardChangeRequest.proposedSolutions.find((ps) => ps.id === data.psId)!;
-    if (selectedProposedSolution.timelineImpact > 0 && blockingWorkPackages && blockingWorkPackages.length > 0) {
+    if (
+      // data.accepted &&
+      selectedProposedSolution.timelineImpact > 0 &&
+      blockingWorkPackages &&
+      blockingWorkPackages.length > 0
+    ) {
       setSelectedTimelineImpact(selectedProposedSolution.timelineImpact);
       setShowWarning(true);
     } else {

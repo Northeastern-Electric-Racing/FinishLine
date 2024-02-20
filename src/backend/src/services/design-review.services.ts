@@ -22,9 +22,11 @@ export default class DesignReviewService {
 
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
 
-    await prisma.design_Review.update({
+    const deletedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
       data: { dateDeleted: new Date(), userDeleted: { connect: { userId: submitter.userId } } }
     });
+
+
   }
 }

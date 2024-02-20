@@ -8,8 +8,9 @@ export default class DesignReviewController {
     try {
       const drId: string = req.params.designReviewId;
       const user: User = await getCurrentUser(res);
-      await DesignReviewService.deleteDesignReview(user, drId);
-      return res.status(200);
+      const deletedDesignReview = await DesignReviewService.deleteDesignReview(user, drId);
+      // TODO: Add a return in the service method and then return it in the controller
+      return res.status(200).json(deletedDesignReview);
     } catch (error: unknown) {
       next(error);
     }
