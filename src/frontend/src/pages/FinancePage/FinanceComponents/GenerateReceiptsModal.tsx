@@ -53,7 +53,7 @@ const GenerateReceiptsModal = ({
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
-    let filteredRequests = allReimbursementRequests
+    const filteredRequests = allReimbursementRequests
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) >= new Date(data.startDate.toDateString())
       )
@@ -113,7 +113,9 @@ const GenerateReceiptsModal = ({
                   onClose={() => setStartDatePickerOpen(false)}
                   onOpen={() => setStartDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    onChange(newValue ?? new Date());
+                    const newDate = newValue ?? new Date();
+                    setStartDate(newDate);
+                    onChange(newDate);
                   }}
                   PopperProps={{
                     placement: 'right'
@@ -143,7 +145,9 @@ const GenerateReceiptsModal = ({
                   onClose={() => setEndDatePickerOpen(false)}
                   onOpen={() => setEndDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    onChange(newValue ?? new Date());
+                    const newDate = newValue ?? new Date();
+                    setEndDate(newDate);
+                    onChange(newDate);
                   }}
                   PopperProps={{
                     placement: 'right'
