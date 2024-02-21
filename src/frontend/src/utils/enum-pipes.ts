@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { yellow, green, blue, purple, grey, orange } from '@mui/material/colors';
-import { ChangeRequestStatus, ChangeRequestType, ReimbursementStatusType, WorkPackageStage } from 'shared';
+import { ChangeRequestStatus, ChangeRequestType, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
