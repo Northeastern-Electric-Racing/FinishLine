@@ -14,7 +14,7 @@ CREATE UNIQUE INDEX "Reimbursement_Request_identifier_key" ON "Reimbursement_Req
 WITH CTE AS (
     SELECT 
         "reimbursementRequestId",
-        ROW_NUMBER() OVER (ORDER BY "dateCreated" DESC) AS new_identifier
+        ROW_NUMBER() OVER (ORDER BY "dateCreated" ASC) AS new_identifier
     FROM 
         "Reimbursement_Request"
     WHERE
