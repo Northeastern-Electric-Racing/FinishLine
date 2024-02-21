@@ -1,7 +1,9 @@
-import { isAdmin } from 'shared';
+import { DesignReview, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { User } from '@prisma/client';
+import { designReviewTransformer } from '../transformers/design-review.transformer';
+import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
 
 export default class DesignReviewService {
   /**
@@ -10,7 +12,7 @@ export default class DesignReviewService {
    * @param designReviewId the id of the design review to be deleted
    */
 
-  static async deleteDesignReview(submitter: User, designReviewId: string): Promise<void> {
+  static async deleteDesignReview(submitter: User, designReviewId: string): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
       where: { designReviewId }
     });
@@ -24,9 +26,10 @@ export default class DesignReviewService {
 
     const deletedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
-      data: { dateDeleted: new Date(), userDeleted: { connect: { userId: submitter.userId } } }
+      data: { dateDeleted: new Date(), userDeleted: { connect: { userId: submitter.userId } } },
+      ...designReviewQueryArgs
     });
 
-
+    return designReviewTransformer(deletedDesignReview);
   }
 }

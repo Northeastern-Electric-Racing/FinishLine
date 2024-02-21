@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
-import { DesignReview } from 'shared';
+import { DesignReview, DesignReviewStatus } from 'shared';
 import userTransformer from './user.transformer';
+import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
+import { wbsNumOf } from '../utils/utils';
 
 export const designReviewTransformer = (
   designReview: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs>
@@ -11,9 +13,6 @@ export const designReviewTransformer = (
     meetingTimes: designReview.meetingTimes,
     dateCreated: designReview.dateCreated,
     userCreated: userTransformer(designReview.userCreated),
-    userCreatedId: designReview.userCreatedId,
-    status: designReview.status,
-    teamType: designReview.teamType,
     requiredMembers: designReview.requiredMembers.map(userTransformer),
     optionalMembers: designReview.optionalMembers.map(userTransformer),
     confirmedMembers: designReview.confirmedMembers.map(userTransformer),
@@ -25,9 +24,10 @@ export const designReviewTransformer = (
     attendees: designReview.attendees.map(userTransformer),
     dateDeleted: designReview.dateDeleted ?? undefined,
     userDeleted: designReview.userDeleted ? userTransformer(designReview.userDeleted) : undefined,
-    userDeletedId: designReview.userDeletedId ?? undefined,
     docTemplateLink: designReview.docTemplateLink ?? undefined,
-    wbsElementId: designReview.wbsElementId,
-    wbsElement: designReview.wbsElement
+    status: designReview.status as DesignReviewStatus,
+    teamType: designReview.teamType,
+    wbsName: designReview.wbsElement.name,
+    wbsNum: wbsNumOf(designReview.wbsElement)
   };
 };
