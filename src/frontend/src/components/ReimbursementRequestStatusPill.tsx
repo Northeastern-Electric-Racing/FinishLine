@@ -5,7 +5,6 @@
 
 import Chip from '@mui/material/Chip';
 import { green, red, grey, purple, yellow, orange } from '@mui/material/colors';
-import { borderColor } from '@mui/system';
 import { ReimbursementStatusType } from 'shared';
 import { displayEnum } from '../utils/pipes';
 
