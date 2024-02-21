@@ -7,7 +7,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { centsToDollar, datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
-import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
+import { imagePreviewUrl, isReimbursementRequestSaboSubmitted } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
 
@@ -24,7 +24,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
-
+  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -58,8 +58,9 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       open={open}
       onHide={() => setOpen(false)}
       title="Input these fields into the Sabo Form"
-      cancelText="Cancel"
-      submitText="Submit to Sabo"
+      submitText={isSaboSubmitted ? '' : 'Submit to Sabo'}
+      showCloseButton={isSaboSubmitted}
+      hideFormButtons={isSaboSubmitted}
       onSubmit={() => handleSubmitToSabo()}
     >
       <Grid container spacing={1}>

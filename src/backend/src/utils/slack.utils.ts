@@ -2,6 +2,7 @@ import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'sh
 import { sendMessage } from '../integrations/slack';
 import { getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
+import { HttpException } from './errors.utils';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -66,4 +67,25 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
   const link = `https://finishlinebyner.com/projects/${wbsPipe(task.wbsNum)}/tasks`;
   const linkButtonText = 'View Task';
   await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+/**
+ * Send a notification to users that reimbursement request is denied on Slack
+ * @param slackId the slack id of the assignee
+ * @param denial the denial if the reimbursement request
+ */
+export const sendReimbursementRequestDeniedNotification = async (slackId: string, requestId: string): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `Your reimbursement request has been denied.`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const linkButtonText = 'View Reimbursement Request';
+
+  try {
+    await sendMessage(slackId, msg, link, linkButtonText);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
+    }
+  }
 };
