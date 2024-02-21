@@ -329,7 +329,7 @@ export default class UsersService {
    * @returns the user's schedule settings
    * @throws if the user doesn't have schedule settings
    */
-  static async getUserScheduleSetting(userId: number, submitter: PrismaUser): Promise<UserScheduleSettings> {
+  static async getUserScheduleSettings(userId: number, submitter: PrismaUser): Promise<UserScheduleSettings> {
     if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
     const scheduleSettings = await prisma.schedule_Settings.findUnique({
       where: { userId }

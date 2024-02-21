@@ -150,7 +150,7 @@ export default class UsersController {
     try {
       const userId: number = parseInt(req.params.userId);
       const submitter = await getCurrentUser(res);
-      const userScheduleSettings = await UsersService.getUserScheduleSetting(userId, submitter);
+      const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, submitter);
       res.status(200).json(userScheduleSettings);
     } catch (error: unknown) {
       next(error);
