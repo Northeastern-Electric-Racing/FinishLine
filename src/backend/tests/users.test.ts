@@ -144,7 +144,7 @@ describe('Users', () => {
     test('getUserScheduleSettings for user with no settings', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
       vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(null);
-      await expect(() => UsersService.getUserScheduleSetting(batman.userId, batman)).rejects.toThrow(
+      await expect(() => UsersService.getUserScheduleSettings(batman.userId, batman)).rejects.toThrow(
         new HttpException(404, 'User Schedule Settings Not Found')
       );
     });
@@ -152,7 +152,7 @@ describe('Users', () => {
     test('non-valid user tries to get someone elses settings', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
       vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
-      await expect(() => UsersService.getUserScheduleSetting(superman.userId, batmanWithScheduleSettings)).rejects.toThrow(
+      await expect(() => UsersService.getUserScheduleSettings(superman.userId, batmanWithScheduleSettings)).rejects.toThrow(
         new AccessDeniedException('You can only access your own schedule settings')
       );
     });
@@ -160,7 +160,7 @@ describe('Users', () => {
     test('getUserScheduleSettings works successfully', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
       vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
-      const res = await UsersService.getUserScheduleSetting(batmanWithScheduleSettings.userId, batmanWithScheduleSettings);
+      const res = await UsersService.getUserScheduleSettings(batmanWithScheduleSettings.userId, batmanWithScheduleSettings);
 
       expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual(batmanUserScheduleSettings);
