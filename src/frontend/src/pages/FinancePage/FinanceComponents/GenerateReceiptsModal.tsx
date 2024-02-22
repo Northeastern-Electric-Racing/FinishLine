@@ -53,18 +53,18 @@ const GenerateReceiptsModal = ({
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
-    let filteredRequests = allReimbursementRequests
+
+    const filteredRequests = allReimbursementRequests
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) >= new Date(data.startDate.toDateString())
       )
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) <= new Date(data.endDate.toDateString())
       )
-      .filter((val: ReimbursementRequest) => !val.dateDeleted);
-
-    if (!(data.receiptType === 'BOTH')) {
-      filteredRequests = filteredRequests.filter((val: ReimbursementRequest) => val.account === data.receiptType);
-    }
+      .filter((val: ReimbursementRequest) => !val.dateDeleted)
+      .filter(
+        (val: ReimbursementRequest) => !val.dateDeleted && (data.receiptType === 'BOTH' || val.account === data.receiptType)
+      );
 
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
 
