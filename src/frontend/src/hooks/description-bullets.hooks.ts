@@ -19,7 +19,7 @@ export const useCheckDescriptionBullet = () => {
   const queryClient = useQueryClient();
   return useMutation<DescriptionBullet, Error, checkDescriptionBulletRequestPayload>(
     ['description bullets', 'check'],
-    async (payload: { userId: number; descriptionId: number }) => {
+    async (payload: checkDescriptionBulletRequestPayload) => {
       const { data } = await checkDescriptionBullet(payload.userId, payload.descriptionId);
       return data;
     },
