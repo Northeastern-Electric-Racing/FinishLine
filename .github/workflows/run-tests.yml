@@ -30,7 +30,7 @@ jobs:
       - name: Add Env Variables
         run: cd src/backend && echo "DATABASE_URL=\"postgresql://postgres:docker@localhost:5432/nerpm?schema=public\"" >> .env
       - name: Create Database
-        run: docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres && docker exec -ti finishline psql -U postgres -c "CREATE DATABASE nerpm;"
+        run: docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres && docker exec finishline psql -U postgres -c "CREATE DATABASE nerpm;"
       - name: Install modules
         run: yarn install && yarn prisma:generate && yarn prisma:migrate:prod
       - name: Run tests
