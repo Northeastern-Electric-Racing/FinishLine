@@ -73,9 +73,16 @@ export default class TeamsService {
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
-    if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId)))
-      throw new HttpException(400, 'team leads cannot be members!');
-
+    // if the new members array includes a current lead on that team, that member will be deleted as a lead of that team
+    const newLeadsArr: number[] = [];
+    if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId))) {
+      for (let i = 0; i < team.leads.length; i++) {
+        if (!userIds.includes(team.leads[i].userId)) {
+          newLeadsArr.push(team.leads[i].userId);
+        }
+      }
+      this.setTeamLeads(submitter, teamId, newLeadsArr);
+    }
     // retrieve userId for every given users to update team's members in the database
     const transformedUsers = users.map((user) => {
       return {
