@@ -126,8 +126,6 @@ model User {
   createdDesignReviews       Design_Review[]         @relation(name: "designReviewCreator")
   deletedDesignReviews       Design_Review[]         @relation(name: "designReviewDeleter")
   drScheduleSettings         Schedule_Settings?
-  Work_Package_Template      Work_Package_Template[]
-  Work_Package_Template      Work_Package_Template[]
 }
 
 model Team {
@@ -637,30 +635,4 @@ model Meeting {
   meetingTimes Int[]
   team         Team?  @relation(fields: [teamId], references: [teamId])
   teamId       String
-}
-
-model Blocked_By_Info {
-  blockedByInfoId       String                @id @default(uuid())
-  stage                 Work_Package_Stage?
-  name                  String
-  workPackageTemplate   Work_Package_Template @relation(fields: [workPackageTemplateId], references: [workPackageTemplateId])
-  workPackageTemplateId String
-}
-
-model Work_Package_Template {
-  workPackageTemplateId String             @id @default(uuid())
-  templateName          String
-  templateNotes         String
-  workPackageName       String?
-  stage                 Work_Package_Stage
-  duration              Int?
-  blockedBy             Blocked_By_Info[]
-  expectedActivities    String[]
-  deliverables          String[]
-  dateCreated           DateTime
-  userCreated           User               @relation(fields: [userCreatedId], references: [userId], name: "workPackageTemplateCreator")
-  userCreatedId         Int
-  dateDeleted           DateTime?
-  userDeleted           User?              @relation(fields: [userDeletedId], references: [userId])
-  userDeletedId            Int?
 }
