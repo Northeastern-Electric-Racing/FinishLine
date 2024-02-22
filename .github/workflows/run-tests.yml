@@ -31,6 +31,8 @@ jobs:
         run: cd src/backend && echo "DATABASE_URL=\"postgresql://postgres:docker@localhost:5432/nerpm?schema=public\"" >> .env
       - name: Pull Docker Image
         run: docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres
+      - name: Wait for Postgres to start
+        run: docker exec finishline pg_isready
       - name: Create Database
         run: docker exec finishline psql -U postgres -c "CREATE DATABASE nerpm;"
       - name: Install modules
