@@ -41,8 +41,6 @@ describe('Users', () => {
   test('getSingleUser', async () => {
     const res = await UsersService.getSingleUser(0);
 
-    const { googleAuthId, ...restOfBatman } = batman;
-
     // we don't return the google auth id for security reasons
     expect(res).toStrictEqual({
       userId: 0,
