@@ -32,7 +32,7 @@ jobs:
       - name: Pull Docker Image
         run: docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres
       - name: Wait for Postgres to start
-        run: docker exec finishline pg_isready
+        run: sleep 10s
       - name: Create Database
         run: docker exec finishline psql -U postgres -c "CREATE DATABASE nerpm;"
       - name: Install modules
