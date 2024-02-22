@@ -246,7 +246,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ScopeTab project={project} />
       ) : tab === 4 ? (
         <ChangesList changes={project.changes} />
-      ) : tab == 5 ? (
+      ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
       ) : (
         <ChangeRequestTab project={project} />
