@@ -129,14 +129,14 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                               <Controller
                                 name={`reimbursementProducts.${product.index}.name`}
                                 control={control}
-                                render={({ fieldState: { error } }) => (
+                                render={({ field }) => (
                                   <TextField
-                                    placeholder="Description"
-                                    error={!!error}
-                                    helperText={error ? error.message : null}
-                                    variant="outlined"
-                                    fullWidth
+                                    {...field}
+                                    placeholder={'Description'}
                                     autoComplete="off"
+                                    variant={'outlined'}
+                                    fullWidth
+                                    error={!!errors.reimbursementProducts?.[product.index]?.name}
                                   />
                                 )}
                               />
@@ -148,20 +148,19 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                               <Controller
                                 name={`reimbursementProducts.${product.index}.cost`}
                                 control={control}
-                                render={({ fieldState: { error } }) => (
+                                render={({ field }) => (
                                   <TextField
-                                    placeholder="Cost"
+                                    {...field}
+                                    placeholder={'Cost'}
+                                    variant={'outlined'}
                                     type="number"
-                                    InputLabelProps={{ shrink: true }}
+                                    fullWidth
+                                    autoComplete="off"
                                     InputProps={{
                                       startAdornment: <InputAdornment position="start">$</InputAdornment>
                                     }}
-                                    error={!!error}
-                                    helperText={error ? error.message : null}
-                                    variant="outlined"
-                                    fullWidth
-                                    autoComplete="off"
                                     onBlur={(e) => onCostBlurHandler(parseFloat(e.target.value), product.index)}
+                                    error={!!errors.reimbursementProducts?.[product.index]?.cost}
                                   />
                                 )}
                               />

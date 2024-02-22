@@ -53,15 +53,18 @@ const GenerateReceiptsModal = ({
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
-    const filteredRequests = allReimbursementRequests
+    let filteredRequests = allReimbursementRequests
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) >= new Date(data.startDate.toDateString())
       )
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) <= new Date(data.endDate.toDateString())
       )
-      .filter((val: ReimbursementRequest) => !val.dateDeleted)
-      .filter((val: ReimbursementRequest) => val.expenseType.name === data.receiptType);
+      .filter((val: ReimbursementRequest) => !val.dateDeleted);
+
+    if (!(data.receiptType === 'BOTH')) {
+      filteredRequests = filteredRequests.filter((val: ReimbursementRequest) => val.account === data.receiptType);
+    }
 
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
 
@@ -179,7 +182,7 @@ const GenerateReceiptsModal = ({
                     onChange(newReceiptType);
                   }}
                 >
-                  {['Budget', 'Cash', 'Both'].map((status) => (
+                  {['BUDGET', 'CASH', 'BOTH'].map((status) => (
                     <MenuItem key={status} value={status}>
                       {status}
                     </MenuItem>
