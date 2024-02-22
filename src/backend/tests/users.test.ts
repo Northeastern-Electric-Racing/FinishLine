@@ -39,15 +39,17 @@ describe('Users', () => {
   });
 
   test('getSingleUser', async () => {
-    vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    const res = await UsersService.getSingleUser(0);
 
-    const res = await UsersService.getSingleUser(1);
-
-    const { googleAuthId, ...restOfBatman } = batman;
-
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     // we don't return the google auth id for security reasons
-    expect(res).toStrictEqual(restOfBatman);
+    expect(res).toStrictEqual({
+      userId: 0,
+      firstName: 'Admin',
+      email: 'admin@gmail.com',
+      lastName: 'User',
+      role: Role.GUEST,
+      emailId: null
+    });
   });
 
   describe('updateUserRole', () => {
