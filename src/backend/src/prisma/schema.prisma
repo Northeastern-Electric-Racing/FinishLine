@@ -83,49 +83,51 @@ model User {
   userSecureSettings User_Secure_Settings?
 
   // Relation references
-  submittedChangeRequests    Change_Request[]        @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests     Change_Request[]        @relation(name: "reviewedChangeRequests")
-  deletedChangeRequests      Change_Request[]        @relation(name: "deletedChangeRequests")
-  changeRequestsToReview     Change_Request[]        @relation(name: "requestedChangeRequestReviewers")
-  markedAsProjectLead        Activation_CR[]         @relation(name: "markAsProjectLead")
-  markedAsProjectManager     Activation_CR[]         @relation(name: "markAsProjectManager")
-  changes                    Change[]
-  projectLead                WBS_Element[]           @relation(name: "projectLead")
-  projectManager             WBS_Element[]           @relation(name: "projectManager")
-  Session                    Session[]
-  teamsAsMember              Team[]                  @relation(name: "teamsAsMember")
-  teamAsHead                 Team?                   @relation(name: "teamAsHead")
-  teamsAsLead                Team[]                  @relation(name: "teamsAsLead")
-  deletedWBSElements         WBS_Element[]           @relation(name: "deletedWbsElements")
-  checkedDescriptionBullets  Description_Bullet[]    @relation(name: "checkDescriptionBullets")
-  createdProposedSolutions   Proposed_Solution[]
-  createdTasks               Task[]                  @relation(name: "createdBy")
-  deletedTasks               Task[]                  @relation(name: "deletedBy")
-  assignedTasks              Task[]                  @relation(name: "assignedTo")
-  favoriteProjects           Project[]               @relation(name: "favoritedBy")
-  reimbursementRequests      Reimbursement_Request[] @relation(name: "reimbursementRequestRecipient")
-  reimbursementStatuses      Reimbursement_Status[]
-  reimbursements             Reimbursement[]         @relation(name: "purchaser")
-  submittedReimbursements    Reimbursement[]         @relation(name: "submitter")
-  createdLinks               Link[]                  @relation(name: "linkCreator")
-  createdLinkTypes           LinkType[]              @relation(name: "linkTypeCreator")
-  deletedReceipts            Receipt[]               @relation(name: "deletedReceipts")
-  createdReceipts            Receipt[]               @relation(name: "receiptsCreatedBy")
-  deletedAssemblies          Assembly[]              @relation(name: "assemblyDeleter")
-  createdAssemblies          Assembly[]              @relation(name: "assemblyCreator")
-  deletedMaterials           Material[]              @relation(name: "materialDeleter")
-  createdMaterials           Material[]              @relation(name: "materialCreator")
-  archivedTeams              Team[]                  @relation(name: "userArchived")
-  createdMaterialTypes       Material_Type[]         @relation(name: "materialTypeCreator")
-  createdManufacturers       Manufacturer[]          @relation(name: "manufacturerCreator")
-  requiredDesignReviews      Design_Review[]         @relation(name: "requiredAttendee")
-  optionalDesignReviews      Design_Review[]         @relation(name: "optionalAttendee")
-  userConfirmedDesignReviews Design_Review[]         @relation(name: "confirmedAttendee")
-  userDeniedDesignReviews    Design_Review[]         @relation(name: "deniedAttendee")
-  attendedDesignReviews      Design_Review[]         @relation(name: "userAttended")
-  createdDesignReviews       Design_Review[]         @relation(name: "designReviewCreator")
-  deletedDesignReviews       Design_Review[]         @relation(name: "designReviewDeleter")
-  drScheduleSettings         Schedule_Settings?
+  submittedChangeRequests      Change_Request[]        @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests       Change_Request[]        @relation(name: "reviewedChangeRequests")
+  deletedChangeRequests        Change_Request[]        @relation(name: "deletedChangeRequests")
+  changeRequestsToReview       Change_Request[]        @relation(name: "requestedChangeRequestReviewers")
+  markedAsProjectLead          Activation_CR[]         @relation(name: "markAsProjectLead")
+  markedAsProjectManager       Activation_CR[]         @relation(name: "markAsProjectManager")
+  changes                      Change[]
+  projectLead                  WBS_Element[]           @relation(name: "projectLead")
+  projectManager               WBS_Element[]           @relation(name: "projectManager")
+  Session                      Session[]
+  teamsAsMember                Team[]                  @relation(name: "teamsAsMember")
+  teamAsHead                   Team?                   @relation(name: "teamAsHead")
+  teamsAsLead                  Team[]                  @relation(name: "teamsAsLead")
+  deletedWBSElements           WBS_Element[]           @relation(name: "deletedWbsElements")
+  checkedDescriptionBullets    Description_Bullet[]    @relation(name: "checkDescriptionBullets")
+  createdProposedSolutions     Proposed_Solution[]
+  createdTasks                 Task[]                  @relation(name: "createdBy")
+  deletedTasks                 Task[]                  @relation(name: "deletedBy")
+  assignedTasks                Task[]                  @relation(name: "assignedTo")
+  favoriteProjects             Project[]               @relation(name: "favoritedBy")
+  reimbursementRequests        Reimbursement_Request[] @relation(name: "reimbursementRequestRecipient")
+  reimbursementStatuses        Reimbursement_Status[]
+  reimbursements               Reimbursement[]         @relation(name: "purchaser")
+  submittedReimbursements      Reimbursement[]         @relation(name: "submitter")
+  createdLinks                 Link[]                  @relation(name: "linkCreator")
+  createdLinkTypes             LinkType[]              @relation(name: "linkTypeCreator")
+  deletedReceipts              Receipt[]               @relation(name: "deletedReceipts")
+  createdReceipts              Receipt[]               @relation(name: "receiptsCreatedBy")
+  deletedAssemblies            Assembly[]              @relation(name: "assemblyDeleter")
+  createdAssemblies            Assembly[]              @relation(name: "assemblyCreator")
+  deletedMaterials             Material[]              @relation(name: "materialDeleter")
+  createdMaterials             Material[]              @relation(name: "materialCreator")
+  archivedTeams                Team[]                  @relation(name: "userArchived")
+  createdMaterialTypes         Material_Type[]         @relation(name: "materialTypeCreator")
+  createdManufacturers         Manufacturer[]          @relation(name: "manufacturerCreator")
+  requiredDesignReviews        Design_Review[]         @relation(name: "requiredAttendee")
+  optionalDesignReviews        Design_Review[]         @relation(name: "optionalAttendee")
+  userConfirmedDesignReviews   Design_Review[]         @relation(name: "confirmedAttendee")
+  userDeniedDesignReviews      Design_Review[]         @relation(name: "deniedAttendee")
+  attendedDesignReviews        Design_Review[]         @relation(name: "userAttended")
+  createdDesignReviews         Design_Review[]         @relation(name: "designReviewCreator")
+  deletedDesignReviews         Design_Review[]         @relation(name: "designReviewDeleter")
+  drScheduleSettings           Schedule_Settings?
+  createdWork_Package_Template Work_Package_Template[] @relation(name: "workPackageTemplateCreator")
+  deletedWork_Package_Template Work_Package_Template[] @relation(name: "workPackageTemplateDeleter")
 }
 
 model Team {
@@ -635,4 +637,30 @@ model Meeting {
   meetingTimes Int[]
   team         Team?  @relation(fields: [teamId], references: [teamId])
   teamId       String
+}
+
+model Blocked_By_Info {
+  blockedByInfoId       String                @id @default(uuid())
+  stage                 Work_Package_Stage?
+  name                  String
+  workPackageTemplate   Work_Package_Template @relation(fields: [workPackageTemplateId], references: [workPackageTemplateId])
+  workPackageTemplateId String
+}
+
+model Work_Package_Template {
+  workPackageTemplateId String             @id @default(uuid())
+  templateName          String
+  templateNotes         String
+  workPackageName       String?
+  stage                 Work_Package_Stage
+  duration              Int?
+  blockedBy             Blocked_By_Info[]
+  expectedActivities    String[]
+  deliverables          String[]
+  dateCreated           DateTime
+  userCreated           User               @relation(fields: [userCreatedId], references: [userId], name: "workPackageTemplateCreator")
+  userCreatedId         Int
+  dateDeleted           DateTime?
+  userDeleted           User?              @relation(fields: [userDeletedId], references: [userId], name: "workPackageTemplateDeleter")
+  userDeletedId         Int?
 }
