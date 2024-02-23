@@ -282,7 +282,7 @@ export default class TasksService {
           lt: endOfDay
         },
         status: {
-          not: "DONE"
+          not: 'DONE'
         }
       },
       include: {
@@ -321,9 +321,9 @@ export default class TasksService {
       const messageBlock = tasks
         .map(
           (task) =>
-            `${usersToSlackIds(task.assignees ?? [])} Reminder: ${
-              task.title
-            } due tomorrow at ${task.deadline.toTimeString()} in project ${task.wbsElement?.name}`
+            `${usersToSlackIds(task.assignees ?? [])} Reminder: ${task.title} due tomorrow in project ${
+              task.wbsElement?.name
+            }`
         )
         .join('\n\n');
 
