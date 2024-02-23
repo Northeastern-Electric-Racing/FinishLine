@@ -153,7 +153,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                       }}
                     />
                     <NERButton
-                      sx={{ width: '180px', height: '55px' }}
+                      sx={{ width: '480px', height: '55px' }}
                       variant="contained"
                       onClick={() => {
                         const newManufacturerName = prompt('Enter New Manufacturer Name');
@@ -162,7 +162,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                         }
                       }}
                     >
-                      Add New <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
+                      Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
                     </NERButton>
                   </Box>
                 );
