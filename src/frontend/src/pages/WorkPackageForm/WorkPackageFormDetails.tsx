@@ -42,9 +42,9 @@ const WorkPackageFormDetails: React.FC<Props> = ({
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
-  // const disableStartDate = (startDate: Date) => {
-  //   return startDate.getDay() !== 1;
-  // };
+  const disableStartDate = (startDate: Date) => {
+    return startDate.getDay() !== 1;
+  };
 
   const StageSelect = () => (
     <FormControl fullWidth>
