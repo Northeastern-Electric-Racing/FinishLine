@@ -4,7 +4,7 @@ import { batman, wonderwoman } from './users.test-data';
 export const designReview1: PrismaDesignReview = {
   designReviewId: '1',
   dateScheduled: new Date('2024-03-25'),
-  meetingTimes: [0, 4],
+  meetingTimes: [0, 1, 2, 3],
   dateCreated: new Date('2024-03-10'),
   userCreatedId: batman.userId,
   status: PrismaDesignReviewStatus.CONFIRMED,
