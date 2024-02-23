@@ -280,6 +280,9 @@ export default class TasksService {
         deadline: {
           gte: startOfDay,
           lt: endOfDay
+        },
+        status: {
+          not: "DONE"
         }
       },
       include: {
