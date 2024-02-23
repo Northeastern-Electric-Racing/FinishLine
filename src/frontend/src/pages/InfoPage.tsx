@@ -64,7 +64,17 @@ const InfoPage: React.FC = () => {
       <PageBlock title="DRC">
         <button onClick={handleOpenModal}>OPEN MODAL</button>
       </PageBlock>
-      <DRCModal open={isModalOpen} onHide={handleCloseModal} title={'Battery'} availabilities={[[0, 1, 2, 3, 4,], [0, 2], [0, 4], [30, 31]]} />
+      <DRCModal
+        open={isModalOpen}
+        onHide={handleCloseModal}
+        title={'Battery'}
+        availabilities={[
+          [0, 1, 2, 3, 4],
+          [0, 2],
+          [0, 4],
+          [30, 31]
+        ]}
+      />
     </PageLayout>
   );
 };

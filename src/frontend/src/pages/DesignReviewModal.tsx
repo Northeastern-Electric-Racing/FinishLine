@@ -1,6 +1,5 @@
 import { Box, Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
-import { Countertops } from '@mui/icons-material';
 
 interface DRCModalProps {
   open: boolean;
