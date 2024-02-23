@@ -35,12 +35,12 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
   } else if (
     req.path === '/tasks/sendTaskDeadlineSlackNotifications' // task deadline notification endpoint
   ) {
-    const { secret } = req.body;
+    const { authorization } = req.headers;
     const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
 
-    if (!secret) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
+    if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
 
-    if (secret !== NOTIFICATION_ENDPOINT_SECRET)
+    if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
       return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
 
     next();
@@ -70,6 +70,18 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
     req.path === '/users' // dev login needs the list of users to log in
   ) {
+    next();
+  } else if (
+    req.path === '/tasks/sendTaskDeadlineSlackNotifications' // task deadline notification endpoint
+  ) {
+    const { authorization } = req.headers;
+    const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
+
+    if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
+
+    if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
+      return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
+
     next();
   } else {
     const devUserId = req.headers.authorization;

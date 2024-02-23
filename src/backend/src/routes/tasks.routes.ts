@@ -38,6 +38,6 @@ tasksRouter.post(
 
 tasksRouter.post('/:taskId/delete', TasksController.deleteTask);
 
-tasksRouter.post('/sendTaskDeadlineSlackNotifications', TasksController.sendTaskDeadlineSlackNotifications);
+tasksRouter.get('/sendTaskDeadlineSlackNotifications', TasksController.sendTaskDeadlineSlackNotifications);
 
 export default tasksRouter;

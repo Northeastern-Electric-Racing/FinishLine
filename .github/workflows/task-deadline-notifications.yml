@@ -10,8 +10,5 @@ jobs:
     steps:
       - name: Send notifications
         run: |
-          curl -X POST https://api.finishlinebyner.com/tasks/sendTaskDeadlineSlackNotifications \
-          -H 'Content-Type: application/json' \
-          -d '{
-            "token": "${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}"
-          }'
+          curl -X GET https://api.finishlinebyner.com/tasks/sendTaskDeadlineSlackNotifications \
+          -H 'Authorization: ${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}'
