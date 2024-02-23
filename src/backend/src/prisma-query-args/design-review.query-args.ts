@@ -13,5 +13,4 @@ const designReviewQueryArgs = Prisma.validator<Prisma.Design_ReviewArgs>()({
     wbsElement: true
   }
 });
-
 export default designReviewQueryArgs;

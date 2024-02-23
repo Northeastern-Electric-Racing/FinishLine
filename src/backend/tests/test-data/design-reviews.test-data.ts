@@ -1,6 +1,5 @@
 import { Design_Review as PrismaDesignReview, Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 import { batman, wonderwoman } from './users.test-data';
-
 export const designReview1: PrismaDesignReview = {
   designReviewId: '1',
   dateScheduled: new Date('2024-03-25'),
@@ -18,11 +17,6 @@ export const designReview1: PrismaDesignReview = {
   docTemplateLink: null,
   wbsElementId: 1
 };
-
-/*
-- The user is not an admin but is the user who created the design review thus is allowed to delete the design review
-*/
-
 export const DesignReview2: PrismaDesignReview = {
   designReviewId: '2',
   dateScheduled: new Date('2024-03-25'),
