@@ -12,8 +12,15 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
+import { DRCModal } from './DesignReviewModal';
+import { useState } from 'react';
 
 const InfoPage: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
   return (
     <PageLayout title="Information">
       <PageBlock title="Resources">
@@ -54,6 +61,10 @@ const InfoPage: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
+      <PageBlock title="DRC">
+        <button onClick={handleOpenModal}>OPEN MODAL</button>
+      </PageBlock>
+      <DRCModal open={isModalOpen} onHide={handleCloseModal} title={'Battery'} availabilities={[[0, 1, 2, 3, 4,], [0, 2], [0, 4], [30, 31]]} />
     </PageLayout>
   );
 };
