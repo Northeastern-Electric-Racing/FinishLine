@@ -6,10 +6,17 @@ import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
-import { hasPermissionToEditTask, sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
+import {
+  TaskWithAssignees,
+  getTeamFromTaskAssignees,
+  hasPermissionToEditTask,
+  sendSlackTaskAssignedNotificationToUsers,
+  usersToSlackIds
+} from '../utils/tasks.utils';
 import { areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
+import { sendMessage } from '../integrations/slack';
 
 export default class TasksService {
   /**
@@ -257,5 +264,67 @@ export default class TasksService {
     });
 
     return deletedTask.taskId;
+  }
+
+  /**
+   * Sends the task deadline slack notifications for all tasks with a deadline of the given date
+   * @param deadline the deadline date as a number
+   */
+  static async sendTaskDeadlineSlackNotifications(deadline: number) {
+    const startOfDay = new Date(deadline);
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(startOfDay.getDate() + 1);
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        deadline: {
+          gte: startOfDay,
+          lt: endOfDay
+        }
+      },
+      include: {
+        assignees: {
+          include: {
+            userSecureSettings: true,
+            userSettings: true,
+            teamAsHead: true,
+            teamsAsLead: true,
+            teamsAsMember: true
+          }
+        },
+        wbsElement: {
+          include: {
+            project: { include: { teams: true } }
+          }
+        }
+      }
+    });
+
+    const teamTaskMap = new Map<string, TaskWithAssignees[]>();
+
+    tasks.forEach((task) => {
+      const teamSlackId = getTeamFromTaskAssignees(task.assignees);
+
+      const currentTasks = teamTaskMap.get(teamSlackId);
+      if (currentTasks) {
+        currentTasks.push(task);
+        teamTaskMap.set(teamSlackId, currentTasks);
+      } else {
+        teamTaskMap.set(teamSlackId, [task]);
+      }
+    });
+
+    teamTaskMap.forEach((tasks, slackId) => {
+      const messageBlock = tasks
+        .map(
+          (task) =>
+            `${usersToSlackIds(task.assignees ?? [])} Reminder: ${
+              task.title
+            } due tomorrow at ${task.deadline.toTimeString()} in project ${task.wbsElement?.name}`
+        )
+        .join('\n\n');
+
+      sendMessage(slackId, messageBlock);
+    });
   }
 }

@@ -32,6 +32,18 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
     req.method === 'OPTIONS' // this is a pre-flight request and those don't send cookies
   ) {
     next();
+  } else if (
+    req.path === '/tasks/sendTaskDeadlineSlackNotifications' // task deadline notification endpoint
+  ) {
+    const { secret } = req.body;
+    const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
+
+    if (!secret) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
+
+    if (secret !== NOTIFICATION_ENDPOINT_SECRET)
+      return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
+
+    next();
   } else {
     const { token } = req.cookies;
 
