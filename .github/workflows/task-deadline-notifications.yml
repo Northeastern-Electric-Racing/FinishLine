@@ -1,0 +1,17 @@
+name: Send Task Deadline Notifications
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+
+jobs:
+  send_notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notifications
+        run: |
+          curl -X POST https://api.finishlinebyner.com/tasks/sendTaskDeadlineSlackNotifications \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "token": "${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}"
+          }'
