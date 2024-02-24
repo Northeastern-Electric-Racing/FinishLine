@@ -51,6 +51,8 @@ const GenerateReceiptsModal = ({
 
   const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate, refundSource);
 
+  const refundSourceOptions = ['BUDGET', 'CASH', 'BOTH'];
+
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
 
@@ -63,7 +65,8 @@ const GenerateReceiptsModal = ({
       )
       .filter((val: ReimbursementRequest) => !val.dateDeleted)
       .filter(
-        (val: ReimbursementRequest) => !val.dateDeleted && (data.refundSource === 'BOTH' || val.account === data.refundSource)
+        (val: ReimbursementRequest) =>
+          !val.dateDeleted && (data.refundSource === 'BOTH' || val.account === data.refundSource)
       );
 
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
@@ -182,7 +185,7 @@ const GenerateReceiptsModal = ({
                     onChange(newRefundSource);
                   }}
                 >
-                  {['BUDGET', 'CASH', 'BOTH'].map((status) => (
+                  {refundSourceOptions.map((status) => (
                     <MenuItem key={status} value={status}>
                       {status}
                     </MenuItem>
