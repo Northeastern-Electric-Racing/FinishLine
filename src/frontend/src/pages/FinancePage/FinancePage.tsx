@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem, setRef } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -62,7 +62,7 @@ const FinancePage = () => {
   const [accountCreditModalShow, setAccountCreditModalShow] = useState<boolean>(false);
   const [showTotalAmountSpent, setShowTotalAmountSpent] = useState(false);
 
-  const [receiptType, setReceiptType] = useState('');
+  const [refundSource, setRefundSource] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
@@ -165,8 +165,8 @@ const FinancePage = () => {
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}
         allReimbursementRequests={allReimbursementRequests}
-        setReceiptType={setReceiptType}
-        receiptType={receiptType}
+        setRefundSource={setRefundSource}
+        refundSource={refundSource}
         startDate={startDate}
         endDate={endDate}
         setStartDate={setStartDate}

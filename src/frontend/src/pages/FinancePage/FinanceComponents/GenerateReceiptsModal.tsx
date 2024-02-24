@@ -13,21 +13,21 @@ import { ReimbursementRequest } from 'shared';
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
   endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required'),
-  receiptType: yup.string().required('Receipt Type is required')
+  refundSource: yup.string().required('Receipt Type is required')
 });
 
 interface GenerateReceiptsFormInput {
   startDate: Date;
   endDate: Date;
-  receiptType: string;
+  refundSource: string;
 }
 
 interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   allReimbursementRequests?: ReimbursementRequest[];
-  setReceiptType: (val: string) => void;
-  receiptType: string;
+  setRefundSource: (val: string) => void;
+  refundSource: string;
   startDate: Date;
   endDate: Date;
   setStartDate: (val: Date) => void;
@@ -38,8 +38,8 @@ const GenerateReceiptsModal = ({
   open,
   setOpen,
   allReimbursementRequests,
-  receiptType,
-  setReceiptType,
+  refundSource,
+  setRefundSource,
   startDate,
   setStartDate,
   endDate,
@@ -49,7 +49,7 @@ const GenerateReceiptsModal = ({
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
-  const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate, receiptType);
+  const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate, refundSource);
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
@@ -63,7 +63,7 @@ const GenerateReceiptsModal = ({
       )
       .filter((val: ReimbursementRequest) => !val.dateDeleted)
       .filter(
-        (val: ReimbursementRequest) => !val.dateDeleted && (data.receiptType === 'BOTH' || val.account === data.receiptType)
+        (val: ReimbursementRequest) => !val.dateDeleted && (data.refundSource === 'BOTH' || val.account === data.refundSource)
       );
 
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
@@ -171,15 +171,15 @@ const GenerateReceiptsModal = ({
           <FormControl fullWidth>
             <FormLabel>Receipt Type</FormLabel>
             <Controller
-              name="receiptType"
+              name="refundSource"
               control={control}
               render={({ field: { onChange, value } }) => (
                 <Select
                   value={value}
                   onChange={(event) => {
-                    const newReceiptType = event.target.value;
-                    setReceiptType(newReceiptType);
-                    onChange(newReceiptType);
+                    const newRefundSource = event.target.value;
+                    setRefundSource(newRefundSource);
+                    onChange(newRefundSource);
                   }}
                 >
                   {['BUDGET', 'CASH', 'BOTH'].map((status) => (
