@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, ListItemIcon, Menu, MenuItem, setRef } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
