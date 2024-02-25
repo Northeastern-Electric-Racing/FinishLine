@@ -5,6 +5,12 @@ import prisma from '../src/prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../src/utils/errors.utils';
 
 describe('Design Reviews', () => {
+  beforeEach(() => {});
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('Delete Design Review Tests', () => {
     test('Delete Reimbursment Request fails when ID does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
