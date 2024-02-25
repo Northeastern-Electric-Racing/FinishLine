@@ -6,7 +6,10 @@ import {
   superman,
   batmanSecureSettings,
   sharedBatman,
-  theVisitor
+  theVisitor,
+  batmanWithScheduleSettings,
+  batmanScheduleSettings,
+  batmanUserScheduleSettings
 } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
@@ -136,6 +139,33 @@ describe('Users', () => {
           batmanSecureSettings.phoneNumber
         )
       ).rejects.toThrow(new HttpException(400, 'Phone number already in use'));
+    });
+  });
+
+  describe('getUserScheduleSettings', () => {
+    test('getUserScheduleSettings for user with no settings', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+      vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(null);
+      await expect(() => UsersService.getUserScheduleSettings(batman.userId, batman)).rejects.toThrow(
+        new HttpException(404, 'User Schedule Settings Not Found')
+      );
+    });
+
+    test('non-valid user tries to get someone elses settings', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
+      vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
+      await expect(() => UsersService.getUserScheduleSettings(superman.userId, batmanWithScheduleSettings)).rejects.toThrow(
+        new AccessDeniedException('You can only access your own schedule settings')
+      );
+    });
+
+    test('getUserScheduleSettings works successfully', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
+      vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
+      const res = await UsersService.getUserScheduleSettings(batmanWithScheduleSettings.userId, batmanWithScheduleSettings);
+
+      expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual(batmanUserScheduleSettings);
     });
   });
 });
