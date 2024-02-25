@@ -1,4 +1,4 @@
-import { designReview1 } from './test-data/design-reviews.test-data';
+import { designReview1, prismaDesignReview2 } from './test-data/design-reviews.test-data';
 import { batman, wonderwoman } from './test-data/users.test-data';
 import DesignReviewService from '../src/services/design-review.services';
 import prisma from '../src/prisma/prisma';
@@ -23,6 +23,31 @@ describe('Design Reviews', () => {
       await expect(() => DesignReviewService.deleteDesignReview(batman, designReview1.designReviewId)).rejects.toThrow(
         new DeletedException('Design Review', designReview1.designReviewId)
       );
+    });
+    test('Delete Design Review succeeds when user is admin', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
+      vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview2);
+
+      expect(prismaDesignReview2.dateDeleted).toBeNull();
+
+      await DesignReviewService.deleteDesignReview(batman, prismaDesignReview2.designReviewId);
+
+      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.design_Review.update).toHaveBeenCalledTimes(1);
+      expect(prismaDesignReview2.dateDeleted).toBeDefined();
+    });
+
+    test('Delete Design Review succeeds when user is the creator of the design review', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
+      vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview2);
+
+      expect(prismaDesignReview2.dateDeleted).toBeNull();
+
+      await DesignReviewService.deleteDesignReview(wonderwoman, prismaDesignReview2.designReviewId);
+
+      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.design_Review.update).toHaveBeenCalledTimes(1);
+      expect(prismaDesignReview2.dateDeleted).toBeDefined();
     });
   });
 });

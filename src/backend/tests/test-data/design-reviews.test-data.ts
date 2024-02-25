@@ -1,5 +1,18 @@
-import { Design_Review as PrismaDesignReview, Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
+import {
+  Design_Review as PrismaDesignReview,
+  Design_Review_Status as PrismaDesignReviewStatus,
+  Prisma,
+  TeamType
+} from '@prisma/client';
 import { batman, wonderwoman } from './users.test-data';
+import designReviewQueryArgs from '../../src/prisma-query-args/design-review.query-args';
+import { prismaWbsElement1 } from './wbs-element.test-data';
+
+export const teamType1: TeamType = {
+  teamTypeId: '1',
+  name: 'teamType1'
+};
+
 export const designReview1: PrismaDesignReview = {
   designReviewId: '1',
   dateScheduled: new Date('2024-03-25'),
@@ -17,7 +30,7 @@ export const designReview1: PrismaDesignReview = {
   docTemplateLink: null,
   wbsElementId: 1
 };
-export const DesignReview2: PrismaDesignReview = {
+export const prismaDesignReview2: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs> = {
   designReviewId: '2',
   dateScheduled: new Date('2024-03-25'),
   meetingTimes: [0, 4],
@@ -32,5 +45,14 @@ export const DesignReview2: PrismaDesignReview = {
   dateDeleted: null,
   userDeletedId: null,
   docTemplateLink: null,
-  wbsElementId: 1
+  wbsElementId: 1,
+  userCreated: wonderwoman,
+  requiredMembers: [wonderwoman],
+  optionalMembers: [],
+  confirmedMembers: [wonderwoman],
+  deniedMembers: [],
+  attendees: [wonderwoman],
+  userDeleted: null,
+  wbsElement: prismaWbsElement1,
+  teamType: teamType1
 };

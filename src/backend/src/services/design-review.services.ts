@@ -2,8 +2,8 @@ import { DesignReview, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { User } from '@prisma/client';
-import { designReviewTransformer } from '../transformers/design-review.transformer';
 import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
+import { designReviewTransformer } from '../transformers/design-review.transformer';
 
 export default class DesignReviewService {
   /**
