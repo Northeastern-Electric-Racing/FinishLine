@@ -326,6 +326,7 @@ export default class UsersService {
   /**
    * Gets a user's schedule settings
    * @param userId the id of the user who's schedule settings are being returned
+   * @param submitter the user who's requesting the schedule settings
    * @returns the user's schedule settings
    * @throws if the user doesn't have schedule settings
    */
