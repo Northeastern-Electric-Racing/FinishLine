@@ -1,13 +1,13 @@
-import { useAllLinkTypes } from '../../hooks/projects.hooks';
-import LoadingIndicator from '../LoadingIndicator';
-import ErrorPage from '../../pages/ErrorPage';
+import { useAllLinkTypes } from '../../../hooks/projects.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 import { IconButton, MenuItem, Select, TextField } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getRequiredLinkTypeNames } from '../../utils/link.utils';
-import { ProjectFormInput } from '../../pages/ProjectDetailPage/ProjectForm/ProjectForm';
+import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
+import { ProjectFormInput } from './ProjectForm';
 import { Box } from '@mui/system';
-import { NERButton } from '../NERButton';
+import { NERButton } from '../../../components/NERButton';
 
 const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
