@@ -1,9 +1,9 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { useState } from 'react';
-import ManufacturerDeleteButtonBlocker from '../components/ManufacturerDeleteButtonBlocker';
-import { useDeleteManufacturer } from '../hooks/bom.hooks';
-import { useToast } from '../hooks/toasts.hooks';
+import NERModal from '../../../components/NERModal';
+import { useDeleteManufacturer } from '../../../hooks/bom.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ManufacturerDeleteButtonProps {
   name: string;
@@ -17,14 +17,6 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
   const toast = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { mutateAsync: deleteManufacturerMutateAsync } = useDeleteManufacturer();
-
-  const handleDeleteButtonClick = () => {
-    setShowDeleteDialog(true);
-  };
-
-  const handleDeleteCancel = () => {
-    setShowDeleteDialog(false);
-  };
 
   const handleDeleteSubmit = async () => {
     onDelete(name);
@@ -47,7 +39,7 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
   return (
     <>
       <IconButton
-        onClick={handleDeleteButtonClick}
+        onClick={() => setShowDeleteDialog(true)}
         sx={{
           color: 'Red',
           width: 'auto',
@@ -70,9 +62,16 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
           <DeleteIcon sx={{ fontSize: 'small' }} />
         </Box>
       </IconButton>
-      {showDeleteDialog && (
-        <ManufacturerDeleteButtonBlocker name={name} onHide={handleDeleteCancel} onSubmit={handleDeleteSubmit} />
-      )}
+      <NERModal
+        open={showDeleteDialog}
+        onHide={() => setShowDeleteDialog(false)}
+        title="Warning!"
+        cancelText="Cancel"
+        submitText="Delete"
+        onSubmit={() => handleDeleteSubmit()}
+      >
+        <Typography>Are you sure you want to delete this manufacturer: {name}</Typography>
+      </NERModal>
     </>
   );
 };

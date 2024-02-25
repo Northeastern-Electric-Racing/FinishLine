@@ -2,13 +2,13 @@ import { Box, Grid, TableCell, TableRow, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Manufacturer } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import ManufacturerDeleteButton from '../../../components/ManufacturerDeleteButton';
 import { NERButton } from '../../../components/NERButton';
 import { useGetAllManufacturers } from '../../../hooks/bom.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import AdminToolTable from '../AdminToolTable';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
+import ManufacturerDeleteButton from './ManufacturerDeleteModal';
 
 const ManufacturerTable: React.FC = () => {
   const {
