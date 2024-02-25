@@ -9,7 +9,7 @@ export default class DesignReviewService {
    * @returns the design review with the specified id
    * @throws if the given design review id doesn't exist
    */
-  static async getSingleUser(designReviewId: string): Promise<Design_Review> {
+  static async getSingleDesignReview(designReviewId: string): Promise<Design_Review> {
     const requestedDesignReview = await prisma.design_Review.findUnique({ where: { designReviewId } });
     if (!requestedDesignReview) throw new NotFoundException('Design Review', designReviewId);
     return requestedDesignReview;
