@@ -13,7 +13,7 @@ import { ReimbursementRequest } from 'shared';
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
   endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required'),
-  refundSource: yup.string().required('Receipt Type is required')
+  refundSource: yup.string()
 });
 
 interface GenerateReceiptsFormInput {
@@ -179,6 +179,7 @@ const GenerateReceiptsModal = ({
               render={({ field: { onChange, value } }) => (
                 <Select
                   value={value}
+                  defaultValue={refundSourceOptions[2]}
                   onChange={(event) => {
                     const newRefundSource = event.target.value;
                     setRefundSource(newRefundSource);
