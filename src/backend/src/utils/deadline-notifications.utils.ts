@@ -19,7 +19,8 @@ export const usersToSlackPings = (users: UserWithSettings[]) => {
 };
 
 /**
- * Gets the team of a task's assignees
+ * Gets the team of a task's assignees.
+ * Assumes all assigness share a team
  * @param users the users of the task
  * @returns the slack id of the team assigned to the task
  */

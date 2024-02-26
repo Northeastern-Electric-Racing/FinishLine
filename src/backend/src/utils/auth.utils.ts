@@ -107,6 +107,9 @@ export const getCurrentUser = async (res: Response): Promise<User> => {
 
 export type UserWithSettings = User & {
   userSettings: User_Settings | null;
+};
+
+export type UserWithSecureSettings = UserWithSettings & {
   userSecureSettings: User_Secure_Settings | null;
 };
 
@@ -116,7 +119,7 @@ export type UserWithSettings = User & {
  * @returns the user with their user settings
  * @throws if no user with the userId exists
  */
-export const getCurrentUserWithUserSettings = async (res: Response): Promise<UserWithSettings> => {
+export const getCurrentUserWithUserSettings = async (res: Response): Promise<UserWithSecureSettings> => {
   const { userId } = res.locals;
   const user = await prisma.user.findUnique({
     where: { userId },

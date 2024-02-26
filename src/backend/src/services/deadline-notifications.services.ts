@@ -25,7 +25,6 @@ export default class DeadlineNotificationsService {
       include: {
         assignees: {
           include: {
-            userSecureSettings: true,
             userSettings: true,
             teamAsHead: true,
             teamsAsLead: true,
