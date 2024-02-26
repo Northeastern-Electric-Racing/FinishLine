@@ -265,7 +265,7 @@ export const useSingleReimbursementRequest = (id: string) => {
 
 /**
  * Custom react hook to delete a single reimbursement request
- *
+ *X
  * @param id id of the reimbursement request to delete
  * @returns the deleted reimbursement request
  */
@@ -340,13 +340,11 @@ export const useDownloadPDFOfImages = (startDate: Date, endDate: Date, refundSou
       return downloadGoogleImage(fileId);
     });
     const blobs = await Promise.all(promises);
-    let pdfName = `receipts-${refundSource}-${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.pdf`;
+    const pdfName = `${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.pdf`;
 
-    if (refundSource === 'BOTH') {
-      pdfName = `receipts-${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.pdf`;
-    }
+    const pdfFileName = refundSource !== "BOTH" ? `receipts-${refundSource}-${pdfName}` : `receipts-${pdfName}`;
 
-    await downloadBlobsToPdf(blobs, pdfName);
+    await downloadBlobsToPdf(blobs, pdfFileName);
   });
 };
 
