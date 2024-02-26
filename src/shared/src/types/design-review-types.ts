@@ -1,5 +1,6 @@
 import { WbsNumber } from './project-types';
 import { User } from './user-types';
+
 export interface DesignReview {
   designReviewId: string;
   dateScheduled: Date;
@@ -23,12 +24,14 @@ export interface DesignReview {
   wbsName: string;
   wbsNum: WbsNumber;
 }
+
 export enum DesignReviewStatus {
   UNCONFIRMED = 'UNCONFIRMED',
   CONFIRMED = 'CONFIRMED',
   SCHEDULED = 'SCHEDULED',
   DONE = 'DONE'
 }
+
 export interface TeamType {
   teamTypeId: string;
   name: string;
