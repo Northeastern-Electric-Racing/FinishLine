@@ -339,4 +339,27 @@ export default class UsersService {
 
     return userScheduleSettingsTransformer(scheduleSettings);
   }
+
+  static async setUserSechuleSettings(
+    user: User,
+    personalGmail: string,
+    personalZoomLink: string,
+    availibility: number[]
+  ): Promise<string> {
+    const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
+      where: { userId: user.userId },
+      update: {
+        personalGmail,
+        personalZoomLink,
+        availibility
+      },
+      create: {
+        userId: user.userId,
+        personalGmail,
+        personalZoomLink,
+        availibility
+      }
+    });
+    return newUserScheduleSettings.userScheduleSettingsId; //check for existance
+  }
 }

@@ -146,6 +146,19 @@ export default class UsersController {
     }
   }
 
+  static async setUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { personalGmail, personalZoomLink, availability } = req.body;
+      const user = await getCurrentUser(res);
+
+      await UsersService.setUserSechuleSettings(user, personalGmail, personalZoomLink, availability);
+
+      res.status(200).json({ message: `Successfully updated schedule settings for user ${user.userId}.` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const userId: number = parseInt(req.params.userId);
