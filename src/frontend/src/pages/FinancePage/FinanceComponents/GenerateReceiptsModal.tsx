@@ -13,7 +13,7 @@ import { ReimbursementRequest } from 'shared';
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
   endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required'),
-  refundSource: yup.string()
+  refundSource: yup.string().required()
 });
 
 interface GenerateReceiptsFormInput {
