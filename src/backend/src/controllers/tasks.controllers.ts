@@ -91,15 +91,4 @@ export default class TasksController {
       next(error);
     }
   }
-
-  static async sendTaskDeadlineSlackNotifications(_req: Request, res: Response, next: NextFunction) {
-    try {
-      const tomorrow = new Date().setHours(24, 0, 0, 0);
-      await TasksService.sendTaskDeadlineSlackNotifications(tomorrow);
-
-      res.status(200).json({ success: 'true' });
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }

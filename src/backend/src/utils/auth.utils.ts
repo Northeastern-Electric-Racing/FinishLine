@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import prisma from '../prisma/prisma';
-import { NotFoundException } from './errors.utils';
+import { HttpException, NotFoundException } from './errors.utils';
 import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
@@ -33,17 +33,9 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
   ) {
     next();
   } else if (
-    req.path === '/tasks/sendTaskDeadlineSlackNotifications' // task deadline notification endpoint
+    req.path.startsWith('/deadline-notifications') // task deadline notification endpoint
   ) {
-    const { authorization } = req.headers;
-    const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
-
-    if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
-
-    if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
-      return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
-
-    next();
+    notificationEndpointAuth(req, res, next);
   } else {
     const { token } = req.cookies;
 
@@ -72,17 +64,9 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
   ) {
     next();
   } else if (
-    req.path === '/tasks/sendTaskDeadlineSlackNotifications' // task deadline notification endpoint
+    req.path.startsWith('/deadline-notifications') // task deadline notification endpoint
   ) {
-    const { authorization } = req.headers;
-    const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
-
-    if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
-
-    if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
-      return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
-
-    next();
+    notificationEndpointAuth(req, res, next);
   } else {
     const devUserId = req.headers.authorization;
 
@@ -92,6 +76,20 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
 
     next();
   }
+};
+
+const notificationEndpointAuth = (req: Request, res: Response, next: NextFunction) => {
+  const { authorization } = req.headers;
+  const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
+
+  if (!NOTIFICATION_ENDPOINT_SECRET) throw new HttpException(500, 'Notification endpoint secret not found!');
+
+  if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
+
+  if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
+    return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
+
+  next();
 };
 
 /**
