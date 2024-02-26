@@ -342,7 +342,7 @@ export const useDownloadPDFOfImages = (startDate: Date, endDate: Date, refundSou
     const blobs = await Promise.all(promises);
     const pdfName = `${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.pdf`;
 
-    const pdfFileName = refundSource !== "BOTH" ? `receipts-${refundSource}-${pdfName}` : `receipts-${pdfName}`;
+    const pdfFileName = refundSource !== 'BOTH' ? `receipts-${refundSource}-${pdfName}` : `receipts-${pdfName}`;
 
     await downloadBlobsToPdf(blobs, pdfFileName);
   });
