@@ -129,19 +129,20 @@ model User {
 }
 
 model Team {
-  teamId         String    @id @default(uuid())
-  teamName       String
-  slackId        String
-  description    String    @default("")
-  projects       Project[] @relation(name: "assignedBy")
-  members        User[]    @relation(name: "teamsAsMember")
-  leads          User[]    @relation(name: "teamsAsLead")
-  headId         Int       @unique
-  head           User      @relation(name: "teamAsHead", fields: [headId], references: [userId])
-  dateArchived   DateTime?
-  userArchivedId Int?
-  userArchived   User?     @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
-  meetings       Meeting[]
+  teamId                   String                     @id @default(uuid())
+  teamName                 String
+  slackId                  String
+  description              String                     @default("")
+  projects                 Project[]                  @relation(name: "assignedBy")
+  members                  User[]                     @relation(name: "teamsAsMember")
+  leads                    User[]                     @relation(name: "teamsAsLead")
+  headId                   Int                        @unique
+  head                     User                       @relation(name: "teamAsHead", fields: [headId], references: [userId])
+  dateArchived             DateTime?
+  userArchivedId           Int?
+  userArchived             User?                      @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
+  meetings                 Meeting[]
+  Project_Proposed_Changes Project_Proposed_Changes[] @relation(name: "projectTeams")
 }
 
 model Session {
@@ -330,19 +331,18 @@ model LinkType {
 }
 
 model Link {
-  linkId                    String                @id @default(uuid())
-  url                       String
-  creatorId                 Int
-  creator                   User                  @relation(name: "linkCreator", fields: [creatorId], references: [userId])
-  dateCreated               DateTime              @default(now())
-  dateDeleted               DateTime?
-  linkTypeName              String
-  linkType                  LinkType              @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
-  wbsElementId              Int
-  wbsElment                 WBS_Element           @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  linkId                  String                 @id @default(uuid())
+  url                     String
+  creatorId               Int
+  creator                 User                   @relation(name: "linkCreator", fields: [creatorId], references: [userId])
+  dateCreated             DateTime               @default(now())
+  dateDeleted             DateTime?
+  linkTypeName            String
+  linkType                LinkType               @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
+  wbsElementId            Int
+  wbsElment               WBS_Element            @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
   // Relation references
-  wbsProposedChangesLinks   Wbs_Proposed_Changes? @relation(name: "wbsProposedChangesLinks", fields: [wbsProposedChangesLinksId], references: [proposedChangeId])
-  wbsProposedChangesLinksId String?
+  wbsProposedChangesLinks Wbs_Proposed_Changes[] @relation(name: "wbsProposedChangesLinks")
 }
 
 model Description_Bullet {
@@ -673,7 +673,7 @@ model Project_Proposed_Changes {
   goals            Description_Bullet[] @relation(name: "proposedProjectChangeGoals")
   features         Description_Bullet[] @relation(name: "proposedProjectChangeFeatures")
   otherConstraints Description_Bullet[] @relation(name: "proposedProjectChangeOtherConstraints")
-  //teams         Team[]               
+  teams            Team[]               @relation(name: "projectTeams")
 }
 
 model Work_Package_Proposed_Changes {
