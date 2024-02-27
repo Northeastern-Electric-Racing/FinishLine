@@ -48,7 +48,7 @@ interface ReimbursementRequestFormProps {
   previousPage: string;
 }
 
-const RECEIPT_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
+const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
 
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
@@ -73,7 +73,7 @@ const schema = yup.object().shape({
     // The requirements for receipt uploads is disabled by default on development to make testing easier;
     // if testing proper receipt uploads is needed, create an environment variable called VITE_RR_RECEIPT_REQUIREMENT
     // in src/frontend/.env and set it to 'enabled'.
-    import.meta.env.MODE === 'development' && RECEIPT_REQUIRED !== 'enabled'
+    import.meta.env.MODE === 'development' && RECEIPTS_REQUIRED !== 'enabled'
       ? yup.array()
       : yup
           .array()
