@@ -40,7 +40,7 @@ const FinancePage = () => {
     isLoading: userReimbursementRequestIsLoading,
     isError: userReimbursementRequestIsError,
     error: userReimbursementRequestError
-  } = useCurrentUserReimbursemefntRequests();
+  } = useCurrentUserReimbursementRequests();
   const {
     data: allReimbursementRequests,
     isLoading: allReimbursementRequestsIsLoading,
