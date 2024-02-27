@@ -7,6 +7,18 @@ import { designReviewTransformer } from '../transformers/design-review.transform
 
 export default class DesignReviewService {
   /**
+   * Gets all design reviews in the database
+   * @returns All of the design reviews
+   */
+  static async getAllDesignReviews(): Promise<DesignReview[]> {
+    const designReview = await prisma.design_Review.findMany({
+      where: { wbsElement: { dateDeleted: null } },
+      ...designReviewQueryArgs
+    });
+    return designReview.map(designReviewTransformer);
+  }
+
+  /**
    * Deletes a design review
    * @param submitter the user who deleted the design review
    * @param designReviewId the id of the design review to be deleted
