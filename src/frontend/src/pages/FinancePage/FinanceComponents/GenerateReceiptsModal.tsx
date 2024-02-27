@@ -6,7 +6,6 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDownloadPDFOfImages } from '../../../hooks/finance.hooks';
-import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { ReimbursementRequest } from 'shared';
 
@@ -32,6 +31,10 @@ interface GenerateReceiptsModalProps {
   endDate: Date;
   setStartDate: (val: Date) => void;
   setEndDate: (val: Date) => void;
+  endDatePickerOpen: boolean;
+  startDatePickerOpen: boolean;
+  setEndDatePickerOpen: (val : boolean) => void
+  setStartDatePickerOpen:(val : boolean) => void;
 }
 
 const GenerateReceiptsModal = ({
@@ -43,11 +46,14 @@ const GenerateReceiptsModal = ({
   startDate,
   setStartDate,
   endDate,
-  setEndDate
+  setEndDate,
+  setEndDatePickerOpen,
+  setStartDatePickerOpen,
+  endDatePickerOpen,
+  startDatePickerOpen
+  
 }: GenerateReceiptsModalProps) => {
   const toast = useToast();
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate, refundSource);
 
@@ -89,7 +95,7 @@ const GenerateReceiptsModal = ({
     reset,
     formState: { errors, isValid }
   } = useForm({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
 
   return (
