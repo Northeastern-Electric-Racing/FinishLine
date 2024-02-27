@@ -33,8 +33,8 @@ interface GenerateReceiptsModalProps {
   setEndDate: (val: Date) => void;
   endDatePickerOpen: boolean;
   startDatePickerOpen: boolean;
-  setEndDatePickerOpen: (val : boolean) => void
-  setStartDatePickerOpen:(val : boolean) => void;
+  setEndDatePickerOpen: (val: boolean) => void;
+  setStartDatePickerOpen: (val: boolean) => void;
 }
 
 const GenerateReceiptsModal = ({
@@ -51,7 +51,6 @@ const GenerateReceiptsModal = ({
   setStartDatePickerOpen,
   startDatePickerOpen,
   endDatePickerOpen
-  
 }: GenerateReceiptsModalProps) => {
   const toast = useToast();
 
@@ -95,7 +94,7 @@ const GenerateReceiptsModal = ({
     reset,
     formState: { errors, isValid }
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema)
   });
 
   return (
