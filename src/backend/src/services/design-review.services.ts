@@ -27,14 +27,14 @@ export default class DesignReviewService {
     user: User,
     designReviewId: string,
     dateScheduled: Date,
-    teamType: TeamType,
+    teamTypeId: string,
     requiredMembers: number[],
     optionalMembers: number[],
     isOnline: boolean,
     isInPerson: boolean,
-    zoomLink: string,
-    location: string,
-    docTemplateLink: string,
+    zoomLink: string | null,
+    location: string | null,
+    docTemplateLink: string | null,
     status: Design_Review_Status,
     confirmedMembers: number[],
     deniedMembers: number[],
@@ -81,7 +81,6 @@ export default class DesignReviewService {
     const updatedDeniedMembers = getUserPrismaIds(await getUsers(deniedMembers));
     const updatedAttendees = getUserPrismaIds(await getUsers(attendees));
 
-    const { teamTypeId } = teamType;
     const originaldesignReview = await prisma.design_Review.findUnique({
       where: { designReviewId }
     });

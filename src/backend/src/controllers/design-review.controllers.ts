@@ -12,15 +12,16 @@ export default class DesignReviewController {
         teamType,
         requiredMembers,
         optionaldMembers,
-        online,
+        isOnline,
         isInPeron,
         zoomLink,
+        location,
         docTemplateLink,
         status,
         confirmedMembers,
         deniedMembers,
         attendees,
-        meetingTime
+        meetingTimes
       } = req.body;
 
       const { designReviewId } = req.params;
@@ -34,15 +35,16 @@ export default class DesignReviewController {
         teamType.teamTypeId,
         requiredMembers,
         optionaldMembers,
-        online,
+        isOnline,
         isInPeron,
         zoomLink,
+        location,
         docTemplateLink,
         status,
         confirmedMembers,
         deniedMembers,
         attendees,
-        meetingTime
+        meetingTimes
       );
       return res.status(200).json({ message: 'Design Review updated successfully' });
     } catch (error: unknown) {
