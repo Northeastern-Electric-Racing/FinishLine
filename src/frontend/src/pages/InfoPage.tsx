@@ -68,12 +68,6 @@ const InfoPage: React.FC = () => {
         open={isModalOpen}
         onHide={handleCloseModal}
         title={'Battery'}
-        availabilities={[
-          [0, 1, 2, 3, 4],
-          [0, 2],
-          [0, 4],
-          [30, 31]
-        ]}
       />
     </PageLayout>
   );

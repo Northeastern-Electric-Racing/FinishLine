@@ -1,12 +1,14 @@
 import { Box, Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
+import { User } from 'shared';
 
 interface DRCModalProps {
   open: boolean;
   title: string;
   onHide: () => void;
   onSubmit?: () => void;
-  availabilities: number[][];
+  currentUser?: User;
+  usersToAvailabilities: Map<User, number[]>;
 }
 
 interface TimeBoxProps {
@@ -53,7 +55,7 @@ const getBackgroundColor = (frequency?: number): string => {
   }
 };
 
-const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, availabilities }) => {
+const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, currentUser, usersToAvailabilities }) => {
   const header = `Are you availble for the ${title} Design Review`;
 
   const renderDayHeaders = () => {
@@ -63,21 +65,29 @@ const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, avai
     ];
   };
 
-  const createFrequencyTable = (availabilities: number[][]) => {
-    let frequencyTable = new Map<number, number>();
-
-    availabilities.forEach((person) => {
-      person.forEach((availableTime) => {
-        const count = frequencyTable.get(availableTime) || 0;
-        frequencyTable.set(availableTime, count + 1);
+  // this will have to come from the backend, will have to store this in our database
+  // we will need a new hashmap for each design review (i think)
+  const createFrequencyTable = () => {
+    const frequencyTable = new Map<number, number>();
+    usersToAvailabilities.forEach((availableTimes, user) => {
+      availableTimes.forEach((time) => {
+        const count = frequencyTable.get(time) || 0;
+        frequencyTable.set(time, count + 1);
       });
     });
     return frequencyTable;
   };
 
-  const renderSchedule = (availabilities: number[][]) => {
-    const frequencyTable = createFrequencyTable(availabilities);
+  const handleSelect = (selectedTime: number) => {
+    if (currentUser) {
+      const userAvailabilities = usersToAvailabilities.get(currentUser) || [];
+      userAvailabilities.push(selectedTime);
+      usersToAvailabilities.set(currentUser, userAvailabilities);
+    }
+  };
 
+  const renderSchedule = () => {
+    const frequencyTable = createFrequencyTable();
     return times.map((time, timeIndex) => (
       <Grid container item xs={12}>
         <TimeBox backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
@@ -87,7 +97,7 @@ const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, avai
             <TimeBox
               key={index}
               backgroundColor={getBackgroundColor(frequencyTable.get(index))}
-              onClick={() => console.log(index)}
+              onClick={() => currentUser && handleSelect(index)}
             />
           );
         })}
@@ -99,7 +109,7 @@ const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, avai
     <NERModal open={open} onHide={onHide} title={header} onSubmit={onSubmit}>
       <Grid container>
         {renderDayHeaders()}
-        {renderSchedule(availabilities)}
+        {renderSchedule()}
       </Grid>
     </NERModal>
   );
