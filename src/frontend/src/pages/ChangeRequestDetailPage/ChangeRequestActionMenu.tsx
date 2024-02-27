@@ -86,7 +86,6 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
       />
     </div>
   );
-
   const requestReviewerDropdown = () => (
     <>
       <Autocomplete
@@ -97,6 +96,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
         options={users.filter((user) => isLeadership(user.role)).map(taskUserToAutocompleteOption)}
         getOptionLabel={(option) => option.label}
         onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
+        defaultValue={changeRequest.requestedReviewers.map(taskUserToAutocompleteOption)}
         renderTags={() => null}
         renderOption={(props, option, { selected }) => (
           <li {...props}>
@@ -110,7 +110,11 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
           </li>
         )}
         renderInput={(params) => (
-          <TextField {...params} variant="standard" placeholder={`${reviewerIds.length} Reviewers Selected`} />
+          <TextField
+            {...params}
+            variant="standard"
+            placeholder={`${changeRequest.requestedReviewers.length} Reviewers Selected`}
+          />
         )}
       />
 
