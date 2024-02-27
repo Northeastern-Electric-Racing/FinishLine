@@ -24,8 +24,6 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
-const RECEIPT_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
-
 export interface ReimbursementRequestInformation {
   vendorId: string;
   dateOfExpense: Date;
@@ -50,6 +48,8 @@ interface ReimbursementRequestFormProps {
   previousPage: string;
 }
 
+const RECEIPT_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
+
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
@@ -70,7 +70,7 @@ const schema = yup.object().shape({
     .required('reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
   receiptFiles:
-    // The requirement for receipt uploads is disabled by default on development to make testing easier;
+    // The requirements for receipt uploads is disabled by default on development to make testing easier;
     // if testing proper receipt uploads is needed, create an environment variable called VITE_RR_RECEIPT_REQUIREMENT
     // in src/frontend/.env and set it to 'enabled'.
     import.meta.env.MODE === 'development' && RECEIPT_REQUIRED !== 'enabled'
