@@ -22,9 +22,9 @@ export const usersToSlackPings = (users: UserWithSettings[]) => {
  * Gets the team of a task's assignees.
  * Assumes all assigness share a team
  * @param users the users of the task
- * @returns the slack id of the team assigned to the task
+ * @returns the team assigned to the task
  */
-export const getTeamFromTaskAssignees = (users: UserWithTeams[]): string => {
+export const getTeamFromTaskAssignees = (users: UserWithTeams[]): Team => {
   const allTeams = users.map((user) => {
     const teams = [];
     if (user.teamAsHead) teams.push(user.teamAsHead);
@@ -43,8 +43,27 @@ export const getTeamFromTaskAssignees = (users: UserWithTeams[]): string => {
 
   // Assuming we return the Slack ID of the first common team if there are any
   if (commonTeams.length > 0) {
-    return commonTeams[0].slackId; // Return the slackId of the first common team
+    return commonTeams[0]; // Return the first common team
   }
 
   throw new HttpException(400, 'All of the users do not share a team!');
+};
+
+/**
+ * Gets the beginning of the day tomorrow
+ * @returns the beginning of the day tomorrow (at 12am)
+ */
+export const startOfDayTomorrow = () => {
+  return new Date(new Date().setHours(24, 0, 0, 0));
+};
+
+/**
+ * Gets the end of the day tomorrow
+ * @returns the end of the day tomorrow (i.e. 12am of the following day)
+ */
+export const endOfDayTomorrow = () => {
+  const startOfDay = startOfDayTomorrow();
+  const endOfDay = new Date(startOfDay);
+  endOfDay.setDate(startOfDay.getDate() + 1);
+  return endOfDay;
 };
