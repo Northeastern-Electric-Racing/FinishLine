@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Grid, ListItemIcon, Menu, MenuItem, Stack, Typography } from '@mui/material';
+import { Grid, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -31,7 +31,7 @@ const DRCPage = () => {
   };
 
   const daysInMonth = (month: number, year: number) => {
-    return new Date(year, month, 0).getDate();
+    return new Date(year, month + 1, 0).getDate() + 1;
   };
 
   const paddingDays = (month: number, year: number) => {
@@ -114,6 +114,17 @@ const DRCPage = () => {
         </Grid>
         <Grid container>
           {daysThisMonth.slice(21, 28).map((day) => {
+            const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
+            console.log(myDate);
+            return (
+              <Grid item xs={12 / 7}>
+                <DayCard myDate={myDate} events={[]}></DayCard>
+              </Grid>
+            );
+          })}
+        </Grid>
+        <Grid container>
+          {daysThisMonth.slice(28, 35).map((day) => {
             const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
             console.log(myDate);
             return (
