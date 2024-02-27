@@ -40,7 +40,7 @@ const FinancePage = () => {
     isLoading: userReimbursementRequestIsLoading,
     isError: userReimbursementRequestIsError,
     error: userReimbursementRequestError
-  } = useCurrentUserReimbursementRequests();
+  } = useCurrentUserReimbursemefntRequests();
   const {
     data: allReimbursementRequests,
     isLoading: allReimbursementRequestsIsLoading,
@@ -65,6 +65,9 @@ const FinancePage = () => {
   const [refundSource, setRefundSource] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
 
   if (isFinance && allReimbursementRequestsIsError) return <ErrorPage message={allReimbursementRequestsError?.message} />;
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
@@ -171,6 +174,10 @@ const FinancePage = () => {
         endDate={endDate}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
+        setEndDatePickerOpen={setEndDatePickerOpen}
+        setStartDatePickerOpen={setStartDatePickerOpen}
+        endDatePickerOpen={endDatePickerOpen}
+        startDatePickerOpen={startDatePickerOpen}
       />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>

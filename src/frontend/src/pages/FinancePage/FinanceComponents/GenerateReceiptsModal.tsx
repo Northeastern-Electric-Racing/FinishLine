@@ -49,8 +49,8 @@ const GenerateReceiptsModal = ({
   setEndDate,
   setEndDatePickerOpen,
   setStartDatePickerOpen,
-  endDatePickerOpen,
-  startDatePickerOpen
+  startDatePickerOpen,
+  endDatePickerOpen
   
 }: GenerateReceiptsModalProps) => {
   const toast = useToast();
