@@ -65,8 +65,6 @@ const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, curr
     ];
   };
 
-  // this will have to come from the backend, will have to store this in our database
-  // we will need a new hashmap for each design review (i think)
   const createFrequencyTable = () => {
     const frequencyTable = new Map<number, number>();
     usersToAvailabilities.forEach((availableTimes, user) => {

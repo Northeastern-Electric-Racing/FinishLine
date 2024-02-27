@@ -14,13 +14,18 @@ import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
 import { DRCModal } from './DesignReviewModal';
 import { useState } from 'react';
+import { User } from 'shared';
+import { batman, superman } from '../../../backend/tests/test-data/users.test-data';
 
 const InfoPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
-
+  const usersToAvailabilities = new Map([
+    [superman, [1, 2, 3]],
+    [batman, [3, 6, 7]]
+  ]);
   return (
     <PageLayout title="Information">
       <PageBlock title="Resources">
@@ -68,6 +73,8 @@ const InfoPage: React.FC = () => {
         open={isModalOpen}
         onHide={handleCloseModal}
         title={'Battery'}
+        currentUser={batman}
+        usersToAvailabilities={usersToAvailabilities}
       />
     </PageLayout>
   );
