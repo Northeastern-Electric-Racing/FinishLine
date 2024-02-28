@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackage, wbsPipe } from 'shared';
+import { ChangeRequest, WorkPackage, wbsPipe } from 'shared';
 import { percentPipe, fullNamePipe, datePipe, weeksPipe } from '../../../utils/pipes';
 import WbsStatus from '../../../components/WbsStatus';
-import { Box, Divider, Grid, Link, Stack, Typography } from '@mui/material';
+import { Box, Divider, Grid, Link, Stack, Typography, useTheme } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import WorkPackageStageChip from '../../../components/WorkPackageStageChip';
 import { timelinePipe } from '../../../utils/pipes';
@@ -16,13 +16,69 @@ import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-
+import ChangeRequestsOverview from '../../ChangeRequestsPage/ChangeRequestsOverview';
+import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
+import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
   dependencies: WorkPackage[];
 }
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
+  const theme = useTheme();
+  const user = useCurrentUser();
+  const changeRequests = useAllChangeRequests();
+  const currentDate = new Date();
+  const crIsLoading = changeRequests.isLoading;
+  if (crIsLoading && !changeRequests) {
+    return <LoadingIndicator />;
+  }
+  const crUnreviewed: ChangeRequest[] = [];
+  const crApproved: ChangeRequest[] = [];
+  const displayCRCards = (crList: ChangeRequest[]) => (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start',
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        }
+      }}
+    >
+      {crList.map((cr: ChangeRequest) => (
+        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
+      ))}
+    </Box>
+  );
+
+  const renderChangeRequests = (title: string, crList: ChangeRequest[], emptyMessage: string) => {
+    return (
+      <>
+        <Typography variant="h5" gutterBottom>
+          {title}
+        </Typography>
+        {crList.length > 0 ? (
+          <Grid container>{displayCRCards(crList)}</Grid>
+        ) : (
+          <Typography gutterBottom>{emptyMessage}</Typography>
+        )}
+      </>
+    );
+  };
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', mb: 2, mt: 1 }}>
@@ -74,6 +130,9 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
           <DetailDisplay label="Timeline Status" content={timelinePipe(workPackage.timelineStatus)} paddingRight={1} />
         </Grid>
       </Grid>
+
+      {renderChangeRequests('My Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
+      {renderChangeRequests('My Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
 
       <Typography
         variant="h5"
