@@ -16,11 +16,11 @@ import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import ChangeRequestsOverview from '../../ChangeRequestsPage/ChangeRequestsOverview';
+//import ChangeRequestsOverview from '../../ChangeRequestsPage/ChangeRequestsOverview';
 import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useCurrentUser } from '../../../hooks/users.hooks';
+//import { useCurrentUser } from '../../../hooks/users.hooks';
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
   dependencies: WorkPackage[];
@@ -28,9 +28,9 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
   const theme = useTheme();
-  const user = useCurrentUser();
+  //const user = useCurrentUser();
   const changeRequests = useAllChangeRequests();
-  const currentDate = new Date();
+  //const currentDate = new Date();
   const crIsLoading = changeRequests.isLoading;
   if (crIsLoading && !changeRequests) {
     return <LoadingIndicator />;
