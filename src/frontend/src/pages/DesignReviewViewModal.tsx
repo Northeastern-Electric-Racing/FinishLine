@@ -1,6 +1,6 @@
-import { Box, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
-import { DRCModalProps, TimeSlotProps, getBackgroundColor, times, daysOfWeek } from './DesignReviewCommon';
+import { DRCModalProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
 
 const DRCViewModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, usersToAvailabilities }) => {
   const header = `Are you availble for the ${title} Design Review`;
@@ -46,29 +46,4 @@ const DRCViewModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
   );
 };
 
-const TimeSlot: React.FC<TimeSlotProps> = ({ text, fontSize, backgroundColor }) => {
-  return (
-    <Box
-      sx={{
-        height: '25px',
-        width: '81px',
-        backgroundColor,
-        cursor: 'pointer',
-        borderStyle: 'solid',
-        borderColor: 'gray',
-        borderWidth: '0.1px',
-        color: 'black',
-        textAlign: 'center',
-        fontSize,
-        fontWeight: 'bold',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end'
-      }}
-    >
-      {text}
-    </Box>
-  );
-};
-
-export { DRCViewModal, TimeSlot };
+export default DRCViewModal;
