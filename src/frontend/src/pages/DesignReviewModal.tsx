@@ -1,14 +1,13 @@
 import { Box, Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
 import { User } from 'shared';
-import { text } from 'stream/consumers';
-import { superman, batman } from '../../../backend/tests/test-data/users.test-data';
 
 interface DRCModalProps {
   open: boolean;
   title: string;
   onHide: () => void;
   onSubmit?: () => void;
+  usersToAvailabilities: Map<User, number[]>;
 }
 
 interface TimeSlotProps {
@@ -33,12 +32,6 @@ const times = [
   '9-10 PM'
 ];
 
-const usersToAvailabilities = new Map([
-  [superman, [1, 2, 3]],
-  [batman, [3, 6, 7]]
-]);
-
-
 const getBackgroundColor = (frequency?: number): string => {
   switch (frequency) {
     case 0:
@@ -60,7 +53,7 @@ const getBackgroundColor = (frequency?: number): string => {
   }
 };
 
-const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title }) => {
+const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, usersToAvailabilities }) => {
   const header = `Are you availble for the ${title} Design Review`;
 
   const renderDayHeaders = () => {
@@ -105,7 +98,6 @@ const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title }) =>
 };
 
 const TimeSlot: React.FC<TimeSlotProps> = ({ text, fontSize, backgroundColor }) => {
-
   return (
     <Box
       sx={{

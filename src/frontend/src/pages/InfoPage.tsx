@@ -14,7 +14,6 @@ import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
 import { DRCModal } from './DesignReviewModal';
 import { useState } from 'react';
-import { User } from 'shared';
 import { batman, superman } from '../../../backend/tests/test-data/users.test-data';
 
 const InfoPage: React.FC = () => {
@@ -73,7 +72,6 @@ const InfoPage: React.FC = () => {
         open={isModalOpen}
         onHide={handleCloseModal}
         title={'Battery'}
-        currentUser={batman}
         usersToAvailabilities={usersToAvailabilities}
       />
     </PageLayout>
