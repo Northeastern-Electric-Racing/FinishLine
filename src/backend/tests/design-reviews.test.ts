@@ -12,7 +12,7 @@ describe('Design Reviews', () => {
   });
 
   describe('getAllDesignReviews', () => {
-    test('Get All Design Reviews works when there are change requests', async () => {
+    test('Get All Design Reviews works', async () => {
       vi.spyOn(prisma.design_Review, 'findMany').mockResolvedValue([]);
 
       const res = await DesignReviewService.getAllDesignReviews();

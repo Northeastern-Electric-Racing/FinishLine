@@ -12,7 +12,7 @@ export default class DesignReviewService {
    */
   static async getAllDesignReviews(): Promise<DesignReview[]> {
     const designReview = await prisma.design_Review.findMany({
-      where: { wbsElement: { dateDeleted: null } },
+      where: { dateDeleted: null },
       ...designReviewQueryArgs
     });
     return designReview.map(designReviewTransformer);
