@@ -12,15 +12,21 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
-import { DRCModal } from './DesignReviewModal';
+import { DRCViewModal } from './DesignReviewViewModal';
+import { DRCEditModal } from './DesignReviewEditModal';
 import { useState } from 'react';
 import { batman, superman } from '../../../backend/tests/test-data/users.test-data';
 
 const InfoPage: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  const handleOpenViewModal = () => setIsViewModalOpen(true);
+  const handleCloseViewModal = () => setIsViewModalOpen(false);
+
+  const handleOpenEditModal = () => setIsEditModalOpen(true);
+  const handleCloseEditModal = () => setIsEditModalOpen(false);
+
   const usersToAvailabilities = new Map([
     [superman, [1, 2, 3]],
     [batman, [3, 6, 7]]
@@ -65,12 +71,21 @@ const InfoPage: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
-      <PageBlock title="DRC">
-        <button onClick={handleOpenModal}>OPEN MODAL</button>
+      <PageBlock title="DRC VIEW">
+        <button onClick={handleOpenViewModal}>OPEN VIEW MODAL</button>
       </PageBlock>
-      <DRCModal
-        open={isModalOpen}
-        onHide={handleCloseModal}
+      <PageBlock title="DRC EDIT">
+        <button onClick={handleOpenEditModal}>OPEN EDIT MODAL</button>
+      </PageBlock>
+      <DRCViewModal
+        open={isViewModalOpen}
+        onHide={handleCloseViewModal}
+        title={'Battery'}
+        usersToAvailabilities={usersToAvailabilities}
+      />
+      <DRCEditModal
+        open={isEditModalOpen}
+        onHide={handleCloseEditModal}
         title={'Battery'}
         usersToAvailabilities={usersToAvailabilities}
       />
