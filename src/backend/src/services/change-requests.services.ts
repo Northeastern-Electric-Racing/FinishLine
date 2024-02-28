@@ -23,18 +23,14 @@ import {
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import {
   updateBlocking,
-  sendSlackCRReviewedNotification,
   allChangeRequestsReviewed,
-  sendSlackCRStatusToThread,
-  addSlackThreadsToChangeRequest,
-  sendAndGetSlackCRNotifications
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail, createChange } from '../utils/changes.utils';
-import { sendSlackRequestedReviewNotification } from '../utils/slack.utils';
+import { addSlackThreadsToChangeRequest, sendAndGetSlackCRNotifications, sendSlackCRReviewedNotification, sendSlackCRStatusToThread, sendSlackRequestedReviewNotification } from '../utils/slack.utils';
 
 export default class ChangeRequestsService {
   /**
