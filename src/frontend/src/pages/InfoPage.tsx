@@ -12,8 +12,8 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
-import { DRCViewModal } from './DesignReviewViewModal';
-import { DRCEditModal } from './DesignReviewEditModal';
+import DRCViewModal from './DesignReviewViewModal';
+import DRCEditModal from './DesignReviewEditModal';
 import { useState } from 'react';
 import { batman, superman } from '../../../backend/tests/test-data/users.test-data';
 

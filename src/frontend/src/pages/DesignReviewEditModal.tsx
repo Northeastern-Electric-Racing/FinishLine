@@ -5,6 +5,10 @@ import { DRCModalProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from '
 const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title }) => {
   const header = `Are you availble for the ${title} Design Review`;
 
+  const handleOnClick = () => {
+
+  }
+  
   const renderDayHeaders = () => {
     return [
       <TimeSlot backgroundColor={getBackgroundColor(0)} />,
@@ -18,7 +22,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title }
         <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
         {daysOfWeek.map((_day, dayIndex) => {
           const index = dayIndex * times.length + timeIndex;
-          return <TimeSlot key={index} backgroundColor={getBackgroundColor()} />;
+          return <TimeSlot key={index} backgroundColor={getBackgroundColor()} onClick={handleOnClick} />;
         })}
       </Grid>
     ));
@@ -34,4 +38,4 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title }
   );
 };
 
-export { DRCEditModal, TimeSlot };
+export default DRCEditModal;
