@@ -125,7 +125,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>Manufacturer</FormLabel>
             <Controller
@@ -140,7 +140,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   onChange('');
                 };
                 return (
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ alignItems: 'center' }}>
                     <NERAutocomplete
                       sx={{ bgcolor: 'inherit' }}
                       id={'manufacturer'}
@@ -152,23 +152,27 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                         newValue ? onChange(newValue.id) : onClear();
                       }}
                     />
-                    <NERButton
-                      sx={{ width: '480px', height: '55px' }}
-                      variant="contained"
-                      onClick={() => {
-                        const newManufacturerName = prompt('Enter New Manufacturer Name');
-                        if (newManufacturerName !== null) {
-                          createManufacturer(newManufacturerName);
-                        }
-                      }}
-                    >
-                      Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
-                    </NERButton>
                   </Box>
                 );
               }}
             />
           </FormControl>
+        </Grid>
+        <Grid item xs={6}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <NERButton
+              sx={{ width: '261px', height: '55px', marginTop: '22px' }}
+              variant="contained"
+              onClick={() => {
+                const newManufacturerName = prompt('Enter New Manufacturer Name');
+                if (newManufacturerName !== null) {
+                  createManufacturer(newManufacturerName);
+                }
+              }}
+            >
+              Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
+            </NERButton>
+          </Box>
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
