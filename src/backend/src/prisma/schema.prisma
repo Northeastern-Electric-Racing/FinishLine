@@ -419,6 +419,7 @@ model Receipt {
 
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
+  identifier             Int                     @unique @default(autoincrement())
   saboId                 Int?                    @unique
   dateCreated            DateTime                @default(now())
   dateDeleted            DateTime?
