@@ -1,21 +1,20 @@
 import { Box, Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
 import { User } from 'shared';
+import { text } from 'stream/consumers';
+import { superman, batman } from '../../../backend/tests/test-data/users.test-data';
 
 interface DRCModalProps {
   open: boolean;
   title: string;
   onHide: () => void;
   onSubmit?: () => void;
-  currentUser?: User;
-  usersToAvailabilities: Map<User, number[]>;
 }
 
-interface TimeBoxProps {
+interface TimeSlotProps {
   text?: string;
   fontSize?: number;
   backgroundColor: string;
-  onClick?: () => void;
 }
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -33,6 +32,12 @@ const times = [
   '8-9 PM',
   '9-10 PM'
 ];
+
+const usersToAvailabilities = new Map([
+  [superman, [1, 2, 3]],
+  [batman, [3, 6, 7]]
+]);
+
 
 const getBackgroundColor = (frequency?: number): string => {
   switch (frequency) {
@@ -55,13 +60,13 @@ const getBackgroundColor = (frequency?: number): string => {
   }
 };
 
-const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, currentUser, usersToAvailabilities }) => {
+const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title }) => {
   const header = `Are you availble for the ${title} Design Review`;
 
   const renderDayHeaders = () => {
     return [
-      <TimeBox backgroundColor={getBackgroundColor(0)} />,
-      daysOfWeek.map((day) => <TimeBox key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={12} />)
+      <TimeSlot backgroundColor={getBackgroundColor(0)} />,
+      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={12} />)
     ];
   };
 
@@ -76,28 +81,14 @@ const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, curr
     return frequencyTable;
   };
 
-  const handleSelect = (selectedTime: number) => {
-    if (currentUser) {
-      const userAvailabilities = usersToAvailabilities.get(currentUser) || [];
-      userAvailabilities.push(selectedTime);
-      usersToAvailabilities.set(currentUser, userAvailabilities);
-    }
-  };
-
   const renderSchedule = () => {
     const frequencyTable = createFrequencyTable();
     return times.map((time, timeIndex) => (
       <Grid container item xs={12}>
-        <TimeBox backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
+        <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
         {daysOfWeek.map((_day, dayIndex) => {
           const index = dayIndex * times.length + timeIndex;
-          return (
-            <TimeBox
-              key={index}
-              backgroundColor={getBackgroundColor(frequencyTable.get(index))}
-              onClick={() => currentUser && handleSelect(index)}
-            />
-          );
+          return <TimeSlot key={index} backgroundColor={getBackgroundColor(frequencyTable.get(index))} />;
         })}
       </Grid>
     ));
@@ -113,7 +104,8 @@ const DRCModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, curr
   );
 };
 
-const TimeBox: React.FC<TimeBoxProps> = ({ text, fontSize, backgroundColor, onClick }) => {
+const TimeSlot: React.FC<TimeSlotProps> = ({ text, fontSize, backgroundColor }) => {
+
   return (
     <Box
       sx={{
@@ -132,11 +124,10 @@ const TimeBox: React.FC<TimeBoxProps> = ({ text, fontSize, backgroundColor, onCl
         flexDirection: 'column',
         justifyContent: 'flex-end'
       }}
-      onClick={onClick}
     >
       {text}
     </Box>
   );
 };
 
-export { DRCModal, TimeBox };
+export { DRCModal, TimeSlot };
