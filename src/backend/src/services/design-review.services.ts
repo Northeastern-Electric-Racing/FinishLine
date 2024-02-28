@@ -7,6 +7,7 @@ export default class DesignReviewService {
   /**
    * Edits a Design_Review in the database
    * @param user the user editing the design review (must be leadership)
+   * @param designReviewId the id of the design review to edit
    * @param dateScheduled the date of the design review (required I guess ask?)
    * @param teamType the team that someone is on (software, electrical, etc.)
    * @param requiredMembers required members for the design review
@@ -49,12 +50,12 @@ export default class DesignReviewService {
 
     // make sure the confirmedMembers are not in the denied Members
     // for review: should someone be able to edit confifirmed and denied members?
-    if (confirmedMembers.every((cMember) => !deniedMembers.includes(cMember))) {
+    if (confirmedMembers.every((cMember) => deniedMembers.includes(cMember))) {
       throw new HttpException(400, 'confirmed members cannot be in denied members');
     }
 
     // make sure the requiredMembers are not in the optionalMembers
-    if (requiredMembers.every((rMember) => !optionalMembers.includes(rMember))) {
+    if (requiredMembers.every((rMember) => optionalMembers.includes(rMember))) {
       throw new HttpException(400, 'required members cannot be in optional members');
     }
 

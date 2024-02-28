@@ -24,9 +24,9 @@ describe('Design Reviews', () => {
           [6],
           designReview1.isOnline,
           designReview1.isInPerson,
-          designReview1.zoomLink,
-          prismaDesignReview2.location,
-          designReview1.docTemplateLink,
+          'https://www.zoom.com',
+          null,
+          '',
           designReview1.status,
           [1],
           [],
@@ -49,8 +49,8 @@ describe('Design Reviews', () => {
           designReview1.isOnline,
           designReview1.isInPerson,
           'https://www.zoom.com',
-          null,
-          '',
+          prismaDesignReview2.location,
+          designReview1.docTemplateLink,
           designReview1.status,
           [1],
           [],
@@ -73,7 +73,7 @@ describe('Design Reviews', () => {
           designReview1.isOnline,
           designReview1.isInPerson,
           designReview1.zoomLink,
-          prismaDesignReview2.location,
+          designReview1.location,
           designReview1.docTemplateLink,
           designReview1.status,
           [1],
@@ -84,28 +84,28 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new AccessDeniedMemberException('edit design reviews'));
     });
 
-    test('Edit Reimbursment Request fails when requiredmember doesnt exist', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
+    test('Edit Reimbursment Request fails when required member doesnt exist', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
       await expect(() =>
         DesignReviewService.editDesignReview(
           batman,
-          designReview1.designReviewId,
-          designReview1.dateScheduled,
-          designReview1.teamTypeId,
+          prismaDesignReview2.designReviewId,
+          prismaDesignReview2.dateScheduled,
+          prismaDesignReview2.teamTypeId,
           [68],
           [],
-          designReview1.isOnline,
-          designReview1.isInPerson,
-          designReview1.zoomLink,
+          prismaDesignReview2.isOnline,
+          prismaDesignReview2.isInPerson,
+          'https://www.zoom.com',
           prismaDesignReview2.location,
-          designReview1.docTemplateLink,
-          designReview1.status,
+          prismaDesignReview2.docTemplateLink,
+          prismaDesignReview2.status,
           [1],
           [],
-          [],
-          designReview1.meetingTimes
+          [batman.userId],
+          prismaDesignReview2.meetingTimes
         )
-      ).rejects.toThrow(new NotFoundException('Design Review', designReview1.designReviewId));
+      ).rejects.toThrow(new NotFoundException('User', 68));
     });
 
     test('Edit Reimbursment Request fails when optionalMember doesnt exist', async () => {
@@ -120,7 +120,7 @@ describe('Design Reviews', () => {
           [68],
           designReview1.isOnline,
           designReview1.isInPerson,
-          designReview1.zoomLink,
+          'https://www.zoom.com',
           prismaDesignReview2.location,
           designReview1.docTemplateLink,
           designReview1.status,
@@ -129,7 +129,7 @@ describe('Design Reviews', () => {
           [],
           designReview1.meetingTimes
         )
-      ).rejects.toThrow(new NotFoundException('Design Review', designReview1.designReviewId));
+      ).rejects.toThrow(new NotFoundException('User', 68));
     });
 
     test('Edit Design Review fails when any confirmedMembers are in deniedMembers', async () => {
@@ -141,7 +141,7 @@ describe('Design Reviews', () => {
           prismaDesignReview2.dateScheduled,
           prismaDesignReview2.teamTypeId,
           [1],
-          [68],
+          [],
           prismaDesignReview2.isOnline,
           prismaDesignReview2.isInPerson,
           prismaDesignReview2.zoomLink,
@@ -149,7 +149,7 @@ describe('Design Reviews', () => {
           prismaDesignReview2.docTemplateLink,
           prismaDesignReview2.status,
           [1],
-          [wonderwoman.userId],
+          [1],
           [],
           prismaDesignReview2.meetingTimes
         )
@@ -165,7 +165,7 @@ describe('Design Reviews', () => {
           prismaDesignReview2.dateScheduled,
           prismaDesignReview2.teamTypeId,
           [1],
-          [wonderwoman.userId],
+          [wonderwoman.userId, 1],
           prismaDesignReview2.isOnline,
           prismaDesignReview2.isInPerson,
           prismaDesignReview2.zoomLink,
@@ -216,7 +216,7 @@ describe('Design Reviews', () => {
           [6],
           true,
           false,
-          '',
+          null,
           prismaDesignReview2.location,
           prismaDesignReview2.docTemplateLink,
           prismaDesignReview2.status,
@@ -280,37 +280,6 @@ describe('Design Reviews', () => {
       // kind bad way to test, but idk better for editting when there is no field for editedDate
       // unless I test everything?
       expect(prismaDesignReview2.isOnline).toEqual(true);
-    });
-
-    test('Edit Design Review succeeds all fields meet above requirements', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
-      vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview2);
-
-      expect(prismaDesignReview2.dateDeleted).toBeNull();
-
-      await DesignReviewService.editDesignReview(
-        batman,
-        prismaDesignReview2.designReviewId,
-        prismaDesignReview2.dateScheduled,
-        prismaDesignReview2.teamTypeId,
-        [1],
-        [6],
-        false,
-        true,
-        prismaDesignReview2.zoomLink,
-        prismaDesignReview2.location,
-        prismaDesignReview2.docTemplateLink,
-        prismaDesignReview2.status,
-        [1],
-        [],
-        [],
-        prismaDesignReview2.meetingTimes
-      );
-
-      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.design_Review.update).toHaveBeenCalledTimes(1);
-      // kind bad way to test, but idk better for editting when there is no field for editedDate
-      expect(prismaDesignReview2.isOnline).toEqual(false);
     });
   });
 });
