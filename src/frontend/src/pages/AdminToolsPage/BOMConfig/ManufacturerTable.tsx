@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react';
 import { Manufacturer } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
-import { useGetAllManufacturers } from '../../../hooks/bom.hooks';
+import { useDeleteManufacturer, useGetAllManufacturers } from '../../../hooks/bom.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import AdminToolTable from '../AdminToolTable';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
 import ManufacturerDeleteButton from './ManufacturerDeleteModal';
+import { deleteManufacturer } from '../../../apis/bom.api';
 
 const ManufacturerTable: React.FC = () => {
   const {
@@ -35,6 +36,7 @@ const ManufacturerTable: React.FC = () => {
 
   const handleDeleteManufacturer = async (manufacturerName: string) => {
     try {
+      deleteManufacturer(manufacturerName);
       const updatedManufacturersTableRows = manufacturerList.filter(
         (manufacturer) => manufacturer.name !== manufacturerName
       );

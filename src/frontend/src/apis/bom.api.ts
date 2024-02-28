@@ -43,7 +43,7 @@ export const createManufacturer = async (name: string) => {
  * @returns The deleted manufacturer
  */
 export const deleteManufacturer = async (name: string) => {
-  const { data } = await axios.post(apiUrls.bomDeleteManufacturer(name), { name });
+  const { data } = await axios.delete(apiUrls.bomDeleteManufacturer(name));
   return data;
 };
 

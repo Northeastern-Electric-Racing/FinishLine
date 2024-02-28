@@ -2,8 +2,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, IconButton, Typography } from '@mui/material';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
-import { useDeleteManufacturer } from '../../../hooks/bom.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
 
 interface ManufacturerDeleteButtonProps {
   name: string;
@@ -14,26 +12,11 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
   name,
   onDelete
 }: ManufacturerDeleteButtonProps) => {
-  const toast = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { mutateAsync: deleteManufacturerMutateAsync } = useDeleteManufacturer();
 
   const handleDeleteSubmit = async () => {
     onDelete(name);
-    deleteManufacturer(name);
     setShowDeleteDialog(false);
-  };
-
-  const deleteManufacturer = (name: string) => async () => {
-    try {
-      await deleteManufacturerMutateAsync({ manufacturerName: name }).finally(() =>
-        toast.success('Manufacturer Successfully Deleted!')
-      );
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 6000);
-      }
-    }
   };
 
   return (
