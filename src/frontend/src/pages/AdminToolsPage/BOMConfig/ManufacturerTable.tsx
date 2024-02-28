@@ -1,15 +1,15 @@
 import { Box, Grid, TableCell, TableRow, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Manufacturer } from 'shared';
+import { deleteManufacturer } from '../../../apis/bom.api';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
-import { useDeleteManufacturer, useGetAllManufacturers } from '../../../hooks/bom.hooks';
+import { useGetAllManufacturers } from '../../../hooks/bom.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import AdminToolTable from '../AdminToolTable';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
 import ManufacturerDeleteButton from './ManufacturerDeleteModal';
-import { deleteManufacturer } from '../../../apis/bom.api';
 
 const ManufacturerTable: React.FC = () => {
   const {
@@ -40,6 +40,7 @@ const ManufacturerTable: React.FC = () => {
       const updatedManufacturersTableRows = manufacturerList.filter(
         (manufacturer) => manufacturer.name !== manufacturerName
       );
+
       setManufacturerList(updatedManufacturersTableRows);
     } catch (error) {
       console.error('Error deleting manufacturer:', error);
@@ -55,7 +56,11 @@ const ManufacturerTable: React.FC = () => {
         <Grid container justifyContent="space-between">
           <Grid sx={{ align: 'left' }}>{manufacturer.name}</Grid>
           <Grid>
-            <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
+            {manufacturerList.length > 1 ? (
+              <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
+            ) : (
+              ''
+            )}
           </Grid>
         </Grid>
       </TableCell>
