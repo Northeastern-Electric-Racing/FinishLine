@@ -912,18 +912,18 @@ describe('Projects', () => {
     });
 
     test('Delete Material Type does not work if material type does not exist', async () => {
-      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', batman)).rejects.toThrow(
-        new NotFoundException('Material Type', 'NERSoftwareTools')
+      await expect(ProjectsService.deleteMaterialType('fakeid', batman)).rejects.toThrow(
+        new NotFoundException('Material Type', 'fakeid')
       );
     });
 
     test('Delete Material Type works', async () => {
       vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
-      vi.spyOn(prisma.material_Type, 'update').mockResolvedValue(toolMaterial);
-      await ProjectsService.deleteMaterialType('NERSoftwareTools', superman);
+      vi.spyOn(prisma.material_Type, 'delete').mockResolvedValue(toolMaterial);
+      await ProjectsService.deleteMaterialType(toolMaterial.name, superman);
       expect(prisma.material_Type.findUnique).toBeCalledTimes(1);
       expect(prisma.material_Type.delete).toBeCalledTimes(1);
-      expect(prisma.material_Type.delete).toHaveBeenCalledWith({ where: { name: 'NERSoftwareTools' } });
+      expect(prisma.material_Type.delete).toHaveBeenCalledWith({ where: { name: toolMaterial.name } });
     });
   });
 
