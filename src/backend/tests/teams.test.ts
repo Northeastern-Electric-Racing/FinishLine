@@ -273,7 +273,8 @@ describe('Teams', () => {
       await expect(callSetTeamLeads).rejects.toThrow(expectedException);
     });
 
-    test('setTeamLeads lead is a member', async () => {
+    // This has now been changed in the backend so that a new team lead can be a current member
+    /*test('setTeamLeads lead is a member', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([aquaman]);
       vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1, primsaTeam2, justiceLeague]);
@@ -283,7 +284,7 @@ describe('Teams', () => {
       const expectedException = new HttpException(400, 'A lead cannot be a member of the team!');
 
       await expect(callSetTeamLeads).rejects.toThrow(expectedException);
-    });
+    });*/
 
     test('setTeamLeads lead is a head', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
@@ -317,7 +318,7 @@ describe('Teams', () => {
 
       const res = await TeamsService.setTeamLeads(flash, sharedTeam1.teamId, [5, 7]);
 
-      expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.team.findUnique).toHaveBeenCalledTimes(2);
       expect(prisma.team.update).toHaveBeenCalledTimes(1);
       expect(prisma.team.update).toHaveBeenCalledWith({
         where: { teamId },
