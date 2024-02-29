@@ -14,6 +14,7 @@ import { routes } from '../../utils/routes';
 import { isGuest } from 'shared';
 import MonthSelector from './MonthSelector';
 import DayCard from './DayCard';
+import FillerCard from './FillerCard';
 
 const DRCPage = () => {
   const user = useCurrentUser();
@@ -39,8 +40,9 @@ const DRCPage = () => {
   };
 
   const daysThisMonth = Array<number>(paddingDays(displayMonth.getMonth(), displayMonth.getFullYear()))
-    .fill(0)
-    .concat([...Array(daysInMonth(displayMonth.getMonth(), displayMonth.getFullYear())).keys()]);
+    .fill(-1)
+    .concat([...Array(daysInMonth(displayMonth.getMonth(), displayMonth.getFullYear())).keys()])
+    .concat([-1, -1, -1, -1, -1, -1]);
 
   const unconfirmedDRSDropdown = (
     <>
@@ -71,21 +73,20 @@ const DRCPage = () => {
           setDisplayMonth(date);
         }}
       ></MonthSelector>
-      <Grid container>
+      <Grid container rowGap={1}>
         <Grid container>
           {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
             <Grid item xs={12 / 7}>
-              <Typography>{day}</Typography>
+              <Typography align={'center'}>{day}</Typography>
             </Grid>
           ))}
         </Grid>
         <Grid container>
           {daysThisMonth.slice(0, 7).map((day) => {
             const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
-            console.log(myDate);
             return (
               <Grid item xs={12 / 7}>
-                <DayCard myDate={myDate} events={[]}></DayCard>
+                {day < 1 ? <FillerCard /> : <DayCard myDate={myDate} events={[]}></DayCard>}
               </Grid>
             );
           })}
@@ -93,7 +94,6 @@ const DRCPage = () => {
         <Grid container>
           {daysThisMonth.slice(7, 14).map((day) => {
             const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
-            console.log(myDate);
             return (
               <Grid item xs={12 / 7}>
                 <DayCard myDate={myDate} events={[]}></DayCard>
@@ -104,7 +104,6 @@ const DRCPage = () => {
         <Grid container>
           {daysThisMonth.slice(14, 21).map((day) => {
             const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
-            console.log(myDate);
             return (
               <Grid item xs={12 / 7}>
                 <DayCard myDate={myDate} events={[]}></DayCard>
@@ -115,7 +114,6 @@ const DRCPage = () => {
         <Grid container>
           {daysThisMonth.slice(21, 28).map((day) => {
             const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
-            console.log(myDate);
             return (
               <Grid item xs={12 / 7}>
                 <DayCard myDate={myDate} events={[]}></DayCard>
@@ -126,10 +124,9 @@ const DRCPage = () => {
         <Grid container>
           {daysThisMonth.slice(28, 35).map((day) => {
             const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
-            console.log(myDate);
             return (
               <Grid item xs={12 / 7}>
-                <DayCard myDate={myDate} events={[]}></DayCard>
+                {day < 1 ? <FillerCard /> : <DayCard myDate={myDate} events={[]}></DayCard>}
               </Grid>
             );
           })}
