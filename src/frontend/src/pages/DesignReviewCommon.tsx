@@ -7,6 +7,7 @@ export interface DRCModalProps {
   onHide: () => void;
   onSubmit?: () => void;
   usersToAvailabilities: Map<User, number[]>;
+  currentUser?: User;
 }
 
 export interface TimeSlotProps {
