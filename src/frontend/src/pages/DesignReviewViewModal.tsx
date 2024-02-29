@@ -7,7 +7,7 @@ const DRCViewModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
 
   const renderDayHeaders = () => {
     return [
-      <TimeSlot backgroundColor={getBackgroundColor(0)} />,
+      <TimeSlot backgroundColor={getBackgroundColor()} />,
       daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={12} />)
     ];
   };
