@@ -7,7 +7,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
   const header = `Are you availble for the ${title} Design Review`;
 
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
-  
+
   const handleOnClick = (selectedTime: number) => {
     setSelectedTimes((prevTimes) =>
       prevTimes.includes(selectedTime) ? prevTimes.filter((time) => time !== selectedTime) : [...prevTimes, selectedTime]
@@ -27,7 +27,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
         <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
         {daysOfWeek.map((_day, dayIndex) => {
           const index = dayIndex * times.length + timeIndex;
-          const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(1) : getBackgroundColor(0);
+          const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(4) : getBackgroundColor(0);
           return <TimeSlot key={index} backgroundColor={backgroundColor} onClick={() => handleOnClick(index)} />;
         })}
       </Grid>

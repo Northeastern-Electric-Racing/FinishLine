@@ -15,7 +15,16 @@ import PageLayout from '../components/PageLayout';
 import DRCViewModal from './DesignReviewViewModal';
 import DRCEditModal from './DesignReviewEditModal';
 import { useState } from 'react';
-import { batman, superman } from '../../../backend/tests/test-data/users.test-data';
+import {
+  batman,
+  superman,
+  theVisitor,
+  greenlantern,
+  wonderwoman,
+  flash,
+  aquaman
+} from '../../../backend/tests/test-data/users.test-data';
+import { green } from '@mui/material/colors';
 
 const InfoPage: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -28,8 +37,13 @@ const InfoPage: React.FC = () => {
   const handleCloseEditModal = () => setIsEditModalOpen(false);
 
   const usersToAvailabilities = new Map([
-    [superman, [1, 2, 3]],
-    [batman, [3, 6, 7]]
+    [superman, [1, 2, 3, 4, 5, 6, 7]],
+    [batman, [2, 3, 4, 5, 6, 7]],
+    [theVisitor, [3, 4, 5, 6, 7]],
+    [greenlantern, [4, 5, 6, 7]],
+    [wonderwoman, [5, 6, 7]],
+    [flash, [6, 7]],
+    [aquaman, [7]]
   ]);
   return (
     <PageLayout title="Information">

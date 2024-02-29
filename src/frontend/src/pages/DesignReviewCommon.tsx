@@ -36,21 +36,19 @@ const times = [
 const getBackgroundColor = (frequency?: number): string => {
   switch (frequency) {
     case 0:
-      return 'white';
+      return '#D9D9D9';
     case 1:
-      return 'red';
+      return '#E0C0C1';
     case 2:
-      return 'blue';
+      return '#E89A9B';
     case 3:
-      return 'green';
+      return '#E4797A';
     case 4:
-      return 'purple';
+      return '#EF4345';
     case 5:
-      return 'orange';
-    case 6:
-      return 'yellow';
+      return '#D70C0F';
     default:
-      return 'white';
+      return '#D9D9D9';
   }
 };
 
