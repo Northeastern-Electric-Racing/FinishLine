@@ -238,6 +238,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Gayathri Ramakrishnan', color: '#47186e' },
     { name: 'Xander Hoke', color: '#C50D93' },
     { name: 'Claire Hendershot', color: '#008080' },
+    { name: 'Marcus Yi', color: '#FFFFFF' },
     { name: 'Alex Dong', color: '#5d42f5' },
     { name: 'Chris Li', color: '#5d42f5' }
   ];
