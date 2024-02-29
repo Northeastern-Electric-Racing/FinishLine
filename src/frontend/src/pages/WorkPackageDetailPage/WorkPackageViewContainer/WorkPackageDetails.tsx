@@ -16,11 +16,11 @@ import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-//import ChangeRequestsOverview from '../../ChangeRequestsPage/ChangeRequestsOverview';
 import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-//import { useCurrentUser } from '../../../hooks/users.hooks';
+import ErrorPage from '../../ErrorPage';
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
   dependencies: WorkPackage[];
@@ -28,15 +28,33 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
   const theme = useTheme();
-  //const user = useCurrentUser();
-  const changeRequests = useAllChangeRequests();
-  //const currentDate = new Date();
-  const crIsLoading = changeRequests.isLoading;
-  if (crIsLoading && !changeRequests) {
-    return <LoadingIndicator />;
-  }
-  const crUnreviewed: ChangeRequest[] = [];
-  const crApproved: ChangeRequest[] = [];
+  const user = useCurrentUser();
+  const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
+  const currentDate = new Date();
+
+  if (crIsLoading || !changeRequests) return <LoadingIndicator />;
+  if (crIsError) return <ErrorPage message={crError?.message} />;
+
+  const crUnreviewed = changeRequests
+    ? changeRequests
+        .filter(
+          (cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId && cr.wbsNum === workPackage.wbsNum
+        )
+        .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime())
+    : [];
+
+  const crApproved = changeRequests
+    ? changeRequests
+        .filter(
+          (cr: ChangeRequest) =>
+            cr.dateReviewed &&
+            cr.accepted &&
+            cr.submitter.userId === user.userId &&
+            currentDate.getTime() - cr.dateReviewed.getTime() <= 1000 * 60 * 60 * 24 * 5 &&
+            cr.wbsNum === workPackage.wbsNum
+        )
+        .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0))
+    : [];
   const displayCRCards = (crList: ChangeRequest[]) => (
     <Box
       sx={{
@@ -131,14 +149,21 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
         </Grid>
       </Grid>
 
-      {renderChangeRequests('My Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
-      {renderChangeRequests('My Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
+      <Grid
+        sx={{
+          mb: 1,
+          mt: 3
+        }}
+      >
+        {renderChangeRequests('My Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
+        {renderChangeRequests('My Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
+      </Grid>
 
       <Typography
         variant="h5"
         sx={{
           mb: 1,
-          mt: 5
+          mt: 3
         }}
       >
         Blocked By
