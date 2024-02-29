@@ -14,7 +14,9 @@ export interface TimeSlotProps {
   text?: string;
   fontSize?: number;
   backgroundColor?: string;
-  onClick?: () => void;
+  onMouseDown?: (e: any) => void;
+  onMouseEnter?: (e: any) => void;
+  onMouseUp?: (e: any) => void;
 }
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -52,7 +54,7 @@ const getBackgroundColor = (frequency?: number): string => {
   }
 };
 
-const TimeSlot: React.FC<TimeSlotProps> = ({ text, fontSize, backgroundColor, onClick }) => {
+const TimeSlot: React.FC<TimeSlotProps> = ({ text, fontSize, backgroundColor, onMouseDown, onMouseEnter, onMouseUp }) => {
   return (
     <Box
       sx={{
@@ -71,7 +73,10 @@ const TimeSlot: React.FC<TimeSlotProps> = ({ text, fontSize, backgroundColor, on
         flexDirection: 'column',
         justifyContent: 'flex-end'
       }}
-      onClick={onClick}
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+      onMouseUp={onMouseUp}
+
     >
       {text}
     </Box>
