@@ -5,7 +5,7 @@ import { prismaTeam1, sharedTeam1, justiceLeague, primsaTeam2 } from './test-dat
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
 import {
   alfred,
-  aquaman,
+  //aquaman,
   batman,
   flash,
   greenlantern,
