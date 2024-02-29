@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, MenuItem, Select, TextField, setRef } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, Select, TextField } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -72,8 +72,6 @@ const GenerateReceiptsModal = ({
         startDate: data.startDate,
         endDate: data.endDate,
         refundSource: data.refundSource
-
-
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -87,9 +85,9 @@ const GenerateReceiptsModal = ({
     handleSubmit,
     control,
     reset,
-    formState: { errors, isValid },
+    formState: { errors, isValid }
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema)
   });
 
   return (

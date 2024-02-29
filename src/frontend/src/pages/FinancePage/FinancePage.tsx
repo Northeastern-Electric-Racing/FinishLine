@@ -163,7 +163,8 @@ const FinancePage = () => {
         allReimbursementRequests={allReimbursementRequests}
         refundSource="BOTH"
         startDate={new Date()}
-        endDate={new Date()}/>
+        endDate={new Date()}
+      />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>
           <Refunds

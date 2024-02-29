@@ -342,7 +342,7 @@ export const useDownloadPDFOfImages = () => {
         return downloadGoogleImage(fileId);
       });
 
-      console.log(formData.startDate)
+      console.log(formData.startDate);
 
       const blobs = await Promise.all(promises);
       const pdfName = `${formData.startDate.toLocaleDateString()}-${formData.endDate.toLocaleDateString()}.pdf`;
