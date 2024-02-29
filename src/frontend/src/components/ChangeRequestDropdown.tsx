@@ -5,6 +5,7 @@ import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
 import { useCurrentUser } from '../hooks/users.hooks';
 import LoadingIndicator from './LoadingIndicator';
+import NERAutocomplete from './NERAutocomplete';
 
 // Filter and sort change requests to display in the dropdown
 const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: AuthenticatedUser): ChangeRequest[] => {
@@ -46,12 +47,16 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
 
   const approvedChangeRequestOptions = filteredRequests.map((cr) => ({
     label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
-    value: cr.crId
+    id: cr.crId.toString()
   }));
 
-  const renderValues = new Map<number, string>();
-
-  changeRequests.forEach((cr) => renderValues.set(cr.crId, `${cr.crId} - ${wbsPipe(cr.wbsNum)}`));
+  const renderValues = new Map<number, { label: string; id: string }>();
+  changeRequests.forEach((cr) =>
+    renderValues.set(cr.crId, {
+      label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
+      id: cr.crId.toString()
+    })
+  );
 
   return (
     <Box>
@@ -61,33 +66,15 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
           control={control}
           name={name}
           render={({ field: { onChange, value } }) => (
-            <Select
-              id="cr-autocomplete"
-              displayEmpty
-              renderValue={(value) => renderValues.get(Number(value))}
-              value={value}
-              onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
-              size={'small'}
-              placeholder={'Change Request Id'}
-              sx={{ height: 56, width: '100%', textAlign: 'left' }}
-              error={!!errors.crId}
-              MenuProps={{
-                anchorOrigin: {
-                  vertical: 'bottom',
-                  horizontal: 'right'
-                },
-                transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'right'
-                }
-              }}
-            >
-              {approvedChangeRequestOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
+            <NERAutocomplete
+              sx={{ width: '100%' }}
+              id="change-request-id-autocomplete"
+              onChange={(_event, value) => onChange(value?.id)}
+              options={approvedChangeRequestOptions}
+              size="small"
+              placeholder="Change Request ID"
+              value={renderValues.get(Number(value))}
+            />
           )}
         />
         <FormHelperText error>{errors.crId?.message}</FormHelperText>
