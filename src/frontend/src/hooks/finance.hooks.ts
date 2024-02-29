@@ -334,18 +334,25 @@ export const useDenyReimbursementRequest = (id: string) => {
  *
  * @param fileIds The google file ids to fetch the images for
  */
-export const useDownloadPDFOfImages = (startDate: Date, endDate: Date, refundSource: String) => {
-  return useMutation(['reimbursement-requests'], async (formData: { fileIds: string[] }) => {
-    const promises = formData.fileIds.map((fileId) => {
-      return downloadGoogleImage(fileId);
-    });
-    const blobs = await Promise.all(promises);
-    const pdfName = `${startDate.toLocaleDateString()}-${endDate.toLocaleDateString()}.pdf`;
+export const useDownloadPDFOfImages = () => {
+  return useMutation(
+    ['reimbursement-requests'],
+    async (formData: { fileIds: string[]; startDate: Date; endDate: Date; refundSource: string }) => {
+      const promises = formData.fileIds.map((fileId) => {
+        return downloadGoogleImage(fileId);
+      });
 
-    const pdfFileName = refundSource !== 'BOTH' ? `receipts-${refundSource}-${pdfName}` : `receipts-${pdfName}`;
+      console.log(formData.startDate)
 
-    await downloadBlobsToPdf(blobs, pdfFileName);
-  });
+      const blobs = await Promise.all(promises);
+      const pdfName = `${formData.startDate.toLocaleDateString()}-${formData.endDate.toLocaleDateString()}.pdf`;
+
+      const pdfFileName =
+        formData.refundSource !== 'BOTH' ? `receipts-${formData.refundSource}-${pdfName}` : `receipts-${pdfName}`;
+
+      await downloadBlobsToPdf(blobs, pdfFileName);
+    }
+  );
 };
 
 /**

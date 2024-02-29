@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, MenuItem, Select, TextField } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, Select, TextField, setRef } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -8,6 +8,7 @@ import * as yup from 'yup';
 import { useDownloadPDFOfImages } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { ReimbursementRequest } from 'shared';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
@@ -25,36 +26,25 @@ interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   allReimbursementRequests?: ReimbursementRequest[];
-  setRefundSource: (val: string) => void;
   refundSource: string;
   startDate: Date;
   endDate: Date;
-  setStartDate: (val: Date) => void;
-  setEndDate: (val: Date) => void;
-  endDatePickerOpen: boolean;
-  startDatePickerOpen: boolean;
-  setEndDatePickerOpen: (val: boolean) => void;
-  setStartDatePickerOpen: (val: boolean) => void;
 }
 
 const GenerateReceiptsModal = ({
   open,
   setOpen,
   allReimbursementRequests,
-  refundSource,
-  setRefundSource,
   startDate,
-  setStartDate,
   endDate,
-  setEndDate,
-  setEndDatePickerOpen,
-  setStartDatePickerOpen,
-  startDatePickerOpen,
-  endDatePickerOpen
+  refundSource
 }: GenerateReceiptsModalProps) => {
   const toast = useToast();
 
-  const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate, refundSource);
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
+
+  const { mutateAsync, isLoading } = useDownloadPDFOfImages();
 
   const refundSourceOptions = ['BUDGET', 'CASH', 'BOTH'];
 
@@ -78,7 +68,12 @@ const GenerateReceiptsModal = ({
 
     try {
       await mutateAsync({
-        fileIds: receipts.map((receipt) => receipt.googleFileId)
+        fileIds: receipts.map((receipt) => receipt.googleFileId),
+        startDate: data.startDate,
+        endDate: data.endDate,
+        refundSource: data.refundSource
+
+
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -92,9 +87,9 @@ const GenerateReceiptsModal = ({
     handleSubmit,
     control,
     reset,
-    formState: { errors, isValid }
+    formState: { errors, isValid },
   } = useForm({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
 
   return (
@@ -125,7 +120,6 @@ const GenerateReceiptsModal = ({
                   onOpen={() => setStartDatePickerOpen(true)}
                   onChange={(newValue) => {
                     const newDate = newValue ?? new Date();
-                    setStartDate(newDate);
                     onChange(newDate);
                   }}
                   PopperProps={{
@@ -157,7 +151,6 @@ const GenerateReceiptsModal = ({
                   onOpen={() => setEndDatePickerOpen(true)}
                   onChange={(newValue) => {
                     const newDate = newValue ?? new Date();
-                    setEndDate(newDate);
                     onChange(newDate);
                   }}
                   PopperProps={{
@@ -184,10 +177,8 @@ const GenerateReceiptsModal = ({
               render={({ field: { onChange, value } }) => (
                 <Select
                   value={value}
-                  defaultValue={refundSourceOptions[2]}
                   onChange={(event) => {
                     const newRefundSource = event.target.value;
-                    setRefundSource(newRefundSource);
                     onChange(newRefundSource);
                   }}
                 >
