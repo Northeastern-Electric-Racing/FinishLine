@@ -12,17 +12,17 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
   name,
   onDelete
 }: ManufacturerDeleteButtonProps) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDeleteSubmit = async () => {
     onDelete(name);
-    setShowDeleteDialog(false);
+    setShowDeleteModal(false);
   };
 
   return (
     <>
       <IconButton
-        onClick={() => setShowDeleteDialog(true)}
+        onClick={() => setShowDeleteModal(true)}
         sx={{
           color: 'Red',
           width: 'auto',
@@ -46,8 +46,8 @@ const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
         </Box>
       </IconButton>
       <NERModal
-        open={showDeleteDialog}
-        onHide={() => setShowDeleteDialog(false)}
+        open={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
         title="Warning!"
         cancelText="Cancel"
         submitText="Delete"

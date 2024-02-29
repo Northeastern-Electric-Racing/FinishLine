@@ -56,11 +56,7 @@ const ManufacturerTable: React.FC = () => {
         <Grid container justifyContent="space-between">
           <Grid sx={{ align: 'left' }}>{manufacturer.name}</Grid>
           <Grid>
-            {manufacturerList.length > 1 ? (
-              <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
-            ) : (
-              ''
-            )}
+            <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
           </Grid>
         </Grid>
       </TableCell>
