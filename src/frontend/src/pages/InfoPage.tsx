@@ -24,7 +24,6 @@ import {
   flash,
   aquaman
 } from '../../../backend/tests/test-data/users.test-data';
-import { green } from '@mui/material/colors';
 
 const InfoPage: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
