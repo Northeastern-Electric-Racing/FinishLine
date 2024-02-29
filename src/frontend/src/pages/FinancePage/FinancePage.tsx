@@ -161,9 +161,6 @@ const FinancePage = () => {
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}
         allReimbursementRequests={allReimbursementRequests}
-        refundSource="BOTH"
-        startDate={new Date()}
-        endDate={new Date()}
       />
       <Grid container>
         <Grid item xs={12} sm={12} md={4}>

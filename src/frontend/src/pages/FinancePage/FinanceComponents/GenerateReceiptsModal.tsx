@@ -26,19 +26,9 @@ interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   allReimbursementRequests?: ReimbursementRequest[];
-  refundSource: string;
-  startDate: Date;
-  endDate: Date;
 }
 
-const GenerateReceiptsModal = ({
-  open,
-  setOpen,
-  allReimbursementRequests,
-  startDate,
-  endDate,
-  refundSource
-}: GenerateReceiptsModalProps) => {
+const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: GenerateReceiptsModalProps) => {
   const toast = useToast();
 
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
@@ -175,6 +165,7 @@ const GenerateReceiptsModal = ({
               render={({ field: { onChange, value } }) => (
                 <Select
                   value={value}
+                  defaultValue={refundSourceOptions[2]}
                   onChange={(event) => {
                     const newRefundSource = event.target.value;
                     onChange(newRefundSource);
