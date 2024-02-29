@@ -14,7 +14,7 @@ CREATE TABLE "Work_Package_Template" (
     "templateName" TEXT NOT NULL,
     "templateNotes" TEXT NOT NULL,
     "workPackageName" TEXT,
-    "stage" "Work_Package_Stage" NOT NULL,
+    "stage" "Work_Package_Stage",
     "duration" INTEGER,
     "expectedActivities" TEXT[],
     "deliverables" TEXT[],

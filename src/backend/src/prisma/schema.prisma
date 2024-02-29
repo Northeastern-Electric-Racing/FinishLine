@@ -649,8 +649,8 @@ model Blocked_By_Info {
 
 model Work_Package_Template {
   workPackageTemplateId String              @id @default(uuid())
-  templateName          String?
-  templateNotes         String?
+  templateName          String
+  templateNotes         String
   workPackageName       String?
   stage                 Work_Package_Stage?
   duration              Int?
