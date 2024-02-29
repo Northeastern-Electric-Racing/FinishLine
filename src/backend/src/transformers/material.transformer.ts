@@ -48,7 +48,7 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<typeof m
     unitName: material.unitName ?? undefined,
     quantityUnit: material.quantityUnit ?? undefined,
     materialType: { ...material.materialType, dateDeleted: material.materialType.dateDeleted ?? undefined },
-    manufacturer: { ...material.manufacturer, dateDeleted: material.manufacturer.dateDeleted ?? undefined },
+    manufacturer: material.manufacturer,
     notes: material.notes ?? undefined
   };
 };
@@ -56,6 +56,7 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<typeof m
 export const materialPreviewTransformer = (material: Prisma.MaterialGetPayload<{}>): MaterialPreview => {
   return {
     ...material,
+    notes: material.notes ?? undefined,
     userDeletedId: material.userDeletedId ?? undefined,
     dateDeleted: material.dateDeleted ?? undefined,
     assemblyId: material.assemblyId ?? undefined,

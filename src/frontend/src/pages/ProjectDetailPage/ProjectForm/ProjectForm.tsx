@@ -12,7 +12,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import LinksEditView from '../../../components/Link/LinksEditView';
+import LinksEditView from './LinksEditView';
 import PageLayout from '../../../components/PageLayout';
 import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
