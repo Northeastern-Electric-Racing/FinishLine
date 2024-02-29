@@ -11,7 +11,7 @@ export default class DesignReviewController {
             const user: User = await getCurrentUser(res);
             const {
                 dateScheduled,
-                teamType,
+                teamTypeName,
                 requiredMembers,
                 optionalMembers,
                 location,
@@ -26,7 +26,7 @@ export default class DesignReviewController {
             const createdDesignReview: Design_Review = await DesignReviewService.createDesignReview(
                 user,
                 dateScheduled,
-                teamType,
+                teamTypeName,
                 requiredMembers,
                 optionalMembers,
                 location,

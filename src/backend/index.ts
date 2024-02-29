@@ -53,7 +53,7 @@ app.use('/change-requests', changeRequestsRouter);
 app.use('/description-bullets', descriptionBulletsRouter);
 app.use('/tasks', tasksRouter);
 app.use('/reimbursement-requests', reimbursementRequestsRouter);
-app.use('/design_reviews', designReviewRouter);
+app.use('/design-reviews', designReviewRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });

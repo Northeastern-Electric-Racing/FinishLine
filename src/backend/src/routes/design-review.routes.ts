@@ -9,7 +9,7 @@ const designReviewRouter = express.Router();
 designReviewRouter.post(
     '/create',
     nonEmptyString(body('dateScheduled')),
-    body('teamType*'),
+    nonEmptyString(body('teamTypeId')),
     body('requiredMembers').isArray(),
     body('optionalMembers').isArray(),
     nonEmptyString(body('location').optional()),
