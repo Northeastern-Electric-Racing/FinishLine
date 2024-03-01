@@ -906,7 +906,7 @@ describe('Projects', () => {
 
   describe('Deleting material type', () => {
     test('Delete Material Type does not work if user is not an admin or head', async () => {
-      await expect(ProjectsService.deleteMaterialType('NERSoftwareTools', theVisitor)).rejects.toThrow(
+      await expect(ProjectsService.deleteMaterialType(toolMaterial.name, theVisitor)).rejects.toThrow(
         new AccessDeniedException('Only an admin or head can delete a material type')
       );
     });
