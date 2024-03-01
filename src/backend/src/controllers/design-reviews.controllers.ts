@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import {} from 'shared';
-import DesignReviewService from '../services/design-review.services';
+import DesignReviewService from '../services/design-reviews.services';
 import { getCurrentUser } from '../utils/auth.utils';
 
 export default class DesignReviewController {
   // Edit a work package to the given specifications
   static async editDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
+      console.log('hello');
       const {
         dateScheduled,
         teamType,

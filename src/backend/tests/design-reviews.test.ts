@@ -92,7 +92,7 @@ describe('Design Reviews', () => {
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
           prismaDesignReview2.teamTypeId,
-          [68],
+          [1200],
           [],
           prismaDesignReview2.isOnline,
           prismaDesignReview2.isInPerson,
@@ -281,5 +281,35 @@ describe('Design Reviews', () => {
       // unless I test everything?
       expect(prismaDesignReview2.isOnline).toEqual(true);
     });
+  });
+
+  test('Edit Design Review succeeds when user is lead or above', async () => {
+    vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
+    vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview2);
+
+    await DesignReviewService.editDesignReview(
+      aquaman,
+      prismaDesignReview2.designReviewId,
+      prismaDesignReview2.dateScheduled,
+      prismaDesignReview2.teamTypeId,
+      [1],
+      [6],
+      prismaDesignReview2.isOnline,
+      prismaDesignReview2.isInPerson,
+      prismaDesignReview2.zoomLink,
+      prismaDesignReview2.location,
+      prismaDesignReview2.docTemplateLink,
+      prismaDesignReview2.status,
+      [1],
+      [],
+      [],
+      prismaDesignReview2.meetingTimes
+    );
+
+    expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.design_Review.update).toHaveBeenCalledTimes(1);
+    // kind bad way to test, but idk better for editting when there is no field for editedDate
+    // unless I test everything?
+    expect(prismaDesignReview2).toEqual(true);
   });
 });

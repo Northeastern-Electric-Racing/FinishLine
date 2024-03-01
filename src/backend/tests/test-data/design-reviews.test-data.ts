@@ -5,7 +5,7 @@ import {
   TeamType
 } from '@prisma/client';
 import { batman, wonderwoman } from './users.test-data';
-import designReviewQueryArgs from '../../src/prisma-query-args/design-review.query-args';
+import designReviewQueryArgs from '../../src/prisma-query-args/design-reviews.query-args';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 
 export const teamType1: TeamType = {

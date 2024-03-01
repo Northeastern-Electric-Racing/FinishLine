@@ -86,8 +86,6 @@ export default class DesignReviewService {
       where: { designReviewId }
     });
 
-    // TODO: add checks for input data
-
     if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
     if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
 
