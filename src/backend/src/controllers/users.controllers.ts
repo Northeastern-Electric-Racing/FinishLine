@@ -151,7 +151,7 @@ export default class UsersController {
       const { personalGmail, personalZoomLink, availability } = req.body;
       const user = await getCurrentUser(res);
 
-      await UsersService.setUserSechuleSettings(user, personalGmail, personalZoomLink, availability);
+      await UsersService.setUserScheduleSettings(user, personalGmail, personalZoomLink, availability);
 
       res.status(200).json({ message: `Successfully updated schedule settings for user ${user.userId}.` });
     } catch (error: unknown) {

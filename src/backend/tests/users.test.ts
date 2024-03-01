@@ -167,5 +167,13 @@ describe('Users', () => {
       expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
       expect(res).toStrictEqual(batmanUserScheduleSettings);
     });
+
+    test('setUserScheduleSettings works successfully', async () => {
+      vi.spyOn(prisma.schedule_Settings, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.schedule_Settings, 'upsert').mockResolvedValue(batmanScheduleSettings);
+      const res = await UsersService.setUserScheduleSettings(batman, 'batman@gmail.com', 'https://zoom.com', [1, 2]);
+
+      expect(res).toBe(batmanUserScheduleSettings.drScheduleSettingsId);
+    });
   });
 });
