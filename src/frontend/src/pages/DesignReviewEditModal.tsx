@@ -11,24 +11,26 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
   const [itemSelected, setItemSelected] = useState(false);
 
   const handleMouseDown = (event: any, selectedTime: number) => {
-    const isTimeAlreadySelected = selectedTimes.includes(selectedTime);
-    setItemSelected(!isTimeAlreadySelected);
+    event.preventDefault();
+    const isItemSelected = selectedTimes.includes(selectedTime);
+    setItemSelected(isItemSelected);
+    setSelectedTimes(
+      isItemSelected ? selectedTimes.filter((time) => time !== selectedTime) : [...selectedTimes, selectedTime]
+    );
     setIsDragging(true);
-    toggleTimeSlot(selectedTime, !isTimeAlreadySelected);
   };
 
   const handleMouseEnter = (event: any, selectedTime: number) => {
     if (!isDragging) return;
-    toggleTimeSlot(selectedTime, itemSelected);
-    event.preventDefault();
+    toggleTimeSlot(selectedTime);
   };
 
-  const toggleTimeSlot = (selectedTime: number, addTime: boolean) => {
+  const toggleTimeSlot = (selectedTime: number) => {
     setSelectedTimes((prevTimes) => {
-      if (addTime) {
-        return prevTimes.includes(selectedTime) ? prevTimes : [...prevTimes, selectedTime];
-      } else {
+      if (itemSelected) {
         return prevTimes.filter((time) => time !== selectedTime);
+      } else {
+        return prevTimes.includes(selectedTime) ? prevTimes : [...prevTimes, selectedTime];
       }
     });
   };
@@ -52,7 +54,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
         <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
         {daysOfWeek.map((_day, dayIndex) => {
           const index = dayIndex * times.length + timeIndex;
-          const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(4) : getBackgroundColor(0);
+          const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(3) : getBackgroundColor(0);
           return (
             <TimeSlot
               key={index}
