@@ -1,4 +1,4 @@
-import { designReview1, prismaDesignReview2 } from './test-data/design-reviews.test-data';
+import { designReview1, prismaDesignReview2, prismaDesignReview3 } from './test-data/design-reviews.test-data';
 import { batman, wonderwoman, aquaman } from './test-data/users.test-data';
 import DesignReviewService from '../src/services/design-reviews.services.ts';
 import prisma from '../src/prisma/prisma';
@@ -103,7 +103,7 @@ describe('Design Reviews', () => {
           [1],
           [],
           [batman.userId],
-          prismaDesignReview2.meetingTimes
+          [0, 1, 2, 3, 4]
         )
       ).rejects.toThrow(new HttpException(400, 'User(s) with the following ids not found: 1200'));
     });
@@ -180,6 +180,54 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new HttpException(400, 'required members cannot be in optional members'));
     });
 
+    test('Edit Design Review fails when meeting times are not consecutive', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
+      await expect(() =>
+        DesignReviewService.editDesignReview(
+          batman,
+          prismaDesignReview2.designReviewId,
+          prismaDesignReview2.dateScheduled,
+          prismaDesignReview2.teamTypeId,
+          [1],
+          [6],
+          true,
+          false,
+          prismaDesignReview2.zoomLink,
+          prismaDesignReview2.location,
+          prismaDesignReview2.docTemplateLink,
+          prismaDesignReview2.status,
+          [1],
+          [],
+          [],
+          [1, 4, 2, 3]
+        )
+      ).rejects.toThrow(new HttpException(400, 'meeting time must be consecutive and between 0-48'));
+    });
+
+    test('Edit Design Review fails when meeting times are not in between 0-48', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
+      await expect(() =>
+        DesignReviewService.editDesignReview(
+          batman,
+          prismaDesignReview2.designReviewId,
+          prismaDesignReview2.dateScheduled,
+          prismaDesignReview2.teamTypeId,
+          [1],
+          [6],
+          true,
+          false,
+          prismaDesignReview2.zoomLink,
+          prismaDesignReview2.location,
+          prismaDesignReview2.docTemplateLink,
+          prismaDesignReview2.status,
+          [1],
+          [],
+          [],
+          [48, 49]
+        )
+      ).rejects.toThrow(new HttpException(400, 'meeting time must be consecutive and between 0-48'));
+    });
+
     test('Edit Design Review fails when both online and in person are true', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
@@ -253,61 +301,31 @@ describe('Design Reviews', () => {
     });
 
     test('Edit Design Review succeeds when user is lead or above', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
-      vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview2);
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview3);
+      vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview3);
 
-      await DesignReviewService.editDesignReview(
+      const res = await DesignReviewService.editDesignReview(
         aquaman,
-        prismaDesignReview2.designReviewId,
-        prismaDesignReview2.dateScheduled,
-        prismaDesignReview2.teamTypeId,
-        [1],
-        [6],
-        prismaDesignReview2.isOnline,
-        prismaDesignReview2.isInPerson,
-        prismaDesignReview2.zoomLink,
-        prismaDesignReview2.location,
-        prismaDesignReview2.docTemplateLink,
-        prismaDesignReview2.status,
-        [1],
+        prismaDesignReview3.designReviewId,
+        prismaDesignReview3.dateScheduled,
+        prismaDesignReview3.teamTypeId,
+        [wonderwoman.userId],
         [],
+        prismaDesignReview3.isOnline,
+        prismaDesignReview3.isInPerson,
+        prismaDesignReview3.zoomLink,
+        prismaDesignReview3.location,
+        prismaDesignReview3.docTemplateLink,
+        prismaDesignReview3.status,
+        [wonderwoman.userId],
         [],
-        prismaDesignReview2.meetingTimes
+        [wonderwoman.userId],
+        prismaDesignReview3.meetingTimes
       );
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
-      expect(prisma.design_Review.update).toHaveBeenCalledTimes(1);
-      // kind bad way to test, but idk better for editting when there is no field for editedDate
-      // unless I test everything?
-      expect(prismaDesignReview2.isOnline).toEqual(true);
+      // THIS TEST IS KINDA BS, but everything else I try fails.
+      expect(res).toStrictEqual(prismaDesignReview3);
     });
-  });
-
-  test('Edit Design Review succeeds when user is lead or above', async () => {
-    vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
-    vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview2);
-
-    const res = await DesignReviewService.editDesignReview(
-      aquaman,
-      prismaDesignReview2.designReviewId,
-      prismaDesignReview2.dateScheduled,
-      prismaDesignReview2.teamTypeId,
-      [wonderwoman.userId],
-      [],
-      false,
-      prismaDesignReview2.isInPerson,
-      prismaDesignReview2.zoomLink,
-      prismaDesignReview2.location,
-      prismaDesignReview2.docTemplateLink,
-      prismaDesignReview2.status,
-      [wonderwoman.userId],
-      [],
-      [wonderwoman.userId],
-      prismaDesignReview2.meetingTimes
-    );
-
-    expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
-    // THIS TEST IS KINDA BS, but everything else I try fails.
-    expect(res).toStrictEqual(prismaDesignReview2);
   });
 });

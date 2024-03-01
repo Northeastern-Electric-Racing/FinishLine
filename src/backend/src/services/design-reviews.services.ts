@@ -1,8 +1,9 @@
-import { Design_Review, Design_Review_Status, TeamType, User, WBS_Element } from '@prisma/client';
+import { Design_Review, Design_Review_Status, User } from '@prisma/client';
 import { isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import { NotFoundException, AccessDeniedMemberException, DeletedException, HttpException } from '../utils/errors.utils';
 import { getUsers, getUserPrismaIds } from '../utils/users.utils';
+import { validateMeetingTimes } from '../utils/design-reviews.utils';
 export default class DesignReviewService {
   /**
    * Edits a Design_Review in the database
@@ -74,6 +75,9 @@ export default class DesignReviewService {
     if (isInPerson && location == null) {
       throw new HttpException(400, 'location is required for in person design reviews');
     }
+
+    // throws if meeting times are not: consecutive and between 0-48
+    meetingTimes = validateMeetingTimes(meetingTimes);
 
     // throw if a user isn't found, then build prisma queries for connecting userIds
     const requiredMembersUsers = await getUsers(requiredMembers);

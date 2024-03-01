@@ -57,3 +57,30 @@ export const prismaDesignReview2: Prisma.Design_ReviewGetPayload<typeof designRe
   wbsElement: prismaWbsElement1,
   teamType: teamType1
 };
+
+export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs> = {
+  designReviewId: '2',
+  dateScheduled: new Date('2024-03-25'),
+  meetingTimes: [0, 1, 2, 3, 4],
+  dateCreated: new Date('2024-03-10'),
+  userCreatedId: wonderwoman.userId,
+  status: PrismaDesignReviewStatus.CONFIRMED,
+  teamTypeId: '1',
+  location: null,
+  isOnline: true,
+  isInPerson: false,
+  zoomLink: 'https://www.zoom.com',
+  dateDeleted: null,
+  userDeletedId: null,
+  docTemplateLink: null,
+  wbsElementId: 1,
+  userCreated: wonderwoman,
+  requiredMembers: [wonderwoman],
+  optionalMembers: [],
+  confirmedMembers: [wonderwoman],
+  deniedMembers: [],
+  attendees: [wonderwoman],
+  userDeleted: null,
+  wbsElement: prismaWbsElement1,
+  teamType: teamType1
+};
