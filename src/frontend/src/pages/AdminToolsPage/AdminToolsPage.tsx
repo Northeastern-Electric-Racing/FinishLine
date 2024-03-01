@@ -18,27 +18,7 @@ import { routes } from '../../utils/routes';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
-
   const [tabIndex, setTabIndex] = useState<number>(0);
-
-  /*
-  User Management Tab
-  {isHead(currentUser.role) && <AdminToolsUserManagement />}
-  {isAdmin(currentUser.role) && <TeamsTools />}
-
-  Project Configuration Tab
-  {isAdmin(currentUser.role) && <AdminToolsBOMConfig />}
-  {isHead(currentUser.role) && <AdminToolsProjectsConfig />}
-
-
-
-  Finance Configuration Tab
-  {(isAdmin(currentUser.role) || currentUser.isAtLeastFinanceLead) && <AdminToolsFinanceConfig />}
-
-
-  Miscellaneous Tab
-  {isAdmin(currentUser.role) && <AdminToolsSlackUpcomingDeadlines />}
-  */
 
   const isUserHead = isHead(currentUser.role);
   const isUserAdmin = isAdmin(currentUser.role);
@@ -58,17 +38,13 @@ const AdminToolsPage: React.FC = () => {
   if (isUserAdmin) {
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
-  //   { tabUrlValue: 'user-management', tabName: 'User Management', roles: ['head', 'admin'] },
-  //   { tabUrlValue: 'project-configuration', tabName: 'Project Configuration', roles: ['head', 'admin'] },
-  //   { tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration', roles: ['financeLead', 'admin'] },
-  //   { tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous', roles: ['admin'] }
 
   const showUserManagement = () => {
-    return isUserAdmin ? <TeamsTools /> : <AdminToolsUserManagement />;
+    return isUserAdmin ? <TeamsTools /> : isUserHead && <AdminToolsUserManagement />;
   };
 
   const showProjectConfiguration = () => {
-    return isUserAdmin ? <AdminToolsBOMConfig /> : <AdminToolsProjectsConfig />;
+    return isUserAdmin ? <AdminToolsBOMConfig /> : isUserHead && <AdminToolsProjectsConfig />;
   };
 
   return (
