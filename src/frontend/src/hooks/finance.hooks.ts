@@ -56,6 +56,13 @@ export interface EditReimbursementRequestPayload extends CreateReimbursementRequ
   receiptPictures: ReimbursementReceiptCreateArgs[];
 }
 
+export interface DownloadReceiptsFormInput {
+  fileIds: string[];
+  startDate: Date;
+  endDate: Date;
+  refundSource: string;
+}
+
 export interface ExpenseTypePayload {
   code: number;
   name: string;
@@ -335,22 +342,21 @@ export const useDenyReimbursementRequest = (id: string) => {
  * @param fileIds The google file ids to fetch the images for
  */
 export const useDownloadPDFOfImages = () => {
-  return useMutation(
-    ['reimbursement-requests'],
-    async (formData: { fileIds: string[]; startDate: Date; endDate: Date; refundSource: string }) => {
-      const promises = formData.fileIds.map((fileId) => {
-        return downloadGoogleImage(fileId);
-      });
+  return useMutation(['reimbursement-requests'], async (formData: { requestData: DownloadReceiptsFormInput }) => {
+    const promises = formData.requestData.fileIds.map((fileId) => {
+      return downloadGoogleImage(fileId);
+    });
 
-      const blobs = await Promise.all(promises);
-      const pdfName = `${formData.startDate.toLocaleDateString()}-${formData.endDate.toLocaleDateString()}.pdf`;
+    const blobs = await Promise.all(promises);
+    const pdfName = `${formData.requestData.startDate.toLocaleDateString()}-${formData.requestData.endDate.toLocaleDateString()}.pdf`;
 
-      const pdfFileName =
-        formData.refundSource !== 'BOTH' ? `receipts-${formData.refundSource}-${pdfName}` : `receipts-${pdfName}`;
+    const pdfFileName =
+      formData.requestData.refundSource !== 'BOTH'
+        ? `receipts-${formData.requestData.refundSource}-${pdfName}`
+        : `receipts-${pdfName}`;
 
-      await downloadBlobsToPdf(blobs, pdfFileName);
-    }
-  );
+    await downloadBlobsToPdf(blobs, pdfFileName);
+  });
 };
 
 /**

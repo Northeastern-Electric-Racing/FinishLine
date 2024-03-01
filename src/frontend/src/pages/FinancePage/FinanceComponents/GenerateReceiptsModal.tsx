@@ -58,10 +58,12 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
 
     try {
       await mutateAsync({
-        fileIds: receipts.map((receipt) => receipt.googleFileId),
-        startDate: data.startDate,
-        endDate: data.endDate,
-        refundSource: data.refundSource
+        requestData: {
+          fileIds: receipts.map((receipt) => receipt.googleFileId),
+          startDate: data.startDate,
+          endDate: data.endDate,
+          refundSource: data.refundSource
+        }
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -77,7 +79,12 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
     reset,
     formState: { errors, isValid }
   } = useForm({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      startDate: new Date(),
+      endDate: new Date(),
+      refundSource: refundSourceOptions[2]
+    }
   });
 
   return (
@@ -107,8 +114,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                   onClose={() => setStartDatePickerOpen(false)}
                   onOpen={() => setStartDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    const newDate = newValue ?? new Date();
-                    onChange(newDate);
+                    onChange(newValue ?? new Date());
                   }}
                   PopperProps={{
                     placement: 'right'
@@ -138,8 +144,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                   onClose={() => setEndDatePickerOpen(false)}
                   onOpen={() => setEndDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    const newDate = newValue ?? new Date();
-                    onChange(newDate);
+                    onChange(newValue ?? new Date());
                   }}
                   PopperProps={{
                     placement: 'right'
@@ -163,14 +168,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
               name="refundSource"
               control={control}
               render={({ field: { onChange, value } }) => (
-                <Select
-                  value={value}
-                  defaultValue={refundSourceOptions[2]}
-                  onChange={(event) => {
-                    const newRefundSource = event.target.value;
-                    onChange(newRefundSource);
-                  }}
-                >
+                <Select value={value} onChange={(event) => onChange(event.target.value)}>
                   {refundSourceOptions.map((status) => (
                     <MenuItem key={status} value={status}>
                       {status}
