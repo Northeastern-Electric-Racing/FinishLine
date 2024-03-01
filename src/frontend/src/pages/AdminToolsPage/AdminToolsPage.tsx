@@ -46,16 +46,22 @@ const AdminToolsPage: React.FC = () => {
 
   const defaultTab = isUserAdmin || isUserHead ? 'user-management' : 'finance-configuration';
 
-  const tabs = [
-    { tabUrlValue: 'user-management', tabName: 'User Management', roles: ['head', 'admin'] },
-    { tabUrlValue: 'project-configuration', tabName: 'Project Configuration', roles: ['head', 'admin'] },
-    { tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration', roles: ['financeLead', 'admin'] },
-    { tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous', roles: ['admin'] }
-  ];
+  const tabs = [];
 
-  const userRole = isUserAdmin ? 'admin' : isUserHead ? 'head' : isUserFinanceLead ? 'financeLead' : 'user';
-
-  const filteredTabs = tabs.filter((tab) => tab.roles.includes(userRole));
+  if (isUserHead || isUserAdmin) {
+    tabs.push({ tabUrlValue: 'user-management', tabName: 'User Management' });
+    tabs.push({ tabUrlValue: 'project-configuration', tabName: 'Project Configuration' });
+  }
+  if (isUserAdmin || isUserFinanceLead) {
+    tabs.push({ tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration' });
+  }
+  if (isUserAdmin) {
+    tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
+  }
+  //   { tabUrlValue: 'user-management', tabName: 'User Management', roles: ['head', 'admin'] },
+  //   { tabUrlValue: 'project-configuration', tabName: 'Project Configuration', roles: ['head', 'admin'] },
+  //   { tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration', roles: ['financeLead', 'admin'] },
+  //   { tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous', roles: ['admin'] }
 
   const showUserManagement = () => {
     return isUserAdmin ? <TeamsTools /> : <AdminToolsUserManagement />;
@@ -71,7 +77,7 @@ const AdminToolsPage: React.FC = () => {
       tabs={
         <NERTabs
           setTab={setTabIndex}
-          tabsLabels={filteredTabs}
+          tabsLabels={tabs}
           baseUrl={routes.ADMIN_TOOLS}
           defaultTab={defaultTab}
           id="admin-tabs"
