@@ -7,7 +7,6 @@ export default class DesignReviewController {
   // Edit a work package to the given specifications
   static async editDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log('hello');
       const {
         dateScheduled,
         teamType,

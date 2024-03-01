@@ -76,11 +76,17 @@ export default class DesignReviewService {
     }
 
     // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getUserPrismaIds(await getUsers(requiredMembers));
-    const updatedOptionalMembers = getUserPrismaIds(await getUsers(optionalMembers));
-    const updatedConfirmedMembers = getUserPrismaIds(await getUsers(confirmedMembers));
-    const updatedDeniedMembers = getUserPrismaIds(await getUsers(deniedMembers));
-    const updatedAttendees = getUserPrismaIds(await getUsers(attendees));
+    const requiredMembersUsers = await getUsers(requiredMembers);
+    const optionalMembersUsers = await getUsers(optionalMembers);
+    const confirmedMembersUsers = await getUsers(confirmedMembers);
+    const deniedMembersUsers = await getUsers(deniedMembers);
+    const attendeesUsers = await getUsers(attendees);
+
+    const updatedRequiredMembers = getUserPrismaIds(requiredMembersUsers);
+    const updatedOptionalMembers = getUserPrismaIds(optionalMembersUsers);
+    const updatedConfirmedMembers = getUserPrismaIds(confirmedMembersUsers);
+    const updatedDeniedMembers = getUserPrismaIds(deniedMembersUsers);
+    const updatedAttendees = getUserPrismaIds(attendeesUsers);
 
     const originaldesignReview = await prisma.design_Review.findUnique({
       where: { designReviewId }
