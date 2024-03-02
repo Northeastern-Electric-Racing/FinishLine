@@ -4,10 +4,10 @@ import { getCurrentUser } from '../utils/auth.utils';
 import DesignReviewService from '../services/design-review.services';
 
 export default class DesignReviewController {
-  static async getAllChangeRequests(_req: Request, res: Response, next: NextFunction) {
+  static async getAllDesignReviews(_req: Request, res: Response, next: NextFunction) {
     try {
-      const changeRequests = await DesignReviewService.getAllDesignReviews();
-      return res.status(200).json(changeRequests);
+      const designReviews = await DesignReviewService.getAllDesignReviews();
+      return res.status(200).json(designReviews);
     } catch (error: unknown) {
       next(error);
     }

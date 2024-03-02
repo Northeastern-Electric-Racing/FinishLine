@@ -11,11 +11,11 @@ export default class DesignReviewService {
    * @returns All of the design reviews
    */
   static async getAllDesignReviews(): Promise<DesignReview[]> {
-    const designReview = await prisma.design_Review.findMany({
+    const designReviews = await prisma.design_Review.findMany({
       where: { dateDeleted: null },
       ...designReviewQueryArgs
     });
-    return designReview.map(designReviewTransformer);
+    return designReviews.map(designReviewTransformer);
   }
 
   /**
