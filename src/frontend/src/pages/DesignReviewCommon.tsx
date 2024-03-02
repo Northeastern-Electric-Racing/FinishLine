@@ -37,9 +37,8 @@ const times = [
 ];
 
 const getBackgroundColor = (frequency: number = 0): string => {
-
   if (frequency > 5) {
-    return '#D70C0F'
+    return '#D70C0F';
   }
 
   switch (frequency) {
@@ -60,7 +59,15 @@ const getBackgroundColor = (frequency: number = 0): string => {
   }
 };
 
-const TimeSlot: React.FC<TimeSlotProps> = ({ text, fontSize, backgroundColor, onMouseDown, onMouseEnter, onMouseUp, onMouseOver }) => {
+const TimeSlot: React.FC<TimeSlotProps> = ({
+  text,
+  fontSize,
+  backgroundColor,
+  onMouseDown,
+  onMouseEnter,
+  onMouseUp,
+  onMouseOver
+}) => {
   return (
     <Box
       sx={{
