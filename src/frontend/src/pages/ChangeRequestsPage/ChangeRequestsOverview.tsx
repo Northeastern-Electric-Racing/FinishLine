@@ -3,19 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead, ChangeRequest, Project, WorkPackage, equalsWbsNumber } from 'shared';
+import { isLeadership, isHead, ChangeRequest, ChangeRequestRow, Project, WorkPackage, equalsWbsNumber } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { makeTeamList } from '../../utils/teams.utils';
+import CRRow from '../../components/ChangeRequestRow';
 
 const ChangeRequestsOverview: React.FC = () => {
-  const theme = useTheme();
   const user = useCurrentUser();
 
   const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
@@ -79,55 +78,29 @@ const ChangeRequestsOverview: React.FC = () => {
     )
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const displayCRCards = (crList: ChangeRequest[]) => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        overflow: 'auto',
-        justifyContent: 'flex-start',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.divider,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        }
-      }}
-    >
-      {crList.map((cr: ChangeRequest) => (
-        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
-      ))}
-    </Box>
-  );
-
-  const renderChangeRequests = (title: string, crList: ChangeRequest[], emptyMessage: string) => {
-    return (
-      <>
-        <Typography variant="h5" gutterBottom>
-          {title}
-        </Typography>
-        {crList.length > 0 ? (
-          <Grid container>{displayCRCards(crList)}</Grid>
-        ) : (
-          <Typography gutterBottom>{emptyMessage}</Typography>
-        )}
-      </>
-    );
+  const crToReviewRow: ChangeRequestRow = {
+    title: 'To Review',
+    crList: crToReview,
+    emptyMessage: 'No change requests to review'
+  };
+  const crUnreviewedRow: ChangeRequestRow = {
+    title: 'My Un-reviewed Change Requests',
+    crList: crUnreviewed,
+    emptyMessage: 'No un-reviewed change requests'
   };
 
+  const crApprovedRow: ChangeRequestRow = {
+    title: 'My Recently Approved Change Requests',
+    crList: crApproved,
+    emptyMessage: 'No recently approved change requests'
+  };
+
+  const overviewRowList = [crToReviewRow, crUnreviewedRow, crApprovedRow];
+
   return (
-    <Box>
-      {showToReview && renderChangeRequests('To Review', crToReview, 'No change requests to review')}
-      {renderChangeRequests('My Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
-      {renderChangeRequests('My Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
-    </Box>
+    <>
+      <Box>{showToReview && CRRow(overviewRowList)}</Box>
+    </>
   );
 };
 
