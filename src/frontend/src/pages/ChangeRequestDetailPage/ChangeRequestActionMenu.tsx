@@ -41,18 +41,18 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const toast = useToast();
   const currentUser = useCurrentUser();
   const history = useHistory();
-  const [reviewerIds, setReviewerIds] = useState<number[]>([]);
+  const [reviewers, setReviewers] = useState(changeRequest.requestedReviewers.map(taskUserToAutocompleteOption));
   const { data: users, isLoading: isLoadingAllUsers, isError: isErrorAllUsers, error: errorAllUsers } = useAllUsers();
 
   if (isErrorAllUsers) return <ErrorPage message={errorAllUsers?.message} />;
   if (isLoadingAllUsers || !users) return <LoadingIndicator />;
 
   const handleRequestReviewerClick = async () => {
-    if (reviewerIds.length === 0) {
+    if (reviewers.length === 0) {
       toast.error('Must select at least one reviewer to request review from');
     } else {
       try {
-        await requestCRReview({ userIds: reviewerIds });
+        await requestCRReview({ userIds: reviewers.map((user) => user.id) });
         toast.success('Review Successfully Requested!');
       } catch (e) {
         if (e instanceof Error) {
@@ -95,8 +95,8 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
         multiple
         options={users.filter((user) => isLeadership(user.role)).map(taskUserToAutocompleteOption)}
         getOptionLabel={(option) => option.label}
-        onChange={(_, values) => setReviewerIds(values.map((value) => value.id))}
-        defaultValue={changeRequest.requestedReviewers.map(taskUserToAutocompleteOption)}
+        onChange={(_, values) => setReviewers(values)}
+        defaultValue={reviewers}
         renderTags={() => null}
         renderOption={(props, option, { selected }) => (
           <li {...props}>
