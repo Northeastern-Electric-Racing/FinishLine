@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import LinkIcon from '@mui/icons-material/Link';
+import NotesIcon from '@mui/icons-material/Notes';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import BOMTable from './BOMTable';
@@ -103,6 +105,30 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
           }}
         />
       );
+      actions.push(
+        <GridActionsCellItem
+          icon={<LinkIcon fontSize="small" />}
+          label="Link"
+          showInMenu
+          disabled={!editPerms}
+          onClick={() => {
+            window.open(params.row.link, '_blank');
+          }}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          icon={<NotesIcon fontSize="small" />}
+          label="Notes"
+          showInMenu
+          disabled={!editPerms}
+          onClick={() => {
+            setSelectedMaterialId(params.row.materialId);
+            setModalShow(true);
+          }}
+        />
+      );
+
       assemblies.forEach((assembly) => {
         if (!(material && assembly.assemblyId === material.assemblyId)) {
           actions.push(
@@ -212,24 +238,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       field: 'subtotal',
       headerName: 'Subtotal',
       type: 'number',
-      sortable: false,
-      filterable: false
-    },
-    {
-      ...bomBaseColDef,
-      field: 'link',
-      headerName: 'Link',
-      type: 'string',
-      renderCell: renderLinkBOM,
-      sortable: false,
-      filterable: false
-    },
-    {
-      ...bomBaseColDef,
-      field: 'notes',
-      headerName: 'Notes',
-      type: 'string',
-      renderCell: renderNotes,
       sortable: false,
       filterable: false
     },
