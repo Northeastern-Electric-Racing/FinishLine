@@ -25,7 +25,6 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
     <Box>
       <TextField
         select
-        variant="outlined"
         defaultValue={monthNames[displayMonth.getMonth()]}
         onChange={(event) => {
           displayMonth.setMonth(monthNames.indexOf(event.target.value));
@@ -41,14 +40,13 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
 
       <TextField
         select
-        variant="outlined"
         defaultValue={displayMonth.getFullYear()}
         onChange={(event) => {
           displayMonth.setFullYear(Number.parseInt(event.target.value));
           setDisplayMonth(new Date(displayMonth));
         }}
       >
-        {[...Array(10).keys()].map((num) => {
+        {[...Array(50).keys()].map((num) => {
           const year = (num + 2024).toString();
           return (
             <MenuItem key={year} value={year}>
