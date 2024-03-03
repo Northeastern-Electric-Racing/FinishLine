@@ -68,7 +68,7 @@ const DRCViewModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
   };
 
   return (
-    <NERModal open={open} onHide={onHide} title={header} onSubmit={onSubmit}>
+    <NERModal open={open} onHide={onHide} title={header} onSubmit={onSubmit} hideFormButtons showCloseButton>
       <Grid container>
         {renderDayHeaders()}
         {renderSchedule()}
