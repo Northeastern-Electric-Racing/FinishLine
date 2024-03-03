@@ -11,7 +11,7 @@ import { timelinePipe } from '../../utils/pipes';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { FormControl, InputLabel, MenuItem, Select, useTheme } from '@mui/material';
+import { FormControl, Grid, InputLabel, MenuItem, Select, useTheme } from '@mui/material';
 import WorkPackageCard from './WorkPackageCard';
 
 const WorkPackagesByTimelineStatus: React.FC = () => {
