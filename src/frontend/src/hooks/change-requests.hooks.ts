@@ -39,24 +39,22 @@ export const useSingleChangeRequest = (id: number) => {
   });
 };
 
+export interface ReviewPayload {
+  reviewerId: number;
+  crId: number;
+  accepted: boolean;
+  reviewNotes: string;
+  psId: string;
+}
+
 /**
  * Custom React Hook to review a change request.
  */
 export const useReviewChangeRequest = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { message: string },
-    Error,
-    {
-      reviewerId: number;
-      crId: number;
-      accepted: boolean;
-      reviewNotes: string;
-      psId: string;
-    }
-  >(
+  return useMutation<{ message: string }, Error, ReviewPayload>(
     ['change requests', 'review'],
-    async (reviewPayload) => {
+    async (reviewPayload: ReviewPayload) => {
       const { data } = await reviewChangeRequest(
         reviewPayload.reviewerId,
         reviewPayload.crId,
@@ -113,50 +111,52 @@ export const useCreateStandardChangeRequest = () => {
   );
 };
 
+export interface Payload {
+  submitterId: number;
+  wbsNum: WbsNumber;
+  projectLeadId: number;
+  projectManagerId: number;
+  startDate: string;
+  confirmDetails: boolean;
+  confirmDone: boolean;
+  crId: number;
+  description: string;
+  scopeImpact: string;
+  timelineImpact: number;
+  budgetImpact: number;
+}
+
 /**
  * Custom React Hook to create an activation change request.
  */
 export const useCreateActivationChangeRequest = () => {
-  return useMutation<
-    { message: string },
-    Error,
-    {
-      submitterId: number;
-      wbsNum: WbsNumber;
-      projectLeadId: number;
-      projectManagerId: number;
-      startDate: string;
-      confirmDetails: boolean;
+  return useMutation<{ message: string }, Error, Payload>(
+    ['change requests', 'create', 'activation'],
+    async (payload: Payload) => {
+      const { data } = await createActivationChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.projectLeadId,
+        payload.projectManagerId,
+        payload.startDate,
+        payload.confirmDetails
+      );
+      return data;
     }
-  >(['change requests', 'create', 'activation'], async (payload) => {
-    const { data } = await createActivationChangeRequest(
-      payload.submitterId,
-      payload.wbsNum,
-      payload.projectLeadId,
-      payload.projectManagerId,
-      payload.startDate,
-      payload.confirmDetails
-    );
-    return data;
-  });
+  );
 };
 
 /**
  * Custom React Hook to create a stage gate change request.
  */
 export const useCreateStageGateChangeRequest = () => {
-  return useMutation<
-    { message: string },
-    Error,
-    {
-      submitterId: number;
-      wbsNum: WbsNumber;
-      confirmDone: boolean;
+  return useMutation<{ message: string }, Error, Payload>(
+    ['change requests', 'create', 'stage gate'],
+    async (payload: Payload) => {
+      const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
+      return data;
     }
-  >(['change requests', 'create', 'stage gate'], async (payload) => {
-    const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
-    return data;
-  });
+  );
 };
 
 /**
@@ -164,20 +164,9 @@ export const useCreateStageGateChangeRequest = () => {
  */
 export const useCreateProposeSolution = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { message: string },
-    Error,
-    {
-      submitterId: number;
-      crId: number;
-      description: string;
-      scopeImpact: string;
-      timelineImpact: number;
-      budgetImpact: number;
-    }
-  >(
+  return useMutation<{ message: string }, Error, Payload>(
     ['change requests', 'create', 'propose solution'],
-    async (payload) => {
+    async (payload: Payload) => {
       const { data } = await addProposedSolution(
         payload.submitterId,
         payload.crId,
@@ -196,18 +185,16 @@ export const useCreateProposeSolution = () => {
   );
 };
 
+export interface CRReviewPayload {
+  userIds: number[];
+}
+
 /**
  * Custom React hook to request cr reviewers
  */
 export const useRequestCRReview = (crId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { message: string },
-    Error,
-    {
-      userIds: number[];
-    }
-  >(
+  return useMutation<{ message: string }, Error, CRReviewPayload>(
     ['change requests', 'review'],
     async (crReviewPayload) => {
       const { data } = await requestCRReview(crId, crReviewPayload);
