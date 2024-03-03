@@ -43,7 +43,7 @@ export default class DesignReviewService {
     attendees: number[],
     meetingTimes: number[]
   ): Promise<Design_Review> {
-    // verify user is allowed to edit work packages
+    // verify user is allowed to edit work package
     if (isNotLeadership(user.role)) throw new AccessDeniedMemberException('edit design reviews');
 
     // check that the time type is valid?
