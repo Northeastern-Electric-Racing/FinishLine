@@ -15,7 +15,7 @@ designReviewRouter.post(
   body('isOnline').isBoolean(),
   body('isInPeron').isBoolean(),
   nonEmptyString(body('zoomLink')).isURL().optional(),
-  nonEmptyString(body('location')).optional,
+  nonEmptyString(body('location')).optional(),
   nonEmptyString(body('docTemplateLink')).isURL().optional(),
   isDesignReviewStatus(body('status')),
   body('confirmedMembers').isArray(),
