@@ -26,8 +26,22 @@ const UpcomingDeadlines: React.FC = () => {
     return <ErrorPage message={workPackages.error.message} error={workPackages.error} />;
   }
 
+  window.addEventListener('load', checkOverflow);
+  window.addEventListener('resize', checkOverflow);
+
+  const container = document.getElementById('container');
+  const content = container?.querySelector('.content');
+
+  function checkOverflow() {
+    if (container !== null && container !== undefined && content !== null && content !== undefined) {
+      const hasOverflow = content.scrollHeight > container.clientHeight || content.scrollWidth > container.scrollWidth;
+      container.style.overflow = hasOverflow ? 'scroll' : 'auto';
+    }
+  }
+
   const fullDisplay = (
     <Box
+      id="container"
       sx={{
         display: 'flex',
         flexDirection: 'row',
@@ -78,7 +92,7 @@ const UpcomingDeadlines: React.FC = () => {
         </FormControl>
       }
     >
-      <Grid container>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Grid>
+      {workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}
     </PageBlock>
   );
 };
