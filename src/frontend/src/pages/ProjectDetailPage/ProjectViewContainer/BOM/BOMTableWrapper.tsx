@@ -13,10 +13,10 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Link, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
-import { renderLinkBOM, renderStatusBOM } from './BOMTableCustomCells';
+import { renderStatusBOM } from './BOMTableCustomCells';
 
 interface BOMTableWrapperProps {
   project: Project;
@@ -55,18 +55,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       }
     }
   };
-
-  const renderNotes = (params: GridRenderCellParams) =>
-    params.value && (
-      <Link
-        onClick={() => {
-          setSelectedMaterialId(params.row.materialId);
-          setModalShow(true);
-        }}
-      >
-        See Notes
-      </Link>
-    );
 
   const editPerms =
     isLeadership(user.role) ||
