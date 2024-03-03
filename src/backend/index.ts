@@ -11,7 +11,7 @@ import changeRequestsRouter from './src/routes/change-requests.routes';
 import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 import tasksRouter from './src/routes/tasks.routes';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes';
-import designReviewRouter from './src/routes/design-review.routes';
+import designReviewRouter from './src/routes/design-reviews.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
