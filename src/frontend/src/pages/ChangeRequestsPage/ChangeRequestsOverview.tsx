@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box } from '@mui/material';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -95,13 +94,14 @@ const ChangeRequestsOverview: React.FC = () => {
     emptyMessage: 'No recently approved change requests'
   };
 
-  const overviewRowList = [crToReviewRow, crUnreviewedRow, crApprovedRow];
+  const overviewRowListShowReview = [crToReviewRow, crUnreviewedRow, crApprovedRow];
+  const overviewRowListNoReview = [crUnreviewedRow, crApprovedRow];
 
-  return (
-    <>
-      <Box>{showToReview && CRRow(overviewRowList)}</Box>
-    </>
-  );
+  if (showToReview) {
+    return <CRRow crRowList={overviewRowListShowReview} />;
+  } else {
+    return <CRRow crRowList={overviewRowListNoReview} />;
+  }
 };
 
 export default ChangeRequestsOverview;

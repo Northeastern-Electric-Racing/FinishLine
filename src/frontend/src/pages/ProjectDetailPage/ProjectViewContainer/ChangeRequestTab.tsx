@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box } from '@mui/material';
 import { ChangeRequest, ChangeRequestRow, Project, equalsWbsNumber } from 'shared';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -33,23 +32,19 @@ const CRTab = ({ project }: { project: Project }) => {
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
   const crUnreviewedRow: ChangeRequestRow = {
-    title: 'My Un-reviewed Change Requests',
+    title: 'Un-reviewed Change Requests',
     crList: crUnreviewed,
     emptyMessage: 'No un-reviewed change requests'
   };
 
   const crApprovedRow: ChangeRequestRow = {
-    title: 'My Recently Approved Change Requests',
+    title: 'Recently Approved Change Requests',
     crList: crApproved,
     emptyMessage: 'No recently approved change requests'
   };
 
   const tabRowList = [crUnreviewedRow, crApprovedRow];
 
-  return (
-    <>
-      <Box>{CRRow(tabRowList)}</Box>
-    </>
-  );
+  return <CRRow crRowList={tabRowList} />;
 };
 export default CRTab;
