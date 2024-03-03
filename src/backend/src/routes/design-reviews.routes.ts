@@ -2,7 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import { intMinZero, nonEmptyString, isDate, isDesignReviewStatus } from '../utils/validation.utils';
 import DesignReviewController from '../controllers/design-reviews.controllers';
-
+import { validateInputs } from '../utils/utils';
 const designReviewRouter = express.Router();
 
 designReviewRouter.post(
@@ -14,9 +14,9 @@ designReviewRouter.post(
   body('optionaldMembers').isArray(),
   body('isOnline').isBoolean(),
   body('isInPeron').isBoolean(),
-  nonEmptyString(body('zoomLink')).isURL().optional,
+  nonEmptyString(body('zoomLink')).isURL().optional(),
   nonEmptyString(body('location')).optional,
-  nonEmptyString(body('docTemplateLink')).isURL().optional,
+  nonEmptyString(body('docTemplateLink')).isURL().optional(),
   isDesignReviewStatus(body('status')),
   body('confirmedMembers').isArray(),
   intMinZero(body('confirmedMembers.*')),
@@ -25,6 +25,7 @@ designReviewRouter.post(
   body('attendees').isArray(),
   intMinZero(body('attendees.*')),
   intMinZero(body('meetingTime')),
+  validateInputs,
   DesignReviewController.editDesignReview
 );
 
