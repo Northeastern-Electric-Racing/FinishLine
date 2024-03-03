@@ -38,7 +38,7 @@ export const useSingleTeam = (teamId: string) => {
 
 export const useSetTeamMembers = (teamId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, number[]>(
     ['teams', 'edit'],
     async (userIds: number[]) => {
       const { data } = await setTeamMembers(teamId, userIds);
@@ -70,7 +70,7 @@ export const useSetTeamHead = (teamId: string) => {
 
 export const useEditTeamDescription = (teamId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['teams', 'edit'],
     async (description: string) => {
       const { data } = await setTeamDescription(teamId, description);
@@ -86,7 +86,7 @@ export const useEditTeamDescription = (teamId: string) => {
 
 export const useDeleteTeam = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, string>(
     ['teams', 'delete'],
     async (teamId: string) => {
       const { data } = await deleteTeam(teamId);
@@ -118,7 +118,7 @@ export const useCreateTeam = () => {
 
 export const useSetTeamLeads = (teamId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<Team, Error, any>(
+  return useMutation<Team, Error, number[]>(
     ['teams', 'edit'],
     async (userIds: number[]) => {
       const { data } = await setTeamLeads(teamId, userIds);

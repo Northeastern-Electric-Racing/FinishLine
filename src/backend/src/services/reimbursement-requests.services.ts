@@ -50,6 +50,7 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import { sendReimbursementRequestDeniedNotification } from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -827,6 +828,14 @@ export default class ReimbursementRequestService {
         user: true
       }
     });
+
+    const recipientSettings = await prisma.user_Settings.findUnique({
+      where: { userId: reimbursementRequest.recipientId }
+    });
+
+    if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }

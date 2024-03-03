@@ -9,7 +9,8 @@ import {
   Project,
   RoleEnum,
   isHead,
-  UserSecureSettings
+  UserSecureSettings,
+  UserScheduleSettings
 } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
@@ -21,6 +22,7 @@ import projectTransformer from '../transformers/projects.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
+import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
 
 export default class UsersService {
   /**
@@ -290,7 +292,7 @@ export default class UsersService {
     phoneNumber: string
   ): Promise<string> {
     const existingUser = await prisma.user_Secure_Settings.findFirst({
-      where: { phoneNumber }
+      where: { phoneNumber, userId: { not: user.userId } } // excludes the current user from check
     });
 
     if (existingUser) {
@@ -319,5 +321,22 @@ export default class UsersService {
     });
 
     return newUserSecureSettings.userSecureSettingsId;
+  }
+
+  /**
+   * Gets a user's schedule settings
+   * @param userId the id of the user who's schedule settings are being returned
+   * @param submitter the user who's requesting the schedule settings
+   * @returns the user's schedule settings
+   * @throws if the user doesn't have schedule settings
+   */
+  static async getUserScheduleSettings(userId: number, submitter: PrismaUser): Promise<UserScheduleSettings> {
+    if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
+    const scheduleSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId }
+    });
+    if (!scheduleSettings) throw new HttpException(404, 'User Schedule Settings Not Found');
+
+    return userScheduleSettingsTransformer(scheduleSettings);
   }
 }
