@@ -54,6 +54,7 @@ export default class ReimbursementRequestsController {
     try {
       const {
         dateOfExpense,
+        dateDelivered,
         vendorId,
         account,
         otherReimbursementProducts,
@@ -65,6 +66,7 @@ export default class ReimbursementRequestsController {
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
+        dateDelivered,
         vendorId,
         account,
         otherReimbursementProducts,

@@ -47,12 +47,24 @@ import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
+import NERFormModal from '../../../components/NERFormModal';
+import { FormControl, FormLabel, TextField } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { Controller, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
+  handleClose: () => void;
 }
 
-const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
+const schema = yup.object().shape({
+  dateReceived: yup.date().required()
+});
+
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest, handleClose }) => {
   const theme = useTheme();
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
@@ -68,6 +80,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   );
   const { mutateAsync: denyReimbursementRequest } = useDenyReimbursementRequest(reimbursementRequest.reimbursementRequestId);
   const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      dateReceived: new Date()
+    },
+    mode: 'onChange'
+  });
 
   const handleDelete = () => {
     try {
@@ -132,18 +157,63 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
+  // const handleConfirm = async (data: { dateReceived: Date }) => {
+  //   handleClose();
+  //   try {
+  //     (dateReceived: data.dateReceived.toISOString());
+  //     toast.success('Reimbursement Request successfully marked as delivered!');
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error) {
+  //       toast.error(error.message);
+  //     }
+  //   }
+  // };
+
   const MarkDeliveredModal = () => (
-    <NERModal
+    // <NERModal
+    //   open={showMarkDelivered}
+    //   onHide={() => setShowMarkDelivered(false)}
+    //   title="Warning!"
+    //   cancelText="No"
+    //   submitText="Yes"
+    //   onSubmit={handleMarkDelivered}
+    // >
+    //   <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
+    // </NERModal>
+
+
+    <NERFormModal
       open={showMarkDelivered}
       onHide={() => setShowMarkDelivered(false)}
       title="Warning!"
       cancelText="No"
       submitText="Yes"
       onSubmit={handleMarkDelivered}
+      reset={reset}
+      handleUseFormSubmit={handleSubmit}
+      onFormSubmit={handleMarkDelivered}
     >
-      <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
-    </NERModal>
+      <FormControl>
+        <FormLabel>Date Received</FormLabel>
+        <Controller
+          name="dateReceived"
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, value } }) => (
+            <DatePicker
+              inputFormat="yyyy-MM-dd"
+              onChange={(e) => onChange(e ?? new Date())}
+              className={'padding: 10'}
+              value={value}
+              renderInput={(params) => <TextField autoComplete="off" {...params} />}
+            />
+          )}
+        />
+      </FormControl>
+    </NERFormModal>
   );
+
+
 
   const BasicInformationView = () => {
     return (
