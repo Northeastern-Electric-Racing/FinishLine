@@ -1,10 +1,8 @@
 import { Material } from 'shared';
 import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
-import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
-import { styled } from '@mui/system';
 
-export interface BomRow extends GridValidRowModel {
+export interface BomRow {
   id: string;
   materialId: string;
   status: string;
@@ -17,8 +15,7 @@ export interface BomRow extends GridValidRowModel {
   price: string;
   subtotal: string;
   link: string;
-  notes: string | undefined;
-  assemblyId: string | undefined;
+  notes: string;
 }
 
 export const materialToRow = (material: Material, idx: number): BomRow => {
@@ -35,8 +32,7 @@ export const materialToRow = (material: Material, idx: number): BomRow => {
     price: `$${centsToDollar(material.price)}`,
     subtotal: `$${centsToDollar(material.subtotal)}`,
     link: material.linkUrl,
-    notes: material.notes,
-    assemblyId: material.assemblyId ?? 'assembly-misc'
+    notes: material.notes
   };
 };
 
@@ -65,36 +61,6 @@ export const bomTableStyles = {
     }
   }
 };
-
-export const BomStyledDataGrid = styled(DataGrid)(({ theme }) => ({
-  '& .super-app-theme--header': {
-    backgroundColor: '#ef4345'
-  },
-  '& .super-app-theme--assembly': {
-    backgroundColor: theme.palette.grey[600],
-    '&:hover': {
-      backgroundColor: theme.palette.grey[700]
-    },
-    '&.Mui-selected': {
-      backgroundColor: '#997570',
-      '&:hover': {
-        backgroundColor: '#997570'
-      }
-    }
-  },
-  '& .super-app-theme--material': {
-    backgroundColor: theme.palette.background.default,
-    '&:hover': {
-      backgroundColor: theme.palette.background.default
-    },
-    '&.Mui-selected': {
-      backgroundColor: theme.palette.background.default,
-      '&:hover': {
-        backgroundColor: theme.palette.background.default
-      }
-    }
-  }
-}));
 
 export const BOM_TABLE_ROW_COUNT = 'tl-table-row-count';
 

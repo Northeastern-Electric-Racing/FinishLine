@@ -10,7 +10,6 @@ export * from './src/types/work-package-types';
 export * from './src/types/team-types';
 export * from './src/types/task-types';
 export * from './src/types/reimbursement-requests-types';
-export * from './src/types/design-review-types';
 
 export * from './src/validate-wbs';
 export * from './src/date-utils';

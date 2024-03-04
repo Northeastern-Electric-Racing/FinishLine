@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useCreateManufacturer } from '../../../hooks/bom.hooks';
 
 const schema = yup.object().shape({
-  name: yup.string().required('Manufacturer Name is Required')
+  name: yup.string().required('Vendor Name is Required')
 });
 
 interface CreateManufacturerProps {

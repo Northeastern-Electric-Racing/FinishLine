@@ -44,7 +44,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
 }) => {
   const quantity = watch('quantity');
   const price = watch('price');
-  const subtotal = quantity && price && parseFloat((quantity * price).toFixed(2));
+  const unit = watch('unitName');
+  const subtotal = quantity && price ? (unit ? price : parseFloat((quantity * price).toFixed(2))) : 0;
 
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
@@ -131,25 +132,23 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                   variant="outlined"
                   error={!!errors.manufacturerName}
                   helperText={errors.manufacturerName?.message}
-                  onChange={(event) => {
-                    const selectedValue = event.target.value;
-                    if (selectedValue === 'createManufacturer') {
-                      const manufacturerName = prompt('Enter Manufacturer Name');
-                      if (manufacturerName) {
-                        createManufacturer(manufacturerName);
-                        field.onChange(event);
-                      }
-                    } else {
-                      field.onChange(event);
-                    }
-                  }}
                 >
                   {allManufacturers.map((manufacturer) => (
                     <MenuItem key={manufacturer.name} value={manufacturer.name}>
                       {manufacturer.name}
                     </MenuItem>
                   ))}
-                  <MenuItem value="createManufacturer">+ Create Manufacturer</MenuItem>
+                  <MenuItem
+                    value="createManufacturer"
+                    onClick={() => {
+                      const manufacturerName = prompt('Enter Manufacturer Name');
+                      if (manufacturerName) {
+                        createManufacturer(manufacturerName);
+                      }
+                    }}
+                  >
+                    + Create Manufacturer
+                  </MenuItem>
                 </TextField>
               )}
             />
@@ -203,25 +202,23 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     variant="outlined"
                     error={!!errors.unitName}
                     helperText={errors.unitName?.message}
-                    value={field.value || ''}
-                    onChange={(event) => {
-                      const selectedValue = event.target.value;
-                      if (selectedValue === 'createUnit') {
-                        const unitName = prompt('Enter Unit Name');
-                        if (unitName) {
-                          createUnit(unitName);
-                        }
-                      } else {
-                        field.onChange(event);
-                      }
-                    }}
                   >
                     {allUnits.map((unit) => (
                       <MenuItem key={unit.name} value={unit.name}>
                         {unit.name}
                       </MenuItem>
                     ))}
-                    <MenuItem value="createUnit">+ Create Unit</MenuItem>
+                    <MenuItem
+                      value="createUnit"
+                      onClick={() => {
+                        const unitName = prompt('Enter Unit Name');
+                        if (unitName) {
+                          createUnit(unitName);
+                        }
+                      }}
+                    >
+                      + Create Unit
+                    </MenuItem>
                   </TextField>
                 )}
               />
@@ -264,7 +261,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Notes (optional)</FormLabel>
+            <FormLabel>Notes</FormLabel>
             <ReactHookTextField
               name="notes"
               control={control}

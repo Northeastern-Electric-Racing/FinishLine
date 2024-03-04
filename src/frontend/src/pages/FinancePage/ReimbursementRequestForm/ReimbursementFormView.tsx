@@ -211,7 +211,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       size="medium"
                       options={mappedExpenseTypes}
                       value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
-                      placeholder="Select Account Code"
+                      placeholder=""
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
                       }}
@@ -271,14 +271,6 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     value={value}
                     disabled={!selectedExpenseType}
                     error={!!errors.account}
-                    displayEmpty
-                    renderValue={() => {
-                      return value ? (
-                        <Typography>{codeAndRefundSourceName(value)} </Typography>
-                      ) : (
-                        <Typography style={{ color: 'gray' }}>Select Refund Source</Typography>
-                      );
-                    }}
                   >
                     {refundSources.map((refundSource) => (
                       <MenuItem key={refundSource} value={refundSource}>

@@ -115,14 +115,6 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
-  '/reimburse/:reimbursementId/edit',
-  intMinZero(body('amount')),
-  isDate(body('dateReceived')),
-  validateInputs,
-  ReimbursementRequestController.editReimbursement
-);
-
-reimbursementRequestsRouter.post(
   '/:requestId/upload-receipt',
   upload.single('image'),
   ReimbursementRequestController.uploadReceipt

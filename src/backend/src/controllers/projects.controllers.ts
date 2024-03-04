@@ -209,8 +209,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        wbsNum,
         notes,
+        wbsNum,
         assemblyId,
         pdmFileName,
         unitName

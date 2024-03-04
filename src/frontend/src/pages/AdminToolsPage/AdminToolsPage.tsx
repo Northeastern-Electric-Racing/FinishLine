@@ -11,7 +11,6 @@ import PageLayout from '../../components/PageLayout';
 import AdminToolsFinanceConfig from './AdminToolsFinanceConfig';
 import TeamsTools from './TeamsTools';
 import AdminToolsBOMConfig from './AdminToolsBOMConfig';
-import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -23,7 +22,6 @@ const AdminToolsPage: React.FC = () => {
       {(isAdmin(currentUser.role) || currentUser.isAtLeastFinanceLead) && <AdminToolsFinanceConfig />}
       {isAdmin(currentUser.role) && <TeamsTools />}
       {isAdmin(currentUser.role) && <AdminToolsBOMConfig />}
-      {isHead(currentUser.role) && <AdminToolsProjectsConfig />}
     </PageLayout>
   );
 };

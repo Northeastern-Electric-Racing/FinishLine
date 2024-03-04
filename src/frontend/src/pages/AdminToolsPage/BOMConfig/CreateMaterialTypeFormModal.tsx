@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useCreateMaterialType } from '../../../hooks/bom.hooks';
 
 const schema = yup.object().shape({
-  name: yup.string().required('Material Type is Required')
+  name: yup.string().required('Vendor Name is Required')
 });
 
 interface CreateMaterialTypeModalProps {
@@ -56,11 +56,11 @@ const CreateMaterialTypeModal: React.FC<CreateMaterialTypeModalProps> = ({ showM
       reset={() => reset({ name: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
-      formId="new-material-type-form"
+      formId="new-manufacturer-form"
       showCloseButton
     >
       <FormControl>
-        <FormLabel>Material Type</FormLabel>
+        <FormLabel>Manufacturer Name</FormLabel>
         <ReactHookTextField name="name" control={control} sx={{ width: 1 }} />
         <FormHelperText error>{errors.name?.message}</FormHelperText>
       </FormControl>

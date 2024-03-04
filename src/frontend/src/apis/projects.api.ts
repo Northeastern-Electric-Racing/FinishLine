@@ -8,7 +8,7 @@ import { LinkType, Project, WbsNumber } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { linkTypeTransformer, projectTransformer } from './transformers/projects.transformers';
-import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
  * Fetches all projects.
@@ -88,13 +88,4 @@ export const getAllLinkTypes = () => {
   return axios.get<LinkType[]>(apiUrls.projectsLinkTypes(), {
     transformResponse: (data) => JSON.parse(data).map(linkTypeTransformer)
   });
-};
-
-/**
- * Creates a linkType in the database
- * @param linkType the data for the linkType
- * @returns the new linkType
- */
-export const createLinkType = async (linkTypeData: LinkTypeCreatePayload) => {
-  return axios.post(apiUrls.projectsCreateLinkTypes(), linkTypeData);
 };

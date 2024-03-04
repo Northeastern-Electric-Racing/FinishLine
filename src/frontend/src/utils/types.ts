@@ -55,9 +55,3 @@ export interface CreateSingleProjectPayload {
   projectLeadId?: number;
   projectManagerId?: number;
 }
-
-export interface LinkTypeCreatePayload {
-  name: string;
-  iconName: string;
-  required: boolean;
-}

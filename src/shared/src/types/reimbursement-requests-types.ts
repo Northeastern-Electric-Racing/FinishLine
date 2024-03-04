@@ -31,7 +31,6 @@ export interface Receipt {
 
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
-  identifier: number;
   saboId?: number;
   dateCreated: Date;
   dateDeleted?: Date;
