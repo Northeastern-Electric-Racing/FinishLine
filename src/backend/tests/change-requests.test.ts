@@ -38,7 +38,7 @@ describe('Change Requests', () => {
   beforeEach(() => {
     vi.spyOn(changeRequestTransformer, 'default').mockReturnValue(sharedChangeRequest);
     vi.spyOn(changeRequestUtils, 'sendSlackCRReviewedNotification').mockImplementation(async (_slackId, _crId) => {
-      return undefined;
+      return [];
     });
     vi.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
       return [];
@@ -182,6 +182,7 @@ describe('Change Requests', () => {
         wbsElementId: 65,
         dateImplemented: new Date()
       });
+      vi.spyOn(prisma.message_Info, 'findMany').mockResolvedValue([]);
       const response = await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1');
       expect(response).toStrictEqual(prismaChangeRequest1.crId);
       expect(prisma.user_Settings.findUnique).toHaveBeenCalledTimes(1);
@@ -205,6 +206,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.proposed_Solution, 'update').mockResolvedValueOnce(updatedSolution);
       vi.spyOn(prisma.project, 'update').mockResolvedValueOnce(prismaProject1);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValueOnce({ ...prismaChangeRequest1, accepted: true });
+      vi.spyOn(prisma.message_Info, 'findMany').mockResolvedValue([]);
       const response = await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, '1');
       expect(response).toStrictEqual(prismaChangeRequest1.crId);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
@@ -281,6 +283,7 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(validSGCR);
       vi.spyOn(prisma.change_Request, 'update').mockResolvedValue({ ...prismaChangeRequest1, accepted: true });
       vi.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
+      vi.spyOn(prisma.message_Info, 'findMany').mockResolvedValue([]);
       await ChangeRequestsService.reviewChangeRequest(superman, crId, reviewNotes, accepted, null);
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
       expect(prisma.change_Request.update).toHaveBeenCalledTimes(1);

@@ -155,6 +155,18 @@ export default class ProjectsController {
     }
   }
 
+  static async createLinkType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { name, iconName, required } = req.body;
+
+      const newLinkType = await ProjectsService.createLinkType(user, name, iconName, required);
+      res.status(200).json(newLinkType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createAssembly(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);
@@ -197,8 +209,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
         wbsNum,
+        notes,
         assemblyId,
         pdmFileName,
         unitName
@@ -226,6 +238,17 @@ export default class ProjectsController {
       const { manufacturerName } = req.params;
       const deletedManufacturer = await ProjectsService.deleteManufacturer(user, manufacturerName);
       res.status(200).json(deletedManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteUnit(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { unitName } = req.params;
+      const deletedUnit = await ProjectsService.deleteUnit(user, unitName);
+      res.status(200).json(deletedUnit);
     } catch (error: unknown) {
       next(error);
     }
@@ -365,6 +388,18 @@ export default class ProjectsController {
       const user = await getCurrentUser(res);
       const createdUnit = await ProjectsService.createUnit(name, user);
       res.status(200).json(createdUnit);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editLinkType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { linkTypeId } = req.params;
+      const { iconName, required } = req.body;
+      const submitter = await getCurrentUser(res);
+      const linkTypeUpdated = await ProjectsService.editLinkType(linkTypeId, iconName, required, submitter);
+      res.status(200).json(linkTypeUpdated);
     } catch (error: unknown) {
       next(error);
     }

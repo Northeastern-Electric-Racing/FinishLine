@@ -18,42 +18,38 @@ import Credits from '../pages/CreditsPage/Credits';
 import AppContextUser from './AppContextUser';
 import { useSingleUserSettings } from '../hooks/users.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
-import ErrorPage from '../pages/ErrorPage';
+import SessionTimeoutAlert from './SessionTimeoutAlert';
 import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
-import { useState } from 'react';
-import NavTopBar from '../layouts/NavTopBar/NavTopBar';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import DrawerHeader from '../components/DrawerHeader';
 import { Container } from '@mui/material';
+import ErrorPage from '../pages/ErrorPage';
+import { Role, isGuest } from 'shared';
 
 interface AppAuthenticatedProps {
   userId: number;
+  userRole: Role;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const handleDrawerOpen = () => {
-    setDrawerOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setDrawerOpen(false);
-  };
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  return userSettingsData.slackId ? (
+  if (isError) {
+    if ((error as Error).message === 'Authentication Failed: Invalid JWT!') {
+      return <SessionTimeoutAlert />;
+    } else {
+      return <ErrorPage error={error as Error} message={(error as Error).message} />;
+    }
+  }
+
+  return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      <NavTopBar handleDrawerOpen={handleDrawerOpen} open={drawerOpen} />
       <Box display={'flex'}>
-        <Sidebar handleDrawerClose={handleDrawerClose} open={drawerOpen} />
+        <Sidebar />
         <Container maxWidth={false}>
-          <DrawerHeader />
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />

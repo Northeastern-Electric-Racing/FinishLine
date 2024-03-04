@@ -21,6 +21,7 @@ import { startDateTester, mapBulletsToPayload } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
+import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -164,23 +165,28 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         e.key === 'Enter' && e.preventDefault();
       }}
     >
+      <Box mb={-1}>
+        <PageBreadcrumbs
+          currentPageTitle={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+          previousPages={[
+            createForm
+              ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
+              : { name: 'Projects', route: routes.PROJECTS },
+            createForm && crIdDisplay
+              ? {
+                  name: `Change Request #${crIdDisplay}`,
+                  route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
+                }
+              : {
+                  name: `${projectWbsNamePipe(wbsElement)}`,
+                  route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
+                }
+          ]}
+        />
+      </Box>
       <PageLayout
         stickyHeader
         title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
-        previousPages={[
-          createForm
-            ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
-            : { name: 'Projects', route: routes.PROJECTS },
-          createForm && crIdDisplay
-            ? {
-                name: `Change Request #${crIdDisplay}`,
-                route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
-              }
-            : {
-                name: `${projectWbsNamePipe(wbsElement)}`,
-                route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
-              }
-        ]}
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>

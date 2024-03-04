@@ -1,17 +1,18 @@
 import {
   Assembly,
-  Material,
+  Material as PrismaMaterial,
   Material_Type as PrismaMaterialType,
   Prisma,
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
-  Manufacturer,
+  Manufacturer as PrismaManufacturer,
   Unit
 } from '@prisma/client';
-import { Project as SharedProject, WbsElementStatus } from 'shared';
+import { Project as SharedProject, WbsElementStatus, LinkType, Manufacturer, Material, MaterialStatus } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
+import { Decimal } from 'decimal.js';
 
 export const prismaProject2: Project = {
   projectId: 2,
@@ -127,6 +128,22 @@ export const sharedProject1: SharedProject = {
   assemblies: []
 };
 
+export const prismaLinkType1: LinkType = {
+  name: 'Confluence',
+  dateCreated: new Date('01-21-2024'),
+  creator: batman,
+  required: true,
+  iconName: 'ConfluenceIcon'
+};
+
+export const prismaLinkType2: LinkType = {
+  name: 'YouTube',
+  dateCreated: new Date('01-21-2024'),
+  creator: batman,
+  required: true,
+  iconName: 'YouTubeIcon'
+};
+
 export const prismaAssembly1: Assembly = {
   name: 'New Assembly',
   pdmFileName: 'file.txt',
@@ -149,7 +166,7 @@ export const prismaUnit: Unit = {
   name: 'FT'
 };
 
-export const prismaMaterial: Material = {
+export const prismaMaterial: PrismaMaterial = {
   materialId: 'id',
   assemblyId: 'assemblyId',
   name: 'name',
@@ -166,22 +183,65 @@ export const prismaMaterial: Material = {
   manufacturerPartNumber: 'partNum',
   price: 800,
   subtotal: 400,
-  quantity: 6,
+  quantity: new Decimal(6),
   unitName: 'FT',
   linkUrl: 'https://www.google.com'
 };
-export const prismaManufacturer1: Manufacturer = {
-  name: 'Manufacturer1',
-  dateCreated: new Date('10-1-2023'),
-  userCreatedId: 1,
-  dateDeleted: null
+
+export const material1: Material = {
+  materialId: '2',
+  name: 'wood',
+  wbsElementId: 1,
+  dateCreated: new Date('2023-02-20'),
+  userCreatedId: 3,
+  userCreated: batman,
+  status: MaterialStatus.Ordered,
+  materialTypeName: 'logs',
+  materialType: {
+    name: 'material',
+    dateCreated: new Date('2022-12-22'),
+    userCreatedId: 4
+  },
+  manufacturerName: 'Amazon',
+  manufacturer: {
+    name: 'Big Company',
+    dateCreated: new Date('2024-01-05'),
+    userCreatedId: 6
+  },
+  manufacturerPartNumber: '11223',
+  quantity: new Decimal(8),
+  price: 20,
+  subtotal: 2000,
+  linkUrl: 'https://example.com',
+  notes: 'IDK'
 };
 
-export const prismaManufacturer2: Manufacturer = {
+export const prismaManufacturer1: PrismaManufacturer = {
+  name: 'PrismaManufacturer1',
+  dateCreated: new Date('10-1-2023'),
+  userCreatedId: 1
+};
+
+export const prismaManufacturer2: PrismaManufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
+  userCreatedId: 1
+};
+
+export const manufacturer1: Manufacturer = {
+  name: 'Manufacturer1',
+  dateCreated: new Date('02-19-2023'),
   userCreatedId: 1,
-  dateDeleted: new Date('10-18-2023')
+  userCreated: batman,
+  materials: []
+};
+
+export const manufacturer2: Manufacturer = {
+  name: 'Manufacturer2',
+  dateCreated: new Date('02-19-2023'),
+  userCreatedId: 1,
+  userCreated: batman,
+  materials: [material1]
 };
 
 export const toolMaterial: PrismaMaterialType = {
@@ -191,7 +251,7 @@ export const toolMaterial: PrismaMaterialType = {
   dateDeleted: null
 };
 
-export const prismaMaterial2: Material = {
+export const prismaMaterial2: PrismaMaterial = {
   materialId: 'id',
   assemblyId: 'assemblyId',
   name: 'name2',
@@ -208,12 +268,12 @@ export const prismaMaterial2: Material = {
   manufacturerPartNumber: 'partNum',
   price: 1000,
   subtotal: 500,
-  quantity: 8,
+  quantity: new Decimal(8),
   unitName: 'FT',
   linkUrl: 'https://www.google.com'
 };
 
-export const prismaMaterial1: Material = {
+export const prismaMaterial1: PrismaMaterial = {
   materialId: '1',
   assemblyId: '1',
   dateCreated: new Date('2023-11-07'),
@@ -225,7 +285,7 @@ export const prismaMaterial1: Material = {
   notes: 'Sample notes',
   pdmFileName: 'pdmname',
   price: 10,
-  quantity: 89,
+  quantity: new Decimal(89),
   status: 'ORDERED',
   subtotal: 1,
   unitName: 'Unit',
@@ -233,4 +293,19 @@ export const prismaMaterial1: Material = {
   wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null
+};
+
+export const mockLinkType1: LinkType = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'file',
+  required: true
+};
+export const transformedMockLinkType1 = {
+  name: 'Doc1',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'Doc2',
+  required: true
 };

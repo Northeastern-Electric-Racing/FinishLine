@@ -30,7 +30,7 @@ const UsefulLinks: React.FC = () => {
     <>
       <CurrencyExchange sx={{ fontSize: 17, color: theme.palette.text.primary }} />
       <Link
-        href="https://docs.google.com/document/d/1HvLnVNzZTftgoAXppIEp-gTmUBQGt-V6n97prziWWrs/edit"
+        href="https://docs.google.com/document/d/1DbT_--TrrQqhUQFA0ReyBydVLSojGW0QPWussvfOxNA/edit"
         target="_blank"
         underline="hover"
         fontSize={19}
