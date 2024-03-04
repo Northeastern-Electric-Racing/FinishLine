@@ -12,8 +12,46 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
+import { Button } from '@mui/material';
+import { useState } from 'react';
+import DRCSummaryModal from './DesignReviewSummaryModal';
+import { DesignReview, DesignReviewStatus } from 'shared';
+import {
+  aquaman,
+  batman,
+  flash,
+  greenlantern,
+  superman,
+  wonderwoman
+} from '../../../backend/tests/test-data/users.test-data';
 
 const InfoPage: React.FC = () => {
+  const exampleDesignReview: DesignReview = {
+    designReviewId: '123',
+    dateScheduled: new Date(),
+    meetingTimes: [1, 4],
+    dateCreated: new Date(),
+    userCreated: batman,
+    status: DesignReviewStatus.CONFIRMED,
+    teamType: { teamTypeId: 'typeIDString', name: 'thisteam' },
+    requiredMembers: [batman, superman, greenlantern, flash, aquaman],
+    optionalMembers: [wonderwoman],
+    confirmedMembers: [],
+    deniedMembers: [],
+    location: 'Room 101',
+    isOnline: true,
+    isInPerson: false,
+    zoomLink: 'https://example.com/zoomlink',
+    attendees: [],
+    wbsName: 'Project X',
+    wbsNum: { carNumber: 1, projectNumber: 4, workPackageNumber: 21 },
+    docTemplateLink: 'www.googledocshashish.com'
+  };
+
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const handleOpenSummary = () => setIsSummaryModalOpen(true);
+  const handleCloseSummary = () => setIsSummaryModalOpen(false);
+
   return (
     <PageLayout title="Information">
       <PageBlock title="Resources">
@@ -54,6 +92,10 @@ const InfoPage: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
+      <PageBlock title="DRC Summary">
+        <Button onClick={handleOpenSummary}>Open DRC Summary</Button>
+      </PageBlock>
+      <DRCSummaryModal open={isSummaryModalOpen} onHide={handleCloseSummary} designReview={exampleDesignReview} />
     </PageLayout>
   );
 };

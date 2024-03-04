@@ -4,9 +4,11 @@ import {
   Prisma,
   TeamType
 } from '@prisma/client';
-import { batman, wonderwoman } from './users.test-data';
+import { batman, greenlantern, superman, wonderwoman } from './users.test-data';
 import designReviewQueryArgs from '../../src/prisma-query-args/design-review.query-args';
 import { prismaWbsElement1 } from './wbs-element.test-data';
+import { DesignReview, DesignReviewStatus } from 'shared';
+import { sharedProject1 } from './projects.test-data';
 
 export const teamType1: TeamType = {
   teamTypeId: '1',
@@ -56,4 +58,23 @@ export const prismaDesignReview2: Prisma.Design_ReviewGetPayload<typeof designRe
   userDeleted: null,
   wbsElement: prismaWbsElement1,
   teamType: teamType1
+};
+
+export const designReview2: DesignReview = {
+  designReviewId: '3',
+  dateScheduled: new Date(),
+  meetingTimes: [],
+  dateCreated: new Date(),
+  userCreated: batman,
+  status: DesignReviewStatus.CONFIRMED,
+  teamType: teamType1,
+  requiredMembers: [batman, superman, wonderwoman],
+  optionalMembers: [greenlantern],
+  confirmedMembers: [],
+  deniedMembers: [],
+  isOnline: true,
+  isInPerson: false,
+  attendees: [],
+  wbsName: 'WBSName',
+  wbsNum: sharedProject1.wbsNum
 };

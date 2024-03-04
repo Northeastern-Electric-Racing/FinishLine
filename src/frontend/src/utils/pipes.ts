@@ -162,3 +162,13 @@ export const displayEnum = (enumString: string) => {
   enumString = enumString.charAt(0).toUpperCase() + enumString.slice(1);
   return enumString;
 };
+
+// Takes in a meeting time (0-48) and converts it to 12-clock format
+export const meetingTimePipe = (meetingTime: number) => {
+  const hours = Math.floor(meetingTime / 4) + 9;
+  const minutes = (meetingTime % 4) * 15;
+  const period = hours >= 12 ? 'pm' : 'am';
+  const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+  const formattedMinutes = minutes === 0 ? '00' : minutes.toString();
+  return `${formattedHours}:${formattedMinutes} ${period}`;
+};
