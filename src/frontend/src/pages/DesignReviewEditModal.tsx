@@ -4,7 +4,7 @@ import { DRCModalProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from '
 import { useState } from 'react';
 
 const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, currentUser }) => {
-  const header = `Are you availble for the ${title} Design Review`;
+  const header = `Are you availble for the ${title} Design Review at 9:00 in the Bay`;
 
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const [isDragging, setIsDragging] = useState(false);
