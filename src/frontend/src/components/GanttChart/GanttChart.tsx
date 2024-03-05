@@ -5,6 +5,7 @@ import { Date_Event, EventChange, applyChangeToEvent, applyChangesToEvents } fro
 import { dateFormatMonthDate, dateToString } from './date.utils';
 import useId from '@mui/material/utils/useId';
 import dayjs from 'dayjs';
+import { Box, Grid } from '@mui/material';
 
 interface GanttChartProps {
   start: Date;
@@ -29,24 +30,32 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
     <div>
       <section>
         {/* Calendar/timeline */}
-        <div className="grid grid-rows-1 gap-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
+        <Grid container spacing={1} sx={{ display: 'grid', gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
           {days.map((day) => {
             const showDate = isMonday(day);
             const showMonth = getDate(day) <= 7; // only show month name once
             const weekend = isWeekend(day);
             const dateDisplay = showDate ? (showMonth ? dayjs(day).format('MMMMM d') : dayjs(day).format('d')) : '';
             return (
-              <div
+              <Box
                 key={day.toISOString()}
-                className={`${weekend ? 'bg-gray-200' : 'bg-gray-700'} p-0.5 w-full rounded text-white text-xs`}
+                sx={{
+                  backgroundColor: weekend ? '#E0E0E0' : '#424242',
+                  padding: '0.5rem',
+                  width: '100%',
+                  borderRadius: '0.25rem',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  textAlign: 'center'
+                }}
               >
                 {dateDisplay}
-              </div>
+              </Box>
             );
           })}
-        </div>
+        </Grid>
         {/* Data display: reset list of events every time eventChanges list changes using key */}
-        <div className="mt-4 space-y-1" key={eventChanges.length}>
+        <div style={{ marginTop: '4px' }} key={eventChanges.length}>
           {displayEvents.map((event) => {
             return <Event key={event.id} days={days} event={event} createChange={createChange} />;
           })}
@@ -153,10 +162,17 @@ function Event({
   };
 
   return (
-    <div className="relative">
+    <div style={{ position: 'relative' }}>
       <div
-        className="absolute top-0 left-0 w-full grid gap-1"
-        style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
+        style={{
+          gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
+          width: '100%',
+          display: 'flex',
+          gap: 1,
+          position: 'absolute',
+          top: 0,
+          left: 0
+        }}
       >
         {/* Drop areas */}
         {showDropPoints &&
@@ -165,11 +181,16 @@ function Event({
               key={index}
               onDragOver={onDragOver}
               onDrop={(e) => onDrop(day)}
-              className="rounded p-1 h-9 bg-blue-600/10"
-            ></div>
+              style={{
+                borderRadius: '0.25rem',
+                height: '2.25rem',
+                padding: '.78rem',
+                backgroundColor: `rgba(37, 99, 235, 0.1)`
+              }}
+            />
           ))}
       </div>
-      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
+      <Grid gap={1} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
         <div
           ref={measureRef}
           {...props}
@@ -185,7 +206,7 @@ function Event({
             <div className="cursor-ew-resize h-full w-20 relative -right-10" onMouseDown={handleMouseDown}></div>
           </div>
         </div>
-      </div>
+      </Grid>
     </div>
   );
 }
