@@ -732,7 +732,7 @@ const richieRich: Prisma.UserCreateInput = {
   firstName: 'Richie',
   lastName: 'Rich',
   email: 'richerich@harveycomics.com',
-  role: Role.ADMIN,
+  role: Role.LEADERSHIP,
   googleAuthId: 'rich',
   userSettings: {
     create: {
