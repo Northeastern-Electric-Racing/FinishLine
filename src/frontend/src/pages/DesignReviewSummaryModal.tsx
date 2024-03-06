@@ -25,10 +25,9 @@ const Chip: React.FC<chipProps> = ({ icon, text }) => {
       sx={{
         fontSize: 13,
         whiteSpace: 'normal',
-
         display: 'flex',
         alignItems: 'center',
-        paddingRight: '5px' // Adjusted paddingRight to create space between icon and text
+        paddingRight: '5px'
       }}
     >
       {icon}
