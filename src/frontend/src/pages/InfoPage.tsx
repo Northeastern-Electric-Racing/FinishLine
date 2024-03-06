@@ -24,6 +24,7 @@ import {
   flash,
   aquaman
 } from '../../../backend/tests/test-data/users.test-data';
+import DRCView from './DesignReviewView';
 
 const InfoPage: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -46,7 +47,7 @@ const InfoPage: React.FC = () => {
   ]);
   return (
     <PageLayout title="Information">
-      <PageBlock title="Resources">
+      {/* <PageBlock title="Resources">
         <Box>
           <Typography>Check out these helpful resources:</Typography>
         </Box>
@@ -83,7 +84,7 @@ const InfoPage: React.FC = () => {
             />
           </Grid>
         </Grid>
-      </PageBlock>
+      </PageBlock> */}
       <PageBlock title="DRC VIEW">
         <button onClick={handleOpenViewModal}>OPEN VIEW MODAL</button>
       </PageBlock>
@@ -102,6 +103,7 @@ const InfoPage: React.FC = () => {
         title={'Battery'}
         usersToAvailabilities={usersToAvailabilities}
       />
+      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} />
     </PageLayout>
   );
 };

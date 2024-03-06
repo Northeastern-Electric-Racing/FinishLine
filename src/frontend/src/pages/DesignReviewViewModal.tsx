@@ -15,7 +15,7 @@ const DRCViewModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
   const renderDayHeaders = () => {
     return [
       <TimeSlot backgroundColor={getBackgroundColor()} />,
-      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={12} />)
+      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize='12px' />)
     ];
   };
 
@@ -59,7 +59,7 @@ const DRCViewModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
     createUnavailableUsers();
     return times.map((time, timeIndex) => (
       <Grid container item xs={12} sx={{ maxWidth: '700px' }} onMouseLeave={handleOnMouseLeave}>
-        <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
+        <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={'13px'} />
         {daysOfWeek.map((_day, dayIndex) => {
           const index = dayIndex * times.length + timeIndex;
           return (

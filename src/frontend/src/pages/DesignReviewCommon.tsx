@@ -10,10 +10,21 @@ export interface DRCModalProps {
   currentUser?: User;
 }
 
+export interface DRCProps {
+  // open: boolean;
+  title: string;
+  // onHide: () => void;
+  // onSubmit?: () => void;
+  usersToAvailabilities: Map<User, number[]>;
+  // currentUser?: User;
+}
+
 export interface TimeSlotProps {
   text?: string;
-  fontSize?: number;
+  fontSize?: string;
   backgroundColor?: string;
+  width?: string;
+  height?: string;
   onMouseDown?: (e: any) => void;
   onMouseEnter?: (e: any) => void;
   onMouseUp?: (e: any) => void;
@@ -63,6 +74,8 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   text,
   fontSize,
   backgroundColor,
+  width = '81px',
+  height = '25px',
   onMouseDown,
   onMouseEnter,
   onMouseUp,
@@ -71,8 +84,8 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   return (
     <Box
       sx={{
-        height: '25px',
-        width: '81px',
+        height,
+        width,
         backgroundColor,
         cursor: 'pointer',
         borderStyle: 'solid',
@@ -84,7 +97,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
         fontWeight: 'bold',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-end'
+        justifyContent: 'center'
       }}
       onMouseDown={onMouseDown}
       onMouseEnter={onMouseEnter}

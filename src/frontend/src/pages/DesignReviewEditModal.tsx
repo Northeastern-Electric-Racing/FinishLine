@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, currentUser }) => {
   const header = `Are you availble for the ${title} Design Review at 9:00 in the Bay`;
-
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [itemSelected, setItemSelected] = useState(false);
@@ -44,29 +43,34 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
   const renderDayHeaders = () => {
     return [
       <TimeSlot backgroundColor={getBackgroundColor(0)} />,
-      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={12} />)
+      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={'12px'} />)
     ];
   };
 
   const renderSchedule = () => {
-    return times.map((time, timeIndex) => (
-      <Grid container item xs={12}>
-        <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={13} />
-        {daysOfWeek.map((_day, dayIndex) => {
-          const index = dayIndex * times.length + timeIndex;
-          const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(3) : getBackgroundColor(0);
-          return (
-            <TimeSlot
-              key={index}
-              backgroundColor={backgroundColor}
-              onMouseDown={(e) => handleMouseDown(e, index)}
-              onMouseEnter={(e) => handleMouseEnter(e, index)}
-              onMouseUp={handleMouseUp}
-            />
-          );
-        })}
+    return (
+      <Grid container>
+        {renderDayHeaders()}
+        {times.map((time, timeIndex) => (
+          <Grid container item xs={12}>
+            <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={'13px'} />
+            {daysOfWeek.map((_day, dayIndex) => {
+              const index = dayIndex * times.length + timeIndex;
+              const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(3) : getBackgroundColor(0);
+              return (
+                <TimeSlot
+                  key={index}
+                  backgroundColor={backgroundColor}
+                  onMouseDown={(e) => handleMouseDown(e, index)}
+                  onMouseEnter={(e) => handleMouseEnter(e, index)}
+                  onMouseUp={handleMouseUp}
+                />
+              );
+            })}
+          </Grid>
+        ))}
       </Grid>
-    ));
+    );
   };
 
   return (
@@ -79,10 +83,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
       title={header}
       onSubmit={onSubmit}
     >
-      <Grid container>
-        {renderDayHeaders()}
-        {renderSchedule()}
-      </Grid>
+      {renderSchedule()}
     </NERModal>
   );
 };
