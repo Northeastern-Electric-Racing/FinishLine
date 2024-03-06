@@ -11,7 +11,7 @@ import { workPackageTransformer } from './transformers/work-packages.transformer
 
 export interface WorkPackageApiInputs {
   name: string;
-  startDate: Date;
+  startDate: String;
   duration: number;
   crId: number;
   stage: WorkPackageStage | string | null;
