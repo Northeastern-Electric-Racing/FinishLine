@@ -10,7 +10,7 @@ export interface DRCModalProps {
   currentUser?: User;
 }
 
-export interface DRCProps {
+export interface DRCViewProps {
   // open: boolean;
   title: string;
   // onHide: () => void;

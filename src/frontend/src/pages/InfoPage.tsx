@@ -12,7 +12,6 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
-import DRCViewModal from './DesignReviewViewModal';
 import DRCEditModal from './DesignReviewEditModal';
 import { useState } from 'react';
 import {
@@ -85,18 +84,9 @@ const InfoPage: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock> */}
-      <PageBlock title="DRC VIEW">
-        <button onClick={handleOpenViewModal}>OPEN VIEW MODAL</button>
-      </PageBlock>
       <PageBlock title="DRC EDIT">
         <button onClick={handleOpenEditModal}>OPEN EDIT MODAL</button>
       </PageBlock>
-      <DRCViewModal
-        open={isViewModalOpen}
-        onHide={handleCloseViewModal}
-        title={'Battery'}
-        usersToAvailabilities={usersToAvailabilities}
-      />
       <DRCEditModal
         open={isEditModalOpen}
         onHide={handleCloseEditModal}

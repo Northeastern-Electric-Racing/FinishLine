@@ -1,10 +1,10 @@
 import { Grid, Typography } from '@mui/material';
 import NERModal from '../components/NERModal';
-import { DRCProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
+import { DRCViewProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
 import { User } from 'shared';
 import { useState } from 'react';
 
-const DRCView: React.FC<DRCProps> = ({ title, usersToAvailabilities }) => {
+const DRCView: React.FC<DRCViewProps> = ({ title, usersToAvailabilities }) => {
   const header = `Are you availble for the ${title} Design Review`;
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
