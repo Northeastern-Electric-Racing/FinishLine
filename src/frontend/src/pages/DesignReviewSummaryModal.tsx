@@ -24,10 +24,11 @@ const Chip: React.FC<chipProps> = ({ icon, text }) => {
     <Typography
       sx={{
         fontSize: 13,
-        whiteSpace: 'normal',
         display: 'flex',
         alignItems: 'center',
-        paddingRight: '5px'
+        justifyContent: 'center',
+        paddingX: 1,
+        width: 'fit-content'
       }}
     >
       {icon}
@@ -128,11 +129,10 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
           <Box
             sx={{
               position: 'absolute',
-              bottom: 6,
-              right: 6,
+              bottom: 10,
+              right: 10,
               display: 'flex',
-              flexDirection: 'row',
-              zIndex: 1
+              flexDirection: 'row'
             }}
           >
             <Button
