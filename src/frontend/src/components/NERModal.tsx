@@ -34,7 +34,7 @@ const NERModal = ({
   hideFormButtons = false
 }: NERModalProps) => {
   return (
-    <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px' } }}>
+    <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px', minWidth: '600px' } }}>
       <DialogTitle sx={{ backgroundColor: background }}>{title}</DialogTitle>
       {showCloseButton && (
         <IconButton
