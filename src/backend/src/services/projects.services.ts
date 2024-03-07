@@ -547,8 +547,8 @@ export default class ProjectsService {
     price: number,
     subtotal: number,
     linkUrl: string,
+    notes: string,
     wbsNumber: WbsNumber,
-    notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
     unitName?: string
@@ -742,26 +742,26 @@ export default class ProjectsService {
     const manufacturer = await prisma.manufacturer.findFirst({
       where: {
         name
-      },
-      ...manufacturerQueryArgs
+      }
     });
 
     if (!manufacturer) {
       throw new NotFoundException('Manufacturer', name);
     }
 
-    if (manufacturer.materials.length > 0) {
-      throw new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it');
-    }
+    if (manufacturer.dateDeleted) throw new DeletedException('Manufacturer', manufacturer.name);
 
-    const deletedManufacturer = await prisma.manufacturer.delete({
+    const dateDeleted: Date = new Date();
+    const deletedManufacturer = await prisma.manufacturer.update({
       where: {
         name: manufacturer.name
       },
-      ...manufacturerQueryArgs
+      data: {
+        dateDeleted
+      }
     });
 
-    return manufacturerTransformer(deletedManufacturer);
+    return deletedManufacturer;
   }
   /**
    * Get all the manufacturers in the database.
@@ -1021,7 +1021,7 @@ export default class ProjectsService {
     price: number,
     subtotal: number,
     linkUrl: string,
-    notes?: string,
+    notes: string,
     unitName?: string,
     assemblyId?: string,
     pdmFileName?: string
@@ -1045,10 +1045,6 @@ export default class ProjectsService {
     if (!project) throw new NotFoundException('Project', material.wbsElementId);
     if (project.wbsElement.dateDeleted) throw new DeletedException('Project', project.projectId);
 
-    const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
-
-    if (!perms) throw new AccessDeniedException('update material');
-
     if (assemblyId) {
       const assembly = await prisma.assembly.findFirst({ where: { assemblyId } });
       if (!assembly) throw new NotFoundException('Assembly', assemblyId);
@@ -1059,12 +1055,21 @@ export default class ProjectsService {
     });
     if (!materialType) throw new NotFoundException('Material Type', materialTypeName);
 
+    const manufacturer = await prisma.manufacturer.findFirst({
+      where: { name: manufacturerName }
+    });
+    if (!manufacturer) throw new NotFoundException('Manufacturer', manufacturerName);
+
     if (unitName) {
       const unit = await prisma.unit.findFirst({
         where: { name: unitName }
       });
       if (!unit) throw new NotFoundException('Unit', unitName);
     }
+
+    const perms = isLeadership(submitter.role) || isUserPartOfTeams(project.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update material');
 
     const updatedMaterial = await prisma.material.update({
       where: { materialId },
@@ -1139,7 +1144,7 @@ export default class ProjectsService {
    * @param submitter user requesting the edit
    */
   static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
-    if (!isAdmin(submitter.role)) throw new AccessDeniedException('Only an admin can update the linkType');
+    if (!isHead(submitter.role)) throw new AccessDeniedException('Only the head or admin can update the linkType');
 
     // check if the linkType we are trying to update exists
     const linkType = await prisma.linkType.findUnique({

@@ -24,26 +24,14 @@ interface GenerateReceiptsModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   allReimbursementRequests?: ReimbursementRequest[];
-  startDate: Date;
-  endDate: Date;
-  setStartDate: (val: Date) => void;
-  setEndDate: (val: Date) => void;
 }
 
-const GenerateReceiptsModal = ({
-  open,
-  setOpen,
-  allReimbursementRequests,
-  startDate,
-  setStartDate,
-  endDate,
-  setEndDate
-}: GenerateReceiptsModalProps) => {
+const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: GenerateReceiptsModalProps) => {
   const toast = useToast();
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
-  const { mutateAsync, isLoading } = useDownloadPDFOfImages(startDate, endDate);
+  const { mutateAsync, isLoading } = useDownloadPDFOfImages();
 
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
@@ -104,9 +92,7 @@ const GenerateReceiptsModal = ({
                   onClose={() => setStartDatePickerOpen(false)}
                   onOpen={() => setStartDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    const newDate = newValue ?? new Date();
-                    setStartDate(newDate);
-                    onChange(newDate);
+                    onChange(newValue ?? new Date());
                   }}
                   PopperProps={{
                     placement: 'right'
@@ -136,9 +122,7 @@ const GenerateReceiptsModal = ({
                   onClose={() => setEndDatePickerOpen(false)}
                   onOpen={() => setEndDatePickerOpen(true)}
                   onChange={(newValue) => {
-                    const newDate = newValue ?? new Date();
-                    setEndDate(newDate);
-                    onChange(newDate);
+                    onChange(newValue ?? new Date());
                   }}
                   PopperProps={{
                     placement: 'right'

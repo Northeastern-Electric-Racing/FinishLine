@@ -24,7 +24,7 @@ const schema = yup.object().shape({
   price: yup.number().required('Price is required!'),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
-  notes: yup.string().optional()
+  notes: yup.string().required('Notes are required!')
 });
 
 export interface MaterialFormInput {
@@ -38,7 +38,7 @@ export interface MaterialFormInput {
   quantity: number;
   unitName?: string;
   linkUrl: string;
-  notes?: string;
+  notes: string;
   assemblyId?: string;
 }
 
@@ -53,7 +53,7 @@ export interface MaterialDataSubmission {
   quantity: Decimal;
   unitName?: string;
   linkUrl: string;
-  notes?: string;
+  notes: string;
   assemblyId?: string;
   subtotal: number;
 }
@@ -86,7 +86,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       price: defaultValues?.price ?? 0,
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
-      notes: defaultValues?.notes,
+      notes: defaultValues?.notes ?? '',
       assemblyId: defaultValues?.assemblyId
     },
     resolver: yupResolver(schema)

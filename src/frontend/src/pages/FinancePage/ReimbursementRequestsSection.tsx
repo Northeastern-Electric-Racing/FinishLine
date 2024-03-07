@@ -195,7 +195,6 @@ const ReimbursementRequestTable = ({
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
                 <TableCell align="center">{row.vendor.name}</TableCell>
-                {tabValue === 1 && <TableCell align="center">{codeAndRefundSourceName(row.refundSource)}</TableCell>}
                 <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
               </TableRow>
             ))}

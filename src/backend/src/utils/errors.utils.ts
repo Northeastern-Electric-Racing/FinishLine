@@ -110,7 +110,6 @@ type ExceptionObjectNames =
   | 'Vendor'
   | 'Expense Type'
   | 'Reimbursement Request'
-  | 'Reimbursement'
   | 'User Secure Settings'
   | 'Material'
   | 'Image File'
@@ -120,5 +119,4 @@ type ExceptionObjectNames =
   | 'Manufacturer'
   | 'Unit'
   | 'Material'
-  | 'Link Type'
-  | 'Design Review';
+  | 'Link Type';

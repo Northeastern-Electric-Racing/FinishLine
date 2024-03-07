@@ -23,7 +23,7 @@ const AppPublic: React.FC = () => {
         theme.toggleTheme();
       }
 
-      return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} />;
+      return <AppAuthenticated userId={auth.user.userId} />;
     }
 
     // if we're on development and the userId is stored in localStorage,

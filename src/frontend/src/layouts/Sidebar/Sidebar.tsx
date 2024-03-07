@@ -115,7 +115,7 @@ const Sidebar = ({ defaultOpen = false }: SidebarProps) => {
               <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo.svg" />
             </Stack>
           )}
-          <Typography className={styles.versionNumber}>v4.3.5</Typography>
+          <Typography className={styles.versionNumber}>v4.3.0</Typography>
         </Box>
       </Box>
     </NERDrawer>

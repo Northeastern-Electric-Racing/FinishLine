@@ -4,7 +4,7 @@
  */
 
 import { expenseTypePipe } from '../../../utils/pipes';
-import { Assignment, Edit } from '@mui/icons-material';
+import { Edit } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -49,7 +49,6 @@ import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
-import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -75,7 +74,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const { mutateAsync: markReimbursed } = useMarkReimbursementRequestAsReimbursed(
     reimbursementRequest.reimbursementRequestId
   );
-  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
 
   const handleDelete = () => {
     try {
@@ -298,10 +296,13 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         isReimbursementRequestDenied(reimbursementRequest)
     },
     {
-      title: isSaboSubmitted ? 'Sabo Info' : 'Submit to Sabo',
+      title: 'Approve',
       onClick: () => setShowSubmitToSaboModal(true),
-      icon: isSaboSubmitted ? <Assignment /> : <CheckIcon />,
-      disabled: !user.isFinance
+      icon: <CheckIcon />,
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestSaboSubmitted(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
     },
     {
       title: 'Deny',
@@ -314,17 +315,13 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   ];
 
-  const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
-  const statusTypes = sortedStatus.map((status) => status.type);
-  const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
-      chips={
-        <Box id="status" display="flex">
-          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
-        </Box>
-      }
+      title={`${
+        isReimbursementRequestDenied(reimbursementRequest)
+          ? `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request - Denied`
+          : `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`
+      }`}
       previousPages={[
         {
           name: 'Finance',

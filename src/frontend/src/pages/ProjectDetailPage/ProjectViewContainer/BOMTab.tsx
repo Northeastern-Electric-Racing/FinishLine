@@ -39,7 +39,7 @@ const BOMTab = ({ project }: { project: Project }) => {
             >
               New Entry
             </NERSuccessButton>
-            <NERButton variant="contained" onClick={() => setShowAddAssembly(true)} disabled={isGuest(user.role)}>
+            <NERButton variant="contained" onClick={() => setShowAddAssembly(true)}>
               New Assembly
             </NERButton>
           </Box>

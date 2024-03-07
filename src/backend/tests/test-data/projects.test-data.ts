@@ -1,14 +1,14 @@
 import {
   Assembly,
-  Material as PrismaMaterial,
+  Material,
   Material_Type as PrismaMaterialType,
   Prisma,
   WBS_Element_Status as PrismaWBSElementStatus,
   Project,
-  Manufacturer as PrismaManufacturer,
+  Manufacturer,
   Unit
 } from '@prisma/client';
-import { Project as SharedProject, WbsElementStatus, LinkType, Manufacturer, Material, MaterialStatus } from 'shared';
+import { Project as SharedProject, WbsElementStatus, LinkType } from 'shared';
 import projectQueryArgs from '../../src/prisma-query-args/projects.query-args';
 import { prismaTeam1 } from './teams.test-data';
 import { batman, superman } from './users.test-data';
@@ -166,7 +166,7 @@ export const prismaUnit: Unit = {
   name: 'FT'
 };
 
-export const prismaMaterial: PrismaMaterial = {
+export const prismaMaterial: Material = {
   materialId: 'id',
   assemblyId: 'assemblyId',
   name: 'name',
@@ -187,61 +187,18 @@ export const prismaMaterial: PrismaMaterial = {
   unitName: 'FT',
   linkUrl: 'https://www.google.com'
 };
-
-export const material1: Material = {
-  materialId: '2',
-  name: 'wood',
-  wbsElementId: 1,
-  dateCreated: new Date('2023-02-20'),
-  userCreatedId: 3,
-  userCreated: batman,
-  status: MaterialStatus.Ordered,
-  materialTypeName: 'logs',
-  materialType: {
-    name: 'material',
-    dateCreated: new Date('2022-12-22'),
-    userCreatedId: 4
-  },
-  manufacturerName: 'Amazon',
-  manufacturer: {
-    name: 'Big Company',
-    dateCreated: new Date('2024-01-05'),
-    userCreatedId: 6
-  },
-  manufacturerPartNumber: '11223',
-  quantity: new Decimal(8),
-  price: 20,
-  subtotal: 2000,
-  linkUrl: 'https://example.com',
-  notes: 'IDK'
-};
-
-export const prismaManufacturer1: PrismaManufacturer = {
-  name: 'PrismaManufacturer1',
+export const prismaManufacturer1: Manufacturer = {
+  name: 'Manufacturer1',
   dateCreated: new Date('10-1-2023'),
-  userCreatedId: 1
+  userCreatedId: 1,
+  dateDeleted: null
 };
 
-export const prismaManufacturer2: PrismaManufacturer = {
+export const prismaManufacturer2: Manufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
-  userCreatedId: 1
-};
-
-export const manufacturer1: Manufacturer = {
-  name: 'Manufacturer1',
-  dateCreated: new Date('02-19-2023'),
   userCreatedId: 1,
-  userCreated: batman,
-  materials: []
-};
-
-export const manufacturer2: Manufacturer = {
-  name: 'Manufacturer2',
-  dateCreated: new Date('02-19-2023'),
-  userCreatedId: 1,
-  userCreated: batman,
-  materials: [material1]
+  dateDeleted: new Date('10-18-2023')
 };
 
 export const toolMaterial: PrismaMaterialType = {
@@ -251,7 +208,7 @@ export const toolMaterial: PrismaMaterialType = {
   dateDeleted: null
 };
 
-export const prismaMaterial2: PrismaMaterial = {
+export const prismaMaterial2: Material = {
   materialId: 'id',
   assemblyId: 'assemblyId',
   name: 'name2',
@@ -273,7 +230,7 @@ export const prismaMaterial2: PrismaMaterial = {
   linkUrl: 'https://www.google.com'
 };
 
-export const prismaMaterial1: PrismaMaterial = {
+export const prismaMaterial1: Material = {
   materialId: '1',
   assemblyId: '1',
   dateCreated: new Date('2023-11-07'),
