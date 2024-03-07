@@ -1,5 +1,10 @@
 import { Box } from '@mui/system';
+import { ReactElement } from 'react';
 import { User } from 'shared';
+import WarningIcon from '@mui/icons-material/Warning';
+import BuildIcon from '@mui/icons-material/Build';
+import ComputerIcon from '@mui/icons-material/Computer';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 
 export interface DRCModalProps {
   open: boolean;
@@ -19,8 +24,8 @@ export interface TimeSlotProps {
   text?: string;
   fontSize?: string;
   backgroundColor?: string;
-  width?: string;
-  height?: string;
+  icon?: string;
+  isModal: boolean;
   onMouseDown?: (e: any) => void;
   onMouseEnter?: (e: any) => void;
   onMouseUp?: (e: any) => void;
@@ -43,11 +48,10 @@ const times = [
   '9-10 PM'
 ];
 
-const getBackgroundColor = (frequency: number = 0): string => {
+function getBackgroundColor(frequency: number = 0): string {
   if (frequency > 5) {
     return '#D70C0F';
   }
-
   switch (frequency) {
     case 0:
       return '#D9D9D9';
@@ -64,14 +68,31 @@ const getBackgroundColor = (frequency: number = 0): string => {
     default:
       return '#D9D9D9';
   }
-};
+}
+
+function getIcon(icon: string, isModal: boolean): ReactElement | null {
+  const iconStyle = isModal ? { fontSize: '1.4em' } : { fontSize: '2em' };
+
+  switch (icon) {
+    case 'warning':
+      return <WarningIcon sx={iconStyle} />;
+    case 'build':
+      return <BuildIcon sx={iconStyle} />;
+    case 'computer':
+      return <ComputerIcon sx={iconStyle} />;
+    case 'electrical':
+      return <ElectricalServicesIcon sx={iconStyle} />;
+    default:
+      return null;
+  }
+}
 
 const TimeSlot: React.FC<TimeSlotProps> = ({
   text,
   fontSize,
   backgroundColor,
-  width = '81px',
-  height = '25px',
+  isModal,
+  icon,
   onMouseDown,
   onMouseEnter,
   onMouseUp,
@@ -80,8 +101,8 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   return (
     <Box
       sx={{
-        height,
-        width,
+        height: isModal ? '25px' : '4.7vh',
+        width: isModal ? '81px' : '11%',
         backgroundColor,
         cursor: 'pointer',
         borderStyle: 'solid',
@@ -100,9 +121,10 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
       onMouseUp={onMouseUp}
       onMouseOver={onMouseOver}
     >
+      {icon && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getIcon(icon, isModal)}</Box>}
       {text}
     </Box>
   );
 };
 
-export { daysOfWeek, times, getBackgroundColor, TimeSlot };
+export { daysOfWeek, times, TimeSlot, getBackgroundColor, getIcon };

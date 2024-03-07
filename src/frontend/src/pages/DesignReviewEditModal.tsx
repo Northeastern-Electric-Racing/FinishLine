@@ -19,6 +19,12 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
     setIsDragging(true);
   };
 
+  const timeslotData = new Map<number, string>();
+  timeslotData.set(5, 'warning');
+  timeslotData.set(6, 'build');
+  timeslotData.set(7, 'computer');
+  timeslotData.set(8, 'electrical');
+
   const handleMouseEnter = (event: any, selectedTime: number) => {
     if (!isDragging) return;
     toggleTimeSlot(selectedTime);
@@ -42,8 +48,10 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
 
   const renderDayHeaders = () => {
     return [
-      <TimeSlot backgroundColor={getBackgroundColor(0)} />,
-      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={'12px'} />)
+      <TimeSlot backgroundColor={getBackgroundColor(0)} isModal={true} />,
+      daysOfWeek.map((day) => (
+        <TimeSlot key={day} backgroundColor={getBackgroundColor()} isModal={true} text={day} fontSize={'12px'} />
+      ))
     ];
   };
 
@@ -53,7 +61,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
         {renderDayHeaders()}
         {times.map((time, timeIndex) => (
           <Grid container item xs={12}>
-            <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={'13px'} />
+            <TimeSlot backgroundColor={getBackgroundColor()} isModal={true} text={time} fontSize={'13px'} />
             {daysOfWeek.map((_day, dayIndex) => {
               const index = dayIndex * times.length + timeIndex;
               const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(3) : getBackgroundColor(0);
@@ -61,9 +69,11 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
                 <TimeSlot
                   key={index}
                   backgroundColor={backgroundColor}
+                  isModal={true}
                   onMouseDown={(e) => handleMouseDown(e, index)}
                   onMouseEnter={(e) => handleMouseEnter(e, index)}
                   onMouseUp={handleMouseUp}
+                  icon={timeslotData.get(index)}
                 />
               );
             })}
