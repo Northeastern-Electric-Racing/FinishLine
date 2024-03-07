@@ -3,6 +3,7 @@ import {
   Reimbursement,
   ReimbursementProduct,
   ReimbursementRequest,
+  ReimbursementRequestRow,
   ReimbursementStatus,
   ReimbursementStatusType,
   WBSElementData,
@@ -113,7 +114,7 @@ export const getRefundRowData = (refund: Reimbursement) => {
   return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted };
 };
 
-export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest) => {
+export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest): ReimbursementRequestRow => {
   return {
     id: reimbursementRequest.reimbursementRequestId,
     saboId: reimbursementRequest.saboId,

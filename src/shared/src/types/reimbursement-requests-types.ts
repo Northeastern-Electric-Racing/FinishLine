@@ -6,6 +6,22 @@ export enum ClubAccount {
   BUDGET = 'BUDGET'
 }
 
+export enum SortingOrder {
+  descending = 'desc',
+  ascending = 'asc'
+}
+
+export interface ReimbursementRequestRow {
+  id: string;
+  saboId: number | undefined;
+  amount: number;
+  dateSubmitted: Date;
+  status: ReimbursementStatusType;
+  dateSubmittedToSabo: Date | undefined;
+  submitter: User;
+  vendor: Vendor;
+}
+
 export enum ReimbursementStatusType {
   PENDING_FINANCE = 'PENDING_FINANCE',
   SABO_SUBMITTED = 'SABO_SUBMITTED',

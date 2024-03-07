@@ -4,27 +4,24 @@ import { useState } from 'react';
 import { ReimbursementRequest, isAdmin, Vendor, ReimbursementStatusType } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
-import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
 import { cleanReimbursementRequestStatus, createReimbursementRequestRowData } from '../../utils/reimbursement-request.utils';
+import { SortingOrder, ReimbursementRequestRow } from '../../../../shared/src/types/reimbursement-requests-types';
 import TableSortLabel from '@mui/material/TableSortLabel';
+import { User } from '../../../../shared/src/types/user-types';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
   allReimbursementRequests?: ReimbursementRequest[];
 }
 
-type ColumnNames = 'id' | 'saboId' | 'amount' | 'dateSubmitted' | 'status' | 'dateSubmittedToSabo' | 'submitter' | 'vendor';
-
-type Order = 'asc' | 'desc';
-
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
   allReimbursementRequests
 }: ReimbursementRequestTableProps) => {
-  const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<ColumnNames>('dateSubmittedToSabo');
+  const [order, setOrder] = useState<SortingOrder>(SortingOrder.ascending);
+  const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('dateSubmittedToSabo');
 
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
@@ -34,14 +31,7 @@ const ReimbursementRequestTable = ({
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
-  // function getComparator<Key extends keyof any>(
-  //   order: Order,
-  //   orderBy: Key
-  // ): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
-  //   return order === 'desc' ? (a, b) => descendingComparator(a, b, orderBy) : (a, b) => -descendingComparator(a, b, orderBy);
-  // }
-
-  function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+  const descendingComparator = <T,>(a: T, b: T, orderBy: keyof T) => {
     if (b[orderBy] < a[orderBy]) {
       return -1;
     }
@@ -49,13 +39,14 @@ const ReimbursementRequestTable = ({
       return 1;
     }
     return 0;
-  }
+  };
 
-  function statusDescendingComparator(a: ReimbursementStatusType, b: ReimbursementStatusType): number {
+  const statusDescendingComparator = (a: ReimbursementStatusType, b: ReimbursementStatusType) => {
     const statusOrder = new Map<ReimbursementStatusType, number>([
       [ReimbursementStatusType.PENDING_FINANCE, 1],
       [ReimbursementStatusType.SABO_SUBMITTED, 2],
       [ReimbursementStatusType.ADVISOR_APPROVED, 3],
+      [ReimbursementStatusType.REIMBURSED, 4],
       [ReimbursementStatusType.DENIED, 5]
     ]);
 
@@ -71,9 +62,9 @@ const ReimbursementRequestTable = ({
       }
     }
     return 0;
-  }
+  };
 
-  function vendorDescendingComparator(a: Vendor, b: Vendor): number {
+  const vendorDescendingComparator = (a: Vendor, b: Vendor) => {
     if (b.name < a.name) {
       return -1;
     }
@@ -81,7 +72,17 @@ const ReimbursementRequestTable = ({
       return 1;
     }
     return 0;
-  }
+  };
+
+  const submitterDescendingComparator = (a: User, b: User) => {
+    if (b.firstName < a.firstName) {
+      return -1;
+    }
+    if (b.firstName > a.firstName) {
+      return 1;
+    }
+    return 0;
+  };
 
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
     if (orderBy === 'vendor') {
@@ -94,18 +95,61 @@ const ReimbursementRequestTable = ({
         ? statusDescendingComparator(a.status, b.status)
         : -statusDescendingComparator(a.status, b.status);
     }
+    if (orderBy === 'submitter') {
+      return order === 'desc'
+        ? submitterDescendingComparator(a.submitter, b.submitter)
+        : -submitterDescendingComparator(a.submitter, b.submitter);
+    }
+    if (b[orderBy] === undefined) {
+      return -1;
+    }
     return order === 'desc' ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
   });
 
   const tabs = [{ label: 'My Requests', value: 0 }];
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Requests', value: 1 });
 
-  const handleRequestSort = (property: ColumnNames) => (event: React.MouseEvent<unknown>) => {
+  const handleRequestSort = (property: keyof ReimbursementRequestRow) => {
     const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    setOrder(isAsc ? SortingOrder.descending : SortingOrder.ascending);
     setOrderBy(property);
-    console.log(order, orderBy);
   };
+
+  interface ReimbursementTableHeadCell {
+    id: keyof ReimbursementRequestRow;
+    label: string;
+  }
+
+  const headCells: readonly ReimbursementTableHeadCell[] = [
+    {
+      id: 'submitter',
+      label: 'Recipient'
+    },
+    {
+      id: 'saboId',
+      label: 'Sabo ID'
+    },
+    {
+      id: 'amount',
+      label: 'Amount ($)'
+    },
+    {
+      id: 'dateSubmitted',
+      label: 'Date Submitted'
+    },
+    {
+      id: 'dateSubmittedToSabo',
+      label: 'Date Submitted To Sabo'
+    },
+    {
+      id: 'vendor',
+      label: 'Vendor'
+    },
+    {
+      id: 'status',
+      label: 'Status'
+    }
+  ];
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
@@ -114,86 +158,27 @@ const ReimbursementRequestTable = ({
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              {tabValue === 1 && <ColumnHeader title="Recipient" />}
-              <TableCell
-                align="center"
-                sx={{ fontSize: '16px', fontWeight: 600 }}
-                sortDirection={orderBy === 'saboId' ? order : false}
-              >
-                <TableSortLabel
-                  active={orderBy === 'saboId'}
-                  direction={orderBy === 'saboId' ? order : 'asc'}
-                  onClick={handleRequestSort('saboId')}
-                >
-                  Sabo ID
-                </TableSortLabel>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ fontSize: '16px', fontWeight: 600 }}
-                sortDirection={orderBy === 'amount' ? order : false}
-              >
-                {' '}
-                <TableSortLabel
-                  active={orderBy === 'amount'}
-                  direction={orderBy === 'amount' ? order : 'asc'}
-                  onClick={handleRequestSort('amount')}
-                >
-                  Amount ($)
-                </TableSortLabel>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ fontSize: '16px', fontWeight: 600 }}
-                sortDirection={orderBy === 'dateSubmitted' ? order : false}
-              >
-                <TableSortLabel
-                  active={orderBy === 'dateSubmitted'}
-                  direction={orderBy === 'dateSubmitted' ? order : 'asc'}
-                  onClick={handleRequestSort('dateSubmitted')}
-                >
-                  Date Submitted
-                </TableSortLabel>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ fontSize: '16px', fontWeight: 600 }}
-                sortDirection={orderBy === 'dateSubmittedToSabo' ? order : false}
-              >
-                <TableSortLabel
-                  active={orderBy === 'dateSubmittedToSabo'}
-                  direction={orderBy === 'dateSubmittedToSabo' ? order : 'asc'}
-                  onClick={handleRequestSort('dateSubmittedToSabo')}
-                >
-                  Date Submitted To Sabo
-                </TableSortLabel>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ fontSize: '16px', fontWeight: 600 }}
-                sortDirection={orderBy === 'vendor' ? order : false}
-              >
-                <TableSortLabel
-                  active={orderBy === 'vendor'}
-                  direction={orderBy === 'vendor' ? order : 'asc'}
-                  onClick={handleRequestSort('vendor')}
-                >
-                  Vendor
-                </TableSortLabel>
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ fontSize: '16px', fontWeight: 600 }}
-                sortDirection={orderBy === 'status' ? order : false}
-              >
-                <TableSortLabel
-                  active={orderBy === 'status'}
-                  direction={orderBy === 'status' ? order : 'asc'}
-                  onClick={handleRequestSort('status')}
-                >
-                  Status
-                </TableSortLabel>
-              </TableCell>
+              {headCells.map((headCell, i) => {
+                if (tabValue === 1 || i !== 0) {
+                  return (
+                    <TableCell
+                      align="center"
+                      sx={{ fontSize: '16px', fontWeight: 600 }}
+                      sortDirection={orderBy === headCell.id ? order : false}
+                    >
+                      <TableSortLabel
+                        active={orderBy === headCell.id}
+                        direction={orderBy === headCell.id ? order : 'asc'}
+                        onClick={() => handleRequestSort(headCell.id)}
+                      >
+                        {headCell.label}
+                      </TableSortLabel>
+                    </TableCell>
+                  );
+                } else {
+                  return null;
+                }
+              })}
             </TableRow>
           </TableHead>
           <TableBody>
