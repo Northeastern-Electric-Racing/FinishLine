@@ -3,7 +3,15 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import { ReimbursementRequest, isAdmin, Vendor, ReimbursementStatusType } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
+import {
+  centsToDollar,
+  codeAndRefundSourceName,
+  datePipe,
+  dateUndefinedPipe,
+  fullNamePipe,
+  undefinedPipe
+} from '../../utils/pipes';
+import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
 import { cleanReimbursementRequestStatus, createReimbursementRequestRowData } from '../../utils/reimbursement-request.utils';
