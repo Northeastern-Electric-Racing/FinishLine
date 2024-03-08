@@ -1,6 +1,6 @@
 import { ChangeRequestType, DesignReview, User, WbsNumber, wbsPipe } from 'shared';
 import NERModal from '../components/NERModal';
-import { Box, Button, FormControlLabel, Grid, IconButton, Link, Typography } from '@mui/material';
+import { Box, Button, FormControlLabel, Grid, IconButton, Link, TextField, Typography } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -10,7 +10,7 @@ import { meetingTimePipe } from '../utils/pipes';
 import Checkbox from '@mui/material/Checkbox';
 import { routes } from '../utils/routes';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { useAuth } from '../hooks/auth.hooks';
 import { useCreateStageGateChangeRequest } from '../hooks/change-requests.hooks';
 import { useToast } from '../hooks/toasts.hooks';
@@ -115,6 +115,53 @@ const StageGateModal: React.FC<StageGateModalProps> = ({ wbsNum, modalShow, hand
   return <StageGateWorkPackageModal wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
 
+// delay wp modal component
+const DelayModal: React.FC<{ open: boolean; onHide: () => void; dr: DesignReview }> = ({ open, onHide, dr }) => {
+  const toast = useToast();
+  const [weeks, setWeeks] = useState<string>('');
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === '' || parseInt(e.target.value) >= 1) {
+      setWeeks(e.target.value);
+    } else {
+      toast.error('If delaying, it must be by at least 1 week');
+    }
+  };
+
+  return (
+    <NERModal open={open} title="Delay WP" onHide={onHide} hideFormButtons showCloseButton>
+      <TextField
+        type="number"
+        label="Enter number of weeks"
+        variant="outlined"
+        value={weeks}
+        onChange={onChange}
+        fullWidth
+        margin="normal"
+      />
+      <Button
+        sx={{
+          color: 'white',
+          backgroundColor: '#EF4345',
+          ':hover': { backgroundColor: '#A72D2D' },
+          fontSize: 10,
+          fontWeight: 'bold',
+          marginLeft: '75%',
+          marginTop: '10px'
+        }}
+      >
+        <Link
+          underline="none"
+          color={'text.primary'}
+          component={RouterLink}
+          to={`${routes.CHANGE_REQUESTS}/new?wbsNum=${wbsPipe(dr.wbsNum)}&timelineDelay=${weeks}`}
+        >
+          Delay
+        </Link>
+      </Button>
+    </NERModal>
+  );
+};
+
 interface DRCSummaryModalProps {
   open: boolean;
   onHide: () => void;
@@ -123,6 +170,7 @@ interface DRCSummaryModalProps {
 
 const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview }) => {
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
+  const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
   return (
     <NERModal open={open} onHide={onHide} title={designReview.wbsName} hideFormButtons>
       <StageGateModal
@@ -130,6 +178,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         modalShow={showStageGateModal}
         handleClose={() => setShowStageGateModal(false)}
       />
+      <DelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} dr={designReview} />
       <IconButton sx={{ position: 'absolute', right: 16, top: 12 }}>
         <EditIcon />
       </IconButton>
@@ -255,15 +304,9 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                 marginLeft: 1,
                 fontWeight: 'bold'
               }}
+              onClick={() => setShowDelayModal(true)}
             >
-              <Link
-                underline="none"
-                color={'text.primary'}
-                component={RouterLink}
-                to={`${routes.CHANGE_REQUESTS}/new?wbsNum=${wbsPipe(designReview.wbsNum)}`}
-              >
-                Request Delay to WP
-              </Link>
+              Request Delay to WP
             </Button>
           </Box>
         </Grid>

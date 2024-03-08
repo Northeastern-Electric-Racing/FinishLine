@@ -47,7 +47,7 @@ const InfoPage: React.FC = () => {
     isInPerson: false,
     zoomLink: 'https://example.com/zoomlink',
     attendees: [],
-    wbsName: 'Project X',
+    wbsName: 'Battery',
     wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
     docTemplateLink: 'https://www.google.com'
   };
