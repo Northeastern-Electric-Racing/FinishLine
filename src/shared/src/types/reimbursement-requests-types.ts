@@ -20,6 +20,7 @@ export interface ReimbursementRequestRow {
   dateSubmittedToSabo: Date | undefined;
   submitter: User;
   vendor: Vendor;
+  refundSource: ClubAccount;
 }
 
 export enum ReimbursementStatusType {
@@ -47,6 +48,7 @@ export interface Receipt {
 
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
+  identifier: number;
   saboId?: number;
   dateCreated: Date;
   dateDeleted?: Date;

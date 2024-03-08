@@ -100,7 +100,7 @@ projectRouter.post(
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString(),
+  body('notes').isString().optional(),
   validateInputs,
   ProjectsController.createMaterial
 );
@@ -113,7 +113,7 @@ projectRouter.post(
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
-  intMinZero(body('quantity')),
+  decimalMinZero(body('quantity')),
   body('unitName').optional(),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
