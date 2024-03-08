@@ -11,9 +11,9 @@ export default class DesignReviewController {
         dateScheduled,
         teamType,
         requiredMembers,
-        optionaldMembers,
+        optionalMembers,
         isOnline,
-        isInPeron,
+        isInPerson,
         zoomLink,
         location,
         docTemplateLink,
@@ -26,6 +26,7 @@ export default class DesignReviewController {
 
       const { designReviewId } = req.params;
 
+      // get the user from the header
       const user = await getCurrentUser(res);
 
       await DesignReviewService.editDesignReview(
@@ -34,9 +35,9 @@ export default class DesignReviewController {
         dateScheduled,
         teamType.teamTypeId,
         requiredMembers,
-        optionaldMembers,
+        optionalMembers,
         isOnline,
-        isInPeron,
+        isInPerson,
         zoomLink,
         location,
         docTemplateLink,
