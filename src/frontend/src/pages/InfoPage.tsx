@@ -26,15 +26,12 @@ import {
 import DRCView from './DesignReviewView';
 
 const InfoPage: React.FC = () => {
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  const handleOpenViewModal = () => setIsViewModalOpen(true);
-  const handleCloseViewModal = () => setIsViewModalOpen(false);
-
   const handleOpenEditModal = () => setIsEditModalOpen(true);
   const handleCloseEditModal = () => setIsEditModalOpen(false);
 
+  // We will have to make a call to the backend to get this data
+  // currently hardcoded for testing purposes
   const usersToAvailabilities = new Map([
     [superman, [1, 2, 3, 4, 5, 6, 7]],
     [batman, [2, 3, 4, 5, 6, 7]],
@@ -44,6 +41,15 @@ const InfoPage: React.FC = () => {
     [flash, [6, 7]],
     [aquaman, [7]]
   ]);
+
+  // We will have to maker a call to the backend to get this data
+  // currently hardcoded for testing purposes
+  const iconData = new Map<number, string>();
+  iconData.set(5, 'warning');
+  iconData.set(10, 'build');
+  iconData.set(20, 'computer');
+  iconData.set(50, 'electrical');
+
   return (
     <PageLayout title="Information">
       {/* <PageBlock title="Resources">
@@ -92,8 +98,9 @@ const InfoPage: React.FC = () => {
         onHide={handleCloseEditModal}
         title={'Battery'}
         usersToAvailabilities={usersToAvailabilities}
+        iconData={iconData}
       />
-      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} />
+      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} iconData={iconData} />
     </PageLayout>
   );
 };

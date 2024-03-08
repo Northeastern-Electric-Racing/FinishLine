@@ -1,32 +1,15 @@
-import { Button, Grid, Icon, Typography } from '@mui/material';
-import { DRCViewProps, getBackgroundColor, times, daysOfWeek, TimeSlot, getIcon } from './DesignReviewCommon';
+import { Button, Grid, Typography } from '@mui/material';
+import { DRCViewProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
 import { User } from 'shared';
-import { ReactElement, useState } from 'react';
+import { useState } from 'react';
 import WarningIcon from '@mui/icons-material/Warning';
 
-const DRCView: React.FC<DRCViewProps> = ({ title, usersToAvailabilities }) => {
-  const header = `Are you availble for the ${title} Design Review`;
+const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
-  const timeslotIcons = new Map<number, ReactElement>();
   const numberOfTimeSlots = times.length * daysOfWeek.length;
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
-
-  const renderDayHeaders = () => {
-    return [
-      <TimeSlot backgroundColor={getBackgroundColor()} isModal={false} />,
-      daysOfWeek.map((day) => (
-        <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={'1em'} isModal={false} />
-      ))
-    ];
-  };
-
-  const timeslotData = new Map<number, string>();
-  timeslotData.set(5, 'warning');
-  timeslotData.set(6, 'build');
-  timeslotData.set(7, 'computer');
-  timeslotData.set(8, 'electrical');
 
   function createAvailableUsers() {
     for (let time = 0; time < numberOfTimeSlots; time++) {
@@ -63,6 +46,15 @@ const DRCView: React.FC<DRCViewProps> = ({ title, usersToAvailabilities }) => {
     setCurrentUnavailableUsers([]);
   };
 
+  const renderDayHeaders = () => {
+    return [
+      <TimeSlot backgroundColor={getBackgroundColor()} isModal={false} />,
+      daysOfWeek.map((day) => (
+        <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={'1em'} isModal={false} />
+      ))
+    ];
+  };
+
   const renderSchedule = () => {
     createAvailableUsers();
     createUnavailableUsers();
@@ -80,7 +72,7 @@ const DRCView: React.FC<DRCViewProps> = ({ title, usersToAvailabilities }) => {
                   backgroundColor={getBackgroundColor(availableUsers.get(index)?.length)}
                   onMouseOver={() => handleOnMouseOver(index)}
                   isModal={false}
-                  icon={timeslotData.get(index)}
+                  icon={iconData.get(index)}
                 />
               );
             })}

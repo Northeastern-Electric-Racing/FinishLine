@@ -12,12 +12,13 @@ export interface DRCModalProps {
   onHide: () => void;
   onSubmit?: () => void;
   usersToAvailabilities: Map<User, number[]>;
-  currentUser?: User;
+  iconData: Map<number, string>;
 }
 
 export interface DRCViewProps {
   title: string;
   usersToAvailabilities: Map<User, number[]>;
+  iconData: Map<number, string>;
 }
 
 export interface TimeSlotProps {

@@ -3,11 +3,12 @@ import NERModal from '../components/NERModal';
 import { DRCModalProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
 import { useState } from 'react';
 
-const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, currentUser }) => {
+const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, iconData }) => {
   const header = `Are you availble for the ${title} Design Review at 9:00 in the Bay`;
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [itemSelected, setItemSelected] = useState(false);
+  const resetSelectedTimes = () => setSelectedTimes([]);
 
   const handleMouseDown = (event: any, selectedTime: number) => {
     event.preventDefault();
@@ -19,15 +20,13 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
     setIsDragging(true);
   };
 
-  const timeslotData = new Map<number, string>();
-  timeslotData.set(5, 'warning');
-  timeslotData.set(6, 'build');
-  timeslotData.set(7, 'computer');
-  timeslotData.set(8, 'electrical');
-
   const handleMouseEnter = (event: any, selectedTime: number) => {
     if (!isDragging) return;
     toggleTimeSlot(selectedTime);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   const toggleTimeSlot = (selectedTime: number) => {
@@ -39,12 +38,6 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
       }
     });
   };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const resetSelectedTimes = () => setSelectedTimes([]);
 
   const renderDayHeaders = () => {
     return [
@@ -73,7 +66,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
                   onMouseDown={(e) => handleMouseDown(e, index)}
                   onMouseEnter={(e) => handleMouseEnter(e, index)}
                   onMouseUp={handleMouseUp}
-                  icon={timeslotData.get(index)}
+                  icon={iconData.get(index)}
                 />
               );
             })}
