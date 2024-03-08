@@ -49,7 +49,7 @@ export default class DesignReviewService {
     // make sure the confirmedMembers are not in the denied Members
     // for review: should someone be able to edit confifirmed and denied members?
     if (confirmedMembers.length > 0 && confirmedMembers.some((cMember) => deniedMembers.includes(cMember))) {
-      throw new HttpException(400, optionalMembers.toString());
+      throw new HttpException(400, 'confirmed members cannot be in denied members');
     }
 
     // make sure the requiredMembers are not in the optionalMembers
