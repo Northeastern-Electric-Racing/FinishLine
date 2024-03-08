@@ -23,27 +23,22 @@ enum months {
 }
 
 const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayMonth }) => {
-  const getMonthName = (month: number) => {
-    return months[month];
-  };
-  const getMonthNumber = (month: string) => {
-    return EnumToArray(months).indexOf(month);
-  };
+  // TODO change this to use Pagination instead of hardocding 50 years
+  const years = [...Array(50).keys()].map((num) => (num + 2024).toString());
 
   return (
     <Box>
       <TextField
         select
-        defaultValue={getMonthName(displayMonth.getMonth())}
+        defaultValue={displayMonth.getMonth()}
         onChange={(event) => {
-          displayMonth.setMonth(getMonthNumber(event.target.value));
+          displayMonth.setMonth(Number(event.target.value));
           setDisplayMonth(new Date(displayMonth));
         }}
       >
-        {EnumToArray(months).map((month) => {
-          console.log(month);
+        {EnumToArray(months).map((month, index) => {
           return (
-            <MenuItem key={month} value={month}>
+            <MenuItem key={month} value={index}>
               {month}
             </MenuItem>
           );
@@ -58,14 +53,12 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
           setDisplayMonth(new Date(displayMonth));
         }}
       >
-        {[...Array(50).keys()].map((num) => {
-          const year = (num + 2024).toString();
-          return (
-            <MenuItem key={year} value={year}>
-              {year}
-            </MenuItem>
-          );
-        })}
+        {years.map((year) => (
+          <MenuItem key={year} value={year}>
+            {year}
+          </MenuItem>
+        ))}
+        ;
       </TextField>
     </Box>
   );
