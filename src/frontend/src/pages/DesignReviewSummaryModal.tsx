@@ -1,6 +1,6 @@
-import { DesignReview, User } from 'shared';
+import { ChangeRequestType, DesignReview, User, WbsNumber, wbsPipe } from 'shared';
 import NERModal from '../components/NERModal';
-import { Box, Button, FormControlLabel, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Button, FormControlLabel, Grid, IconButton, Link, Typography } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -8,18 +8,19 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import EditIcon from '@mui/icons-material/Edit';
 import { meetingTimePipe } from '../utils/pipes';
 import Checkbox from '@mui/material/Checkbox';
+import { routes } from '../utils/routes';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../hooks/auth.hooks';
+import { useCreateStageGateChangeRequest } from '../hooks/change-requests.hooks';
+import { useToast } from '../hooks/toasts.hooks';
+import StageGateWorkPackageModal from './WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModal';
 
-interface DRCSummaryModalProps {
-  open: boolean;
-  onHide: () => void;
-  designReview: DesignReview;
-}
-
-interface chipProps {
+// component for regular DR pills
+const Pill: React.FC<{
   icon: React.ReactNode;
   text: string;
-}
-const Chip: React.FC<chipProps> = ({ icon, text }) => {
+}> = ({ icon, text }) => {
   return (
     <Typography
       sx={{
@@ -37,7 +38,33 @@ const Chip: React.FC<chipProps> = ({ icon, text }) => {
   );
 };
 
-const MemberChip: React.FC<{ user: User }> = ({ user }) => {
+// component for the DR pills that are links (zoom and docs)
+const LinkPill: React.FC<{
+  icon: React.ReactNode;
+  linkText: string;
+  displayText: string;
+}> = ({ icon, linkText, displayText }) => {
+  return (
+    <Typography
+      sx={{
+        fontSize: 13,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingX: 1,
+        width: 'fit-content'
+      }}
+    >
+      {icon}
+      <Link target="_blank" sx={{ color: 'white' }} href={linkText} paddingLeft="5px">
+        {displayText}
+      </Link>
+    </Typography>
+  );
+};
+
+// component for the member pill displaying full name
+const MemberPill: React.FC<{ user: User }> = ({ user }) => {
   return (
     <Box sx={{ borderRadius: '11px', backgroundColor: '#d9d9d9', width: 'fit-content', margin: '8px' }}>
       <Typography
@@ -50,26 +77,85 @@ const MemberChip: React.FC<{ user: User }> = ({ user }) => {
   );
 };
 
+interface StageGateModalProps {
+  wbsNum: WbsNumber;
+  modalShow: boolean;
+  handleClose: () => void;
+}
+
+export interface FormInput {
+  confirmDone: boolean;
+}
+
+// stage gate modal component (redacted loading and error for this specific case)
+const StageGateModal: React.FC<StageGateModalProps> = ({ wbsNum, modalShow, handleClose }) => {
+  const auth = useAuth();
+  const history = useHistory();
+  const toast = useToast();
+  const { mutateAsync } = useCreateStageGateChangeRequest();
+
+  const handleConfirm = async ({ confirmDone }: FormInput) => {
+    handleClose();
+    if (auth.user?.userId === undefined) throw new Error('Cannot create stage gate change request without being logged in');
+    try {
+      await mutateAsync({
+        submitterId: auth.user?.userId,
+        wbsNum,
+        type: ChangeRequestType.StageGate,
+        confirmDone
+      });
+      history.push(routes.CHANGE_REQUESTS);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+  };
+
+  return <StageGateWorkPackageModal wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
+};
+
+interface DRCSummaryModalProps {
+  open: boolean;
+  onHide: () => void;
+  designReview: DesignReview;
+}
+
 const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview }) => {
+  const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   return (
-    <NERModal open={open} onHide={onHide} title={designReview.teamType.name} hideFormButtons>
+    <NERModal open={open} onHide={onHide} title={designReview.wbsName} hideFormButtons>
+      <StageGateModal
+        wbsNum={designReview.wbsNum}
+        modalShow={showStageGateModal}
+        handleClose={() => setShowStageGateModal(false)}
+      />
       <IconButton sx={{ position: 'absolute', right: 16, top: 12 }}>
         <EditIcon />
       </IconButton>
+
       <Grid container direction="column">
-        <Grid item xs={12}>
-          <Grid container direction="row" alignItems="center" justifyContent="space-between">
+        <Grid item>
+          <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={1}>
             <Grid item xs={3}>
-              <Chip icon={<AccessTimeIcon />} text={designReview.meetingTimes.map(meetingTimePipe).join(', ')} />
+              <Pill icon={<AccessTimeIcon />} text={designReview.meetingTimes.map(meetingTimePipe).join(', ')} />
             </Grid>
             <Grid item xs={3}>
-              <Chip icon={<LocationOnIcon />} text={designReview.location ?? 'Online'} />
+              <Pill icon={<LocationOnIcon />} text={designReview.location ?? 'Online'} />
             </Grid>
             <Grid item xs={3}>
-              <Chip icon={<DescriptionIcon />} text={designReview.docTemplateLink ?? 'No Doc'} />
+              <LinkPill
+                icon={<DescriptionIcon />}
+                linkText={designReview.docTemplateLink ?? ''}
+                displayText={designReview.docTemplateLink ? 'docs' : 'No Doc'}
+              />
             </Grid>
             <Grid item xs={3}>
-              <Chip icon={<VideocamIcon />} text={designReview.zoomLink ?? 'No Zoom'} />
+              <LinkPill
+                icon={<VideocamIcon />}
+                linkText={designReview.zoomLink ?? ''}
+                displayText={designReview.zoomLink ? 'zoom.us' : 'No Zoom'}
+              />
             </Grid>
           </Grid>
         </Grid>
@@ -84,7 +170,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                   <Grid container>
                     {designReview.requiredMembers.map((member, index) => (
                       <Grid item key={index}>
-                        <MemberChip user={member} />
+                        <MemberPill user={member} />
                       </Grid>
                     ))}
                   </Grid>
@@ -99,7 +185,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                     <Grid container>
                       {designReview.optionalMembers.map((member, index) => (
                         <Grid item key={index}>
-                          <MemberChip user={member} />
+                          <MemberPill user={member} />
                         </Grid>
                       ))}
                     </Grid>
@@ -156,6 +242,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                 marginLeft: 1,
                 fontWeight: 'bold'
               }}
+              onClick={() => setShowStageGateModal(true)}
             >
               Stage Gate
             </Button>
@@ -169,7 +256,14 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                 fontWeight: 'bold'
               }}
             >
-              Request Delay to WP
+              <Link
+                underline="none"
+                color={'text.primary'}
+                component={RouterLink}
+                to={`${routes.CHANGE_REQUESTS}/new?wbsNum=${wbsPipe(designReview.wbsNum)}`}
+              >
+                Request Delay to WP
+              </Link>
             </Button>
           </Box>
         </Grid>

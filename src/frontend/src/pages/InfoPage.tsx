@@ -17,19 +17,23 @@ import { useState } from 'react';
 import DRCSummaryModal from './DesignReviewSummaryModal';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import {
-  aquaman,
   batman,
-  flash,
-  greenlantern,
   superman,
+  greenlantern,
+  flash,
+  aquaman,
   wonderwoman
 } from '../../../backend/tests/test-data/users.test-data';
 
 const InfoPage: React.FC = () => {
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const handleOpenSummary = () => setIsSummaryModalOpen(true);
+  const handleCloseSummary = () => setIsSummaryModalOpen(false);
+
   const exampleDesignReview: DesignReview = {
     designReviewId: '123',
     dateScheduled: new Date(),
-    meetingTimes: [1, 4],
+    meetingTimes: [1, 4, 8, 34],
     dateCreated: new Date(),
     userCreated: batman,
     status: DesignReviewStatus.CONFIRMED,
@@ -44,13 +48,9 @@ const InfoPage: React.FC = () => {
     zoomLink: 'https://example.com/zoomlink',
     attendees: [],
     wbsName: 'Project X',
-    wbsNum: { carNumber: 1, projectNumber: 4, workPackageNumber: 21 },
-    docTemplateLink: 'www.googledocshashish.com'
+    wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+    docTemplateLink: 'https://www.google.com'
   };
-
-  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-  const handleOpenSummary = () => setIsSummaryModalOpen(true);
-  const handleCloseSummary = () => setIsSummaryModalOpen(false);
 
   return (
     <PageLayout title="Information">
