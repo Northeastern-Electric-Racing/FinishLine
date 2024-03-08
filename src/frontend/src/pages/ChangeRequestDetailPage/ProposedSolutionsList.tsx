@@ -47,7 +47,17 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
         description,
         scopeImpact,
         timelineImpact,
-        budgetImpact
+        budgetImpact,
+        wbsNum: {
+          carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0
+        },
+        projectLeadId: 0,
+        projectManagerId: 0,
+        startDate: '',
+        confirmDetails: false,
+        confirmDone: false
       });
     } catch (e) {
       if (e instanceof Error) {

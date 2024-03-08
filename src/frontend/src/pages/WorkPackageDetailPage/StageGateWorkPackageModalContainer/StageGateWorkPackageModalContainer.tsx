@@ -41,7 +41,16 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
         submitterId: auth.user?.userId,
         wbsNum,
         type: ChangeRequestType.StageGate,
-        confirmDone
+        confirmDone,
+        projectLeadId: 0,
+        projectManagerId: 0,
+        startDate: '',
+        confirmDetails: false,
+        crId: 0,
+        description: '',
+        scopeImpact: '',
+        timelineImpact: 0,
+        budgetImpact: 0
       });
       history.push(routes.CHANGE_REQUESTS);
     } catch (e: unknown) {
