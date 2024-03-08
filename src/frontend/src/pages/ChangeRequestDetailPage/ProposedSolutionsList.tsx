@@ -57,7 +57,8 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
         projectManagerId: 0,
         startDate: '',
         confirmDetails: false,
-        confirmDone: false
+        confirmDone: false,
+        type: ''
       });
     } catch (e) {
       if (e instanceof Error) {

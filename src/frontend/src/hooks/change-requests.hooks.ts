@@ -124,7 +124,7 @@ export interface Payload {
   scopeImpact: string;
   timelineImpact: number;
   budgetImpact: number;
-  type: String;
+  type: string;
 }
 
 /**
