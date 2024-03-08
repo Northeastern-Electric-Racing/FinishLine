@@ -11,6 +11,17 @@ describe('Design Reviews', () => {
     vi.clearAllMocks();
   });
 
+  describe('getAllDesignReviews', () => {
+    test('Get All Design Reviews works', async () => {
+      vi.spyOn(prisma.design_Review, 'findMany').mockResolvedValue([]);
+
+      const res = await DesignReviewService.getAllDesignReviews();
+
+      expect(prisma.design_Review.findMany).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual([]);
+    });
+  });
+
   describe('Delete Design Review Tests', () => {
     test('Delete Reimbursment Request fails when ID does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
