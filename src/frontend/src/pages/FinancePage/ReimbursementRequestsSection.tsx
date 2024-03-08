@@ -11,7 +11,6 @@ import {
   fullNamePipe,
   undefinedPipe
 } from '../../utils/pipes';
-import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
 import { cleanReimbursementRequestStatus, createReimbursementRequestRowData } from '../../utils/reimbursement-request.utils';
