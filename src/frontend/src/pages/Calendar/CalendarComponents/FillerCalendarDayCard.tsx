@@ -1,10 +1,10 @@
 import { Box, Card, CardContent, Grid, Typography, useTheme } from '@mui/material';
 
-interface FillerCardProps {
+interface FillerCalendarDayCardProps {
   day: Number;
 }
 
-const FillerCard: React.FC<FillerCardProps> = ({ day }) => {
+const FillerCalendarDayCard: React.FC<FillerCalendarDayCardProps> = ({ day }) => {
   const FillerCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item></Grid>
@@ -31,10 +31,10 @@ const FillerCard: React.FC<FillerCardProps> = ({ day }) => {
         }}
       >
         <CardContent sx={{ padding: 0 }}>
-          <FillerCardTitle></FillerCardTitle>
+          <FillerCardTitle />
         </CardContent>
       </Card>
     </Box>
   );
 };
-export default FillerCard;
+export default FillerCalendarDayCard;

@@ -1,13 +1,14 @@
 import { Box, Card, CardContent, Grid, IconButton, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { DesignReview } from 'shared';
+import { NOON_IN_MINUTES } from '../../../utils/design-review.utils';
 
-interface DayCardProps {
+interface CalendarDayCardProps {
   myDate: Date;
-  events: DesignReview[] | undefined;
+  events: DesignReview[];
 }
 
-const DayCard: React.FC<DayCardProps> = ({ myDate, events }) => {
+const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ myDate, events }) => {
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item>
@@ -33,22 +34,22 @@ const DayCard: React.FC<DayCardProps> = ({ myDate, events }) => {
       <Box marginLeft={0.5}>
         <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
           <Typography marginLeft={0.5} marginBottom={0.3}>
-            {name + ' ' + hours + (minutes !== 0 ? ':' + minutes : '') + (time >= 720 ? 'pm' : 'am')}
+            {name + ' ' + hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am')}
           </Typography>
         </Card>
       </Box>
     );
   };
-  console.log(myDate, events);
+
   return (
     <Box>
       <Card sx={{ borderRadius: 2, minWidth: 150, maxWidth: 150, minHeight: 90, maxHeight: 90 }}>
         <CardContent sx={{ padding: 0 }}>
           <DayCardTitle />
-          {events && events.map((event) => EventCard(event))}
+          {events.map((event) => EventCard(event))}
         </CardContent>
       </Card>
     </Box>
   );
 };
-export default DayCard;
+export default CalendarDayCard;

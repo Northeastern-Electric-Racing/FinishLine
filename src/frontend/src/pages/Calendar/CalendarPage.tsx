@@ -8,41 +8,28 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { NERButton } from '../../components/NERButton';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import PageLayout from '../../components/PageLayout';
-import { DesignReview, DesignReviewStatus } from 'shared';
-import MonthSelector from './MonthSelector';
-import DayCard from './DayCard';
-import FillerCard from './FillerCard';
-import { batman } from '../../../../backend/tests/test-data/users.test-data';
+import { DesignReview } from 'shared';
+import MonthSelector from './CalendarComponents/MonthSelector';
+import DayCard from './CalendarComponents/CalendarDayCard';
+import FillerCard from './CalendarComponents/FillerCalendarDayCard';
+import { DAY_NAMES, EnumToArray, testDesignReview1 } from '../../utils/design-review.utils';
 
-const DRCPage = () => {
+const CalendarPage = () => {
   const theme = useTheme();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [displayMonth, setDisplayMonth] = useState<Date>(new Date());
 
   const EventDict = new Map<Number, DesignReview[]>();
-  // Test data:
-  EventDict.set(new Date().getDate(), [
-    {
-      designReviewId: 'Meeting',
-      dateScheduled: new Date(),
-      meetingTimes: [16],
-      dateCreated: new Date(),
-      userCreated: batman,
-      status: DesignReviewStatus.UNCONFIRMED,
-      teamType: { teamTypeId: 'Mechanical', name: 'Mechanical' },
-      requiredMembers: [],
-      optionalMembers: [],
-      confirmedMembers: [],
-      deniedMembers: [],
-      isOnline: false,
-      isInPerson: false,
-      attendees: [],
-      wbsName: 'bruh',
-      wbsNum: { carNumber: 1, workPackageNumber: 1, projectNumber: 1 }
-    }
-  ]);
-  console.log(EventDict);
+  // TODO remove during wire up ticket
+  EventDict.set(new Date().getDate(), [testDesignReview1]);
+
+  const startOfEachWeek = [0, 7, 14, 21, 28, 35];
+
+  const isDayInDifferentMonth = (day: number, week: number) => {
+    return day < week - 7 || day < 1 || day > week + 7;
+  };
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -97,14 +84,9 @@ const DRCPage = () => {
 
   return (
     <PageLayout title="Design Review Calendar" headerRight={unconfirmedDRSDropdown}>
-      <MonthSelector
-        displayMonth={displayMonth}
-        setDisplayMonth={(date) => {
-          setDisplayMonth(date);
-        }}
-      ></MonthSelector>
+      <MonthSelector displayMonth={displayMonth} setDisplayMonth={setDisplayMonth} />
       <Grid container alignItems="center">
-        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+        {EnumToArray(DAY_NAMES).map((day) => (
           <Grid item xs={12 / 7}>
             <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
               {day}
@@ -114,17 +96,17 @@ const DRCPage = () => {
       </Grid>
       <Box sx={{ border: '2px solid grey', borderRadius: 2, bgcolor: theme.palette.background.paper }}>
         <Grid container>
-          {[0, 7, 14, 21, 28, 35].map((week) => (
+          {startOfEachWeek.map((week) => (
             <Grid container alignItems="center" justifyContent="center">
               {daysThisMonth.slice(week, week + 7).map((day) => {
                 const myDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
                 return (
                   <Grid item xs={12 / 7} alignItems="center" justifyContent="center">
                     <Box marginLeft={1.5} marginTop={2}>
-                      {day < week - 7 || day < 1 || day > week + 7 ? (
+                      {isDayInDifferentMonth(day, week) ? (
                         <FillerCard day={day} />
                       ) : (
-                        <DayCard myDate={myDate} events={EventDict.get(myDate.getDate())}></DayCard>
+                        <DayCard myDate={myDate} events={EventDict.get(myDate.getDate()) ?? []} />
                       )}
                     </Box>
                   </Grid>
@@ -138,4 +120,4 @@ const DRCPage = () => {
   );
 };
 
-export default DRCPage;
+export default CalendarPage;

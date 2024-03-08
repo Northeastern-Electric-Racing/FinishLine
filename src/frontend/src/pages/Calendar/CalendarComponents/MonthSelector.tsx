@@ -1,41 +1,53 @@
 import { Box, MenuItem, TextField } from '@mui/material';
 import { Dispatch, SetStateAction } from 'react';
+import { EnumToArray } from '../../../utils/design-review.utils';
 
 interface MonthSelectorProps {
   displayMonth: Date;
   setDisplayMonth: Dispatch<SetStateAction<Date>>;
 }
 
+enum months {
+  January,
+  February,
+  March,
+  April,
+  May,
+  June,
+  July,
+  August,
+  September,
+  October,
+  November,
+  December
+}
+
 const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayMonth }) => {
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ];
+  const getMonthName = (month: number) => {
+    return months[month];
+  };
+  const getMonthNumber = (month: string) => {
+    return EnumToArray(months).indexOf(month);
+  };
+
   return (
     <Box>
       <TextField
         select
-        defaultValue={monthNames[displayMonth.getMonth()]}
+        defaultValue={getMonthName(displayMonth.getMonth())}
         onChange={(event) => {
-          displayMonth.setMonth(monthNames.indexOf(event.target.value));
+          displayMonth.setMonth(getMonthNumber(event.target.value));
           setDisplayMonth(new Date(displayMonth));
         }}
       >
-        {monthNames.map((month) => (
-          <MenuItem key={month} value={month}>
-            {month}
-          </MenuItem>
-        ))}
+        {EnumToArray(months).map((month) => {
+          console.log(month);
+          return (
+            <MenuItem key={month} value={month}>
+              {month}
+            </MenuItem>
+          );
+        })}
       </TextField>
 
       <TextField

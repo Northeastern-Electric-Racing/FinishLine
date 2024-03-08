@@ -4,9 +4,9 @@
  */
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import DRCPage from './DRCPage';
+import DRCPage from './CalendarPage';
 
-const DRC: React.FC = () => {
+const Calendar: React.FC = () => {
   return (
     <Switch>
       <Route path={routes.DESIGN_REVIEW_CALENDAR} component={DRCPage} />
@@ -14,4 +14,4 @@ const DRC: React.FC = () => {
   );
 };
 
-export default DRC;
+export default Calendar;
