@@ -1,25 +1,10 @@
 import { Box, MenuItem, TextField } from '@mui/material';
 import { Dispatch, SetStateAction } from 'react';
-import { EnumToArray } from '../../../utils/design-review.utils';
+import { EnumToArray, MONTH_NAMES } from '../../../utils/design-review.utils';
 
 interface MonthSelectorProps {
   displayMonth: Date;
   setDisplayMonth: Dispatch<SetStateAction<Date>>;
-}
-
-enum months {
-  January,
-  February,
-  March,
-  April,
-  May,
-  June,
-  July,
-  August,
-  September,
-  October,
-  November,
-  December
 }
 
 const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayMonth }) => {
@@ -36,7 +21,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
           setDisplayMonth(new Date(displayMonth));
         }}
       >
-        {EnumToArray(months).map((month, index) => {
+        {EnumToArray(MONTH_NAMES).map((month, index) => {
           return (
             <MenuItem key={month} value={index}>
               {month}

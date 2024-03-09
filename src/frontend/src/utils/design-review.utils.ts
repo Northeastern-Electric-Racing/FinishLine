@@ -13,6 +13,21 @@ export enum DAY_NAMES {
   Sunday
 }
 
+export enum MONTH_NAMES {
+  January,
+  February,
+  March,
+  April,
+  May,
+  June,
+  July,
+  August,
+  September,
+  October,
+  November,
+  December
+}
+
 export const EnumToArray = (en: any) => {
   return Object.keys(en)
     .filter((value: string) => isNaN(Number(value)) === false)
