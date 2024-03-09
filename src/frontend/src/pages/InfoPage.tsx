@@ -21,7 +21,8 @@ import {
   greenlantern,
   wonderwoman,
   flash,
-  aquaman
+  aquaman,
+  alfred
 } from '../../../backend/tests/test-data/users.test-data';
 import DRCView from './DesignReviewView';
 
@@ -39,7 +40,8 @@ const InfoPage: React.FC = () => {
     [greenlantern, [4, 5, 6, 7]],
     [wonderwoman, [5, 6, 7]],
     [flash, [6, 7]],
-    [aquaman, [7]]
+    [aquaman, [7]],
+    [alfred, [7]]
   ]);
 
   // We will have to maker a call to the backend to get this data

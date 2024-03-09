@@ -7,10 +7,10 @@ import NERFailButton from '../components/NERFailButton';
 import NERSuccessButton from '../components/NERSuccessButton';
 
 const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) => {
+  const totalUsers = usersToAvailabilities.size;
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const numberOfTimeSlots = times.length * daysOfWeek.length;
-  const totalUsers = usersToAvailabilities.size
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
 
@@ -49,13 +49,10 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
     setCurrentUnavailableUsers([]);
   };
 
-
   const renderDayHeaders = () => {
     return [
-      <TimeSlot backgroundColor={getBackgroundColor()} isModal={false} />,
-      daysOfWeek.map((day) => (
-        <TimeSlot key={day} backgroundColor={getBackgroundColor()} text={day} fontSize={'1em'} isModal={false} />
-      ))
+      <TimeSlot backgroundColor="#D9D9D9" isModal={false} />,
+      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor="#D9D9D9" text={day} fontSize={'1em'} isModal={false} />)
     ];
   };
 
@@ -67,13 +64,13 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
         {renderDayHeaders()}
         {times.map((time, timeIndex) => (
           <Grid container item xs={12} onMouseLeave={handleOnMouseLeave}>
-            <TimeSlot backgroundColor={getBackgroundColor()} text={time} fontSize={'1em'} isModal={false} />
+            <TimeSlot backgroundColor="#D9D9D9" text={time} fontSize={'1em'} isModal={false} />
             {daysOfWeek.map((_day, dayIndex) => {
               const index = dayIndex * times.length + timeIndex;
               return (
                 <TimeSlot
                   key={index}
-                  backgroundColor={getBackgroundColor(availableUsers.get(index)?.length)}
+                  backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                   onMouseOver={() => handleOnMouseOver(index)}
                   isModal={false}
                   icon={iconData.get(index)}
@@ -87,15 +84,16 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
   };
 
   const renderLegend = () => {
+    const colors = ['#D9D9D9', '#E0C0C1', '#E89A9B', '#E4797A', '#EF4345', '#D70C0F'];
     return (
       <Grid sx={{ display: 'flex', justifyContent: 'center' }}>
         <Typography style={{ marginRight: '10px', fontFamily: 'oswald' }}>0/0</Typography>
-        {Array.from({ length: 5 }, (_, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <Box
             sx={{
               width: '1.5vw',
               height: '1.5vw',
-              backgroundColor: getBackgroundColor(i)
+              backgroundColor: colors[i]
             }}
           />
         ))}

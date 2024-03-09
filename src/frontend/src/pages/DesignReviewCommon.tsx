@@ -49,27 +49,18 @@ const times = [
   '9-10 PM'
 ];
 
-function getBackgroundColor(frequency: number = 0): string {
-  if (frequency > 5) {
-    return '#D70C0F';
-  }
-  switch (frequency) {
-    case 0:
-      return '#D9D9D9';
-    case 1:
-      return '#E0C0C1';
-    case 2:
-      return '#E89A9B';
-    case 3:
-      return '#E4797A';
-    case 4:
-      return '#EF4345';
-    case 5:
-      return '#D70C0F';
-    default:
-      return '#D9D9D9';
-  }
+function getBackgroundColor(frequency: number = 0, totalUsers: number): string {
+  if (frequency === 0) return '#D9D9D9'; 
+  if (frequency >= totalUsers) return '#D70C0F';
+
+  const colors = ['#E0C0C1', '#E89A9B', '#E4797A', '#EF4345'];
+
+  const ratio = (frequency - 1) / (totalUsers - 1) * (colors.length - 1);
+  const colorIndex = Math.floor(ratio);
+
+  return colors[colorIndex];
 }
+
 
 function getIcon(icon: string, isModal: boolean): ReactElement | null {
   const iconStyle = isModal ? { fontSize: '1.4em' } : { fontSize: '2em' };

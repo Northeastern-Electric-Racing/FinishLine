@@ -41,10 +41,8 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
 
   const renderDayHeaders = () => {
     return [
-      <TimeSlot backgroundColor={getBackgroundColor(0)} isModal={true} />,
-      daysOfWeek.map((day) => (
-        <TimeSlot key={day} backgroundColor={getBackgroundColor()} isModal={true} text={day} fontSize={'12px'} />
-      ))
+      <TimeSlot backgroundColor="#D9D9D9" isModal={true} />,
+      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor="#D9D9D9" isModal={true} text={day} fontSize={'12px'} />)
     ];
   };
 
@@ -54,10 +52,10 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
         {renderDayHeaders()}
         {times.map((time, timeIndex) => (
           <Grid container item xs={12}>
-            <TimeSlot backgroundColor={getBackgroundColor()} isModal={true} text={time} fontSize={'13px'} />
+            <TimeSlot backgroundColor='#D9D9D9' isModal={true} text={time} fontSize={'13px'} />
             {daysOfWeek.map((_day, dayIndex) => {
               const index = dayIndex * times.length + timeIndex;
-              const backgroundColor = selectedTimes.includes(index) ? getBackgroundColor(3) : getBackgroundColor(0);
+              const backgroundColor = selectedTimes.includes(index) ? '#E4797A' : '#D9D9D9';
               return (
                 <TimeSlot
                   key={index}
