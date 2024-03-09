@@ -39,12 +39,26 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
-  const showUserManagement = () => {
-    return isUserAdmin ? <TeamsTools /> : isUserHead && <AdminToolsUserManagement />;
+  const UserManagementTab = () => {
+    return isUserAdmin ? (
+      <>
+        <AdminToolsUserManagement />
+        <TeamsTools />
+      </>
+    ) : (
+      <AdminToolsUserManagement />
+    );
   };
 
-  const showProjectConfiguration = () => {
-    return isUserAdmin ? <AdminToolsBOMConfig /> : isUserHead && <AdminToolsProjectsConfig />;
+  const ProjectConfigurationTab = () => {
+    return isUserAdmin ? (
+      <>
+        <AdminToolsProjectsConfig />
+        <AdminToolsBOMConfig />
+      </>
+    ) : (
+      <AdminToolsProjectsConfig />
+    );
   };
 
   return (
@@ -56,14 +70,14 @@ const AdminToolsPage: React.FC = () => {
           tabsLabels={tabs}
           baseUrl={routes.ADMIN_TOOLS}
           defaultTab={defaultTab}
-          id="admin-tabs"
+          id="admin-tools-tabs"
         />
       }
     >
       {tabIndex === 0 ? (
-        showUserManagement()
+        <UserManagementTab />
       ) : tabIndex === 1 ? (
-        showProjectConfiguration()
+        <ProjectConfigurationTab />
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : (
