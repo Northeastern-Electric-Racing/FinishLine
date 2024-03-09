@@ -36,7 +36,7 @@ const InfoPage: React.FC = () => {
     meetingTimes: [1, 4, 8, 34],
     dateCreated: new Date(),
     userCreated: batman,
-    status: DesignReviewStatus.CONFIRMED,
+    status: DesignReviewStatus.DONE,
     teamType: { teamTypeId: 'typeIDString', name: 'thisteam' },
     requiredMembers: [batman, superman, greenlantern, flash, aquaman],
     optionalMembers: [wonderwoman],
