@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
-import { DRCModalProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
+import { DRCModalProps, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
 import { useState } from 'react';
 
 const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, iconData }) => {
