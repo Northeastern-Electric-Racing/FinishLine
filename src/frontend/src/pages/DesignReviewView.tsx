@@ -1,13 +1,16 @@
-import { Button, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { DRCViewProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
 import { User } from 'shared';
 import { useState } from 'react';
 import WarningIcon from '@mui/icons-material/Warning';
+import NERFailButton from '../components/NERFailButton';
+import NERSuccessButton from '../components/NERSuccessButton';
 
 const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const numberOfTimeSlots = times.length * daysOfWeek.length;
+  const totalUsers = usersToAvailabilities.size
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
 
@@ -46,6 +49,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
     setCurrentUnavailableUsers([]);
   };
 
+
   const renderDayHeaders = () => {
     return [
       <TimeSlot backgroundColor={getBackgroundColor()} isModal={false} />,
@@ -82,7 +86,28 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
     );
   };
 
+  const renderLegend = () => {
+    return (
+      <Grid sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Typography style={{ marginRight: '10px', fontFamily: 'oswald' }}>0/0</Typography>
+        {Array.from({ length: 5 }, (_, i) => (
+          <Box
+            sx={{
+              width: '1.5vw',
+              height: '1.5vw',
+              backgroundColor: getBackgroundColor(i)
+            }}
+          />
+        ))}
+        <Typography style={{ marginLeft: '10px', fontFamily: 'oswald' }}>
+          {totalUsers}/{totalUsers}
+        </Typography>
+      </Grid>
+    );
+  };
+
   const renderAvailabilites = () => {
+    const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
     return (
       <Grid
         style={{
@@ -95,79 +120,58 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
           overflow: 'auto'
         }}
       >
-        <Grid display={'flex'} gap={2}>
-          <Grid>
-            <Typography
-              style={{
-                textDecoration: 'underline',
-                fontFamily: 'oswald',
-                fontSize: '1.5em',
-                textAlign: 'center',
-                marginBottom: '10px'
-              }}
-            >
-              Available Users
-            </Typography>
-            {currentAvailableUsers.map((user) => (
-              <Typography style={{ fontFamily: 'oswald', textAlign: 'center', fontSize: '1.2em' }}>
-                {user.firstName} {user.lastName}
+        <Grid style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, marginBottom: '10px' }}>
+          {renderLegend()}
+          <Grid style={{ display: 'flex', gap: '2', marginTop: '10px' }}>
+            <Grid>
+              <Typography
+                style={{
+                  textDecoration: 'underline',
+                  fontFamily: 'oswald',
+                  fontSize: '1.5em',
+                  textAlign: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                Available Users
               </Typography>
-            ))}
-          </Grid>
-          <Grid>
-            <Typography
-              style={{
-                textDecoration: 'underline',
-                fontFamily: 'oswald',
-                fontSize: '1.5em',
-                textAlign: 'center',
-                marginBottom: '10px'
-              }}
-            >
-              Unvailable Users
-            </Typography>
-            {currentUnavailableUsers.map((user) => (
-              <Typography style={{ fontFamily: 'oswald', textAlign: 'center', fontSize: '1.2em' }}>
-                {user.firstName} {user.lastName}
+              {currentAvailableUsers.map((user) => (
+                <Typography style={{ fontFamily: 'oswald', textAlign: 'center', fontSize }}>
+                  {user.firstName} {user.lastName}
+                </Typography>
+              ))}
+            </Grid>
+            <Grid>
+              <Typography
+                style={{
+                  textDecoration: 'underline',
+                  fontFamily: 'oswald',
+                  fontSize: '1.5em',
+                  textAlign: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                Unvailable Users
               </Typography>
-            ))}
+              {currentUnavailableUsers.map((user) => (
+                <Typography style={{ fontFamily: 'oswald', textAlign: 'center', fontSize }}>
+                  {user.firstName} {user.lastName}
+                </Typography>
+              ))}
+            </Grid>
           </Grid>
-        </Grid>
-        <Grid
-          style={{
-            marginTop: 'auto',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '10px'
-          }}
-        >
-          <WarningIcon style={{ color: 'yellow', fontSize: '2em', marginTop: '5px' }} />
-          <Button
+          <Grid
             style={{
-              fontFamily: 'oswald',
-              backgroundColor: '#848484',
-              borderRadius: '10px',
-              color: 'white',
-              fontSize: '1em',
-              padding: '8px',
-              width: '30%'
+              marginTop: 'auto',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '10px'
             }}
           >
-            Cancel
-          </Button>
-          <Button
-            style={{
-              fontFamily: 'oswald',
-              backgroundColor: '#EF4345',
-              borderRadius: '10px',
-              color: 'white',
-              fontSize: '1em',
-              padding: '8px',
-              width: '30%'
-            }}
-          >
-            Finalize
-          </Button>
+            <WarningIcon style={{ color: 'yellow', fontSize: '2em', marginTop: '5px' }} />
+            <NERFailButton>Cancel</NERFailButton>
+            <NERSuccessButton>Finalize</NERSuccessButton>
+          </Grid>
         </Grid>
       </Grid>
     );
