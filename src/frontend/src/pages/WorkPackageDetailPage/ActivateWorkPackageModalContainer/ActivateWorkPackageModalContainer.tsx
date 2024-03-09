@@ -6,7 +6,7 @@
 import { useHistory } from 'react-router-dom';
 import { ChangeRequestType, isGuest, WbsNumber } from 'shared';
 import { useAuth } from '../../../hooks/auth.hooks';
-import { Payload, useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
+import { ChangeRequestPayload, useCreateActivationChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import { routes } from '../../../utils/routes';
 import ErrorPage from '../../ErrorPage';
@@ -56,7 +56,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
         scopeImpact: '',
         timelineImpact: 0,
         budgetImpact: 0
-      } as Payload);
+      } as ChangeRequestPayload);
       history.push(routes.CHANGE_REQUESTS);
     } catch (e: unknown) {
       if (e instanceof Error) {
