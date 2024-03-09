@@ -6,6 +6,8 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
+import DynamicTooltip from '../../../../../components/DynamicTooltip';
+import InfoIcon from '@mui/icons-material/Info';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -119,7 +121,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={4}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer</FormLabel>
+            <FormLabel>
+              Manufacturer
+              <DynamicTooltip title={`Make sure to enter the manufacturer and not the distributor`}>
+                <InfoIcon />
+              </DynamicTooltip>
+            </FormLabel>
             <Controller
               name="manufacturerName"
               control={control}
