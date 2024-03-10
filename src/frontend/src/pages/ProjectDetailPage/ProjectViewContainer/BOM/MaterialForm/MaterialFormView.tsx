@@ -161,7 +161,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         <Grid item xs={6}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <NERButton
-              sx={{ width: '261px', height: '55px', marginTop: '22px' }}
+              sx={{ width: '100%', height: '55px', marginTop: '23px' }}
               variant="contained"
               onClick={() => {
                 const newManufacturerName = prompt('Enter New Manufacturer Name');
