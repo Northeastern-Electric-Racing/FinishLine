@@ -111,14 +111,16 @@ export default class DesignReviewService {
       }
     });
 
-    // send to all the people invited to the design review
-    const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: user.userId } });
-    if (creatorUserSettings && creatorUserSettings.slackId) {
-      try {
-        await sendSlackDesignReviewNotification(creatorUserSettings.slackId, design_review.designReviewId);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    for (const member of requiredMembers.concat(optionalMembers)) {
+      // send to all the people invited to the design review
+      const memberUserSettings = await prisma.user_Settings.findUnique({ where: { userId: member.userId } });
+      if (memberUserSettings && memberUserSettings.slackId) {
+        try {
+          await sendSlackDesignReviewNotification(memberUserSettings.slackId, design_review.designReviewId);
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+          }
         }
       }
     }
