@@ -4,11 +4,13 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   NotFoundException,
-  AccessDeniedGuestException
+  AccessDeniedGuestException,
+  HttpException
 } from '../utils/errors.utils';
 import { User, Design_Review_Status, Design_Review } from '@prisma/client';
 import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
 import { designReviewTransformer } from '../transformers/design-review.transformer';
+import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
 
 export default class DesignReviewService {
   /**
@@ -108,6 +110,18 @@ export default class DesignReviewService {
         wbsElement: { connect: { wbsElementId } }
       }
     });
+
+    // send to all the people invited to the design review
+    const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: user.userId } });
+    if (creatorUserSettings && creatorUserSettings.slackId) {
+      try {
+        await sendSlackDesignReviewNotification(creatorUserSettings.slackId, design_review.designReviewId);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+        }
+      }
+    }
 
     return design_review;
   }
