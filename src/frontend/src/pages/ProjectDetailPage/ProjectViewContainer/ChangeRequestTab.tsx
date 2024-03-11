@@ -17,11 +17,11 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
   const wbsNum = project.wbsNum;
   const currentDate = new Date();
 
-  const crUnreviewed = changeRequests
+  const unReviewedChangeRequests = changeRequests
     .filter((cr: ChangeRequest) => !cr.dateReviewed && equalsWbsNumber(wbsNum, cr.wbsNum))
     .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
-  const crApproved = changeRequests
+  const approvedChangeRequests = changeRequests
     .filter(
       (cr: ChangeRequest) =>
         cr.dateReviewed &&
@@ -33,18 +33,16 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
 
   const crUnreviewedRow: changeRequests = {
     title: 'Un-reviewed Change Requests',
-    crList: crUnreviewed,
+    crList: unReviewedChangeRequests,
     emptyMessage: 'No un-reviewed change requests'
   };
 
   const crApprovedRow: changeRequests = {
-    title: 'Approved Change Requests',
-    crList: crApproved,
+    title: 'Recently Approved Change Requests',
+    crList: approvedChangeRequests,
     emptyMessage: 'No recently approved change requests'
   };
 
-  const tabRowList = [crUnreviewedRow, crApprovedRow];
-
-  return <CRRow crRowList={tabRowList} />;
+  return <CRRow crRowList={[crUnreviewedRow, crApprovedRow]} />;
 };
 export default ChangeRequestTab;

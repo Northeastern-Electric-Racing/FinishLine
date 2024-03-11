@@ -95,7 +95,7 @@ const ChangeRequestsOverview: React.FC = () => {
   };
 
   const overviewRowList = [crUnreviewedRow, crApprovedRow];
-  if (showToReview) overviewRowList.push(crToReviewRow);
+  if (showToReview) overviewRowList.unshift(crToReviewRow);
 
   return <CRRow crRowList={overviewRowList} />;
 };
