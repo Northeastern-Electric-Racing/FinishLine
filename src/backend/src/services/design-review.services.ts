@@ -53,7 +53,7 @@ export default class DesignReviewService {
   }
 
   /**
-   * 
+   *
    * @param user user who created the design review
    * @param dateScheduled when the design review is scheduled for
    * @param teamTypeId team type id the design review concerns
