@@ -4,7 +4,15 @@ import TimeSlot from '../components/TimeSlot';
 import { useState } from 'react';
 import { DRCModalProps, HeatmapColors, daysOfWeek, times } from '../utils/design-review.utils';
 
-const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, description, time, location, existingMeetingData }) => {
+const DRCEditModal: React.FC<DRCModalProps> = ({
+  open,
+  onHide,
+  onSubmit,
+  description,
+  time,
+  location,
+  existingMeetingData
+}) => {
   const header = `Are you availble for the ${description} Design Review at ${time} in the ${location}`;
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -42,7 +50,9 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, descrip
   const renderDayHeaders = () => {
     return [
       <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} />,
-      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={HeatmapColors.zero} isModal={true} text={day} fontSize={'12px'} />)
+      daysOfWeek.map((day) => (
+        <TimeSlot key={day} backgroundColor={HeatmapColors.zero} isModal={true} text={day} fontSize={'12px'} />
+      ))
     ];
   };
 

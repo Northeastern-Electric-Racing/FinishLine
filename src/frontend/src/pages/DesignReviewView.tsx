@@ -78,7 +78,14 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
   };
 
   const renderLegend = () => {
-    const colors = [HeatmapColors.zero, HeatmapColors.one, HeatmapColors.two, HeatmapColors.three, HeatmapColors.four, HeatmapColors.five];
+    const colors = [
+      HeatmapColors.zero,
+      HeatmapColors.one,
+      HeatmapColors.two,
+      HeatmapColors.three,
+      HeatmapColors.four,
+      HeatmapColors.five
+    ];
     return (
       <Grid sx={{ display: 'flex', justifyContent: 'center' }}>
         <Typography style={{ marginRight: '10px', fontFamily: 'oswald' }}>0/0</Typography>
