@@ -10,9 +10,9 @@ import { meetingTimePipe } from '../utils/pipes';
 import Checkbox from '@mui/material/Checkbox';
 import { useState } from 'react';
 import { StageGateModal } from '../components/DesignReviewStageGateModal';
-import { DelayModal } from '../components/DesignReviewDelayModal';
-import { Pill } from '../components/DesignReviewPill';
-import { MemberPill } from '../components/DesignReviewMemberPill';
+import { DesignReviewDelayModal } from '../components/DesignReviewDelayModal';
+import { DesignReviewPill } from '../components/DesignReviewPill';
+import { DesignReviewMemberPill } from '../components/DesignReviewMemberPill';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -30,7 +30,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         modalShow={showStageGateModal}
         handleClose={() => setShowStageGateModal(false)}
       />
-      <DelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} dr={designReview} />
+      <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} dr={designReview} />
       <IconButton sx={{ position: 'absolute', right: 16, top: 12 }}>
         <EditIcon />
       </IconButton>
@@ -39,25 +39,29 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         <Grid item>
           <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={1}>
             <Grid item xs={3}>
-              <Pill icon={<AccessTimeIcon />} isLink={false} displayText={meetingTimePipe(designReview.meetingTimes[0])} />
-            </Grid>
-            <Grid item xs={3}>
-              <Pill icon={<LocationOnIcon />} isLink={false} displayText={designReview.location ?? 'Online'} />
-            </Grid>
-            <Grid item xs={3}>
-              <Pill
-                isLink
-                icon={<DescriptionIcon />}
-                linkText={designReview.docTemplateLink ?? ''}
-                displayText={designReview.docTemplateLink ? 'docs' : 'No Doc'}
+              <DesignReviewPill
+                icon={<AccessTimeIcon />}
+                isLink={false}
+                displayText={meetingTimePipe(designReview.meetingTimes[0])}
               />
             </Grid>
             <Grid item xs={3}>
-              <Pill
+              <DesignReviewPill icon={<LocationOnIcon />} isLink={false} displayText={designReview.location ?? 'Online'} />
+            </Grid>
+            <Grid item xs={3}>
+              <DesignReviewPill
+                isLink
+                icon={<DescriptionIcon />}
+                linkText={designReview.docTemplateLink ?? ''}
+                displayText={designReview.docTemplateLink ? 'Questions Doc' : 'No Doc'}
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <DesignReviewPill
                 isLink
                 icon={<VideocamIcon />}
                 linkText={designReview.zoomLink ?? ''}
-                displayText={designReview.zoomLink ? 'zoom.us' : 'No Zoom'}
+                displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
               />
             </Grid>
           </Grid>
@@ -73,7 +77,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                   <Grid container>
                     {designReview.requiredMembers.map((member, index) => (
                       <Grid item key={index}>
-                        <MemberPill user={member} />
+                        <DesignReviewMemberPill user={member} />
                       </Grid>
                     ))}
                   </Grid>
@@ -88,7 +92,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                     <Grid container>
                       {designReview.optionalMembers.map((member, index) => (
                         <Grid item key={index}>
-                          <MemberPill user={member} />
+                          <DesignReviewMemberPill user={member} />
                         </Grid>
                       ))}
                     </Grid>

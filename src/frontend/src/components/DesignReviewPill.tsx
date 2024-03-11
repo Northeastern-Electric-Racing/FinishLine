@@ -1,7 +1,7 @@
 import { Typography, Link } from '@mui/material';
 
 // component for the DR pills that are links (zoom and docs)
-export const Pill: React.FC<{
+export const DesignReviewPill: React.FC<{
   icon: React.ReactNode;
   isLink: boolean;
   linkText?: string;

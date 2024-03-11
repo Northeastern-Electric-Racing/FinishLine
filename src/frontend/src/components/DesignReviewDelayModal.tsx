@@ -7,7 +7,11 @@ import NERModal from './NERModal';
 import { Link as RouterLink } from 'react-router-dom';
 
 // delay wp modal component
-export const DelayModal: React.FC<{ open: boolean; onHide: () => void; dr: DesignReview }> = ({ open, onHide, dr }) => {
+export const DesignReviewDelayModal: React.FC<{ open: boolean; onHide: () => void; dr: DesignReview }> = ({
+  open,
+  onHide,
+  dr
+}) => {
   const toast = useToast();
   const [weeks, setWeeks] = useState<number>(1);
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
