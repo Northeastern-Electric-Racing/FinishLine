@@ -15,20 +15,13 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
   if (crIsError) return <ErrorPage message={crError?.message} />;
 
   const wbsNum = project.wbsNum;
-  const currentDate = new Date();
 
   const unReviewedChangeRequests = changeRequests
     .filter((cr: ChangeRequest) => !cr.dateReviewed && equalsWbsNumber(wbsNum, cr.wbsNum))
     .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
   const approvedChangeRequests = changeRequests
-    .filter(
-      (cr: ChangeRequest) =>
-        cr.dateReviewed &&
-        cr.accepted &&
-        equalsWbsNumber(wbsNum, cr.wbsNum) &&
-        currentDate.getTime() - cr.dateReviewed.getTime() <= 1000 * 60 * 60 * 24 * 5
-    )
+    .filter((cr: ChangeRequest) => cr.accepted && equalsWbsNumber(wbsNum, cr.wbsNum))
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
   const crUnreviewedRow: changeRequests = {
@@ -38,7 +31,7 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
   };
 
   const crApprovedRow: changeRequests = {
-    title: 'Recently Approved Change Requests',
+    title: 'Approved Change Requests',
     crList: approvedChangeRequests,
     emptyMessage: 'No recently approved change requests'
   };
