@@ -1,5 +1,5 @@
 import { Prisma, User, Team } from '@prisma/client';
-import { UserWithTeams } from './notifications.utils';
+import { UserWithSettings } from './auth.utils';
 
 const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
   include: {
@@ -50,6 +50,12 @@ export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQuer
  */
 export const isUserPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>[], user: User) => {
   return teams.some((team) => isUserOnTeam(team, user));
+};
+
+export type UserWithTeams = UserWithSettings & {
+  teamAsHead: Team | null;
+  teamsAsLead: Team[] | null;
+  teamsAsMember: Team[] | null;
 };
 
 /**

@@ -1,13 +1,7 @@
 import { Team, Task as Prisma_Task, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils';
 import { HttpException } from './errors.utils';
-import { getTeamsFromUsers } from './teams.utils';
-
-export type UserWithTeams = UserWithSettings & {
-  teamAsHead: Team | null;
-  teamsAsLead: Team[] | null;
-  teamsAsMember: Team[] | null;
-};
+import { UserWithTeams, getTeamsFromUsers } from './teams.utils';
 
 export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;
