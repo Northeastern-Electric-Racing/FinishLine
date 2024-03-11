@@ -28,10 +28,8 @@ export enum MONTH_NAMES {
   December
 }
 
-export const EnumToArray = (en: any) => {
-  return Object.keys(en)
-    .filter((value: string) => isNaN(Number(value)) === false)
-    .map((key) => en[key]);
+export const EnumToArray = (en: { [key: number]: string | number }) => {
+  return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
 };
 
 // TODO remove during wire up ticket
