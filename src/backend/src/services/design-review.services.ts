@@ -52,6 +52,23 @@ export default class DesignReviewService {
     return designReviewTransformer(deletedDesignReview);
   }
 
+  /**
+   * 
+   * @param user user who created the design review
+   * @param dateScheduled when the design review is scheduled for
+   * @param teamTypeId team type id the design review concerns
+   * @param requiredMembers users who need to be at the design review
+   * @param optionalMembers users who do not need to be at the design review
+   * @param location where the design review will be held
+   * @param isOnline if the design reivew is held online
+   * @param isInPerson if the design review is held in person
+   * @param zoomLink what the zoom link is
+   * @param docTemplateLink doc template link
+   * @param wbsElementId wbs element id the design review is related to
+   * @param meetingTimes meeting times
+   * @throws if permissions are not valid to create a design review
+   * @returns a newly created design review
+   */
   static async createDesignReview(
     user: User,
     dateScheduled: string,
@@ -74,14 +91,6 @@ export default class DesignReviewService {
 
     if (!teamType) {
       throw new NotFoundException('Team Type', teamTypeId);
-    }
-
-    const userCreated = await prisma.user.findUnique({
-      where: { userId: user.userId }
-    });
-
-    if (!userCreated) {
-      throw new NotFoundException('User', user.userId);
     }
 
     const WBS_Element = await prisma.wBS_Element.findUnique({

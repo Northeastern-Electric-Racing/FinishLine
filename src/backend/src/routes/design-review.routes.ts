@@ -2,7 +2,7 @@ import express from 'express';
 import DesignReviewController from '../controllers/design-review.controllers';
 import { validateInputs } from '../utils/utils';
 import { body } from 'express-validator';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString, isDate } from '../utils/validation.utils';
 
 const designReviewRouter = express.Router();
 
@@ -12,7 +12,7 @@ designReviewRouter.delete('/:designReviewId/delete', DesignReviewController.dele
 
 designReviewRouter.post(
   '/create',
-  nonEmptyString(body('dateScheduled')),
+  isDate(body('dateScheduled')),
   nonEmptyString(body('teamTypeId')),
   body('requiredMembers').isArray(),
   body('optionalMembers').isArray(),
