@@ -14,7 +14,7 @@ export interface WorkPackageApiInputs {
   startDate: String;
   duration: number;
   crId: number;
-  stage: WorkPackageStage | string | null;
+  stage: WorkPackageStage | null;
   blockedBy: WbsNumber[];
 }
 

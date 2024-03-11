@@ -22,6 +22,7 @@ import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageStage } from 'shared';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -140,7 +141,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         blockedBy: blockedByWbsNums,
         expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
         deliverables: createForm ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
-        stage
+        stage: stage as WorkPackageStage
       };
       await mutateAsync(payload);
       exitActiveMode();
