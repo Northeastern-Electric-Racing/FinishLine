@@ -14,7 +14,7 @@ const AdminToolsBOMConfig: React.FC = () => {
         <Grid item direction="column" alignSelf="right" xs={12} md={6}>
           <MaterialTypeTable />
         </Grid>
-        <Grid item direction="column" xs={12} md={6}>
+        <Grid item direction="column" xs={11} md={6}>
           <UnitTable />
         </Grid>
       </Grid>

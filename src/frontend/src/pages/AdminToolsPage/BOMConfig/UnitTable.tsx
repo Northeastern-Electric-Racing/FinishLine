@@ -8,7 +8,7 @@ import AdminToolTable from '../AdminToolTable';
 import { useGetAllUnits } from '../../../hooks/bom.hooks';
 import CreateUnitFormModal from './CreateUnitFormModal';
 
-const UnitTable: React.FC = () => {
+const UnitTypeTable: React.FC = () => {
   const {
     data: unitTypes,
     isLoading: unitTypesIsLoading,
@@ -50,4 +50,4 @@ const UnitTable: React.FC = () => {
   );
 };
 
-export default UnitTable;
+export default UnitTypeTable;

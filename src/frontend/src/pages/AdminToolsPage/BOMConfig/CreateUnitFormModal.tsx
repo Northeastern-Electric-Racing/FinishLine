@@ -13,12 +13,12 @@ const schema = yup.object().shape({
   name: yup.string().required('Vendor Name is Required')
 });
 
-interface CreateUnitModalProps {
+interface CreateUnitTypeModalProps {
   showModal: boolean;
   handleClose: () => void;
 }
 
-const CreateUnitModal: React.FC<CreateUnitModalProps> = ({ showModal, handleClose }) => {
+const CreateUnitModal: React.FC<CreateUnitTypeModalProps> = ({ showModal, handleClose }) => {
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useCreateUnit();
 
