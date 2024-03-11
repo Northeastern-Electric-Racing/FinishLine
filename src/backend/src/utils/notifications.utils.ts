@@ -25,28 +25,32 @@ export const usersToSlackPings = (users: UserWithSettings[]) => {
  * @returns the team assigned to the task
  */
 export const getTeamFromTaskAssignees = (users: UserWithTeams[]): Team => {
-  const allTeams = users.map((user) => {
+  const usersTeams = getTeamsFromUsers(users);
+
+  firstUsersTeams: for (const team of usersTeams[0]) {
+    for (let i = 0; i < usersTeams.length; i++) {
+      // If the team is not found in the current user's teams, continue to the next team
+      if (!usersTeams[i].some((t) => t.teamId === team.teamId)) continue firstUsersTeams;
+    }
+    return team;
+  }
+
+  throw new HttpException(400, 'All of the users do not share a team!');
+};
+
+/**
+ * Gets the teams from a list of users
+ * @param users the users to get the teams from
+ * @returns an array of the teams each user is in
+ */
+export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
+  return users.map((user) => {
     const teams = [];
     if (user.teamAsHead) teams.push(user.teamAsHead);
     if (user.teamsAsLead) teams.push(...user.teamsAsLead);
     if (user.teamsAsMember) teams.push(...user.teamsAsMember);
     return teams;
   });
-
-  // Find common teams across all users
-  const commonTeams = allTeams.reduce((acc, teams, index) => {
-    if (index === 0) {
-      return teams;
-    }
-    return acc.filter((team) => teams.some((t) => t.teamId === team.teamId));
-  }, allTeams[0] || []);
-
-  // Assuming we return the Slack ID of the first common team if there are any
-  if (commonTeams.length > 0) {
-    return commonTeams[0]; // Return the first common team
-  }
-
-  throw new HttpException(400, 'All of the users do not share a team!');
 };
 
 /**

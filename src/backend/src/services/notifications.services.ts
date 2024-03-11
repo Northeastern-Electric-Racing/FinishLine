@@ -71,7 +71,8 @@ export default class NotificationsService {
         )
         .join('\n\n');
 
-      sendMessage(slackId, messageBlock);
+      // messageBlock will be empty if there are tasks with no assignees
+      if (messageBlock != '') sendMessage(slackId, messageBlock);
     });
   }
 }
