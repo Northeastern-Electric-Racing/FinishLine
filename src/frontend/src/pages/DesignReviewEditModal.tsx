@@ -1,14 +1,14 @@
 import { Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
-import { DRCModalProps, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
+import TimeSlot from '../components/TimeSlot';
 import { useState } from 'react';
+import { DRCModalProps, HeatmapColors, daysOfWeek, times } from '../utils/design-review.utils';
 
-const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, iconData }) => {
-  const header = `Are you availble for the ${title} Design Review at 9:00 in the Bay`;
+const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, description, time, location, existingMeetingData }) => {
+  const header = `Are you availble for the ${description} Design Review at ${time} in the ${location}`;
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [itemSelected, setItemSelected] = useState(false);
-  const resetSelectedTimes = () => setSelectedTimes([]);
 
   const handleMouseDown = (event: any, selectedTime: number) => {
     event.preventDefault();
@@ -41,8 +41,8 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
 
   const renderDayHeaders = () => {
     return [
-      <TimeSlot backgroundColor="#D9D9D9" isModal={true} />,
-      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor="#D9D9D9" isModal={true} text={day} fontSize={'12px'} />)
+      <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} />,
+      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor={HeatmapColors.zero} isModal={true} text={day} fontSize={'12px'} />)
     ];
   };
 
@@ -52,10 +52,10 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
         {renderDayHeaders()}
         {times.map((time, timeIndex) => (
           <Grid container item xs={12}>
-            <TimeSlot backgroundColor='#D9D9D9' isModal={true} text={time} fontSize={'13px'} />
+            <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} text={time} fontSize={'13px'} />
             {daysOfWeek.map((_day, dayIndex) => {
               const index = dayIndex * times.length + timeIndex;
-              const backgroundColor = selectedTimes.includes(index) ? '#E4797A' : '#D9D9D9';
+              const backgroundColor = selectedTimes.includes(index) ? HeatmapColors.three : HeatmapColors.zero;
               return (
                 <TimeSlot
                   key={index}
@@ -64,7 +64,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
                   onMouseDown={(e) => handleMouseDown(e, index)}
                   onMouseEnter={(e) => handleMouseEnter(e, index)}
                   onMouseUp={handleMouseUp}
-                  icon={iconData.get(index)}
+                  icon={existingMeetingData.get(index)}
                 />
               );
             })}
@@ -79,7 +79,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({ open, onHide, onSubmit, title, 
       open={open}
       onHide={() => {
         onHide();
-        resetSelectedTimes();
+        setSelectedTimes([]);
       }}
       title={header}
       onSubmit={onSubmit}

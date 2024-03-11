@@ -1,43 +1,19 @@
 import { Box, Grid, Typography } from '@mui/material';
-import { DRCViewProps, getBackgroundColor, times, daysOfWeek, TimeSlot } from './DesignReviewCommon';
+import TimeSlot from '../components/TimeSlot';
 import { User } from 'shared';
 import { useState } from 'react';
 import WarningIcon from '@mui/icons-material/Warning';
 import NERFailButton from '../components/NERFailButton';
 import NERSuccessButton from '../components/NERSuccessButton';
+import { DRCViewProps, times, daysOfWeek, getBackgroundColor, HeatmapColors } from '../utils/design-review.utils';
 
-const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) => {
+const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetingData }) => {
   const totalUsers = usersToAvailabilities.size;
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const numberOfTimeSlots = times.length * daysOfWeek.length;
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
-
-  function createAvailableUsers() {
-    for (let time = 0; time < numberOfTimeSlots; time++) {
-      availableUsers.set(time, []);
-    }
-
-    usersToAvailabilities.forEach((availableTimes, user) => {
-      availableTimes.forEach((time) => {
-        const usersAtTime = availableUsers.get(time) || [];
-        usersAtTime.push(user);
-        availableUsers.set(time, usersAtTime);
-      });
-    });
-    return availableUsers;
-  }
-
-  function createUnavailableUsers() {
-    const allUsers = [...usersToAvailabilities.keys()];
-    for (let time = 0; time < numberOfTimeSlots; time++) {
-      const currentUsers = availableUsers.get(time) || [];
-      const currentUnavailableUsers = allUsers.filter((user) => !currentUsers.includes(user));
-      unavailableUsers.set(time, currentUnavailableUsers);
-    }
-    return unavailableUsers;
-  }
 
   const handleOnMouseOver = (index: number) => {
     setCurrentAvailableUsers(availableUsers.get(index) || []);
@@ -57,14 +33,32 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
   };
 
   const renderSchedule = () => {
-    createAvailableUsers();
-    createUnavailableUsers();
+    // Populates the availableUsers map
+    for (let time = 0; time < numberOfTimeSlots; time++) {
+      availableUsers.set(time, []);
+    }
+    usersToAvailabilities.forEach((availableTimes, user) => {
+      availableTimes.forEach((time) => {
+        const usersAtTime = availableUsers.get(time) || [];
+        usersAtTime.push(user);
+        availableUsers.set(time, usersAtTime);
+      });
+    });
+
+    // Populates the unavailableUsers map
+    const allUsers = [...usersToAvailabilities.keys()];
+    for (let time = 0; time < numberOfTimeSlots; time++) {
+      const currentUsers = availableUsers.get(time) || [];
+      const currentUnavailableUsers = allUsers.filter((user) => !currentUsers.includes(user));
+      unavailableUsers.set(time, currentUnavailableUsers);
+    }
+
     return (
       <Grid container>
         {renderDayHeaders()}
         {times.map((time, timeIndex) => (
           <Grid container item xs={12} onMouseLeave={handleOnMouseLeave}>
-            <TimeSlot backgroundColor="#D9D9D9" text={time} fontSize={'1em'} isModal={false} />
+            <TimeSlot backgroundColor={HeatmapColors.zero} text={time} fontSize={'1em'} isModal={false} />
             {daysOfWeek.map((_day, dayIndex) => {
               const index = dayIndex * times.length + timeIndex;
               return (
@@ -73,7 +67,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
                   backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                   onMouseOver={() => handleOnMouseOver(index)}
                   isModal={false}
-                  icon={iconData.get(index)}
+                  icon={existingMeetingData.get(index)}
                 />
               );
             })}
@@ -84,7 +78,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, iconData }) =>
   };
 
   const renderLegend = () => {
-    const colors = ['#D9D9D9', '#E0C0C1', '#E89A9B', '#E4797A', '#EF4345', '#D70C0F'];
+    const colors = [HeatmapColors.zero, HeatmapColors.one, HeatmapColors.two, HeatmapColors.three, HeatmapColors.four, HeatmapColors.five];
     return (
       <Grid sx={{ display: 'flex', justifyContent: 'center' }}>
         <Typography style={{ marginRight: '10px', fontFamily: 'oswald' }}>0/0</Typography>

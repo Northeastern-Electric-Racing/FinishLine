@@ -14,43 +14,13 @@ import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
 import DRCEditModal from './DesignReviewEditModal';
 import { useState } from 'react';
-import {
-  batman,
-  superman,
-  theVisitor,
-  greenlantern,
-  wonderwoman,
-  flash,
-  aquaman,
-  alfred
-} from '../../../backend/tests/test-data/users.test-data';
 import DRCView from './DesignReviewView';
+import { usersToAvailabilities, existingMeetingData } from '../utils/design-review.utils';
 
 const InfoPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const handleOpenEditModal = () => setIsEditModalOpen(true);
   const handleCloseEditModal = () => setIsEditModalOpen(false);
-
-  // We will have to make a call to the backend to get this data
-  // currently hardcoded for testing purposes
-  const usersToAvailabilities = new Map([
-    [superman, [1, 2, 3, 4, 5, 6, 7]],
-    [batman, [2, 3, 4, 5, 6, 7]],
-    [theVisitor, [3, 4, 5, 6, 7]],
-    [greenlantern, [4, 5, 6, 7]],
-    [wonderwoman, [5, 6, 7]],
-    [flash, [6, 7]],
-    [aquaman, [7]],
-    [alfred, [7]]
-  ]);
-
-  // We will have to maker a call to the backend to get this data
-  // currently hardcoded for testing purposes
-  const iconData = new Map<number, string>();
-  iconData.set(5, 'warning');
-  iconData.set(10, 'build');
-  iconData.set(20, 'computer');
-  iconData.set(50, 'electrical');
 
   return (
     <PageLayout title="Information">
@@ -98,11 +68,13 @@ const InfoPage: React.FC = () => {
       <DRCEditModal
         open={isEditModalOpen}
         onHide={handleCloseEditModal}
-        title={'Battery'}
+        description="Battery"
+        time="9:00"
+        location="the bay"
         usersToAvailabilities={usersToAvailabilities}
-        iconData={iconData}
+        existingMeetingData={existingMeetingData}
       />
-      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} iconData={iconData} />
+      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} existingMeetingData={existingMeetingData} />
     </PageLayout>
   );
 };
