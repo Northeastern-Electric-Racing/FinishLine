@@ -58,12 +58,10 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
 
     try {
       await mutateAsync({
-        requestData: {
-          fileIds: receipts.map((receipt) => receipt.googleFileId),
-          startDate: data.startDate,
-          endDate: data.endDate,
-          refundSource: data.refundSource
-        }
+        fileIds: receipts.map((receipt) => receipt.googleFileId),
+        startDate: data.startDate,
+        endDate: data.endDate,
+        refundSource: data.refundSource
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
