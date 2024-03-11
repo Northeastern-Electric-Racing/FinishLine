@@ -30,6 +30,7 @@ import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
 import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
+import { Decimal } from 'decimal.js';
 
 const prisma = new PrismaClient();
 
@@ -118,6 +119,14 @@ const performSeed: () => Promise<void> = async () => {
   const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
+  const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
+  const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
+  const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
+  const johnBoddy = await prisma.user.create({ data: dbSeedAllUsers.johnBoddy });
+  const villager = await prisma.user.create({ data: dbSeedAllUsers.villager });
+  const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
+  const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
+  const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -188,14 +197,14 @@ const performSeed: () => Promise<void> = async () => {
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
+  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
 
-  /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
-  const financeTeamId = justiceLeague.teamId;
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
+
   /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
-    currentEnv.FINANCE_TEAM_ID = financeTeamId;
+    currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
     /** Write the new .env file */
     let stringifiedEnv = '';
     Object.keys(currentEnv).forEach((key) => {
@@ -230,6 +239,18 @@ const performSeed: () => Promise<void> = async () => {
     justiceLeague.teamId,
     [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
   );
+
+  await TeamsService.setTeamMembers(
+    monopolyMan,
+    financeTeam.teamId,
+    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    monopolyMan,
+    financeTeam.teamId,
+    [mrKrabs, richieRich].map((user) => user.userId)
+  );
+
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
@@ -956,6 +977,27 @@ const performSeed: () => Promise<void> = async () => {
     100
   );
 
+  await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    new Date(),
+    vendor.vendorId,
+    ClubAccount.BUDGET,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 10000
+      }
+    ],
+    expenseType.expenseTypeId,
+    200
+  );
+
   /**
    * Bill of Materials
    */
@@ -975,16 +1017,16 @@ const performSeed: () => Promise<void> = async () => {
     'Resistor',
     'Digikey',
     'abcdef',
-    20,
+    new Decimal(20),
     30,
     600,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    'Here are some notes',
     {
       carNumber: 1,
       projectNumber: 1,
       workPackageNumber: 0
-    }
+    },
+    'Here are some notes'
   );
 
   await ProjectsService.createMaterial(
@@ -994,16 +1036,16 @@ const performSeed: () => Promise<void> = async () => {
     'Resistor',
     'Digikey',
     'bacfed',
-    10,
+    new Decimal(10),
     7,
     70,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    'Here are some more notes',
     {
       carNumber: 1,
       projectNumber: 1,
       workPackageNumber: 0
     },
+    'Here are some more notes',
     assembly1.assemblyId
   );
 };

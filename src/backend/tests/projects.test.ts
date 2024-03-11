@@ -18,7 +18,9 @@ import {
   prismaMaterial2,
   prismaProject2,
   mockLinkType1,
-  transformedMockLinkType1
+  transformedMockLinkType1,
+  manufacturer1,
+  manufacturer2
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -36,6 +38,7 @@ import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { Material, Material_Status, User } from '@prisma/client';
+import { Decimal } from 'decimal.js';
 import linkTypeQueryArgs from '../src/prisma-query-args/link-types.query-args';
 
 vi.mock('../src/utils/projects.utils');
@@ -510,12 +513,12 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -534,12 +537,12 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -559,12 +562,12 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -585,12 +588,12 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -612,12 +615,12 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -641,12 +644,12 @@ describe('Projects', () => {
           'type',
           'manufacturer',
           'partNum',
-          6,
+          new Decimal(6),
           800,
           400,
           'https://www.google.com',
-          'none',
           { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+          'none',
           'assemblyName',
           'file',
           'FT'
@@ -669,12 +672,12 @@ describe('Projects', () => {
         prismaMaterialType.name,
         prismaManufacturer2.name,
         'partNum',
-        6,
+        new Decimal(6),
         800,
         400,
         'https://www.google.com',
-        'none',
         { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+        'none',
         'assemblyName',
         'file',
         'FT'
@@ -709,24 +712,33 @@ describe('Projects', () => {
       expect(manufacturer.userCreatedId).toBe(prismaManufacturer1.userCreatedId);
     });
 
+    test('deleteManufacturer fails when there is materials in it', async () => {
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer2);
+
+      await expect(ProjectsService.deleteManufacturer(batman, 'Manufacturer2')).rejects.toThrow(
+        new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it')
+      );
+    });
+
     test('deleteManufacturer works', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer1);
+      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(manufacturer1);
 
-      const manufacturer = await ProjectsService.deleteManufacturer(batman, prismaManufacturer1.name);
+      const manufacturer = await ProjectsService.deleteManufacturer(batman, manufacturer1.name);
+      expect(prisma.manufacturer.delete).toBeCalledTimes(1);
 
-      expect(manufacturer).toStrictEqual(prismaManufacturer1);
+      expect(manufacturer).toStrictEqual(manufacturer1);
       expect(prisma.manufacturer.findFirst).toHaveBeenCalledTimes(1);
-      expect(prisma.manufacturer.update).toHaveBeenCalledTimes(1);
+      expect(prisma.manufacturer.delete).toHaveBeenCalledTimes(1);
     });
 
     test('deleteManufacturer fails when user is not at least Head', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer1);
-      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(prismaManufacturer1);
+      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer1);
+      vi.spyOn(prisma.manufacturer, 'update').mockResolvedValue(manufacturer1);
 
-      await expect(
-        async () => await ProjectsService.deleteManufacturer(wonderwoman, prismaManufacturer1.name)
-      ).rejects.toThrow(new AccessDeniedException('Only heads and above can delete a manufacturer'));
+      await expect(async () => await ProjectsService.deleteManufacturer(wonderwoman, manufacturer1.name)).rejects.toThrow(
+        new AccessDeniedException('Only heads and above can delete a manufacturer')
+      );
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
@@ -741,13 +753,6 @@ describe('Projects', () => {
 
       expect(prisma.project.findFirst).toHaveBeenCalledTimes(0);
       expect(prisma.project.update).toHaveBeenCalledTimes(0);
-    });
-
-    test('deleteManufacturer fails when manufacturer has been deleted', async () => {
-      vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(prismaManufacturer2);
-      await expect(async () => await ProjectsService.deleteManufacturer(batman, prismaManufacturer2.name)).rejects.toThrow(
-        new DeletedException('Manufacturer', prismaManufacturer2.name)
-      );
     });
 
     test('Get all Manufacturer works', async () => {
@@ -928,6 +933,29 @@ describe('Projects', () => {
     });
   });
 
+  describe('Deleting unit', () => {
+    test('Delete unit does not work if user is not an admin or head', async () => {
+      await expect(ProjectsService.deleteUnit(theVisitor, 'NERSoftwareTools')).rejects.toThrow(
+        new AccessDeniedException('Only heads and above can delete a unit')
+      );
+    });
+
+    test('Deleting unit fails if unit does not exist', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(null);
+
+      await expect(ProjectsService.deleteUnit(batman, 'New Unit')).rejects.toThrow(
+        new NotFoundException('Unit', 'New Unit')
+      );
+    });
+
+    test('Delete Unit works', async () => {
+      vi.spyOn(prisma.unit, 'findUnique').mockResolvedValue(toolMaterial);
+      vi.spyOn(prisma.unit, 'delete');
+      await ProjectsService.deleteUnit(superman, 'NERSoftwareTools');
+      expect(prisma.unit.delete).toBeCalledTimes(1);
+    });
+  });
+
   describe('updateMaterial', () => {
     test('Update material fails if the given material does not exists', async () => {
       vi.spyOn(prisma.material, 'findUnique').mockResolvedValue(null);
@@ -945,7 +973,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -970,7 +998,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -995,7 +1023,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1021,7 +1049,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1047,7 +1075,7 @@ describe('Projects', () => {
           prismaMaterial2.price,
           prismaMaterial2.subtotal,
           prismaMaterial2.linkUrl,
-          prismaMaterial2.notes,
+          prismaMaterial2.notes || undefined,
           prismaMaterial2.unitName || undefined,
           prismaMaterial2.assemblyId || undefined,
           prismaMaterial2.pdmFileName || undefined
@@ -1072,7 +1100,7 @@ describe('Projects', () => {
         prismaMaterial2.price,
         prismaMaterial2.subtotal,
         prismaMaterial2.linkUrl,
-        prismaMaterial2.notes,
+        prismaMaterial2.notes || undefined,
         prismaMaterial2.unitName || undefined,
         prismaMaterial2.assemblyId || undefined,
         prismaMaterial2.pdmFileName || undefined
@@ -1120,11 +1148,11 @@ describe('Projects', () => {
     });
   });
   describe('editLinkTypes', () => {
-    test('Edit LinkType fails if the submitter is not an admin or a head', async () => {
+    test('Edit LinkType fails if the submitter is not an admin', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
       await expect(
         ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, aquaman)
-      ).rejects.toThrow(new AccessDeniedException('Only the head or admin can update the linkType'));
+      ).rejects.toThrow(new AccessDeniedException('Only an admin can update the linkType'));
     });
     test('Throws error if linkType not found', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);

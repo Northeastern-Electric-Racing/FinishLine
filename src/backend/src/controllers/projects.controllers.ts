@@ -209,8 +209,8 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        notes,
         wbsNum,
+        notes,
         assemblyId,
         pdmFileName,
         unitName
@@ -238,6 +238,17 @@ export default class ProjectsController {
       const { manufacturerName } = req.params;
       const deletedManufacturer = await ProjectsService.deleteManufacturer(user, manufacturerName);
       res.status(200).json(deletedManufacturer);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteUnit(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user: User = await getCurrentUser(res);
+      const { unitName } = req.params;
+      const deletedUnit = await ProjectsService.deleteUnit(user, unitName);
+      res.status(200).json(deletedUnit);
     } catch (error: unknown) {
       next(error);
     }

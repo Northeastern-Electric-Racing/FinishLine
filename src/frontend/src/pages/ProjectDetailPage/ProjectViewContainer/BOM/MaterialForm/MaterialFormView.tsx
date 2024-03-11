@@ -51,8 +51,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
 }) => {
   const quantity = watch('quantity');
   const price = watch('price');
-  const unit = watch('unitName');
-  const subtotal = quantity && price ? (unit ? price : quantity * price) : 0;
+  const subtotal = quantity && price && parseFloat((quantity * price).toFixed(2));
 
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
@@ -222,23 +221,25 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     variant="outlined"
                     error={!!errors.unitName}
                     helperText={errors.unitName?.message}
+                    value={field.value || ''}
+                    onChange={(event) => {
+                      const selectedValue = event.target.value;
+                      if (selectedValue === 'createUnit') {
+                        const unitName = prompt('Enter Unit Name');
+                        if (unitName) {
+                          createUnit(unitName);
+                        }
+                      } else {
+                        field.onChange(event);
+                      }
+                    }}
                   >
                     {allUnits.map((unit) => (
                       <MenuItem key={unit.name} value={unit.name}>
                         {unit.name}
                       </MenuItem>
                     ))}
-                    <MenuItem
-                      value="createUnit"
-                      onClick={() => {
-                        const unitName = prompt('Enter Unit Name');
-                        if (unitName) {
-                          createUnit(unitName);
-                        }
-                      }}
-                    >
-                      + Create Unit
-                    </MenuItem>
+                    <MenuItem value="createUnit">+ Create Unit</MenuItem>
                   </TextField>
                 )}
               />
@@ -281,7 +282,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Notes</FormLabel>
+            <FormLabel>Notes (optional)</FormLabel>
             <ReactHookTextField
               name="notes"
               control={control}
