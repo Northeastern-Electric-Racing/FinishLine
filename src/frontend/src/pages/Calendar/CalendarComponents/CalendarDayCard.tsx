@@ -1,7 +1,7 @@
 import { Box, Card, CardContent, Grid, IconButton, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { DesignReview } from 'shared';
-import { NOON_IN_MINUTES } from '../../../utils/design-review.utils';
+import { meetingStartTimePipe } from '../../../utils/pipes';
 
 interface CalendarDayCardProps {
   myDate: Date;
@@ -26,15 +26,11 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ myDate, events }) => 
 
   const EventCard = (event: DesignReview) => {
     const name = event.designReviewId;
-    // number of minutes after midnight
-    const time = event.meetingTimes[0] * 15 + 9 * 60;
-    const minutes = time % 60;
-    const hours = ((time - minutes) / 60) % 12 === 0 ? 12 : ((time - minutes) / 60) % 12;
     return (
       <Box marginLeft={0.5}>
         <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
           <Typography marginLeft={0.5} marginBottom={0.3}>
-            {name + ' ' + hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am')}
+            {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
           </Typography>
         </Card>
       </Box>
