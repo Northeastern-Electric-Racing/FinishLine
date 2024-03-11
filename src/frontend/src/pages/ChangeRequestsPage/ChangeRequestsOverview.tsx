@@ -94,14 +94,10 @@ const ChangeRequestsOverview: React.FC = () => {
     emptyMessage: 'No recently approved change requests'
   };
 
-  const overviewRowListShowReview = [crToReviewRow, crUnreviewedRow, crApprovedRow];
-  const overviewRowListNoReview = [crUnreviewedRow, crApprovedRow];
+  const overviewRowList = [crUnreviewedRow, crApprovedRow];
+  if (showToReview) overviewRowList.push(crToReviewRow);
 
-  if (showToReview) {
-    return <CRRow crRowList={overviewRowListShowReview} />;
-  } else {
-    return <CRRow crRowList={overviewRowListNoReview} />;
-  }
+  return <CRRow crRowList={overviewRowList} />;
 };
 
 export default ChangeRequestsOverview;
