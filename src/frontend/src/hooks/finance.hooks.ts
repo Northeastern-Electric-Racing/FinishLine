@@ -272,7 +272,6 @@ export const useSingleReimbursementRequest = (id: string) => {
 
 /**
  * Custom react hook to delete a single reimbursement request
- *X
  * @param id id of the reimbursement request to delete
  * @returns the deleted reimbursement request
  */
