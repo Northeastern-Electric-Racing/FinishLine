@@ -53,10 +53,15 @@ const CRRow = ({ crRowList }: { crRowList: changeRequests[] }) => {
       </>
     );
   };
+
+  const ChangeRequestRow = ({ cr }: { cr: changeRequests }) => {
+    return <Box>{renderChangeRequests(cr.title, cr.crList, cr.emptyMessage)}</Box>;
+  };
+
   return (
     <>
       {crRowList.map((cr: changeRequests) => (
-        <Box> {renderChangeRequests(cr.title, cr.crList, cr.emptyMessage)}</Box>
+        <ChangeRequestRow cr={cr} />
       ))}
     </>
   );
