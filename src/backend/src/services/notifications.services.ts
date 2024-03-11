@@ -61,18 +61,15 @@ export default class NotificationsService {
     // send the notifications to each team for their respective tasks
     teamTaskMap.forEach((tasks, slackId) => {
       const messageBlock = tasks
-        // ensures that the task has assignees to send a reminder for
-        .filter((task) => task.assignees)
         .map(
           (task) =>
-            `${usersToSlackPings(task.assignees ?? [])} Reminder: ${task.title} due tomorrow in project ${
-              task.wbsElement?.name
-            }`
+            `${usersToSlackPings(task.assignees ?? [])} ${task.title} due tomorrow in project ${task.wbsElement?.name}`
         )
         .join('\n\n');
 
       // messageBlock will be empty if there are tasks with no assignees
-      if (messageBlock !== '') sendMessage(slackId, messageBlock);
+      if (messageBlock !== '')
+        sendMessage(slackId, ':sparkles: :pepe-coop: UPCOMING TASK DEADLINES :pepe-coop: :sparkles: \n\n\n' + messageBlock);
     });
   }
 }
