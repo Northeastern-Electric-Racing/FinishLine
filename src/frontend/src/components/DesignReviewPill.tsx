@@ -21,10 +21,14 @@ export const DesignReviewPill: React.FC<{
       {icon}
       {isLink ? (
         <Link target="_blank" sx={{ color: 'white' }} href={linkText} paddingLeft="5px">
-          {displayText}
+          <Typography fontSize={14} paddingLeft="5px">
+            {displayText}
+          </Typography>
         </Link>
       ) : (
-        <Typography paddingLeft="5px">{displayText}</Typography>
+        <Typography fontSize={14} paddingLeft="5px">
+          {displayText}
+        </Typography>
       )}
     </Typography>
   );

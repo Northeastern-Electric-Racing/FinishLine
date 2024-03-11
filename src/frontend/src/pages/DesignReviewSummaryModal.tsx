@@ -21,8 +21,13 @@ interface DRCSummaryModalProps {
 }
 
 const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview }) => {
+  const [checked, setChecked] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChecked(event.target.checked);
+  };
+
   return (
     <NERModal open={open} onHide={onHide} title={designReview.wbsName} hideFormButtons>
       <StageGateModal
@@ -109,6 +114,8 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
             sx={{ marginBottom: 5 }}
             control={
               <Checkbox
+                checked={checked}
+                onChange={handleChange}
                 sx={{
                   color: 'white',
                   '&.Mui-checked': { color: 'white' }
@@ -137,7 +144,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                 marginLeft: 1,
                 fontWeight: 'bold'
               }}
-              disabled={designReview.status !== DesignReviewStatus.DONE}
+              disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
             >
               Schedule Another DR
             </Button>
@@ -151,7 +158,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                 fontWeight: 'bold'
               }}
               onClick={() => setShowStageGateModal(true)}
-              disabled={designReview.status !== DesignReviewStatus.DONE}
+              disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
             >
               Stage Gate
             </Button>
@@ -165,7 +172,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
                 fontWeight: 'bold'
               }}
               onClick={() => setShowDelayModal(true)}
-              disabled={designReview.status !== DesignReviewStatus.DONE}
+              disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
             >
               Request Delay to WP
             </Button>
