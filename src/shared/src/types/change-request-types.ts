@@ -106,7 +106,7 @@ export interface ProposedSolutionCreateArgs {
   timelineImpact: number;
 }
 
-export interface ChangeRequestRow {
+export interface changeRequests {
   title: string;
   crList: ChangeRequest[];
   emptyMessage: string;

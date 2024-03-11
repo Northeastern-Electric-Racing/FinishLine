@@ -6,7 +6,7 @@
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead, ChangeRequest, ChangeRequestRow, Project, WorkPackage, equalsWbsNumber } from 'shared';
+import { isLeadership, isHead, ChangeRequest, changeRequests, Project, WorkPackage, equalsWbsNumber } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -77,18 +77,18 @@ const ChangeRequestsOverview: React.FC = () => {
     )
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crToReviewRow: ChangeRequestRow = {
+  const crToReviewRow: changeRequests = {
     title: 'To Review',
     crList: crToReview,
     emptyMessage: 'No change requests to review'
   };
-  const crUnreviewedRow: ChangeRequestRow = {
+  const crUnreviewedRow: changeRequests = {
     title: 'My Un-reviewed Change Requests',
     crList: crUnreviewed,
     emptyMessage: 'No un-reviewed change requests'
   };
 
-  const crApprovedRow: ChangeRequestRow = {
+  const crApprovedRow: changeRequests = {
     title: 'My Recently Approved Change Requests',
     crList: crApproved,
     emptyMessage: 'No recently approved change requests'
