@@ -71,7 +71,10 @@ const DRCEditModal: React.FC<DRCEditModalProps> = ({
   const renderSchedule = () => {
     return (
       <Grid container>
-        {renderDayHeaders()}
+        <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} />,
+        {EnumToArray(DAY_NAMES).map((day) => (
+          <TimeSlot key={day} backgroundColor={HeatmapColors.zero} isModal={true} text={day} fontSize={'12px'} />
+        ))}
         {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
           <Grid container item xs={12}>
             <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} text={time} fontSize={'13px'} />

@@ -70,7 +70,10 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
 
     return (
       <Grid container>
-        {renderDayHeaders()}
+        <TimeSlot backgroundColor="#D9D9D9" isModal={false} />,
+        {EnumToArray(DAY_NAMES).map((day) => (
+          <TimeSlot key={day} backgroundColor="#D9D9D9" text={day} fontSize={'1em'} isModal={false} />
+        ))}
         {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
           <Grid container item xs={12} onMouseLeave={handleOnMouseLeave}>
             <TimeSlot backgroundColor={HeatmapColors.zero} text={time} fontSize={'1em'} isModal={false} />
