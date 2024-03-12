@@ -125,6 +125,8 @@ model User {
   createdDesignReviews       Design_Review[]         @relation(name: "designReviewCreator")
   deletedDesignReviews       Design_Review[]         @relation(name: "designReviewDeleter")
   drScheduleSettings         Schedule_Settings?
+  createdWorkPackageTemplate Work_Package_Template[] @relation(name: "workPackageTemplateCreator")
+  deletedWorkPackageTemplate Work_Package_Template[] @relation(name: "workPackageTemplateDeleter")
 }
 
 model Team {
@@ -690,4 +692,30 @@ model Work_Package_Proposed_Changes {
   stage                        Work_Package_Stage
   proposedWbsChanges           Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId         String               @unique
+}
+
+model Blocked_By_Info {
+  blockedByInfoId       String                @id @default(uuid())
+  stage                 Work_Package_Stage?
+  name                  String
+  workPackageTemplate   Work_Package_Template @relation(fields: [workPackageTemplateId], references: [workPackageTemplateId])
+  workPackageTemplateId String
+}
+
+model Work_Package_Template {
+  workPackageTemplateId String              @id @default(uuid())
+  templateName          String
+  templateNotes         String
+  workPackageName       String?
+  stage                 Work_Package_Stage?
+  duration              Int?
+  blockedBy             Blocked_By_Info[]
+  expectedActivities    String[]
+  deliverables          String[]
+  dateCreated           DateTime
+  userCreated           User                @relation(fields: [userCreatedId], references: [userId], name: "workPackageTemplateCreator")
+  userCreatedId         Int
+  dateDeleted           DateTime?
+  userDeleted           User?               @relation(fields: [userDeletedId], references: [userId], name: "workPackageTemplateDeleter")
+  userDeletedId         Int?
 }

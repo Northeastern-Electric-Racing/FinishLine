@@ -43,6 +43,7 @@ export const reimbursementRequestTransformer = (
 ): ReimbursementRequest => {
   return {
     reimbursementRequestId: reimbursementRequest.reimbursementRequestId,
+    identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
     dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
