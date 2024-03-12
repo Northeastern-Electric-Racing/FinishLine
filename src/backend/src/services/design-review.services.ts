@@ -137,3 +137,24 @@ export default class DesignReviewService {
     return design_review;
   }
 }
+
+  /**
+   * Retrieves a single design review
+   *
+   * @param submitter the user who is trying to retrieve the design review
+   * @param designReviewId the id of the design review to retrieve
+   * @returns the design review
+   */
+  static async getSingleDesignReview(submitter: User, designReviewId: string): Promise<DesignReview> {
+    const designReview = await prisma.design_Review.findUnique({
+      where: { designReviewId },
+      ...designReviewQueryArgs
+    });
+
+    if (!designReview) throw new NotFoundException('Design Review', designReviewId);
+
+    if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+
+    return designReviewTransformer(designReview);
+  }
+}
