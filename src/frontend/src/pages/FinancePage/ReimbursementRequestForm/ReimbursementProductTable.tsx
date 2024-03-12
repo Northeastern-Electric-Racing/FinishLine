@@ -44,7 +44,7 @@ interface ReimbursementProductTableProps {
     id: string;
   }[];
   errors: FieldErrors<ReimbursementRequestFormInput>;
-  control: Control<ReimbursementRequestFormInput, any>;
+  control: Control<ReimbursementRequestFormInput>;
   setValue: UseFormSetValue<ReimbursementRequestFormInput>;
 }
 
