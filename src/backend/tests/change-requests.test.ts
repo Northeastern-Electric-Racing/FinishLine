@@ -33,14 +33,15 @@ import {
 } from '../src/utils/errors.utils';
 import * as changeRequestTransformer from '../src/transformers/change-requests.transformer';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
+import * as slackUtils from '../src/utils/slack.utils';
 
 describe('Change Requests', () => {
   beforeEach(() => {
     vi.spyOn(changeRequestTransformer, 'default').mockReturnValue(sharedChangeRequest);
-    vi.spyOn(changeRequestUtils, 'sendSlackCRReviewedNotification').mockImplementation(async (_slackId, _crId) => {
+    vi.spyOn(slackUtils, 'sendSlackCRReviewedNotification').mockImplementation(async (_slackId, _crId) => {
       return [];
     });
-    vi.spyOn(changeRequestUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
+    vi.spyOn(slackUtils, 'sendSlackChangeRequestNotification').mockImplementation(async (_slackId, _crId) => {
       return [];
     });
     vi.spyOn(changeRequestUtils, 'updateBlocking').mockImplementation(async () => {});
