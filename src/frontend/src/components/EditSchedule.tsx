@@ -44,13 +44,13 @@ const EditSchedule: React.FC<EditScheduleProps> = ({ selectedTimes, setSelectedT
 
   return (
     <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors[0]} isModal={true} />
+      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} />
       {EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot key={day} backgroundColor={HeatmapColors[0]} isModal={true} text={day} fontSize={'12px'} />
+        <TimeSlot key={day} backgroundColor={HeatmapColors[0]} small={true} text={day} fontSize={'12px'} />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-        <Grid container item xs={12}>
-          <TimeSlot backgroundColor={HeatmapColors[0]} isModal={true} text={time} fontSize={'13px'} />
+        <Grid container item>
+          <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
           {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
             const backgroundColor = selectedTimes.includes(index) ? HeatmapColors[3] : HeatmapColors[0];
@@ -58,7 +58,7 @@ const EditSchedule: React.FC<EditScheduleProps> = ({ selectedTimes, setSelectedT
               <TimeSlot
                 key={index}
                 backgroundColor={backgroundColor}
-                isModal={true}
+                small={true}
                 onMouseDown={(e) => handleMouseDown(e, index)}
                 onMouseEnter={(e) => handleMouseEnter(e, index)}
                 onMouseUp={handleMouseUp}

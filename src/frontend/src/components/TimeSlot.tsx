@@ -6,7 +6,7 @@ interface TimeSlotProps {
   fontSize?: string;
   backgroundColor?: string;
   icon?: string;
-  isModal: boolean;
+  small: boolean;
   onMouseDown?: (e: any) => void;
   onMouseEnter?: (e: any) => void;
   onMouseUp?: (e: any) => void;
@@ -17,7 +17,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   text,
   fontSize,
   backgroundColor,
-  isModal,
+  small = false,
   icon,
   onMouseDown,
   onMouseEnter,
@@ -27,8 +27,8 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   return (
     <Box
       sx={{
-        height: isModal ? '25px' : '4.7vh',
-        width: isModal ? '81px' : '11%',
+        height: small ? '25px' : '4.7vh',
+        width: small ? '81px' : '11%',
         backgroundColor,
         cursor: 'pointer',
         borderStyle: 'solid',
@@ -47,7 +47,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
       onMouseUp={onMouseUp}
       onMouseOver={onMouseOver}
     >
-      {icon && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getIcon(icon, isModal)}</Box>}
+      {icon && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getIcon(icon, small)}</Box>}
       {text}
     </Box>
   );

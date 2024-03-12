@@ -1,8 +1,8 @@
-import NERModal from '../components/NERModal';
+import NERModal from '../../../components/NERModal';
 import { useState } from 'react';
-import { existingMeetingData } from '../utils/design-review.utils';
+import { existingMeetingData } from '../../../utils/design-review.utils';
 import { User } from 'shared';
-import EditSchedule from '../components/EditSchedule';
+import EditSchedule from '../../../components/EditSchedule';
 
 interface DRCEditModalProps {
   open: boolean;

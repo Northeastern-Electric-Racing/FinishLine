@@ -59,8 +59,8 @@ export const getBackgroundColor = (frequency: number = 0, totalUsers: number): s
   return colors[colorIndex];
 };
 
-export const getIcon = (icon: string, isModal: boolean): ReactElement | null => {
-  const iconFont = isModal ? { fontSize: '1.4em' } : { fontSize: '2em' };
+export const getIcon = (icon: string, small: boolean): ReactElement | null => {
+  const iconFont = small ? { fontSize: '1.4em' } : { fontSize: '2em' };
 
   switch (icon) {
     case 'warning':
