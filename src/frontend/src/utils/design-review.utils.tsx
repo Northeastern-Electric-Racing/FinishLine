@@ -14,7 +14,6 @@ import {
   alfred
 } from '../../../backend/tests/test-data/users.test-data';
 
-
 export const EnumToArray = (en: { [key: number]: string | number }) => {
   return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
 };
@@ -42,7 +41,7 @@ export enum REVIEW_TIMES {
   '7-8 PM',
   '8-9 PM',
   '9-10 PM'
-};
+}
 
 export enum HeatmapColors {
   zero = '#D9D9D9',
