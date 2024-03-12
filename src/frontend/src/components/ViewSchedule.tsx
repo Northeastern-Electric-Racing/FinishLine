@@ -1,7 +1,14 @@
-import { Grid } from "@mui/material";
-import { User } from "shared";
-import { NUMBER_OF_TIME_SLOTS, EnumToArray, DAY_NAMES, REVIEW_TIMES, HeatmapColors, getBackgroundColor } from "../utils/design-review.utils";
-import TimeSlot from "./TimeSlot";
+import { Grid } from '@mui/material';
+import { User } from 'shared';
+import {
+  NUMBER_OF_TIME_SLOTS,
+  EnumToArray,
+  DAY_NAMES,
+  REVIEW_TIMES,
+  HeatmapColors,
+  getBackgroundColor
+} from '../utils/design-review.utils';
+import TimeSlot from './TimeSlot';
 
 interface ViewScheduleProps {
   availableUsers: Map<number, User[]>;
