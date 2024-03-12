@@ -72,16 +72,15 @@ enum Work_Package_Stage {
 }
 
 model User {
-  userId             Int                   @id @default(autoincrement())
-  firstName          String
-  lastName           String
-  googleAuthId       String                @unique
-  email              String                @unique
-  emailId            String?               @unique
-  role               Role                  @default(GUEST)
-  userSettings       User_Settings?
-  userSecureSettings User_Secure_Settings?
-
+  userId                     Int                     @id @default(autoincrement())
+  firstName                  String
+  lastName                   String
+  googleAuthId               String                  @unique
+  email                      String                  @unique
+  emailId                    String?                 @unique
+  role                       Role                    @default(GUEST)
+  userSettings               User_Settings?
+  userSecureSettings         User_Secure_Settings?
   // Relation references
   submittedChangeRequests    Change_Request[]        @relation(name: "submittedChangeRequests")
   reviewedChangeRequests     Change_Request[]        @relation(name: "reviewedChangeRequests")
@@ -655,42 +654,40 @@ model Meeting {
 }
 
 model Wbs_Proposed_Changes {
-  wbsProposedChangeId String             @id @default(uuid())
-  name                String
-  status              WBS_Element_Status
-  projectLeadId       Int
-  projectManagerId    Int
-  links               Link[]             @relation(name: "proposedChangeLinks")
-  changRequestId      Int                @unique
-  changeRequest       Change_Request     @relation(fields: [changRequestId], references: [crId])
-
-  projectChanges   Project_Proposed_Changes @relation(name: "proposedProjectChanges", fields: [projectChangesId], references: [projectProposedChangeId])
-  projectChangesId String                   @unique
-
-  workPackageChanges   Work_Package_Proposed_Changes? @relation(name: "proposedWorkPackageChanges", fields: [workPackageChangesId], references: [wpProposedChangesId])
-  workPackageChangesId String?                        @unique
+  wbsProposedChangeId    String                         @id @default(uuid())
+  name                   String
+  status                 WBS_Element_Status
+  projectLeadId          Int
+  projectManagerId       Int
+  links                  Link[]                         @relation(name: "proposedChangeLinks")
+  changRequestId         Int                            @unique
+  changeRequest          Change_Request                 @relation(fields: [changRequestId], references: [crId])
+  proposedProjectChanges Project_Proposed_Changes?      @relation(name: "proposedProjectChanges")
+  wpProposedChanges      Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
 }
 
 model Project_Proposed_Changes {
-  projectProposedChangeId String                @id @default(uuid())
+  projectProposedChangeId String               @id @default(uuid())
   budget                  Int
   summary                 String
   rules                   String[]
-  goals                   Description_Bullet[]  @relation(name: "proposedProjectGoals")
-  features                Description_Bullet[]  @relation(name: "proposedProjectFeatures")
-  otherConstraints        Description_Bullet[]  @relation(name: "proposedProjectOtherConstraints")
-  teams                   Team[]                @relation(name: "proposedProjectTeams")
-  proposedWbsChanges      Wbs_Proposed_Changes? @relation(name: "proposedProjectChanges")
+  goals                   Description_Bullet[] @relation(name: "proposedProjectGoals")
+  features                Description_Bullet[] @relation(name: "proposedProjectFeatures")
+  otherConstraints        Description_Bullet[] @relation(name: "proposedProjectOtherConstraints")
+  teams                   Team[]               @relation(name: "proposedProjectTeams")
+  proposedWbsChanges      Wbs_Proposed_Changes @relation(name: "proposedProjectChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangeId])
+  wbsProposedChangesId    String               @unique
 }
 
 model Work_Package_Proposed_Changes {
-  wpProposedChangesId String                @id @default(uuid())
+  wpProposedChangesId String               @id @default(uuid())
   orderInProject      Int
   startDate           DateTime
   duration            Int
-  blockedBy           WBS_Element[]         @relation(name: "blockedBy")
-  expectedActivities  Description_Bullet[]  @relation(name: "workPackageExpectedActivities")
-  deliverables        Description_Bullet[]  @relation(name: "workPackageDeliverables")
+  blockedBy           WBS_Element[]        @relation(name: "blockedBy")
+  expectedActivities  Description_Bullet[] @relation(name: "workPackageExpectedActivities")
+  deliverables        Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage               Work_Package_Stage
-  proposedWbsChange   Wbs_Proposed_Changes? @relation(name: "proposedWorkPackageChanges")
+  proposedWbsChange   Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangeId], references: [wbsProposedChangeId])
+  wbsProposedChangeId String               @unique
 }
