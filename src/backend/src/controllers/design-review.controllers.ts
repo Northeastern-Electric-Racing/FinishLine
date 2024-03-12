@@ -56,11 +56,10 @@ export default class DesignReviewController {
         meetingTime
       );
       return res.status(200).json(createdDesignReview);
-          } catch (error: unknown) {
+    } catch (error: unknown) {
       next(error);
     }
   }
-}
 
   static async getSingleDesignReview(req: Request, res: Response, next: NextFunction) {
     try {

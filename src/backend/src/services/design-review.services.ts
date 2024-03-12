@@ -136,7 +136,6 @@ export default class DesignReviewService {
 
     return design_review;
   }
-}
 
   /**
    * Retrieves a single design review
