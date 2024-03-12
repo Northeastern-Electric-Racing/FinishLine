@@ -38,15 +38,6 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
     setCurrentUnavailableUsers([]);
   };
 
-  const renderDayHeaders = () => {
-    return [
-      <TimeSlot backgroundColor="#D9D9D9" isModal={false} />,
-      EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot key={day} backgroundColor="#D9D9D9" text={day} fontSize={'1em'} isModal={false} />
-      ))
-    ];
-  };
-
   const renderSchedule = () => {
     // Populates the availableUsers map
     for (let time = 0; time < NUMBER_OF_TIME_SLOTS; time++) {
