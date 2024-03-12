@@ -343,7 +343,7 @@ model Link {
   wbsElementId        Int
   wbsElment           WBS_Element           @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
   proposedWbsChangeId String?
-  wbsProposedChanges  Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [proposedWbsChangeId], references: [wbsProposedChangeId])
+  wbsProposedChanges  Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [proposedWbsChangeId], references: [wbsProposedChangesId])
 }
 
 model Description_Bullet {
@@ -366,11 +366,11 @@ model Description_Bullet {
   workPackageIdDeliverables                Int?
   workPackageDeliverables                  Work_Package?                  @relation(name: "workPackageDeliverables", fields: [workPackageIdDeliverables], references: [workPackageId])
   proposedProjectChangesGoalsId            String?
-  proposedProjectChangesGoals              Project_Proposed_Changes?      @relation(name: "proposedProjectGoals", fields: [proposedProjectChangesGoalsId], references: [projectProposedChangeId])
+  proposedProjectChangesGoals              Project_Proposed_Changes?      @relation(name: "proposedProjectGoals", fields: [proposedProjectChangesGoalsId], references: [projectProposedChangesId])
   proposedProjectChangesFeaturesId         String?
-  proposedProjectChangesFeatures           Project_Proposed_Changes?      @relation(name: "proposedProjectFeatures", fields: [proposedProjectChangesFeaturesId], references: [projectProposedChangeId])
+  proposedProjectChangesFeatures           Project_Proposed_Changes?      @relation(name: "proposedProjectFeatures", fields: [proposedProjectChangesFeaturesId], references: [projectProposedChangesId])
   proposedProjectChangesOtherConstraintsId String?
-  proposedProjectChangesOtherConstraints   Project_Proposed_Changes?      @relation(name: "proposedProjectOtherConstraints", fields: [proposedProjectChangesOtherConstraintsId], references: [projectProposedChangeId])
+  proposedProjectChangesOtherConstraints   Project_Proposed_Changes?      @relation(name: "proposedProjectOtherConstraints", fields: [proposedProjectChangesOtherConstraintsId], references: [projectProposedChangesId])
   wpProposedChangesExpectedActivitiesId    String?
   wpProposedChangesExpectedActivities      Work_Package_Proposed_Changes? @relation(name: "workPackageExpectedActivities", fields: [wpProposedChangesExpectedActivitiesId], references: [wpProposedChangesId])
   wpProposedChangesDeliverablesId          String?
@@ -654,7 +654,7 @@ model Meeting {
 }
 
 model Wbs_Proposed_Changes {
-  wbsProposedChangeId    String                         @id @default(uuid())
+  wbsProposedChangesId   String                         @id @default(uuid())
   name                   String
   status                 WBS_Element_Status
   projectLeadId          Int
@@ -667,27 +667,27 @@ model Wbs_Proposed_Changes {
 }
 
 model Project_Proposed_Changes {
-  projectProposedChangeId String               @id @default(uuid())
-  budget                  Int
-  summary                 String
-  rules                   String[]
-  goals                   Description_Bullet[] @relation(name: "proposedProjectGoals")
-  features                Description_Bullet[] @relation(name: "proposedProjectFeatures")
-  otherConstraints        Description_Bullet[] @relation(name: "proposedProjectOtherConstraints")
-  teams                   Team[]               @relation(name: "proposedProjectTeams")
-  proposedWbsChanges      Wbs_Proposed_Changes @relation(name: "proposedProjectChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangeId])
-  wbsProposedChangesId    String               @unique
+  projectProposedChangesId String               @id @default(uuid())
+  budget                   Int
+  summary                  String
+  rules                    String[]
+  goals                    Description_Bullet[] @relation(name: "proposedProjectGoals")
+  features                 Description_Bullet[] @relation(name: "proposedProjectFeatures")
+  otherConstraints         Description_Bullet[] @relation(name: "proposedProjectOtherConstraints")
+  teams                    Team[]               @relation(name: "proposedProjectTeams")
+  proposedWbsChanges       Wbs_Proposed_Changes @relation(name: "proposedProjectChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChangesId     String               @unique
 }
 
 model Work_Package_Proposed_Changes {
-  wpProposedChangesId String               @id @default(uuid())
-  orderInProject      Int
-  startDate           DateTime
-  duration            Int
-  blockedBy           WBS_Element[]        @relation(name: "blockedBy")
-  expectedActivities  Description_Bullet[] @relation(name: "workPackageExpectedActivities")
-  deliverables        Description_Bullet[] @relation(name: "workPackageDeliverables")
-  stage               Work_Package_Stage
-  proposedWbsChange   Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangeId], references: [wbsProposedChangeId])
-  wbsProposedChangeId String               @unique
+  wpProposedChangesId  String               @id @default(uuid())
+  orderInProject       Int
+  startDate            DateTime
+  duration             Int
+  blockedBy            WBS_Element[]        @relation(name: "blockedBy")
+  expectedActivities   Description_Bullet[] @relation(name: "workPackageExpectedActivities")
+  deliverables         Description_Bullet[] @relation(name: "workPackageDeliverables")
+  stage                Work_Package_Stage
+  proposedWbsChanges   Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChangesId String               @unique
 }
