@@ -3,7 +3,6 @@ import WarningIcon from '@mui/icons-material/Warning';
 import BuildIcon from '@mui/icons-material/Build';
 import ComputerIcon from '@mui/icons-material/Computer';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
-import { User } from 'shared';
 import {
   batman,
   superman,
@@ -15,9 +14,22 @@ import {
   alfred
 } from '../../../backend/tests/test-data/users.test-data';
 
-export const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export const times = [
+export const EnumToArray = (en: { [key: number]: string | number }) => {
+  return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
+};
+
+export enum DAY_NAMES {
+  Monday,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday,
+  Sunday
+}
+
+export enum REVIEW_TIMES {
   '10-11 AM',
   '11-12 AM',
   '12-1 PM',
@@ -30,36 +42,7 @@ export const times = [
   '7-8 PM',
   '8-9 PM',
   '9-10 PM'
-];
-
-export interface DRCModalProps {
-  open: boolean;
-  description: string;
-  time: string;
-  location: string;
-  onHide: () => void;
-  onSubmit?: () => void;
-  usersToAvailabilities: Map<User, number[]>;
-  existingMeetingData: Map<number, string>;
-}
-
-export interface DRCViewProps {
-  title: string;
-  usersToAvailabilities: Map<User, number[]>;
-  existingMeetingData: Map<number, string>;
-}
-
-export interface TimeSlotProps {
-  text?: string;
-  fontSize?: string;
-  backgroundColor?: string;
-  icon?: string;
-  isModal: boolean;
-  onMouseDown?: (e: any) => void;
-  onMouseEnter?: (e: any) => void;
-  onMouseUp?: (e: any) => void;
-  onMouseOver?: () => void;
-}
+};
 
 export enum HeatmapColors {
   zero = '#D9D9D9',
@@ -70,11 +53,13 @@ export enum HeatmapColors {
   five = '#D70C0F'
 }
 
+export const NUMBER_OF_TIME_SLOTS = EnumToArray(REVIEW_TIMES).length * EnumToArray(DAY_NAMES).length;
+
 export const getBackgroundColor = (frequency: number = 0, totalUsers: number): string => {
   if (frequency === 0) return HeatmapColors.zero;
   if (frequency >= totalUsers) return HeatmapColors.five;
 
-  const colors = [HeatmapColors.two, HeatmapColors.three, HeatmapColors.four, HeatmapColors.five];
+  const colors = [HeatmapColors.one, HeatmapColors.two, HeatmapColors.three, HeatmapColors.four];
 
   const ratio = ((frequency - 1) / (totalUsers - 1)) * (colors.length - 1);
   const colorIndex = Math.floor(ratio);
@@ -83,24 +68,23 @@ export const getBackgroundColor = (frequency: number = 0, totalUsers: number): s
 };
 
 export const getIcon = (icon: string, isModal: boolean): ReactElement | null => {
-  const iconStyle = isModal ? { fontSize: '1.4em' } : { fontSize: '2em' };
+  const iconFont = isModal ? { fontSize: '1.4em' } : { fontSize: '2em' };
 
   switch (icon) {
     case 'warning':
-      return <WarningIcon sx={iconStyle} />;
+      return <WarningIcon sx={iconFont} />;
     case 'build':
-      return <BuildIcon sx={iconStyle} />;
+      return <BuildIcon sx={iconFont} />;
     case 'computer':
-      return <ComputerIcon sx={iconStyle} />;
+      return <ComputerIcon sx={iconFont} />;
     case 'electrical':
-      return <ElectricalServicesIcon sx={iconStyle} />;
+      return <ElectricalServicesIcon sx={iconFont} />;
     default:
       return null;
   }
 };
 
 // TODO: We will have to make a call to the backend to get this data
-// currently hardcoded for testing purposes
 export const usersToAvailabilities = new Map([
   [superman, [1, 2, 3, 4, 5, 6, 7]],
   [batman, [2, 3, 4, 5, 6, 7]],
@@ -113,7 +97,6 @@ export const usersToAvailabilities = new Map([
 ]);
 
 // TODO: We will have to maker a call to the backend to get this data
-// currently hardcoded for testing purposes
 export const existingMeetingData = new Map<number, string>();
 existingMeetingData.set(5, 'warning');
 existingMeetingData.set(10, 'build');

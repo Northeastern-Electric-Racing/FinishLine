@@ -5,13 +5,26 @@ import { useState } from 'react';
 import WarningIcon from '@mui/icons-material/Warning';
 import NERFailButton from '../components/NERFailButton';
 import NERSuccessButton from '../components/NERSuccessButton';
-import { DRCViewProps, times, daysOfWeek, getBackgroundColor, HeatmapColors } from '../utils/design-review.utils';
+import {
+  REVIEW_TIMES,
+  DAY_NAMES,
+  NUMBER_OF_TIME_SLOTS,
+  EnumToArray,
+  getBackgroundColor,
+  HeatmapColors
+} from '../utils/design-review.utils';
+import { fullNamePipe } from '../utils/pipes';
+
+interface DRCViewProps {
+  title: string;
+  usersToAvailabilities: Map<User, number[]>;
+  existingMeetingData: Map<number, string>;
+}
 
 const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetingData }) => {
   const totalUsers = usersToAvailabilities.size;
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
-  const numberOfTimeSlots = times.length * daysOfWeek.length;
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
 
@@ -28,13 +41,15 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
   const renderDayHeaders = () => {
     return [
       <TimeSlot backgroundColor="#D9D9D9" isModal={false} />,
-      daysOfWeek.map((day) => <TimeSlot key={day} backgroundColor="#D9D9D9" text={day} fontSize={'1em'} isModal={false} />)
+      EnumToArray(DAY_NAMES).map((day) => (
+        <TimeSlot key={day} backgroundColor="#D9D9D9" text={day} fontSize={'1em'} isModal={false} />
+      ))
     ];
   };
 
   const renderSchedule = () => {
     // Populates the availableUsers map
-    for (let time = 0; time < numberOfTimeSlots; time++) {
+    for (let time = 0; time < NUMBER_OF_TIME_SLOTS; time++) {
       availableUsers.set(time, []);
     }
     usersToAvailabilities.forEach((availableTimes, user) => {
@@ -47,7 +62,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
 
     // Populates the unavailableUsers map
     const allUsers = [...usersToAvailabilities.keys()];
-    for (let time = 0; time < numberOfTimeSlots; time++) {
+    for (let time = 0; time < NUMBER_OF_TIME_SLOTS; time++) {
       const currentUsers = availableUsers.get(time) || [];
       const currentUnavailableUsers = allUsers.filter((user) => !currentUsers.includes(user));
       unavailableUsers.set(time, currentUnavailableUsers);
@@ -56,11 +71,11 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
     return (
       <Grid container>
         {renderDayHeaders()}
-        {times.map((time, timeIndex) => (
+        {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
           <Grid container item xs={12} onMouseLeave={handleOnMouseLeave}>
             <TimeSlot backgroundColor={HeatmapColors.zero} text={time} fontSize={'1em'} isModal={false} />
-            {daysOfWeek.map((_day, dayIndex) => {
-              const index = dayIndex * times.length + timeIndex;
+            {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
+              const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
               return (
                 <TimeSlot
                   key={index}
@@ -78,17 +93,10 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
   };
 
   const renderLegend = () => {
-    const colors = [
-      HeatmapColors.zero,
-      HeatmapColors.one,
-      HeatmapColors.two,
-      HeatmapColors.three,
-      HeatmapColors.four,
-      HeatmapColors.five
-    ];
+    const colors = EnumToArray(HeatmapColors);
     return (
       <Grid sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Typography style={{ marginRight: '10px', fontFamily: 'oswald' }}>0/0</Typography>
+        <Typography style={{ marginRight: '10px' }}>0/0</Typography>
         {Array.from({ length: 6 }, (_, i) => (
           <Box
             sx={{
@@ -98,7 +106,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
             }}
           />
         ))}
-        <Typography style={{ marginLeft: '10px', fontFamily: 'oswald' }}>
+        <Typography style={{ marginLeft: '10px' }}>
           {totalUsers}/{totalUsers}
         </Typography>
       </Grid>
@@ -126,7 +134,6 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
               <Typography
                 style={{
                   textDecoration: 'underline',
-                  fontFamily: 'oswald',
                   fontSize: '1.5em',
                   textAlign: 'center',
                   marginBottom: '10px'
@@ -135,16 +142,13 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
                 Available Users
               </Typography>
               {currentAvailableUsers.map((user) => (
-                <Typography style={{ fontFamily: 'oswald', textAlign: 'center', fontSize }}>
-                  {user.firstName} {user.lastName}
-                </Typography>
+                <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
               ))}
             </Grid>
             <Grid>
               <Typography
                 style={{
                   textDecoration: 'underline',
-                  fontFamily: 'oswald',
                   fontSize: '1.5em',
                   textAlign: 'center',
                   marginBottom: '10px'
@@ -153,9 +157,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
                 Unvailable Users
               </Typography>
               {currentUnavailableUsers.map((user) => (
-                <Typography style={{ fontFamily: 'oswald', textAlign: 'center', fontSize }}>
-                  {user.firstName} {user.lastName}
-                </Typography>
+                <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
               ))}
             </Grid>
           </Grid>

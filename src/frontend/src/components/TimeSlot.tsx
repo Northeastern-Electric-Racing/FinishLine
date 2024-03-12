@@ -1,5 +1,17 @@
 import { Box } from '@mui/system';
-import { TimeSlotProps, getIcon } from '../utils/design-review.utils';
+import { getIcon } from '../utils/design-review.utils';
+
+interface TimeSlotProps {
+  text?: string;
+  fontSize?: string;
+  backgroundColor?: string;
+  icon?: string;
+  isModal: boolean;
+  onMouseDown?: (e: any) => void;
+  onMouseEnter?: (e: any) => void;
+  onMouseUp?: (e: any) => void;
+  onMouseOver?: () => void;
+}
 
 const TimeSlot: React.FC<TimeSlotProps> = ({
   text,

@@ -2,9 +2,21 @@ import { Grid } from '@mui/material';
 import NERModal from '../components/NERModal';
 import TimeSlot from '../components/TimeSlot';
 import { useState } from 'react';
-import { DRCModalProps, HeatmapColors, daysOfWeek, times } from '../utils/design-review.utils';
+import { HeatmapColors, DAY_NAMES, REVIEW_TIMES, EnumToArray } from '../utils/design-review.utils';
+import { User } from 'shared';
 
-const DRCEditModal: React.FC<DRCModalProps> = ({
+interface DRCEditModalProps {
+  open: boolean;
+  description: string;
+  time: string;
+  location: string;
+  onHide: () => void;
+  onSubmit?: () => void;
+  usersToAvailabilities: Map<User, number[]>;
+  existingMeetingData: Map<number, string>;
+}
+
+const DRCEditModal: React.FC<DRCEditModalProps> = ({
   open,
   onHide,
   onSubmit,
@@ -50,7 +62,7 @@ const DRCEditModal: React.FC<DRCModalProps> = ({
   const renderDayHeaders = () => {
     return [
       <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} />,
-      daysOfWeek.map((day) => (
+      EnumToArray(DAY_NAMES).map((day) => (
         <TimeSlot key={day} backgroundColor={HeatmapColors.zero} isModal={true} text={day} fontSize={'12px'} />
       ))
     ];
@@ -60,11 +72,11 @@ const DRCEditModal: React.FC<DRCModalProps> = ({
     return (
       <Grid container>
         {renderDayHeaders()}
-        {times.map((time, timeIndex) => (
+        {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
           <Grid container item xs={12}>
             <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} text={time} fontSize={'13px'} />
-            {daysOfWeek.map((_day, dayIndex) => {
-              const index = dayIndex * times.length + timeIndex;
+            {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
+              const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
               const backgroundColor = selectedTimes.includes(index) ? HeatmapColors.three : HeatmapColors.zero;
               return (
                 <TimeSlot
