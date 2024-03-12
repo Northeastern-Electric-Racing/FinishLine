@@ -67,7 +67,7 @@ const ViewSchedule: React.FC<ViewScheduleProps> = ({
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item xs={12} onMouseLeave={handleOnMouseLeave}>
-          <TimeSlot backgroundColor={HeatmapColors.zero} text={time} fontSize={'1em'} isModal={false} />
+          <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} isModal={false} />
           {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
             return (

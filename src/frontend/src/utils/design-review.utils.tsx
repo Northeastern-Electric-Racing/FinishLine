@@ -43,22 +43,15 @@ export enum REVIEW_TIMES {
   '9-10 PM'
 }
 
-export enum HeatmapColors {
-  zero = '#D9D9D9',
-  one = '#E0C0C1',
-  two = '#E89A9B',
-  three = '#E4797A',
-  four = '#EF4345',
-  five = '#D70C0F'
-}
+export const HeatmapColors = ['#D9D9D9', '#E0C0C1', '#E89A9B', '#E4797A', '#EF4345', '#D70C0F'];
 
 export const NUMBER_OF_TIME_SLOTS = EnumToArray(REVIEW_TIMES).length * EnumToArray(DAY_NAMES).length;
 
 export const getBackgroundColor = (frequency: number = 0, totalUsers: number): string => {
-  if (frequency === 0) return HeatmapColors.zero;
-  if (frequency >= totalUsers) return HeatmapColors.five;
+  if (frequency === 0) return HeatmapColors[0];
+  if (frequency >= totalUsers) return HeatmapColors[5];
 
-  const colors = [HeatmapColors.one, HeatmapColors.two, HeatmapColors.three, HeatmapColors.four];
+  const colors = [HeatmapColors[1], HeatmapColors[2], HeatmapColors[3], HeatmapColors[4]];
 
   const ratio = ((frequency - 1) / (totalUsers - 1)) * (colors.length - 1);
   const colorIndex = Math.floor(ratio);

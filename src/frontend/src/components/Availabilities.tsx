@@ -20,8 +20,6 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
-  const colors = EnumToArray(HeatmapColors);
-
   return (
     <Grid
       style={{
@@ -42,7 +40,7 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
               sx={{
                 width: '1.5vw',
                 height: '1.5vw',
-                backgroundColor: colors[i]
+                backgroundColor: HeatmapColors[i]
               }}
             />
           ))}
@@ -60,7 +58,7 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
                 marginBottom: '10px'
               }}
             >
-              Available Users
+              Available
             </Typography>
             {currentAvailableUsers.map((user) => (
               <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
@@ -75,7 +73,7 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
                 marginBottom: '10px'
               }}
             >
-              Unvailable Users
+              Unvailable
             </Typography>
             {currentUnavailableUsers.map((user) => (
               <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>

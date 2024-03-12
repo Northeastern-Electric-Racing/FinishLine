@@ -44,16 +44,16 @@ const EditSchedule: React.FC<EditScheduleProps> = ({ selectedTimes, setSelectedT
 
   return (
     <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} />
+      <TimeSlot backgroundColor={HeatmapColors[0]} isModal={true} />
       {EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot key={day} backgroundColor={HeatmapColors.zero} isModal={true} text={day} fontSize={'12px'} />
+        <TimeSlot key={day} backgroundColor={HeatmapColors[0]} isModal={true} text={day} fontSize={'12px'} />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item xs={12}>
-          <TimeSlot backgroundColor={HeatmapColors.zero} isModal={true} text={time} fontSize={'13px'} />
+          <TimeSlot backgroundColor={HeatmapColors[0]} isModal={true} text={time} fontSize={'13px'} />
           {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
-            const backgroundColor = selectedTimes.includes(index) ? HeatmapColors.three : HeatmapColors.zero;
+            const backgroundColor = selectedTimes.includes(index) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
                 key={index}
