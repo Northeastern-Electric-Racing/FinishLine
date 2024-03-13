@@ -14,8 +14,9 @@ import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
 import DRCEditModal from './DesignReviewPage/DesignReviewEditModal';
 import { useState } from 'react';
-import DRCView from '../components/DesignReviewView';
+
 import { usersToAvailabilities, existingMeetingData } from '../utils/design-review.utils';
+import DRCView from './DesignReviewPage/DesignReviewView';
 
 const InfoPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
