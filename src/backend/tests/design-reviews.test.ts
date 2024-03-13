@@ -1,4 +1,4 @@
-import { prismaDesignReview1, prismaDesignReview2, sharedDesignReview1 } from './test-data/design-reviews.test-data';
+import { prismaDesignReview1, prismaDesignReview2, sharedDesignReview1, teamType1 } from './test-data/design-reviews.test-data';
 import { batman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import DesignReviewService from '../src/services/design-review.services';
 import prisma from '../src/prisma/prisma';
@@ -8,7 +8,6 @@ import {
   DeletedException,
   NotFoundException
 } from '../src/utils/errors.utils';
-import { mechanicalTeamType } from './test-data/teams.test-data';
 import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 describe('Design Reviews', () => {
@@ -101,7 +100,7 @@ describe('Design Reviews', () => {
 
   describe('Create design review tests', () => {
     test('Create design review succeeds', async () => {
-      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(mechanicalTeamType);
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(teamType1);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
       vi.spyOn(prisma.design_Review, 'create').mockResolvedValue(prismaDesignReview1);
 
@@ -165,7 +164,7 @@ describe('Design Reviews', () => {
     });
 
     test('Create design review wbs element not found', async () => {
-      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(mechanicalTeamType);
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(teamType1);
 
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
       await expect(
