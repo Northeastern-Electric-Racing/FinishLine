@@ -3,7 +3,6 @@ import { GridColDefStyle } from './tables';
 import { centsToDollar } from './pipes';
 import { DataGrid, GridValidRowModel } from '@mui/x-data-grid';
 import { styled } from '@mui/system';
-import { wrap } from 'module';
 
 export interface BomRow extends GridValidRowModel {
   id: string;
@@ -105,7 +104,6 @@ export const BOM_TABLE_ROW_COUNT = 'tl-table-row-count';
 
 export const bomBaseColDef: GridColDefStyle = {
   flex: 1,
-  whitespace: 'wrap',
   align: 'center',
   headerAlign: 'center',
   headerClassName: 'super-app-theme--header'
