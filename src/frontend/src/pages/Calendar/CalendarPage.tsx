@@ -26,6 +26,8 @@ const CalendarPage = () => {
   const EventDict = new Map<Number, DesignReview[]>();
   // TODO remove during wire up ticket
   EventDict.set(new Date().getDate(), [testDesignReview1]);
+  EventDict.set(new Date().getDate() + 3, [testDesignReview1, testDesignReview1]);
+  EventDict.set(new Date().getDate() + 4, [testDesignReview1, testDesignReview1, testDesignReview1]);
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
 

@@ -27,10 +27,22 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
   const EventCard = (event: DesignReview) => {
     const name = event.designReviewId;
     return (
-      <Box marginLeft={0.5}>
+      <Box marginLeft={0.5} marginBottom={0.2}>
         <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
           <Typography marginLeft={0.5} marginBottom={0.3}>
             {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
+          </Typography>
+        </Card>
+      </Box>
+    );
+  };
+
+  const ExtraEventsCard = (extraEvents: number) => {
+    return (
+      <Box marginLeft={0.5} marginBottom={0.2}>
+        <Card sx={{ backgroundColor: 'grey', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
+          <Typography marginLeft={0.5} marginBottom={0.3} align="center">
+            {'+' + extraEvents}
           </Typography>
         </Card>
       </Box>
@@ -41,7 +53,14 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
     <Card sx={{ borderRadius: 2, minWidth: 150, maxWidth: 150, minHeight: 90, maxHeight: 90 }}>
       <CardContent sx={{ padding: 0 }}>
         <DayCardTitle />
-        {events.map((event) => EventCard(event))}
+        {events.length < 3 ? (
+          events.map((event) => EventCard(event))
+        ) : (
+          <>
+            {EventCard(events[1])}
+            {ExtraEventsCard(events.length - 1)}
+          </>
+        )}
       </CardContent>
     </Card>
   );
