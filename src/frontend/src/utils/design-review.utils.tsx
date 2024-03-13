@@ -1,8 +1,3 @@
-import { ReactElement } from 'react';
-import WarningIcon from '@mui/icons-material/Warning';
-import BuildIcon from '@mui/icons-material/Build';
-import ComputerIcon from '@mui/icons-material/Computer';
-import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import {
   batman,
   superman,
@@ -57,23 +52,6 @@ export const getBackgroundColor = (frequency: number = 0, totalUsers: number): s
   const colorIndex = Math.floor(ratio);
 
   return colors[colorIndex];
-};
-
-export const getIcon = (icon: string, small: boolean): ReactElement | null => {
-  const iconFont = small ? { fontSize: '1.4em' } : { fontSize: '2em' };
-
-  switch (icon) {
-    case 'warning':
-      return <WarningIcon sx={iconFont} />;
-    case 'build':
-      return <BuildIcon sx={iconFont} />;
-    case 'computer':
-      return <ComputerIcon sx={iconFont} />;
-    case 'electrical':
-      return <ElectricalServicesIcon sx={iconFont} />;
-    default:
-      return null;
-  }
 };
 
 // TODO: We will have to make a call to the backend to get this data

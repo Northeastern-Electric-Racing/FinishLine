@@ -1,5 +1,9 @@
 import { Box } from '@mui/system';
-import { getIcon } from '../utils/design-review.utils';
+import { ReactElement } from 'react';
+import WarningIcon from '@mui/icons-material/Warning';
+import BuildIcon from '@mui/icons-material/Build';
+import ComputerIcon from '@mui/icons-material/Computer';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 
 interface TimeSlotProps {
   text?: string;
@@ -24,6 +28,24 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   onMouseUp,
   onMouseOver
 }) => {
+
+  const getIcon = (icon: string, small: boolean): ReactElement | null => {
+    const iconFont = small ? { fontSize: '1.4em' } : { fontSize: '2em' };
+  
+    switch (icon) {
+      case 'warning':
+        return <WarningIcon sx={iconFont} />;
+      case 'build':
+        return <BuildIcon sx={iconFont} />;
+      case 'computer':
+        return <ComputerIcon sx={iconFont} />;
+      case 'electrical':
+        return <ElectricalServicesIcon sx={iconFont} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Box
       sx={{

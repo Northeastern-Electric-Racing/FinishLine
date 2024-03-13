@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import { useState } from 'react';
-import { HeatmapColors, EnumToArray, DAY_NAMES, REVIEW_TIMES } from '../utils/design-review.utils';
+import { HeatmapColors, EnumToArray, DAY_NAMES, REVIEW_TIMES } from '../../../utils/design-review.utils';
 import TimeSlot from './TimeSlot';
 
 interface EditScheduleProps {

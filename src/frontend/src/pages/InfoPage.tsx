@@ -12,9 +12,9 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
-import DRCEditModal from './DesignReviewPage/components/DesignReviewEditModal';
+import DRCEditModal from './DesignReviewPage/DesignReviewEditModal';
 import { useState } from 'react';
-import DRCView from './DesignReviewPage/components/DesignReviewView';
+import DRCView from '../components/DesignReviewView';
 import { usersToAvailabilities, existingMeetingData } from '../utils/design-review.utils';
 
 const InfoPage: React.FC = () => {

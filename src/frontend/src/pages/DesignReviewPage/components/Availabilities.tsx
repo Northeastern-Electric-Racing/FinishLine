@@ -1,10 +1,10 @@
 import { Grid, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { User } from 'shared';
-import { EnumToArray, HeatmapColors } from '../utils/design-review.utils';
-import { fullNamePipe } from '../utils/pipes';
-import NERFailButton from './NERFailButton';
-import NERSuccessButton from './NERSuccessButton';
+import { HeatmapColors } from '../../../utils/design-review.utils';
+import { fullNamePipe } from '../../../utils/pipes';
+import NERFailButton from '../../../components/NERFailButton';
+import NERSuccessButton from '../../../components/NERSuccessButton';
 import WarningIcon from '@mui/icons-material/Warning';
 
 interface AvailabilitiesProps {

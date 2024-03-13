@@ -7,7 +7,7 @@ import {
   REVIEW_TIMES,
   HeatmapColors,
   getBackgroundColor
-} from '../utils/design-review.utils';
+} from '../../../utils/design-review.utils';
 import TimeSlot from './TimeSlot';
 
 interface ViewScheduleProps {

@@ -1,8 +1,8 @@
 import { Grid } from '@mui/material';
 import { User } from 'shared';
 import { useState } from 'react';
-import ViewSchedule from '../../../components/ViewSchedule';
-import Availabilities from '../../../components/Availabilities';
+import ViewSchedule from './components/ViewSchedule';
+import Availabilities from './components/Availabilities';
 
 interface DRCViewProps {
   title: string;
