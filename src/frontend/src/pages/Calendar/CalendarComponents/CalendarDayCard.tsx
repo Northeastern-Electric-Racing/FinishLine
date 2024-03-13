@@ -1,7 +1,8 @@
-import { Box, Card, CardContent, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, IconButton, Stack, SvgIcon, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { DesignReview } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
+import { getTeamTypeIcon } from '../../../utils/design-review.utils';
 
 interface CalendarDayCardProps {
   cardDate: Date;
@@ -29,9 +30,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
     return (
       <Box marginLeft={0.5} marginBottom={0.2}>
         <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
-          <Typography marginLeft={0.5} marginBottom={0.3}>
-            {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
-          </Typography>
+          <Stack direction="row">
+            <SvgIcon component={getTeamTypeIcon(event.teamType.teamTypeId)} inheritViewBox fontSize="small"></SvgIcon>
+            <Typography marginLeft={0.5} marginBottom={0.3}>
+              {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
+            </Typography>
+          </Stack>
         </Card>
       </Box>
     );
