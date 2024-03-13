@@ -1,4 +1,9 @@
-import { prismaDesignReview1, prismaDesignReview2, sharedDesignReview1, teamType1 } from './test-data/design-reviews.test-data';
+import {
+  prismaDesignReview1,
+  prismaDesignReview2,
+  sharedDesignReview1,
+  teamType1
+} from './test-data/design-reviews.test-data';
 import { batman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import DesignReviewService from '../src/services/design-review.services';
 import prisma from '../src/prisma/prisma';
