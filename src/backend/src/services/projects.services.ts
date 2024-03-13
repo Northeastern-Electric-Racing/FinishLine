@@ -936,8 +936,9 @@ export default class ProjectsService {
    * @param submitter the user who is deleting the material type
    * @param materialTypeId the Id of the material type being deleted
    * @throws if the submitter is not an admin/head or if the material type is not found
+   * @returns the deleted material type
    */
-  static async deleteMaterialType(materialTypeId: string, submitter: User): Promise<void> {
+  static async deleteMaterialType(materialTypeId: string, submitter: User): Promise<Material_Type> {
     if (!isHead(submitter.role) && !isAdmin(submitter.role)) {
       throw new AccessDeniedException('Only an admin or head can delete a material type');
     }
@@ -949,7 +950,8 @@ export default class ProjectsService {
 
     if (!materialType) throw new NotFoundException('Material Type', materialTypeId);
 
-    await prisma.material_Type.delete({ where: { name: materialTypeId } });
+    const deletedMaterialType = await prisma.material_Type.delete({ where: { name: materialTypeId } });
+    return deletedMaterialType;
   }
 
   /**

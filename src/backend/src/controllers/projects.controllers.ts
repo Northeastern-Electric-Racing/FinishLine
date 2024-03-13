@@ -312,8 +312,8 @@ export default class ProjectsController {
     try {
       const { materialTypeId } = req.params;
       const user = await getCurrentUser(res);
-      await ProjectsService.deleteMaterialType(materialTypeId, user);
-      return res.status(204).json({ message: `Successfully deleted material type with id ${materialTypeId}` });
+      const deletedMaterialType = await ProjectsService.deleteMaterialType(materialTypeId, user);
+      return res.status(200).json(deletedMaterialType);
     } catch (error: unknown) {
       next(error);
     }
