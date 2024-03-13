@@ -61,7 +61,7 @@ export const testDesignReview1: DesignReview = {
   dateCreated: new Date(),
   userCreated: batman,
   status: DesignReviewStatus.UNCONFIRMED,
-  teamType: { teamTypeId: 'Mechanical', name: 'Mechanical' },
+  teamType: { teamTypeId: 'Mechanical', name: 'Mechanical', iconName: '' },
   requiredMembers: [],
   optionalMembers: [],
   confirmedMembers: [],

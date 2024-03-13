@@ -28,11 +28,22 @@ const CalendarPage = () => {
   EventDict.set(new Date().getDate(), [testDesignReview1]);
   EventDict.set(new Date().getDate() + 3, [testDesignReview1, testDesignReview1]);
   EventDict.set(new Date().getDate() + 4, [testDesignReview1, testDesignReview1, testDesignReview1]);
+  const drData: DesignReview[] = [testDesignReview1, testDesignReview1];
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
 
   const isDayInDifferentMonth = (day: number, week: number) => {
     return day < week - 7 || day < 1 || day > week + 7;
+  };
+
+  const designReviewButtons = (drs: DesignReview[]) => {
+    return drs.map((dr) => {
+      return {
+        title: dr.designReviewId,
+        onClick: () => {},
+        disabled: false
+      };
+    });
   };
 
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
@@ -51,21 +62,7 @@ const CalendarPage = () => {
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
   const unconfirmedDRSDropdown = (
-    <ActionsMenu
-      title="My Unconfirmed DRS"
-      buttons={[
-        {
-          title: 'Mock Review #1',
-          onClick: () => {},
-          disabled: false
-        },
-        {
-          title: 'Mock Review #2',
-          onClick: () => {},
-          disabled: false
-        }
-      ]}
-    >
+    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(drData)}>
       My Unconfirmed DRs
     </ActionsMenu>
   );

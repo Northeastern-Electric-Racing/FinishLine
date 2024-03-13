@@ -31,7 +31,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
       <Box marginLeft={0.5} marginBottom={0.2}>
         <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
           <Stack direction="row">
-            <SvgIcon component={getTeamTypeIcon(event.teamType.teamTypeId)} inheritViewBox fontSize="small"></SvgIcon>
+            <SvgIcon inheritViewBox fontSize="small"></SvgIcon>
             <Typography marginLeft={0.5} marginBottom={0.3}>
               {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
             </Typography>
