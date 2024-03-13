@@ -111,7 +111,7 @@ describe('Design Reviews', () => {
 
       const res = await DesignReviewService.createDesignReview(
         batman,
-        '2024-03-25',
+        new Date('2024-03-25'),
         '1',
         [],
         [],
@@ -134,7 +134,7 @@ describe('Design Reviews', () => {
       await expect(
         DesignReviewService.createDesignReview(
           theVisitor,
-          '2024-03-25',
+          new Date('2024-03-25'),
           '1',
           [],
           [],
@@ -157,7 +157,7 @@ describe('Design Reviews', () => {
       await expect(
         DesignReviewService.createDesignReview(
           batman,
-          '2024-03-25',
+          new Date('2024-03-25'),
           '15',
           [],
           [],
@@ -182,7 +182,7 @@ describe('Design Reviews', () => {
       await expect(
         DesignReviewService.createDesignReview(
           batman,
-          '2024-03-25',
+          new Date('2024-03-25'),
           '1',
           [],
           [],

@@ -71,7 +71,7 @@ export default class DesignReviewService {
    */
   static async createDesignReview(
     user: User,
-    dateScheduled: string,
+    dateScheduled: Date,
     teamTypeId: string,
     requiredMemberIds: number[],
     optionalMemberIds: number[],
@@ -121,9 +121,9 @@ export default class DesignReviewService {
       throw new HttpException(400, 'If the design review is in person then there needs to be a location');
     }
 
-    // if (dateScheduled <= new Date().toDateString()) {
-    //   throw new HttpException(400, 'Design review cannot be scheduled for the same day (or before), its created');
-    // }
+    if (dateScheduled.valueOf() <= new Date().valueOf()) {
+      throw new HttpException(400, 'Design review cannot be scheduled for the same day (or before), its created');
+    }
 
     const designReview = await prisma.design_Review.create({
       data: {
