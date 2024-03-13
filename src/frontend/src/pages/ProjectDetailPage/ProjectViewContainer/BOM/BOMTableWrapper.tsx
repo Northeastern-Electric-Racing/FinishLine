@@ -16,6 +16,7 @@ import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
 import { renderLinkBOM, renderStatusBOM } from './BOMTableCustomCells';
 
+
 interface BOMTableWrapperProps {
   project: Project;
 }
@@ -129,6 +130,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     }
     return actions;
   };
+  
+  
 
   const columns: GridColumns<any> = [
     {
@@ -202,7 +205,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     {
       ...bomBaseColDef,
       field: 'price',
-      headerName: 'Price per Unit',
+      headerName: 'Price per Unit', 
       type: 'number',
       sortable: false,
       filterable: false
