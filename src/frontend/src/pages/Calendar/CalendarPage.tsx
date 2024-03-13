@@ -7,8 +7,8 @@ import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
-import DayCard from './CalendarComponents/CalendarDayCard';
-import FillerCard from './CalendarComponents/FillerCalendarDayCard';
+import CalendarDayCard from './CalendarComponents/CalendarDayCard';
+import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
 import {
   DAY_NAMES,
   EnumToArray,
@@ -99,9 +99,9 @@ const CalendarPage = () => {
                   <Grid item xs={12 / 7}>
                     <Box marginLeft={1.5} marginTop={2} sx={{ alignContent: 'center' }}>
                       {isDayInDifferentMonth(day, week) ? (
-                        <FillerCard day={day} />
+                        <FillerCalendarDayCard day={day} />
                       ) : (
-                        <DayCard cardDate={cardDate} events={EventDict.get(cardDate.getDate()) ?? []} />
+                        <CalendarDayCard cardDate={cardDate} events={EventDict.get(cardDate.getDate()) ?? []} />
                       )}
                     </Box>
                   </Grid>
