@@ -61,13 +61,13 @@ const ViewSchedule: React.FC<ViewScheduleProps> = ({
 
   return (
     <Grid container>
-      <TimeSlot backgroundColor="#D9D9D9" small />
+      <TimeSlot backgroundColor={HeatmapColors[0]} />
       {EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot key={day} backgroundColor="#D9D9D9" text={day} fontSize={'1em'} small />
+        <TimeSlot backgroundColor={HeatmapColors[0]} text={day} fontSize={'1em'} />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item xs={12} onMouseLeave={handleOnMouseLeave}>
-          <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} small />
+          <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
           {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
             return (
@@ -75,7 +75,6 @@ const ViewSchedule: React.FC<ViewScheduleProps> = ({
                 key={index}
                 backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                 onMouseOver={() => handleOnMouseOver(index)}
-                small
                 icon={existingMeetingData.get(index)}
               />
             );

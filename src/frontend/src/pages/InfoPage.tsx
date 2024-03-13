@@ -14,7 +14,6 @@ import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
 import DRCEditModal from './DesignReviewPage/DesignReviewEditModal';
 import { useState } from 'react';
-
 import { usersToAvailabilities, existingMeetingData } from '../utils/design-review.utils';
 import DRCView from './DesignReviewPage/DesignReviewView';
 

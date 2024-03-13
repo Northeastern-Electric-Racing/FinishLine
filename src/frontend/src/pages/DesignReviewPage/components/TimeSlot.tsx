@@ -10,7 +10,7 @@ interface TimeSlotProps {
   fontSize?: string;
   backgroundColor?: string;
   icon?: string;
-  small: boolean;
+  small?: boolean;
   onMouseDown?: (e: any) => void;
   onMouseEnter?: (e: any) => void;
   onMouseUp?: (e: any) => void;

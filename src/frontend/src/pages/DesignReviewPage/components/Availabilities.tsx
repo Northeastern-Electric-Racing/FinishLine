@@ -1,4 +1,4 @@
-import { Grid, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { User } from 'shared';
 import { HeatmapColors } from '../../../utils/design-review.utils';
@@ -21,7 +21,7 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
   const totalUsers = usersToAvailabilities.size;
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
   return (
-    <Grid
+    <Box
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -32,8 +32,8 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
         overflow: 'auto'
       }}
     >
-      <Grid style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, marginBottom: '10px' }}>
-        <Grid sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, marginBottom: '10px' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Typography style={{ marginRight: '10px' }}>0/0</Typography>
           {Array.from({ length: 6 }, (_, i) => (
             <Box
@@ -47,15 +47,16 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
           <Typography style={{ marginLeft: '10px' }}>
             {totalUsers}/{totalUsers}
           </Typography>
-        </Grid>
-        <Grid style={{ display: 'flex', gap: '2', marginTop: '10px' }}>
-          <Grid>
+        </Box>
+        <Box style={{ display: 'flex', gap: '2', marginTop: '10px' }}>
+          <Box>
             <Typography
               style={{
                 textDecoration: 'underline',
                 fontSize: '1.5em',
                 textAlign: 'center',
-                marginBottom: '10px'
+                marginBottom: '10px',
+                width: '10vw'
               }}
             >
               Available
@@ -63,14 +64,15 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
             {currentAvailableUsers.map((user) => (
               <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
             ))}
-          </Grid>
-          <Grid>
+          </Box>
+          <Box>
             <Typography
               style={{
                 textDecoration: 'underline',
                 fontSize: '1.5em',
                 textAlign: 'center',
-                marginBottom: '10px'
+                marginBottom: '10px',
+                width: '10vw'
               }}
             >
               Unvailable
@@ -78,9 +80,9 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
             {currentUnavailableUsers.map((user) => (
               <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
             ))}
-          </Grid>
-        </Grid>
-        <Grid
+          </Box>
+        </Box>
+        <Box
           style={{
             marginTop: 'auto',
             display: 'flex',
@@ -91,9 +93,9 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
           <WarningIcon style={{ color: 'yellow', fontSize: '2em', marginTop: '5px' }} />
           <NERFailButton>Cancel</NERFailButton>
           <NERSuccessButton>Finalize</NERSuccessButton>
-        </Grid>
-      </Grid>
-    </Grid>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
