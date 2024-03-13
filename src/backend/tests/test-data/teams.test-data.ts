@@ -1,5 +1,5 @@
 import { batman, superman, wonderwoman, flash, alfred, greenlantern, aquaman, theVisitor } from './users.test-data';
-import { Prisma } from '@prisma/client';
+import { Prisma, TeamType } from '@prisma/client';
 import { Team as SharedTeam } from 'shared/src/types/team-types';
 import teamQueryArgs from '../../src/prisma-query-args/teams.query-args';
 import { prismaProject1 } from './projects.test-data';
@@ -63,4 +63,9 @@ export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   dateArchived: null,
   userArchived: null,
   userArchivedId: null
+};
+
+export const mechanicalTeamType: TeamType = {
+  teamTypeId: '1',
+  name: 'Mechanical'
 };
