@@ -161,23 +161,16 @@ export default class TeamsService {
 
     // if the new head is a current member on the team, this will remove them as a member
     if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId)) {
-      const newTeamArr: number[] = [];
-      for (let i = 0; i < team.members.length; i++) {
-        if (team.members[i].userId !== newHead.userId) {
-          newTeamArr.push(team.members[i].userId);
-        }
-      }
+      const newTeamArr: number[] = team.members
+        .filter((member) => member.userId !== newHead.userId)
+        .map((member) => member.userId);
       this.setTeamMembers(submitter, teamId, newTeamArr);
     }
 
     // if the new head is a current leader on the team, they will be removed as a leader
-    if (newHead && team.leads.map((user) => user.userId).includes(newHead?.userId)) {
-      const newLeadsArr: number[] = [];
-      for (let i = 0; i < team.leads.length; i++) {
-        if (team.leads[i].userId !== newHead.userId) {
-          newLeadsArr.push(team.leads[i].userId);
-        }
-      }
+    // this will work in theory, but there is a block on the front-end that prevents the user from adding a current lead as the head of a team (they won't show up in the new head dropdown)
+    if (team.leads.map((lead) => lead.userId).includes(userId)) {
+      const newLeadsArr: number[] = team.leads.map((lead) => lead.userId).filter((leadId) => leadId !== userId);
       this.setTeamLeads(submitter, teamId, newLeadsArr);
     }
 
@@ -298,18 +291,13 @@ export default class TeamsService {
       throw new HttpException(400, 'A lead cannot be the head of the team!');
     }
 
-    /*if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
-      throw new HttpException(400, 'A lead cannot be a member of the team!');
-    }*/
-
-    // removes the new leads from the current members of the given team
-    const newMembersArr: number[] = [];
-    for (let i = 0; i < team.members.length; i++) {
-      if (!userIds.includes(team.members[i].userId)) {
-        newMembersArr.push(team.members[i].userId);
-      }
+    // removes the new leads as current members of the given team (if they are current members of that team)
+    if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
+      const newMembersArr: number[] = team.members
+        .map((member) => member.userId)
+        .filter((memberId) => !userIds.includes(memberId));
+      this.setTeamMembers(submitter, teamId, newMembersArr);
     }
-    this.setTeamMembers(submitter, teamId, newMembersArr);
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
 
