@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useCreateUnit } from '../../../hooks/bom.hooks';
 
 const schema = yup.object().shape({
-  name: yup.string().required('Unit Name is required')
+  name: yup.string().required('Unit Name is Required')
 });
 
 interface CreateUnitTypeModalProps {

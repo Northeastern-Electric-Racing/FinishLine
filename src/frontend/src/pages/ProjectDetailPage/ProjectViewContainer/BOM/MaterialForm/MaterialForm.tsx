@@ -105,7 +105,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   const {
     data: manufactuers,
     isLoading: isLoadingManufactuers,
-    isError: manufacturersIsError
+    isError: manufacturersIsError,
     error: manufacturersError
   } = useGetAllManufacturers();
 

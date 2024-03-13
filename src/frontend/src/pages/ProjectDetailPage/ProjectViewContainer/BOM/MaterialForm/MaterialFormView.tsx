@@ -185,7 +185,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 control={control}
                 errorMessage={errors.quantity}
                 placeholder="Enter Quantity"
-                type="numbers"
+                type="number"
               />
             </FormControl>
             <FormControl fullWidth>
