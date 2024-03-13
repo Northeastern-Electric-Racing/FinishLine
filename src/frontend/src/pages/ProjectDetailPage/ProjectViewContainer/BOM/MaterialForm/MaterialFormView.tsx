@@ -20,7 +20,6 @@ export interface MaterialFormViewProps {
   assemblies: Assembly[];
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
-  createUnit: (name: string) => void;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
 }
@@ -38,7 +37,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   assemblies,
   open,
   watch,
-  createUnit,
   createManufacturer,
   setValue
 }) => {
@@ -204,24 +202,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     error={!!errors.unitName}
                     helperText={errors.unitName?.message}
                     value={field.value || ''}
-                    onChange={(event) => {
-                      const selectedValue = event.target.value;
-                      if (selectedValue === 'createUnit') {
-                        const unitName = prompt('Enter Unit Name');
-                        if (unitName) {
-                          createUnit(unitName);
-                        }
-                      } else {
-                        field.onChange(event);
-                      }
-                    }}
                   >
                     {allUnits.map((unit) => (
                       <MenuItem key={unit.name} value={unit.name}>
                         {unit.name}
                       </MenuItem>
                     ))}
-                    <MenuItem value="createUnit">+ Create Unit</MenuItem>
                   </TextField>
                 )}
               />

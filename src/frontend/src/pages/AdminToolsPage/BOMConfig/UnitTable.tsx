@@ -26,8 +26,9 @@ const UnitTypeTable: React.FC = () => {
 
   const unitTypesTableRows = unitTypes.map((unitType) => (
     <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}></TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{unitType.name}</TableCell>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
+        {unitType.name}
+      </TableCell>
     </TableRow>
   ));
 
@@ -35,7 +36,7 @@ const UnitTypeTable: React.FC = () => {
     <Box>
       <CreateUnitFormModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
       <Typography variant="subtitle1">Registered Units</Typography>
-      <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Unit' }]} rows={unitTypesTableRows} />
+      <AdminToolTable columns={[{ name: 'Unit' }]} rows={unitTypesTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"
