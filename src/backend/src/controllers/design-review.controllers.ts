@@ -1,4 +1,4 @@
-import { User, Design_Review } from '@prisma/client';
+import { User } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import DesignReviewService from '../services/design-review.services';
@@ -26,7 +26,7 @@ export default class DesignReviewController {
 
   static async createDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
+      const submitter: User = await getCurrentUser(res);
       const {
         dateScheduled,
         teamTypeName,
@@ -37,12 +37,12 @@ export default class DesignReviewController {
         isInPerson,
         zoomLink,
         docTemplateLink,
-        wbsElementId,
-        meetingTime
+        wbsNum,
+        meetingTimes
       } = req.body;
 
-      const createdDesignReview: Design_Review = await DesignReviewService.createDesignReview(
-        user,
+      const createdDesignReview = await DesignReviewService.createDesignReview(
+        submitter,
         dateScheduled,
         teamTypeName,
         requiredMembers,
@@ -52,8 +52,8 @@ export default class DesignReviewController {
         isInPerson,
         zoomLink,
         docTemplateLink,
-        wbsElementId,
-        meetingTime
+        wbsNum,
+        meetingTimes
       );
       return res.status(200).json(createdDesignReview);
     } catch (error: unknown) {

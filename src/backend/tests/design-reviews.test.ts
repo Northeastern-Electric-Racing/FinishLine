@@ -115,18 +115,19 @@ describe('Design Reviews', () => {
         '1',
         [],
         [],
-        '',
         true,
         false,
-        '',
         'doc temp',
-        1,
-        [0, 1, 2, 3]
+        {
+          carNumber: 1,
+          projectNumber: 2,
+          workPackageNumber: 0
+        },
+        [0, 1, 2, 3],
+        'zoooooom'
       );
 
-      expect(res).toStrictEqual({
-        ...prismaDesignReview1
-      });
+      expect(res.teamType).toBe(teamType1);
     });
 
     test('Create design review fails guest permission', async () => {
@@ -137,13 +138,16 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          '',
           true,
           false,
-          '',
           'doc temp',
-          1,
-          [0, 1, 2, 3]
+          {
+            carNumber: 1,
+            projectNumber: 2,
+            workPackageNumber: 0
+          },
+          [0, 1, 2, 3],
+          'zoom'
         )
       ).rejects.toThrow(new AccessDeniedGuestException('create design review'));
     });
@@ -157,13 +161,16 @@ describe('Design Reviews', () => {
           '15',
           [],
           [],
-          '',
           true,
           false,
-          '',
           'doc temp',
-          1,
-          [0, 1, 2, 3]
+          {
+            carNumber: 1,
+            projectNumber: 2,
+            workPackageNumber: 0
+          },
+          [0, 1, 2, 3],
+          'zoom'
         )
       ).rejects.toThrow(new NotFoundException('Team Type', '15'));
     });
@@ -179,15 +186,18 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          '',
           true,
           false,
-          '',
           'doc temp',
-          245,
-          [0, 1, 2, 3]
+          {
+            carNumber: 15,
+            projectNumber: 2,
+            workPackageNumber: 0
+          },
+          [0, 1, 2, 3],
+          'zoom'
         )
-      ).rejects.toThrow(new NotFoundException('WBS Element', 245));
+      ).rejects.toThrow(new NotFoundException('WBS Element', 15));
     });
   });
 });

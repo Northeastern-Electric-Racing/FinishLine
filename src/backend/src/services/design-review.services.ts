@@ -1,4 +1,4 @@
-import { DesignReview, isAdmin, isGuest } from 'shared';
+import { DesignReview, WbsNumber, isAdmin, isGuest, isLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -7,7 +7,7 @@ import {
   AccessDeniedGuestException,
   HttpException
 } from '../utils/errors.utils';
-import { User, Design_Review_Status, Design_Review } from '@prisma/client';
+import { User, Design_Review_Status } from '@prisma/client';
 import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
 import { designReviewTransformer } from '../transformers/design-review.transformer';
 import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
@@ -73,16 +73,16 @@ export default class DesignReviewService {
     user: User,
     dateScheduled: string,
     teamTypeId: string,
-    requiredMembers: User[],
-    optionalMembers: User[],
-    location: string,
+    requiredMemberIds: number[],
+    optionalMemberIds: number[],
     isOnline: boolean,
     isInPerson: boolean,
-    zoomLink: string,
     docTemplateLink: string,
-    wbsElementId: number,
-    meetingTimes: number[]
-  ): Promise<Design_Review> {
+    wbsNum: WbsNumber,
+    meetingTimes: number[],
+    zoomLink?: string,
+    location?: string
+  ): Promise<DesignReview> {
     if (isGuest(user.role)) throw new AccessDeniedGuestException('create design review');
 
     const teamType = await prisma.teamType.findFirst({
@@ -93,15 +93,39 @@ export default class DesignReviewService {
       throw new NotFoundException('Team Type', teamTypeId);
     }
 
-    const WBS_Element = await prisma.wBS_Element.findUnique({
-      where: { wbsElementId }
+    const wbs_Element = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          carNumber: wbsNum.carNumber,
+          projectNumber: wbsNum.projectNumber,
+          workPackageNumber: wbsNum.workPackageNumber
+        }
+      }
     });
 
-    if (!WBS_Element) {
-      throw new NotFoundException('WBS Element', wbsElementId);
+    if (!wbs_Element) {
+      throw new NotFoundException('WBS Element', wbsNum.carNumber);
     }
 
-    const design_review = await prisma.design_Review.create({
+    for (let i = 0; i < meetingTimes.length - 1; i++) {
+      if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 48) {
+        throw new HttpException(400, 'Meeting times have to be continous and in range 0-48');
+      }
+    }
+
+    if (isOnline && !zoomLink) {
+      throw new HttpException(400, 'If the design review is online then there needs to be a zoom link');
+    }
+
+    if (isInPerson && !location) {
+      throw new HttpException(400, 'If the design review is in person then there needs to be a location');
+    }
+
+    // if (dateScheduled <= new Date().toDateString()) {
+    //   throw new HttpException(400, 'Design review cannot be scheduled for the same day (or before), its created');
+    // }
+
+    const designReview = await prisma.design_Review.create({
       data: {
         dateScheduled,
         dateCreated: new Date(),
@@ -113,19 +137,21 @@ export default class DesignReviewService {
         docTemplateLink,
         userCreated: { connect: { userId: user.userId } },
         teamType: { connect: { teamTypeId: teamType.teamTypeId } },
-        requiredMembers: { connect: requiredMembers.map((user) => ({ userId: user.userId })) },
-        optionalMembers: { connect: optionalMembers.map((user) => ({ userId: user.userId })) },
+        requiredMembers: { connect: requiredMemberIds.map((memberId) => ({ userId: memberId })) },
+        optionalMembers: { connect: optionalMemberIds.map((memberId) => ({ userId: memberId })) },
         meetingTimes,
-        wbsElement: { connect: { wbsElementId } }
-      }
+        wbsElement: { connect: { wbsElementId: wbs_Element.wbsElementId } }
+      },
+      ...designReviewQueryArgs
     });
 
-    for (const member of requiredMembers.concat(optionalMembers)) {
-      // send to all the people invited to the design review
-      const memberUserSettings = await prisma.user_Settings.findUnique({ where: { userId: member.userId } });
-      if (memberUserSettings && memberUserSettings.slackId) {
+    // send to all the people invited to the design review
+    for (const memberId of requiredMemberIds.concat(optionalMemberIds)) {
+      const memberUserSettings = await prisma.user_Settings.findUnique({ where: { userId: memberId } });
+      const member = await prisma.user.findUnique({ where: { userId: memberId } });
+      if (memberUserSettings && member && memberUserSettings.slackId && isLeadership(member.role)) {
         try {
-          await sendSlackDesignReviewNotification(memberUserSettings.slackId, design_review.designReviewId);
+          await sendSlackDesignReviewNotification(memberUserSettings.slackId, designReview.designReviewId);
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
@@ -134,7 +160,7 @@ export default class DesignReviewService {
       }
     }
 
-    return design_review;
+    return designReviewTransformer(designReview);
   }
 
   /**
