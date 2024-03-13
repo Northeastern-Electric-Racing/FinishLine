@@ -18,9 +18,9 @@ import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { projectWbsPipe } from '../../../utils/pipes';
 interface WorkPackageDetailsProps {
   workPackage: WorkPackage;
   dependencies: WorkPackage[];
@@ -28,7 +28,6 @@ interface WorkPackageDetailsProps {
 
 const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, dependencies }) => {
   const theme = useTheme();
-  const user = useCurrentUser();
   const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
   const currentDate = new Date();
 
@@ -37,9 +36,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
 
   const crUnreviewed = changeRequests
     ? changeRequests
-        .filter(
-          (cr: ChangeRequest) => !cr.dateReviewed && cr.submitter.userId === user.userId && cr.wbsNum === workPackage.wbsNum
-        )
+        .filter((cr: ChangeRequest) => !cr.dateReviewed && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
         .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime())
     : [];
 
@@ -49,9 +46,8 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
           (cr: ChangeRequest) =>
             cr.dateReviewed &&
             cr.accepted &&
-            cr.submitter.userId === user.userId &&
             currentDate.getTime() - cr.dateReviewed.getTime() <= 1000 * 60 * 60 * 24 * 5 &&
-            cr.wbsNum === workPackage.wbsNum
+            projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum)
         )
         .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0))
     : [];
@@ -155,8 +151,8 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
           mt: 3
         }}
       >
-        {renderChangeRequests('My Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
-        {renderChangeRequests('My Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
+        {renderChangeRequests('Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
+        {renderChangeRequests('Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
       </Grid>
 
       <Typography
