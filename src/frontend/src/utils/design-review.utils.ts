@@ -32,6 +32,14 @@ export const EnumToArray = (en: { [key: number]: string | number }) => {
   return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
 };
 
+export const daysInMonth = (month: Date): number => {
+  return new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+};
+
+export const calendarPaddingDays = (month: Date): number => {
+  return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
+};
+
 // TODO remove during wire up ticket
 export const testDesignReview1: DesignReview = {
   designReviewId: 'Meeting',

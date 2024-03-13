@@ -43,7 +43,7 @@ const CHANGE_REQUESTS_OVERVIEW = CHANGE_REQUESTS + `/overview`;
 const ADMIN_TOOLS = `/admin-tools`;
 
 /**************** Design Review Calendar ****************/
-const DESIGN_REVIEW_CALENDAR = `/design-review-calendar`;
+const CALENDAR = `/design-review-calendar`;
 
 export const routes = {
   HOME,
@@ -80,5 +80,5 @@ export const routes = {
 
   ADMIN_TOOLS,
 
-  DESIGN_REVIEW_CALENDAR
+  CALENDAR
 };

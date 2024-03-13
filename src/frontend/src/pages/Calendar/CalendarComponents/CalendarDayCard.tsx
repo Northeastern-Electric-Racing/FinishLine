@@ -4,11 +4,11 @@ import { DesignReview } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 
 interface CalendarDayCardProps {
-  myDate: Date;
+  cardDate: Date;
   events: DesignReview[];
 }
 
-const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ myDate, events }) => {
+const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) => {
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item>
@@ -18,7 +18,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ myDate, events }) => 
       </Grid>
       <Grid item xs display="flex" justifyContent="flex-end">
         <Typography variant="h6" marginRight={1}>
-          {myDate.getDate()}
+          {cardDate.getDate()}
         </Typography>
       </Grid>
     </Grid>
@@ -38,14 +38,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ myDate, events }) => 
   };
 
   return (
-    <Box>
-      <Card sx={{ borderRadius: 2, minWidth: 150, maxWidth: 150, minHeight: 90, maxHeight: 90 }}>
-        <CardContent sx={{ padding: 0 }}>
-          <DayCardTitle />
-          {events.map((event) => EventCard(event))}
-        </CardContent>
-      </Card>
-    </Box>
+    <Card sx={{ borderRadius: 2, minWidth: 150, maxWidth: 150, minHeight: 90, maxHeight: 90 }}>
+      <CardContent sx={{ padding: 0 }}>
+        <DayCardTitle />
+        {events.map((event) => EventCard(event))}
+      </CardContent>
+    </Card>
   );
 };
 export default CalendarDayCard;

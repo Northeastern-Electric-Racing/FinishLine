@@ -3,13 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import DayCard from './CalendarComponents/CalendarDayCard';
 import FillerCard from './CalendarComponents/FillerCalendarDayCard';
-import { DAY_NAMES, EnumToArray, testDesignReview1 } from '../../utils/design-review.utils';
+import {
+  DAY_NAMES,
+  EnumToArray,
+  calendarPaddingDays,
+  daysInMonth,
+  testDesignReview1
+} from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 
 const CalendarPage = () => {
@@ -27,21 +33,15 @@ const CalendarPage = () => {
     return day < week - 7 || day < 1 || day > week + 7;
   };
 
-  const daysInMonth = (month: Date) => {
-    return new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  };
-
-  const paddingDays = (month: Date) => {
-    return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
-  };
-
-  const paddingArrayStart = [...Array<number>(paddingDays(displayMonthYear)).keys()].map(
-    (day) =>
-      daysInMonth(new Date(displayMonthYear.getDate(), displayMonthYear.getMonth() - 1, displayMonthYear.getFullYear())) -
-      day
-  );
+  const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
+    .map(
+      (day) =>
+        daysInMonth(new Date(displayMonthYear.getDate(), displayMonthYear.getMonth() - 1, displayMonthYear.getFullYear())) -
+        (day + 1)
+    )
+    .reverse();
   const paddingArrayEnd = [
-    ...Array<number>(7 - ((daysInMonth(displayMonthYear) + paddingDays(displayMonthYear)) % 7)).keys()
+    ...Array<number>(7 - ((daysInMonth(displayMonthYear) + calendarPaddingDays(displayMonthYear)) % 7)).keys()
   ].map((day) => day + 1);
   const daysThisMonth = paddingArrayStart
     .concat([...Array(daysInMonth(displayMonthYear)).keys()])
@@ -69,9 +69,18 @@ const CalendarPage = () => {
   );
 
   return (
-    <PageLayout title="Design Review Calendar" headerRight={unconfirmedDRSDropdown}>
-      <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
-      <Grid container alignItems="center">
+    <PageLayout
+      title="Design Review Calendar"
+      headerRight={
+        <Stack direction="row" justifyContent="flex-end">
+          <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
+          <Box marginTop={0.9} marginLeft={1}>
+            {unconfirmedDRSDropdown}
+          </Box>
+        </Stack>
+      }
+    >
+      <Grid container>
         {EnumToArray(DAY_NAMES).map((day) => (
           <Grid item xs={12 / 7}>
             <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
@@ -83,16 +92,16 @@ const CalendarPage = () => {
       <Box sx={{ border: '2px solid grey', borderRadius: 2, bgcolor: theme.palette.background.paper }}>
         <Grid container>
           {startOfEachWeek.map((week) => (
-            <Grid container alignItems="center" justifyContent="center">
+            <Grid container>
               {daysThisMonth.slice(week, week + 7).map((day) => {
-                const myDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
+                const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
                 return (
-                  <Grid item xs={12 / 7} alignItems="center" justifyContent="center">
-                    <Box marginLeft={1.5} marginTop={2}>
+                  <Grid item xs={12 / 7}>
+                    <Box marginLeft={1.5} marginTop={2} sx={{ alignContent: 'center' }}>
                       {isDayInDifferentMonth(day, week) ? (
                         <FillerCard day={day} />
                       ) : (
-                        <DayCard myDate={myDate} events={EventDict.get(myDate.getDate()) ?? []} />
+                        <DayCard cardDate={cardDate} events={EventDict.get(cardDate.getDate()) ?? []} />
                       )}
                     </Box>
                   </Grid>

@@ -64,9 +64,9 @@ const Sidebar = ({ defaultOpen = false }: SidebarProps) => {
       route: routes.TEAMS
     },
     {
-      name: 'DRC',
+      name: 'Calendar',
       icon: <CalendarTodayIcon />,
-      route: routes.DESIGN_REVIEW_CALENDAR
+      route: routes.CALENDAR
     },
     {
       name: 'Info',

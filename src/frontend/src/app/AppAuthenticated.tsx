@@ -62,7 +62,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.INFO} component={InfoPage} />
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
-            <Route path={routes.DESIGN_REVIEW_CALENDAR} component={Calendar} />
+            <Route path={routes.CALENDAR} component={Calendar} />
             <Route exact path={routes.HOME} component={Home} />
             <Route path="*" component={PageNotFound} />
           </Switch>
