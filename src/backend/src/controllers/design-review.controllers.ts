@@ -60,4 +60,15 @@ export default class DesignReviewController {
       next(error);
     }
   }
+
+  static async getSingleDesignReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const drId: string = req.params.designReviewId;
+      const user: User = await getCurrentUser(res);
+      const designReview = await DesignReviewService.getSingleDesignReview(user, drId);
+      return res.status(200).json(designReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
