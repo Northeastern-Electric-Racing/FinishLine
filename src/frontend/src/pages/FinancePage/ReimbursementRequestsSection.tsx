@@ -14,7 +14,7 @@ import {
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
 import { cleanReimbursementRequestStatus, createReimbursementRequestRowData } from '../../utils/reimbursement-request.utils';
-import { SortingOrder, ReimbursementRequestRow } from '../../../../shared/src/types/reimbursement-requests-types';
+import { ReimbursementRequestRow } from '../../../../shared/src/types/reimbursement-requests-types';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import { User } from '../../../../shared/src/types/user-types';
 
@@ -23,11 +23,16 @@ interface ReimbursementRequestTableProps {
   allReimbursementRequests?: ReimbursementRequest[];
 }
 
+interface ReimbursementTableHeadCell {
+  id: keyof ReimbursementRequestRow;
+  label: string;
+}
+
 const ReimbursementRequestTable = ({
   userReimbursementRequests,
   allReimbursementRequests
 }: ReimbursementRequestTableProps) => {
-  const [order, setOrder] = useState<SortingOrder>(SortingOrder.ascending);
+  const [isAscendingOrder, setAscendingOrder] = useState(true);
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('dateSubmittedToSabo');
 
   const theme = useTheme();
@@ -57,8 +62,8 @@ const ReimbursementRequestTable = ({
       [ReimbursementStatusType.DENIED, 5]
     ]);
 
-    let bConverted = statusOrder.get(b);
-    let aConverted = statusOrder.get(a);
+    const bConverted = statusOrder.get(b);
+    const aConverted = statusOrder.get(a);
 
     if (bConverted !== undefined && aConverted !== undefined) {
       if (bConverted < aConverted) {
@@ -93,39 +98,33 @@ const ReimbursementRequestTable = ({
 
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
     if (orderBy === 'vendor') {
-      return order === 'desc'
+      return !isAscendingOrder
         ? vendorDescendingComparator(a.vendor, b.vendor)
         : -vendorDescendingComparator(a.vendor, b.vendor);
     }
     if (orderBy === 'status') {
-      return order === 'desc'
+      return !isAscendingOrder
         ? statusDescendingComparator(a.status, b.status)
         : -statusDescendingComparator(a.status, b.status);
     }
     if (orderBy === 'submitter') {
-      return order === 'desc'
+      return !isAscendingOrder
         ? submitterDescendingComparator(a.submitter, b.submitter)
         : -submitterDescendingComparator(a.submitter, b.submitter);
     }
     if (b[orderBy] === undefined) {
       return -1;
     }
-    return order === 'desc' ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
+    return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
   });
 
   const tabs = [{ label: 'My Requests', value: 0 }];
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Requests', value: 1 });
 
   const handleRequestSort = (property: keyof ReimbursementRequestRow) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? SortingOrder.descending : SortingOrder.ascending);
+    setAscendingOrder(isAscendingOrder ? false : true);
     setOrderBy(property);
   };
-
-  interface ReimbursementTableHeadCell {
-    id: keyof ReimbursementRequestRow;
-    label: string;
-  }
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
@@ -171,11 +170,11 @@ const ReimbursementRequestTable = ({
                     <TableCell
                       align="center"
                       sx={{ fontSize: '16px', fontWeight: 600 }}
-                      sortDirection={orderBy === headCell.id ? order : false}
+                      sortDirection={orderBy === headCell.id ? (isAscendingOrder ? 'asc' : 'desc') : false}
                     >
                       <TableSortLabel
                         active={orderBy === headCell.id}
-                        direction={orderBy === headCell.id ? order : 'asc'}
+                        direction={orderBy === headCell.id ? (isAscendingOrder ? 'asc' : 'desc') : 'asc'}
                         onClick={() => handleRequestSort(headCell.id)}
                       >
                         {headCell.label}

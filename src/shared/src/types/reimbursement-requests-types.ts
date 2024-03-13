@@ -6,11 +6,6 @@ export enum ClubAccount {
   BUDGET = 'BUDGET'
 }
 
-export enum SortingOrder {
-  descending = 'desc',
-  ascending = 'asc'
-}
-
 export interface ReimbursementRequestRow {
   id: string;
   saboId: number | undefined;
