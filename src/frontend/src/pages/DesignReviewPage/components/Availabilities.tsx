@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, useTheme } from '@mui/system';
 import { User } from 'shared';
 import { HeatmapColors } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
@@ -18,16 +18,16 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
   currentUnavailableUsers,
   usersToAvailabilities
 }) => {
+  const theme = useTheme();
   const totalUsers = usersToAvailabilities.size;
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
   return (
     <Box
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#2C2C2C',
+        backgroundColor: theme.palette.background.paper,
         padding: '20px',
-        borderRadius: '8px',
+        borderRadius: '10px',
         height: '100%',
         overflow: 'auto'
       }}
