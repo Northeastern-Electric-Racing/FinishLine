@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import {} from 'shared';
-import DesignReviewService from '../services/design-reviews.services';
+import DesignReviewsService from '../services/design-reviews.services';
 import { getCurrentUser } from '../utils/auth.utils';
 
-export default class DesignReviewController {
+export default class DesignReviewsController {
   // Edit a work package to the given specifications
-  static async editDesignReview(req: Request, res: Response, next: NextFunction) {
+  static async editDesignReviews(req: Request, res: Response, next: NextFunction) {
     try {
       const {
         dateScheduled,
@@ -18,8 +17,6 @@ export default class DesignReviewController {
         location,
         docTemplateLink,
         status,
-        confirmedMembers,
-        deniedMembers,
         attendees,
         meetingTimes
       } = req.body;
@@ -29,7 +26,7 @@ export default class DesignReviewController {
       // get the user from the header
       const user = await getCurrentUser(res);
 
-      await DesignReviewService.editDesignReview(
+      await DesignReviewsService.editDesignReviews(
         user,
         designReviewId,
         dateScheduled,
@@ -42,8 +39,6 @@ export default class DesignReviewController {
         location,
         docTemplateLink,
         status,
-        confirmedMembers,
-        deniedMembers,
         attendees,
         meetingTimes
       );

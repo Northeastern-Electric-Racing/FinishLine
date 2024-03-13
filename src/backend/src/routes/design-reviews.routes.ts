@@ -1,11 +1,11 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { intMinZero, nonEmptyString, isDate, isDesignReviewStatus } from '../utils/validation.utils';
-import DesignReviewController from '../controllers/design-reviews.controllers';
+import DesignReviewsController from '../controllers/design-reviews.controllers';
 import { validateInputs } from '../utils/utils';
-const designReviewRouter = express.Router();
+const designReviewsRouter = express.Router();
 
-designReviewRouter.post(
+designReviewsRouter.post(
   '/:designReviewId/edit',
   isDate(body('dateScheduled')),
   nonEmptyString(body('teamType')),
@@ -19,15 +19,12 @@ designReviewRouter.post(
   nonEmptyString(body('location')).optional(),
   nonEmptyString(body('docTemplateLink')).isURL(),
   isDesignReviewStatus(body('status')),
-  body('confirmedMembers').isArray(),
-  intMinZero(body('confirmedMembers.*')),
-  body('deniedMembers').isArray(),
-  intMinZero(body('deniedMembers.*')),
   body('attendees').isArray(),
   intMinZero(body('attendees.*')),
-  intMinZero(body('meetingTimes').isArray()),
+  body('meetingTimes').isArray(),
+  intMinZero(body('meetingTimes.*')),
   validateInputs,
-  DesignReviewController.editDesignReview
+  DesignReviewsController.editDesignReviews
 );
 
-export default designReviewRouter;
+export default designReviewsRouter;
