@@ -6,7 +6,7 @@ import UnitTable from './BOMConfig/UnitTable';
 
 const AdminToolsBOMConfig: React.FC = () => {
   return (
-    <PageBlock title="Bill of Material Config">
+    <PageBlock title="Bill of Materials Config">
       <Grid container spacing="3%">
         <Grid item direction="column" xs={12} md={6}>
           <ManufacturerTable />

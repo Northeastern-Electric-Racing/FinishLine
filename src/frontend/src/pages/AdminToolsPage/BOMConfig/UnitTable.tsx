@@ -26,7 +26,7 @@ const UnitTypeTable: React.FC = () => {
 
   const unitTypesTableRows = unitTypes.map((unitType) => (
     <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell align="right" sx={{ border: '2px solid black' }}>
         {unitType.name}
       </TableCell>
     </TableRow>
