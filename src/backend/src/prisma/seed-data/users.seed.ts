@@ -772,6 +772,15 @@ const roquanSmith: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
+const justinTucker: Prisma.UserCreateInput = {
+  firstName: 'Justin',
+  lastName: 'Tucker',
+  googleAuthId: '1',
+  email: 'tucker.just@husky.neu.edu',
+  emailId: 'tucker.just',
+  role: Role.MEMBER
+};
+
 //Roquan Smith
 
 export const dbSeedAllUsers = {
@@ -863,5 +872,6 @@ export const dbSeedAllUsers = {
   marlonHumphrey,
   kyleHamilton,
   marcusWilliams,
-  roquanSmith
+  roquanSmith,
+  justinTucker
 };
