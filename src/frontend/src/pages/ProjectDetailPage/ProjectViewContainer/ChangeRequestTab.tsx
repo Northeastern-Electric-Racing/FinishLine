@@ -27,13 +27,13 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
   const crUnreviewedRow: changeRequests = {
     title: 'Un-reviewed Change Requests',
     crList: unReviewedChangeRequests,
-    emptyMessage: 'No un-reviewed change requests'
+    noChangeRequestsMessage: 'No un-reviewed change requests'
   };
 
   const crApprovedRow: changeRequests = {
     title: 'Approved Change Requests',
     crList: approvedChangeRequests,
-    emptyMessage: 'No recently approved change requests'
+    noChangeRequestsMessage: 'No recently approved change requests'
   };
 
   return <CRRow crRowList={[crUnreviewedRow, crApprovedRow]} />;

@@ -80,24 +80,24 @@ const ChangeRequestsOverview: React.FC = () => {
   const crToReviewRow: changeRequests = {
     title: 'To Review',
     crList: crToReview,
-    emptyMessage: 'No change requests to review'
+    noChangeRequestsMessage: 'No change requests to review'
   };
   const crUnreviewedRow: changeRequests = {
     title: 'My Un-reviewed Change Requests',
     crList: crUnreviewed,
-    emptyMessage: 'No un-reviewed change requests'
+    noChangeRequestsMessage: 'No un-reviewed change requests'
   };
 
   const crApprovedRow: changeRequests = {
     title: 'My Recently Approved Change Requests',
     crList: crApproved,
-    emptyMessage: 'No recently approved change requests'
+    noChangeRequestsMessage: 'No recently approved change requests'
   };
 
   const overviewRowList = [crUnreviewedRow, crApprovedRow];
   if (showToReview) overviewRowList.unshift(crToReviewRow);
 
-  return <CRRow crRowList={overviewRowList} />;
+  return <ChangeRequestRow crRowList={overviewRowList} />;
 };
 
 export default ChangeRequestsOverview;

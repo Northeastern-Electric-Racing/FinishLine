@@ -109,5 +109,5 @@ export interface ProposedSolutionCreateArgs {
 export interface changeRequests {
   title: string;
   crList: ChangeRequest[];
-  emptyMessage: string;
+  noChangeRequestsMessage: string;
 }

@@ -8,7 +8,7 @@ import { Box } from '@mui/system';
 import { ChangeRequest, changeRequests } from 'shared/src/types/change-request-types';
 import ChangeRequestDetailCard from './ChangeRequestDetailCard';
 
-const CRRow = ({ crRowList }: { crRowList: changeRequests[] }) => {
+const ChangeRequestRow = ({ cr }: { cr: changeRequests }) => {
   const theme = useTheme();
 
   const displayCRCards = (crList: ChangeRequest[]) => (
@@ -54,16 +54,10 @@ const CRRow = ({ crRowList }: { crRowList: changeRequests[] }) => {
     );
   };
 
-  const ChangeRequestRow = ({ cr }: { cr: changeRequests }) => {
-    return <Box>{renderChangeRequests(cr.title, cr.crList, cr.emptyMessage)}</Box>;
-  };
-
   return (
     <>
-      {crRowList.map((cr: changeRequests) => (
-        <ChangeRequestRow cr={cr} />
-      ))}
+      <Box>{renderChangeRequests(cr.title, cr.crList, cr.noChangeRequestsMessage)}</Box>;
     </>
   );
 };
-export default CRRow;
+export default ChangeRequestRow;
