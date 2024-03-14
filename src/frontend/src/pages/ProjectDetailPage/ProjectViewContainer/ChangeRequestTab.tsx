@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequest, ChangeRequestRow, Project, equalsWbsNumber } from 'shared';
+import { ChangeRequest, ChangeRequestRowInfo, Project, equalsWbsNumber } from 'shared';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import ChangeRequestRowView from '../../../components/ChangeRequestRow';
+import ChangeRequestRow from '../../../components/ChangeRequestRow';
 
 const ChangeRequestTab = ({ project }: { project: Project }) => {
   const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
@@ -24,13 +24,13 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
     .filter((cr: ChangeRequest) => cr.accepted && equalsWbsNumber(wbsNum, cr.wbsNum))
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crUnreviewedRow: ChangeRequestRow = {
+  const crUnreviewedRow: ChangeRequestRowInfo = {
     title: 'Un-reviewed Change Requests',
     changeRequests: unReviewedChangeRequests,
     noChangeRequestsMessage: 'No un-reviewed change requests'
   };
 
-  const crApprovedRow: ChangeRequestRow = {
+  const crApprovedRow: ChangeRequestRowInfo = {
     title: 'Approved Change Requests',
     changeRequests: approvedChangeRequests,
     noChangeRequestsMessage: 'No recently approved change requests'
@@ -38,8 +38,8 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
 
   return (
     <>
-      {[crUnreviewedRow, crApprovedRow].map((crRow: ChangeRequestRow) => (
-        <ChangeRequestRowView cr={crRow} />
+      {[crUnreviewedRow, crApprovedRow].map((crRow: ChangeRequestRowInfo) => (
+        <ChangeRequestRow cr={crRow} />
       ))}
     </>
   );

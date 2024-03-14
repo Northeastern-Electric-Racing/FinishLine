@@ -6,12 +6,12 @@
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead, ChangeRequest, ChangeRequestRow, Project, WorkPackage, equalsWbsNumber } from 'shared';
+import { isLeadership, isHead, ChangeRequest, ChangeRequestRowInfo, Project, WorkPackage, equalsWbsNumber } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { makeTeamList } from '../../utils/teams.utils';
-import ChangeRequestRowView from '../../components/ChangeRequestRow';
+import ChangeRequestRow from '../../components/ChangeRequestRow';
 
 const ChangeRequestsOverview: React.FC = () => {
   const user = useCurrentUser();
@@ -77,18 +77,18 @@ const ChangeRequestsOverview: React.FC = () => {
     )
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crToReviewRow: ChangeRequestRow = {
+  const crToReviewRow: ChangeRequestRowInfo = {
     title: 'To Review',
     changeRequests: crToReview,
     noChangeRequestsMessage: 'No change requests to review'
   };
-  const crUnreviewedRow: ChangeRequestRow = {
+  const crUnreviewedRow: ChangeRequestRowInfo = {
     title: 'My Un-reviewed Change Requests',
     changeRequests: crUnreviewed,
     noChangeRequestsMessage: 'No un-reviewed change requests'
   };
 
-  const crApprovedRow: ChangeRequestRow = {
+  const crApprovedRow: ChangeRequestRowInfo = {
     title: 'My Recently Approved Change Requests',
     changeRequests: crApproved,
     noChangeRequestsMessage: 'No recently approved change requests'
@@ -99,8 +99,8 @@ const ChangeRequestsOverview: React.FC = () => {
 
   return (
     <>
-      {overviewRowList.map((crRow: ChangeRequestRow) => (
-        <ChangeRequestRowView cr={crRow} />
+      {overviewRowList.map((crRow: ChangeRequestRowInfo) => (
+        <ChangeRequestRow cr={crRow} />
       ))}
     </>
   );
