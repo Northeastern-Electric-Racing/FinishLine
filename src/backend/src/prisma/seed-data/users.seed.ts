@@ -781,7 +781,87 @@ const justinTucker: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
-//Roquan Smith
+const monopolyMan: Prisma.UserCreateInput = {
+  firstName: 'Milburn',
+  lastName: 'Pennybags',
+  email: 'donotpassgo@northeastern.edu',
+  role: Role.ADMIN,
+  googleAuthId: 'monopoly',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'monopolyman'
+    }
+  }
+};
+
+const mrKrabs: Prisma.UserCreateInput = {
+  firstName: 'Eugene',
+  lastName: 'Krabs',
+  email: 'mrkrabs@krustykrabs.com',
+  role: Role.ADMIN,
+  googleAuthId: 'krabs',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'mrkrabs'
+    }
+  }
+};
+
+const richieRich: Prisma.UserCreateInput = {
+  firstName: 'Richie',
+  lastName: 'Rich',
+  email: 'richerich@harveycomics.com',
+  role: Role.LEADERSHIP,
+  googleAuthId: 'rich',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'richietherich'
+    }
+  }
+};
+
+const johnBoddy: Prisma.UserCreateInput = {
+  firstName: 'John',
+  lastName: 'Boddy',
+  googleAuthId: 'deadmillionaire',
+  email: 'johnboddy@clue.com',
+  role: Role.MEMBER
+};
+
+const villager: Prisma.UserCreateInput = {
+  firstName: 'Minecraft',
+  lastName: 'Villager',
+  googleAuthId: 'villager',
+  email: 'hrmmm@minecraft.com',
+  role: Role.MEMBER
+};
+
+const francis: Prisma.UserCreateInput = {
+  firstName: 'Francis',
+  lastName: 'Francis',
+  googleAuthId: 'francis',
+  email: 'ffrancis@puppyco.com',
+  role: Role.MEMBER
+};
+
+const victorPerkins: Prisma.UserCreateInput = {
+  firstName: 'Victor',
+  lastName: 'Perkins',
+  googleAuthId: 'victorperkins',
+  email: 'mysonstolethemoon@evilbank.com',
+  role: Role.MEMBER
+};
+
+const kingJulian: Prisma.UserCreateInput = {
+  firstName: 'King',
+  lastName: 'Julian',
+  googleAuthId: 'kingjulian',
+  email: 'iliketomoveit@jungle.net',
+  role: Role.MEMBER
+};
 
 export const dbSeedAllUsers = {
   thomasEmrax,
@@ -873,5 +953,13 @@ export const dbSeedAllUsers = {
   kyleHamilton,
   marcusWilliams,
   roquanSmith,
-  justinTucker
+  justinTucker,
+  monopolyMan,
+  mrKrabs,
+  richieRich,
+  johnBoddy,
+  villager,
+  francis,
+  victorPerkins,
+  kingJulian
 };
