@@ -70,7 +70,7 @@ const ReimbursementRequestTable = ({
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
-                <TableCell align="center">{undefinedPipe(row.id)}</TableCell>
+                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
                 <TableCell align="center">{row.vendor.name}</TableCell>
                 {tabValue === 1 && <TableCell align="center">{codeAndRefundSourceName(row.refundSource)}</TableCell>}
