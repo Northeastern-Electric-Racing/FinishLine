@@ -169,7 +169,7 @@ const ReimbursementRequestTable = ({
           <TableHead>
             <TableRow>
               {headCells.map((headCell, i) => {
-                if (tabValue === 1 || (i !== 0 && i !== 7)) {
+                if (tabValue === 1 || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) {
                   return (
                     <TableCell
                       align="center"
