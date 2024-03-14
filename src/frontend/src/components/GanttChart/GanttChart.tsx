@@ -28,7 +28,7 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
 
   return (
     <div>
-      <section style={{ overflow: 'scroll', padding: 1 }}>
+      <section style={{ overflow: 'scroll', padding: 5 }}>
         {/* Calendar/timeline */}
         <Box
           gridTemplateColumns={`repeat(${days.length}, minmax(0, 1fr))`}
@@ -68,7 +68,7 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
           })}
         </Box>
         {/* Data display: reset list of events every time eventChanges list changes using key */}
-        <div style={{ marginTop: '4px' }} key={eventChanges.length}>
+        <div style={{ marginTop: '1rem', width: '100%' }} key={eventChanges.length}>
           {displayEvents.map((event) => {
             return <Event key={event.id} days={days} event={event} createChange={createChange} />;
           })}
@@ -122,7 +122,7 @@ function Event({
   const [width, setWidth] = useState(0); // current width of component, will change on resize
 
   useEffect(() => {
-    if (bounds.width != 0 && width === 0) {
+    if (bounds.width !== 0 && width === 0) {
       setInitialWidth(bounds.width);
       setWidth(bounds.width);
     }
@@ -175,7 +175,7 @@ function Event({
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       <Box
         gridTemplateColumns={`repeat(${days.length}, minmax(0, 1fr))`}
         sx={{
@@ -203,7 +203,7 @@ function Event({
             />
           ))}
       </Box>
-      <Grid gap={1} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
+      <Box sx={{ display: 'grid', gridTemplateRows: 'repeat(1,  1fr)', gap: 0.5, width: '100%' }}>
         <div
           ref={measureRef}
           {...props}
@@ -212,16 +212,17 @@ function Event({
             gridColumnEnd: endCol,
             height: '2.25rem',
             width: width === 0 ? `unset` : `${width}px`,
-            borderWidth: '1px',
+            border: '1px solid black',
             borderRadius: '0.25rem',
-            borderColor: isResizing ? 'rgb(37 99 235)' : ''
+            borderColor: isResizing ? 'rgb(37 99 235)' : '',
+            backgroundColor: 'red'
           }}
           className={`${props.className} bg-gray-100 ${isResizing && `border-blue-600`}`}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
-          <div
-            style={{
+          <Box
+            sx={{
               height: '100%',
               width: '100%',
               display: 'flex',
@@ -230,7 +231,7 @@ function Event({
               overflow: 'visible'
             }}
           >
-            <div
+            <Box
               draggable
               onDrag={onDragStart}
               onDragEnd={onDragEnd}
@@ -244,14 +245,14 @@ function Event({
               }}
             >
               {event.title} ({dayjs(event.start).format('MMM D')}–{dayjs(event.end).format('MMM D')})
-            </div>
+            </Box>
             <div
               style={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
               onMouseDown={handleMouseDown}
             ></div>
-          </div>
+          </Box>
         </div>
-      </Grid>
+      </Box>
     </div>
   );
 }
