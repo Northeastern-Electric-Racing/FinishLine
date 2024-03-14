@@ -1,0 +1,129 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
+import { ChangeRequest, WorkPackage, wbsPipe } from 'shared';
+import { Box, Divider, Grid, Link, Stack, Typography, useTheme } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
+import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
+import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { projectWbsPipe } from '../../../utils/pipes';
+interface ChangeRequestsTabProps {
+  workPackage: WorkPackage;
+  dependencies: WorkPackage[];
+}
+
+const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage, dependencies }) => {
+  const theme = useTheme();
+  const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
+  const currentDate = new Date();
+
+  if (crIsLoading || !changeRequests) return <LoadingIndicator />;
+  if (crIsError) return <ErrorPage message={crError?.message} />;
+
+  const crUnreviewed = changeRequests
+    ? changeRequests
+        .filter((cr: ChangeRequest) => !cr.dateReviewed && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
+        .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime())
+    : [];
+
+  const crApproved = changeRequests
+    ? changeRequests
+        .filter(
+          (cr: ChangeRequest) =>
+            cr.dateReviewed &&
+            cr.accepted &&
+            currentDate.getTime() - cr.dateReviewed.getTime() <= 1000 * 60 * 60 * 24 * 5 &&
+            projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum)
+        )
+        .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0))
+    : [];
+  const displayCRCards = (crList: ChangeRequest[]) => (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        overflow: 'auto',
+        justifyContent: 'flex-start',
+        '&::-webkit-scrollbar': {
+          height: '20px'
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.divider,
+          borderRadius: '20px',
+          border: '6px solid transparent',
+          backgroundClip: 'content-box'
+        }
+      }}
+    >
+      {crList.map((cr: ChangeRequest) => (
+        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
+      ))}
+    </Box>
+  );
+
+  const renderChangeRequests = (title: string, crList: ChangeRequest[], emptyMessage: string) => {
+    return (
+      <>
+        <Typography variant="h5" gutterBottom>
+          {title}
+        </Typography>
+        {crList.length > 0 ? (
+          <Grid container>{displayCRCards(crList)}</Grid>
+        ) : (
+          <Typography gutterBottom>{emptyMessage}</Typography>
+        )}
+      </>
+    );
+  };
+  return (
+    <>
+      <Grid
+        sx={{
+          mb: 1,
+          mt: 3
+        }}
+      >
+        {renderChangeRequests('Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
+        {renderChangeRequests('Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
+      </Grid>
+
+      <Typography
+        variant="h5"
+        sx={{
+          mb: 1,
+          mt: 3
+        }}
+      >
+        Blocked By
+      </Typography>
+
+      <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
+        {dependencies.length === 0 ? (
+          <Typography>No Blockers</Typography>
+        ) : (
+          dependencies.map((dep, idx) => (
+            <Link
+              key={`${dep.name}-${idx}`}
+              component={RouterLink}
+              to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`}
+              fontWeight="bold"
+            >
+              {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
+            </Link>
+          ))
+        )}
+      </Stack>
+    </>
+  );
+};
+
+export default ChangeRequestsTab;

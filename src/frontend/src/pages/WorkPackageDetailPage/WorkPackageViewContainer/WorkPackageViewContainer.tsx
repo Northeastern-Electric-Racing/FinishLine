@@ -29,6 +29,7 @@ import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
 import NERTabs from '../../../components/Tabs';
 import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
+import ChangeRequestsTab from './ChangeRequestsTab';
 
 interface WorkPackageViewContainerProps {
   workPackage: WorkPackage;
@@ -181,7 +182,8 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
             tabsLabels={[
               { tabUrlValue: 'overview', tabName: 'Overview' },
               { tabUrlValue: 'scope', tabName: 'Scope' },
-              { tabUrlValue: 'changes', tabName: 'Changes' }
+              { tabUrlValue: 'changes', tabName: 'Changes' },
+              { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
             ]}
             baseUrl={`${routes.PROJECTS}/${wbsNum}`}
             defaultTab="overview"
@@ -193,9 +195,11 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
           <WorkPackageDetails workPackage={workPackage} dependencies={dependencies} />
         ) : tabValue === 1 ? (
           <ScopeTab workPackage={workPackage} />
-        ) : (
+        ) : tabValue === 2 ? (
           <ChangesList changes={workPackage.changes} />
-        )}
+        ) : tabValue === 3 ? (
+          <ChangeRequestsTab workPackage={workPackage} dependencies={dependencies} />
+        ) : null}
         {showActivateModal && (
           <ActivateWorkPackageModalContainer
             wbsNum={workPackage.wbsNum}
