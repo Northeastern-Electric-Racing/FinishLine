@@ -60,14 +60,13 @@ import * as yup from 'yup';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
-  handleClose: () => void;
 }
 
 const schema = yup.object().shape({
   dateReceived: yup.date().required()
 });
 
-const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest, handleClose }) => {
+const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
   const totalCostBackgroundColor = theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200];
   const user = useCurrentUser();
@@ -92,7 +91,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const {
     handleSubmit,
     control,
-    formState: { errors },
     reset
   } = useForm({
     resolver: yupResolver(schema),
@@ -124,16 +122,30 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleMarkDelivered = () => {
+  const handleMarkDelivered = async (data: { dateDelivered: Date }) => {
     try {
-      markDelivered();
+      await markDelivered({
+        dateDelivered: data.dateDelivered.toISOString()
+      });
       setShowMarkDelivered(false);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 3000);
+      toast.success('New Account Credit Reported Successfully');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
       }
     }
   };
+
+    // const handleMarkDelivered = () => {
+    //   try {
+    //     markDelivered();
+    //     setShowMarkDelivered(false);
+    //   } catch (e: unknown) {
+    //     if (e instanceof Error) {
+    //       toast.error(e.message, 3000);
+    //     }
+    //   }
+    // };
 
   const handleMarkReimbursed = () => {
     try {
@@ -176,17 +188,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
-  // const handleConfirm = async (data: { dateReceived: Date }) => {
-  //   handleClose();
-  //   try {
-  //     (dateReceived: data.dateReceived.toISOString());
-  //     toast.success('Reimbursement Request successfully marked as delivered!');
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       toast.error(error.message);
-  //     }
-  //   }
-  // };
 
   const MarkDeliveredModal = () => (
     // <NERModal
@@ -207,7 +208,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title="Warning!"
       cancelText="No"
       submitText="Yes"
-      onSubmit={handleMarkDelivered}
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleMarkDelivered}
@@ -229,6 +229,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
           )}
         />
       </FormControl>
+      <Typography>Are you sure the items in this reimbursement<br/>request have all been delivered?</Typography>
     </NERFormModal>
   );
 

@@ -52,8 +52,8 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
  * @param id id of the reimbursement request being marked as delivered
  * @returns the updated reimbursement request
  */
-export const markReimbursementRequestAsDelivered = (id: string) => {
-  return axios.post(apiUrls.financeMarkAsDelivered(id));
+export const markReimbursementRequestAsDelivered = (id: string, dateDelivered: string) => {
+  return axios.post(apiUrls.financeMarkAsDelivered(id), dateDelivered);
 };
 
 /**

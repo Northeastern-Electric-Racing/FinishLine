@@ -214,10 +214,10 @@ export const useAllReimbursements = () => {
  */
 export const useMarkReimbursementRequestAsDelivered = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementRequest, Error>(
+  return useMutation<ReimbursementRequest, Error, { dateDelivered: string }>(
     ['reimbursement-requests', 'edit'],
-    async () => {
-      const { data } = await markReimbursementRequestAsDelivered(id);
+    async (formData: { dateDelivered: string }) => {
+      const { data } = await markReimbursementRequestAsDelivered(id, formData.dateDelivered);
       return data;
     },
     {
@@ -227,6 +227,17 @@ export const useMarkReimbursementRequestAsDelivered = (id: string) => {
     }
   );
 };
+
+// export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
+//   return useMutation<ReimbursementRequest, Error, EditReimbursementRequestPayload>(
+//     ['reimbursement-requests', 'edit'],
+//     async (formData: EditReimbursementRequestPayload) => {
+//       const { data } = await editReimbursementRequest(reimbursementRequestId, formData);
+//       return data;
+//     }
+//   );
+// };
+
 
 /**
  * Custom react hook to mark a reimbursement request as Reimbursed

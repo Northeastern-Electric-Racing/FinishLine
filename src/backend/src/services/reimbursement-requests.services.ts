@@ -645,7 +645,7 @@ export default class ReimbursementRequestService {
    * @throws AccessDeniedException if the creator of the request is not the submitter
    * @returns the updated reimbursement request
    */
-  static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string) {
+  static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string, dateMarkedDelivered: string) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
@@ -660,7 +660,7 @@ export default class ReimbursementRequestService {
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
       data: {
-        dateDelivered: new Date()
+        dateDelivered: new Date(dateMarkedDelivered)
       }
     });
 

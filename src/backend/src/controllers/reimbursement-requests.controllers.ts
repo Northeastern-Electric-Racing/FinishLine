@@ -292,8 +292,9 @@ export default class ReimbursementRequestsController {
   static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
+      const { dateDelivered } = req.body;
       const user = await getCurrentUser(res);
-      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId);
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId, dateDelivered);
       res.status(200).json(updatedRequest);
     } catch (error: unknown) {
       next(error);
