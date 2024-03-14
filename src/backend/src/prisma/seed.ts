@@ -128,6 +128,14 @@ const performSeed: () => Promise<void> = async () => {
   const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
   const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
   const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
+  const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
+  const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
+  const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
+  const johnBoddy = await prisma.user.create({ data: dbSeedAllUsers.johnBoddy });
+  const villager = await prisma.user.create({ data: dbSeedAllUsers.villager });
+  const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
+  const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
+  const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -199,6 +207,7 @@ const performSeed: () => Promise<void> = async () => {
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const ravensFootball: Team = await prisma.team.create(dbSeedAllTeams.ravens(justinTucker.userId));
+  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
 
   /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
   const financeTeamId = justiceLeague.teamId;
@@ -310,16 +319,16 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     justinTucker,
     ravensFootball.teamId,
-    [zayFlowers,
-    patrickRicard,
-    patrickQueen,
-    jadeveonClowney,
-    marlonHumphrey,
-    kyleHamilton, 
-    marcusWilliams,
-    roquanSmith].map(
-      (user) => user.userId
-    )
+    [
+      zayFlowers,
+      patrickRicard,
+      patrickQueen,
+      jadeveonClowney,
+      marlonHumphrey,
+      kyleHamilton,
+      marcusWilliams,
+      roquanSmith
+    ].map((user) => user.userId)
   );
 
   /**
