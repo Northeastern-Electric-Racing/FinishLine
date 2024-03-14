@@ -43,6 +43,7 @@ export const reimbursementRequestTransformer = (
 ): ReimbursementRequest => {
   return {
     reimbursementRequestId: reimbursementRequest.reimbursementRequestId,
+    identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
     dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
@@ -96,7 +97,8 @@ export const expenseTypeTransformer = (expenseType: Prisma.Expense_TypeGetPayloa
     name: expenseType.name,
     code: expenseType.code,
     allowed: expenseType.allowed,
-    allowedRefundSources: expenseType.allowedRefundSources as ClubAccount[]
+    allowedRefundSources: expenseType.allowedRefundSources as ClubAccount[],
+    dateDeleted: expenseType.dateDeleted ?? undefined
   };
 };
 
@@ -104,6 +106,7 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor
   return {
     vendorId: vendor.vendorId,
     dateCreated: vendor.dateCreated,
+    dateDeleted: vendor.dateDeleted ?? undefined,
     name: vendor.name
   };
 };

@@ -1,4 +1,4 @@
-import { Box, FormControl, FormHelperText, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, FormControl, FormLabel } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
@@ -69,7 +69,6 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
             />
           )}
         />
-        <FormHelperText error>{errors.crId?.message}</FormHelperText>
       </FormControl>
     </Box>
   );

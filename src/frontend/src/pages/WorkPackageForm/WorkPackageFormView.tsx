@@ -9,7 +9,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import { useState } from 'react';
-import { UseMutateAsyncFunction } from 'react-query';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
@@ -21,6 +20,9 @@ import { startDateTester, mapBulletsToPayload } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
+import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageStage } from 'shared';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -39,7 +41,7 @@ const schema = yup.object().shape({
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: UseMutateAsyncFunction<unknown, unknown, unknown>;
+  mutateAsync: (data: WorkPackageApiInputs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
@@ -120,6 +122,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
+
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
@@ -138,7 +141,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         blockedBy: blockedByWbsNums,
         expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
         deliverables: createForm ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
-        stage
+        stage: stage as WorkPackageStage
       };
       await mutateAsync(payload);
       exitActiveMode();
@@ -164,23 +167,28 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         e.key === 'Enter' && e.preventDefault();
       }}
     >
+      <Box mb={-1}>
+        <PageBreadcrumbs
+          currentPageTitle={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+          previousPages={[
+            createForm
+              ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
+              : { name: 'Projects', route: routes.PROJECTS },
+            createForm && crIdDisplay
+              ? {
+                  name: `Change Request #${crIdDisplay}`,
+                  route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
+                }
+              : {
+                  name: `${projectWbsNamePipe(wbsElement)}`,
+                  route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
+                }
+          ]}
+        />
+      </Box>
       <PageLayout
         stickyHeader
         title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
-        previousPages={[
-          createForm
-            ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
-            : { name: 'Projects', route: routes.PROJECTS },
-          createForm && crIdDisplay
-            ? {
-                name: `Change Request #${crIdDisplay}`,
-                route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
-              }
-            : {
-                name: `${projectWbsNamePipe(wbsElement)}`,
-                route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
-              }
-        ]}
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>

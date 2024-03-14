@@ -122,6 +122,23 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async editReimbursement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reimbursementId } = req.params;
+      const { amount, dateReceived } = req.body;
+      const editor = await getCurrentUser(res);
+      const updatedReimbursement = await ReimbursementRequestService.editReimbursement(
+        reimbursementId,
+        editor,
+        amount,
+        dateReceived
+      );
+      res.status(200).json(updatedReimbursement);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
@@ -254,6 +271,17 @@ export default class ReimbursementRequestsController {
       const user = await getCurrentUser(res);
       const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(requestId, user);
       res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsReimbursed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsReimbursed(requestId, user);
+      res.status(200).json(updatedRequest);
     } catch (error: unknown) {
       next(error);
     }
