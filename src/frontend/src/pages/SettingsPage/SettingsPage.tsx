@@ -71,106 +71,6 @@ const NERSwitch = styled((props: SwitchProps) => (
 }));
 
 const SettingsPage: React.FC = () => {
-  const auth = useAuth();
-  const user = useCurrentUser();
-  const [showAlert, setShowAlert] = useState(false);
-  const {
-    isLoading: settingsIsLoading,
-    isError: settingsIsError,
-    error: settingsError,
-    data: userSettingsData
-  } = useSingleUserSettings(user.userId);
-  const {
-    isLoading: secureSettingsIsLoading,
-    isError: secureSettingsIsError,
-    error: secureSettingsError,
-    data: userSecureSettings
-  } = useCurrentUserSecureSettings();
-  const { isLoading: allTeamsIsLoading, isError: allTeamsIsError, data: teams, error: allTeamsError } = useAllTeams();
-
-  if (secureSettingsIsError) return <ErrorPage error={secureSettingsError} message={secureSettingsError.message} />;
-  if (settingsIsError) return <ErrorPage error={settingsError} message={settingsError.message} />;
-  if (allTeamsIsError) return <ErrorPage error={allTeamsError} message={allTeamsError.message} />;
-  if (
-    auth.isLoading ||
-    !auth.user ||
-    settingsIsLoading ||
-    !userSettingsData ||
-    secureSettingsIsLoading ||
-    !userSecureSettings ||
-    allTeamsIsLoading ||
-    !teams
-  )
-    return <LoadingIndicator />;
-
-  const logout = () => {
-    setShowAlert(true);
-    setTimeout(() => {
-      auth.signout();
-    }, 2000);
-  };
-
-  const userTeams = teams.filter((team) =>
-    team.members.some((member) => member.userId === user.userId || team.head.userId === user.userId)
-  );
-/*
-  return (
-    <PageLayout title="Settings">
-      {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
-      <PageBlock title={'Organization Settings'}>
-        <Grid container>
-          <Grid item xs={6} md={12}>
-            <DetailDisplay label="Name" content="Northeastern Electric Racing" />
-          </Grid>
-          <Grid item xs={6} md={12}>
-            <FormGroup>
-              <FormControlLabel
-                label="Trickster Mode"
-                control={
-                  import.meta.env.MODE === 'development' ? (
-                    <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
-                  ) : (
-                    <GoogleLogout
-                      clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID || ''}
-                      onLogoutSuccess={logout}
-                      render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
-                    />
-                  )
-                }
-              />
-            </FormGroup>
-          </Grid>
-        </Grid>
-      </PageBlock>
-      <PageBlock title="User Details">
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={4} lg={2}>
-            <DetailDisplay label="First Name" content={user.firstName} />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3} lg={2}>
-            <DetailDisplay label="Last Name" content={user.lastName} />
-          </Grid>
-          <Grid item xs={12} sm={7} md={5} lg={3}>
-            <DetailDisplay label="Email" content={user.email} />
-          </Grid>
-          <Grid item xs={12} sm={6} md={4} lg={2}>
-            <DetailDisplay label="Role" content={displayEnum(user.role)} />
-          </Grid>
-          <Grid item xs={12} sm={6} md={4} lg={2}>
-            <DetailDisplay
-              label="Teams"
-              content={userTeams.length === 0 ? 'None' : userTeams.map((team) => team.teamName).join(', ')}
-            />
-          </Grid>
-        </Grid>
-      </PageBlock>
-      <UserSettings currentSettings={userSettingsData} />
-      <UserSecureSettings currentSettings={userSecureSettings} />
-    </PageLayout>
-  );
-};
-
-const SettingsPage: React.FC = () => {*/
   const [tabIndex, setTabIndex] = useState<number>(0);
 
   return (
@@ -183,7 +83,7 @@ const SettingsPage: React.FC = () => {*/
             { tabUrlValue: 'details', tabName: 'Details' },
             { tabUrlValue: 'preferences', tabName: 'Preferences' }
           ]}
-          baseUrl={routes.PROJECTS}
+          baseUrl={routes.SETTINGS}
           defaultTab="details"
           id="settings-tabs"
         />

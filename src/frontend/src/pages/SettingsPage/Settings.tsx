@@ -5,17 +5,15 @@
 
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-
+import SettingsPage from './SettingsPage';
+import Details from './Details';
+import Preferences from './Preferences';
 
 const Settings: React.FC = () => {
   return (
     <Switch>
-      {/* /*<Route path={routes.PROJECTS_OVERVIEW} component={ProjectsPage} />
-      <Route path={routes.PROJECTS_ALL} component={ProjectsPage} />
-      <Route path={routes.WORK_PACKAGE_NEW} component={CreateWorkPackageForm} />
-      <Route path={routes.PROJECTS_NEW} component={ProjectCreateContainer} />
-      <Route path={routes.PROJECTS_BY_WBS} component={WBSDetails} />
-      <Route path={routes.PROJECTS} component={ProjectsPage} />*/ }
+      <Route path={routes.SETTINGS_DETAILS} component={Details} />
+      <Route path={routes.SETTINGS_PREFERENCES} component={Preferences} />
     </Switch>
   );
 };
