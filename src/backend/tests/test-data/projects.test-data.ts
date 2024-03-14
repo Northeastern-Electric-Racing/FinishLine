@@ -245,7 +245,7 @@ export const manufacturer2: Manufacturer = {
 };
 
 export const manufacturer3: Manufacturer = {
-  name: 'Manufacturer3',
+  name: 'Amazon',
   dateCreated: new Date('03-13-2024'),
   userCreatedId: 2,
   userCreated: superman,
