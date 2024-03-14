@@ -159,10 +159,10 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>
-              Manufacturer Part Number
-              <Tooltip title={'Enter \'N/A\' if no Manufacturer Part Number'} placement="right">
+              <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="left" style={{ marginRight: '2px' }}>
                 <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
               </Tooltip>
+              Manufacturer Part Number
             </FormLabel>
             <ReactHookTextField
               name="manufacturerPartNumber"
