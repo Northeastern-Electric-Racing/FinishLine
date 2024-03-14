@@ -25,6 +25,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import styles from '../../stylesheets/pages/teams.module.css';
 import ReactMarkdown from 'react-markdown';
 import * as yup from 'yup';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 import { isHead, isUnderWordCount, countWords, isAdmin } from 'shared';
 import { userComparator, userToAutocompleteOption } from '../../utils/teams.utils';
 import ReactHookTextField from '../../components/ReactHookTextField';
@@ -54,15 +56,15 @@ const defaultValues = {
 };
 
 const TeamsTools = () => {
-  const { data: allTeams } = useAllTeams();
-  const { mutateAsync } = useCreateTeam();
+  const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
+  const { isLoading, mutateAsync } = useCreateTeam();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
   const auth = useAuth();
   const theme = useTheme();
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(true);
   const [currentDescription, setCurrentDescription] = useState('');
   const [prevDescription, setPrevDescription] = useState('');
   const [isPreview, setIsPreview] = useState(false);
-  const { data: users } = useAllUsers();
   const toast = useToast();
   const {
     handleSubmit,
@@ -73,6 +75,14 @@ const TeamsTools = () => {
     resolver: yupResolver(schema),
     defaultValues
   });
+
+  if (!allTeams || allTeamsIsLoading || !users || allUsersIsLoading || isLoading) return <LoadingIndicator />;
+
+  if (allTeamsIsError) {
+    return <ErrorPage message={allTeamsError.message} />;
+  }
+
+  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   const onFormSubmit = async (data: CreateTeamFormInput) => {
     try {
       await mutateAsync({ ...data, headId: Number(data.headId) });
@@ -86,7 +96,7 @@ const TeamsTools = () => {
   };
 
   const headOptions = users
-    ?.filter((user) => isHead(user.role))
+    .filter((user) => isHead(user.role))
     .sort(userComparator)
     .map(userToAutocompleteOption);
 
@@ -99,14 +109,6 @@ const TeamsTools = () => {
       </TableCell>
     </TableRow>
   ));
-
-  const handleSaveDesc = async () => {
-    if (!isUnderWordCount(currentDescription, 300)) {
-      return alert('Description must be less than 300 words');
-    }
-    resetDefaults();
-    setPrevDescription(currentDescription);
-  };
 
   const resetDefaults = () => {
     setIsEditingDescription(false);
@@ -141,13 +143,17 @@ const TeamsTools = () => {
       <Button
         onClick={() => {
           setCurrentDescription(prevDescription);
+          setPrevDescription('');
           resetDefaults();
         }}
       >
         Cancel
       </Button>
       <Button
-        onClick={() => setIsPreview(!isPreview)}
+        onClick={() => {
+          setPrevDescription(currentDescription);
+          setIsPreview(!isPreview);
+        }}
         sx={{
           ml: 2,
           backgroundColor: theme.palette.grey[600],
@@ -158,20 +164,6 @@ const TeamsTools = () => {
         }}
       >
         {isPreview ? 'Edit' : 'Preview'}
-      </Button>
-
-      <Button
-        onClick={handleSaveDesc}
-        sx={{
-          ml: 2,
-          backgroundColor: theme.palette.success.main,
-          color: theme.palette.success.contrastText,
-          '&:hover': {
-            backgroundColor: theme.palette.success.dark
-          }
-        }}
-      >
-        Save
       </Button>
     </Box>
   );
@@ -215,7 +207,7 @@ const TeamsTools = () => {
                   <NERAutocomplete
                     value={headOptions?.find((option) => option.id === value) || { id: '', label: '' }}
                     onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
-                    options={headOptions ?? []}
+                    options={headOptions}
                     id="create-team-head"
                     size="small"
                     placeholder="Choose a user"
@@ -249,7 +241,7 @@ const TeamsTools = () => {
                           inputProps={{
                             maxLength: isUnderWordCount(field.value, 300) ? null : 0
                           }}
-                          error={!!errors.description && !!isUnderWordCount(currentDescription, 300)}
+                          error={!!errors.description || !isUnderWordCount(currentDescription, 300)}
                           helperText={
                             errors.description ? errors.description.message : `${countWords(field.value)}/300 words`
                           }
@@ -272,7 +264,7 @@ const TeamsTools = () => {
         <Grid item xs={12} md={6} sx={{ marginTop: '24px' }}>
           <AdminToolTable
             columns={[{ name: 'Team Name' }, { name: 'Head' }, { name: 'Members', width: '20%' }]}
-            rows={teamTableRows ?? []}
+            rows={teamTableRows}
           />
         </Grid>
       </Grid>
