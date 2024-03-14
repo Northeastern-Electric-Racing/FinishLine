@@ -181,7 +181,7 @@ describe('Design Reviews', () => {
           prismaDesignReview2.docTemplateLink,
           prismaDesignReview2.status,
           [],
-          [48, 49]
+          [49]
         )
       ).rejects.toThrow(new HttpException(400, 'meeting time must be consecutive and between 0-48'));
     });
