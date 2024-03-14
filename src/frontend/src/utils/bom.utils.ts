@@ -49,7 +49,7 @@ export const bomTableStyles = {
       display: 'none'
     },
     '.MuiDataGrid-cell': {
-      borderBottom: 'none' 
+      borderBottom: 'none'
     },
     '&.MuiDataGrid-root': {
       border: 'none'
@@ -62,10 +62,10 @@ export const bomTableStyles = {
     },
     '.MuiDataGrid-columnHeader:focus-within': {
       outline: 'none'
-    }, 
+    },
     '& .MuiDataGrid-columnHeaderTitle': {
-      whiteSpace: "normal",
-      lineHeight: "normal"
+      whiteSpace: 'normal',
+      lineHeight: 'normal'
     }
   }
 };
