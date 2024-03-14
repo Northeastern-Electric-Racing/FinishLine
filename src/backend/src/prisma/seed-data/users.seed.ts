@@ -700,11 +700,10 @@ const snowBite: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
-
 const zayFlowers: Prisma.UserCreateInput = {
   firstName: 'Zay',
   lastName: 'Flowers',
-  googleAuthId: '1',
+  googleAuthId: '8172979',
   email: 'flowers.za@husky.neu.edu',
   emailId: 'flowers.za',
   role: Role.MEMBER
@@ -713,7 +712,7 @@ const zayFlowers: Prisma.UserCreateInput = {
 const patrickRicard: Prisma.UserCreateInput = {
   firstName: 'Patrick',
   lastName: 'Ricard',
-  googleAuthId: '1',
+  googleAuthId: '02894828',
   email: 'ricard.pat@husky.neu.edu',
   emailId: 'ricard.pat',
   role: Role.MEMBER
@@ -722,7 +721,7 @@ const patrickRicard: Prisma.UserCreateInput = {
 const patrickQueen: Prisma.UserCreateInput = {
   firstName: 'Patrick',
   lastName: 'Queen',
-  googleAuthId: '1',
+  googleAuthId: '8681663',
   email: 'queen.pat@husky.neu.edu',
   emailId: 'queen.pat',
   role: Role.MEMBER
@@ -731,7 +730,7 @@ const patrickQueen: Prisma.UserCreateInput = {
 const jadeveonClowney: Prisma.UserCreateInput = {
   firstName: 'Jadeveon',
   lastName: 'Clowney',
-  googleAuthId: '1',
+  googleAuthId: '9478927',
   email: 'clowney.jadev@husky.neu.edu',
   emailId: 'clowney.jadev',
   role: Role.MEMBER
@@ -740,7 +739,7 @@ const jadeveonClowney: Prisma.UserCreateInput = {
 const marlonHumphrey: Prisma.UserCreateInput = {
   firstName: 'Marlon',
   lastName: 'Humphrey',
-  googleAuthId: '1',
+  googleAuthId: '014629n',
   email: 'humphrey.marl@husky.neu.edu',
   emailId: 'humphrey.marl',
   role: Role.MEMBER
@@ -749,7 +748,7 @@ const marlonHumphrey: Prisma.UserCreateInput = {
 const kyleHamilton: Prisma.UserCreateInput = {
   firstName: 'Kyle',
   lastName: 'Hamilton',
-  googleAuthId: '1',
+  googleAuthId: '937299j',
   email: 'hamilton.ky@husky.neu.edu',
   emailId: 'hamilton.ky',
   role: Role.MEMBER
@@ -758,7 +757,7 @@ const kyleHamilton: Prisma.UserCreateInput = {
 const marcusWilliams: Prisma.UserCreateInput = {
   firstName: 'Marcus',
   lastName: 'Williams',
-  googleAuthId: '1',
+  googleAuthId: '018383k',
   email: 'williams.marc@husky.neu.edu',
   emailId: 'williams.marc',
   role: Role.MEMBER
@@ -767,7 +766,7 @@ const marcusWilliams: Prisma.UserCreateInput = {
 const roquanSmith: Prisma.UserCreateInput = {
   firstName: 'Roquan',
   lastName: 'Smith',
-  googleAuthId: '1',
+  googleAuthId: '0193739n',
   email: 'smith.roqu@husky.neu.edu',
   emailId: 'smith.roqu',
   role: Role.MEMBER
@@ -776,7 +775,7 @@ const roquanSmith: Prisma.UserCreateInput = {
 const justinTucker: Prisma.UserCreateInput = {
   firstName: 'Justin',
   lastName: 'Tucker',
-  googleAuthId: '1',
+  googleAuthId: '018392w',
   email: 'tucker.just@husky.neu.edu',
   emailId: 'tucker.just',
   role: Role.MEMBER
