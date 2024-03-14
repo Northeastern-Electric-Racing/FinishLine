@@ -1,7 +1,5 @@
 import { DesignReview, DesignReviewStatus } from 'shared';
 import { batman } from '../../../backend/tests/test-data/users.test-data';
-import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { SvgIconTypeMap } from '@mui/material';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -47,11 +45,11 @@ export const calendarPaddingDays = (month: Date): number => {
 };
 
 export const getTeamTypeIcon = (teamTypeId: string) => {
-  const teamIcons: Map<string, OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }> = new Map([
-    ['Software', TerminalIcon],
-    ['Business', WorkOutlineIcon],
-    ['Electrical', ElectricalServicesIcon],
-    ['Mechanical', ConstructionIcon]
+  const teamIcons: Map<string, JSX.Element> = new Map([
+    ['Software', <TerminalIcon fontSize="small" />],
+    ['Business', <WorkOutlineIcon fontSize="small" />],
+    ['Electrical', <ElectricalServicesIcon fontSize="small" />],
+    ['Mechanical', <ConstructionIcon fontSize="small" />]
   ]);
   return teamIcons.get(teamTypeId);
 };
