@@ -50,14 +50,6 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
     id: cr.crId.toString()
   }));
 
-  const renderValues = new Map<number, { label: string; id: string }>();
-  changeRequests.forEach((cr) =>
-    renderValues.set(cr.crId, {
-      label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
-      id: cr.crId.toString()
-    })
-  );
-
   return (
     <Box>
       <FormControl fullWidth>
@@ -73,7 +65,7 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
               options={approvedChangeRequestOptions}
               size="small"
               placeholder="Change Request ID"
-              value={renderValues.get(Number(value))}
+              value={approvedChangeRequestOptions.find((option) => option.id === value)}
             />
           )}
         />
