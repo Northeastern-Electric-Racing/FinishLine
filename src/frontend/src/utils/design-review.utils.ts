@@ -8,10 +8,13 @@ import {
   aquaman,
   alfred
 } from '../../../backend/tests/test-data/users.test-data';
+import { DesignReview, DesignReviewStatus } from 'shared';
 
 export const EnumToArray = (en: { [key: number]: string | number }) => {
   return Object.keys(en).filter((value: string) => isNaN(Number(value)) === true);
 };
+
+export const NOON_IN_MINUTES = 720;
 
 export enum DAY_NAMES {
   Monday,
@@ -21,6 +24,21 @@ export enum DAY_NAMES {
   Friday,
   Saturday,
   Sunday
+}
+
+export enum MONTH_NAMES {
+  January,
+  February,
+  March,
+  April,
+  May,
+  June,
+  July,
+  August,
+  September,
+  October,
+  November,
+  December
 }
 
 export enum REVIEW_TIMES {
@@ -52,6 +70,34 @@ export const getBackgroundColor = (frequency: number = 0, totalUsers: number): s
   const colorIndex = Math.floor(ratio);
 
   return colors[colorIndex];
+};
+
+export const daysInMonth = (month: Date): number => {
+  return new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+};
+
+export const calendarPaddingDays = (month: Date): number => {
+  return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
+};
+
+// TODO remove during wire up ticket
+export const testDesignReview1: DesignReview = {
+  designReviewId: 'Meeting',
+  dateScheduled: new Date(),
+  meetingTimes: [16],
+  dateCreated: new Date(),
+  userCreated: batman,
+  status: DesignReviewStatus.UNCONFIRMED,
+  teamType: { teamTypeId: 'Mechanical', name: 'Mechanical', iconName: '' },
+  requiredMembers: [],
+  optionalMembers: [],
+  confirmedMembers: [],
+  deniedMembers: [],
+  isOnline: false,
+  isInPerson: false,
+  attendees: [],
+  wbsName: 'bruh',
+  wbsNum: { carNumber: 1, workPackageNumber: 1, projectNumber: 1 }
 };
 
 // TODO: We will have to make a call to the backend to get this data

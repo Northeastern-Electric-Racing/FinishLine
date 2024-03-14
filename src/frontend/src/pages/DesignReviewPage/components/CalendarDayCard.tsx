@@ -1,8 +1,23 @@
-import { Box, Card, CardContent, Grid, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { DesignReview } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
-import { getTeamTypeIcon } from '../../../utils/design-review.utils';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import TerminalIcon from '@mui/icons-material/Terminal';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
+
+const getTeamTypeIcon = (teamTypeId: string) => {
+  const teamIcons: Map<string, JSX.Element> = new Map([
+    ['Software', <TerminalIcon fontSize="small" style={{ color: 'white' }} />],
+    ['Business', <WorkOutlineIcon fontSize="small" style={{ color: 'white' }} />],
+    ['Electrical', <ElectricalServicesIcon fontSize="small" style={{ color: 'white' }} />],
+    ['Mechanical', <ConstructionIcon fontSize="small" style={{ color: 'white' }} />]
+  ]);
+  return teamIcons.get(teamTypeId);
+};
 
 interface CalendarDayCardProps {
   cardDate: Date;
@@ -30,12 +45,14 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
     return (
       <Box marginLeft={0.5} marginBottom={0.5}>
         <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
-          <Stack direction="row">
-            {getTeamTypeIcon(event.teamType.teamTypeId)}
-            <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14}>
-              {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
-            </Typography>
-          </Stack>
+          <Link component={RouterLink} to={`/${routes.CALENDAR}/scheduling`}>
+            <Stack direction="row">
+              {getTeamTypeIcon(event.teamType.teamTypeId)}
+              <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14} color={'white'}>
+                {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
+              </Typography>
+            </Stack>
+          </Link>
         </Card>
       </Box>
     );

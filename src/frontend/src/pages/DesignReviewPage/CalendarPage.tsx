@@ -6,9 +6,9 @@ import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview } from 'shared';
-import MonthSelector from './CalendarComponents/MonthSelector';
-import CalendarDayCard from './CalendarComponents/CalendarDayCard';
-import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
+import MonthSelector from './components/MonthSelector';
+import CalendarDayCard from './components/CalendarDayCard';
+import FillerCalendarDayCard from './components/FillerCalendarDayCard';
 import {
   DAY_NAMES,
   EnumToArray,
@@ -71,6 +71,7 @@ const CalendarPage = () => {
       title="Design Review Calendar"
       headerRight={
         <Stack direction="row" justifyContent="flex-end">
+          
           <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
           <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
         </Stack>

@@ -16,6 +16,7 @@ import DRCEditModal from './DesignReviewPage/DesignReviewEditModal';
 import { useState } from 'react';
 import { usersToAvailabilities, existingMeetingData } from '../utils/design-review.utils';
 import DRCView from './DesignReviewPage/DesignReviewView';
+import Scheduling from './DesignReviewPage/Scheduling';
 
 const InfoPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,7 +63,7 @@ const InfoPage: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock> */}
-      <PageBlock title="DRC EDIT">
+      {/* <PageBlock title="DRC EDIT">
         <button onClick={handleOpenEditModal}>OPEN EDIT MODAL</button>
       </PageBlock>
       <DRCEditModal
@@ -74,7 +75,8 @@ const InfoPage: React.FC = () => {
         usersToAvailabilities={usersToAvailabilities}
         existingMeetingData={existingMeetingData}
       />
-      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} existingMeetingData={existingMeetingData} />
+      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} existingMeetingData={existingMeetingData} /> */}
+      <Scheduling name={'2.41.1 - Battery'} />
     </PageLayout>
   );
 };
