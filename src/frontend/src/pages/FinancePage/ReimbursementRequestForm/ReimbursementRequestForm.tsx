@@ -48,6 +48,8 @@ interface ReimbursementRequestFormProps {
   previousPage: string;
 }
 
+const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
+
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
@@ -67,11 +69,17 @@ const schema = yup.object().shape({
     )
     .required('reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
-  receiptFiles: yup
-    .array()
-    .required('receipt files required')
-    .min(1, 'At least one Receipt is required')
-    .max(7, 'At most 7 Receipts are allowed')
+  receiptFiles:
+    // The requirements for receipt uploads is disabled by default on development to make testing easier;
+    // if testing proper receipt uploads is needed, create an environment variable called VITE_RR_RECEIPT_REQUIREMENT
+    // in src/frontend/.env and set it to 'enabled'.
+    import.meta.env.MODE === 'development' && RECEIPTS_REQUIRED !== 'enabled'
+      ? yup.array()
+      : yup
+          .array()
+          .required('receipt files required')
+          .min(1, 'At least one Receipt is required')
+          .max(7, 'At most 7 Receipts are allowed')
 });
 
 const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
