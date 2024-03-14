@@ -6,7 +6,6 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import EditIcon from '@mui/icons-material/Edit';
-import { meetingTimePipe } from '../utils/pipes';
 import Checkbox from '@mui/material/Checkbox';
 import { useState } from 'react';
 import { DesignReviewDelayModal } from '../components/DesignReviewDelayModal';
@@ -16,6 +15,7 @@ import NERFailButton from '../components/NERFailButton';
 import NERSuccessButton from '../components/NERSuccessButton';
 import { NERButton } from '../components/NERButton';
 import StageGateWorkPackageModalContainer from './WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
+import { meetingStartTimePipe } from '../utils/pipes';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -140,7 +140,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         <DesignReviewPill
           icon={<AccessTimeIcon />}
           isLink={false}
-          displayText={`${meetingTimePipe(designReview.meetingTimes[0])}`}
+          displayText={`${meetingStartTimePipe(designReview.meetingTimes)}`}
         />
       </Grid>
       <Grid item xs={3}>

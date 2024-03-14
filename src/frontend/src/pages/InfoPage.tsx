@@ -35,7 +35,11 @@ const InfoPage: React.FC = () => {
     dateCreated: new Date(),
     userCreated: batman,
     status: DesignReviewStatus.DONE,
-    teamType: { teamTypeId: 'typeIDString', name: 'thisteam' },
+    teamType: {
+      teamTypeId: 'typeIDString',
+      name: 'thisteam',
+      iconName: ''
+    },
     requiredMembers: [batman, superman, greenlantern, flash, aquaman],
     optionalMembers: [wonderwoman],
     confirmedMembers: [],
