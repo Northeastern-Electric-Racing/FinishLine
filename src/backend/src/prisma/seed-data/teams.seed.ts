@@ -80,4 +80,14 @@ const huskies = (headId: number): Prisma.TeamCreateArgs => {
   };
 };
 
-export const dbSeedAllTeams = { ravens, orioles, justiceLeague, huskies, avatarBenders, plLegends };
+const financeTeam = (headId: number): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'financeTeam',
+      slackId: 'finance',
+      headId
+    }
+  };
+};
+
+export const dbSeedAllTeams = { ravens, orioles, justiceLeague, huskies, avatarBenders, plLegends, financeTeam };

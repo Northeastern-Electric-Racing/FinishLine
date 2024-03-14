@@ -700,6 +700,7 @@ const snowBite: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
+
 const zayFlowers: Prisma.UserCreateInput = {
   firstName: 'Zay',
   lastName: 'Flowers',
@@ -945,6 +946,7 @@ export const dbSeedAllUsers = {
   husky,
   howler,
   snowBite,
+
   zayFlowers,
   patrickRicard,
   patrickQueen,

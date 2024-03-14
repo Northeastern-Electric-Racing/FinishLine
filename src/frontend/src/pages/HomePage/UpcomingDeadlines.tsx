@@ -14,7 +14,7 @@ import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageBlock from '../../layouts/PageBlock';
 import ErrorPage from '../ErrorPage';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import WorkPackageCard from './WorkPackageCard';
 
 const UpcomingDeadlines: React.FC = () => {
@@ -78,7 +78,7 @@ const UpcomingDeadlines: React.FC = () => {
         </FormControl>
       }
     >
-      <Grid container>{workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}</Grid>
+      {workPackages.isLoading ? <LoadingIndicator /> : fullDisplay}
     </PageBlock>
   );
 };

@@ -209,13 +209,12 @@ const performSeed: () => Promise<void> = async () => {
   const ravensFootball: Team = await prisma.team.create(dbSeedAllTeams.ravensFootball(justinTucker.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
 
-  /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
-  const financeTeamId = justiceLeague.teamId;
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
+
   /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
-    currentEnv.FINANCE_TEAM_ID = financeTeamId;
+    currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
     /** Write the new .env file */
     let stringifiedEnv = '';
     Object.keys(currentEnv).forEach((key) => {
@@ -250,6 +249,18 @@ const performSeed: () => Promise<void> = async () => {
     justiceLeague.teamId,
     [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
   );
+
+  await TeamsService.setTeamMembers(
+    monopolyMan,
+    financeTeam.teamId,
+    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    monopolyMan,
+    financeTeam.teamId,
+    [mrKrabs, richieRich].map((user) => user.userId)
+  );
+
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
@@ -989,6 +1000,27 @@ const performSeed: () => Promise<void> = async () => {
     ],
     expenseType.expenseTypeId,
     100
+  );
+
+  await ReimbursementRequestService.createReimbursementRequest(
+    thomasEmrax,
+    new Date(),
+    vendor.vendorId,
+    ClubAccount.BUDGET,
+    [],
+    [
+      {
+        name: 'BOX',
+        reason: {
+          carNumber: 1,
+          projectNumber: 1,
+          workPackageNumber: 0
+        },
+        cost: 10000
+      }
+    ],
+    expenseType.expenseTypeId,
+    200
   );
 
   /**
