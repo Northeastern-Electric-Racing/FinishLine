@@ -54,10 +54,6 @@ const ChangeRequestRowView = ({ cr }: { cr: ChangeRequestRow }) => {
     );
   };
 
-  return (
-    <>
-      <Box>{renderChangeRequests(cr.title, cr.changeRequests, cr.noChangeRequestsMessage)}</Box>;
-    </>
-  );
+  return <Box>{renderChangeRequests(cr.title, cr.changeRequests, cr.noChangeRequestsMessage)}</Box>;
 };
 export default ChangeRequestRowView;

@@ -7,7 +7,7 @@ import { ChangeRequest, ChangeRequestRow, Project, equalsWbsNumber } from 'share
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import CRRow from '../../../components/ChangeRequestRow';
+import ChangeRequestRowView from '../../../components/ChangeRequestRow';
 
 const ChangeRequestTab = ({ project }: { project: Project }) => {
   const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
@@ -36,6 +36,12 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
     noChangeRequestsMessage: 'No recently approved change requests'
   };
 
-  return <CRRow crRowList={[crUnreviewedRow, crApprovedRow]} />;
+  return (
+    <>
+      {[crUnreviewedRow, crApprovedRow].map((crRow: ChangeRequestRow) => (
+        <ChangeRequestRowView cr={crRow} />
+      ))}
+    </>
+  );
 };
 export default ChangeRequestTab;
