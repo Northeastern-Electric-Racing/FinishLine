@@ -49,7 +49,7 @@ import {
   vendorTransformer
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
-import { UserWithSettings } from '../utils/auth.utils';
+import { UserWithSecureSettings } from '../utils/auth.utils';
 import { sendReimbursementRequestDeniedNotification } from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
@@ -112,7 +112,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
-    recipient: UserWithSettings,
+    recipient: UserWithSecureSettings,
     dateOfExpense: Date,
     dateDelivered: Date,
     vendorId: string,

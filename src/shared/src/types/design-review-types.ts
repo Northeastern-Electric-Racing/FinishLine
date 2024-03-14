@@ -35,4 +35,5 @@ export enum DesignReviewStatus {
 export interface TeamType {
   teamTypeId: string;
   name: string;
+  iconName: string;
 }
