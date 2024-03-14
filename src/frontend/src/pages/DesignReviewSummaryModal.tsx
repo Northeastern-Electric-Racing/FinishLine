@@ -38,7 +38,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
   const currentUser = useCurrentUser();
   const toast = useToast();
   const handleRemoveRequiredMember = (user: User) => {
-    if (2 === 2) {
+    if (currentUser.userId === designReview.userCreated.userId) {
       setRequiredMembers(requiredMembers.filter((member) => member.userId !== user.userId));
     } else {
       toast.error('Only the creator of the Design Review can edit attendees');
@@ -46,7 +46,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
   };
 
   const handleRemoveOptionalMember = (user: User) => {
-    if (2 === 2) {
+    if (currentUser.userId === designReview.userCreated.userId) {
       setOptionalMembers(optionalMembers.filter((member) => member.userId !== user.userId));
     } else {
       toast.error('Only the creator of the Design Review can edit attendees');
