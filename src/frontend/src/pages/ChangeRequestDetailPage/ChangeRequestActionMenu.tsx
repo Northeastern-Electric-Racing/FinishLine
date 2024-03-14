@@ -110,11 +110,7 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
           </li>
         )}
         renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="standard"
-            placeholder={`${changeRequest.requestedReviewers.length} Reviewers Selected`}
-          />
+          <TextField {...params} variant="standard" placeholder={`${reviewers.length} Reviewers Selected`} />
         )}
       />
 
