@@ -178,7 +178,7 @@ function Event({
     <div style={{ position: 'relative' }}>
       <Box
         gridTemplateColumns={`repeat(${days.length}, minmax(0, 1fr))`}
-        style={{
+        sx={{
           width: '100%',
           display: 'flex',
           gap: 0.5,
@@ -194,7 +194,7 @@ function Event({
               key={index}
               onDragOver={onDragOver}
               onDrop={(e) => onDrop(day)}
-              style={{
+              sx={{
                 borderRadius: '0.25rem',
                 height: '2.25rem',
                 padding: '.78rem',
@@ -203,15 +203,6 @@ function Event({
             />
           ))}
       </Box>
-      {/** <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
-            gridTemplateRows: 'repeat(1, minmax(0, 1fr))',
-            gap: '2rem',
-            width: 'fit-content'
-          }}
-        >*/}
       <Grid gap={1} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
         <div
           ref={measureRef}
