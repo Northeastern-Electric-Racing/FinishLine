@@ -1,6 +1,6 @@
 import { DesignReview, DesignReviewStatus } from 'shared';
 import NERModal from '../components/NERModal';
-import { Box, Button, FormControlLabel, Grid, IconButton, Typography } from '@mui/material';
+import { Box, FormControlLabel, Grid, IconButton, Typography } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -9,10 +9,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import { meetingTimePipe } from '../utils/pipes';
 import Checkbox from '@mui/material/Checkbox';
 import { useState } from 'react';
-import { StageGateModal } from '../components/DesignReviewStageGateModal';
 import { DesignReviewDelayModal } from '../components/DesignReviewDelayModal';
 import { DesignReviewPill } from '../components/DesignReviewPill';
 import { DesignReviewMemberPill } from '../components/DesignReviewMemberPill';
+import NERFailButton from '../components/NERFailButton';
+import NERSuccessButton from '../components/NERSuccessButton';
+import { NERButton } from '../components/NERButton';
+import StageGateWorkPackageModalContainer from './WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -28,155 +31,168 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     setChecked(event.target.checked);
   };
 
+  const ModalButtons: React.FC = () => (
+    <Box
+      sx={{
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        display: 'flex',
+        flexDirection: 'row'
+      }}
+    >
+      <NERButton
+        sx={{
+          textTransform: 'uppercase',
+          color: '#474849',
+          backgroundColor: '#d9d9d9',
+          ':hover': { backgroundColor: '#A4A4A4' },
+          fontSize: 10,
+          marginLeft: 1,
+          fontWeight: 'bold'
+        }}
+        disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
+      >
+        Schedule Another DR
+      </NERButton>
+      <NERSuccessButton
+        sx={{
+          fontSize: 10,
+          marginLeft: 1,
+          fontWeight: 'bold'
+        }}
+        onClick={() => setShowStageGateModal(true)}
+        disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
+      >
+        Stage Gate
+      </NERSuccessButton>
+      <NERFailButton
+        sx={{
+          fontSize: 10,
+          marginLeft: 1,
+          fontWeight: 'bold'
+        }}
+        onClick={() => setShowDelayModal(true)}
+        disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
+      >
+        Request Delay to WP
+      </NERFailButton>
+    </Box>
+  );
+
+  const CheckBoxForm: React.FC = () => (
+    <FormControlLabel
+      label="Mark Design Review as Complete"
+      sx={{ marginBottom: 5 }}
+      control={
+        <Checkbox
+          checked={checked}
+          onChange={handleChange}
+          sx={{
+            color: 'white',
+            '&.Mui-checked': { color: 'white' }
+          }}
+        />
+      }
+    />
+  );
+
+  const MembersGrid: React.FC = () => (
+    <Grid container direction="row" paddingY="20px">
+      <Grid item xs={12}>
+        <Grid container>
+          <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
+            <Typography>Required: </Typography>
+          </Grid>
+          <Grid item xs={10}>
+            <Grid container>
+              {designReview.requiredMembers.map((member, index) => (
+                <Grid item key={index}>
+                  <DesignReviewMemberPill user={member} handleClick={() => {}} />
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <Grid container>
+            <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
+              <Typography>Optional: </Typography>
+            </Grid>
+            <Grid item>
+              <Grid container>
+                {designReview.optionalMembers.map((member, index) => (
+                  <Grid item key={index}>
+                    <DesignReviewMemberPill user={member} handleClick={() => {}} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
+  );
+
+  const SummaryDetails: React.FC = () => (
+    <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={1}>
+      <Grid item xs={3}>
+        <DesignReviewPill
+          icon={<AccessTimeIcon />}
+          isLink={false}
+          displayText={`${meetingTimePipe(designReview.meetingTimes[0])}`}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <DesignReviewPill icon={<LocationOnIcon />} isLink={false} displayText={designReview.location ?? 'Online'} />
+      </Grid>
+      <Grid item xs={3}>
+        <DesignReviewPill
+          isLink
+          icon={<DescriptionIcon />}
+          linkURL={designReview.docTemplateLink ?? ''}
+          displayText={designReview.docTemplateLink ? 'Questions Doc' : 'No Doc'}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <DesignReviewPill
+          isLink
+          icon={<VideocamIcon />}
+          linkURL={designReview.zoomLink ?? ''}
+          displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
+        />
+      </Grid>
+    </Grid>
+  );
+
   return (
     <NERModal open={open} onHide={onHide} title={designReview.wbsName} hideFormButtons>
-      <StageGateModal
-        wbsNum={designReview.wbsNum}
-        modalShow={showStageGateModal}
-        handleClose={() => setShowStageGateModal(false)}
-      />
-      <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} dr={designReview} />
       <IconButton sx={{ position: 'absolute', right: 16, top: 12 }}>
         <EditIcon />
       </IconButton>
+      <StageGateWorkPackageModalContainer
+        wbsNum={designReview.wbsNum}
+        modalShow={showStageGateModal}
+        handleClose={() => setShowStageGateModal(false)}
+        hideStatus
+      />
+      <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} designReview={designReview} />
 
       <Grid container direction="column">
         <Grid item>
-          <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={1}>
-            <Grid item xs={3}>
-              <DesignReviewPill
-                icon={<AccessTimeIcon />}
-                isLink={false}
-                displayText={meetingTimePipe(designReview.meetingTimes[0])}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <DesignReviewPill icon={<LocationOnIcon />} isLink={false} displayText={designReview.location ?? 'Online'} />
-            </Grid>
-            <Grid item xs={3}>
-              <DesignReviewPill
-                isLink
-                icon={<DescriptionIcon />}
-                linkText={designReview.docTemplateLink ?? ''}
-                displayText={designReview.docTemplateLink ? 'Questions Doc' : 'No Doc'}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <DesignReviewPill
-                isLink
-                icon={<VideocamIcon />}
-                linkText={designReview.zoomLink ?? ''}
-                displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid container direction="row" paddingY="20px">
-            <Grid item xs={12}>
-              <Grid container>
-                <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
-                  <Typography>Required: </Typography>
-                </Grid>
-                <Grid item xs={10}>
-                  <Grid container>
-                    {designReview.requiredMembers.map((member, index) => (
-                      <Grid item key={index}>
-                        <DesignReviewMemberPill user={member} />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={12}>
-                <Grid container>
-                  <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
-                    <Typography>Optional: </Typography>
-                  </Grid>
-                  <Grid item>
-                    <Grid container>
-                      {designReview.optionalMembers.map((member, index) => (
-                        <Grid item key={index}>
-                          <DesignReviewMemberPill user={member} />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
+          <SummaryDetails />
         </Grid>
 
-        <Grid item xs={12}>
-          <FormControlLabel
-            label="Mark Design Review as Complete"
-            sx={{ marginBottom: 5 }}
-            control={
-              <Checkbox
-                checked={checked}
-                onChange={handleChange}
-                sx={{
-                  color: 'white',
-                  '&.Mui-checked': { color: 'white' }
-                }}
-              />
-            }
-          />
+        <Grid item>
+          <MembersGrid />
         </Grid>
 
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 10,
-              right: 10,
-              display: 'flex',
-              flexDirection: 'row'
-            }}
-          >
-            <Button
-              sx={{
-                color: '#474849',
-                backgroundColor: '#d9d9d9',
-                ':hover': { backgroundColor: '#A4A4A4' },
-                fontSize: 10,
-                marginLeft: 1,
-                fontWeight: 'bold'
-              }}
-              disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
-            >
-              Schedule Another DR
-            </Button>
-            <Button
-              sx={{
-                color: '#474849',
-                backgroundColor: '#82e94b',
-                ':hover': { backgroundColor: '#559334' },
-                fontSize: 10,
-                marginLeft: 1,
-                fontWeight: 'bold'
-              }}
-              onClick={() => setShowStageGateModal(true)}
-              disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
-            >
-              Stage Gate
-            </Button>
-            <Button
-              sx={{
-                color: 'white',
-                backgroundColor: '#EF4345',
-                ':hover': { backgroundColor: '#A72D2D' },
-                fontSize: 10,
-                marginLeft: 1,
-                fontWeight: 'bold'
-              }}
-              onClick={() => setShowDelayModal(true)}
-              disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
-            >
-              Request Delay to WP
-            </Button>
-          </Box>
+        <Grid item>
+          <CheckBoxForm />
+        </Grid>
+
+        <Grid item>
+          <ModalButtons />
         </Grid>
       </Grid>
     </NERModal>

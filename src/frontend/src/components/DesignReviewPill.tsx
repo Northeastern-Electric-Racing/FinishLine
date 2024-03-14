@@ -1,12 +1,11 @@
 import { Typography, Link } from '@mui/material';
 
-// component for the DR pills that are links (zoom and docs)
 export const DesignReviewPill: React.FC<{
   icon: React.ReactNode;
   isLink: boolean;
-  linkText?: string;
+  linkURL?: string;
   displayText: string;
-}> = ({ icon, linkText, displayText, isLink }) => {
+}> = ({ icon, linkURL, displayText, isLink }) => {
   return (
     <Typography
       sx={{
@@ -20,7 +19,7 @@ export const DesignReviewPill: React.FC<{
     >
       {icon}
       {isLink ? (
-        <Link target="_blank" sx={{ color: 'white' }} href={linkText} paddingLeft="5px">
+        <Link target="_blank" sx={{ color: 'white' }} href={linkURL} paddingLeft="5px">
           <Typography fontSize={14} paddingLeft="5px">
             {displayText}
           </Typography>

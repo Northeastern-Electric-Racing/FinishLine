@@ -27,8 +27,6 @@ import {
 
 const InfoPage: React.FC = () => {
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-  const handleOpenSummary = () => setIsSummaryModalOpen(true);
-  const handleCloseSummary = () => setIsSummaryModalOpen(false);
 
   const exampleDesignReview: DesignReview = {
     designReviewId: '123',
@@ -93,9 +91,13 @@ const InfoPage: React.FC = () => {
         </Grid>
       </PageBlock>
       <PageBlock title="DRC Summary">
-        <Button onClick={handleOpenSummary}>Open DRC Summary</Button>
+        <Button onClick={() => setIsSummaryModalOpen(true)}>Open DRC Summary</Button>
       </PageBlock>
-      <DRCSummaryModal open={isSummaryModalOpen} onHide={handleCloseSummary} designReview={exampleDesignReview} />
+      <DRCSummaryModal
+        open={isSummaryModalOpen}
+        onHide={() => setIsSummaryModalOpen(false)}
+        designReview={exampleDesignReview}
+      />
     </PageLayout>
   );
 };
