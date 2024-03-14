@@ -122,7 +122,7 @@ const ReimbursementRequestTable = ({
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Requests', value: 1 });
 
   const handleRequestSort = (property: keyof ReimbursementRequestRow) => {
-    setAscendingOrder(isAscendingOrder ? false : true);
+    setAscendingOrder(!isAscendingOrder);
     setOrderBy(property);
   };
 
