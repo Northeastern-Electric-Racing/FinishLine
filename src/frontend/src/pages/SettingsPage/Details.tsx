@@ -40,7 +40,6 @@ const Details: React.FC = () => {
   )
     return <LoadingIndicator />;
 
-
   const userTeams = teams.filter((team) =>
     team.members.some((member) => member.userId === user.userId || team.head.userId === user.userId)
   );
