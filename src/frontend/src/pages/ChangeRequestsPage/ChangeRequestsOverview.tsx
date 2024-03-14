@@ -6,12 +6,12 @@
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead, ChangeRequest, changeRequests, Project, WorkPackage, equalsWbsNumber } from 'shared';
+import { isLeadership, isHead, ChangeRequest, ChangeRequestRow, Project, WorkPackage, equalsWbsNumber } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { makeTeamList } from '../../utils/teams.utils';
-import CRRow from '../../components/ChangeRequestRow';
+import ChangeRequestRowView from '../../components/ChangeRequestRow';
 
 const ChangeRequestsOverview: React.FC = () => {
   const user = useCurrentUser();
@@ -77,27 +77,27 @@ const ChangeRequestsOverview: React.FC = () => {
     )
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crToReviewRow: changeRequests = {
+  const crToReviewRow: ChangeRequestRow = {
     title: 'To Review',
-    crList: crToReview,
+    changeRequests: crToReview,
     noChangeRequestsMessage: 'No change requests to review'
   };
-  const crUnreviewedRow: changeRequests = {
+  const crUnreviewedRow: ChangeRequestRow = {
     title: 'My Un-reviewed Change Requests',
-    crList: crUnreviewed,
+    changeRequests: crUnreviewed,
     noChangeRequestsMessage: 'No un-reviewed change requests'
   };
 
-  const crApprovedRow: changeRequests = {
+  const crApprovedRow: ChangeRequestRow = {
     title: 'My Recently Approved Change Requests',
-    crList: crApproved,
+    changeRequests: crApproved,
     noChangeRequestsMessage: 'No recently approved change requests'
   };
 
   const overviewRowList = [crUnreviewedRow, crApprovedRow];
   if (showToReview) overviewRowList.unshift(crToReviewRow);
 
-  return <ChangeRequestRow crRowList={overviewRowList} />;
+  return overviewRowList.map((crRow: ChangeRequestRow) => <ChangeRequestRowView cr={crRow} />);
 };
 
 export default ChangeRequestsOverview;

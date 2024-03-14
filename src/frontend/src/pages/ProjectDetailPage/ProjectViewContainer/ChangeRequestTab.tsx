@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequest, changeRequests, Project, equalsWbsNumber } from 'shared';
+import { ChangeRequest, ChangeRequestRow, Project, equalsWbsNumber } from 'shared';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -24,15 +24,15 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
     .filter((cr: ChangeRequest) => cr.accepted && equalsWbsNumber(wbsNum, cr.wbsNum))
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crUnreviewedRow: changeRequests = {
+  const crUnreviewedRow: ChangeRequestRow = {
     title: 'Un-reviewed Change Requests',
-    crList: unReviewedChangeRequests,
+    changeRequests: unReviewedChangeRequests,
     noChangeRequestsMessage: 'No un-reviewed change requests'
   };
 
-  const crApprovedRow: changeRequests = {
+  const crApprovedRow: ChangeRequestRow = {
     title: 'Approved Change Requests',
-    crList: approvedChangeRequests,
+    changeRequests: approvedChangeRequests,
     noChangeRequestsMessage: 'No recently approved change requests'
   };
 
