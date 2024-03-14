@@ -175,5 +175,17 @@ describe('Users', () => {
 
       expect(res).toBe(batmanUserScheduleSettings.drScheduleSettingsId);
     });
+
+    test('setting same email does not work', async () => {
+      vi.spyOn(prisma.schedule_Settings, 'findFirst').mockResolvedValue(batmanScheduleSettings);
+      await expect(() =>
+        UsersService.setUserScheduleSettings(
+          batmanWithScheduleSettings,
+          batmanScheduleSettings.personalGmail,
+          batmanScheduleSettings.personalZoomLink,
+          batmanScheduleSettings.availability
+        )
+      ).rejects.toThrow(new HttpException(400, 'Email already in use'));
+    });
   });
 });

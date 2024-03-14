@@ -32,14 +32,17 @@ userRouter.post(
   nonEmptyString(body('phoneNumber')),
   UsersController.setUserSecureSettings
 );
+
 userRouter.post(
   '/schedule-settings/set',
-  nonEmptyString(body('personalGmail')),
-  nonEmptyString(body('personalZoomLink')),
+  nonEmptyString(body('personalGmail')).isEmail(),
+  nonEmptyString(body('personalZoomLink')).isURL(),
   body('availability').isArray(),
   intMinZero(body('availibility.*')),
+  validateInputs,
   UsersController.setUserScheduleSettings
 );
+
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
 
 export default userRouter;
