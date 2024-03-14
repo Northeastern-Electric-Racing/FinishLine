@@ -206,7 +206,7 @@ const performSeed: () => Promise<void> = async () => {
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
-  const ravensFootball: Team = await prisma.team.create(dbSeedAllTeams.ravens(justinTucker.userId));
+  const ravensFootball: Team = await prisma.team.create(dbSeedAllTeams.ravensFootball(justinTucker.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
 
   /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
