@@ -100,10 +100,6 @@ const Preferences: React.FC = () => {
     }, 2000);
   };
 
-  const userTeams = teams.filter((team) =>
-    team.members.some((member) => member.userId === user.userId || team.head.userId === user.userId)
-  );
-
   return (
     <PageLayout title="Preferences">
       {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
