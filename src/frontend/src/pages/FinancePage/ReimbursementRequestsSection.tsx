@@ -152,6 +152,10 @@ const ReimbursementRequestTable = ({
       label: 'Vendor'
     },
     {
+      id: 'refundSource',
+      label: 'Refund Source'
+    },
+    {
       id: 'status',
       label: 'Status'
     }
@@ -165,7 +169,7 @@ const ReimbursementRequestTable = ({
           <TableHead>
             <TableRow>
               {headCells.map((headCell, i) => {
-                if (tabValue === 1 || i !== 0) {
+                if (tabValue === 1 || (i !== 0 && i !== 7)) {
                   return (
                     <TableCell
                       align="center"
