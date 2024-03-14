@@ -106,8 +106,10 @@ const Details: React.FC = () => {
     );
 
     return(
-    <PageBlock title="User Details">
-        <Grid container spacing={2}>
+    //<PageBlock title="User Details">
+        <Grid container
+        direction = "column"
+         spacing={0.5}>
           <Grid item xs={12} sm={6} md={4} lg={2}>
             <DetailDisplay label="First Name" content={user.firstName} />
           </Grid>
@@ -127,7 +129,7 @@ const Details: React.FC = () => {
             />
           </Grid>
         </Grid>
-      </PageBlock>
+   //   </PageBlock>
       );
 };
 
