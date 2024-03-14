@@ -4,19 +4,8 @@
  */
 
 import { useState } from 'react';
-import { useAuth } from '../../hooks/auth.hooks';
-import PageBlock from '../../layouts/PageBlock';
-import UserSettings from './UserSettings/UserSettings';
-import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
-import DetailDisplay from '../../components/DetailDisplay';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import { GoogleLogout } from 'react-google-login';
+import { Switch, SwitchProps, styled } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
-import ErrorPage from '../ErrorPage';
-import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
-import { useAllTeams } from '../../hooks/teams.hooks';
-import { displayEnum } from '../../utils/pipes';
 import Preferences from './Preferences';
 import Details from './Details';
 import { routes } from '../../utils/routes';

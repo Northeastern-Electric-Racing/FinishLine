@@ -5,7 +5,6 @@
 
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import SettingsPage from './SettingsPage';
 import Details from './Details';
 import Preferences from './Preferences';
 
