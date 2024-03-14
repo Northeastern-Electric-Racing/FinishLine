@@ -4,6 +4,7 @@
  */
 
 import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, ClubAccount, ExpenseType } from 'shared';
+import { NOON_IN_MINUTES } from './design-review.utils';
 
 /**
  * Pipes:
@@ -163,12 +164,9 @@ export const displayEnum = (enumString: string) => {
   return enumString;
 };
 
-// Takes in a meeting time (0-48) and converts it to 12-clock format
-export const meetingTimePipe = (meetingTime: number) => {
-  const hours = Math.floor(meetingTime / 4) + 9;
-  const minutes = (meetingTime % 4) * 15;
-  const period = hours >= 12 ? 'pm' : 'am';
-  const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-  const formattedMinutes = minutes === 0 ? '00' : minutes.toString();
-  return `${formattedHours}:${formattedMinutes} ${period}`;
+export const meetingStartTimePipe = (times: number[]) => {
+  const time = times[0] * 15 + 9 * 60;
+  const minutes = time % 60;
+  const hours = ((time - minutes) / 60) % 12 === 0 ? 12 : ((time - minutes) / 60) % 12;
+  return hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am');
 };
