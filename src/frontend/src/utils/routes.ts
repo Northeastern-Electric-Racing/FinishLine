@@ -42,6 +42,9 @@ const CHANGE_REQUESTS_OVERVIEW = CHANGE_REQUESTS + `/overview`;
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
 
+/**************** Design Review Calendar ****************/
+const CALENDAR = `/design-review-calendar`;
+
 export const routes = {
   HOME,
   LOGIN,
@@ -75,5 +78,7 @@ export const routes = {
   REIMBURSEMENT_REQUEST_BY_ID,
   REIMBURSEMENT_REQUEST_EDIT,
 
-  ADMIN_TOOLS
+  ADMIN_TOOLS,
+
+  CALENDAR
 };
