@@ -58,7 +58,7 @@ const TeamsTools = () => {
   const { mutateAsync } = useCreateTeam();
   const auth = useAuth();
   const theme = useTheme();
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(true);
   const [currentDescription, setCurrentDescription] = useState('');
   const [prevDescription, setPrevDescription] = useState('');
   const [isPreview, setIsPreview] = useState(false);
@@ -100,14 +100,6 @@ const TeamsTools = () => {
     </TableRow>
   ));
 
-  const handleSaveDesc = async () => {
-    if (!isUnderWordCount(currentDescription, 300)) {
-      return alert('Description must be less than 300 words');
-    }
-    resetDefaults();
-    setPrevDescription(currentDescription);
-  };
-
   const resetDefaults = () => {
     setIsEditingDescription(false);
     setIsPreview(false);
@@ -141,13 +133,17 @@ const TeamsTools = () => {
       <Button
         onClick={() => {
           setCurrentDescription(prevDescription);
+          setPrevDescription('');
           resetDefaults();
         }}
       >
         Cancel
       </Button>
       <Button
-        onClick={() => setIsPreview(!isPreview)}
+        onClick={() => {
+          setPrevDescription(currentDescription);
+          setIsPreview(!isPreview);
+        }}
         sx={{
           ml: 2,
           backgroundColor: theme.palette.grey[600],
@@ -158,20 +154,6 @@ const TeamsTools = () => {
         }}
       >
         {isPreview ? 'Edit' : 'Preview'}
-      </Button>
-
-      <Button
-        onClick={handleSaveDesc}
-        sx={{
-          ml: 2,
-          backgroundColor: theme.palette.success.main,
-          color: theme.palette.success.contrastText,
-          '&:hover': {
-            backgroundColor: theme.palette.success.dark
-          }
-        }}
-      >
-        Save
       </Button>
     </Box>
   );
@@ -249,7 +231,7 @@ const TeamsTools = () => {
                           inputProps={{
                             maxLength: isUnderWordCount(field.value, 300) ? null : 0
                           }}
-                          error={!!errors.description && !!isUnderWordCount(currentDescription, 300)}
+                          error={!!errors.description || !isUnderWordCount(currentDescription, 300)}
                           helperText={
                             errors.description ? errors.description.message : `${countWords(field.value)}/300 words`
                           }
