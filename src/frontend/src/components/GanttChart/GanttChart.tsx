@@ -28,32 +28,45 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
 
   return (
     <div>
-      <section>
+      <section style={{ overflow: 'scroll', padding: 1 }}>
         {/* Calendar/timeline */}
-        <Grid container spacing={1} sx={{ display: 'grid', gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
+        <Box
+          gridTemplateColumns={`repeat(${days.length}, minmax(0, 1fr))`}
+          sx={{
+            display: 'flex',
+            gap: 0.5,
+            gridTemplateRows: 'repeat(1, minmax(0, 1fr))',
+            width: 'fit-content'
+          }}
+        >
           {days.map((day) => {
             const showDate = isMonday(day);
             const showMonth = getDate(day) <= 7; // only show month name once
             const weekend = isWeekend(day);
-            const dateDisplay = showDate ? (showMonth ? dayjs(day).format('MMMMM d') : dayjs(day).format('d')) : '';
+            const dateDisplay = showDate ? (showMonth ? dayjs(day).format('MMM D') : dayjs(day).format('D')) : '';
             return (
               <Box
                 key={day.toISOString()}
                 sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                   backgroundColor: weekend ? '#E0E0E0' : '#424242',
-                  padding: '0.5rem',
-                  width: '100%',
                   borderRadius: '0.25rem',
                   color: 'white',
                   fontSize: '0.75rem',
-                  textAlign: 'center'
+                  lineHeight: '1rem',
+                  textAlign: 'center',
+                  height: '2.25rem',
+                  minWidth: '1.56rem',
+                  maxWidth: '1.56rem'
                 }}
               >
                 {dateDisplay}
               </Box>
             );
           })}
-        </Grid>
+        </Box>
         {/* Data display: reset list of events every time eventChanges list changes using key */}
         <div style={{ marginTop: '4px' }} key={eventChanges.length}>
           {displayEvents.map((event) => {
@@ -163,12 +176,12 @@ function Event({
 
   return (
     <div style={{ position: 'relative' }}>
-      <div
+      <Box
+        gridTemplateColumns={`repeat(${days.length}, minmax(0, 1fr))`}
         style={{
-          gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
           width: '100%',
           display: 'flex',
-          gap: 1,
+          gap: 0.5,
           position: 'absolute',
           top: 0,
           left: 0
@@ -177,7 +190,7 @@ function Event({
         {/* Drop areas */}
         {showDropPoints &&
           days.map((day, index) => (
-            <div
+            <Box
               key={index}
               onDragOver={onDragOver}
               onDrop={(e) => onDrop(day)}
@@ -189,21 +202,62 @@ function Event({
               }}
             />
           ))}
-      </div>
+      </Box>
+      {/** <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
+            gridTemplateRows: 'repeat(1, minmax(0, 1fr))',
+            gap: '2rem',
+            width: 'fit-content'
+          }}
+        >*/}
       <Grid gap={1} style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
         <div
           ref={measureRef}
           {...props}
-          style={{ gridColumnStart: startCol, gridColumnEnd: endCol, width: width === 0 ? `unset` : `${width}px` }}
-          className={`${props.className} h-9 bg-gray-100 border ${isResizing && `border-blue-600`} rounded`}
+          style={{
+            gridColumnStart: startCol,
+            gridColumnEnd: endCol,
+            height: '2.25rem',
+            width: width === 0 ? `unset` : `${width}px`,
+            borderWidth: '1px',
+            borderRadius: '0.25rem',
+            borderColor: isResizing ? 'rgb(37 99 235)' : ''
+          }}
+          className={`${props.className} bg-gray-100 ${isResizing && `border-blue-600`}`}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
-          <div className="h-full w-full flex items-center justify-between overflow-visible">
-            <div draggable onDrag={onDragStart} onDragEnd={onDragEnd} className="p-1 line-clamp-1 select-none">
-              {event.title} ({dayjs(event.start).format('d')}–{dayjs(event.end).format('d')})
+          <div
+            style={{
+              height: '100%',
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              overflow: 'visible'
+            }}
+          >
+            <div
+              draggable
+              onDrag={onDragStart}
+              onDragEnd={onDragEnd}
+              style={{
+                padding: '0.25rem',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 1,
+                userSelect: 'none'
+              }}
+            >
+              {event.title} ({dayjs(event.start).format('MMM D')}–{dayjs(event.end).format('MMM D')})
             </div>
-            <div className="cursor-ew-resize h-full w-20 relative -right-10" onMouseDown={handleMouseDown}></div>
+            <div
+              style={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
+              onMouseDown={handleMouseDown}
+            ></div>
           </div>
         </div>
       </Grid>
