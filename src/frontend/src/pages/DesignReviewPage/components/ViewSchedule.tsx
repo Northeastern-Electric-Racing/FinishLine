@@ -60,13 +60,13 @@ const ViewSchedule: React.FC<ViewScheduleProps> = ({
   }
 
   return (
-    <Grid container>
+    <Grid container width={'100%'}>
       <TimeSlot backgroundColor={HeatmapColors[0]} />
       {EnumToArray(DAY_NAMES).map((day) => (
         <TimeSlot backgroundColor={HeatmapColors[0]} text={day} fontSize={'1em'} />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
-        <Grid container item xs={12} onMouseLeave={handleOnMouseLeave}>
+        <Grid container item onMouseLeave={handleOnMouseLeave}>
           <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
           {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;

@@ -17,16 +17,18 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
 
   return (
-    <Grid display={'flex'}>
-      <ViewSchedule
-        availableUsers={availableUsers}
-        unavailableUsers={unavailableUsers}
-        usersToAvailabilities={usersToAvailabilities}
-        existingMeetingData={existingMeetingData}
-        setCurrentAvailableUsers={setCurrentAvailableUsers}
-        setCurrentUnavailableUsers={setCurrentUnavailableUsers}
-      />
-      <Grid>
+    <Grid container>
+      <Grid item xs={9}>
+        <ViewSchedule
+          availableUsers={availableUsers}
+          unavailableUsers={unavailableUsers}
+          usersToAvailabilities={usersToAvailabilities}
+          existingMeetingData={existingMeetingData}
+          setCurrentAvailableUsers={setCurrentAvailableUsers}
+          setCurrentUnavailableUsers={setCurrentUnavailableUsers}
+        />
+      </Grid>
+      <Grid item xs={3}>
         <Availabilities
           currentAvailableUsers={currentAvailableUsers}
           currentUnavailableUsers={currentUnavailableUsers}

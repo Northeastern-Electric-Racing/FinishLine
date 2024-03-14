@@ -28,10 +28,9 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   onMouseUp,
   onMouseOver
 }) => {
-
   const getIcon = (icon: string, small: boolean): ReactElement | null => {
     const iconFont = small ? { fontSize: '1.4em' } : { fontSize: '2em' };
-  
+
     switch (icon) {
       case 'warning':
         return <WarningIcon sx={iconFont} />;
@@ -50,7 +49,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
     <Box
       sx={{
         height: small ? '25px' : '4.7vh',
-        width: small ? '81px' : '11%',
+        width: small ? '81px' : '12.2%',
         backgroundColor,
         cursor: 'pointer',
         borderStyle: 'solid',
