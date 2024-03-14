@@ -115,7 +115,7 @@ export const getRefundRowData = (refund: Reimbursement) => {
 
 export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest) => {
   return {
-    id: reimbursementRequest.reimbursementRequestId,
+    id: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId,
     amount: reimbursementRequest.totalCost,
     dateSubmitted: reimbursementRequest.dateCreated,
