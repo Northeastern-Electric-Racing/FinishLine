@@ -49,16 +49,15 @@ const CalendarPage = () => {
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
     .map(
       (day) =>
-        daysInMonth(new Date(displayMonthYear.getDate(), displayMonthYear.getMonth() - 1, displayMonthYear.getFullYear())) -
-        (day + 1)
+        daysInMonth(new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, displayMonthYear.getDate())) -
+        day
     )
     .reverse();
   const paddingArrayEnd = [
     ...Array<number>(7 - ((daysInMonth(displayMonthYear) + calendarPaddingDays(displayMonthYear)) % 7)).keys()
   ].map((day) => day + 1);
   const daysThisMonth = paddingArrayStart
-    .concat([...Array(daysInMonth(displayMonthYear)).keys()])
-    .map((day) => day + 1)
+    .concat([...Array(daysInMonth(displayMonthYear)).keys()].map((day) => day + 1))
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
   const unconfirmedDRSDropdown = (
@@ -96,7 +95,7 @@ const CalendarPage = () => {
                 const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
                 return (
                   <Grid item xs={12 / 7}>
-                    <Box marginLeft={1.5} marginTop={2} sx={{ alignContent: 'center' }}>
+                    <Box marginLeft={1.5} marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
                       {isDayInDifferentMonth(day, week) ? (
                         <FillerCalendarDayCard day={day} />
                       ) : (

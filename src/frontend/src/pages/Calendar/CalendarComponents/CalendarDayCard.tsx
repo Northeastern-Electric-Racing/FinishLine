@@ -28,15 +28,15 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
   const EventCard = (event: DesignReview) => {
     const name = event.designReviewId;
     return (
-      <Box marginLeft={0.5} marginBottom={0.2}>
+      <Box marginLeft={0.5} marginBottom={0.5}>
         <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
           <Stack direction="row">
             {
               // "This works on my machine" lol
               // <SvgIcon component={getTeamTypeIcon(event.teamType.teamTypeId)} inheritViewBox fontSize="small"></SvgIcon>
             }
-            <AlignHorizontalLeftIcon fontSize="small"></AlignHorizontalLeftIcon>
-            <Typography marginLeft={0.5} marginBottom={0.3}>
+            <AlignHorizontalLeftIcon sx={{ fontSize: 15, marginTop: 0.45, marginLeft: 0.2 }}></AlignHorizontalLeftIcon>
+            <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14}>
               {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
             </Typography>
           </Stack>
