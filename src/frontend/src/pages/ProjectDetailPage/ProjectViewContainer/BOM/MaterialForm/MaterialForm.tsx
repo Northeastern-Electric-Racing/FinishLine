@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import { MaterialStatus, WbsElement } from 'shared';
+import { MaterialStatus, WbsElement, isGuest } from 'shared';
 import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
@@ -13,6 +13,7 @@ import {
 import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 import { Decimal } from 'decimal.js';
+import { useCurrentUser } from '../../../../../hooks/users.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -113,10 +114,13 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
 
   const { assemblies } = wbsElement;
 
-  if (materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
-  if (unitsIsError) return <ErrorPage message={unitsError?.message} />;
-  if (manufacturersIsError) return <ErrorPage message={manufacturersError?.message} />;
-  if (
+  const user = useCurrentUser();
+  if (!isGuest(user.role) && materialTypesIsError) return <ErrorPage message={materialTypesError?.message} />;
+  if (!isGuest(user.role) && unitsIsError) return <ErrorPage message={unitsError?.message} />;
+  if (!isGuest(user.role) && manufacturersIsError) return <ErrorPage message={manufacturersError?.message} />;
+  if (isGuest(user.role)) {
+    return null;
+  } else if (
     isLoadingManufactuers ||
     isLoadingMaterialTypes ||
     isLoadingUnits ||
