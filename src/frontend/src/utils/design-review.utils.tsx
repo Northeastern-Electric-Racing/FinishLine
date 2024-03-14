@@ -1,5 +1,13 @@
 import { DesignReview, DesignReviewStatus } from 'shared';
-import { batman } from '../../../backend/tests/test-data/users.test-data';
+import {
+  alfred,
+  aquaman,
+  batman,
+  flash,
+  greenlantern,
+  superman,
+  wonderwoman
+} from '../../../backend/tests/test-data/users.test-data';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
@@ -44,12 +52,12 @@ export const calendarPaddingDays = (month: Date): number => {
   return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
 };
 
-export const getTeamTypeIcon = (teamTypeId: string) => {
+export const getTeamTypeIcon = (teamTypeId: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
-    ['Software', <TerminalIcon fontSize="small" />],
-    ['Business', <WorkOutlineIcon fontSize="small" />],
-    ['Electrical', <ElectricalServicesIcon fontSize="small" />],
-    ['Mechanical', <ConstructionIcon fontSize="small" />]
+    ['Software', <TerminalIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['Business', <WorkOutlineIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['Electrical', <ElectricalServicesIcon fontSize={isLarge ? 'large' : 'small'} />],
+    ['Mechanical', <ConstructionIcon fontSize={isLarge ? 'large' : 'small'} />]
   ]);
   return teamIcons.get(teamTypeId);
 };
@@ -72,4 +80,31 @@ export const testDesignReview1: DesignReview = {
   attendees: [],
   wbsName: 'bruh',
   wbsNum: { carNumber: 1, workPackageNumber: 1, projectNumber: 1 }
+};
+
+// TODO remove during wire up ticket
+export const exampleDesignReview: DesignReview = {
+  designReviewId: '123',
+  dateScheduled: new Date(),
+  meetingTimes: [1, 4, 8, 34],
+  dateCreated: new Date(),
+  userCreated: superman,
+  status: DesignReviewStatus.DONE,
+  teamType: {
+    teamTypeId: 'Electrical',
+    name: 'thisteam',
+    iconName: ''
+  },
+  requiredMembers: [batman, superman, greenlantern, flash, aquaman],
+  optionalMembers: [wonderwoman, alfred],
+  confirmedMembers: [],
+  deniedMembers: [],
+  location: 'Room 101',
+  isOnline: true,
+  isInPerson: false,
+  zoomLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  attendees: [],
+  wbsName: 'Battery',
+  wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+  docTemplateLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 };

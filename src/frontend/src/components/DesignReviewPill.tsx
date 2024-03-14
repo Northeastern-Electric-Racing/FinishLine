@@ -1,4 +1,4 @@
-import { Typography, Link } from '@mui/material';
+import { Typography, Link, Box } from '@mui/material';
 
 export const DesignReviewPill: React.FC<{
   icon: React.ReactNode;
@@ -7,9 +7,8 @@ export const DesignReviewPill: React.FC<{
   displayText: string;
 }> = ({ icon, linkURL, displayText, isLink }) => {
   return (
-    <Typography
+    <Box
       sx={{
-        fontSize: 13,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -19,16 +18,14 @@ export const DesignReviewPill: React.FC<{
     >
       {icon}
       {isLink ? (
-        <Link target="_blank" sx={{ color: 'white' }} href={linkURL} paddingLeft="5px">
-          <Typography fontSize={14} paddingLeft="5px">
-            {displayText}
-          </Typography>
+        <Link target="_blank" color="inherit" href={linkURL} paddingLeft="4px">
+          <Typography fontSize={15}>{displayText}</Typography>
         </Link>
       ) : (
-        <Typography fontSize={14} paddingLeft="5px">
+        <Typography fontSize={15} paddingLeft="4px">
           {displayText}
         </Typography>
       )}
-    </Typography>
+    </Box>
   );
 };

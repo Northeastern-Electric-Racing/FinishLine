@@ -15,44 +15,10 @@ import PageLayout from '../components/PageLayout';
 import { Button } from '@mui/material';
 import { useState } from 'react';
 import DRCSummaryModal from './DesignReviewSummaryModal';
-import { DesignReview, DesignReviewStatus } from 'shared';
-import {
-  batman,
-  superman,
-  greenlantern,
-  flash,
-  aquaman,
-  wonderwoman
-} from '../../../backend/tests/test-data/users.test-data';
+import { exampleDesignReview } from '../utils/design-review.utils';
 
 const InfoPage: React.FC = () => {
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-
-  const exampleDesignReview: DesignReview = {
-    designReviewId: '123',
-    dateScheduled: new Date(),
-    meetingTimes: [1, 4, 8, 34],
-    dateCreated: new Date(),
-    userCreated: batman,
-    status: DesignReviewStatus.DONE,
-    teamType: {
-      teamTypeId: 'typeIDString',
-      name: 'thisteam',
-      iconName: ''
-    },
-    requiredMembers: [batman, superman, greenlantern, flash, aquaman],
-    optionalMembers: [wonderwoman],
-    confirmedMembers: [],
-    deniedMembers: [],
-    location: 'Room 101',
-    isOnline: true,
-    isInPerson: false,
-    zoomLink: 'https://example.com/zoomlink',
-    attendees: [],
-    wbsName: 'Battery',
-    wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
-    docTemplateLink: 'https://www.google.com'
-  };
 
   return (
     <PageLayout title="Information">

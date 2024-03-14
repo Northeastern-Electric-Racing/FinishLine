@@ -16,7 +16,7 @@ export const DesignReviewMemberPill: React.FC<{ user: User; handleClick: () => v
         margin: '8px'
       }}
     >
-      <Typography fontSize="15px" marginLeft="10px" paddingY="1px" color="#242526">
+      <Typography fontSize="15px" marginLeft="10px" color="#242526">
         {fullNamePipe(user)}
       </Typography>
       <IconButton onClick={handleClick} size="small">

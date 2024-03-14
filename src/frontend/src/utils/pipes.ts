@@ -170,3 +170,14 @@ export const meetingStartTimePipe = (times: number[]) => {
   const hours = ((time - minutes) / 60) % 12 === 0 ? 12 : ((time - minutes) / 60) % 12;
   return hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am');
 };
+
+export const meetingDatePipe = (date?: Date) => {
+  if (!date) return '';
+  date = new Date(date.toDateString());
+  return date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    timeZone: 'UTC'
+  });
+};
