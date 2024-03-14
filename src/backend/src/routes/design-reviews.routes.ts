@@ -5,6 +5,11 @@ import DesignReviewsController from '../controllers/design-reviews.controllers';
 import { validateInputs } from '../utils/utils';
 const designReviewsRouter = express.Router();
 
+designReviewsRouter.get('/', DesignReviewsController.getAllDesignReviews);
+
+designReviewsRouter.delete('/:designReviewId/delete', DesignReviewsController.deleteDesignReview);
+designReviewsRouter.get('/:designReviewId', DesignReviewsController.getSingleDesignReview);
+
 designReviewsRouter.post(
   '/:designReviewId/edit',
   isDate(body('dateScheduled')),
