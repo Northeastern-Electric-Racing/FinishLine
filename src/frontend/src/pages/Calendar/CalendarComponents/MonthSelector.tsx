@@ -14,9 +14,8 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
   return (
     <Box>
       <TextField
-        sx={{ paddingBottom: 0, marginTop: 0 }}
+        size="small"
         select
-        SelectProps={{ style: { padding: 0 } }}
         defaultValue={displayMonth.getMonth()}
         onChange={(event) => {
           displayMonth.setMonth(Number(event.target.value));
@@ -25,7 +24,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
       >
         {EnumToArray(MONTH_NAMES).map((month, index) => {
           return (
-            <MenuItem key={month} value={index} sx={{ padding: 0 }}>
+            <MenuItem key={month} value={index}>
               {month}
             </MenuItem>
           );
@@ -34,7 +33,8 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
 
       <TextField
         select
-        sx={{ marginLeft: 1, paddingBottom: 0, marginTop: 0 }}
+        size="small"
+        sx={{ marginLeft: 1 }}
         defaultValue={displayMonth.getFullYear()}
         onChange={(event) => {
           displayMonth.setFullYear(Number.parseInt(event.target.value));

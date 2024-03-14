@@ -1,8 +1,11 @@
 import { DesignReview, DesignReviewStatus } from 'shared';
 import { batman } from '../../../backend/tests/test-data/users.test-data';
-import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { SvgIconTypeMap } from '@mui/material';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import TerminalIcon from '@mui/icons-material/Terminal';
 
 export const NOON_IN_MINUTES = 720;
 
@@ -45,10 +48,10 @@ export const calendarPaddingDays = (month: Date): number => {
 
 export const getTeamTypeIcon = (teamTypeId: string) => {
   const teamIcons: Map<string, OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }> = new Map([
-    ['Software', AlignHorizontalLeftIcon],
-    ['Business', AlignHorizontalLeftIcon],
-    ['Electrical', AlignHorizontalLeftIcon],
-    ['Mechanical', AlignHorizontalLeftIcon]
+    ['Software', TerminalIcon],
+    ['Business', WorkOutlineIcon],
+    ['Electrical', ElectricalServicesIcon],
+    ['Mechanical', ConstructionIcon]
   ]);
   return teamIcons.get(teamTypeId);
 };

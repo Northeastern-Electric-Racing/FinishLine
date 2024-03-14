@@ -28,7 +28,7 @@ const CalendarPage = () => {
   EventDict.set(new Date().getDate(), [testDesignReview1]);
   EventDict.set(new Date().getDate() + 3, [testDesignReview1, testDesignReview1]);
   EventDict.set(new Date().getDate() + 4, [testDesignReview1, testDesignReview1, testDesignReview1]);
-  const drData: DesignReview[] = [testDesignReview1, testDesignReview1];
+  const designReviewData: DesignReview[] = [testDesignReview1, testDesignReview1];
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
 
@@ -36,10 +36,10 @@ const CalendarPage = () => {
     return day < week - 7 || day < 1 || day > week + 7;
   };
 
-  const designReviewButtons = (drs: DesignReview[]) => {
-    return drs.map((dr) => {
+  const designReviewButtons = (designReviews: DesignReview[]) => {
+    return designReviews.map((designReview) => {
       return {
-        title: dr.designReviewId,
+        title: designReview.designReviewId,
         onClick: () => {},
         disabled: false
       };
@@ -61,7 +61,7 @@ const CalendarPage = () => {
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
   const unconfirmedDRSDropdown = (
-    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(drData)}>
+    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(designReviewData)}>
       My Unconfirmed DRs
     </ActionsMenu>
   );
@@ -72,9 +72,7 @@ const CalendarPage = () => {
       headerRight={
         <Stack direction="row" justifyContent="flex-end">
           <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
-          <Box marginTop={0.9} marginLeft={1}>
-            {unconfirmedDRSDropdown}
-          </Box>
+          <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
         </Stack>
       }
     >
@@ -88,7 +86,7 @@ const CalendarPage = () => {
         ))}
       </Grid>
       <Box sx={{ border: '2px solid grey', borderRadius: 2, bgcolor: theme.palette.background.paper }}>
-        <Grid container>
+        <Grid container marginBottom={2}>
           {startOfEachWeek.map((week) => (
             <Grid container>
               {daysThisMonth.slice(week, week + 7).map((day) => {
