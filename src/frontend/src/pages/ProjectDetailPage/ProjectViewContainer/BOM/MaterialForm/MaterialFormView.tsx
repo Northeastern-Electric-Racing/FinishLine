@@ -157,21 +157,19 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <NERButton
-              sx={{ width: '100%', height: '55px', marginTop: '23px' }}
-              variant="contained"
-              onClick={() => {
-                const newManufacturerName = prompt('Enter New Manufacturer Name');
-                if (newManufacturerName !== null) {
-                  createManufacturer(newManufacturerName);
-                }
-              }}
-            >
-              Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
-            </NERButton>
-          </Box>
+        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+          <NERButton
+            sx={{ width: '100%', height: '56px' }}
+            variant="contained"
+            onClick={() => {
+              const newManufacturerName = prompt('Enter New Manufacturer Name');
+              if (newManufacturerName !== null) {
+                createManufacturer(newManufacturerName);
+              }
+            }}
+          >
+            Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
+          </NERButton>
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
