@@ -86,7 +86,7 @@ export const testDesignReview1: DesignReview = {
 export const exampleDesignReview: DesignReview = {
   designReviewId: '123',
   dateScheduled: new Date(),
-  meetingTimes: [1, 4, 8, 34],
+  meetingTimes: [1, 2, 5],
   dateCreated: new Date(),
   userCreated: superman,
   status: DesignReviewStatus.DONE,

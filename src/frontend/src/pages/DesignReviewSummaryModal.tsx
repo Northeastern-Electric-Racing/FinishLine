@@ -1,13 +1,14 @@
 import { DesignReview, DesignReviewStatus, User } from 'shared';
 import NERModal from '../components/NERModal';
-import { Box, FormControlLabel, Grid, IconButton, Typography } from '@mui/material';
+import { Box, FormControlLabel, Grid, IconButton, TextField, Typography } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import EditIcon from '@mui/icons-material/Edit';
 import Checkbox from '@mui/material/Checkbox';
-import { useState } from 'react';
+import SaveIcon from '@mui/icons-material/Save';
+import { ChangeEvent, useState } from 'react';
 import { DesignReviewDelayModal } from '../components/DesignReviewDelayModal';
 import { DesignReviewPill } from '../components/DesignReviewPill';
 import { DesignReviewMemberPill } from '../components/DesignReviewMemberPill';
@@ -15,7 +16,7 @@ import NERFailButton from '../components/NERFailButton';
 import NERSuccessButton from '../components/NERSuccessButton';
 import { NERButton } from '../components/NERButton';
 import StageGateWorkPackageModalContainer from './WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-import { meetingDatePipe, meetingStartTimePipe } from '../utils/pipes';
+import { availabilityStartTimePipe, meetingDatePipe } from '../utils/pipes';
 import { useCurrentUser } from '../hooks/users.hooks';
 import { useToast } from '../hooks/toasts.hooks';
 import { getTeamTypeIcon } from '../utils/design-review.utils';
@@ -35,6 +36,10 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
   };
+  const [editing, setEditing] = useState<boolean>(false);
+  const [locationState, setLocationState] = useState<string>(() => designReview.location || '');
+  const [documentState, setDocumentState] = useState<string>(() => designReview.docTemplateLink || '');
+  const [zoomState, setZoomState] = useState<string>(() => designReview.zoomLink || '');
   const currentUser = useCurrentUser();
   const toast = useToast();
   const handleRemoveRequiredMember = (user: User) => {
@@ -174,27 +179,62 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         <DesignReviewPill
           icon={<AccessTimeIcon />}
           isLink={false}
-          displayText={`${meetingDatePipe(designReview.dateCreated)} ${meetingStartTimePipe(designReview.meetingTimes)}`}
+          displayText={`${meetingDatePipe(designReview.dateCreated)} ${availabilityStartTimePipe(
+            designReview.meetingTimes
+          )}`}
         />
       </Grid>
       <Grid item xs={3}>
-        <DesignReviewPill icon={<LocationOnIcon />} isLink={false} displayText={designReview.location ?? 'Online'} />
+        {editing ? (
+          <TextField
+            variant="standard"
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              setLocationState(event.target.value);
+            }}
+            value={locationState}
+            label="Enter Location"
+          ></TextField>
+        ) : (
+          <DesignReviewPill icon={<LocationOnIcon />} isLink={false} displayText={locationState ?? 'Online'} />
+        )}
       </Grid>
       <Grid item xs={3}>
-        <DesignReviewPill
-          isLink
-          icon={<DescriptionIcon />}
-          linkURL={designReview.docTemplateLink ?? ''}
-          displayText={designReview.docTemplateLink ? 'Questions Doc' : 'No Doc'}
-        />
+        {editing ? (
+          <TextField
+            variant="standard"
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              setDocumentState(event.target.value);
+            }}
+            value={documentState}
+            label="Enter Docs URL"
+          ></TextField>
+        ) : (
+          <DesignReviewPill
+            isLink
+            icon={<DescriptionIcon />}
+            linkURL={documentState ?? ''}
+            displayText={documentState ? 'Questions Doc' : 'No Doc'}
+          />
+        )}
       </Grid>
       <Grid item xs={3}>
-        <DesignReviewPill
-          isLink
-          icon={<VideocamIcon />}
-          linkURL={designReview.zoomLink ?? ''}
-          displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
-        />
+        {editing ? (
+          <TextField
+            variant="standard"
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              setZoomState(event.target.value);
+            }}
+            value={zoomState}
+            label="Enter Zoom Link"
+          ></TextField>
+        ) : (
+          <DesignReviewPill
+            isLink
+            icon={<VideocamIcon />}
+            linkURL={zoomState ?? ''}
+            displayText={zoomState ? 'Zoom Link' : 'No Zoom'}
+          />
+        )}
       </Grid>
     </Grid>
   );
@@ -207,8 +247,11 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       hideFormButtons
       icon={getTeamTypeIcon(designReview.teamType.teamTypeId, true)}
     >
-      <IconButton sx={{ position: 'absolute', right: 16, top: 12 }}>
+      <IconButton onClick={() => setEditing(true)} sx={{ position: 'absolute', right: 16, top: 12 }}>
         <EditIcon />
+      </IconButton>
+      <IconButton onClick={() => setEditing(false)} sx={{ position: 'absolute', right: 70, top: 12 }}>
+        <SaveIcon />
       </IconButton>
       <StageGateWorkPackageModalContainer
         wbsNum={designReview.wbsNum}

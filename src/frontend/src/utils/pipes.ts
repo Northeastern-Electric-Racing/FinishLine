@@ -181,3 +181,11 @@ export const meetingDatePipe = (date?: Date) => {
     timeZone: 'UTC'
   });
 };
+
+export const availabilityStartTimePipe = (times: number[]) => {
+  const index = times[0] % 12;
+  const time = index * 60 + 10 * 60;
+  const minutes = time % 60;
+  const hours = ((time - minutes) / 60) % 12 === 0 ? 12 : ((time - minutes) / 60) % 12;
+  return hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'PM' : 'AM');
+};
