@@ -83,8 +83,8 @@ export const testDesignReview1: DesignReview = {
 };
 
 // TODO remove during wire up ticket
-export const exampleDesignReview: DesignReview = {
-  designReviewId: '123',
+export const exampleDesignReview1: DesignReview = {
+  designReviewId: 'Wiring',
   dateScheduled: new Date(),
   meetingTimes: [1, 2, 5],
   dateCreated: new Date(),

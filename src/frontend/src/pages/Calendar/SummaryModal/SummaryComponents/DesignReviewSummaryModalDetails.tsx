@@ -1,12 +1,12 @@
 import { Grid, TextField } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
-import { availabilityStartTimePipe } from '../utils/pipes';
-import { DesignReviewPill } from './DesignReviewPill';
 import { DesignReview } from 'shared';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
 import VideocamIcon from '@mui/icons-material/Videocam';
+import { DesignReviewPill } from '../../../../components/DesignReviewPill';
+import { availabilityStartTimePipe } from '../../../../utils/pipes';
 
 interface DesignReviewSummaryModalDetailsProps {
   designReview: DesignReview;
@@ -56,7 +56,7 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
             isLink
             icon={<DescriptionIcon />}
             linkURL={documentState ?? ''}
-            displayText={documentState ? 'Questions Doc' : 'No Doc'}
+            displayText={documentState ? 'Docs' : 'No Doc'}
           />
         )}
       </Grid>

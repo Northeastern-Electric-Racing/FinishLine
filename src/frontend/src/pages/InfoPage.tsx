@@ -13,13 +13,8 @@ import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
 import { Button } from '@mui/material';
-import { useState } from 'react';
-import DRCSummaryModal from './DesignReviewSummaryModal';
-import { exampleDesignReview } from '../utils/design-review.utils';
 
 const InfoPage: React.FC = () => {
-  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-
   return (
     <PageLayout title="Information">
       <PageBlock title="Resources">
@@ -60,14 +55,6 @@ const InfoPage: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
-      <PageBlock title="DRC Summary">
-        <Button onClick={() => setIsSummaryModalOpen(true)}>Open DRC Summary</Button>
-      </PageBlock>
-      <DRCSummaryModal
-        open={isSummaryModalOpen}
-        onHide={() => setIsSummaryModalOpen(false)}
-        designReview={exampleDesignReview}
-      />
     </PageLayout>
   );
 };

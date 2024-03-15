@@ -18,7 +18,8 @@ export const NERButton = styled(Button)<NERButtonProps>(({ whiteVariant }) => ({
     '&:hover': {
       backgroundColor: '#A4A4A4'
     },
-    fontSize: 14,
-    textTransform: 'uppercase'
+    fontSize: 13,
+    textTransform: 'uppercase',
+    fontWeight: 'bold'
   })
 }));

@@ -3,6 +3,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { DesignReview } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import { getTeamTypeIcon } from '../../../utils/design-review.utils';
+import DRCSummaryModal from '../SummaryModal/DesignReviewSummaryModal';
+import { useState } from 'react';
 
 interface CalendarDayCardProps {
   cardDate: Date;
@@ -26,18 +28,22 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
   );
 
   const EventCard = (event: DesignReview) => {
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const name = event.designReviewId;
     return (
-      <Box marginLeft={0.5} marginBottom={0.5}>
-        <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
-          <Stack direction="row">
-            {getTeamTypeIcon(event.teamType.teamTypeId)}
-            <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14}>
-              {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
-            </Typography>
-          </Stack>
-        </Card>
-      </Box>
+      <>
+        <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
+        <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)}>
+          <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
+            <Stack direction="row">
+              {getTeamTypeIcon(event.teamType.teamTypeId)}
+              <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14}>
+                {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
+              </Typography>
+            </Stack>
+          </Card>
+        </Box>
+      </>
     );
   };
 

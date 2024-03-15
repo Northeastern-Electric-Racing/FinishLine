@@ -1,6 +1,7 @@
 import React from 'react';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { Box } from '@mui/system';
 
 interface DesignReviewSummaryModalCheckBoxProps {
   onChange: (checked: boolean) => void;
@@ -13,20 +14,22 @@ const DesignReviewSummaryModalCheckBox: React.FC<DesignReviewSummaryModalCheckBo
   };
 
   return (
-    <FormControlLabel
-      label="Mark Design Review as Complete"
-      sx={{ marginBottom: 5 }}
-      control={
-        <Checkbox
-          checked={checked}
-          onChange={handleChange}
-          sx={{
-            color: 'inherit',
-            '&.Mui-checked': { color: 'inherit' }
-          }}
-        />
-      }
-    />
+    <Box marginTop="6px">
+      <FormControlLabel
+        label="Mark Design Review as Complete"
+        sx={{ marginBottom: 5 }}
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={handleChange}
+            sx={{
+              color: 'inherit',
+              '&.Mui-checked': { color: 'inherit' }
+            }}
+          />
+        }
+      />
+    </Box>
   );
 };
 
