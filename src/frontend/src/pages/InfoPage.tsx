@@ -12,20 +12,11 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
-import DRCEditModal from './DesignReviewPage/DesignReviewEditModal';
-import { useState } from 'react';
-import { usersToAvailabilities, existingMeetingData } from '../utils/design-review.utils';
-import DRCView from './DesignReviewPage/DesignReviewView';
-import Scheduling from './DesignReviewPage/Scheduling';
 
 const InfoPage: React.FC = () => {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const handleOpenEditModal = () => setIsEditModalOpen(true);
-  const handleCloseEditModal = () => setIsEditModalOpen(false);
-
   return (
     <PageLayout title="Information">
-      {/* <PageBlock title="Resources">
+      <PageBlock title="Resources">
         <Box>
           <Typography>Check out these helpful resources:</Typography>
         </Box>
@@ -62,21 +53,7 @@ const InfoPage: React.FC = () => {
             />
           </Grid>
         </Grid>
-      </PageBlock> */}
-      {/* <PageBlock title="DRC EDIT">
-        <button onClick={handleOpenEditModal}>OPEN EDIT MODAL</button>
       </PageBlock>
-      <DRCEditModal
-        open={isEditModalOpen}
-        onHide={handleCloseEditModal}
-        description="Battery"
-        time="9:00"
-        location="the bay"
-        usersToAvailabilities={usersToAvailabilities}
-        existingMeetingData={existingMeetingData}
-      />
-      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} existingMeetingData={existingMeetingData} /> */}
-      <Scheduling name={'2.41.1 - Battery'} />
     </PageLayout>
   );
 };

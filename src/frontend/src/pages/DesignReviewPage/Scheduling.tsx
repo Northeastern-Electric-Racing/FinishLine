@@ -1,7 +1,7 @@
 import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { usersToAvailabilities, existingMeetingData } from '../../utils/design-review.utils';
-import DRCView from './DesignReviewView';
+import DRCView from './components/DesignReviewView';
 import { useAllUsers } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
