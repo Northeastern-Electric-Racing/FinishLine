@@ -12,7 +12,6 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
-import { Button } from '@mui/material';
 
 const InfoPage: React.FC = () => {
   return (
