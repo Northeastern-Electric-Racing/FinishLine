@@ -23,12 +23,12 @@ designReviewRouter.post(
   body('isOnline').isBoolean(),
   body('isInPerson').isBoolean(),
   nonEmptyString(body('zoomLink').optional()),
-  body('docTemplateLink').optional(),
+  nonEmptyString(body('docTemplateLink')).optional(),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
-  body('meetingTime').isArray(),
-  intMinZero(body('meetingTime.*')),
+  body('meetingTimes').isArray(),
+  intMinZero(body('meetingTimes.*')),
   validateInputs,
   DesignReviewController.createDesignReview
 );

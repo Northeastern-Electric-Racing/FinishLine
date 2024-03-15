@@ -9,7 +9,7 @@ import DesignReviewService from '../src/services/design-review.services';
 import prisma from '../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
-  AccessDeniedGuestException,
+  AccessDeniedException,
   DeletedException,
   NotFoundException
 } from '../src/utils/errors.utils';
@@ -149,7 +149,7 @@ describe('Design Reviews', () => {
           [0, 1, 2, 3],
           'zoom'
         )
-      ).rejects.toThrow(new AccessDeniedGuestException('create design review'));
+      ).rejects.toThrow(new AccessDeniedException('create design review'));
     });
 
     test('Create design review team type not found', async () => {

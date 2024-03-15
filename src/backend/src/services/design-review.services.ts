@@ -1,11 +1,11 @@
-import { DesignReview, WbsNumber, isAdmin, isGuest, isLeadership } from 'shared';
+import { DesignReview, WbsNumber, isAdmin, isLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   NotFoundException,
-  AccessDeniedGuestException,
-  HttpException
+  HttpException,
+  AccessDeniedException
 } from '../utils/errors.utils';
 import { User, Design_Review_Status } from '@prisma/client';
 import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
@@ -54,11 +54,11 @@ export default class DesignReviewService {
 
   /**
    *
-   * @param user user who created the design review
+   * @param submitter user who created the design review
    * @param dateScheduled when the design review is scheduled for
    * @param teamTypeId team type id the design review concerns
-   * @param requiredMembers users who need to be at the design review
-   * @param optionalMembers users who do not need to be at the design review
+   * @param requiredMemberIds Ids of users who need to be at the design review
+   * @param optionalMemberIds Ids of users who do not need to be at the design review
    * @param location where the design review will be held
    * @param isOnline if the design reivew is held online
    * @param isInPerson if the design review is held in person
@@ -70,7 +70,7 @@ export default class DesignReviewService {
    * @returns a newly created design review
    */
   static async createDesignReview(
-    user: User,
+    submitter: User,
     dateScheduled: Date,
     teamTypeId: string,
     requiredMemberIds: number[],
@@ -83,7 +83,7 @@ export default class DesignReviewService {
     zoomLink?: string,
     location?: string
   ): Promise<DesignReview> {
-    if (isGuest(user.role)) throw new AccessDeniedGuestException('create design review');
+    if (!isLeadership(submitter.role)) throw new AccessDeniedException('create design review');
 
     const teamType = await prisma.teamType.findFirst({
       where: { teamTypeId }
@@ -93,7 +93,7 @@ export default class DesignReviewService {
       throw new NotFoundException('Team Type', teamTypeId);
     }
 
-    const wbs_Element = await prisma.wBS_Element.findUnique({
+    const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           carNumber: wbsNum.carNumber,
@@ -103,12 +103,15 @@ export default class DesignReviewService {
       }
     });
 
-    if (!wbs_Element) {
+    if (!wbsElement) {
       throw new NotFoundException('WBS Element', wbsNum.carNumber);
     }
 
     for (let i = 0; i < meetingTimes.length - 1; i++) {
-      if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 48) {
+      if (i === meetingTimes.length - 1) {
+        continue;
+      }
+      if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 84) {
         throw new HttpException(400, 'Meeting times have to be continous and in range 0-48');
       }
     }
@@ -135,12 +138,12 @@ export default class DesignReviewService {
         isInPerson,
         zoomLink,
         docTemplateLink,
-        userCreated: { connect: { userId: user.userId } },
+        userCreated: { connect: { userId: submitter.userId } },
         teamType: { connect: { teamTypeId: teamType.teamTypeId } },
         requiredMembers: { connect: requiredMemberIds.map((memberId) => ({ userId: memberId })) },
         optionalMembers: { connect: optionalMemberIds.map((memberId) => ({ userId: memberId })) },
         meetingTimes,
-        wbsElement: { connect: { wbsElementId: wbs_Element.wbsElementId } }
+        wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } }
       },
       ...designReviewQueryArgs
     });

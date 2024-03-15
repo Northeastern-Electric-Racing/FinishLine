@@ -47,13 +47,13 @@ export default class DesignReviewController {
         teamTypeName,
         requiredMembers,
         optionalMembers,
-        location,
         isOnline,
         isInPerson,
-        zoomLink,
         docTemplateLink,
         wbsNum,
-        meetingTimes
+        meetingTimes,
+        zoomLink,
+        location
       );
       return res.status(200).json(createdDesignReview);
     } catch (error: unknown) {
