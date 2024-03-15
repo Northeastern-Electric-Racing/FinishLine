@@ -80,7 +80,7 @@ const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
               limitTags={1}
               renderTags={() => null}
               id="required-users"
-              options={users}
+              options={users.filter((user) => !optionalUsers.some((optUser) => optUser.id === user.id))}
               value={requiredUsers}
               onChange={(_event, newValue) => setRequiredUsers(newValue)}
               getOptionLabel={(option) => option.label}
@@ -126,7 +126,7 @@ const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
               limitTags={1}
               renderTags={() => null}
               id="optional-users"
-              options={users}
+              options={users.filter((user) => !requiredUsers.some((reqUser) => reqUser.id === user.id))}
               value={optionalUsers}
               onChange={(_event, newValue) => setOptionalUsers(newValue)}
               getOptionLabel={(option) => option.label}
