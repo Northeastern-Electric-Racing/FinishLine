@@ -168,6 +168,5 @@ export const meetingStartTimePipe = (times: number[]) => {
   const time = times[0] * 60 + 10 * 60;
   const hours = Math.floor(time / 60) % 24;
   const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-  const ampm = hours >= 12 && hours < 24 ? 'pm' : 'am';
-  return displayHours + ':00' + ampm;
+  return displayHours + ':00' + (time >= NOON_IN_MINUTES ? 'pm' : 'am');
 };
