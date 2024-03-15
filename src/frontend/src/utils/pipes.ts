@@ -165,8 +165,9 @@ export const displayEnum = (enumString: string) => {
 };
 
 export const meetingStartTimePipe = (times: number[]) => {
-  const time = times[0] * 15 + 9 * 60;
-  const minutes = time % 60;
-  const hours = ((time - minutes) / 60) % 12 === 0 ? 12 : ((time - minutes) / 60) % 12;
-  return hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am');
+  const time = times[0] * 60 + 10 * 60;
+  const hours = Math.floor(time / 60) % 24;
+  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+  const ampm = hours >= 12 && hours < 24 ? 'pm' : 'am';
+  return displayHours + ':00' + ampm;
 };
