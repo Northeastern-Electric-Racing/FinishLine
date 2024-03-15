@@ -43,7 +43,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
   const EventCard = (event: DesignReview) => {
     const name = event.designReviewId;
     return (
-      <Box component={RouterLink} to={`${routes.CALENDAR}/1`}>
+      <Box component={RouterLink} to={`${routes.CALENDAR}/1`} sx={{ textDecoration: 'none' }}>
         <Box marginLeft={0.5} marginBottom={0.5}>
           <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
             <Stack direction="row">
