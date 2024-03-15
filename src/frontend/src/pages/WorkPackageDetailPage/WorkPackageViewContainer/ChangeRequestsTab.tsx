@@ -35,6 +35,7 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage, depe
         )
         .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0))
     : [];
+    
   const displayCRCards = (crList: ChangeRequest[]) => (
     <Box
       sx={{
@@ -81,11 +82,16 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage, depe
     <>
       <Grid
         sx={{
-          mb: 1,
-          mt: 5
+          mt: 3
         }}
       >
-        {renderChangeRequests('Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
+        <Grid
+          sx={{
+            mb: 3
+          }}
+        >
+          {renderChangeRequests('Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
+        </Grid>
         {renderChangeRequests('Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
       </Grid>
     </>
