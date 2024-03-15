@@ -3,13 +3,13 @@ import { useState } from 'react';
 import { HeatmapColors, EnumToArray, DAY_NAMES, REVIEW_TIMES } from '../../../utils/design-review.utils';
 import TimeSlot from './TimeSlot';
 
-interface EditScheduleProps {
+interface EditAvailabilityProps {
   selectedTimes: number[];
   setSelectedTimes: (val: number[]) => void;
   existingMeetingData: Map<number, string>;
 }
 
-const EditSchedule: React.FC<EditScheduleProps> = ({ selectedTimes, setSelectedTimes, existingMeetingData }) => {
+const EditAvailability: React.FC<EditAvailabilityProps> = ({ selectedTimes, setSelectedTimes, existingMeetingData }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isFirstItemSelected, setIsFirstItemSelected] = useState(false);
 
@@ -72,4 +72,4 @@ const EditSchedule: React.FC<EditScheduleProps> = ({ selectedTimes, setSelectedT
   );
 };
 
-export default EditSchedule;
+export default EditAvailability;

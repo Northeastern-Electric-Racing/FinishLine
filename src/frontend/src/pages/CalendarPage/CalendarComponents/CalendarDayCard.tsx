@@ -43,17 +43,17 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
   const EventCard = (event: DesignReview) => {
     const name = event.designReviewId;
     return (
-      <Box marginLeft={0.5} marginBottom={0.5}>
-        <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
-          <Link component={RouterLink} to={`/${routes.CALENDAR}/scheduling`}>
+      <Box component={RouterLink} to={`${routes.CALENDAR}/1`}>
+        <Box marginLeft={0.5} marginBottom={0.5}>
+          <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
             <Stack direction="row">
               {getTeamTypeIcon(event.teamType.teamTypeId)}
               <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14} color={'white'}>
                 {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
               </Typography>
             </Stack>
-          </Link>
-        </Card>
+          </Card>
+        </Box>
       </Box>
     );
   };

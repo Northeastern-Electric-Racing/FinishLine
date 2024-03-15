@@ -2,7 +2,7 @@ import NERModal from '../../../components/NERModal';
 import { useState } from 'react';
 import { existingMeetingData } from '../../../utils/design-review.utils';
 import { User } from 'shared';
-import EditSchedule from './EditSchedule';
+import EditAvailability from './EditAvailability';
 
 interface DRCEditModalProps {
   open: boolean;
@@ -15,7 +15,7 @@ interface DRCEditModalProps {
   existingMeetingData: Map<number, string>;
 }
 
-const DRCEditModal: React.FC<DRCEditModalProps> = ({ open, onHide, onSubmit, description, time, location }) => {
+const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({ open, onHide, onSubmit, description, time, location }) => {
   const header = `Are you availble for the ${description} Design Review at ${time} in the ${location}`;
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
 
@@ -29,7 +29,7 @@ const DRCEditModal: React.FC<DRCEditModalProps> = ({ open, onHide, onSubmit, des
       title={header}
       onSubmit={onSubmit}
     >
-      <EditSchedule
+      <EditAvailability
         selectedTimes={selectedTimes}
         setSelectedTimes={setSelectedTimes}
         existingMeetingData={existingMeetingData}
@@ -38,4 +38,4 @@ const DRCEditModal: React.FC<DRCEditModalProps> = ({ open, onHide, onSubmit, des
   );
 };
 
-export default DRCEditModal;
+export default AvailabilityEditModal;

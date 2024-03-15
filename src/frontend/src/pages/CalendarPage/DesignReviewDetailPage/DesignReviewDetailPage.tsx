@@ -1,21 +1,21 @@
 import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
-import PageLayout from '../../components/PageLayout';
-import { usersToAvailabilities, existingMeetingData } from '../../utils/design-review.utils';
-import DRCView from './components/DesignReviewView';
-import { useAllUsers } from '../../hooks/users.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
-import { userToAutocompleteOption } from '../../utils/teams.utils';
+import PageLayout from '../../../components/PageLayout';
+import { usersToAvailabilities, existingMeetingData } from '../../../utils/design-review.utils';
+import AvailabilityView from './AvailabilityView';
+import { useAllUsers } from '../../../hooks/users.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import { routes } from '../../utils/routes';
+import { routes } from '../../../utils/routes';
 
-interface SchedulingProps {
+interface DesignReviewDetailPageProps {
   name: string;
 }
 
-const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
+const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name }) => {
   const theme = useTheme();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
@@ -31,7 +31,7 @@ const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
       previousPages={[
         {
           name: 'Design Review Calendar',
-          route: `${routes.CALENDAR}/scheduling`
+          route: `${routes.CALENDAR}`
         }
       ]}
     >
@@ -148,9 +148,13 @@ const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
           </Box>
         </Grid>
       </Grid>
-      <DRCView title={'Battery'} usersToAvailabilities={usersToAvailabilities} existingMeetingData={existingMeetingData} />
+      <AvailabilityView
+        title={'Battery'}
+        usersToAvailabilities={usersToAvailabilities}
+        existingMeetingData={existingMeetingData}
+      />
     </PageLayout>
   );
 };
 
-export default Scheduling;
+export default DesignReviewDetailPage;

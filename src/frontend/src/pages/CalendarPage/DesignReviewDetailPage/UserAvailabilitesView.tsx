@@ -7,13 +7,13 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import WarningIcon from '@mui/icons-material/Warning';
 
-interface AvailabilitiesProps {
+interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
   currentUnavailableUsers: User[];
   usersToAvailabilities: Map<User, number[]>;
 }
 
-const Availabilities: React.FC<AvailabilitiesProps> = ({
+const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentAvailableUsers,
   currentUnavailableUsers,
   usersToAvailabilities
@@ -99,4 +99,4 @@ const Availabilities: React.FC<AvailabilitiesProps> = ({
   );
 };
 
-export default Availabilities;
+export default UserAvailabilites;

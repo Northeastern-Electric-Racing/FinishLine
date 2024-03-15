@@ -26,7 +26,7 @@ import { Box } from '@mui/system';
 import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
-import Calendar from '../pages/DesignReviewPage/CalendarPage';
+import Calendar from '../pages/CalendarPage/Calendar';
 
 interface AppAuthenticatedProps {
   userId: number;

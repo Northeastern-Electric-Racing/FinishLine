@@ -1,16 +1,16 @@
 import { Grid } from '@mui/material';
 import { User } from 'shared';
 import { useState } from 'react';
-import ViewSchedule from './ViewSchedule';
-import Availabilities from './Availabilities';
+import AvailabilityScheduleView from './AvailabilityScheduleView';
+import UserAvailabilites from './UserAvailabilitesView';
 
-interface DRCViewProps {
+interface AvailabilityViewProps {
   title: string;
   usersToAvailabilities: Map<User, number[]>;
   existingMeetingData: Map<number, string>;
 }
 
-const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetingData }) => {
+const AvailabilityView: React.FC<AvailabilityViewProps> = ({ usersToAvailabilities, existingMeetingData }) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
@@ -19,7 +19,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
   return (
     <Grid container>
       <Grid item xs={9}>
-        <ViewSchedule
+        <AvailabilityScheduleView
           availableUsers={availableUsers}
           unavailableUsers={unavailableUsers}
           usersToAvailabilities={usersToAvailabilities}
@@ -29,7 +29,7 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
         />
       </Grid>
       <Grid item xs={3}>
-        <Availabilities
+        <UserAvailabilites
           currentAvailableUsers={currentAvailableUsers}
           currentUnavailableUsers={currentUnavailableUsers}
           usersToAvailabilities={usersToAvailabilities}
@@ -39,4 +39,4 @@ const DRCView: React.FC<DRCViewProps> = ({ usersToAvailabilities, existingMeetin
   );
 };
 
-export default DRCView;
+export default AvailabilityView;

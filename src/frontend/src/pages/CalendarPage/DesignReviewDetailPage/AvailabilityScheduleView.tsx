@@ -8,9 +8,9 @@ import {
   HeatmapColors,
   getBackgroundColor
 } from '../../../utils/design-review.utils';
-import TimeSlot from './TimeSlot';
+import TimeSlot from '../SchedulingComponents/TimeSlot';
 
-interface ViewScheduleProps {
+interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
   unavailableUsers: Map<number, User[]>;
   usersToAvailabilities: Map<User, number[]>;
@@ -19,7 +19,7 @@ interface ViewScheduleProps {
   setCurrentUnavailableUsers: (val: User[]) => void;
 }
 
-const ViewSchedule: React.FC<ViewScheduleProps> = ({
+const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   availableUsers,
   unavailableUsers,
   usersToAvailabilities,
@@ -85,4 +85,4 @@ const ViewSchedule: React.FC<ViewScheduleProps> = ({
   );
 };
 
-export default ViewSchedule;
+export default AvailabilityScheduleView;
