@@ -1,12 +1,5 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
-
-import { ChangeRequest, WorkPackage, wbsPipe } from 'shared';
-import { Box, Divider, Grid, Link, Stack, Typography, useTheme } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
-import { routes } from '../../../utils/routes';
+import { ChangeRequest, WorkPackage } from 'shared';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -89,39 +82,12 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage, depe
       <Grid
         sx={{
           mb: 1,
-          mt: 3
+          mt: 5
         }}
       >
         {renderChangeRequests('Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
         {renderChangeRequests('Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
       </Grid>
-
-      <Typography
-        variant="h5"
-        sx={{
-          mb: 1,
-          mt: 3
-        }}
-      >
-        Blocked By
-      </Typography>
-
-      <Stack direction="row" alignItems="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
-        {dependencies.length === 0 ? (
-          <Typography>No Blockers</Typography>
-        ) : (
-          dependencies.map((dep, idx) => (
-            <Link
-              key={`${dep.name}-${idx}`}
-              component={RouterLink}
-              to={routes.PROJECTS + `/${wbsPipe(dep.wbsNum)}`}
-              fontWeight="bold"
-            >
-              {`${wbsPipe(dep.wbsNum)} - ${dep.name}`}
-            </Link>
-          ))
-        )}
-      </Stack>
     </>
   );
 };
