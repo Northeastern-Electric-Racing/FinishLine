@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Grid, IconButton, Stack, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { DesignReview } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
