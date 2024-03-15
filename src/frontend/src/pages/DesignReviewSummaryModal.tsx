@@ -1,10 +1,7 @@
 import { DesignReview, DesignReviewStatus, User } from 'shared';
 import NERModal from '../components/NERModal';
 import { Box, FormControlLabel, Grid, IconButton, TextField, Typography } from '@mui/material';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import DescriptionIcon from '@mui/icons-material/Description';
-import VideocamIcon from '@mui/icons-material/Videocam';
+
 import EditIcon from '@mui/icons-material/Edit';
 import Checkbox from '@mui/material/Checkbox';
 import SaveIcon from '@mui/icons-material/Save';
@@ -20,6 +17,9 @@ import { availabilityStartTimePipe, meetingDatePipe } from '../utils/pipes';
 import { useCurrentUser } from '../hooks/users.hooks';
 import { useToast } from '../hooks/toasts.hooks';
 import { getTeamTypeIcon } from '../utils/design-review.utils';
+import DesignReviewSummaryModalDetails from '../components/DesignReviewSummaryModalDetails';
+import CheckBox from '../components/DesignReviewSummaryCheckbox';
+import DesignReviewSummaryModalCheckBox from '../components/DesignReviewSummaryCheckbox';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -37,9 +37,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     setChecked(event.target.checked);
   };
   const [editing, setEditing] = useState<boolean>(false);
-  const [locationState, setLocationState] = useState<string>(() => designReview.location || '');
-  const [documentState, setDocumentState] = useState<string>(() => designReview.docTemplateLink || '');
-  const [zoomState, setZoomState] = useState<string>(() => designReview.zoomLink || '');
+
   const currentUser = useCurrentUser();
   const toast = useToast();
   const handleRemoveRequiredMember = (user: User) => {
@@ -70,21 +68,16 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     >
       <NERButton
         sx={{
-          textTransform: 'uppercase',
-          color: '#474849',
-          backgroundColor: '#d9d9d9',
-          ':hover': { backgroundColor: '#A4A4A4' },
-          fontSize: 10,
           marginLeft: 1,
           fontWeight: 'bold'
         }}
         disabled={designReview.status !== DesignReviewStatus.DONE || !checked}
+        whiteVariant
       >
         Schedule Another DR
       </NERButton>
       <NERSuccessButton
         sx={{
-          fontSize: 10,
           marginLeft: 1,
           fontWeight: 'bold'
         }}
@@ -95,7 +88,6 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       </NERSuccessButton>
       <NERFailButton
         sx={{
-          fontSize: 10,
           marginLeft: 1,
           fontWeight: 'bold'
         }}
@@ -107,27 +99,10 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     </Box>
   );
 
-  const CheckBoxForm: React.FC = () => (
-    <FormControlLabel
-      label="Mark Design Review as Complete"
-      sx={{ marginBottom: 5 }}
-      control={
-        <Checkbox
-          checked={checked}
-          onChange={handleChange}
-          sx={{
-            color: 'inherit',
-            '&.Mui-checked': { color: 'inherit' }
-          }}
-        />
-      }
-    />
-  );
-
   const MembersGrid: React.FC = () => (
     <Box marginLeft="15px">
       <Grid container direction="row" paddingY="20px">
-        <Grid item xs={12}>
+        <Grid item>
           <Grid container>
             <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
               <Typography>Required: </Typography>
@@ -173,71 +148,9 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     </Box>
   );
 
-  const SummaryDetails: React.FC = () => (
-    <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={1}>
-      <Grid item xs={3}>
-        <DesignReviewPill
-          icon={<AccessTimeIcon />}
-          isLink={false}
-          displayText={`${meetingDatePipe(designReview.dateCreated)} ${availabilityStartTimePipe(
-            designReview.meetingTimes
-          )}`}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        {editing ? (
-          <TextField
-            variant="standard"
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              setLocationState(event.target.value);
-            }}
-            value={locationState}
-            label="Enter Location"
-          ></TextField>
-        ) : (
-          <DesignReviewPill icon={<LocationOnIcon />} isLink={false} displayText={locationState ?? 'Online'} />
-        )}
-      </Grid>
-      <Grid item xs={3}>
-        {editing ? (
-          <TextField
-            variant="standard"
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              setDocumentState(event.target.value);
-            }}
-            value={documentState}
-            label="Enter Docs URL"
-          ></TextField>
-        ) : (
-          <DesignReviewPill
-            isLink
-            icon={<DescriptionIcon />}
-            linkURL={documentState ?? ''}
-            displayText={documentState ? 'Questions Doc' : 'No Doc'}
-          />
-        )}
-      </Grid>
-      <Grid item xs={3}>
-        {editing ? (
-          <TextField
-            variant="standard"
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              setZoomState(event.target.value);
-            }}
-            value={zoomState}
-            label="Enter Zoom Link"
-          ></TextField>
-        ) : (
-          <DesignReviewPill
-            isLink
-            icon={<VideocamIcon />}
-            linkURL={zoomState ?? ''}
-            displayText={zoomState ? 'Zoom Link' : 'No Zoom'}
-          />
-        )}
-      </Grid>
-    </Grid>
-  );
+  const handleCheck = (isChecked: boolean) => {
+    setChecked(isChecked);
+  };
 
   return (
     <NERModal
@@ -263,7 +176,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
 
       <Grid container direction="column">
         <Grid item>
-          <SummaryDetails />
+          <DesignReviewSummaryModalDetails designReview={designReview} editing={editing} />
         </Grid>
 
         <Grid item>
@@ -271,7 +184,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         </Grid>
 
         <Grid item>
-          <CheckBoxForm />
+          <DesignReviewSummaryModalCheckBox onChange={handleCheck} checked={checked} />
         </Grid>
 
         <Grid item>

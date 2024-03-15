@@ -6,6 +6,7 @@ import { routes } from '../utils/routes';
 import NERModal from './NERModal';
 import { Link as RouterLink } from 'react-router-dom';
 import { NERButton } from './NERButton';
+import NERSuccessButton from './NERSuccessButton';
 
 export const DesignReviewDelayModal: React.FC<{ open: boolean; onHide: () => void; designReview: DesignReview }> = ({
   open,
@@ -28,10 +29,8 @@ export const DesignReviewDelayModal: React.FC<{ open: boolean; onHide: () => voi
         <FormLabel>Enter number of weeks</FormLabel>
         <TextField type="number" variant="outlined" value={weeks} onChange={onChange} fullWidth margin="normal" />
       </FormControl>
-      <NERButton
+      <NERSuccessButton
         sx={{
-          color: 'white',
-          fontWeight: 'bold',
           marginLeft: '75%',
           marginTop: '10px'
         }}
@@ -44,7 +43,7 @@ export const DesignReviewDelayModal: React.FC<{ open: boolean; onHide: () => voi
         >
           Delay
         </Link>
-      </NERButton>
+      </NERSuccessButton>
     </NERModal>
   );
 };
