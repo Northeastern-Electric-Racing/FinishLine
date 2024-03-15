@@ -35,7 +35,7 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage, depe
         )
         .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0))
     : [];
-    
+
   const displayCRCards = (crList: ChangeRequest[]) => (
     <Box
       sx={{
