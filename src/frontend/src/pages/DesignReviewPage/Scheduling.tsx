@@ -1,14 +1,15 @@
-import { Autocomplete, Box, Grid, TextField, useTheme } from '@mui/material';
+import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { usersToAvailabilities, existingMeetingData } from '../../utils/design-review.utils';
 import DRCView from './DesignReviewView';
-import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllUsers } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { userToAutocompleteOption } from '../../utils/teams.utils';
 import { useState } from 'react';
-import { User } from 'shared';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import { routes } from '../../utils/routes';
 
 interface SchedulingProps {
   name: string;
@@ -25,7 +26,15 @@ const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
   const users = allUsers.map(userToAutocompleteOption);
 
   return (
-    <PageLayout title="Scheduling">
+    <PageLayout
+      title="Scheduling"
+      previousPages={[
+        {
+          name: 'Design Review Calendar',
+          route: `${routes.CALENDAR}/scheduling`
+        }
+      ]}
+    >
       <Grid container spacing={3} display={'flex'} paddingBottom={2}>
         <Grid item xs={1}>
           <Box
@@ -67,12 +76,28 @@ const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
             <Autocomplete
               isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
               multiple
+              disableCloseOnSelect
+              limitTags={1}
+              renderTags={() => null}
               id="required-users"
               options={users}
               value={requiredUsers}
               onChange={(_event, newValue) => setRequiredUsers(newValue)}
               getOptionLabel={(option) => option.label}
-              renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+              renderOption={(props, option, { selected }) => (
+                <li {...props}>
+                  <Checkbox
+                    icon={<CheckBoxOutlineBlankIcon />}
+                    checkedIcon={<CheckBoxIcon />}
+                    style={{ marginRight: 8 }}
+                    checked={selected}
+                  />
+                  {option.label}
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField {...params} variant="standard" placeholder={`${requiredUsers.length} users selected`} />
+              )}
             />
           </Box>
         </Grid>
@@ -95,14 +120,30 @@ const Scheduling: React.FC<SchedulingProps> = ({ name }) => {
         <Grid item xs={3}>
           <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
             <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id}
+              isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
               multiple
+              disableCloseOnSelect
+              limitTags={1}
+              renderTags={() => null}
               id="optional-users"
               options={users}
               value={optionalUsers}
               onChange={(_event, newValue) => setOptionalUsers(newValue)}
               getOptionLabel={(option) => option.label}
-              renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+              renderOption={(props, option, { selected }) => (
+                <li {...props}>
+                  <Checkbox
+                    icon={<CheckBoxOutlineBlankIcon />}
+                    checkedIcon={<CheckBoxIcon />}
+                    style={{ marginRight: 8 }}
+                    checked={selected}
+                  />
+                  {option.label}
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField {...params} variant="standard" placeholder={`${optionalUsers.length} users selected`} />
+              )}
             />
           </Box>
         </Grid>
