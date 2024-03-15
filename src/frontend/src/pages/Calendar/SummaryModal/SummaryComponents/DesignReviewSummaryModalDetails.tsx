@@ -6,7 +6,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import { DesignReviewPill } from '../../../../components/DesignReviewPill';
-import { availabilityStartTimePipe } from '../../../../utils/pipes';
+import { meetingStartTimePipe } from '../../../../utils/pipes';
 
 interface DesignReviewSummaryModalDetailsProps {
   designReview: DesignReview;
@@ -24,7 +24,7 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
         <DesignReviewPill
           icon={<AccessTimeIcon />}
           isLink={false}
-          displayText={availabilityStartTimePipe(designReview.meetingTimes)}
+          displayText={meetingStartTimePipe(designReview.meetingTimes)}
         />
       </Grid>
       <Grid item xs={3}>
@@ -38,7 +38,11 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
             label="Enter Location"
           />
         ) : (
-          <DesignReviewPill icon={<LocationOnIcon />} isLink={false} displayText={locationState ?? 'Online'} />
+          <DesignReviewPill
+            icon={<LocationOnIcon />}
+            isLink={false}
+            displayText={locationState ? locationState : 'Online'}
+          />
         )}
       </Grid>
       <Grid item xs={3}>
