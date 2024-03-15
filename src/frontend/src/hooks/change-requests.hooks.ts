@@ -111,14 +111,25 @@ export const useCreateStandardChangeRequest = () => {
   );
 };
 
-export interface ChangeRequestPayload {
+export interface CreateActivationChangeRequestPayload {
   submitterId: number;
   wbsNum: WbsNumber;
   projectLeadId: number;
   projectManagerId: number;
   startDate: string;
   confirmDetails: boolean;
+  type: string;
+}
+
+export interface CreateStageGateChangeRequestPayload {
+  submitterId: number;
+  wbsNum: WbsNumber;
   confirmDone: boolean;
+  type: string;
+}
+
+export interface CreateProposeSolutionPayload {
+  submitterId: number;
   crId: number;
   description: string;
   scopeImpact: string;
@@ -131,9 +142,9 @@ export interface ChangeRequestPayload {
  * Custom React Hook to create an activation change request.
  */
 export const useCreateActivationChangeRequest = () => {
-  return useMutation<{ message: string }, Error, ChangeRequestPayload>(
+  return useMutation<{ message: string }, Error, CreateActivationChangeRequestPayload>(
     ['change requests', 'create', 'activation'],
-    async (payload: ChangeRequestPayload) => {
+    async (payload: CreateActivationChangeRequestPayload) => {
       const { data } = await createActivationChangeRequest(
         payload.submitterId,
         payload.wbsNum,
@@ -151,9 +162,9 @@ export const useCreateActivationChangeRequest = () => {
  * Custom React Hook to create a stage gate change request.
  */
 export const useCreateStageGateChangeRequest = () => {
-  return useMutation<{ message: string }, Error, ChangeRequestPayload>(
+  return useMutation<{ message: string }, Error, CreateStageGateChangeRequestPayload>(
     ['change requests', 'create', 'stage gate'],
-    async (payload: ChangeRequestPayload) => {
+    async (payload: CreateStageGateChangeRequestPayload) => {
       const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
       return data;
     }
@@ -165,9 +176,9 @@ export const useCreateStageGateChangeRequest = () => {
  */
 export const useCreateProposeSolution = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ChangeRequestPayload>(
+  return useMutation<{ message: string }, Error, CreateProposeSolutionPayload>(
     ['change requests', 'create', 'propose solution'],
-    async (payload: ChangeRequestPayload) => {
+    async (payload: CreateProposeSolutionPayload) => {
       const { data } = await addProposedSolution(
         payload.submitterId,
         payload.crId,
