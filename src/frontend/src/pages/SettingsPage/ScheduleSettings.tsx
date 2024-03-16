@@ -16,8 +16,6 @@ import ErrorPage from '../ErrorPage';
 
 const ScheduleSettings: React.FC = () => {
   const auth = useAuth();
-  const user = useCurrentUser();
-  const [chooseModalShow, setChooseModalShow] = useState<boolean>(false);
 
   const {
     isLoading: secureSettingsIsLoading,
