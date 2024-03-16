@@ -3,7 +3,8 @@ import {
   prismaDesignReview1,
   prismaDesignReview2,
   prismaDesignReview3,
-  sharedDesignReview1
+  sharedDesignReview1,
+  teamType1
 } from './test-data/design-reviews.test-data';
 import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
 import DesignReviewsService from '../src/services/design-reviews.services';
@@ -235,7 +236,7 @@ describe('Design Reviews', () => {
           [6],
           true,
           false,
-          prismaDesignReview2.zoomLink,
+          'location',
           prismaDesignReview2.location,
           prismaDesignReview2.docTemplateLink,
           prismaDesignReview2.status,
@@ -257,8 +258,8 @@ describe('Design Reviews', () => {
           [6],
           true,
           false,
+          'location',
           prismaDesignReview2.zoomLink,
-          prismaDesignReview2.location,
           prismaDesignReview2.docTemplateLink,
           prismaDesignReview2.status,
           [],
@@ -280,7 +281,7 @@ describe('Design Reviews', () => {
           [6],
           true,
           false,
-          prismaDesignReview2.zoomLink,
+          'zoomLink',
           prismaDesignReview2.location,
           null,
           PrismaDesignReviewStatus.SCHEDULED,

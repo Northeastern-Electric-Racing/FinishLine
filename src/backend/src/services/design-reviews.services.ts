@@ -108,6 +108,7 @@ export default class DesignReviewsService {
   ): Promise<Design_Review> {
     // verify user is allowed to edit work package
     if (isNotLeadership(user.role)) throw new AccessDeniedMemberException('edit design reviews');
+    console.log(zoomLink);
 
     // make sure the requiredMembers are not in the optionalMembers
     if (requiredMembers.length > 0 && requiredMembers.some((rMember) => optionalMembers.includes(rMember))) {
@@ -119,11 +120,11 @@ export default class DesignReviewsService {
     const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
     // make sure there is a zoom link if the design review is online
-    if (isOnline && zoomLink == null) {
+    if (isOnline && zoomLink === null) {
       throw new HttpException(400, 'zoom link is required for online design reviews');
     }
     // make sure there is a location if the design review is in person
-    if (isInPerson && location == null) {
+    if (isInPerson && location === null) {
       throw new HttpException(400, 'location is required for in person design reviews');
     }
 

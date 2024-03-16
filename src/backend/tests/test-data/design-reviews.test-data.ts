@@ -95,7 +95,7 @@ export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designRe
   userCreatedId: wonderwoman.userId,
   status: PrismaDesignReviewStatus.CONFIRMED,
   teamTypeId: '1',
-  location: null,
+  location: 'location',
   isOnline: true,
   isInPerson: false,
   zoomLink: 'https://www.zoom.com',
