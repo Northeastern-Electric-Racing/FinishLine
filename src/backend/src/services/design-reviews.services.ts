@@ -8,7 +8,7 @@ import {
   HttpException,
   AccessDeniedAdminOnlyException
 } from '../utils/errors.utils';
-import { getUsers, getUserPrismaIds } from '../utils/users.utils';
+import { getUsers, getPrismaQueryUserIds } from '../utils/users.utils';
 import { validateMeetingTimes } from '../utils/design-reviews.utils';
 import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 import { designReviewTransformer } from '../transformers/design-review.transformer';
@@ -87,7 +87,7 @@ export default class DesignReviewsService {
    * @param docTemplateLink the document template link for the design review
    * @param status see Design_Review_Status enum
    * @param attendees the attendees for the design review (should they have any relation to the other shit / can't edit this after STATUS: DONE)
-   * @param meetingTimes meeting time must be between 0-48 (9-9, 15 minute increments)
+   * @param meetingTimes meeting time must be between 0-84 (Monday 12am - Sunday 12am, 1hr minute increments)
    */
 
   static async editDesignReviews(
@@ -113,19 +113,22 @@ export default class DesignReviewsService {
     if (requiredMembers.length > 0 && requiredMembers.some((rMember) => optionalMembers.includes(rMember))) {
       throw new HttpException(400, 'required members cannot be in optional members');
     }
+    // throw if a user isn't found, then build prisma queries for connecting userIds
+    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMembers));
+    const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembers));
+    const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
-    // make sure the design review is either online or (exclusive) in person
-    if (isOnline && isInPerson) {
-      throw new HttpException(400, 'design review cannot be both online and in person');
+    // make sure there is a zoom link if the design review is online
+    if (isOnline && zoomLink == null) {
+      throw new HttpException(400, 'zoom link is required for online design reviews');
+    }
+    // make sure there is a location if the design review is in person
+    if (isInPerson && location == null) {
+      throw new HttpException(400, 'location is required for in person design reviews');
     }
 
-    // throws if meeting times are not: consecutive and between 0-48
+    // throws if meeting times are not: consecutive and between 0-84
     meetingTimes = validateMeetingTimes(meetingTimes);
-
-    // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getUserPrismaIds(await getUsers(requiredMembers));
-    const updatedOptionalMembers = getUserPrismaIds(await getUsers(optionalMembers));
-    const updatedAttendees = getUserPrismaIds(await getUsers(attendees));
 
     // validate the design review exists and is not deleted
     const originaldesignReview = await prisma.design_Review.findUnique({
@@ -133,6 +136,12 @@ export default class DesignReviewsService {
     });
     if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
     if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+
+    // validate the teamTypeId exists
+    const teamType = await prisma.teamType.findUnique({
+      where: { teamTypeId }
+    });
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
 
     // actually try to update the design review
     const updateDesignReviews = await prisma.design_Review.update({

@@ -41,7 +41,7 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
  * @param userIds the userIds to get as users
  * @returns userIds in prisma format
  */
-export const getUserPrismaIds = (users: User[]) => {
+export const getPrismaQueryUserIds = (users: User[]) => {
   const userIds = users.map((user) => {
     return {
       userId: user.userId
