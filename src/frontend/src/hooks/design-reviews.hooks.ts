@@ -11,7 +11,7 @@ import { DesignReview } from 'shared';
  *
  * @returns all the design reviews
  */
-export const useGetAllDesignReviews = () => {
+export const useAllDesignReviews = () => {
   return useQuery<DesignReview[], Error>(['design-reviews'], async () => {
     const { data } = await getAllDesignReviews();
     return data;
