@@ -135,7 +135,6 @@ export interface CreateProposeSolutionPayload {
   scopeImpact: string;
   timelineImpact: number;
   budgetImpact: number;
-  type: string;
 }
 
 /**
@@ -208,7 +207,7 @@ export const useRequestCRReview = (crId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CRReviewPayload>(
     ['change requests', 'review'],
-    async (crReviewPayload) => {
+    async (crReviewPayload: CRReviewPayload) => {
       const { data } = await requestCRReview(crId, crReviewPayload);
       return data;
     },

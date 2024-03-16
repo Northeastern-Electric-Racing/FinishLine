@@ -47,8 +47,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
         description,
         scopeImpact,
         timelineImpact,
-        budgetImpact,
-        type: ''
+        budgetImpact
       });
     } catch (e) {
       if (e instanceof Error) {
