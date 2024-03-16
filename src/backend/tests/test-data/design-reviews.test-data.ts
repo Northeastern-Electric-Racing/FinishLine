@@ -7,7 +7,7 @@ import { DesignReview as SharedDesignReview, DesignReviewStatus as sharedDesignR
 export const teamType1: TeamType = {
   teamTypeId: '1',
   name: 'teamType1',
-  iconName: 'icon1'
+  iconName: 'YouTubeIcon'
 };
 
 export const prismaDesignReview1: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs> = {
