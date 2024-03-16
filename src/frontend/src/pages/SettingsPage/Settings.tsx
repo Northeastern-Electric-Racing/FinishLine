@@ -17,6 +17,7 @@ import ErrorPage from '../ErrorPage';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { displayEnum } from '../../utils/pipes';
+import UserSchedulePref from './UserScheudlePreferences/UserSchedulePref';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -162,6 +163,7 @@ const Settings: React.FC = () => {
       </PageBlock>
       <UserSettings currentSettings={userSettingsData} />
       <UserSecureSettings currentSettings={userSecureSettings} />
+      <UserSchedulePref />
     </PageLayout>
   );
 };
