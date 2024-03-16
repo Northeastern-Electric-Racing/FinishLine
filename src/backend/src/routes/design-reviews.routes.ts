@@ -13,7 +13,7 @@ designReviewsRouter.get('/:designReviewId', DesignReviewsController.getSingleDes
 designReviewsRouter.post(
   '/:designReviewId/edit',
   isDate(body('dateScheduled')),
-  nonEmptyString(body('teamType')),
+  nonEmptyString(body('teamTypeId')),
   body('requiredMembers').isArray(),
   intMinZero(body('requiredMembers.*')),
   body('optionalMembers').isArray(),

@@ -246,7 +246,7 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new HttpException(400, 'meeting times must be consecutive'));
     });
 
-    test('Edit Design Review fails when meeting times are consecutive and *above* 84', async () => {
+    test('Edit Design Review fails when meeting times are consecutive and *above* 83', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
         DesignReviewsService.editDesignReviews(
@@ -263,9 +263,9 @@ describe('Design Reviews', () => {
           prismaDesignReview2.docTemplateLink,
           prismaDesignReview2.status,
           [],
-          [89, 90]
+          [84, 85]
         )
-      ).rejects.toThrow(new HttpException(400, 'meeting time must be between 0-84'));
+      ).rejects.toThrow(new HttpException(400, 'meeting time must be between 0-83'));
     });
 
     test('Edit Design Review fails when no docTemplateLink, and status is scheduled or done', async () => {

@@ -90,7 +90,7 @@ export const prismaDesignReview2: Prisma.Design_ReviewGetPayload<typeof designRe
 export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs> = {
   designReviewId: '2',
   dateScheduled: new Date('2024-03-25'),
-  meetingTimes: [80, 81, 82, 83, 84],
+  meetingTimes: [80, 81, 82, 83],
   dateCreated: new Date('2024-03-10'),
   userCreatedId: wonderwoman.userId,
   status: PrismaDesignReviewStatus.CONFIRMED,

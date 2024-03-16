@@ -87,7 +87,7 @@ export default class DesignReviewsService {
    * @param docTemplateLink the document template link for the design review
    * @param status see Design_Review_Status enum
    * @param attendees the attendees for the design review (should they have any relation to the other shit / can't edit this after STATUS: DONE)
-   * @param meetingTimes meeting time must be between 0-84 (Monday 12am - Sunday 12am, 1hr minute increments)
+   * @param meetingTimes meeting time must be between 0-83 (Monday 12am - Sunday 12am, 1hr minute increments)
    */
 
   static async editDesignReviews(
@@ -127,7 +127,7 @@ export default class DesignReviewsService {
       throw new HttpException(400, 'location is required for in person design reviews');
     }
 
-    // throws if meeting times are not: consecutive and between 0-84
+    // throws if meeting times are not: consecutive and between 0-83
     meetingTimes = validateMeetingTimes(meetingTimes);
 
     // docTemplateLink is required if the status is scheduled or done
