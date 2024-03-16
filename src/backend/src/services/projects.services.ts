@@ -942,6 +942,7 @@ export default class ProjectsService {
     if (!isHead(submitter.role) && !isAdmin(submitter.role)) {
       throw new AccessDeniedException('Only an admin or head can delete a material type');
     }
+
     const materialType = await prisma.material_Type.findUnique({
       where: {
         name: materialTypeId
@@ -949,6 +950,16 @@ export default class ProjectsService {
     });
 
     if (!materialType) throw new NotFoundException('Material Type', materialTypeId);
+
+    const materials = await prisma.material.findMany({
+      where: {
+        materialTypeName: materialTypeId
+      }
+    });
+
+    if (materials.length > 0) {
+      throw new HttpException(400, `Material type "${materialTypeId}" is associated with materials and cannot be deleted`);
+    }
 
     const deletedMaterialType = await prisma.material_Type.delete({ where: { name: materialTypeId } });
     return deletedMaterialType;

@@ -20,7 +20,8 @@ import {
   mockLinkType1,
   transformedMockLinkType1,
   manufacturer1,
-  manufacturer2
+  manufacturer2,
+  badMaterialType
 } from './test-data/projects.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
@@ -917,13 +918,22 @@ describe('Projects', () => {
       );
     });
 
+    test('Delete Material Type does not work if material type is associated with existing materials', async () => {
+      await expect(ProjectsService.deleteMaterialType(prismaMaterialType.name, batman)).rejects.toThrow(
+        new HttpException(
+          400,
+          `Material type "${prismaMaterialType.name}" is associated with materials and cannot be deleted`
+        )
+      );
+    });
+
     test('Delete Material Type works', async () => {
-      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(toolMaterial);
-      vi.spyOn(prisma.material_Type, 'delete').mockResolvedValue(toolMaterial);
-      await ProjectsService.deleteMaterialType(toolMaterial.name, superman);
+      vi.spyOn(prisma.material_Type, 'findUnique').mockResolvedValue(badMaterialType);
+      vi.spyOn(prisma.material_Type, 'delete').mockResolvedValue(badMaterialType);
+      await ProjectsService.deleteMaterialType(badMaterialType.name, superman);
       expect(prisma.material_Type.findUnique).toBeCalledTimes(1);
       expect(prisma.material_Type.delete).toBeCalledTimes(1);
-      expect(prisma.material_Type.delete).toHaveBeenCalledWith({ where: { name: toolMaterial.name } });
+      expect(prisma.material_Type.delete).toHaveBeenCalledWith({ where: { name: badMaterialType.name } });
     });
   });
 
