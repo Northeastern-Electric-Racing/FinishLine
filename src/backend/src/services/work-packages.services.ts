@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Blocked_By_Info, Blocked_By_InfoPayload, Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -707,5 +707,151 @@ export default class WorkPackagesService {
     );
 
     return;
+  }
+
+  static async editWorkPackageTemplate(
+    user: User,
+    workPackageTemplateId: string,
+    templateName: string,
+    crId: number,
+    templateNotes: string,
+    expectedActivities: string[],
+    deliverables: string[],
+    blockedBy: Blocked_By_Info[],
+    stage?: WorkPackageStage,
+    duration?: number,
+    workPackageName?: string,
+  ): Promise<void> {
+    // verify user is allowed to edit work package templates
+    if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
+
+    const { userId } = user;
+
+    // get the original work package template so we can compare things
+    const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
+      where: { workPackageTemplateId },
+      include: {
+        blockedBy: true,
+      }
+    });
+
+    if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package', workPackageTemplateId);
+    if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package', workPackageTemplateId);
+
+    const updatedBlockedBys = await Promise.all(
+      blockedBy.map(async (blockedBy: Blocked_By_Info) => {
+        const wbsElem = await prisma.wBS_Element.findUnique({
+          where: {
+            wbsNumber: { carNumber, projectNumber, workPackageNumber }
+          }
+        });
+
+        return wbsElem;
+      })
+    );
+
+    let changes = [];
+    // get the changes or undefined for each of the fields
+    const nameChangeJson = createChange('name', originalWorkPackageTemplate.templateName, templateName, crId, userId, workPackageTemplateId!);
+    const stageChangeJson = createChange('stage', originalWorkPackageTemplate.stage, stage, crId, userId, wbsElementId!);
+    const durationChangeJson = createChange('duration', originalWorkPackageTemplate.duration, duration, crId, userId, wbsElementId!);
+    const blockedByChangeJson = createListChanges(
+      'blocked by',
+      originalWorkPackageTemplate.blockedBy.map((element) => {
+        return {
+          element,
+          comparator: `${element.workPackageTemplateId}`,
+          displayValue: wbsPipe(wbsNumOf(element))
+        };
+      }),
+      updatedBlockedBys.map((element) => {
+        return {
+          element,
+          comparator: `${element.wbsElementId}`,
+          displayValue: wbsPipe(wbsNumOf(element))
+        };
+      }),
+      crId,
+      userId,
+      wbsElementId!
+    );
+    const expectedActivitiesChangeJson = createListChanges(
+      'expected activity',
+      descriptionBulletsToChangeListValues(originalWorkPackageTemplate.expectedActivities.filter((ele) => !ele.dateDeleted)),
+      expectedActivities.map(descriptionBulletToChangeListValue),
+      crId,
+      userId,
+      templateName!
+    );
+    const deliverablesChangeJson = createListChanges(
+      'deliverable',
+
+      descriptionBulletsToChangeListValues(originalWorkPackage.deliverables.filter((ele) => !ele.dateDeleted)),
+      deliverables.map(descriptionBulletToChangeListValue),
+      crId,
+      userId,
+      wbsElementId!
+    );
+
+    // add to changes if not undefined
+    if (nameChangeJson !== undefined) changes.push(nameChangeJson);
+    if (durationChangeJson !== undefined) changes.push(durationChangeJson);
+    if (stageChangeJson !== undefined) changes.push(stageChangeJson);
+
+
+    // add the changes for each of blockers, expected activities, and deliverables
+    changes = changes
+      .concat(blockedByChangeJson.changes)
+      .concat(expectedActivitiesChangeJson.changes)
+      .concat(deliverablesChangeJson.changes);
+
+    // update the work package with the input fields
+    const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
+      where: { workPackageTemplateId },
+      data: {
+        duration,
+        wbsElement: {
+          update: {
+            templateName
+          }
+        },
+        stage,
+        blockedBy: {
+          set: [], // remove all the connections then add all the given ones
+          connect: updatedBlockedBys.map((ele) => ({ wbsElementId: ele.wbsElementId }))
+        }
+      }
+    });
+
+    // Update any deleted description bullets to have their date deleted as right now
+    const deletedElements: DescriptionBulletPreview[] = expectedActivitiesChangeJson.deletedElements.concat(
+      deliverablesChangeJson.deletedElements
+    );
+    if (deletedElements.length > 0) {
+      await prisma.description_Bullet.updateMany({
+        where: { descriptionId: { in: deletedElements.map((descriptionBullet) => descriptionBullet.id) } },
+        data: { dateDeleted: new Date() }
+      });
+    }
+
+    // Add the expected activities to the workpackage
+    await addDescriptionBullets(
+      expectedActivitiesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      updatedWorkPackageTemplate.workPackageTemplateId,
+      'workPackageIdExpectedActivities'
+    );
+
+    // Add the deliverables to the workpackage
+    await addDescriptionBullets(
+      deliverablesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
+      updatedWorkPackageTemplate.workPackageTemplateId,
+      'workPackageIdDeliverables'
+    );
+
+    // edit the expected changes and deliverables
+    await editDescriptionBullets(expectedActivitiesChangeJson.editedElements.concat(deliverablesChangeJson.editedElements));
+
+    // create the changes in prisma
+    await prisma.change.createMany({ data: changes });
   }
 }

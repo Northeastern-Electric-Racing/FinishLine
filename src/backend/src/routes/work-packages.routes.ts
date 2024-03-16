@@ -65,4 +65,21 @@ workPackagesRouter.post(
   WorkPackagesController.slackMessageUpcomingDeadlines
 );
 
+workPackagesRouter.post('/template/:workpackageTemplateId/edit',
+  intMinZero(body('workPackageTemplateId')),
+  nonEmptyString(body('templateName')),
+  intMinZero(body('duration')),
+  isWorkPackageStageOrNone(body('stage')),
+  intMinZero(body('blockedBy.*.carNumber')),
+  intMinZero(body('blockedBy.*.projectNumber')),
+  intMinZero(body('blockedBy.*.workPackageNumber')),
+  body('expectedActivities').isArray(),
+  body('expectedActivities.*.id').isInt({ min: -1 }).not().isString(),
+  nonEmptyString(body('expectedActivities.*.detail')),
+  body('deliverables').isArray(),
+  body('deliverables.*.id').isInt({ min: -1 }).not().isString(),
+  nonEmptyString(body('deliverables.*.detail')),
+  validateInputs,
+  WorkPackagesController.editWorkPackage);
+
 export default workPackagesRouter;
