@@ -37,7 +37,9 @@ export default class DesignReviewController {
         isInPerson,
         zoomLink,
         docTemplateLink,
-        wbsNum,
+        wbsNumCarNumber,
+        wbsNumProjNumber,
+        wbsNumWpNumber,
         meetingTimes
       } = req.body;
 
@@ -50,7 +52,7 @@ export default class DesignReviewController {
         isOnline,
         isInPerson,
         docTemplateLink,
-        wbsNum,
+        { carNumber: wbsNumCarNumber, projectNumber: wbsNumProjNumber, workPackageNumber: wbsNumWpNumber },
         meetingTimes,
         zoomLink,
         location
