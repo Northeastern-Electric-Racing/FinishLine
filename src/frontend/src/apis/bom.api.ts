@@ -1,9 +1,19 @@
-import { Material, WbsNumber } from 'shared';
+import { DesignReview, Material, WbsNumber } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { manufacturerTransformer, materialTypeTransformer } from './transformers/bom.transformers';
 import { MaterialDataSubmission } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/MaterialForm/MaterialForm';
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
+import { designReviewTransformer } from '../../../backend/src/transformers/design-review.transformer';
+
+/**
+ * 
+ */
+export const getSingleDesignReview = async (id: number) => {
+  return axios.get<DesignReview>(apiUrls.designReviewsById(`${id}`), {
+    transformResponse: (data) => JSON.parse(data).map(designReviewTransformer)
+  });
+};
 
 /**
  * Requests all the material types from the backend.

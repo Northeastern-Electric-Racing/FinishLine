@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Assembly, Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
+import { Assembly, DesignReview, Manufacturer, Material, MaterialType, Unit, WbsNumber } from 'shared';
 import {
   assignMaterialToAssembly,
   createAssembly,
@@ -17,10 +17,20 @@ import { MaterialDataSubmission } from '../pages/ProjectDetailPage/ProjectViewCo
 import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/BOM/AssemblyForm/AssemblyForm';
 
 /**
+ *
+ *
+ */
+export const useSingleDesignReview = () => {
+  return useQuery<DesignReview, Error>(['design-reviews'], async () => {
+    const { data } = await getSingleDesignReview();
+    return data;
+  });
+};
+/**
  * Custom React hook to supply all material types.
  * @returns All the material types
  */
-export const useGetAllMaterialTypes = () => {
+const useGetAllMaterialTypes = () => {
   return useQuery<MaterialType[], Error>(['materials', 'materialTypes'], async () => {
     const data = await getAllMaterialTypes();
     return data;
