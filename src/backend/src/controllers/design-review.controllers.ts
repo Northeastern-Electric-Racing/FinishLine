@@ -29,9 +29,9 @@ export default class DesignReviewController {
       const submitter: User = await getCurrentUser(res);
       const {
         dateScheduled,
-        teamTypeName,
-        requiredMembers,
-        optionalMembers,
+        teamTypeId,
+        requiredMemberIds,
+        optionalMemberIds,
         location,
         isOnline,
         isInPerson,
@@ -44,9 +44,9 @@ export default class DesignReviewController {
       const createdDesignReview = await DesignReviewService.createDesignReview(
         submitter,
         dateScheduled,
-        teamTypeName,
-        requiredMembers,
-        optionalMembers,
+        teamTypeId,
+        requiredMemberIds,
+        optionalMemberIds,
         isOnline,
         isInPerson,
         docTemplateLink,

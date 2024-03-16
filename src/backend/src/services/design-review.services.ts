@@ -53,21 +53,20 @@ export default class DesignReviewService {
   }
 
   /**
-   *
-   * @param submitter user who created the design review
+   * Creates a design review
+   * @param submitter user who submitted the design review
    * @param dateScheduled when the design review is scheduled for
-   * @param teamTypeId team type id the design review concerns
-   * @param requiredMemberIds Ids of users who need to be at the design review
-   * @param optionalMemberIds Ids of users who do not need to be at the design review
-   * @param location where the design review will be held
-   * @param isOnline if the design reivew is held online
-   * @param isInPerson if the design review is held in person
-   * @param zoomLink what the zoom link is
-   * @param docTemplateLink doc template link
-   * @param wbsElementId wbs element id the design review is related to
-   * @param meetingTimes meeting times
-   * @throws if permissions are not valid to create a design review
-   * @returns a newly created design review
+   * @param teamTypeId team type id of the design review
+   * @param requiredMemberIds ids of the required members to attend the design review
+   * @param optionalMemberIds ids of the optional members to attend the design reivew
+   * @param isOnline if design review is online
+   * @param isInPerson if design review is in person
+   * @param docTemplateLink link to the doc template
+   * @param wbsNum wbs number for the design review
+   * @param meetingTimes the meeting times for the design review
+   * @param zoomLink link for the zoom if design review is online
+   * @param location location of the design review if in person
+   * @returns a design review
    */
   static async createDesignReview(
     submitter: User,
@@ -107,12 +106,13 @@ export default class DesignReviewService {
       throw new NotFoundException('WBS Element', wbsNum.carNumber);
     }
 
+    // checks if the meeting times are valid times and are all continous (ie. [1, 2, 3, 4])
     for (let i = 0; i < meetingTimes.length - 1; i++) {
       if (i === meetingTimes.length - 1) {
         continue;
       }
-      if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 84) {
-        throw new HttpException(400, 'Meeting times have to be continous and in range 0-48');
+      if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 83) {
+        throw new HttpException(400, 'Meeting times have to be continous and in range 0-83');
       }
     }
 
@@ -124,8 +124,8 @@ export default class DesignReviewService {
       throw new HttpException(400, 'If the design review is in person then there needs to be a location');
     }
 
-    if (dateScheduled.valueOf() <= new Date().valueOf()) {
-      throw new HttpException(400, 'Design review cannot be scheduled for the same day (or before), its created');
+    if (dateScheduled.valueOf() < new Date().valueOf()) {
+      throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
 
     const designReview = await prisma.design_Review.create({
@@ -148,13 +148,28 @@ export default class DesignReviewService {
       ...designReviewQueryArgs
     });
 
-    // send to all the people invited to the design review
-    for (const memberId of requiredMemberIds.concat(optionalMemberIds)) {
-      const memberUserSettings = await prisma.user_Settings.findUnique({ where: { userId: memberId } });
-      const member = await prisma.user.findUnique({ where: { userId: memberId } });
-      if (memberUserSettings && member && memberUserSettings.slackId && isLeadership(member.role)) {
+    const members = await prisma.user.findMany({
+      where: { userId: { in: optionalMemberIds.concat(requiredMemberIds) } }
+    });
+
+    if (!members) {
+      throw new NotFoundException('User', 'Cannot find members who are invited to the design review');
+    }
+
+    // get the user settings for all the members invited, who are leaderingship
+    const memberUserSettings = await prisma.user_Settings.findMany({
+      where: { userId: { in: members.filter((member) => isLeadership(member.role)).map((member) => member.userId) } }
+    });
+
+    if (!memberUserSettings) {
+      throw new NotFoundException('User Settings', 'Cannot find settings of members');
+    }
+
+    // send a slack message to all leadership invited to the design review
+    for (const memberUserSetting of memberUserSettings) {
+      if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewNotification(memberUserSettings.slackId, designReview.designReviewId);
+          await sendSlackDesignReviewNotification(memberUserSetting.slackId, designReview.designReviewId);
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
