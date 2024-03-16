@@ -106,8 +106,12 @@ export default class DesignReviewService {
       throw new NotFoundException('WBS Element', wbsNum.carNumber);
     }
 
+    if (meetingTimes.length === 0) {
+      throw new HttpException(400, 'There must be at least one meeting time');
+    }
+
     // checks if the meeting times are valid times and are all continous (ie. [1, 2, 3, 4])
-    for (let i = 0; i < meetingTimes.length - 1; i++) {
+    for (let i = 0; i < meetingTimes.length; i++) {
       if (i === meetingTimes.length - 1) {
         continue;
       }
