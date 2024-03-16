@@ -2,7 +2,22 @@ import { Box, Card, CardContent, Grid, IconButton, Stack, Typography } from '@mu
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { DesignReview } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
-import { getTeamTypeIcon } from '../../../utils/design-review.utils';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import TerminalIcon from '@mui/icons-material/Terminal';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
+
+const getTeamTypeIcon = (teamTypeId: string) => {
+  const teamIcons: Map<string, JSX.Element> = new Map([
+    ['Software', <TerminalIcon fontSize="small" style={{ color: 'white' }} />],
+    ['Business', <WorkOutlineIcon fontSize="small" style={{ color: 'white' }} />],
+    ['Electrical', <ElectricalServicesIcon fontSize="small" style={{ color: 'white' }} />],
+    ['Mechanical', <ConstructionIcon fontSize="small" style={{ color: 'white' }} />]
+  ]);
+  return teamIcons.get(teamTypeId);
+};
 
 interface CalendarDayCardProps {
   cardDate: Date;
@@ -28,15 +43,17 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
   const EventCard = (event: DesignReview) => {
     const name = event.designReviewId;
     return (
-      <Box marginLeft={0.5} marginBottom={0.5}>
-        <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
-          <Stack direction="row">
-            {getTeamTypeIcon(event.teamType.teamTypeId)}
-            <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14}>
-              {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
-            </Typography>
-          </Stack>
-        </Card>
+      <Box component={RouterLink} to={`${routes.CALENDAR}/1`} sx={{ textDecoration: 'none' }}>
+        <Box marginLeft={0.5} marginBottom={0.5}>
+          <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
+            <Stack direction="row">
+              {getTeamTypeIcon(event.teamType.teamTypeId)}
+              <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14} color={'white'}>
+                {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
+              </Typography>
+            </Stack>
+          </Card>
+        </Box>
       </Box>
     );
   };
