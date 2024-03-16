@@ -19,7 +19,11 @@ import {
 import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 
 describe('Design Reviews', () => {
-  beforeEach(() => {});
+  beforeEach(() => {
+    vi.spyOn(prisma.user, 'findMany').mockImplementation((users) => {
+      return [batman, wonderwoman, aquaman].filter((user) => user.userId.toString() === users.where.userId.in.toString());
+    });
+  });
 
   afterEach(() => {
     vi.clearAllMocks();
@@ -48,7 +52,7 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new AccessDeniedMemberException('edit design reviews'));
     });
 
-    test('Edit Reimbursement Request fails when ID does not exist', async () => {
+    test('Edit Design Review fails when ID does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
       await expect(() =>
         DesignReviewsService.editDesignReviews(
@@ -92,7 +96,7 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new DeletedException('Design Review', designReview1.designReviewId));
     });
 
-    test('Edit Reimbursement Request fails when TeamTypeId does not exist', async () => {
+    test('Edit Design Review fails when TeamTypeId does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
         DesignReviewsService.editDesignReviews(
@@ -136,7 +140,7 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new HttpException(400, 'required members cannot be in optional members'));
     });
 
-    test('Edit Reimbursement Request fails when required member doesnt exist', async () => {
+    test('Edit Design Review fails when required member doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
       await expect(() =>
         DesignReviewsService.editDesignReviews(
@@ -158,7 +162,7 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new HttpException(400, 'User(s) with the following ids not found: 1200'));
     });
 
-    test('Edit Reimbursement Request fails when optionalMember doesnt exist', async () => {
+    test('Edit Design Review fails when optionalMember doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
         DesignReviewsService.editDesignReviews(
@@ -329,7 +333,7 @@ describe('Design Reviews', () => {
   });
 
   describe('Delete Design Review Tests', () => {
-    test('Delete Reimbursment Request fails when ID does not exist', async () => {
+    test('Delete Design Review fails when ID does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
       await expect(() =>
         DesignReviewsService.deleteDesignReview(batman, prismaDesignReview1.designReviewId)
