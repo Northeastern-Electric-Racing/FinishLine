@@ -108,7 +108,6 @@ export default class DesignReviewsService {
   ): Promise<Design_Review> {
     // verify user is allowed to edit work package
     if (isNotLeadership(user.role)) throw new AccessDeniedMemberException('edit design reviews');
-    console.log(zoomLink);
 
     // make sure the requiredMembers are not in the optionalMembers
     if (requiredMembers.length > 0 && requiredMembers.some((rMember) => optionalMembers.includes(rMember))) {
