@@ -5,8 +5,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
 import VideocamIcon from '@mui/icons-material/Videocam';
-import { DesignReviewPill } from '../../../../components/DesignReviewPill';
-import { meetingStartTimePipe } from '../../../../utils/pipes';
+import { DesignReviewPill } from './DesignReviewPill';
+import { meetingStartTimePipe } from '../../../utils/pipes';
 
 interface DesignReviewSummaryModalDetailsProps {
   designReview: DesignReview;
@@ -71,7 +71,7 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
       <Grid item xs={3}>
         {isEditing ? (
           <FormControl>
-            <FormLabel sx={{ overflow: 'hidden', width: '100%', height: '23px' }}>Enter Zoom Link4f3rf3f3rf</FormLabel>
+            <FormLabel sx={{ overflow: 'hidden', width: '100%', height: '23px' }}>Enter Zoom URL</FormLabel>
             <TextField
               variant="standard"
               onChange={(event: ChangeEvent<HTMLInputElement>) => {

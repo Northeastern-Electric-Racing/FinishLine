@@ -7,7 +7,7 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import { useState } from 'react';
-import DRCSummaryModal from '../../Calendar/SummaryModal/DesignReviewSummaryModal';
+import DRCSummaryModal from '../DesignReviewSummaryModal';
 
 export const getTeamTypeIcon = (teamTypeId: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([

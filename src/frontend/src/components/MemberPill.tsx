@@ -4,7 +4,7 @@ import { User } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
-export const DesignReviewMemberPill: React.FC<{ user: User; handleClick: () => void }> = ({ user, handleClick }) => {
+export const MemberPill: React.FC<{ user: User; handleClick: () => void }> = ({ user, handleClick }) => {
   return (
     <Box
       sx={{

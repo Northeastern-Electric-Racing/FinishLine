@@ -2,9 +2,9 @@ import { Grid, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { DesignReview, User } from 'shared';
 import { useState } from 'react';
-import { DesignReviewMemberPill } from '../../../../components/DesignReviewMemberPill';
-import { useToast } from '../../../../hooks/toasts.hooks';
-import { useCurrentUser } from '../../../../hooks/users.hooks';
+import { MemberPill } from '../../../components/MemberPill';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface DesignReviewSummaryModalAttendeesProps {
   designReview: DesignReview;
@@ -32,41 +32,38 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
   };
 
   return (
-    <Box marginLeft="15px">
-      <Grid container direction="row" paddingY="6px">
-        <Grid item container>
+    <Box marginLeft="15px" paddingY="6px">
+      <Grid container>
+        <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
+          <Typography>Required: </Typography>
+        </Grid>
+        <Grid item xs={10} container>
+          {requiredMembers.map((member, index) => (
+            <Grid item key={index}>
+              <MemberPill
+                user={member}
+                handleClick={() => {
+                  handleRemoveRequiredMember(member);
+                }}
+              />
+            </Grid>
+          ))}
+        </Grid>
+        <Grid container>
           <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
-            <Typography>Required: </Typography>
+            <Typography>Optional: </Typography>
           </Grid>
           <Grid item xs={10} container>
-            {requiredMembers.map((member, index) => (
+            {optionalMembers.map((member, index) => (
               <Grid item key={index}>
-                <DesignReviewMemberPill
+                <MemberPill
                   user={member}
                   handleClick={() => {
-                    handleRemoveRequiredMember(member);
+                    handleRemoveOptionalMember(member);
                   }}
                 />
               </Grid>
             ))}
-          </Grid>
-
-          <Grid item container>
-            <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
-              <Typography>Optional: </Typography>
-            </Grid>
-            <Grid item xs={10} container>
-              {optionalMembers.map((member, index) => (
-                <Grid item key={index}>
-                  <DesignReviewMemberPill
-                    user={member}
-                    handleClick={() => {
-                      handleRemoveOptionalMember(member);
-                    }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
           </Grid>
         </Grid>
       </Grid>

@@ -2,10 +2,10 @@ import { TextField, Link, FormLabel, FormControl } from '@mui/material';
 import { useState, ChangeEvent } from 'react';
 import { DesignReview, wbsPipe } from 'shared';
 import { Link as RouterLink } from 'react-router-dom';
-import NERModal from '../../../../components/NERModal';
-import NERSuccessButton from '../../../../components/NERSuccessButton';
-import { useToast } from '../../../../hooks/toasts.hooks';
-import { routes } from '../../../../utils/routes';
+import NERModal from '../../../components/NERModal';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { routes } from '../../../utils/routes';
 
 export const DesignReviewDelayModal: React.FC<{ open: boolean; onHide: () => void; designReview: DesignReview }> = ({
   open,

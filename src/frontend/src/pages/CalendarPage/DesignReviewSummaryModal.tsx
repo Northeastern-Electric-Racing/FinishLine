@@ -1,17 +1,16 @@
 import { DesignReview } from 'shared';
-import NERModal from '../../../components/NERModal';
-import { Box, Grid, IconButton } from '@mui/material';
+import NERModal from '../../components/NERModal';
+import { Box, IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import { useState } from 'react';
 import { DesignReviewDelayModal } from './SummaryComponents/DesignReviewDelayModal';
-import StageGateWorkPackageModalContainer from '../../WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
+import StageGateWorkPackageModalContainer from '../WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import DesignReviewSummaryModalDetails from './SummaryComponents/DesignReviewSummaryModalDetails';
 import DesignReviewSummaryModalCheckBox from './SummaryComponents/DesignReviewSummaryCheckbox';
 import DesignReviewSummaryModalButtons from './SummaryComponents/DesignReviewSummaryModalButtons';
 import DesignReviewSummaryModalAttendees from './SummaryComponents/DesignReviewSummaryModalAttendees';
-import { getTeamTypeIcon } from '../../CalendarPage/CalendarComponents/CalendarDayCard';
-import DesignReviewSummaryModalDetailsButton from './SummaryComponents/DesignReviewDelayModalDetailsButton';
+import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -33,7 +32,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       hideFormButtons
       icon={getTeamTypeIcon(designReview.teamType.teamTypeId, true)}
     >
-      <Box width="500px">
+      <Box minWidth="500px">
         <Box position="absolute" right="16px" top="12px">
           {editing ? (
             <IconButton onClick={() => setEditing(false)}>
@@ -52,38 +51,22 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
           hideStatus
         />
         <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} designReview={designReview} />
-
-        <Grid container direction="column">
-          <Grid item>
-            <DesignReviewSummaryModalDetails designReview={designReview} isEditing={editing} />
-          </Grid>
-
-          <Grid item>
-            <DesignReviewSummaryModalAttendees designReview={designReview} />
-          </Grid>
-
-          <Grid item>
-            <DesignReviewSummaryModalCheckBox
-              onChange={(checked) => {
-                setChecked(checked);
-              }}
-              checked={checked}
-            />
-          </Grid>
-
-          <Grid item>
-            {checked ? (
-              <DesignReviewSummaryModalButtons
-                designReview={designReview}
-                handleStageGateClick={() => setShowStageGateModal(true)}
-                handleDelayClick={() => setShowDelayModal(true)}
-                checked={checked}
-              />
-            ) : (
-              <DesignReviewSummaryModalDetailsButton designReview={designReview} />
-            )}
-          </Grid>
-        </Grid>
+        <Box>
+          <DesignReviewSummaryModalDetails designReview={designReview} isEditing={editing} />
+          <DesignReviewSummaryModalAttendees designReview={designReview} />
+          <DesignReviewSummaryModalCheckBox
+            onChange={(checked) => {
+              setChecked(checked);
+            }}
+            checked={checked}
+          />
+          <DesignReviewSummaryModalButtons
+            designReview={designReview}
+            handleStageGateClick={() => setShowStageGateModal(true)}
+            handleDelayClick={() => setShowDelayModal(true)}
+            checked={checked}
+          />
+        </Box>
       </Box>
     </NERModal>
   );
