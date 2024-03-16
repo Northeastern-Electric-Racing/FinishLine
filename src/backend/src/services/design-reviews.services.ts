@@ -130,6 +130,12 @@ export default class DesignReviewsService {
     // throws if meeting times are not: consecutive and between 0-84
     meetingTimes = validateMeetingTimes(meetingTimes);
 
+    // docTemplateLink is required if the status is scheduled or done
+    if (status === Design_Review_Status.SCHEDULED || status === Design_Review_Status.DONE) {
+      if (docTemplateLink == null) {
+        throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
+      }
+    }
     // validate the design review exists and is not deleted
     const originaldesignReview = await prisma.design_Review.findUnique({
       where: { designReviewId }

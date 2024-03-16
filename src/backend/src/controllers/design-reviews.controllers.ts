@@ -55,7 +55,7 @@ export default class DesignReviewsController {
 
       const { designReviewId } = req.params;
 
-      // get the user from the header
+      // get the user from the submitter
       const user = await getCurrentUser(res);
 
       await DesignReviewsService.editDesignReviews(

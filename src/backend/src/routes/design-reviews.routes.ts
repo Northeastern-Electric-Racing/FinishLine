@@ -22,7 +22,7 @@ designReviewsRouter.post(
   body('isInPerson').isBoolean(),
   nonEmptyString(body('zoomLink')).isURL().optional(),
   nonEmptyString(body('location')).optional(),
-  nonEmptyString(body('docTemplateLink')).isURL(),
+  nonEmptyString(body('docTemplateLink')).isURL().optional(),
   isDesignReviewStatus(body('status')),
   body('attendees').isArray(),
   intMinZero(body('attendees.*')),

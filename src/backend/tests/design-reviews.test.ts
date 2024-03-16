@@ -15,6 +15,8 @@ import {
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
+import { AccessDeniedMemberException, DeletedException, NotFoundException, HttpException } from '../src/utils/errors.utils';
+import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 
 describe('Design Reviews', () => {
   beforeEach(() => {});
@@ -266,6 +268,28 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new HttpException(400, 'meeting time must be between 0-84'));
     });
 
+    test('Edit Design Review fails when no docTemplateLink, and status is scheduled or done', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
+      await expect(() =>
+        DesignReviewsService.editDesignReviews(
+          batman,
+          prismaDesignReview2.designReviewId,
+          prismaDesignReview2.dateScheduled,
+          prismaDesignReview2.teamTypeId,
+          [1],
+          [6],
+          true,
+          false,
+          prismaDesignReview2.zoomLink,
+          prismaDesignReview2.location,
+          null,
+          PrismaDesignReviewStatus.SCHEDULED,
+          [],
+          prismaDesignReview2.meetingTimes
+        )
+      ).rejects.toThrow(new HttpException(400, 'doc template link is required for scheduled and done design reviews'));
+    });
     test('Edit Design Review succeeds when user is lead or above', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview3);
       vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview3);
