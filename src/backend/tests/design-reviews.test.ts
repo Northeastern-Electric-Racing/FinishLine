@@ -15,7 +15,6 @@ import {
   HttpException,
   NotFoundException
 } from '../src/utils/errors.utils';
-import { AccessDeniedMemberException, DeletedException, NotFoundException, HttpException } from '../src/utils/errors.utils';
 import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 
 describe('Design Reviews', () => {
