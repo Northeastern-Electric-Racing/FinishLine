@@ -26,6 +26,7 @@ import { Box } from '@mui/system';
 import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
+import SettingsPage from '../pages/SettingsPage/SettingsPage';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -56,7 +57,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
             <Route path={routes.GANTT} component={GanttPageWrapper} />
             <Route path={routes.TEAMS} component={Teams} />
-            <Route path={routes.SETTINGS} component={Settings} />
+            <Route path={routes.SETTINGS} component={SettingsPage} />
             <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
             <Route path={routes.INFO} component={InfoPage} />
             <Route path={routes.CREDITS} component={Credits} />
