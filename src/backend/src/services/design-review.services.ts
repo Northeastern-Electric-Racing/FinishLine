@@ -162,7 +162,7 @@ export default class DesignReviewService {
 
     // get the user settings for all the members invited, who are leaderingship
     const memberUserSettings = await prisma.user_Settings.findMany({
-      where: { userId: { in: members.filter((member) => isLeadership(member.role)).map((member) => member.userId) } }
+      where: { userId: { in: members.map((member) => member.userId) } }
     });
 
     if (!memberUserSettings) {
