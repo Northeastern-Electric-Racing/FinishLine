@@ -10,9 +10,9 @@ export const DesignReviewPill: React.FC<{
     <Box
       sx={{
         display: 'flex',
+        whiteSpace: 'nowrap',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingX: 1,
         width: 'fit-content'
       }}
     >

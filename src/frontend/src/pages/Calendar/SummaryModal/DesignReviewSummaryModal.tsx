@@ -6,12 +6,12 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useState } from 'react';
 import { DesignReviewDelayModal } from './SummaryComponents/DesignReviewDelayModal';
 import StageGateWorkPackageModalContainer from '../../WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
-
-import { getTeamTypeIcon } from '../../../utils/design-review.utils';
 import DesignReviewSummaryModalDetails from './SummaryComponents/DesignReviewSummaryModalDetails';
 import DesignReviewSummaryModalCheckBox from './SummaryComponents/DesignReviewSummaryCheckbox';
 import DesignReviewSummaryModalButtons from './SummaryComponents/DesignReviewSummaryModalButtons';
 import DesignReviewSummaryModalAttendees from './SummaryComponents/DesignReviewSummaryModalAttendees';
+import { getTeamTypeIcon } from '../../CalendarPage/CalendarComponents/CalendarDayCard';
+import DesignReviewSummaryModalDetailsButton from './SummaryComponents/DesignReviewDelayModalDetailsButton';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -55,7 +55,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
 
         <Grid container direction="column">
           <Grid item>
-            <DesignReviewSummaryModalDetails designReview={designReview} editing={editing} />
+            <DesignReviewSummaryModalDetails designReview={designReview} isEditing={editing} />
           </Grid>
 
           <Grid item>
@@ -72,12 +72,16 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
           </Grid>
 
           <Grid item>
-            <DesignReviewSummaryModalButtons
-              designReview={designReview}
-              handleStageGateClick={() => setShowStageGateModal(true)}
-              handleDelayClick={() => setShowDelayModal(true)}
-              checked={checked}
-            />
+            {checked ? (
+              <DesignReviewSummaryModalButtons
+                designReview={designReview}
+                handleStageGateClick={() => setShowStageGateModal(true)}
+                handleDelayClick={() => setShowDelayModal(true)}
+                checked={checked}
+              />
+            ) : (
+              <DesignReviewSummaryModalDetailsButton designReview={designReview} />
+            )}
           </Grid>
         </Grid>
       </Box>

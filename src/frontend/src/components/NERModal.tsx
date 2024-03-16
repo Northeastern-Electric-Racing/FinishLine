@@ -37,7 +37,30 @@ const NERModal = ({
 }: NERModalProps) => {
   return (
     <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px', maxWidth: '700px' } }}>
-      <DialogTitle sx={{ backgroundColor: background }}>{title}</DialogTitle>
+      <DialogTitle sx={{ backgroundColor: background }}>
+        {icon ? (
+          <Box display="flex" justifyContent="left" alignItems="center">
+            <Icon
+              sx={{
+                position: 'absolute',
+                left: 10,
+                top: 17,
+                color: (theme) => theme.palette.text.primary,
+                width: 'max-content',
+                height: 'max-content'
+              }}
+            >
+              {icon}
+            </Icon>
+            <Typography fontFamily="inherit" fontSize={25} marginLeft="26px">
+              {title}
+            </Typography>
+          </Box>
+        ) : (
+          title
+        )}
+      </DialogTitle>
+
       {showCloseButton && (
         <IconButton
           aria-label="close"

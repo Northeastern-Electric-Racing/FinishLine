@@ -28,7 +28,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
   wbsNum,
   modalShow,
   handleClose,
-  hideStatus
+  hideStatus = false
 }) => {
   const auth = useAuth();
   const history = useHistory();
@@ -53,7 +53,7 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
     }
   };
 
-  if (!hideStatus || hideStatus === undefined) {
+  if (!hideStatus) {
     if (isLoading) return <LoadingIndicator />;
     if (isError) return <ErrorPage message={error?.message} />;
   }

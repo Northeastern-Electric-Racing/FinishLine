@@ -100,6 +100,33 @@ export const testDesignReview1: DesignReview = {
   wbsNum: { carNumber: 1, workPackageNumber: 1, projectNumber: 1 }
 };
 
+// TODO remove during wire up ticket
+export const exampleDesignReview1: DesignReview = {
+  designReviewId: 'Wiring',
+  dateScheduled: new Date(),
+  meetingTimes: [1, 2, 5],
+  dateCreated: new Date(),
+  userCreated: superman,
+  status: DesignReviewStatus.DONE,
+  teamType: {
+    teamTypeId: 'Electrical',
+    name: 'thisteam',
+    iconName: ''
+  },
+  requiredMembers: [batman, superman, greenlantern, flash, aquaman],
+  optionalMembers: [wonderwoman, alfred],
+  confirmedMembers: [],
+  deniedMembers: [],
+  location: 'Room 101',
+  isOnline: true,
+  isInPerson: false,
+  zoomLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  attendees: [],
+  wbsName: 'Battery',
+  wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
+  docTemplateLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+};
+
 // TODO: We will have to make a call to the backend to get this data
 export const usersToAvailabilities = new Map([
   [superman, [1, 2, 3, 4, 5, 6, 7]],

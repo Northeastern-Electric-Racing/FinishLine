@@ -171,6 +171,7 @@ export const meetingStartTimePipe = (times: number[]) => {
   return hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am');
 };
 
+// takes in a Date and returns it as a string in the form mm/dd/yy
 export const meetingDatePipe = (date?: Date) => {
   if (!date) return '';
   date = new Date(date.toDateString());
