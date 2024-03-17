@@ -4,7 +4,7 @@
  */
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
-import { designReviewTransformer } from '../../../backend/src/transformers/design-review.transformer';
+import { designReviewTransformer } from './transformers/design-reviews.tranformers';
 
 /**
  * Gets all the design reviews
