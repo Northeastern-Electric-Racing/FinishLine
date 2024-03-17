@@ -11,6 +11,26 @@ designReviewsRouter.delete('/:designReviewId/delete', DesignReviewsController.de
 designReviewsRouter.get('/:designReviewId', DesignReviewsController.getSingleDesignReview);
 
 designReviewsRouter.post(
+  '/create',
+  isDate(body('dateScheduled')),
+  nonEmptyString(body('teamTypeId')),
+  body('requiredMemberIds').isArray(),
+  intMinZero(body('requiredMemberIds.*')),
+  body('optionalMemberIds').isArray(),
+  intMinZero(body('optionalMemberIds.*')),
+  nonEmptyString(body('location').optional()),
+  body('isOnline').isBoolean(),
+  body('isInPerson').isBoolean(),
+  nonEmptyString(body('zoomLink').optional()),
+  nonEmptyString(body('docTemplateLink')).optional(),
+  body('wbsNum'),
+  body('meetingTimes').isArray(),
+  intMinZero(body('meetingTimes.*')),
+  validateInputs,
+  DesignReviewsController.createDesignReview
+);
+
+designReviewsRouter.post(
   '/:designReviewId/edit',
   isDate(body('dateScheduled')),
   nonEmptyString(body('teamTypeId')),

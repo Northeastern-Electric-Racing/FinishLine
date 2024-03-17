@@ -24,6 +24,43 @@ export default class DesignReviewsController {
     }
   }
 
+  static async createDesignReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const submitter: User = await getCurrentUser(res);
+      const {
+        dateScheduled,
+        teamTypeId,
+        requiredMemberIds,
+        optionalMemberIds,
+        location,
+        isOnline,
+        isInPerson,
+        zoomLink,
+        docTemplateLink,
+        wbsNum,
+        meetingTimes
+      } = req.body;
+
+      const createdDesignReview = await DesignReviewsService.createDesignReview(
+        submitter,
+        dateScheduled,
+        teamTypeId,
+        requiredMemberIds,
+        optionalMemberIds,
+        isOnline,
+        isInPerson,
+        docTemplateLink,
+        wbsNum,
+        meetingTimes,
+        zoomLink,
+        location
+      );
+      return res.status(200).json(createdDesignReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getSingleDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const drId: string = req.params.designReviewId;
