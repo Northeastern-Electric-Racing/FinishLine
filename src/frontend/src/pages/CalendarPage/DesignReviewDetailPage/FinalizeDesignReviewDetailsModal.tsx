@@ -51,7 +51,7 @@ const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit }: FinalizeD
               variant="outlined"
               value={docTemplate}
               onChange={(e) => setDocTemplate(e.target.value)}
-              style={{ backgroundColor: 'grey', borderRadius: 10 }}
+              style={{ borderRadius: 10 }}
               size="small"
             />
           </Grid>
@@ -68,7 +68,7 @@ const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit }: FinalizeD
             <Typography style={{ textDecoration: 'underline', marginBottom: 10, fontSize: '1.2em', marginRight: 135 }}>
               Location:
             </Typography>
-            <FormControl style={{ backgroundColor: 'grey', width: '45%', borderRadius: 5 }} fullWidth>
+            <FormControl style={{ width: '45%', borderRadius: 5 }} fullWidth>
               <InputLabel>Location</InputLabel>
               <Select value={location} onChange={handleLocationChange} variant="outlined">
                 {locations.map((loc: string) => (
