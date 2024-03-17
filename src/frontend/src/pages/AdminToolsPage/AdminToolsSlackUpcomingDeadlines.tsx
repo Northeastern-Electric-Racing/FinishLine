@@ -67,7 +67,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
       onHide={handleCloseModal}
       title="Attendee Design Review Information"
       showCloseButton={true}
-      hideFormButtons={true} // Set to false if you want to show form buttons
+      hideFormButtons={true}
     >
       <Table>
         <TableHead>
@@ -78,7 +78,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {/* Data row hookup, I've just put a stub there for now*/}
+          {/* Data row hookup comes here, I've just put a stub for now*/}
           <TableRow>
             <TableCell style={tableBodyCellStyle}>Batman</TableCell>
             <TableCell style={tableBodyCellStyle}>2</TableCell>
