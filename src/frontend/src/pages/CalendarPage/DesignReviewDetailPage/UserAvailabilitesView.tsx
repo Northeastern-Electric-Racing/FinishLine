@@ -7,7 +7,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useState } from 'react';
-import FinalizeDesignReviewModal from './FinalizeDesignReviewModal';
+import FinalizeDesignReviewDetailsModal from './FinalizeDesignReviewDetailsModal';
 
 interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
@@ -21,7 +21,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   usersToAvailabilities
 }) => {
   const theme = useTheme();
-  const [showFinalizeDesignReviewModal, setShowFinalizeDesignReviewModal] = useState(false);
+  const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
   const totalUsers = usersToAvailabilities.size;
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
 
@@ -100,11 +100,14 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             variant="contained"
             type="submit"
             sx={{ mx: 1 }}
-            onClick={() => setShowFinalizeDesignReviewModal(true)}
+            onClick={() => setShowFinalizeDesignReviewDetailsModal(true)}
           >
             Finalize
           </NERSuccessButton>
-          <FinalizeDesignReviewModal open={showFinalizeDesignReviewModal} setOpen={setShowFinalizeDesignReviewModal} />
+          <FinalizeDesignReviewDetailsModal
+            open={showFinalizeDesignReviewDetailsModal}
+            setOpen={setShowFinalizeDesignReviewDetailsModal}
+          />
         </Box>
       </Box>
     </Box>
