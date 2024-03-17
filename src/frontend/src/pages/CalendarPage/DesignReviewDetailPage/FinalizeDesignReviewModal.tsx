@@ -1,6 +1,3 @@
-import { SubmitHandler, SubmitErrorHandler } from 'react-hook-form';
-import NERFormModal from '../../../components/NERFormModal';
-import { Box } from '@mui/system';
 import NERModal from '../../../components/NERModal';
 
 interface FinalizeDesignReviewProps {
@@ -15,9 +12,9 @@ const FinalizeDesignReviewModal = ({ open, setOpen, onSubmit }: FinalizeDesignRe
   };
 
   return (
-    <NERModal 
-      open={open} 
-      title={''} 
+    <NERModal
+      open={open}
+      title={''}
       onHide={handleClose} // Call handleClose function to close the modal
       onSubmit={onSubmit}
     >

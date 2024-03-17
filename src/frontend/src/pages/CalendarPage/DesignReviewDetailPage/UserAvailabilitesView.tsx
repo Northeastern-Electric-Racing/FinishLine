@@ -18,7 +18,7 @@ interface UserAvailabilitiesProps {
 const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentAvailableUsers,
   currentUnavailableUsers,
-  usersToAvailabilities, 
+  usersToAvailabilities
 }) => {
   const theme = useTheme();
   const [showFinalizeDesignReviewModal, setShowFinalizeDesignReviewModal] = useState(false);
@@ -96,11 +96,15 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
         >
           <WarningIcon style={{ color: 'yellow', fontSize: '2em', marginTop: '5px' }} />
           <NERFailButton>Cancel</NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={() => setShowFinalizeDesignReviewModal(true)} >Finalize</NERSuccessButton>
-          <FinalizeDesignReviewModal
-            open={showFinalizeDesignReviewModal}
-            setOpen={setShowFinalizeDesignReviewModal}
-          />
+          <NERSuccessButton
+            variant="contained"
+            type="submit"
+            sx={{ mx: 1 }}
+            onClick={() => setShowFinalizeDesignReviewModal(true)}
+          >
+            Finalize
+          </NERSuccessButton>
+          <FinalizeDesignReviewModal open={showFinalizeDesignReviewModal} setOpen={setShowFinalizeDesignReviewModal} />
         </Box>
       </Box>
     </Box>
