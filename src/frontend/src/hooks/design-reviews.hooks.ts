@@ -3,7 +3,6 @@ import { editDesignReview } from '../apis/design-reviews.api';
 import { Design_Review_Status } from '@prisma/client';
 
 export interface EditDesignReviewPayload {
-  designReviewId: string;
   dateScheduled: Date;
   teamTypeId: string;
   requiredMembersIds: number[];
