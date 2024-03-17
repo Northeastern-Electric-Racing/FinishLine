@@ -36,14 +36,14 @@ export interface EditDesignReviewPayload {
 export const useEditDesignReview = (designReviewId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, EditDesignReviewPayload>(
-    ['design reviews', 'edit'],
+    ['design-reviews', 'edit'],
     async (designReviewPayload: EditDesignReviewPayload) => {
       const { data } = await editDesignReview(designReviewId, designReviewPayload);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['design reviews', designReviewId]);
+        queryClient.invalidateQueries(['design-reviews', designReviewId]);
       }
     }
   );
