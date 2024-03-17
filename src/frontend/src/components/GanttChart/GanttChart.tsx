@@ -1,11 +1,12 @@
 import { addDays, differenceInDays, eachDayOfInterval, getDate, isMonday, isWeekend } from 'date-fns';
 import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
-import { Date_Event, EventChange, applyChangeToEvent, applyChangesToEvents } from './event';
+import { Date_Event, EventChange, applyChangesToEvents } from './event';
 import { dateFormatMonthDate, dateToString } from './date.utils';
 import useId from '@mui/material/utils/useId';
 import dayjs from 'dayjs';
-import { Box, Grid } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
+import { purple } from '@mui/material/colors';
 
 interface GanttChartProps {
   start: Date;
@@ -31,12 +32,11 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
       <section style={{ overflow: 'scroll', padding: 5 }}>
         {/* Calendar/timeline */}
         <Box
-          gridTemplateColumns={`repeat(${days.length}, minmax(0, 1fr))`}
           sx={{
-            display: 'flex',
-            gap: 0.5,
-            gridTemplateRows: 'repeat(1, minmax(0, 1fr))',
-            width: 'fit-content'
+            display: 'grid',
+            gap: '0.25rem',
+            gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`
           }}
         >
           {days.map((day) => {
@@ -121,6 +121,8 @@ function Event({
   const [initialWidth, setInitialWidth] = useState(0); // original width of the component, should not change on resize
   const [width, setWidth] = useState(0); // current width of component, will change on resize
 
+  const theme = useTheme();
+
   useEffect(() => {
     if (bounds.width !== 0 && width === 0) {
       setInitialWidth(bounds.width);
@@ -177,11 +179,12 @@ function Event({
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <Box
-        gridTemplateColumns={`repeat(${days.length}, minmax(0, 1fr))`}
         sx={{
           width: '100%',
-          display: 'flex',
-          gap: 0.5,
+          display: 'grid',
+          gap: '0.25rem',
+          gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`,
           position: 'absolute',
           top: 0,
           left: 0
@@ -203,7 +206,15 @@ function Event({
             />
           ))}
       </Box>
-      <Box sx={{ display: 'grid', gridTemplateRows: 'repeat(1,  1fr)', gap: 0.5, width: '100%' }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: '0.25rem',
+          gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${days.length}, minmax(1.56rem, 1fr))`,
+          width: '100%'
+        }}
+      >
         <div
           ref={measureRef}
           {...props}
@@ -212,12 +223,10 @@ function Event({
             gridColumnEnd: endCol,
             height: '2.25rem',
             width: width === 0 ? `unset` : `${width}px`,
-            border: '1px solid black',
+            border: `1px solid ${isResizing ? 'rgb(37 99 235)' : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            borderColor: isResizing ? 'rgb(37 99 235)' : '',
-            backgroundColor: 'red'
+            backgroundColor: purple[100]
           }}
-          className={`${props.className} bg-gray-100 ${isResizing && `border-blue-600`}`}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
@@ -244,12 +253,12 @@ function Event({
                 userSelect: 'none'
               }}
             >
-              {event.title} ({dayjs(event.start).format('MMM D')}–{dayjs(event.end).format('MMM D')})
+              {event.title} ({dayjs(event.start).format('MMM D')}-{dayjs(event.end).format('MMM D')})
             </Box>
-            <div
-              style={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
+            <Box
+              sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
               onMouseDown={handleMouseDown}
-            ></div>
+            />
           </Box>
         </div>
       </Box>
