@@ -1,5 +1,5 @@
 import { Design_Review_Status, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { DesignReview, TeamType, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -25,6 +25,11 @@ export default class DesignReviewsService {
       ...designReviewQueryArgs
     });
     return designReviews.map(designReviewTransformer);
+  }
+
+  static async getAllTeamTypes(): Promise<TeamType[]> {
+    const teamTypes = await prisma.teamType.findMany();
+    return teamTypes;
   }
 
   /**

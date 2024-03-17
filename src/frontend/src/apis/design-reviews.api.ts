@@ -1,4 +1,8 @@
-import axios from 'axios';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+import axios from '../utils/axios';
 import { DesignReview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateDesignReviewsPayload } from '../hooks/design-reviews.hooks';
@@ -16,6 +20,15 @@ export const createDesignReviews = async (payload: CreateDesignReviewsPayload) =
  */
 export const getAllDesignReviews = () => {
   return axios.get(apiUrls.designReviews(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Gets all the team types
+ */
+export const getAllTeamTypes = () => {
+  return axios.get(apiUrls.teamTypes(), {
     transformResponse: (data) => JSON.parse(data)
   });
 };

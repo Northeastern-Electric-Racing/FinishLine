@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import OverdueWorkPackageAlerts from './OverdueWorkPackageAlerts';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
@@ -13,15 +13,9 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 
-// temp for testing DR create modal
-import { useState } from 'react';
-import { DesignReviewCreateModal } from '../../components/DesignReviewCreateModal';
-
 const Home = () => {
   const user = useCurrentUser();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-
-  const [open, setOpen] = useState(false); // temp for testing DR create modal
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -35,21 +29,6 @@ const Home = () => {
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
-
-      {/* temp for testing DR create modal */}
-      <DesignReviewCreateModal
-        showModal={open}
-        handleClose={() => {
-          setOpen(false);
-        }}
-      />
-      <Button
-        onClick={() => {
-          setOpen(true);
-        }}
-      >
-        Open DR Create Modal
-      </Button>
     </PageLayout>
   );
 };

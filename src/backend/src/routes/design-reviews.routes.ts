@@ -7,6 +7,8 @@ const designReviewsRouter = express.Router();
 
 designReviewsRouter.get('/', DesignReviewsController.getAllDesignReviews);
 
+designReviewsRouter.get('/teamType/all', DesignReviewsController.getAllTeamTypes);
+
 designReviewsRouter.delete('/:designReviewId/delete', DesignReviewsController.deleteDesignReview);
 designReviewsRouter.get('/:designReviewId', DesignReviewsController.getSingleDesignReview);
 

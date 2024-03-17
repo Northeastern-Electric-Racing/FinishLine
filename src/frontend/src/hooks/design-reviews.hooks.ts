@@ -1,6 +1,10 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { DesignReview, WbsNumber } from 'shared';
-import { createDesignReviews, getAllDesignReviews } from '../apis/design-reviews.api';
+import { DesignReview, TeamType, WbsNumber } from 'shared';
+import { createDesignReviews, getAllDesignReviews, getAllTeamTypes } from '../apis/design-reviews.api';
 
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
@@ -40,6 +44,18 @@ export const useCreateDesignReviews = () => {
 export const useAllDesignReviews = () => {
   return useQuery<DesignReview[], Error>(['design-reviews'], async () => {
     const { data } = await getAllDesignReviews();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get all team types
+ *
+ * @returns all the team types
+ */
+export const useAllTeamTypes = () => {
+  return useQuery<TeamType[], Error>(['teamTypes'], async () => {
+    const { data } = await getAllTeamTypes();
     return data;
   });
 };

@@ -18,9 +18,13 @@ import {
   testDesignReview1
 } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
+import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const CalendarPage = () => {
   const theme = useTheme();
+  const { data, isLoading, isError, error } = useAllTeamTypes();
 
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
 
@@ -67,6 +71,9 @@ const CalendarPage = () => {
     </ActionsMenu>
   );
 
+  if (!data || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error?.message} />;
+
   return (
     <PageLayout
       title="Design Review Calendar"
@@ -98,7 +105,11 @@ const CalendarPage = () => {
                       {isDayInDifferentMonth(day, week) ? (
                         <FillerCalendarDayCard day={day} />
                       ) : (
-                        <CalendarDayCard cardDate={cardDate} events={EventDict.get(cardDate.getDate()) ?? []} />
+                        <CalendarDayCard
+                          cardDate={cardDate}
+                          events={EventDict.get(cardDate.getDate()) ?? []}
+                          teamTypes={data}
+                        />
                       )}
                     </Box>
                   </Grid>

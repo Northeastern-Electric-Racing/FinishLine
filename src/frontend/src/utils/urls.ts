@@ -132,9 +132,9 @@ const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
 const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 
 /************** Design Review Endpoints *******************************/
-const designReviewsEndpoints = () => `${API_URL}/design-reviews`;
-const designReviewsCreate = () => `${designReviewsEndpoints}/create`;
 const designReviews = () => `${API_URL}/design-reviews`;
+const designReviewsCreate = () => `${designReviews()}/create`;
+const teamTypes = () => `${designReviews()}/teamType/all`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -242,9 +242,9 @@ export const apiUrls = {
   bomCreateMaterialType,
   bomCreateUnit,
 
-  designReviewsEndpoints,
-  designReviewsCreate,
   designReviews,
+  designReviewsCreate,
+  teamTypes,
 
   version
 };
