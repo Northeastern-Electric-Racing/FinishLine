@@ -117,6 +117,13 @@ export const updateUserSecureSettings = (settings: UserSecureSettings) => {
   return axios.post<{ message: string }>(apiUrls.userSecureSettingsSet(), settings);
 };
 
+/**
+ * Update the given user's schedule settings by UserId
+ */
+export const updateUserScheduleSettings = (settings: UserScheduleSettings) => {
+  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
+};
+
 export const updateUserRole = (id: number, role: string) => {
   return axios.post<{ message: string }>(apiUrls.userRoleByUserId(`${id}`), { role });
 };

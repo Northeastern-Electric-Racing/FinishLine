@@ -16,7 +16,8 @@ import {
   updateUserSecureSettings,
   getCurrentUserSecureSettings,
   getUserSecureSettings,
-  getUserScheduleSettings
+  getUserScheduleSettings,
+  updateUserScheduleSettings
 } from '../apis/users.api';
 import {
   User,
@@ -183,6 +184,28 @@ export const useUpdateUserSecureSettings = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['users', 'secure-settings']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom Hook to update a user's schedule settings
+ *
+ * @returns The mutation to update a user's schedule settings
+ */
+export const useUpdateUserScheduleSettings = () => {
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  return useMutation<UserScheduleSettings, Error, UserScheduleSettings>(
+    ['users', 'schedule-settings', 'update'],
+    async (settings: UserScheduleSettings) => {
+      const { data } = await updateUserScheduleSettings(settings);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
       }
     }
   );

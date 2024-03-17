@@ -8,19 +8,20 @@ import { FormControl, FormLabel, Grid, TextField, Typography } from '@mui/materi
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { NERButton } from '../../../components/NERButton';
-import { ScheduleSettingsFormInput } from './UserScheduleSettings';
-import AvailabilityEditModal from '../../CalendarPage/SchedulingComponents/AvailabilityEditModal';
+import { ScheduleSettingsFormInput, ScheduleSettingsPayload } from './UserScheduleSettings';
+import AvailabilityEditModal from './Availability/AvailabilityEditModal';
 import { useState } from 'react';
 import { UserScheduleSettings } from 'shared';
+import ExternalLink from '../../../components/ExternalLink';
 
 interface UserScheduleSettingsEditProps {
-  onSubmit: (data: { email: string; zoomLink: string; availabilities: number[] }) => Promise<void>;
+  onSubmit: (data: ScheduleSettingsPayload) => Promise<void>;
   defaultValues?: UserScheduleSettings;
 }
 
 const schema = yup.object().shape({
-  email: yup.string().required('Personal Gmail is required'),
-  zoomLink: yup.string().required('Slack ID is required')
+  personalGmail: yup.string().required('Personal Gmail is required'),
+  personalZoomLink: yup.string().required('Slack ID is required')
 });
 
 const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onSubmit, defaultValues }) => {
@@ -28,7 +29,7 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
   const [availabilities, setAvailabilities] = useState<number[]>(defaultValues?.availability || []);
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
-    onSubmit({ availabilities: availabilities, ...data });
+    onSubmit({ availability: availabilities, ...data });
   };
 
   const {
@@ -38,8 +39,8 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
   } = useForm<ScheduleSettingsFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
-      email: defaultValues?.personalGmail,
-      zoomLink: defaultValues?.personalZoomLink
+      personalGmail: defaultValues?.personalGmail,
+      personalZoomLink: defaultValues?.personalZoomLink
     }
   });
 
@@ -53,13 +54,13 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
           availabilites={availabilities}
           setAvailabilities={setAvailabilities}
         />
-        <Grid item sx={{ mb: 1 }} xs={12} sm={6}>
+        <Grid item sx={{ mb: 1 }} xs={12} sm={4}>
           <FormControl fullWidth>
             <FormLabel sx={{ display: 'flex' }}>
               <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Google Email</Typography>
             </FormLabel>
             <Controller
-              name="email"
+              name="personalGmail"
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
@@ -69,8 +70,8 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
                   autoComplete="off"
                   onChange={onChange}
                   value={value}
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
+                  error={!!errors.personalGmail}
+                  helperText={errors.personalGmail?.message}
                 />
               )}
             />
@@ -80,9 +81,13 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
           <FormControl fullWidth>
             <FormLabel sx={{ display: 'flex' }}>
               <Typography sx={{ whiteSpace: 'nowrap' }}>Personal Zoom Link</Typography>
+              <ExternalLink
+                link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0065760#:~:text=Sign%20in%20to%20the%20Zoom,Click%20Copy%20Invitation."
+                description="(Find your Personal Zoom Link)"
+              />
             </FormLabel>
             <Controller
-              name="zoomLink"
+              name="personalZoomLink"
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
@@ -92,15 +97,15 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
                   autoComplete="off"
                   onChange={onChange}
                   value={value}
-                  error={!!errors.zoomLink}
-                  helperText={errors.zoomLink?.message}
+                  error={!!errors.personalZoomLink}
+                  helperText={errors.personalZoomLink?.message}
                 />
               )}
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={6}>
-          <NERButton variant="contained" color="success" onClick={() => setEditAvailability(true)}>
+        <Grid item xs={12} sm={2} display={'flex'} alignItems={'center'} justifyContent={'end'}>
+          <NERButton variant="contained" onClick={() => setEditAvailability(true)}>
             Edit Availability
           </NERButton>
         </Grid>

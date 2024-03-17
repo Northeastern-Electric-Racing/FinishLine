@@ -23,6 +23,7 @@ const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -145,6 +146,7 @@ export const apiUrls = {
   userFavoriteProjects,
   userSecureSettings,
   userScheduleSettings,
+  userScheduleSettingsSet,
 
   projects,
   projectsByWbsNum,

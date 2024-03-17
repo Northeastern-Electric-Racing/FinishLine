@@ -1,4 +1,4 @@
-import NERModal from '../../../components/NERModal';
+import NERModal from '../../../../components/NERModal';
 import EditAvailability from './EditAvailability';
 
 interface DRCEditModalProps {
@@ -13,7 +13,7 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({ open, onHide, head
   const existingMeetingData = new Map<number, string>();
 
   return (
-    <NERModal open={open} onHide={onHide} title={header} onSubmit={onHide}>
+    <NERModal open={open} onHide={onHide} title={header} onSubmit={onHide} submitText="Save">
       <EditAvailability
         selectedTimes={availabilites}
         setSelectedTimes={setAvailabilities}

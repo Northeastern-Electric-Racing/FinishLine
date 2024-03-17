@@ -12,26 +12,50 @@ import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
 import PageBlock from '../../../layouts/PageBlock';
 import { User } from 'shared';
-import { useUserScheduleSettings } from '../../../hooks/users.hooks';
+import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 export interface ScheduleSettingsFormInput {
-  email: string;
-  zoomLink: string;
+  personalGmail: string;
+  personalZoomLink: string;
+}
+
+export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {
+  availability: number[];
 }
 
 const UserScheduleSettings = ({ user }: { user: User }) => {
   const [edit, setEdit] = useState(false);
+  const toast = useToast();
 
   const { data, isLoading, isError, error } = useUserScheduleSettings(user.userId);
+  const {
+    mutateAsync: updateUserScheduleSettings,
+    isLoading: updateUserScheduleSettingsIsLoading,
+    isError: updateUserScheduleSettingsIsError,
+    error: updateUserScheduleSettingsError
+  } = useUpdateUserScheduleSettings();
 
-  if (!data || isLoading) return <LoadingIndicator />;
+  if (!data || isLoading || updateUserScheduleSettingsIsLoading) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage error={error} message={error.message} />;
+  if (updateUserScheduleSettingsIsError)
+    return <ErrorPage error={updateUserScheduleSettingsError!} message={updateUserScheduleSettingsError?.message} />;
 
-  const handleConfirm = async (payload: { email: string; zoomLink: string; availabilities: number[] }) => {
+  const handleConfirm = async (payload: ScheduleSettingsPayload) => {
     setEdit(false);
+    try {
+      await updateUserScheduleSettings({
+        drScheduleSettingsId: data.drScheduleSettingsId,
+        ...payload
+      });
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   return (

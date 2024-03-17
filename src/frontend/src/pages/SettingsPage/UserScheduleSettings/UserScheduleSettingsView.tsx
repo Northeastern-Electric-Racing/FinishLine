@@ -5,27 +5,30 @@
 
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
-import ExternalLink from '../../../components/ExternalLink';
 import { NERButton } from '../../../components/NERButton';
-import InfoIcon from '@mui/icons-material/Info';
 import { UserScheduleSettings } from 'shared';
+import { useState } from 'react';
+import SingleAvailabilityModal from './Availability/SingleAvailabilityModal';
 
 const UserScheduleSettingsView = ({ scheduleSettings }: { scheduleSettings: UserScheduleSettings }) => {
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
+
   return (
     <Grid container spacing={6} sx={{ pt: '10px' }}>
-      <Grid item xs={12} sm={6} md={4} lg={6}>
+      <SingleAvailabilityModal
+        open={availabilityOpen}
+        onHide={() => setAvailabilityOpen(false)}
+        header={'Availability'}
+        availabilites={scheduleSettings.availability}
+      />
+      <Grid item xs={12} sm={6} lg={4}>
         <DetailDisplay label="Personal Google Email" content={scheduleSettings.personalGmail} />
       </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={6}>
+      <Grid item xs={12} sm={6} lg={5}>
         <DetailDisplay label="Personal Zoom Link" content={scheduleSettings.personalZoomLink} />
-        <ExternalLink
-          link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0065760#:~:text=Sign%20in%20to%20the%20Zoom,Click%20Copy%20Invitation."
-          description="Find your Zoom Id"
-          icon={<InfoIcon />}
-        />
       </Grid>
-      <Grid item xs={12} sm={6} md={4} lg={6}>
-        <NERButton variant="contained" color="success" onClick={() => {}}>
+      <Grid item xs={12} lg={3} display="flex" justifyContent={'flex-end'}>
+        <NERButton variant="contained" onClick={() => setAvailabilityOpen(true)}>
           View Availability
         </NERButton>
       </Grid>
