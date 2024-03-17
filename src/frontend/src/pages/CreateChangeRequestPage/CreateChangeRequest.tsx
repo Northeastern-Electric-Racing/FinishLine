@@ -41,6 +41,19 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
           approved: false
         }
       ]
+    : query.get('timelineDelay')
+    ? [
+        {
+          id: '',
+          description: 'Timeline Delay',
+          budgetImpact: 0,
+          timelineImpact: Number(query.get('timelineDelay')),
+          scopeImpact: 'No Changes',
+          createdBy: user,
+          dateCreated: new Date(),
+          approved: false
+        }
+      ]
     : [];
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>(defaultProposedSolution);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');

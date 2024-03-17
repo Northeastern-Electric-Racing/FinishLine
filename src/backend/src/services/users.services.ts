@@ -1,4 +1,4 @@
-import { User_Settings, User as PrismaUser } from '@prisma/client';
+import { User_Settings, User as PrismaUser, Schedule_Settings } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import {
   AuthenticatedUser,
@@ -338,5 +338,44 @@ export default class UsersService {
     if (!scheduleSettings) throw new HttpException(404, 'User Schedule Settings Not Found');
 
     return userScheduleSettingsTransformer(scheduleSettings);
+  }
+
+  /**
+   *
+   * @param user the user to set the schedule settings for
+   * @param personalGmail the user's personal gmail
+   * @param personalZoomLink the user's personal zoom link
+   * @param availability the user's availibility
+   * @returns the id of the user's schedule settings
+   */
+  static async setUserScheduleSettings(
+    user: User,
+    personalGmail: string,
+    personalZoomLink: string,
+    availability: number[]
+  ): Promise<Schedule_Settings> {
+    const existingUser = await prisma.schedule_Settings.findFirst({
+      where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
+    });
+
+    if (existingUser) {
+      throw new HttpException(400, 'Email already in use');
+    }
+
+    const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
+      where: { userId: user.userId },
+      update: {
+        personalGmail,
+        personalZoomLink,
+        availability
+      },
+      create: {
+        userId: user.userId,
+        personalGmail,
+        personalZoomLink,
+        availability
+      }
+    });
+    return newUserScheduleSettings;
   }
 }
