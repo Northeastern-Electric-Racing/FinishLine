@@ -13,7 +13,8 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
 import HelpIcon from '@mui/icons-material/Help';
-import { Dialog, DialogTitle, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import NERModal from '../../components/NERModal';
 
 const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const user = useCurrentUser();
@@ -48,20 +49,26 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   );
 
   const tableHeaderCellStyle = {
-    borderRight: '1px solid white',
-    borderBottom: '1px solid white'
+    borderRight: '2px solid white',
+    borderBottom: '2px solid white'
   };
 
   const tableBodyCellStyle = {
-    borderRight: '1px solid white'
+    borderRight: '2px solid white'
   };
 
   const lastHeaderCellStyle = {
-    borderBottom: '1px solid white'
+    borderBottom: '2px solid white'
   };
 
   const AttendeeModal = () => (
-    <Dialog open={isModalOpen} onClose={handleCloseModal}>
+    <NERModal
+      open={isModalOpen}
+      onHide={handleCloseModal}
+      title="Attendee Design Review Information"
+      showCloseButton={true}
+      hideFormButtons={true} // Set to false if you want to show form buttons
+    >
       <Table>
         <TableHead>
           <TableRow>
@@ -84,7 +91,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
           </TableRow>
         </TableBody>
       </Table>
-    </Dialog>
+    </NERModal>
   );
 
   return (
@@ -114,7 +121,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
           <NERButton
             variant="contained"
             disabled={!isAdmin(user.role) || disableButton || isLoading}
-            onClick={handleOpenModal} // Open modal on click
+            onClick={handleOpenModal}
           >
             Attendee Design Review Information
           </NERButton>
