@@ -8,18 +8,16 @@ import DetailDisplay from '../../../components/DetailDisplay';
 import ExternalLink from '../../../components/ExternalLink';
 import { NERButton } from '../../../components/NERButton';
 import InfoIcon from '@mui/icons-material/Info';
-import { useState } from 'react';
+import { UserScheduleSettings } from 'shared';
 
-const UserSchedulePrefView: React.FC = () => {
-  const [chooseModalShow, setChooseModalShow] = useState<boolean>(false);
-
+const UserScheduleSettingsView = ({ scheduleSettings }: { scheduleSettings: UserScheduleSettings }) => {
   return (
     <Grid container spacing={6} sx={{ pt: '10px' }}>
       <Grid item xs={12} sm={6} md={4} lg={6}>
-        <DetailDisplay label="Personal Google Email" content="--" />
+        <DetailDisplay label="Personal Google Email" content={scheduleSettings.personalGmail} />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={6}>
-        <DetailDisplay label="Personal Zoom Link" content="--" />
+        <DetailDisplay label="Personal Zoom Link" content={scheduleSettings.personalZoomLink} />
         <ExternalLink
           link="https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0065760#:~:text=Sign%20in%20to%20the%20Zoom,Click%20Copy%20Invitation."
           description="Find your Zoom Id"
@@ -27,13 +25,7 @@ const UserSchedulePrefView: React.FC = () => {
         />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={6}>
-        <NERButton
-          variant="contained"
-          color="success"
-          onClick={() => {
-            setChooseModalShow(true);
-          }}
-        >
+        <NERButton variant="contained" color="success" onClick={() => {}}>
           View Availability
         </NERButton>
       </Grid>
@@ -41,4 +33,4 @@ const UserSchedulePrefView: React.FC = () => {
   );
 };
 
-export default UserSchedulePrefView;
+export default UserScheduleSettingsView;

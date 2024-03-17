@@ -7,37 +7,52 @@ import * as yup from 'yup';
 import { FormControl, FormLabel, Grid, TextField, Typography } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ThemeName } from 'shared';
-import { SchedulePrefFormInput } from './UserSchedulePref';
 import { NERButton } from '../../../components/NERButton';
+import { ScheduleSettingsFormInput } from './UserScheduleSettings';
+import AvailabilityEditModal from '../../CalendarPage/SchedulingComponents/AvailabilityEditModal';
 import { useState } from 'react';
+import { UserScheduleSettings } from 'shared';
 
-interface UserPreferencesEditProps {
-  onSubmit: (data: SchedulePrefFormInput) => Promise<void>;
+interface UserScheduleSettingsEditProps {
+  onSubmit: (data: { email: string; zoomLink: string; availabilities: number[] }) => Promise<void>;
+  defaultValues?: UserScheduleSettings;
 }
 
 const schema = yup.object().shape({
-  defaultTheme: yup
-    .mixed<ThemeName>()
-    .oneOf(['DARK', 'LIGHT'], 'Invalid theme chosen')
-    .required('Default theme is required'),
-  slackId: yup.string().required('Slack ID is required')
+  email: yup.string().required('Personal Gmail is required'),
+  zoomLink: yup.string().required('Slack ID is required')
 });
 
-const UserSchedulePrefEdit: React.FC<UserPreferencesEditProps> = ({ onSubmit }) => {
-  const [chooseModalShow, setChooseModalShow] = useState<boolean>(false);
+const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onSubmit, defaultValues }) => {
+  const [editAvailabilityOpen, setEditAvailability] = useState(false);
+  const [availabilities, setAvailabilities] = useState<number[]>(defaultValues?.availability || []);
+
+  const onFormSubmit = (data: ScheduleSettingsFormInput) => {
+    onSubmit({ availabilities: availabilities, ...data });
+  };
 
   const {
     handleSubmit,
     control,
     formState: { errors }
-  } = useForm<SchedulePrefFormInput>({
-    resolver: yupResolver(schema)
+  } = useForm<ScheduleSettingsFormInput>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      email: defaultValues?.personalGmail,
+      zoomLink: defaultValues?.personalZoomLink
+    }
   });
 
   return (
-    <form id={'update-user-preferences'} onSubmit={handleSubmit(onSubmit)}>
+    <form id={'update-user-schedule-settings'} onSubmit={handleSubmit(onFormSubmit)}>
       <Grid container spacing={2}>
+        <AvailabilityEditModal
+          open={editAvailabilityOpen}
+          onHide={() => setEditAvailability(false)}
+          header="Edit Availability"
+          availabilites={availabilities}
+          setAvailabilities={setAvailabilities}
+        />
         <Grid item sx={{ mb: 1 }} xs={12} sm={6}>
           <FormControl fullWidth>
             <FormLabel sx={{ display: 'flex' }}>
@@ -85,13 +100,7 @@ const UserSchedulePrefEdit: React.FC<UserPreferencesEditProps> = ({ onSubmit }) 
           </FormControl>
         </Grid>
         <Grid item xs={12} sm={6} md={4} lg={6}>
-          <NERButton
-            variant="contained"
-            color="success"
-            onClick={() => {
-              setChooseModalShow(true);
-            }}
-          >
+          <NERButton variant="contained" color="success" onClick={() => setEditAvailability(true)}>
             Edit Availability
           </NERButton>
         </Grid>
@@ -100,4 +109,4 @@ const UserSchedulePrefEdit: React.FC<UserPreferencesEditProps> = ({ onSubmit }) 
   );
 };
 
-export default UserSchedulePrefEdit;
+export default UserScheduleSettingsEdit;

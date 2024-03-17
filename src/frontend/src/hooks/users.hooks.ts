@@ -15,9 +15,18 @@ import {
   getUsersFavoriteProjects,
   updateUserSecureSettings,
   getCurrentUserSecureSettings,
-  getUserSecureSettings
+  getUserSecureSettings,
+  getUserScheduleSettings
 } from '../apis/users.api';
-import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project, UserSecureSettings } from 'shared';
+import {
+  User,
+  AuthenticatedUser,
+  UserSettings,
+  UpdateUserRolePayload,
+  Project,
+  UserSecureSettings,
+  UserScheduleSettings
+} from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
@@ -109,6 +118,23 @@ export const useUserSecureSettings = (id: number) => {
   return useQuery<UserSecureSettings, Error>(['users', id, 'secure-settings'], async () => {
     const { data } = await getUserSecureSettings(id);
     return data;
+  });
+};
+
+/**
+ * Custom React Hook to supply a single user's schedule settings
+ *
+ * @param id User ID of the requested user's schedule settings
+ * @returns the user's schedule settings
+ */
+export const useUserScheduleSettings = (id: number) => {
+  return useQuery<UserScheduleSettings, Error>(['users', id, 'schedule-settings'], async () => {
+    try {
+      const { data } = await getUserScheduleSettings(id);
+      return data;
+    } catch (error: unknown) {
+      return { drScheduleSettingsId: '', personalGmail: '', personalZoomLink: '', availability: [] };
+    }
   });
 };
 

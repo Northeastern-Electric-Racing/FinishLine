@@ -7,20 +7,30 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { Grid, IconButton, Box } from '@mui/material';
-import UserSchedulePrefView from './UserSchedulePrefView';
-import UserSchedulePrefEdit from './UserSchedulePrefEdit';
+import { IconButton, Box } from '@mui/material';
+import UserScheduleSettingsView from './UserScheduleSettingsView';
+import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
 import PageBlock from '../../../layouts/PageBlock';
+import { User } from 'shared';
+import { useUserScheduleSettings } from '../../../hooks/users.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
-export interface SchedulePrefFormInput {
-  email: String;
-  zoomLink: String;
+export interface ScheduleSettingsFormInput {
+  email: string;
+  zoomLink: string;
 }
 
-const UserSchedulePref: React.FC = () => {
+const UserScheduleSettings = ({ user }: { user: User }) => {
   const [edit, setEdit] = useState(false);
 
-  const handleConfirm = async ({ email, zoomLink }: SchedulePrefFormInput) => {
+  const { data, isLoading, isError, error } = useUserScheduleSettings(user.userId);
+
+  if (!data || isLoading) return <LoadingIndicator />;
+
+  if (isError) return <ErrorPage error={error} message={error.message} />;
+
+  const handleConfirm = async (payload: { email: string; zoomLink: string; availabilities: number[] }) => {
     setEdit(false);
   };
 
@@ -34,20 +44,23 @@ const UserSchedulePref: React.FC = () => {
           </IconButton>
         ) : (
           <Box
-            className="d-flex flex-row"
             sx={{
               display: { xs: 'none', sm: 'flex' }
             }}
           >
             <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-            <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
+            <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-schedule-settings">
               Save
             </NERSuccessButton>
           </Box>
         )
       }
     >
-      <Grid container>{!edit ? <UserSchedulePrefView /> : <UserSchedulePrefEdit onSubmit={handleConfirm} />}</Grid>
+      {!edit ? (
+        <UserScheduleSettingsView scheduleSettings={data} />
+      ) : (
+        <UserScheduleSettingsEdit onSubmit={handleConfirm} defaultValues={data} />
+      )}
       {edit && (
         <Box
           sx={{
@@ -56,7 +69,7 @@ const UserSchedulePref: React.FC = () => {
           }}
         >
           <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-          <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
+          <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-schedule-settings">
             Save
           </NERSuccessButton>
         </Box>
@@ -65,4 +78,4 @@ const UserSchedulePref: React.FC = () => {
   );
 };
 
-export default UserSchedulePref;
+export default UserScheduleSettings;
