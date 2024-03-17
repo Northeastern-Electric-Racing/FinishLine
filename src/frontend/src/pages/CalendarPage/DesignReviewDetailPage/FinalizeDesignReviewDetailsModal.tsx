@@ -17,10 +17,10 @@ interface FinalizeDesignReviewProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   onSubmit?: () => void;
-  names: String[];
+  designReviews?: String[];
 }
 
-const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, names }: FinalizeDesignReviewProps) => {
+const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, designReviews }: FinalizeDesignReviewProps) => {
   const handleClose = () => {
     setOpen(false);
   };
@@ -79,24 +79,30 @@ const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, names }: Fi
             </FormControl>
           </Grid>
           <Grid container justifyContent="center" style={{ alignItems: 'center' }}>
-            <Box sx={{ backgroundColor: '#ef4345', width: '80%', padding: 0.5 }}>
-              <Typography>Design Reviews Day Conflicts</Typography>
-            </Box>
-            <Grid container justifyContent="center" style={{ marginBottom: 20 }}>
-              <Box
-                sx={{
-                  width: '80%',
-                  height: '90px',
-                  overflowY: 'auto',
-                  backgroundColor: 'grey',
-                  padding: 1
-                }}
-              >
-                {names.map((name) => (
-                  <Typography style={{ color: 'black', borderTop: '1px solid black' }}>{name}</Typography>
-                ))}
-              </Box>
-            </Grid>
+            {designReviews && designReviews.length > 0 && (
+              <Grid item container justifyContent="center" style={{ alignItems: 'center' }}>
+                <Box sx={{ backgroundColor: '#ef4345', width: '80%', padding: 0.5 }}>
+                  <Typography>Design Reviews Day Conflicts</Typography>
+                </Box>
+                <Grid item container justifyContent="center" style={{ marginBottom: 20 }}>
+                  <Box
+                    sx={{
+                      width: '80%',
+                      height: '90px',
+                      overflowY: 'auto',
+                      backgroundColor: 'grey',
+                      padding: 1
+                    }}
+                  >
+                    {designReviews.map((designReview, index) => (
+                      <Typography key={index} style={{ color: 'black', borderTop: '1px solid black' }}>
+                        {designReview}
+                      </Typography>
+                    ))}
+                  </Box>
+                </Grid>
+              </Grid>
+            )}
           </Grid>
         </Grid>
       </Grid>
