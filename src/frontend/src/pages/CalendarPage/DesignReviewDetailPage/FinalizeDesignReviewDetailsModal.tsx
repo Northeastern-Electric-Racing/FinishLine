@@ -17,14 +17,13 @@ interface FinalizeDesignReviewProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   onSubmit?: () => void;
+  names: String[];
 }
 
-const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit }: FinalizeDesignReviewProps) => {
+const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, names }: FinalizeDesignReviewProps) => {
   const handleClose = () => {
     setOpen(false);
   };
-
-  const names = ['jdel', 'dehkdh', 'dehjkdhk', 'dsahksdh', 'dsajkldsaj'];
   const locations = ['The Bay', 'Zoom'];
   const [docTemplate, setDocTemplate] = useState('');
   const [meetingType, setMeetingType] = useState<string[]>([]);
