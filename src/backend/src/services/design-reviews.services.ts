@@ -12,7 +12,7 @@ import {
 import { getUsers, getPrismaQueryUserIds } from '../utils/users.utils';
 import { validateMeetingTimes } from '../utils/design-reviews.utils';
 import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
-import { designReviewTransformer } from '../transformers/design-review.transformer';
+import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
 export default class DesignReviewsService {
   /**

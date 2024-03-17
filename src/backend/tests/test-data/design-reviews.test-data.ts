@@ -5,9 +5,9 @@ import {
   Design_Review as PrismaDesignReview
 } from '@prisma/client';
 import { batman, sharedBatman, wonderwoman } from './users.test-data';
-import designReviewQueryArgs from '../../src/prisma-query-args/design-review.query-args';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { DesignReview as SharedDesignReview, DesignReviewStatus as sharedDesignReviewStatus } from 'shared';
+import designReviewQueryArgs from '../../src/prisma-query-args/design-reviews.query-args';
 
 export const designReview1: PrismaDesignReview = {
   designReviewId: '1',
