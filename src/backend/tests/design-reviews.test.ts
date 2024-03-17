@@ -171,7 +171,7 @@ describe('Design Reviews', () => {
           designReview1.designReviewId,
           designReview1.dateScheduled,
           designReview1.teamTypeId,
-          [1],
+          [],
           [1200],
           designReview1.isOnline,
           designReview1.isInPerson,
@@ -313,7 +313,7 @@ describe('Design Reviews', () => {
         prismaDesignReview3.location,
         prismaDesignReview3.docTemplateLink,
         prismaDesignReview3.status,
-        [wonderwoman.userId],
+        [],
         prismaDesignReview3.meetingTimes
       );
 
