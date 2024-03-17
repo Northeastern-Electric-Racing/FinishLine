@@ -13,6 +13,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
 import HelpIcon from '@mui/icons-material/Help';
+import { Dialog, DialogTitle, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
 const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const user = useCurrentUser();
@@ -20,6 +21,9 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const [deadline, setDeadline] = useState<Date>(new Date());
   const [disableButton, setDisableButton] = useState(false);
   const { mutateAsync, isLoading } = useSlackUpcomingDeadlines();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
   const datePickerOnChange = (value: Date | null) => {
     if (value) setDeadline(value);
@@ -41,6 +45,46 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
       All work packages that have an end date up to and including the selected date will be messaged in Slack in the Leads
       channel.
     </Typography>
+  );
+
+  const tableHeaderCellStyle = {
+    borderRight: '1px solid white',
+    borderBottom: '1px solid white'
+  };
+
+  const tableBodyCellStyle = {
+    borderRight: '1px solid white'
+  };
+
+  const lastHeaderCellStyle = {
+    borderBottom: '1px solid white'
+  };
+
+  const AttendeeModal = () => (
+    <Dialog open={isModalOpen} onClose={handleCloseModal}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell style={tableHeaderCellStyle}>Team Member Name</TableCell>
+            <TableCell style={tableHeaderCellStyle}>No. Of Design Reviews Attended</TableCell>
+            <TableCell style={lastHeaderCellStyle}>Required to come but did not</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {/* Data row hookup, I've just put a stub there for now*/}
+          <TableRow>
+            <TableCell style={tableBodyCellStyle}>Batman</TableCell>
+            <TableCell style={tableBodyCellStyle}>2</TableCell>
+            <TableCell>4</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell style={tableBodyCellStyle}>Superman</TableCell>
+            <TableCell style={tableBodyCellStyle}>4</TableCell>
+            <TableCell>1</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </Dialog>
   );
 
   return (
@@ -67,11 +111,16 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
           </NERButton>
         </Grid>
         <Grid item>
-          <NERButton variant="contained" disabled={!isAdmin(user.role) || disableButton || isLoading}>
+          <NERButton
+            variant="contained"
+            disabled={!isAdmin(user.role) || disableButton || isLoading}
+            onClick={handleOpenModal} // Open modal on click
+          >
             Attendee Design Review Information
           </NERButton>
         </Grid>
       </Grid>
+      <AttendeeModal />
     </PageBlock>
   );
 };
