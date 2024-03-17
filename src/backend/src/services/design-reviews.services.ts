@@ -251,10 +251,6 @@ export default class DesignReviewsService {
     if (requiredMembers.length > 0 && requiredMembers.some((rMember) => optionalMembers.includes(rMember))) {
       throw new HttpException(400, 'required members cannot be in optional members');
     }
-    // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMembers));
-    const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembers));
-    const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
     // make sure there is a zoom link if the design review is online
     if (isOnline && zoomLink === null) {
@@ -286,6 +282,11 @@ export default class DesignReviewsService {
       where: { teamTypeId }
     });
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    // throw if a user isn't found, then build prisma queries for connecting userIds
+    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMembers));
+    const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembers));
+    const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
     // actually try to update the design review
     const updateDesignReviews = await prisma.design_Review.update({
