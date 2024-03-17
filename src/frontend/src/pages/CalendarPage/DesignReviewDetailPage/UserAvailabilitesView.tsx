@@ -107,6 +107,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
           <FinalizeDesignReviewDetailsModal
             open={showFinalizeDesignReviewDetailsModal}
             setOpen={setShowFinalizeDesignReviewDetailsModal}
+            names={['jdel', 'dehkdh', 'dehjkdhk', 'dsahksdh', 'dsajkldsaj']}
           />
         </Box>
       </Box>
