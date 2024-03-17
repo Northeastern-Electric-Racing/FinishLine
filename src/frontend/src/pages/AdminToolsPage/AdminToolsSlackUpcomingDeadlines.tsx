@@ -5,7 +5,17 @@
 
 import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
-import { Grid, TextField, Tooltip, Typography } from '@mui/material';
+import {
+  Grid,
+  TextField,
+  Tooltip,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent
+} from '@mui/material';
 import { useState } from 'react';
 import { useSlackUpcomingDeadlines } from '../../hooks/work-packages.hooks';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -25,6 +35,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+  const [selectedTeam, setSelectedTeam] = useState('');
 
   const datePickerOnChange = (value: Date | null) => {
     if (value) setDeadline(value);
@@ -61,6 +72,12 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
     borderBottom: '2px solid white'
   };
 
+  const teams = ['All', 'Team A', 'Team B', 'Team C'];
+
+  const handleTeamChange = (event: SelectChangeEvent) => {
+    setSelectedTeam(event.target.value as string);
+  };
+
   const AttendeeModal = () => (
     <NERModal
       open={isModalOpen}
@@ -69,6 +86,23 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
       showCloseButton={true}
       hideFormButtons={true}
     >
+      <FormControl fullWidth>
+        <InputLabel id="team-select-label">Team</InputLabel>
+        <Select
+          labelId="team-select-label"
+          id="team-select"
+          value={selectedTeam}
+          label="Team"
+          onChange={handleTeamChange}
+          sx={{ marginBottom: 2 }}
+        >
+          {teams.map((team) => (
+            <MenuItem key={team} value={team}>
+              {team}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <Table>
         <TableHead>
           <TableRow>
