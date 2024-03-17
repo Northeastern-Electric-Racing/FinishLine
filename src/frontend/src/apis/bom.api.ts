@@ -7,7 +7,7 @@ import { AssemblyFormInput } from '../pages/ProjectDetailPage/ProjectViewContain
 import { designReviewTransformer } from '../../../backend/src/transformers/design-review.transformer';
 
 /**
- * 
+ *
  */
 export const getSingleDesignReview = async (id: number) => {
   return axios.get<DesignReview>(apiUrls.designReviewsById(`${id}`), {
