@@ -104,7 +104,7 @@ export const testDesignReview1: DesignReview = {
 export const exampleDesignReview1: DesignReview = {
   designReviewId: 'Wiring',
   dateScheduled: new Date(),
-  meetingTimes: [1, 2, 5],
+  meetingTimes: [1, 2, 3, 4, 5],
   dateCreated: new Date(),
   userCreated: superman,
   status: DesignReviewStatus.DONE,
