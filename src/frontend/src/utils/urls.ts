@@ -22,6 +22,8 @@ const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
+const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -132,6 +134,7 @@ const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 /**************** Design Reviews Endpoints ****************/
 const designReviewsEndpoints = () => `${API_URL}/design-reviews`;
 const designReviewsEdit = (designReviewId: string) => `${designReviewsEndpoints()}/${designReviewId}/edit`;
+const designReviews = () => `${API_URL}/design-reviews`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -147,6 +150,8 @@ export const apiUrls = {
   userRoleByUserId,
   userFavoriteProjects,
   userSecureSettings,
+  userScheduleSettings,
+  userScheduleSettingsSet,
 
   projects,
   projectsByWbsNum,
@@ -184,6 +189,8 @@ export const apiUrls = {
   changeRequestsCreateStandard,
   changeRequestCreateProposeSolution,
   changeRequestRequestReviewer,
+
+  designReviews,
 
   teams,
   teamsById,

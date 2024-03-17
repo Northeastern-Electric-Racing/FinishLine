@@ -1,6 +1,22 @@
-import { useMutation, useQueryClient } from 'react-query';
-import { editDesignReview } from '../apis/design-reviews.api';
-import { Design_Review_Status } from '@prisma/client';
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { editDesignReview, getAllDesignReviews } from '../apis/design-reviews.api';
+import { DesignReview, DesignReviewStatus } from 'shared';
+
+/**
+ * Custom react hook to get all design reviews
+ *
+ * @returns all the design reviews
+ */
+export const useAllDesignReviews = () => {
+  return useQuery<DesignReview[], Error>(['design-reviews'], async () => {
+    const { data } = await getAllDesignReviews();
+    return data;
+  });
+};
 
 export interface EditDesignReviewPayload {
   dateScheduled: Date;
@@ -12,7 +28,7 @@ export interface EditDesignReviewPayload {
   zoomLink: string | null;
   location: string | null;
   docTemplateLink: string | null;
-  status: Design_Review_Status;
+  status: DesignReviewStatus;
   attendees: number[];
   meetingTimes: number[];
 }

@@ -1,4 +1,4 @@
-import { User_Settings, User as PrismaUser, Schedule_Settings } from '@prisma/client';
+import { User_Settings, User as PrismaUser } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import {
   AuthenticatedUser,
@@ -353,7 +353,7 @@ export default class UsersService {
     personalGmail: string,
     personalZoomLink: string,
     availability: number[]
-  ): Promise<Schedule_Settings> {
+  ): Promise<UserScheduleSettings> {
     const existingUser = await prisma.schedule_Settings.findFirst({
       where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
     });
@@ -376,6 +376,6 @@ export default class UsersService {
         availability
       }
     });
-    return newUserScheduleSettings;
+    return userScheduleSettingsTransformer(newUserScheduleSettings);
   }
 }
