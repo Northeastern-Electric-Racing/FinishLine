@@ -139,6 +139,8 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when required member doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
+
       await expect(() =>
         DesignReviewsService.editDesignReviews(
           batman,
@@ -161,6 +163,8 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when optionalMember doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
+
       await expect(() =>
         DesignReviewsService.editDesignReviews(
           batman,
@@ -301,7 +305,7 @@ describe('Design Reviews', () => {
         prismaDesignReview3.designReviewId,
         prismaDesignReview3.dateScheduled,
         prismaDesignReview3.teamTypeId,
-        [wonderwoman.userId],
+        [],
         [],
         prismaDesignReview3.isOnline,
         prismaDesignReview3.isInPerson,
