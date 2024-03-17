@@ -44,5 +44,6 @@ userRouter.post(
 );
 
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
+userRouter.get('/:userId/schedule-settings', UsersController.getUserScheduleSettings);
 
 export default userRouter;

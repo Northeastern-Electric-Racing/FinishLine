@@ -151,14 +151,14 @@ export default class UsersController {
       const { personalGmail, personalZoomLink, availability } = req.body;
       const user = await getCurrentUser(res);
 
-      const editedScheduleSettings = await UsersService.setUserScheduleSettings(
+      const updatedScheduleSettings = await UsersService.setUserScheduleSettings(
         user,
         personalGmail,
         personalZoomLink,
         availability
       );
 
-      return res.status(200).json(editedScheduleSettings);
+      return res.status(200).json(updatedScheduleSettings);
     } catch (error: unknown) {
       next(error);
     }
