@@ -216,8 +216,8 @@ export default class DesignReviewsService {
    * @param designReviewId the id of the design review to edit
    * @param dateScheduled the date of the design review
    * @param teamTypeId the team that the design_review is for (software, electrical, etc.)
-   * @param requiredMembers required members for the design review
-   * @param optionalMembers optional members for the design review
+   * @param requiredMembersIds required members Ids for the design review
+   * @param optionalMembersIds optional members Ids for the design review
    * @param isOnline is the design review online (IF TRUE: zoom link should be requried))
    * @param isInPerson is the design review in person (IF TRUE: location should be required)
    * @param zoomLink the zoom link for the design review meeting
@@ -233,8 +233,8 @@ export default class DesignReviewsService {
     designReviewId: string,
     dateScheduled: Date,
     teamTypeId: string,
-    requiredMembers: number[],
-    optionalMembers: number[],
+    requiredMembersIds: number[],
+    optionalMembersIds: number[],
     isOnline: boolean,
     isInPerson: boolean,
     zoomLink: string | null,
@@ -247,8 +247,8 @@ export default class DesignReviewsService {
     // verify user is allowed to edit work package
     if (isNotLeadership(user.role)) throw new AccessDeniedMemberException('edit design reviews');
 
-    // make sure the requiredMembers are not in the optionalMembers
-    if (requiredMembers.length > 0 && requiredMembers.some((rMember) => optionalMembers.includes(rMember))) {
+    // make sure the requiredMembersIds are not in the optionalMembers
+    if (requiredMembersIds.length > 0 && requiredMembersIds.some((rMemberId) => optionalMembersIds.includes(rMemberId))) {
       throw new HttpException(400, 'required members cannot be in optional members');
     }
 
@@ -284,8 +284,8 @@ export default class DesignReviewsService {
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
 
     // throw if a user isn't found, then build prisma queries for connecting userIds
-    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMembers));
-    const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembers));
+    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMembersIds));
+    const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembersIds));
     const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
     // actually try to update the design review
