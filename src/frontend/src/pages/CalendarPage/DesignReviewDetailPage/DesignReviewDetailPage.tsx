@@ -46,7 +46,16 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
           </Box>
         </Grid>
         <Grid item xs={3}>
-          <Box sx={{ padding: 1.5, fontSize: '1.2em', backgroundColor: 'grey', borderRadius: 3, textAlign: 'center', width: '80%' }}>
+          <Box
+            sx={{
+              padding: 1.5,
+              fontSize: '1.2em',
+              backgroundColor: 'grey',
+              borderRadius: 3,
+              textAlign: 'center',
+              width: '80%'
+            }}
+          >
             {name}
           </Box>
         </Grid>
