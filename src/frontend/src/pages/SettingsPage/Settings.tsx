@@ -17,6 +17,7 @@ import ErrorPage from '../ErrorPage';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { displayEnum } from '../../utils/pipes';
+import UserScheduleSettings from './UserScheduleSettings/UserScheduleSettings';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -112,7 +113,7 @@ const Settings: React.FC = () => {
 
   return (
     <PageLayout title="Settings">
-      {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
+      {showAlert && <Alert severity="info">Haha {user.firstName} bye bye!</Alert>}
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item xs={6} md={12}>
@@ -162,6 +163,7 @@ const Settings: React.FC = () => {
       </PageBlock>
       <UserSettings currentSettings={userSettingsData} />
       <UserSecureSettings currentSettings={userSecureSettings} />
+      <UserScheduleSettings user={user} />
     </PageLayout>
   );
 };

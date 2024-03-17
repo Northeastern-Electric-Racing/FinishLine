@@ -8,7 +8,7 @@ import {
   HeatmapColors,
   getBackgroundColor
 } from '../../../utils/design-review.utils';
-import TimeSlot from '../SchedulingComponents/TimeSlot';
+import TimeSlot from '../../../components/TimeSlot';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;

@@ -173,7 +173,7 @@ describe('Users', () => {
       vi.spyOn(prisma.schedule_Settings, 'upsert').mockResolvedValue(batmanScheduleSettings);
       const res = await UsersService.setUserScheduleSettings(batman, 'batman@gmail.com', 'https://zoom.com', [1, 2]);
 
-      expect(res).toBe(batmanScheduleSettings);
+      expect(res).toStrictEqual(batmanUserScheduleSettings);
     });
 
     test('setting same email does not work', async () => {
