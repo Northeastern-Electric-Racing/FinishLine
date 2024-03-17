@@ -17,17 +17,17 @@ export interface CreateDesignReviewsPayload {
 }
 
 export const useCreateDesignReviews = () => {
-    const queryClient = useQueryClient();
-    return useMutation<DesignReview, Error, CreateDesignReviewsPayload>(
-        ['design reviews', 'create'],
-        async (formData: CreateDesignReviewsPayload) => {
-            const {data} = await createDesignReviews(formData);
-            return data;
-        },
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries(['design reviews']);
-            }
-        }
-    );
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, CreateDesignReviewsPayload>(
+    ['design reviews', 'create'],
+    async (formData: CreateDesignReviewsPayload) => {
+      const { data } = await createDesignReviews(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design reviews']);
+      }
+    }
+  );
 };
