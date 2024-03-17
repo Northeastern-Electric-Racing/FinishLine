@@ -1,8 +1,19 @@
-import { prismaDesignReview1, prismaDesignReview2, sharedDesignReview1 } from './test-data/design-reviews.test-data';
-import { batman, wonderwoman } from './test-data/users.test-data';
+import {
+  prismaDesignReview1,
+  prismaDesignReview2,
+  sharedDesignReview1,
+  teamType1
+} from './test-data/design-reviews.test-data';
+import { batman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import DesignReviewService from '../src/services/design-review.services';
 import prisma from '../src/prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  NotFoundException
+} from '../src/utils/errors.utils';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
 
 describe('Design Reviews', () => {
   beforeEach(() => {});
@@ -89,6 +100,104 @@ describe('Design Reviews', () => {
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
       expect(result).toEqual(sharedDesignReview1);
+    });
+  });
+
+  describe('Create design review tests', () => {
+    test('Create design review succeeds', async () => {
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(teamType1);
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
+      vi.spyOn(prisma.design_Review, 'create').mockResolvedValue(prismaDesignReview1);
+
+      const res = await DesignReviewService.createDesignReview(
+        batman,
+        new Date('2024-03-25'),
+        '1',
+        [],
+        [],
+        true,
+        false,
+        'doc temp',
+        {
+          carNumber: 1,
+          projectNumber: 2,
+          workPackageNumber: 0
+        },
+        [0, 1, 2, 3],
+        'zoooooom'
+      );
+
+      expect(res.teamType).toBe(teamType1);
+    });
+
+    test('Create design review fails guest permission', async () => {
+      await expect(
+        DesignReviewService.createDesignReview(
+          theVisitor,
+          new Date('2024-03-25'),
+          '1',
+          [],
+          [],
+          true,
+          false,
+          'doc temp',
+          {
+            carNumber: 1,
+            projectNumber: 2,
+            workPackageNumber: 0
+          },
+          [0, 1, 2, 3],
+          'zoom'
+        )
+      ).rejects.toThrow(new AccessDeniedException('create design review'));
+    });
+
+    test('Create design review team type not found', async () => {
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(null);
+      await expect(
+        DesignReviewService.createDesignReview(
+          batman,
+          new Date('2024-03-25'),
+          '15',
+          [],
+          [],
+          true,
+          false,
+          'doc temp',
+          {
+            carNumber: 1,
+            projectNumber: 2,
+            workPackageNumber: 0
+          },
+          [0, 1, 2, 3],
+          'zoom'
+        )
+      ).rejects.toThrow(new NotFoundException('Team Type', '15'));
+    });
+
+    test('Create design review wbs element not found', async () => {
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(teamType1);
+
+      vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
+      await expect(
+        DesignReviewService.createDesignReview(
+          batman,
+          new Date('2024-03-25'),
+          '1',
+          [],
+          [],
+          true,
+          false,
+          'doc temp',
+          {
+            carNumber: 15,
+            projectNumber: 2,
+            workPackageNumber: 0
+          },
+          [0, 1, 2, 3],
+          'zoom'
+        )
+      ).rejects.toThrow(new NotFoundException('WBS Element', 15));
     });
   });
 });
