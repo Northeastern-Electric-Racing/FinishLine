@@ -339,4 +339,43 @@ export default class UsersService {
 
     return userScheduleSettingsTransformer(scheduleSettings);
   }
+
+  /**
+   *
+   * @param user the user to set the schedule settings for
+   * @param personalGmail the user's personal gmail
+   * @param personalZoomLink the user's personal zoom link
+   * @param availability the user's availibility
+   * @returns the id of the user's schedule settings
+   */
+  static async setUserScheduleSettings(
+    user: User,
+    personalGmail: string,
+    personalZoomLink: string,
+    availability: number[]
+  ): Promise<UserScheduleSettings> {
+    const existingUser = await prisma.schedule_Settings.findFirst({
+      where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
+    });
+
+    if (existingUser) {
+      throw new HttpException(400, 'Email already in use');
+    }
+
+    const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
+      where: { userId: user.userId },
+      update: {
+        personalGmail,
+        personalZoomLink,
+        availability
+      },
+      create: {
+        userId: user.userId,
+        personalGmail,
+        personalZoomLink,
+        availability
+      }
+    });
+    return userScheduleSettingsTransformer(newUserScheduleSettings);
+  }
 }

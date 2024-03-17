@@ -51,7 +51,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
         height: small ? '25px' : '4.7vh',
         width: small ? '81px' : '12.2%',
         backgroundColor,
-        cursor: 'pointer',
+        cursor: onMouseEnter ? 'pointer' : undefined,
         borderStyle: 'solid',
         borderColor: 'gray',
         borderWidth: '0.1px',

@@ -1,18 +1,20 @@
-import { DesignReview, WbsNumber, isAdmin, isLeadership } from 'shared';
+import { Design_Review_Status, User } from '@prisma/client';
+import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
-  AccessDeniedAdminOnlyException,
-  DeletedException,
   NotFoundException,
+  AccessDeniedMemberException,
+  DeletedException,
   HttpException,
+  AccessDeniedAdminOnlyException,
   AccessDeniedException
 } from '../utils/errors.utils';
-import { User, Design_Review_Status } from '@prisma/client';
-import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
-import { designReviewTransformer } from '../transformers/design-review.transformer';
+import { getUsers, getPrismaQueryUserIds } from '../utils/users.utils';
+import { validateMeetingTimes } from '../utils/design-reviews.utils';
+import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
+import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
-
-export default class DesignReviewService {
+export default class DesignReviewsService {
   /**
    * Gets all design reviews in the database
    * @returns All of the design reviews
@@ -206,5 +208,112 @@ export default class DesignReviewService {
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
 
     return designReviewTransformer(designReview);
+  }
+
+  /**
+   * Edits a Design_Review in the database
+   * @param user the user editing the design review (must be leadership)
+   * @param designReviewId the id of the design review to edit
+   * @param dateScheduled the date of the design review
+   * @param teamTypeId the team that the design_review is for (software, electrical, etc.)
+   * @param requiredMembersIds required members Ids for the design review
+   * @param optionalMembersIds optional members Ids for the design review
+   * @param isOnline is the design review online (IF TRUE: zoom link should be requried))
+   * @param isInPerson is the design review in person (IF TRUE: location should be required)
+   * @param zoomLink the zoom link for the design review meeting
+   * @param location the location for the design review meeting
+   * @param docTemplateLink the document template link for the design review
+   * @param status see Design_Review_Status enum
+   * @param attendees the attendees for the design review (should they have any relation to the other shit / can't edit this after STATUS: DONE)
+   * @param meetingTimes meeting time must be between 0-83 (Monday 12am - Sunday 12am, 1hr minute increments)
+   */
+
+  static async editDesignReview(
+    user: User,
+    designReviewId: string,
+    dateScheduled: Date,
+    teamTypeId: string,
+    requiredMembersIds: number[],
+    optionalMembersIds: number[],
+    isOnline: boolean,
+    isInPerson: boolean,
+    zoomLink: string | null,
+    location: string | null,
+    docTemplateLink: string | null,
+    status: Design_Review_Status,
+    attendees: number[],
+    meetingTimes: number[]
+  ): Promise<DesignReview> {
+    // verify user is allowed to edit work package
+    if (isNotLeadership(user.role)) throw new AccessDeniedMemberException('edit design reviews');
+
+    // make sure the requiredMembersIds are not in the optionalMembers
+    if (requiredMembersIds.length > 0 && requiredMembersIds.some((rMemberId) => optionalMembersIds.includes(rMemberId))) {
+      throw new HttpException(400, 'required members cannot be in optional members');
+    }
+
+    // make sure there is a zoom link if the design review is online
+    if (isOnline && zoomLink === null) {
+      throw new HttpException(400, 'zoom link is required for online design reviews');
+    }
+    // make sure there is a location if the design review is in person
+    if (isInPerson && location === null) {
+      throw new HttpException(400, 'location is required for in person design reviews');
+    }
+
+    // throws if meeting times are not: consecutive and between 0-83
+    meetingTimes = validateMeetingTimes(meetingTimes);
+
+    // docTemplateLink is required if the status is scheduled or done
+    if (status === Design_Review_Status.SCHEDULED || status === Design_Review_Status.DONE) {
+      if (docTemplateLink == null) {
+        throw new HttpException(400, 'doc template link is required for scheduled and done design reviews');
+      }
+    }
+    // validate the design review exists and is not deleted
+    const originaldesignReview = await prisma.design_Review.findUnique({
+      where: { designReviewId }
+    });
+    if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
+    if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+
+    // validate the teamTypeId exists
+    const teamType = await prisma.teamType.findUnique({
+      where: { teamTypeId }
+    });
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    // throw if a user isn't found, then build prisma queries for connecting userIds
+    const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMembersIds));
+    const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembersIds));
+    const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
+
+    // actually try to update the design review
+    const updateDesignReview = await prisma.design_Review.update({
+      where: { designReviewId },
+      ...designReviewQueryArgs,
+      data: {
+        designReviewId,
+        dateScheduled,
+        meetingTimes,
+        status,
+        teamTypeId,
+        requiredMembers: {
+          set: updatedRequiredMembers
+        },
+        optionalMembers: {
+          set: updatedOptionalMembers
+        },
+        location,
+        isOnline,
+        isInPerson,
+        zoomLink,
+        docTemplateLink,
+        attendees: {
+          set: updatedAttendees
+        }
+      }
+    });
+    return designReviewTransformer(updateDesignReview);
   }
 }

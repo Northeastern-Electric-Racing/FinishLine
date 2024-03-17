@@ -10,3 +10,12 @@ import { CreateDesignReviewsPayload } from '../hooks/design-reviews.hooks';
 export const createDesignReviews = async (payload: CreateDesignReviewsPayload) => {
   return axios.post<DesignReview>(apiUrls.designReviewsCreate(), payload);
 };
+
+/**
+ * Gets all the design reviews
+ */
+export const getAllDesignReviews = () => {
+  return axios.get(apiUrls.designReviews(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};

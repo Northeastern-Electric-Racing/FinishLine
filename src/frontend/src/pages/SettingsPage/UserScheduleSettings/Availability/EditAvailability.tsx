@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import { useState } from 'react';
-import { HeatmapColors, EnumToArray, DAY_NAMES, REVIEW_TIMES } from '../../../utils/design-review.utils';
-import TimeSlot from './TimeSlot';
+import { HeatmapColors, EnumToArray, DAY_NAMES, REVIEW_TIMES } from '../../../../utils/design-review.utils';
+import TimeSlot from '../../../../components/TimeSlot';
 
 interface EditAvailabilityProps {
   selectedTimes: number[];

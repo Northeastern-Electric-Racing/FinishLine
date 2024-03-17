@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { DesignReview, WbsNumber } from 'shared';
-import { createDesignReviews } from '../apis/design-reviews.api';
+import { createDesignReviews, getAllDesignReviews } from '../apis/design-reviews.api';
 
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
@@ -30,4 +30,16 @@ export const useCreateDesignReviews = () => {
       }
     }
   );
+};
+
+/**
+ * Custom react hook to get all design reviews
+ *
+ * @returns all the design reviews
+ */
+export const useAllDesignReviews = () => {
+  return useQuery<DesignReview[], Error>(['design-reviews'], async () => {
+    const { data } = await getAllDesignReviews();
+    return data;
+  });
 };
