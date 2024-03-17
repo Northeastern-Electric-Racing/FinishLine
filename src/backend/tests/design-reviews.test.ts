@@ -17,17 +17,12 @@ import {
   NotFoundException
 } from '../src/utils/errors.utils';
 import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
-import { GetResult } from '@prisma/client/runtime';
 
 describe('Design Reviews', () => {
   beforeEach(() => {
-    vi.spyOn(prisma.user, 'findMany').mockImplementation(
-      (users: { where: { userId: { in: { toString: () => string } } } }) => {
-        return [batman, wonderwoman, aquaman].filter(
-          (user) => user.userId.toString() === users.where?.userId?.in?.toString()
-        );
-      }
-    );
+    vi.spyOn(prisma.user, 'findMany').mockImplementation((users) => {
+      return [batman, wonderwoman, aquaman].filter((user) => user.userId.toString() === users.where?.userId?.in?.toString());
+    });
   });
 
   afterEach(() => {
