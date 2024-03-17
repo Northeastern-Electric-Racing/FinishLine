@@ -20,8 +20,11 @@ interface UserScheduleSettingsEditProps {
 }
 
 const schema = yup.object().shape({
-  personalGmail: yup.string().required('Personal Gmail is required'),
-  personalZoomLink: yup.string().required('Slack ID is required')
+  personalGmail: yup.string().email('Must be an email address').required('Personal Gmail is required'),
+  personalZoomLink: yup
+    .string()
+    .required('Personal Zoom Link is required')
+    .test('zoom-link', 'Must be a valid zoom link', (value) => value!.includes('zoom.us/'))
 });
 
 const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onSubmit, defaultValues }) => {
