@@ -11,6 +11,10 @@ import DesignReviewSummaryModalCheckBox from './SummaryComponents/DesignReviewSu
 import DesignReviewSummaryModalButtons from './SummaryComponents/DesignReviewSummaryModalButtons';
 import DesignReviewSummaryModalAttendees from './SummaryComponents/DesignReviewSummaryModalAttendees';
 import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
+import { useEditDesignReview } from '../../hooks/design-reviews.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -24,6 +28,38 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
   const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
 
+  const toast = useToast();
+
+  const {
+    isLoading: editDesignReviewIsLoading,
+    mutateAsync: editDesignReview,
+    isError: editDesignReviewIsError,
+    error: editDesignReviewError
+  } = useEditDesignReview(designReview.designReviewId);
+
+  const onSave = async () => {
+    setEditing(false);
+    try {
+      await editDesignReview({
+        ...designReview,
+        zoomLink: designReview.zoomLink ?? '',
+        location: designReview.location ?? '',
+        docTemplateLink: designReview.docTemplateLink ?? '',
+        teamTypeId: designReview.teamType.teamTypeId,
+        attendees: designReview.attendees.map((user) => user.userId),
+        requiredMembersIds: designReview.requiredMembers.map((member) => member.userId),
+        optionalMembersIds: designReview.optionalMembers.map((member) => member.userId)
+      });
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+  };
+
+  if (!designReview || editDesignReviewIsLoading) return <LoadingIndicator />;
+  if (editDesignReviewIsError) return <ErrorPage error={editDesignReviewError!} message={editDesignReviewError?.message} />;
+
   return (
     <NERModal
       open={open}
@@ -35,7 +71,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       <Box minWidth="500px">
         <Box position="absolute" right="16px" top="12px">
           {editing ? (
-            <IconButton onClick={() => setEditing(false)}>
+            <IconButton onClick={onSave}>
               <SaveIcon />
             </IconButton>
           ) : (
