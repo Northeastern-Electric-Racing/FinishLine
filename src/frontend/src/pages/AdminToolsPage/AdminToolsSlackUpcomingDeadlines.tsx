@@ -66,6 +66,11 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
             Send
           </NERButton>
         </Grid>
+        <Grid item>
+          <NERButton variant="contained" disabled={!isAdmin(user.role) || disableButton || isLoading}>
+            Attendee Design Review Information
+          </NERButton>
+        </Grid>
       </Grid>
     </PageBlock>
   );
