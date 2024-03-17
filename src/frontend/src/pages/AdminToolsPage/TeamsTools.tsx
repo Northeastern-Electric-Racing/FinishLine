@@ -1,16 +1,4 @@
-import {
-  Box,
-  FormControl,
-  FormLabel,
-  Grid,
-  TableCell,
-  TableRow,
-  Button,
-  IconButton,
-  TextField,
-  useTheme
-} from '@mui/material';
-import { Edit } from '@mui/icons-material';
+import { Box, FormControl, FormLabel, Grid, TableCell, TableRow, Button, TextField, useTheme } from '@mui/material';
 import { routes } from '../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import PageBlock from '../../layouts/PageBlock';
@@ -27,12 +15,11 @@ import ReactMarkdown from 'react-markdown';
 import * as yup from 'yup';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isHead, isUnderWordCount, countWords, isAdmin } from 'shared';
+import { isHead, isUnderWordCount, countWords } from 'shared';
 import { userComparator, userToAutocompleteOption } from '../../utils/teams.utils';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { ReactNode, useState } from 'react';
-import { useAuth } from '../../hooks/auth.hooks';
 
 const schema = yup.object().shape({
   teamName: yup.string().required('Team Name is Required'),
@@ -59,9 +46,7 @@ const TeamsTools = () => {
   const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
   const { isLoading, mutateAsync } = useCreateTeam();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
-  const auth = useAuth();
   const theme = useTheme();
-  const [isEditingDescription, setIsEditingDescription] = useState(true);
   const [currentDescription, setCurrentDescription] = useState('');
   const [prevDescription, setPrevDescription] = useState('');
   const [isPreview, setIsPreview] = useState(false);
@@ -82,7 +67,7 @@ const TeamsTools = () => {
     return <ErrorPage message={allTeamsError.message} />;
   }
 
-  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
+  if (allUsersIsError) return <ErrorPage message={allUsersError.message} />;
   const onFormSubmit = async (data: CreateTeamFormInput) => {
     try {
       await mutateAsync({ ...data, headId: Number(data.headId) });
@@ -100,7 +85,7 @@ const TeamsTools = () => {
     .sort(userComparator)
     .map(userToAutocompleteOption);
 
-  const teamTableRows = allTeams?.map((team) => (
+  const teamTableRows = allTeams.map((team) => (
     <TableRow component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
       <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
@@ -109,13 +94,6 @@ const TeamsTools = () => {
       </TableCell>
     </TableRow>
   ));
-
-  const resetDefaults = () => {
-    setIsEditingDescription(false);
-    setIsPreview(false);
-  };
-
-  const hasPerms = auth.user && isAdmin(auth.user.role);
 
   interface DescriptionButtonsProps {
     toRight: ReactNode;
@@ -144,7 +122,7 @@ const TeamsTools = () => {
         onClick={() => {
           setCurrentDescription(prevDescription);
           setPrevDescription('');
-          resetDefaults();
+          setIsPreview(true);
         }}
       >
         Cancel
@@ -165,15 +143,6 @@ const TeamsTools = () => {
       >
         {isPreview ? 'Edit' : 'Preview'}
       </Button>
-    </Box>
-  );
-
-  const nonEditingView = (
-    <Box sx={{ display: 'flex-col' }}>
-      <DescriptionButtons
-        toRight={hasPerms ? <IconButton onClick={() => setIsEditingDescription(true)} children={<Edit />} /> : null}
-      />
-      <ReactMarkdown className={styles.markdown}>{currentDescription}</ReactMarkdown>
     </Box>
   );
 
@@ -205,7 +174,7 @@ const TeamsTools = () => {
                 control={control}
                 render={({ field: { onChange, value } }) => (
                   <NERAutocomplete
-                    value={headOptions?.find((option) => option.id === value) || { id: '', label: '' }}
+                    value={headOptions.find((option) => option.id === value) || { id: '', label: '' }}
                     onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
                     options={headOptions}
                     id="create-team-head"
@@ -221,37 +190,31 @@ const TeamsTools = () => {
                 name="description"
                 control={control}
                 rules={{ required: true }}
-                render={({ field }) =>
-                  isEditingDescription ? (
-                    <Box sx={{ display: 'flex-col' }}>
-                      <DescriptionButtons toRight={editButtons} />
-                      {isPreview ? (
-                        <ReactMarkdown className={styles.markdown}>{currentDescription}</ReactMarkdown>
-                      ) : (
-                        <TextField
-                          fullWidth
-                          multiline
-                          rows={5}
-                          value={currentDescription}
-                          id={'description-input'}
-                          onChange={(e) => {
-                            setCurrentDescription(e.target.value);
-                            field.onChange(e);
-                          }}
-                          inputProps={{
-                            maxLength: isUnderWordCount(field.value, 300) ? null : 0
-                          }}
-                          error={!!errors.description || !isUnderWordCount(currentDescription, 300)}
-                          helperText={
-                            errors.description ? errors.description.message : `${countWords(field.value)}/300 words`
-                          }
-                        />
-                      )}
-                    </Box>
-                  ) : (
-                    nonEditingView
-                  )
-                }
+                render={({ field }) => (
+                  <Box sx={{ display: 'flex-col' }}>
+                    <DescriptionButtons toRight={editButtons} />
+                    {isPreview ? (
+                      <ReactMarkdown className={styles.markdown}>{currentDescription}</ReactMarkdown>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={5}
+                        value={currentDescription}
+                        id={'description-input'}
+                        onChange={(e) => {
+                          setCurrentDescription(e.target.value);
+                          field.onChange(e);
+                        }}
+                        inputProps={{
+                          maxLength: isUnderWordCount(field.value, 300) ? null : 0
+                        }}
+                        error={!!errors.description || !isUnderWordCount(currentDescription, 300)}
+                        helperText={errors.description ? errors.description.message : `${countWords(field.value)}/300 words`}
+                      />
+                    )}
+                  </Box>
+                )}
               />
             </FormControl>
             <Box sx={{ display: 'flex', justifyContent: 'right' }}>
