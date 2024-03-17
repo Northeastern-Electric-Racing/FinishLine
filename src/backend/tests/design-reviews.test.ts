@@ -1,5 +1,6 @@
 import {
   designReview1,
+  designReview3,
   prismaDesignReview1,
   prismaDesignReview2,
   prismaDesignReview3,
@@ -29,7 +30,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when user is not lead or above', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           wonderwoman,
           designReview1.designReviewId,
           designReview1.dateScheduled,
@@ -51,7 +52,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when ID does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           designReview1.designReviewId,
           designReview1.dateScheduled,
@@ -73,7 +74,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when design review is already deleted', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue({ ...designReview1, dateDeleted: new Date() });
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           designReview1.designReviewId,
           designReview1.dateScheduled,
@@ -96,7 +97,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(null);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           designReview1.designReviewId,
           designReview1.dateScheduled,
@@ -118,7 +119,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when any requiredMembers are in optionalMembers', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
@@ -142,7 +143,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
 
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
@@ -166,7 +167,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
 
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           designReview1.designReviewId,
           designReview1.dateScheduled,
@@ -188,7 +189,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when the meeting is online and there is no zoomLink / no text', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
@@ -210,7 +211,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when the meeting in person and there is no location', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
@@ -232,7 +233,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when meeting times are not consecutive', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
@@ -254,7 +255,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review fails when meeting times are consecutive and *above* 83', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
@@ -277,7 +278,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
       vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
       await expect(() =>
-        DesignReviewsService.editDesignReviews(
+        DesignReviewsService.editDesignReview(
           batman,
           prismaDesignReview2.designReviewId,
           prismaDesignReview2.dateScheduled,
@@ -300,7 +301,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview3);
       vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
 
-      const res = await DesignReviewsService.editDesignReviews(
+      const res = await DesignReviewsService.editDesignReview(
         aquaman,
         prismaDesignReview3.designReviewId,
         prismaDesignReview3.dateScheduled,
@@ -319,7 +320,7 @@ describe('Design Reviews', () => {
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
       // THIS TEST IS KINDA BS, but everything else I try fails.
-      expect(res).toStrictEqual(prismaDesignReview3);
+      expect(res).toStrictEqual(designReview3);
     });
   });
   describe('getAllDesignReviews', () => {

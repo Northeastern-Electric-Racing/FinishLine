@@ -1,4 +1,4 @@
-import { Design_Review, Design_Review_Status, User } from '@prisma/client';
+import { Design_Review_Status, User } from '@prisma/client';
 import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -228,7 +228,7 @@ export default class DesignReviewsService {
    * @param meetingTimes meeting time must be between 0-83 (Monday 12am - Sunday 12am, 1hr minute increments)
    */
 
-  static async editDesignReviews(
+  static async editDesignReview(
     user: User,
     designReviewId: string,
     dateScheduled: Date,
@@ -243,7 +243,7 @@ export default class DesignReviewsService {
     status: Design_Review_Status,
     attendees: number[],
     meetingTimes: number[]
-  ): Promise<Design_Review> {
+  ): Promise<DesignReview> {
     // verify user is allowed to edit work package
     if (isNotLeadership(user.role)) throw new AccessDeniedMemberException('edit design reviews');
 
@@ -289,8 +289,9 @@ export default class DesignReviewsService {
     const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
     // actually try to update the design review
-    const updateDesignReviews = await prisma.design_Review.update({
+    const updateDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
+      ...designReviewQueryArgs,
       data: {
         designReviewId,
         dateScheduled,
@@ -313,6 +314,6 @@ export default class DesignReviewsService {
         }
       }
     });
-    return updateDesignReviews;
+    return designReviewTransformer(updateDesignReview);
   }
 }

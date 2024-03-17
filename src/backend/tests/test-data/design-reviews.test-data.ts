@@ -6,7 +6,12 @@ import {
 } from '@prisma/client';
 import { batman, sharedBatman, wonderwoman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import { DesignReview as SharedDesignReview, DesignReviewStatus as sharedDesignReviewStatus } from 'shared';
+import {
+  DesignReview,
+  DesignReviewStatus,
+  DesignReview as SharedDesignReview,
+  DesignReviewStatus as sharedDesignReviewStatus
+} from 'shared';
 import designReviewQueryArgs from '../../src/prisma-query-args/design-reviews.query-args';
 
 export const designReview1: PrismaDesignReview = {
@@ -103,16 +108,41 @@ export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designRe
   userDeletedId: null,
   docTemplateLink: null,
   wbsElementId: 1,
-  userCreated: wonderwoman,
-  requiredMembers: [wonderwoman],
+  userCreated: batman,
+  requiredMembers: [batman],
   optionalMembers: [],
-  confirmedMembers: [wonderwoman],
+  confirmedMembers: [batman],
   deniedMembers: [],
-  attendees: [wonderwoman],
+  attendees: [batman],
   userDeleted: null,
   wbsElement: prismaWbsElement1,
   teamType: teamType1
 };
+
+export const designReview3: DesignReview = {
+  designReviewId: '2',
+  dateScheduled: new Date('2024-03-25'),
+  meetingTimes: [80, 81, 82, 83],
+  dateCreated: new Date('2024-03-10'),
+  userCreated: sharedBatman,
+  status: DesignReviewStatus.CONFIRMED,
+  teamType: teamType1,
+  location: 'location',
+  isOnline: true,
+  isInPerson: false,
+  zoomLink: 'https://www.zoom.com',
+  docTemplateLink: undefined,
+  wbsName: 'car',
+  wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 },
+  requiredMembers: [sharedBatman],
+  optionalMembers: [],
+  confirmedMembers: [sharedBatman],
+  deniedMembers: [],
+  attendees: [sharedBatman],
+  userDeleted: undefined,
+  dateDeleted: undefined
+};
+
 export const sharedDesignReview1: SharedDesignReview = {
   designReviewId: '1',
   dateScheduled: new Date('2024-03-25'),

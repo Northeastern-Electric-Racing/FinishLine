@@ -95,7 +95,7 @@ export default class DesignReviewsController {
       // get the user from the submitter
       const user = await getCurrentUser(res);
 
-      await DesignReviewsService.editDesignReviews(
+      await DesignReviewsService.editDesignReview(
         user,
         designReviewId,
         dateScheduled,
