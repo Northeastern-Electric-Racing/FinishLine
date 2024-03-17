@@ -113,6 +113,9 @@ export default class DesignReviewService {
     // checks if the meeting times are valid times and are all continous (ie. [1, 2, 3, 4])
     for (let i = 0; i < meetingTimes.length; i++) {
       if (i === meetingTimes.length - 1) {
+        if (meetingTimes[i] < 0 || meetingTimes[i] > 83) {
+          throw new HttpException(400, 'Meeting times have to be in range 0-83');
+        }
         continue;
       }
       if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 83) {
