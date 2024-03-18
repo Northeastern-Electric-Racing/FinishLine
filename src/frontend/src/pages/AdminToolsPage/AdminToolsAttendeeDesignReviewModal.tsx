@@ -35,19 +35,19 @@ const AttendeeDesignReviewModal: React.FC<AttendeeDesignReviewModalProps> = ({ o
     borderBottom: '2px solid white'
   };
 
-  // to be deleted later, this is just stub data for filter options
+  // TODO: to be deleted later, this is just stub data for filter options
   const teams = ['All', 'Team A', 'Team B', 'Team C'];
 
-  // Stub data for team members, replace with dynamic data here
+  // TODO: Stub data for team members, replace with dynamic data here
   const teamMembers = [
     { name: 'Batman', reviewsAttended: 2, missedReviews: 4 },
     { name: 'Superman', reviewsAttended: 4, missedReviews: 1 }
   ];
 
-  // Filtering team members based on search query here
+  // TODO: Filtering team members based on search query here
   const filteredMembers = teamMembers.filter((member) => member.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Filtering for teams backend logic comes here
+  // TODO: Filtering for teams backend logic comes here
   const handleTeamChange = (event: SelectChangeEvent) => {
     setSelectedTeam(event.target.value as string);
   };
@@ -87,7 +87,7 @@ const AttendeeDesignReviewModal: React.FC<AttendeeDesignReviewModalProps> = ({ o
               {team}
             </MenuItem>
           ))}
-          {/* we'll have to change this here as well for backend logic, above is just a stub implementation. */}
+          {/* TODO: we'll have to change this here as well for backend logic, above is just a stub implementation. */}
         </Select>
       </FormControl>
       <Table>
