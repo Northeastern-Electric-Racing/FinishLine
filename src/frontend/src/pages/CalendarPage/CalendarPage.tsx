@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { DesignReview } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
@@ -26,10 +26,11 @@ const CalendarPage = () => {
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const designReviews = allDesignReviews.filter(isConfirmed);
+  const confirmedDesignReviews = allDesignReviews.filter(isConfirmed);
 
   const eventDict = new Map<string, DesignReview[]>();
-  designReviews.forEach((designReview) => {
+  confirmedDesignReviews.forEach((designReview) => {
+    // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
     const date = datePipe(
       new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
     );
@@ -41,8 +42,7 @@ const CalendarPage = () => {
   });
 
   const unconfirmedDR = allDesignReviews.filter(
-    (designReview) =>
-      designReview.userCreated.userId === user.userId && designReview.status === DesignReviewStatus.UNCONFIRMED
+    (designReview) => designReview.userCreated.userId === user.userId && !isConfirmed(designReview)
   );
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];

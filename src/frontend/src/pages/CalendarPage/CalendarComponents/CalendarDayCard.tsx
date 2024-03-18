@@ -71,7 +71,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
     return (
       <>
         <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
-        <Link style={{ cursor: 'pointer' }} fontSize={15} onClick={() => setIsSummaryModalOpen(true)}>
+        <Link
+          style={{ cursor: 'pointer' }}
+          fontSize={15}
+          onClick={() => {
+            setIsSummaryModalOpen(true);
+          }}
+        >
           {event.wbsName + (event.meetingTimes.length > 0 ? ' - ' + meetingStartTimePipe(event.meetingTimes) : '')}
         </Link>
       </>
@@ -79,12 +85,26 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
   };
 
   const ExtraEventsCard = (extraEvents: DesignReview[]) => {
+    const [showTooltip, setShowTooltip] = useState(false);
     return (
       <Box marginLeft={0.5} marginBottom={0.2}>
-        <Card sx={{ backgroundColor: 'grey', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
+        <Card
+          sx={{
+            backgroundColor: 'grey',
+            borderRadius: 1,
+            minWidth: 140,
+            maxWidth: 140,
+            minHeight: 20,
+            maxHeight: 20
+          }}
+        >
           <Tooltip
             id="tooltip"
+            open={showTooltip}
+            disableHoverListener
+            onClick={() => setShowTooltip(!showTooltip)}
             placement="right"
+            sx={{ cursor: 'pointer' }}
             PopperProps={{
               popperOptions: {
                 modifiers: [
