@@ -14,3 +14,9 @@ export const getAllDesignReviews = () => {
     transformResponse: (data) => JSON.parse(data).map(designReviewTransformer)
   });
 };
+
+export const getSingleDesignReview = async (id: string) => {
+  return axios.get(apiUrls.designReviewById(`${id}`), {
+    transformResponse: (data) => JSON.parse(data).map(designReviewTransformer)
+  });
+};
