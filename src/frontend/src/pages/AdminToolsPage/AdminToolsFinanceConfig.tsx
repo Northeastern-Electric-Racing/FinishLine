@@ -1,11 +1,12 @@
-import { Grid } from '@mui/material';
-import PageBlock from '../../layouts/PageBlock';
+import { Grid, Typography } from '@mui/material';
 import VendorsTable from './FinanceConfig/VendorsTable';
 import AccountCodesTable from './FinanceConfig/AccountCodesTable';
 
 const AdminToolsFinanceConfig: React.FC = () => {
   return (
-    <PageBlock title="Finance Config">
+    <div>
+      <Typography variant="h4">Finance Config</Typography>
+      <br />
       <Grid container spacing="3%">
         <Grid item direction="column" xs={12} md={6}>
           <VendorsTable />
@@ -14,7 +15,7 @@ const AdminToolsFinanceConfig: React.FC = () => {
           <AccountCodesTable />
         </Grid>
       </Grid>
-    </PageBlock>
+    </div>
   );
 };
 
