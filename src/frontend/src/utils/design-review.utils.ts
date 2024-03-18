@@ -80,53 +80,6 @@ export const calendarPaddingDays = (month: Date): number => {
   return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
 };
 
-// TODO remove during wire up ticket
-export const testDesignReview1: DesignReview = {
-  designReviewId: 'Meeting',
-  dateScheduled: new Date(),
-  meetingTimes: [16],
-  dateCreated: new Date(),
-  userCreated: batman,
-  status: DesignReviewStatus.UNCONFIRMED,
-  teamType: { teamTypeId: 'Mechanical', name: 'Mechanical', iconName: '' },
-  requiredMembers: [],
-  optionalMembers: [],
-  confirmedMembers: [],
-  deniedMembers: [],
-  isOnline: false,
-  isInPerson: false,
-  attendees: [],
-  wbsName: 'bruh',
-  wbsNum: { carNumber: 1, workPackageNumber: 1, projectNumber: 1 }
-};
-
-// TODO remove during wire up ticket
-export const exampleDesignReview1: DesignReview = {
-  designReviewId: 'Wiring',
-  dateScheduled: new Date(),
-  meetingTimes: [1, 2, 5],
-  dateCreated: new Date(),
-  userCreated: superman,
-  status: DesignReviewStatus.DONE,
-  teamType: {
-    teamTypeId: 'Electrical',
-    name: 'thisteam',
-    iconName: ''
-  },
-  requiredMembers: [batman, superman, greenlantern, flash, aquaman],
-  optionalMembers: [wonderwoman, alfred],
-  confirmedMembers: [],
-  deniedMembers: [],
-  location: 'Room 101',
-  isOnline: true,
-  isInPerson: false,
-  zoomLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-  attendees: [],
-  wbsName: 'Battery',
-  wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
-  docTemplateLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-};
-
 // TODO: We will have to make a call to the backend to get this data
 export const usersToAvailabilities = new Map([
   [superman, [1, 2, 3, 4, 5, 6, 7]],
@@ -145,3 +98,11 @@ existingMeetingData.set(5, 'warning');
 existingMeetingData.set(10, 'build');
 existingMeetingData.set(20, 'computer');
 existingMeetingData.set(50, 'electrical');
+
+export const isConfirmed = (designReview: DesignReview): boolean => {
+  return (
+    designReview.status === DesignReviewStatus.CONFIRMED ||
+    designReview.status === DesignReviewStatus.SCHEDULED ||
+    designReview.status === DesignReviewStatus.DONE
+  );
+};
