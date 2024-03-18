@@ -21,7 +21,6 @@ export const getAllDesignReviews = () => {
  * @returns the request design review
  */
 export const getSingleDesignReview = async (id: string) => {
-  console.log(id);
   return axios.get(apiUrls.designReviewById(id), {
     transformResponse: (data) => designReviewTransformer(JSON.parse(data))
   });
