@@ -1,9 +1,11 @@
 import {
   designReview1,
   designReview3,
+  designReview4,
   prismaDesignReview1,
   prismaDesignReview2,
   prismaDesignReview3,
+  prismaDesignReview4,
   sharedDesignReview1,
   teamType1
 } from './test-data/design-reviews.test-data';
@@ -503,7 +505,15 @@ describe('Design Reviews', () => {
   });
 
   describe('Mark user confirmation tests', () => {
-    test('Marking succeeds', async () => {});
+    test('Marking succeeds', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
+      const result = await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [1, 2], wonderwoman)
+      );
+
+      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(designReview4);
+    });
 
     test('Design Review was not found', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);

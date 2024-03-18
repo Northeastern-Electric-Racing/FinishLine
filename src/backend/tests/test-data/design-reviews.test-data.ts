@@ -57,7 +57,7 @@ export const prismaDesignReview1: Prisma.Design_ReviewGetPayload<typeof designRe
   docTemplateLink: null,
   wbsElementId: 1,
   requiredMembers: [batman],
-  optionalMembers: [],
+  optionalMembers: [wonderwoman],
   confirmedMembers: [batman],
   deniedMembers: [],
   attendees: [batman],
@@ -158,6 +158,25 @@ export const sharedDesignReview1: SharedDesignReview = {
   deniedMembers: [],
   attendees: [sharedBatman],
   teamType: teamType1,
+  wbsName: 'car',
+  wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
+};
+
+export const designReview4: DesignReview = {
+  designReviewId: '1',
+  dateScheduled: new Date('2024-03-25'),
+  meetingTimes: [0, 1, 2, 3],
+  dateCreated: new Date('2024-03-10'),
+  userCreated: batman,
+  teamType: teamType1,
+  isOnline: true,
+  isInPerson: false,
+  requiredMembers: [batman],
+  optionalMembers: [wonderwoman],
+  confirmedMembers: [batman, wonderwoman],
+  deniedMembers: [],
+  attendees: [batman],
+  status: 'C:/Users/marti/Desktop/vscode projects/FinishLine/src/shared/src/types/design-review-types'.UNCONFIRMED,
   wbsName: 'car',
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
 };
