@@ -57,7 +57,7 @@ export const prismaDesignReview1: Prisma.Design_ReviewGetPayload<typeof designRe
   docTemplateLink: null,
   wbsElementId: 1,
   requiredMembers: [batman],
-  optionalMembers: [wonderwoman],
+  optionalMembers: [],
   confirmedMembers: [batman],
   deniedMembers: [],
   attendees: [batman],
@@ -119,6 +119,33 @@ export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designRe
   teamType: teamType1
 };
 
+export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs> = {
+  designReviewId: '1',
+  dateScheduled: new Date('2024-03-25'),
+  meetingTimes: [0, 1, 2, 3],
+  dateCreated: new Date('2024-03-10'),
+  userCreatedId: batman.userId,
+  userCreated: batman,
+  status: PrismaDesignReviewStatus.CONFIRMED,
+  teamTypeId: '1',
+  teamType: teamType1,
+  location: null,
+  isOnline: true,
+  isInPerson: false,
+  zoomLink: null,
+  dateDeleted: null,
+  userDeletedId: null,
+  docTemplateLink: null,
+  wbsElementId: 1,
+  requiredMembers: [batman],
+  optionalMembers: [wonderwoman],
+  confirmedMembers: [batman],
+  deniedMembers: [],
+  attendees: [batman],
+  userDeleted: null,
+  wbsElement: prismaWbsElement1
+};
+
 export const designReview3: DesignReview = {
   designReviewId: '2',
   dateScheduled: new Date('2024-03-25'),
@@ -162,21 +189,21 @@ export const sharedDesignReview1: SharedDesignReview = {
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
 };
 
-export const designReview4: DesignReview = {
+export const designReview5: DesignReview = {
   designReviewId: '1',
   dateScheduled: new Date('2024-03-25'),
   meetingTimes: [0, 1, 2, 3],
   dateCreated: new Date('2024-03-10'),
   userCreated: batman,
+  status: DesignReviewStatus.CONFIRMED,
   teamType: teamType1,
   isOnline: true,
   isInPerson: false,
   requiredMembers: [batman],
   optionalMembers: [wonderwoman],
-  confirmedMembers: [batman, wonderwoman],
+  confirmedMembers: [batman],
   deniedMembers: [],
   attendees: [batman],
-  status: DesignReviewStatus.UNCONFIRMED,
   wbsName: 'car',
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
 };

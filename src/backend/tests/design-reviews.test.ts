@@ -1,11 +1,10 @@
 import {
   designReview1,
   designReview3,
-  designReview4,
+  designReview5,
   prismaDesignReview1,
   prismaDesignReview2,
   prismaDesignReview3,
-  prismaDesignReview4,
   sharedDesignReview1,
   teamType1
 } from './test-data/design-reviews.test-data';
@@ -512,7 +511,7 @@ describe('Design Reviews', () => {
       );
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(designReview4);
+      expect(result).toEqual(designReview5);
     });
 
     test('Design Review was not found', async () => {
