@@ -1,34 +1,11 @@
 import React, { useState } from 'react';
 import PageBlock from '../../layouts/PageBlock';
-import {
-  TextField,
-  FormControl,
-  FormLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow
-} from '@mui/material';
+import { TextField, FormControl, FormLabel, Select, MenuItem, SelectChangeEvent, TableCell, TableRow } from '@mui/material';
+import AdminToolTable from './AdminToolTable';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [selectedTeam, setSelectedTeam] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const tableHeaderCellStyle = {
-    borderRight: '2px solid white',
-    borderBottom: '2px solid white'
-  };
-
-  const tableBodyCellStyle = {
-    borderRight: '2px solid white'
-  };
-
-  const lastHeaderCellStyle = {
-    borderBottom: '2px solid white'
-  };
 
   // TODO: to be deleted later, this is just stub data for filter options
   const teams = ['All', 'Team A', 'Team B', 'Team C'];
@@ -50,6 +27,14 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
+
+  const attendeeRows = filteredMembers.map((member, index) => (
+    <TableRow key={index}>
+      <TableCell sx={{ border: '2px solid black' }}>{member.name}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>{member.reviewsAttended}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>{member.missedReviews}</TableCell>
+    </TableRow>
+  ));
 
   return (
     <PageBlock title="Attendee Design Review Information">
@@ -75,24 +60,14 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
           {/* TODO: we'll have to change this here as well for backend logic, above is just a stub implementation. */}
         </Select>
       </FormControl>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell style={tableHeaderCellStyle}>Team Member Name</TableCell>
-            <TableCell style={tableHeaderCellStyle}>No. Of Design Reviews Attended</TableCell>
-            <TableCell style={lastHeaderCellStyle}>Required to come but did not</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filteredMembers.map((member, index) => (
-            <TableRow key={index}>
-              <TableCell style={tableBodyCellStyle}>{member.name}</TableCell>
-              <TableCell style={tableBodyCellStyle}>{member.reviewsAttended}</TableCell>
-              <TableCell>{member.missedReviews}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <AdminToolTable
+        columns={[
+          { name: 'Team Member Name', width: '33%' },
+          { name: 'No. Of Design Reviews Attended', width: '33%' },
+          { name: 'Required to come but did not', width: '34%' }
+        ]}
+        rows={attendeeRows}
+      />
     </PageBlock>
   );
 };
