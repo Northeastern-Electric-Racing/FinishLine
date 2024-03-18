@@ -10,12 +10,13 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { routes } from '../../../utils/routes';
+import { DesignReview } from 'shared';
 
 interface DesignReviewDetailPageProps {
-  name: string;
+  designReview: DesignReview;
 }
 
-const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name }) => {
+const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview, designReview: { teamType } }) => {
   const theme = useTheme();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
@@ -25,6 +26,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
 
   const users = allUsers.map(userToAutocompleteOption);
 
+  const designReviewName = `${designReview.wbsNum} - ${teamType.name}`;
   return (
     <PageLayout
       title="Scheduling"
@@ -52,7 +54,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
         </Grid>
         <Grid item xs={3}>
           <Box sx={{ padding: 1.5, fontSize: '1.2em', backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
-            {name}
+            {designReviewName}
           </Box>
         </Grid>
         <Grid item xs={1}>
