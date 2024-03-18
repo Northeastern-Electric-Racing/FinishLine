@@ -84,7 +84,7 @@ const AdminToolsPage: React.FC = () => {
       ) : (
         <>
           <AdminToolsSlackUpcomingDeadlines />
-          {isAdmin(currentUser.role) && <AdminToolsAttendeeDesignReviewInfo />}
+          <AdminToolsAttendeeDesignReviewInfo />
         </>
       )}
     </PageLayout>
