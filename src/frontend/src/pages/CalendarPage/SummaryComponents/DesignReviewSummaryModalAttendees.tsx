@@ -80,9 +80,9 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
 
   // TODO handle errors and submit
   const {
-    handleSubmit,
-    control,
-    formState: { errors }
+    //handleSubmit,
+    control
+    //formState: { errors }
   } = useForm<DesignReviewEditAttendeesProps>({
     resolver: yupResolver(schema),
     defaultValues: {
