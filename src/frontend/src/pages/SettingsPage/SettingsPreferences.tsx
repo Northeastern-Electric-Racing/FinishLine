@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
 import UserSettings from './UserSettings/UserSettings';
-import { Alert } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
@@ -11,7 +9,6 @@ import { useAllTeams } from '../../hooks/teams.hooks';
 const SettingsPreferences: React.FC = () => {
   const auth = useAuth();
   const user = useCurrentUser();
-  const showAlert = useState(false);
   const {
     isLoading: settingsIsLoading,
     isError: settingsIsError,
@@ -43,7 +40,6 @@ const SettingsPreferences: React.FC = () => {
 
   return (
     <PageLayout title="Preferences">
-      {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
       <UserSettings currentSettings={userSettingsData} />
     </PageLayout>
   );
