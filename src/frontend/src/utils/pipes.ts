@@ -4,7 +4,6 @@
  */
 
 import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, ClubAccount, ExpenseType } from 'shared';
-import { NOON_IN_MINUTES } from './design-review.utils';
 
 /**
  * Pipes:
@@ -165,10 +164,9 @@ export const displayEnum = (enumString: string) => {
 };
 
 export const meetingStartTimePipe = (times: number[]) => {
-  const time = times[0] * 15 + 9 * 60;
-  const minutes = time % 60;
-  const hours = ((time - minutes) / 60) % 12 === 0 ? 12 : ((time - minutes) / 60) % 12;
-  return hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am');
+  const time = (times[0] % 12) + 10;
+
+  return time <= 12 ? time + 'am' : time - 12 + 'pm';
 };
 
 // takes in a Date and returns it as a string in the form mm/dd/yy
