@@ -41,10 +41,10 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
   const handleConfirm = async ({ projectLeadId, projectManagerId, startDate, confirmDetails }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create activation change request without being logged in');
-    if (projectLeadId === undefined) {
+    if (!projectLeadId) {
       throw new Error('Project Lead Id must be defined to create an activation change request');
     }
-    if (projectManagerId === undefined) {
+    if (!projectManagerId) {
       throw new Error('Project Manager Id must be defined to create an activation change request');
     }
     try {
