@@ -176,7 +176,7 @@ export const designReview4: DesignReview = {
   confirmedMembers: [batman, wonderwoman],
   deniedMembers: [],
   attendees: [batman],
-  status: 'C:/Users/marti/Desktop/vscode projects/FinishLine/src/shared/src/types/design-review-types'.UNCONFIRMED,
+  status: DesignReviewStatus.UNCONFIRMED,
   wbsName: 'car',
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
 };
