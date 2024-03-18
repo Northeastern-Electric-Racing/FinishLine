@@ -99,7 +99,6 @@ const AttendeeDesignReviewModal: React.FC<AttendeeDesignReviewModalProps> = ({ o
           </TableRow>
         </TableHead>
         <TableBody>
-          {/* Data row hookup comes below here, I've just put a stub for now*/}
           {filteredMembers.map((member, index) => (
             <TableRow key={index}>
               <TableCell style={tableBodyCellStyle}>{member.name}</TableCell>
