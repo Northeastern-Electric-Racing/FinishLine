@@ -23,10 +23,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
-
+  const designReviewName = `${designReview.wbsNum} - ${teamType.name}`;
   const users = allUsers.map(userToAutocompleteOption);
 
-  const designReviewName = `${designReview.wbsNum} - ${teamType.name}`;
   return (
     <PageLayout
       title="Scheduling"
@@ -76,7 +75,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         <Grid item xs={3}>
           <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
             <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
+              isOptionEqualToValue={(option, value) => option.id === value.id}
               multiple
               disableCloseOnSelect
               limitTags={1}
@@ -122,7 +121,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         <Grid item xs={3}>
           <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
             <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
+              isOptionEqualToValue={(option, value) => option.id === value.id}
               multiple
               disableCloseOnSelect
               limitTags={1}

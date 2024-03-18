@@ -18,8 +18,13 @@ export const useAllDesignReviews = () => {
   });
 };
 
+/**
+ * Custom react hook to get a single design review
+ *
+ * @returns a single design review
+ */
 export const useSingleDesignReview = (id: string) => {
-  return useQuery<DesignReview, Error>(['design-reviews'], async () => {
+  return useQuery<DesignReview, Error>(['design-reviews', id], async () => {
     const { data } = await getSingleDesignReview(id);
     return data;
   });
