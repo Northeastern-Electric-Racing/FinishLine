@@ -13,7 +13,6 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
 import HelpIcon from '@mui/icons-material/Help';
-import AttendeeDesignReviewModal from './AdminToolsAttendeeDesignReviewModal';
 
 const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const user = useCurrentUser();
@@ -21,9 +20,6 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const [deadline, setDeadline] = useState<Date>(new Date());
   const [disableButton, setDisableButton] = useState(false);
   const { mutateAsync, isLoading } = useSlackUpcomingDeadlines();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
 
   const datePickerOnChange = (value: Date | null) => {
     if (value) setDeadline(value);
@@ -70,17 +66,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
             Send
           </NERButton>
         </Grid>
-        <Grid item>
-          <NERButton
-            variant="contained"
-            disabled={!isAdmin(user.role) || disableButton || isLoading}
-            onClick={handleOpenModal} // Opens the modal
-          >
-            Attendee Design Review Information
-          </NERButton>
-        </Grid>
       </Grid>
-      <AttendeeDesignReviewModal open={isModalOpen} onClose={handleCloseModal} />
     </PageBlock>
   );
 };

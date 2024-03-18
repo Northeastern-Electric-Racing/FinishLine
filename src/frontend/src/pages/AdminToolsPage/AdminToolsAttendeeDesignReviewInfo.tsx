@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PageBlock from '../../layouts/PageBlock';
 import {
   TextField,
   FormControl,
@@ -12,14 +13,8 @@ import {
   TableHead,
   TableRow
 } from '@mui/material';
-import NERModal from '../../components/NERModal';
 
-interface AttendeeDesignReviewModalProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-const AttendeeDesignReviewModal: React.FC<AttendeeDesignReviewModalProps> = ({ open, onClose }) => {
+const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [selectedTeam, setSelectedTeam] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const tableHeaderCellStyle = {
@@ -57,13 +52,7 @@ const AttendeeDesignReviewModal: React.FC<AttendeeDesignReviewModalProps> = ({ o
   };
 
   return (
-    <NERModal
-      open={open}
-      onHide={onClose}
-      title="Attendee Design Review Information"
-      showCloseButton={true}
-      hideFormButtons={true}
-    >
+    <PageBlock title="Attendee Design Review Information">
       <FormControl fullWidth sx={{ marginBottom: 2 }}>
         <FormLabel htmlFor="search-by-name">Search by team member name</FormLabel>
         <TextField id="search-by-name" variant="outlined" value={searchQuery} onChange={handleSearchChange} fullWidth />
@@ -104,8 +93,8 @@ const AttendeeDesignReviewModal: React.FC<AttendeeDesignReviewModalProps> = ({ o
           ))}
         </TableBody>
       </Table>
-    </NERModal>
+    </PageBlock>
   );
 };
 
-export default AttendeeDesignReviewModal;
+export default AdminToolsAttendeeDesignReviewInfo;
