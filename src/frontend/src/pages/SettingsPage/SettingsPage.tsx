@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import PageLayout from '../../components/PageLayout';
-import Preferences from './Preferences';
-import Details from './Details';
+import SettingsPreferences from './SettingsPreferences';
+import SettingsDetails from './SettingsDetails';
 import { routes } from '../../utils/routes';
 import NERTabs from '../../components/Tabs';
 
@@ -29,7 +29,7 @@ const SettingsPage: React.FC = () => {
         />
       }
     >
-      {tabIndex === 0 ? <Details /> : <Preferences />}
+      {tabIndex === 0 ? <SettingsDetails /> : <SettingsPreferences />}
     </PageLayout>
   );
 };

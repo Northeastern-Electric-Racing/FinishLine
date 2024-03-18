@@ -5,14 +5,14 @@
 
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import Details from './Details';
-import Preferences from './Preferences';
+import SettingsDetails from './SettingsDetails';
+import SettingsPreferences from './SettingsPreferences';
 
 const Settings: React.FC = () => {
   return (
     <Switch>
-      <Route path={routes.SETTINGS_DETAILS} component={Details} />
-      <Route path={routes.SETTINGS_PREFERENCES} component={Preferences} />
+      <Route path={routes.SETTINGS_DETAILS} component={SettingsDetails} />
+      <Route path={routes.SETTINGS_PREFERENCES} component={SettingsPreferences} />
     </Switch>
   );
 };

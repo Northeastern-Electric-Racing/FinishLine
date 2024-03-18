@@ -1,16 +1,17 @@
+import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Grid } from '@mui/material';
-import DetailDisplay from '../../components/DetailDisplay';
+import UserSettings from './UserSettings/UserSettings';
+import { Alert } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import { displayEnum } from '../../utils/pipes';
 
-const Details: React.FC = () => {
+const SettingsPreferences: React.FC = () => {
   const auth = useAuth();
   const user = useCurrentUser();
+  const showAlert = useState(false);
   const {
     isLoading: settingsIsLoading,
     isError: settingsIsError,
@@ -40,34 +41,12 @@ const Details: React.FC = () => {
   )
     return <LoadingIndicator />;
 
-  const userTeams = teams.filter((team) =>
-    team.members.some((member) => member.userId === user.userId || team.head.userId === user.userId)
-  );
-
   return (
-    <PageLayout title="Details">
-      <Grid container direction="column" spacing={0.5}>
-        <Grid item xs={12} sm={6} md={4} lg={2}>
-          <DetailDisplay label="First Name" content={user.firstName} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} lg={2}>
-          <DetailDisplay label="Last Name" content={user.lastName} />
-        </Grid>
-        <Grid item xs={12} sm={7} md={5} lg={3}>
-          <DetailDisplay label="Email" content={user.email} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={2}>
-          <DetailDisplay label="Role" content={displayEnum(user.role)} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={2}>
-          <DetailDisplay
-            label="Teams"
-            content={userTeams.length === 0 ? 'None' : userTeams.map((team) => team.teamName).join(', ')}
-          />
-        </Grid>
-      </Grid>
+    <PageLayout title="Preferences">
+      {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
+      <UserSettings currentSettings={userSettingsData} />
     </PageLayout>
   );
 };
 
-export default Details;
+export default SettingsPreferences;

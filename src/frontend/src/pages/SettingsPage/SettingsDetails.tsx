@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
-import PageBlock from '../../layouts/PageBlock';
-import UserSettings from './UserSettings/UserSettings';
-import { Alert, Grid, Switch, FormGroup, FormControlLabel, SwitchProps, styled } from '@mui/material';
+import { FormControlLabel, FormGroup, Grid, Switch, SwitchProps, styled } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { GoogleLogout } from 'react-google-login';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
-import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import { useAllTeams } from '../../hooks/teams.hooks';
+import { displayEnum } from '../../utils/pipes';
+import UserSettings from './UserSettings/UserSettings';
+import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
+import PageBlock from '../../layouts/PageBlock';
+import { GoogleLogout } from 'react-google-login';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -60,7 +61,7 @@ const NERSwitch = styled((props: SwitchProps) => (
   }
 }));
 
-const Preferences: React.FC = () => {
+const SettingsDetails: React.FC = () => {
   const auth = useAuth();
   const user = useCurrentUser();
   const [showAlert, setShowAlert] = useState(false);
@@ -93,6 +94,10 @@ const Preferences: React.FC = () => {
   )
     return <LoadingIndicator />;
 
+  const userTeams = teams.filter((team) =>
+    team.members.some((member) => member.userId === user.userId || team.head.userId === user.userId)
+  );
+
   const logout = () => {
     setShowAlert(true);
     setTimeout(() => {
@@ -101,8 +106,27 @@ const Preferences: React.FC = () => {
   };
 
   return (
-    <PageLayout title="Preferences">
-      {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
+    <PageLayout title="Details">
+      <Grid container direction="column" spacing={0.5}>
+        <Grid item xs={12} sm={6} md={4} lg={2}>
+          <DetailDisplay label="First Name" content={user.firstName} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3} lg={2}>
+          <DetailDisplay label="Last Name" content={user.lastName} />
+        </Grid>
+        <Grid item xs={12} sm={7} md={5} lg={3}>
+          <DetailDisplay label="Email" content={user.email} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4} lg={2}>
+          <DetailDisplay label="Role" content={displayEnum(user.role)} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4} lg={2}>
+          <DetailDisplay
+            label="Teams"
+            content={userTeams.length === 0 ? 'None' : userTeams.map((team) => team.teamName).join(', ')}
+          />
+        </Grid>
+      </Grid>
       <PageBlock title={'Organization Settings'}>
         <Grid container>
           <Grid item xs={6} md={12}>
@@ -128,10 +152,9 @@ const Preferences: React.FC = () => {
           </Grid>
         </Grid>
       </PageBlock>
-      <UserSettings currentSettings={userSettingsData} />
       <UserSecureSettings currentSettings={userSecureSettings} />
     </PageLayout>
   );
 };
 
-export default Preferences;
+export default SettingsDetails;
