@@ -41,7 +41,7 @@ const CalendarPage = () => {
     }
   });
 
-  const unconfirmedDR = allDesignReviews.filter(
+  const unconfirmedDesignReviews = allDesignReviews.filter(
     (designReview) => designReview.userCreated.userId === user.userId && !isConfirmed(designReview)
   );
 
@@ -77,7 +77,7 @@ const CalendarPage = () => {
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
   const unconfirmedDRSDropdown = (
-    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(unconfirmedDR)}>
+    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(unconfirmedDesignReviews)}>
       My Unconfirmed DRs
     </ActionsMenu>
   );

@@ -41,7 +41,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
     </Grid>
   );
 
-  const EventCard = (event: DesignReview) => {
+  const EventCard = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const name = event.wbsName;
     return (
@@ -65,7 +65,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
     );
   };
 
-  const ExtraEventNote = (event: DesignReview) => {
+  const ExtraEventNote = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
 
     return (
@@ -84,7 +84,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
     );
   };
 
-  const ExtraEventsCard = (extraEvents: DesignReview[]) => {
+  const ExtraEventsCard = ({ extraEvents }: { extraEvents: DesignReview[] }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     return (
       <Box marginLeft={0.5} marginBottom={0.2}>
@@ -126,7 +126,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
               }
             }}
             arrow
-            title={<Stack direction="column">{extraEvents.map((event) => ExtraEventNote(event))}</Stack>}
+            title={
+              <Stack direction="column">
+                {extraEvents.map((event) => (
+                  <ExtraEventNote event={event} />
+                ))}
+              </Stack>
+            }
           >
             <Typography marginLeft={0.5} marginBottom={0.3} align="center">
               {'+' + extraEvents.length}
@@ -142,11 +148,11 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
       <CardContent sx={{ padding: 0 }}>
         <DayCardTitle />
         {events.length < 3 ? (
-          events.map((event) => EventCard(event))
+          events.map((event) => <EventCard event={event} />)
         ) : (
           <>
-            {EventCard(events[0])}
-            {ExtraEventsCard(events.slice(1))}
+            <EventCard event={events[0]} />
+            <ExtraEventsCard extraEvents={events.slice(1)} />
           </>
         )}
       </CardContent>
