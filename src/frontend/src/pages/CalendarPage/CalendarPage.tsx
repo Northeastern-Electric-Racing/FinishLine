@@ -7,9 +7,9 @@ import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
-import CalendarDayCard from './CalendarComponents/CalendarDayCard';
+import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
-import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
+import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth, isConfirmed } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -20,37 +20,27 @@ import { datePipe } from '../../utils/pipes';
 const CalendarPage = () => {
   const theme = useTheme();
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
-  const { isLoading, isError, error, data: designReviews } = useAllDesignReviews();
+  const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
   const user = useCurrentUser();
 
-  if (isLoading || !designReviews) return <LoadingIndicator />;
+  if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const EventDict = new Map<string, DesignReview[]>();
+  const designReviews = allDesignReviews.filter(isConfirmed);
 
+  const eventDict = new Map<string, DesignReview[]>();
   designReviews.forEach((designReview) => {
-    if (
-      EventDict.has(
-        datePipe(new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000))
-      )
-    ) {
-      EventDict.set(
-        datePipe(designReview.dateScheduled),
-        EventDict.get(
-          datePipe(new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000))
-        )!.concat(designReview)
-      );
+    const date = datePipe(
+      new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
+    );
+    if (eventDict.has(date)) {
+      eventDict.get(date)?.push(designReview);
     } else {
-      EventDict.set(
-        datePipe(new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)),
-        [designReview]
-      );
+      eventDict.set(date, [designReview]);
     }
-
-    console.log(designReview.wbsName);
   });
 
-  const unconfirmedDR = designReviews.filter(
+  const unconfirmedDR = allDesignReviews.filter(
     (designReview) =>
       designReview.userCreated.userId === user.userId && designReview.status === DesignReviewStatus.UNCONFIRMED
   );
@@ -64,6 +54,7 @@ const CalendarPage = () => {
   const designReviewButtons = (designReviews: DesignReview[]) => {
     return designReviews.map((designReview) => {
       return {
+        icon: getTeamTypeIcon(designReview.teamType.name),
         title: designReview.wbsName,
         onClick: () => {},
         disabled: false
@@ -122,7 +113,13 @@ const CalendarPage = () => {
                       {isDayInDifferentMonth(day, week) ? (
                         <FillerCalendarDayCard day={day} />
                       ) : (
-                        <CalendarDayCard cardDate={cardDate} events={EventDict.get(datePipe(cardDate)) ?? []} />
+                        <CalendarDayCard
+                          cardDate={cardDate}
+                          events={
+                            eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
+                            []
+                          }
+                        />
                       )}
                     </Box>
                   </Grid>
