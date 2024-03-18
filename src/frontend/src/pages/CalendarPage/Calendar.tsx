@@ -5,12 +5,12 @@
 import { Route, Switch } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import CalendarPage from './CalendarPage';
-import DesignReviewDetailPage from './DesignReviewDetailPage/DesignReviewDetailPage';
+import DesignReviewDetails from './DesignReviewDetailPage/DesignReviewDetails';
 
 const Calendar: React.FC = () => {
   return (
     <Switch>
-      <Route path={routes.DESIGN_REVIEW_BY_ID} component={DesignReviewDetailPage} />
+      <Route path={routes.DESIGN_REVIEW_BY_ID} component={DesignReviewDetails} />
       <Route path={routes.CALENDAR} component={CalendarPage} />
     </Switch>
   );

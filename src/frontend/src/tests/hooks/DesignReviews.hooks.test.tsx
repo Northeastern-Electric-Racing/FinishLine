@@ -8,9 +8,9 @@ import { AxiosResponse } from 'axios';
 import { DesignReview } from 'shared';
 import wrapper from '../../app/AppContextQuery';
 import { mockPromiseAxiosResponse } from '../test-support/test-data/test-utils.stub';
-import { exampleAllDesignReviews } from '../test-support/test-data/design-reviews.stub';
-import { getAllDesignReviews } from '../../apis/design-reviews.api';
-import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
+import { exampleAllDesignReviews, exampleDesignReview1 } from '../test-support/test-data/design-reviews.stub';
+import { getAllDesignReviews, getSingleDesignReview } from '../../apis/design-reviews.api';
+import { useAllDesignReviews, useSingleDesignReview } from '../../hooks/design-reviews.hooks';
 
 vi.mock('../../apis/design-reviews.api');
 
@@ -22,5 +22,14 @@ describe('design review hooks', () => {
     const { result, waitFor } = renderHook(() => useAllDesignReviews(), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAllDesignReviews);
+  });
+
+  it('handles getting a single design review', async () => {
+    const mockedGetSingleDesignReview = getSingleDesignReview as jest.Mock<Promise<AxiosResponse<DesignReview>>>;
+    mockedGetSingleDesignReview.mockReturnValue(mockPromiseAxiosResponse<DesignReview>(exampleDesignReview1));
+
+    const { result, waitFor } = renderHook(() => useSingleDesignReview('1'), { wrapper });
+    await waitFor(() => result.current.isSuccess);
+    expect(result.current.data).toEqual(exampleDesignReview1);
   });
 });

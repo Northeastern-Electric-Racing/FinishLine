@@ -10,12 +10,13 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
-
+import { DesignReview } from 'shared';
+import { wbsPipe } from 'shared';
 interface DesignReviewDetailPageProps {
-  name: string;
+  designReview: DesignReview;
 }
 
-const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name }) => {
+const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview, designReview: { teamType } }) => {
   const theme = useTheme();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
@@ -25,7 +26,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
-
+  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
   const users = allUsers.map(userToAutocompleteOption);
 
   return (
@@ -56,7 +57,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
               width: '80%'
             }}
           >
-            {name}
+            {designReviewName}
           </Box>
         </Grid>
         <Grid item xs={1}>
