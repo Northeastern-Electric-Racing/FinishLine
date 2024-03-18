@@ -41,6 +41,12 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
   const handleConfirm = async ({ projectLeadId, projectManagerId, startDate, confirmDetails }: FormInput) => {
     handleClose();
     if (auth.user?.userId === undefined) throw new Error('Cannot create activation change request without being logged in');
+    if (!projectLeadId) {
+      throw new Error('Project Lead Id must be defined to create an activation change request');
+    }
+    if (!projectManagerId) {
+      throw new Error('Project Manager Id must be defined to create an activation change request');
+    }
     try {
       await mutateAsync({
         submitterId: auth.user?.userId,
@@ -48,7 +54,7 @@ const ActivateWorkPackageModalContainer: React.FC<ActivateWorkPackageModalContai
         type: ChangeRequestType.Activation,
         projectLeadId,
         projectManagerId,
-        startDate,
+        startDate: startDate.toISOString(),
         confirmDetails
       });
       history.push(routes.CHANGE_REQUESTS);
