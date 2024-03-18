@@ -9,14 +9,7 @@ import { DesignReview } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
-import {
-  DAY_NAMES,
-  EnumToArray,
-  calendarPaddingDays,
-  daysInMonth,
-  exampleDesignReview1,
-  isConfirmed
-} from '../../utils/design-review.utils';
+import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth, isConfirmed } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -123,9 +116,8 @@ const CalendarPage = () => {
                         <CalendarDayCard
                           cardDate={cardDate}
                           events={
-                            eventDict.get(
-                              datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
-                            ) ?? [exampleDesignReview1]
+                            eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
+                            []
                           }
                         />
                       )}
