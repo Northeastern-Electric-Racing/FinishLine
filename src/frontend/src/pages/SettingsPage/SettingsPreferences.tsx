@@ -10,6 +10,7 @@ import { GoogleLogout } from 'react-google-login';
 import DetailDisplay from '../../components/DetailDisplay';
 import PageBlock from '../../layouts/PageBlock';
 import { useState } from 'react';
+import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -128,6 +129,7 @@ const SettingsPreferences: React.FC = () => {
         </Grid>
       </PageBlock>
       <UserSettings currentSettings={userSettingsData} />
+      <UserSecureSettings currentSettings={userSecureSettings} />
     </PageLayout>
   );
 };

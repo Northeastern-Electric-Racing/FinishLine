@@ -7,7 +7,6 @@ import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } f
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { displayEnum } from '../../utils/pipes';
-import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 
 const SettingsDetails: React.FC = () => {
   const auth = useAuth();
@@ -67,8 +66,6 @@ const SettingsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
-
-      <UserSecureSettings currentSettings={userSecureSettings} />
     </PageLayout>
   );
 };
