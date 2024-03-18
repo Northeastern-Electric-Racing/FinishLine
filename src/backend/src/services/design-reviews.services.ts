@@ -316,4 +316,55 @@ export default class DesignReviewsService {
     });
     return designReviewTransformer(updateDesignReview);
   }
+
+  /**
+   * Edits a design review but confirming a given user's availability
+   * @param submitter the member that is being confirmed
+   * @param designReviewId the id of the design review
+   * @param availability the given member's availabilities
+   * @returns the modified design review with its updated confirmedMembers
+   */
+  static async markUserConfirmed(designReviewId: string, availability: number[], submitter: User): Promise<DesignReview> {
+    const designReview = await prisma.design_Review.findUnique({
+      where: { designReviewId },
+      ...designReviewQueryArgs
+    });
+
+    if (!designReview) throw new NotFoundException('Design Review', designReviewId);
+
+    if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+
+    // validation
+    const requiredMembers = designReview.requiredMembers.map((user) => user.userId);
+    const optionalMembers = designReview.optionalMembers.map((user) => user.userId);
+
+    const isMemberPresent = (member: User): boolean => {
+      return requiredMembers.includes(member.userId) || optionalMembers.includes(member.userId);
+    };
+
+    if (!isMemberPresent(submitter))
+      throw new HttpException(400, 'Current user is not in the list of this design reviews members');
+
+    // update user schedule settings (in progress)
+
+    const validAvailability = availability ? validateMeetingTimes(availability) : false;
+    //if (validAvailability === false) throw new HttpException(400, 'This availability is invalid');
+    console.log(validAvailability);
+    console.log(availability);
+
+    // update design review confirmed members (works)
+    const newConfirmedMembers: User[] = [...designReview.confirmedMembers, submitter];
+    const updatedConfirmedMembers: { userId: number }[] = getPrismaQueryUserIds(newConfirmedMembers);
+    const markedDesignReview = await prisma.design_Review.update({
+      where: { designReviewId },
+      ...designReviewQueryArgs,
+      data: {
+        confirmedMembers: {
+          set: updatedConfirmedMembers
+        }
+      }
+    });
+
+    return designReviewTransformer(markedDesignReview);
+  }
 }
