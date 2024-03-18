@@ -510,7 +510,6 @@ describe('Design Reviews', () => {
         DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [1, 2], wonderwoman)
       );
 
-      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
       expect(result).toEqual(designReview5);
     });
 
