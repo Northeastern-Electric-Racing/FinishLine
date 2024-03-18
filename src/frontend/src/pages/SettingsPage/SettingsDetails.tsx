@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { useAuth } from '../../hooks/auth.hooks';
-import { Alert, FormControlLabel, FormGroup, Grid, Switch, SwitchProps, styled } from '@mui/material';
+import { Grid } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
@@ -9,61 +8,10 @@ import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { displayEnum } from '../../utils/pipes';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
-import PageBlock from '../../layouts/PageBlock';
-import { GoogleLogout } from 'react-google-login';
-
-const NERSwitch = styled((props: SwitchProps) => (
-  <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
-))(({ theme }) => ({
-  width: 34,
-  height: 18,
-  padding: 0,
-  '& .MuiSwitch-switchBase': {
-    padding: 0,
-    margin: 2,
-    transitionDuration: '300ms',
-    '&.Mui-checked': {
-      transform: 'translateX(16px)',
-      color: '#fff',
-      '& + .MuiSwitch-track': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#ef4345' : '#ef4345',
-        opacity: 1,
-        border: 0
-      },
-      '&.Mui-disabled + .MuiSwitch-track': {
-        opacity: 0.5
-      }
-    },
-    '&.Mui-focusVisible .MuiSwitch-thumb': {
-      color: '#ef4345',
-      border: '6px solid #fff'
-    },
-    '&.Mui-disabled .MuiSwitch-thumb': {
-      color: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[600]
-    },
-    '&.Mui-disabled + .MuiSwitch-track': {
-      opacity: theme.palette.mode === 'light' ? 0.7 : 0.3
-    }
-  },
-  '& .MuiSwitch-thumb': {
-    boxSizing: 'border-box',
-    width: 14,
-    height: 14
-  },
-  '& .MuiSwitch-track': {
-    borderRadius: 18 / 2,
-    backgroundColor: theme.palette.mode === 'light' ? '#E9E9EA' : '#39393D',
-    opacity: 1,
-    transition: theme.transitions.create(['background-color'], {
-      duration: 500
-    })
-  }
-}));
 
 const SettingsDetails: React.FC = () => {
   const auth = useAuth();
   const user = useCurrentUser();
-  const [showAlert, setShowAlert] = useState(false);
   const {
     isLoading: settingsIsLoading,
     isError: settingsIsError,
@@ -97,16 +45,8 @@ const SettingsDetails: React.FC = () => {
     team.members.some((member) => member.userId === user.userId || team.head.userId === user.userId)
   );
 
-  const logout = () => {
-    setShowAlert(true);
-    setTimeout(() => {
-      auth.signout();
-    }, 2000);
-  };
-
   return (
-    <PageLayout title="Details">
-      {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
+    <PageLayout>
       <Grid container direction="column" spacing={0.5}>
         <Grid item xs={12} sm={6} md={4} lg={2}>
           <DetailDisplay label="First Name" content={user.firstName} />
@@ -127,31 +67,7 @@ const SettingsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
-      <PageBlock title={'Organization Settings'}>
-        <Grid container>
-          <Grid item xs={6} md={12}>
-            <DetailDisplay label="Name" content="Northeastern Electric Racing" />
-          </Grid>
-          <Grid item xs={6} md={12}>
-            <FormGroup>
-              <FormControlLabel
-                label="Trickster Mode"
-                control={
-                  import.meta.env.MODE === 'development' ? (
-                    <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
-                  ) : (
-                    <GoogleLogout
-                      clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID || ''}
-                      onLogoutSuccess={logout}
-                      render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
-                    />
-                  )
-                }
-              />
-            </FormGroup>
-          </Grid>
-        </Grid>
-      </PageBlock>
+
       <UserSecureSettings currentSettings={userSecureSettings} />
     </PageLayout>
   );
