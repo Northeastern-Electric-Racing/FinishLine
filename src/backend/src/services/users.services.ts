@@ -9,7 +9,8 @@ import {
   Project,
   RoleEnum,
   isHead,
-  UserSecureSettings
+  UserSecureSettings,
+  UserScheduleSettings
 } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
@@ -21,6 +22,7 @@ import projectTransformer from '../transformers/projects.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
+import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
 
 export default class UsersService {
   /**
@@ -319,5 +321,61 @@ export default class UsersService {
     });
 
     return newUserSecureSettings.userSecureSettingsId;
+  }
+
+  /**
+   * Gets a user's schedule settings
+   * @param userId the id of the user who's schedule settings are being returned
+   * @param submitter the user who's requesting the schedule settings
+   * @returns the user's schedule settings
+   * @throws if the user doesn't have schedule settings
+   */
+  static async getUserScheduleSettings(userId: number, submitter: PrismaUser): Promise<UserScheduleSettings> {
+    if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
+    const scheduleSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId }
+    });
+    if (!scheduleSettings) throw new HttpException(404, 'User Schedule Settings Not Found');
+
+    return userScheduleSettingsTransformer(scheduleSettings);
+  }
+
+  /**
+   *
+   * @param user the user to set the schedule settings for
+   * @param personalGmail the user's personal gmail
+   * @param personalZoomLink the user's personal zoom link
+   * @param availability the user's availibility
+   * @returns the id of the user's schedule settings
+   */
+  static async setUserScheduleSettings(
+    user: User,
+    personalGmail: string,
+    personalZoomLink: string,
+    availability: number[]
+  ): Promise<UserScheduleSettings> {
+    const existingUser = await prisma.schedule_Settings.findFirst({
+      where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
+    });
+
+    if (existingUser) {
+      throw new HttpException(400, 'Email already in use');
+    }
+
+    const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
+      where: { userId: user.userId },
+      update: {
+        personalGmail,
+        personalZoomLink,
+        availability
+      },
+      create: {
+        userId: user.userId,
+        personalGmail,
+        personalZoomLink,
+        availability
+      }
+    });
+    return userScheduleSettingsTransformer(newUserScheduleSettings);
   }
 }

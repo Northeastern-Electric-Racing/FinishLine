@@ -162,3 +162,21 @@ export const displayEnum = (enumString: string) => {
   enumString = enumString.charAt(0).toUpperCase() + enumString.slice(1);
   return enumString;
 };
+
+export const meetingStartTimePipe = (times: number[]) => {
+  const time = (times[0] % 12) + 10;
+
+  return time <= 12 ? time + 'am' : time - 12 + 'pm';
+};
+
+// takes in a Date and returns it as a string in the form mm/dd/yy
+export const meetingDatePipe = (date?: Date) => {
+  if (!date) return '';
+  date = new Date(date.toDateString());
+  return date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    timeZone: 'UTC'
+  });
+};
