@@ -1,4 +1,4 @@
-import { DesignReview, DesignReviewStatus, User } from 'shared';
+import { DesignReview } from 'shared';
 import NERModal from '../../components/NERModal';
 import { Box, IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -26,37 +26,18 @@ interface DRCSummaryModalProps {
 }
 
 export interface DesignReviewEditProps {
-  dateScheduled: Date;
-  teamTypeId: string;
-  requiredMembers: User[];
-  optionalMembers: User[];
-  isOnline: boolean;
-  isInPerson: boolean;
   zoomLink: string;
   location: string;
   docTemplateLink: string;
-  status: DesignReviewStatus;
-  attendees: number[];
-  meetingTimes: number[];
 }
 
 const schema = yup.object().shape({
-  dateScheduled: yup.date(),
-  teamTypeId: yup.string().required(),
-  requiredMembersIds: yup.array(yup.number()).required(),
-  optionalMemberIds: yup.array(yup.number()).required(),
-  isOnline: yup.boolean(),
-  isInPerson: yup.boolean(),
   zoomLink: yup
     .string()
     .optional()
     .test('zoom-link', 'Must be a valid zoom link', (value) => value!.includes('zoom.us/')),
   location: yup.string().optional(),
-  docTemplateLink: yup.string().optional(),
-  // TODO is status cast to string or left as enum?
-  status: yup.string(),
-  attendees: yup.array(yup.number()),
-  meetingTimes: yup.array(yup.number())
+  docTemplateLink: yup.string().optional()
 });
 
 /*
@@ -84,14 +65,14 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     setEditing(false);
     try {
       await editDesignReview({
-        ...payload,
-        zoomLink: payload.zoomLink ?? '',
-        location: payload.location ?? '',
-        docTemplateLink: payload.docTemplateLink ?? '',
-        teamTypeId: payload.teamTypeId,
-        attendees: payload.attendees,
-        requiredMembersIds: payload.requiredMembers.map((member) => member.userId),
-        optionalMembersIds: payload.optionalMembers.map((member) => member.userId)
+        ...designReview,
+        zoomLink: payload.zoomLink ?? designReview.zoomLink,
+        location: payload.location ?? designReview.location,
+        docTemplateLink: payload.docTemplateLink ?? designReview.docTemplateLink,
+        teamTypeId: designReview.teamType.teamTypeId,
+        attendees: designReview.attendees.map((user) => user.userId),
+        requiredMembersIds: designReview.requiredMembers.map((member) => member.userId),
+        optionalMembersIds: designReview.optionalMembers.map((member) => member.userId)
       });
     } catch (e) {
       if (e instanceof Error) {
@@ -110,9 +91,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       ...designReview,
       zoomLink: designReview.zoomLink ?? '',
       location: designReview.location ?? '',
-      docTemplateLink: designReview.docTemplateLink ?? '',
-      teamTypeId: designReview.teamType.teamTypeId,
-      attendees: designReview.attendees.map((user) => user.userId)
+      docTemplateLink: designReview.docTemplateLink ?? ''
     }
   });
 
@@ -160,7 +139,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
               control={control}
               errors={errors}
             />
-            <DesignReviewSummaryModalAttendees designReview={designReview} control={control} errors={errors} />
+            <DesignReviewSummaryModalAttendees designReview={designReview} />
             <DesignReviewSummaryModalCheckBox
               onChange={(checked) => {
                 setChecked(checked);
