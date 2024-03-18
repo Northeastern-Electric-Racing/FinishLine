@@ -740,18 +740,20 @@ export default class WorkPackagesService {
 
     const updatedBlockedBys = await Promise.all(
       blockedBy.map(async (blockedBy: Blocked_By_Info) => {
-        const wbsElem = await prisma.wBS_Element.findUnique({
+        const blockedByInfoID = await prisma.blocked_By_Info.findUnique({
           where: {
-            wbsNumber: { carNumber, projectNumber, workPackageNumber }
+            blockedByInfoId: blockedBy.blockedByInfoId
           }
         });
 
-        return wbsElem;
+        return blockedByInfoID;
       })
     );
 
     let changes = [];
     // get the changes or undefined for each of the fields
+    const workPackageChangeJson = createChange('workPackage', originalWorkPackageTemplate.workPackageName, workPackageName, crId, userId, workPackageTemplateId!);
+    const templateNotesChangeJson = createChange('templateNotes', originalWorkPackageTemplate.templateNotes, templateNotes, crId, userId, workPackageTemplateId!);
     const nameChangeJson = createChange('name', originalWorkPackageTemplate.templateName, templateName, crId, userId, workPackageTemplateId!);
     const stageChangeJson = createChange('stage', originalWorkPackageTemplate.stage, stage, crId, userId, wbsElementId!);
     const durationChangeJson = createChange('duration', originalWorkPackageTemplate.duration, duration, crId, userId, wbsElementId!);
@@ -761,23 +763,24 @@ export default class WorkPackagesService {
         return {
           element,
           comparator: `${element.workPackageTemplateId}`,
-          displayValue: wbsPipe(wbsNumOf(element))
+          displayValue: element.blockedByInfoId
         };
       }),
       updatedBlockedBys.map((element) => {
         return {
           element,
-          comparator: `${element.wbsElementId}`,
-          displayValue: wbsPipe(wbsNumOf(element))
+          comparator: `${element?.blockedByInfoId}`,
+          displayValue: element?.blockedByInfoId 
         };
       }),
       crId,
-      userId,
-      wbsElementId!
+      user.userId,
+      workPackageTemplateId 
     );
+    
     const expectedActivitiesChangeJson = createListChanges(
       'expected activity',
-      descriptionBulletsToChangeListValues(originalWorkPackageTemplate.expectedActivities.filter((ele) => !ele.dateDeleted)),
+      descriptionBulletsToChangeListValues(originalWorkPackageTemplate.expectedActivities.filter((ele: { dateDeleted: any; }) => !ele.dateDeleted)),
       expectedActivities.map(descriptionBulletToChangeListValue),
       crId,
       userId,
@@ -786,17 +789,18 @@ export default class WorkPackagesService {
     const deliverablesChangeJson = createListChanges(
       'deliverable',
 
-      descriptionBulletsToChangeListValues(originalWorkPackage.deliverables.filter((ele) => !ele.dateDeleted)),
+      descriptionBulletsToChangeListValues(originalWorkPackageTemplate.deliverables.filter((ele) => !ele.dateDeleted)),
       deliverables.map(descriptionBulletToChangeListValue),
       crId,
       userId,
-      wbsElementId!
+      workPackageTemplateId!
     );
 
-    // add to changes if not undefined
     if (nameChangeJson !== undefined) changes.push(nameChangeJson);
     if (durationChangeJson !== undefined) changes.push(durationChangeJson);
     if (stageChangeJson !== undefined) changes.push(stageChangeJson);
+    if (workPackageName !== undefined) changes.push(workPackageChangeJson);
+    if (templateNotes !== undefined) changes.push(templateNotesChangeJson);
 
 
     // add the changes for each of blockers, expected activities, and deliverables
@@ -818,7 +822,7 @@ export default class WorkPackagesService {
         stage,
         blockedBy: {
           set: [], // remove all the connections then add all the given ones
-          connect: updatedBlockedBys.map((ele) => ({ wbsElementId: ele.wbsElementId }))
+          connect: updatedBlockedBys.map((ele) => ({ wbsElementId: ele?.workPackageTemplateId }))
         }
       }
     });
@@ -838,14 +842,14 @@ export default class WorkPackagesService {
     await addDescriptionBullets(
       expectedActivitiesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedWorkPackageTemplate.workPackageTemplateId,
-      'workPackageIdExpectedActivities'
+      'workPackageTemplateIdExpectedActivities'
     );
 
     // Add the deliverables to the workpackage
     await addDescriptionBullets(
       deliverablesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
       updatedWorkPackageTemplate.workPackageTemplateId,
-      'workPackageIdDeliverables'
+      'workPackageTemplateIdDeliverables'
     );
 
     // edit the expected changes and deliverables
