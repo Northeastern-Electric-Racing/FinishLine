@@ -29,7 +29,7 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
 
   return (
     <div>
-      <section style={{ overflow: 'scroll', padding: 5 }}>
+      <Box sx={{ overflow: 'scroll', padding: 1, paddingBottom: 2 }}>
         {/* Calendar/timeline */}
         <Box
           sx={{
@@ -73,7 +73,7 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
             return <Event key={event.id} days={days} event={event} createChange={createChange} />;
           })}
         </div>
-      </section>
+      </Box>
 
       {/* List of changes */}
       <h2 className="mt-10 text-3xl font-bold">Changes</h2>
@@ -128,7 +128,7 @@ function Event({
       setInitialWidth(bounds.width);
       setWidth(bounds.width);
     }
-  }, [bounds]);
+  }, [bounds, width]);
 
   const [isResizing, setIsResizing] = useState(false);
   const [startX, setStartX] = useState<number | null>(null);
