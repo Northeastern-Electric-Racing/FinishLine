@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User, UserSecureSettings } from 'shared';
+import { Project, User, UserScheduleSettings, UserSecureSettings } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -94,6 +94,16 @@ export const getUserSecureSettings = (id: number) => {
 };
 
 /**
+ * Fetch a user's schedule settings
+ *
+ * @param userId User ID of the requested user's schedule settings
+ * @returns the schedule settings
+ */
+export const getUserScheduleSettings = (userId: number) => {
+  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(`${userId}`));
+};
+
+/**
  * Update the given user's settings by UserId
  */
 export const updateUserSettings = (id: number, settings: UserSettings) => {
@@ -105,6 +115,13 @@ export const updateUserSettings = (id: number, settings: UserSettings) => {
  */
 export const updateUserSecureSettings = (settings: UserSecureSettings) => {
   return axios.post<{ message: string }>(apiUrls.userSecureSettingsSet(), settings);
+};
+
+/**
+ * Update the given user's schedule settings by UserId
+ */
+export const updateUserScheduleSettings = (settings: UserScheduleSettings) => {
+  return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
 };
 
 export const updateUserRole = (id: number, role: string) => {
