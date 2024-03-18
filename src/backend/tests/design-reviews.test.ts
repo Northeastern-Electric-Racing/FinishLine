@@ -506,9 +506,7 @@ describe('Design Reviews', () => {
   describe('Mark user confirmation tests', () => {
     test('Marking succeeds', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
-      const result = await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [1, 2], wonderwoman)
-      );
+      const result = await DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [1, 2], wonderwoman);
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(0);
       expect(result).toEqual(designReview5);
