@@ -5,17 +5,7 @@
 
 import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
-import {
-  Grid,
-  TextField,
-  Tooltip,
-  Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  SelectChangeEvent
-} from '@mui/material';
+import { Grid, TextField, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useSlackUpcomingDeadlines } from '../../hooks/work-packages.hooks';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -23,8 +13,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
 import { useToast } from '../../hooks/toasts.hooks';
 import HelpIcon from '@mui/icons-material/Help';
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import NERModal from '../../components/NERModal';
+import AttendeeDesignReviewModal from './AdminToolsAttendeeDesignReviewModal';
 
 const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const user = useCurrentUser();
@@ -35,7 +24,6 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
-  const [selectedTeam, setSelectedTeam] = useState('');
 
   const datePickerOnChange = (value: Date | null) => {
     if (value) setDeadline(value);
@@ -57,75 +45,6 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
       All work packages that have an end date up to and including the selected date will be messaged in Slack in the Leads
       channel.
     </Typography>
-  );
-
-  const tableHeaderCellStyle = {
-    borderRight: '2px solid white',
-    borderBottom: '2px solid white'
-  };
-
-  const tableBodyCellStyle = {
-    borderRight: '2px solid white'
-  };
-
-  const lastHeaderCellStyle = {
-    borderBottom: '2px solid white'
-  };
-
-  const teams = ['All', 'Team A', 'Team B', 'Team C'];
-
-  const handleTeamChange = (event: SelectChangeEvent) => {
-    setSelectedTeam(event.target.value as string);
-  };
-
-  const AttendeeModal = () => (
-    <NERModal
-      open={isModalOpen}
-      onHide={handleCloseModal}
-      title="Attendee Design Review Information"
-      showCloseButton={true}
-      hideFormButtons={true}
-    >
-      <FormControl fullWidth>
-        <InputLabel id="team-select-label">Team</InputLabel>
-        <Select
-          labelId="team-select-label"
-          id="team-select"
-          value={selectedTeam}
-          label="Team"
-          onChange={handleTeamChange}
-          sx={{ marginBottom: 2 }}
-        >
-          {teams.map((team) => (
-            <MenuItem key={team} value={team}>
-              {team}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell style={tableHeaderCellStyle}>Team Member Name</TableCell>
-            <TableCell style={tableHeaderCellStyle}>No. Of Design Reviews Attended</TableCell>
-            <TableCell style={lastHeaderCellStyle}>Required to come but did not</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {/* Data row hookup comes here, I've just put a stub for now*/}
-          <TableRow>
-            <TableCell style={tableBodyCellStyle}>Batman</TableCell>
-            <TableCell style={tableBodyCellStyle}>2</TableCell>
-            <TableCell>4</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell style={tableBodyCellStyle}>Superman</TableCell>
-            <TableCell style={tableBodyCellStyle}>4</TableCell>
-            <TableCell>1</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </NERModal>
   );
 
   return (
@@ -155,13 +74,13 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
           <NERButton
             variant="contained"
             disabled={!isAdmin(user.role) || disableButton || isLoading}
-            onClick={handleOpenModal}
+            onClick={handleOpenModal} // Opens the modal
           >
             Attendee Design Review Information
           </NERButton>
         </Grid>
       </Grid>
-      <AttendeeModal />
+      <AttendeeDesignReviewModal open={isModalOpen} onClose={handleCloseModal} />
     </PageBlock>
   );
 };
