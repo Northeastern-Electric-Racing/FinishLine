@@ -42,7 +42,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
 
   const EventCard = (event: DesignReview) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-    const name = event.designReviewId;
+    const name = event.wbsName;
     return (
       <>
         <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
@@ -51,7 +51,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
             <Stack direction="row">
               {getTeamTypeIcon(event.teamType.teamTypeId)}
               <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14}>
-                {name + ' ' + meetingStartTimePipe(event.meetingTimes)}
+                {name + (event.meetingTimes.length > 0 ? ' ' + meetingStartTimePipe(event.meetingTimes) : '')}
               </Typography>
             </Stack>
           </Card>

@@ -5,31 +5,55 @@
 import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DesignReview } from 'shared';
+import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard from './CalendarComponents/CalendarDayCard';
 import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
-import {
-  DAY_NAMES,
-  EnumToArray,
-  calendarPaddingDays,
-  daysInMonth,
-  exampleDesignReview1,
-  testDesignReview1
-} from '../../utils/design-review.utils';
+import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
+import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { datePipe } from '../../utils/pipes';
 
 const CalendarPage = () => {
   const theme = useTheme();
-
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
+  const { isLoading, isError, error, data: designReviews } = useAllDesignReviews();
+  const user = useCurrentUser();
 
-  const EventDict = new Map<Number, DesignReview[]>();
-  // TODO remove during wire up ticket
-  EventDict.set(new Date().getDate(), [exampleDesignReview1]);
-  EventDict.set(new Date().getDate() + 3, [testDesignReview1, testDesignReview1]);
-  EventDict.set(new Date().getDate() + 4, [testDesignReview1, testDesignReview1, testDesignReview1]);
-  const designReviewData: DesignReview[] = [testDesignReview1, testDesignReview1];
+  if (isLoading || !designReviews) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error.message} />;
+
+  const EventDict = new Map<string, DesignReview[]>();
+
+  designReviews.forEach((designReview) => {
+    if (
+      EventDict.has(
+        datePipe(new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000))
+      )
+    ) {
+      EventDict.set(
+        datePipe(designReview.dateScheduled),
+        EventDict.get(
+          datePipe(new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000))
+        )!.concat(designReview)
+      );
+    } else {
+      EventDict.set(
+        datePipe(new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)),
+        [designReview]
+      );
+    }
+
+    console.log(designReview.wbsName);
+  });
+
+  const unconfirmedDR = designReviews.filter(
+    (designReview) =>
+      designReview.userCreated.userId === user.userId && designReview.status === DesignReviewStatus.UNCONFIRMED
+  );
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
 
@@ -40,7 +64,7 @@ const CalendarPage = () => {
   const designReviewButtons = (designReviews: DesignReview[]) => {
     return designReviews.map((designReview) => {
       return {
-        title: designReview.designReviewId,
+        title: designReview.wbsName,
         onClick: () => {},
         disabled: false
       };
@@ -62,7 +86,7 @@ const CalendarPage = () => {
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
   const unconfirmedDRSDropdown = (
-    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(designReviewData)}>
+    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(unconfirmedDR)}>
       My Unconfirmed DRs
     </ActionsMenu>
   );
@@ -98,7 +122,7 @@ const CalendarPage = () => {
                       {isDayInDifferentMonth(day, week) ? (
                         <FillerCalendarDayCard day={day} />
                       ) : (
-                        <CalendarDayCard cardDate={cardDate} events={EventDict.get(cardDate.getDate()) ?? []} />
+                        <CalendarDayCard cardDate={cardDate} events={EventDict.get(datePipe(cardDate)) ?? []} />
                       )}
                     </Box>
                   </Grid>
