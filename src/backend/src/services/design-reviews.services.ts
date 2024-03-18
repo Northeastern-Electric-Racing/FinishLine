@@ -347,9 +347,16 @@ export default class DesignReviewsService {
 
     // update user schedule settings (in progress)
 
-    const validAvailability = availability ? validateMeetingTimes(availability) : false;
-    //if (validAvailability === false) throw new HttpException(400, 'This availability is invalid');
-    console.log(validAvailability);
+    // Update user schedule settings
+    if (availability) {
+      const validAvailability = validateMeetingTimes(availability);
+      console.log(validAvailability);
+      if (!validAvailability) throw new HttpException(400, 'This availability is invalid');
+
+      // Update user schedule settings with the new availability here...
+      // Example: await updateUserScheduleSettings(submitter, availability);
+    }
+
     console.log(availability);
 
     // update design review confirmed members (works)

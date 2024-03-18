@@ -7,7 +7,7 @@ import {
   sharedDesignReview1,
   teamType1
 } from './test-data/design-reviews.test-data';
-import { aquaman, batman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import prisma from '../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -499,6 +499,45 @@ describe('Design Reviews', () => {
           'zoom'
         )
       ).rejects.toThrow(new NotFoundException('WBS Element', 15));
+    });
+  });
+
+  describe('Mark user confirmation tests', () => {
+    test('Marking succeeds', async () => {});
+
+    test('Design Review was not found', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 1, 2], batman)
+      ).rejects.toThrow(new NotFoundException('Design Review', prismaDesignReview1.designReviewId));
+    });
+
+    test('Design Review was deleted', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue({ ...prismaDesignReview1, dateDeleted: new Date() });
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 1, 2], batman)
+      ).rejects.toThrow(new DeletedException('Design Review', prismaDesignReview1.designReviewId));
+    });
+
+    test('User was not in required/optional members of design review', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 1, 2], superman)
+      ).rejects.toThrow(new HttpException(400, 'Current user is not in the list of this design reviews members'));
+    });
+
+    test('Availabilities were invalid - out of bounds', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 85], batman)
+      ).rejects.toThrow(new HttpException(400, 'meeting time must be between 0-83'));
+    });
+
+    test('Availabilities were invalid - non-consecutive', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [1, 3], batman)
+      ).rejects.toThrow(new HttpException(400, 'meeting times must be consecutive'));
     });
   });
 });
