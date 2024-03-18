@@ -10,7 +10,7 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { routes } from '../../../utils/routes';
-import { DesignReview } from 'shared';
+import { DesignReview, wbsPipe } from 'shared';
 
 interface DesignReviewDetailPageProps {
   designReview: DesignReview;
@@ -23,7 +23,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
-  const designReviewName = `${designReview.wbsNum} - ${teamType.name}`;
+  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
   const users = allUsers.map(userToAutocompleteOption);
 
   return (

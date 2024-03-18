@@ -40,7 +40,7 @@ const CalendarPage = () => {
   const designReviewButtons = (designReviews: DesignReview[]) => {
     return designReviews.map((designReview) => {
       return {
-        title: designReview.designReviewId,
+        title: designReview.wbsName,
         onClick: () => {},
         disabled: false
       };

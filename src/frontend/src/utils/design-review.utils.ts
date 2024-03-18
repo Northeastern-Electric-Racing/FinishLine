@@ -102,7 +102,7 @@ export const testDesignReview1: DesignReview = {
 
 // TODO remove during wire up ticket
 export const exampleDesignReview1: DesignReview = {
-  designReviewId: 'Wiring',
+  designReviewId: 'e4fd58f4-0fd3-45eb-86ec-54c703f539c8',
   dateScheduled: new Date(),
   meetingTimes: [1, 2, 5],
   dateCreated: new Date(),

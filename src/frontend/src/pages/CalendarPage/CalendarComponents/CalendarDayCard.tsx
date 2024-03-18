@@ -42,7 +42,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
 
   const EventCard = (event: DesignReview) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-    const name = event.designReviewId;
+    const name = event.wbsName;
     return (
       <>
         <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
