@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   TextField,
   FormControl,
-  InputLabel,
+  FormLabel,
   Select,
   MenuItem,
   SelectChangeEvent,
@@ -64,23 +64,19 @@ const AttendeeDesignReviewModal: React.FC<AttendeeDesignReviewModalProps> = ({ o
       showCloseButton={true}
       hideFormButtons={true}
     >
-      <TextField
-        label="Search by team member name"
-        variant="outlined"
-        value={searchQuery}
-        onChange={handleSearchChange}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-      />
-      <FormControl fullWidth>
-        <InputLabel id="team-select-label">Team</InputLabel>
+      <FormControl fullWidth sx={{ marginBottom: 2 }}>
+        <FormLabel htmlFor="search-by-name">Search by team member name</FormLabel>
+        <TextField id="search-by-name" variant="outlined" value={searchQuery} onChange={handleSearchChange} fullWidth />
+      </FormControl>
+      <FormControl fullWidth sx={{ marginBottom: 2 }}>
+        <FormLabel id="team-select-label">Team</FormLabel>
         <Select
           labelId="team-select-label"
           id="team-select"
           value={selectedTeam}
-          label="Team"
           onChange={handleTeamChange}
-          sx={{ marginBottom: 2 }}
+          displayEmpty
+          fullWidth
         >
           {teams.map((team) => (
             <MenuItem key={team} value={team}>
