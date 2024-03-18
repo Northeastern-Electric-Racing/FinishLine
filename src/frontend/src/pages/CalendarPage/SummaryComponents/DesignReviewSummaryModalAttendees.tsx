@@ -5,16 +5,25 @@ import { useState } from 'react';
 import { MemberPill } from '../../../components/MemberPill';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { DesignReviewEditProps } from '../DesignReviewSummaryModal';
 
 interface DesignReviewSummaryModalAttendeesProps {
   designReview: DesignReview;
+  control: Control<DesignReviewEditProps>;
+  errors: FieldErrors<DesignReviewEditProps>;
 }
 
-const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttendeesProps> = ({ designReview }) => {
+const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttendeesProps> = ({
+  designReview,
+  control,
+  errors
+}) => {
   const toast = useToast();
   const [requiredMembers, setRequiredMembers] = useState<User[]>(designReview.requiredMembers);
   const [optionalMembers, setOptionalMembers] = useState<User[]>(designReview.optionalMembers);
   const currentUser = useCurrentUser();
+  //TODO fix
   const handleRemoveRequiredMember = (user: User) => {
     if (currentUser.userId === designReview.userCreated.userId) {
       setRequiredMembers(requiredMembers.filter((member) => member.userId !== user.userId));
@@ -22,7 +31,7 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
       toast.error('Only the creator of the Design Review can edit attendees');
     }
   };
-
+  //TODO fix
   const handleRemoveOptionalMember = (user: User) => {
     if (currentUser.userId === designReview.userCreated.userId) {
       setOptionalMembers(optionalMembers.filter((member) => member.userId !== user.userId));
@@ -37,34 +46,48 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
         <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
           <Typography>Required: </Typography>
         </Grid>
-        <Grid item xs={10} container>
-          {requiredMembers.map((member, index) => (
-            <Grid item key={index}>
-              <MemberPill
-                user={member}
-                handleClick={() => {
-                  handleRemoveRequiredMember(member);
-                }}
-              />
+        <Controller
+          name="requiredMembers"
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, value } }) => (
+            <Grid item xs={10} container>
+              {value.map((member, index) => (
+                <Grid item key={index}>
+                  <MemberPill
+                    user={member}
+                    handleClick={() => {
+                      handleRemoveRequiredMember(member);
+                    }}
+                  />
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
+          )}
+        />
         <Grid container>
           <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
             <Typography>Optional: </Typography>
           </Grid>
-          <Grid item xs={10} container>
-            {optionalMembers.map((member, index) => (
-              <Grid item key={index}>
-                <MemberPill
-                  user={member}
-                  handleClick={() => {
-                    handleRemoveOptionalMember(member);
-                  }}
-                />
+          <Controller
+            name="optionalMembers"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <Grid item xs={10} container>
+                {value.map((member, index) => (
+                  <Grid item key={index}>
+                    <MemberPill
+                      user={member}
+                      handleClick={() => {
+                        handleRemoveOptionalMember(member);
+                      }}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            )}
+          />
         </Grid>
       </Grid>
     </Box>

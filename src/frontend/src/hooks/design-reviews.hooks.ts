@@ -33,6 +33,10 @@ export interface EditDesignReviewPayload {
   meetingTimes: number[];
 }
 
+/**
+ * Custom React Hook to edit a Design Review
+ * @param designReviewId the design review being edited
+ */
 export const useEditDesignReview = (designReviewId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, EditDesignReviewPayload>(
