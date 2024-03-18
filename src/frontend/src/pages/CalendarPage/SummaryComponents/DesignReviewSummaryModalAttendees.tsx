@@ -23,21 +23,23 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
   const [requiredMembers, setRequiredMembers] = useState<User[]>(designReview.requiredMembers);
   const [optionalMembers, setOptionalMembers] = useState<User[]>(designReview.optionalMembers);
   const currentUser = useCurrentUser();
-  //TODO fix
-  const handleRemoveRequiredMember = (user: User) => {
+
+  const handleRemoveRequiredMember = (user: User, onChange: (event: User[]) => void) => {
     if (currentUser.userId === designReview.userCreated.userId) {
       setRequiredMembers(requiredMembers.filter((member) => member.userId !== user.userId));
     } else {
       toast.error('Only the creator of the Design Review can edit attendees');
     }
+    onChange(requiredMembers);
   };
-  //TODO fix
-  const handleRemoveOptionalMember = (user: User) => {
+
+  const handleRemoveOptionalMember = (user: User, onChange: (event: User[]) => void) => {
     if (currentUser.userId === designReview.userCreated.userId) {
       setOptionalMembers(optionalMembers.filter((member) => member.userId !== user.userId));
     } else {
       toast.error('Only the creator of the Design Review can edit attendees');
     }
+    onChange(optionalMembers);
   };
 
   return (
@@ -57,7 +59,7 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
                   <MemberPill
                     user={member}
                     handleClick={() => {
-                      handleRemoveRequiredMember(member);
+                      handleRemoveRequiredMember(member, onChange);
                     }}
                   />
                 </Grid>
@@ -80,7 +82,7 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
                     <MemberPill
                       user={member}
                       handleClick={() => {
-                        handleRemoveOptionalMember(member);
+                        handleRemoveOptionalMember(member, onChange);
                       }}
                     />
                   </Grid>

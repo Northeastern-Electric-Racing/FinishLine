@@ -131,9 +131,11 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         <Box minWidth="500px">
           <Box position="absolute" right="16px" top="12px">
             {editing ? (
-              <IconButton onClick={handleSubmit(onSave)}>
-                <SaveIcon />
-              </IconButton>
+              <>
+                <IconButton type="submit" form="design-reviews-edit-form">
+                  <SaveIcon />
+                </IconButton>
+              </>
             ) : (
               <IconButton onClick={() => setEditing(true)}>
                 <EditIcon />
