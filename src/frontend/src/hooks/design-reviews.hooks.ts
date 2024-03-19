@@ -11,11 +11,6 @@ export interface CreateDesignReviewsPayload {
   teamTypeId: string;
   requiredMemberIds: number[];
   optionalMemberIds: number[];
-  location?: string;
-  isOnline: boolean;
-  isInPerson: boolean;
-  zoomLink?: string;
-  docTemplateLink?: string;
   wbsNum: WbsNumber;
   meetingTimes: number[];
 }

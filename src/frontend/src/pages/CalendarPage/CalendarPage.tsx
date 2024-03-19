@@ -20,7 +20,12 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 
 const CalendarPage = () => {
   const theme = useTheme();
-  const { data: allTeamTypes, isLoading: allTeamTypesLoading, isError: allTeamTypesIsError, error: allTeamTypesError } = useAllTeamTypes();
+  const {
+    data: allTeamTypes,
+    isLoading: allTeamTypesLoading,
+    isError: allTeamTypesIsError,
+    error: allTeamTypesError
+  } = useAllTeamTypes();
 
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
@@ -32,6 +37,7 @@ const CalendarPage = () => {
   const confirmedDesignReviews = allDesignReviews.filter(isConfirmed);
 
   const eventDict = new Map<string, DesignReview[]>();
+  console.log(confirmedDesignReviews);
   confirmedDesignReviews.forEach((designReview) => {
     // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
     const date = datePipe(

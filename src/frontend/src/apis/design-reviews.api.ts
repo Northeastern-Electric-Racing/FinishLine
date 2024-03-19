@@ -6,6 +6,7 @@ import axios from '../utils/axios';
 import { DesignReview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateDesignReviewsPayload } from '../hooks/design-reviews.hooks';
+import { designReviewTransformer } from './transformers/design-reviews.tranformers';
 
 /**
  * Create a design review
@@ -20,7 +21,7 @@ export const createDesignReviews = async (payload: CreateDesignReviewsPayload) =
  */
 export const getAllDesignReviews = () => {
   return axios.get(apiUrls.designReviews(), {
-    transformResponse: (data) => JSON.parse(data)
+    transformResponse: (data) => JSON.parse(data).map(designReviewTransformer)
   });
 };
 

@@ -41,11 +41,6 @@ export default class DesignReviewsController {
         teamTypeId,
         requiredMemberIds,
         optionalMemberIds,
-        location,
-        isOnline,
-        isInPerson,
-        zoomLink,
-        docTemplateLink,
         wbsNum,
         meetingTimes
       } = req.body;
@@ -56,13 +51,8 @@ export default class DesignReviewsController {
         teamTypeId,
         requiredMemberIds,
         optionalMemberIds,
-        isOnline,
-        isInPerson,
-        docTemplateLink,
         wbsNum,
-        meetingTimes,
-        zoomLink,
-        location
+        meetingTimes
       );
       return res.status(200).json(createdDesignReview);
     } catch (error: unknown) {

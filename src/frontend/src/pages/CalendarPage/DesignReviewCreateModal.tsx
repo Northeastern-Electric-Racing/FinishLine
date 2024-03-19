@@ -2,12 +2,31 @@ import NERFormModal from '../../components/NERFormModal';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
-import { Box, FormControl, FormLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import {
+  Autocomplete,
+  Box,
+  FormControl,
+  FormLabel,
+  Grid,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography
+} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
-import { meetingStartTimePipe } from '../../utils/pipes';
-import { TeamType } from 'shared';
+import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
+import { Project, TeamType, WbsNumber, WorkPackage, validateWBS, wbsPipe } from 'shared';
+import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
+import { useAllUsers } from '../../hooks/users.hooks';
+import ErrorPage from '../ErrorPage';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { userToAutocompleteOption } from '../../utils/teams.utils';
+import { useQuery } from '../../hooks/utils.hooks';
+import NERAutocomplete from '../../components/NERAutocomplete';
+import { useAllProjects } from '../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
@@ -21,6 +40,9 @@ interface CreateDesignReviewFormInput {
   startTime: number;
   endTime: number;
   teamTypeId: string;
+  requiredMemberIds: number[];
+  optionalMemberIds: number[];
+  wbsNum: WbsNumber;
 }
 
 interface DesignReviewCreateModalProps {
@@ -31,15 +53,35 @@ interface DesignReviewCreateModalProps {
 
 export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = ({ showModal, handleClose, teamTypes }) => {
   const HOURS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  const query = useQuery();
 
   const toast = useToast();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [requiredMembers, setRequiredMembers] = useState([].map(userToAutocompleteOption));
+  const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
+  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+  const { data: projects } = useAllProjects();
 
-  // create design review hook
+  const { mutateAsync } = useCreateDesignReviews();
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
+    const day = data.date.getDay();
+    console.log('Day: ' + day);
+    const times = [];
+    for (let i = day * 12 + data.startTime; i <= day * 12 + data.endTime; i++) {
+      times.push(i);
+    }
+    console.log('times: ' + times);
     try {
-      // await mutateAsync(data);
+      await mutateAsync({
+        dateScheduled: data.date,
+        teamTypeId: data.teamTypeId,
+        requiredMemberIds: requiredMembers.map((member) => parseInt(member.id)),
+        optionalMemberIds: optionalMembers.map((member) => parseInt(member.id)),
+        wbsNum: validateWBS(wbsNum),
+        meetingTimes: times
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -62,6 +104,43 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       teamTypeId: ''
     }
   });
+
+  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
+  if (allUsersIsLoading || !users || !projects) return <LoadingIndicator />;
+
+  const memberOptions = users.map(userToAutocompleteOption);
+
+  const projectOptions: { label: string; id: string }[] = [];
+
+  const wbsDropdownOptions: { label: string; id: string }[] = [];
+
+  projects.forEach((project: Project) => {
+    wbsDropdownOptions.push({
+      label: `${wbsNamePipe(project)}`,
+      id: wbsPipe(project.wbsNum)
+    });
+    projectOptions.push({
+      label: `${wbsNamePipe(project)}`,
+      id: wbsPipe(project.wbsNum)
+    });
+    project.workPackages.forEach((workPackage: WorkPackage) => {
+      wbsDropdownOptions.push({
+        label: `${wbsNamePipe(workPackage)}`,
+        id: wbsPipe(workPackage.wbsNum)
+      });
+    });
+  });
+
+  const wbsAutocompleteOnChange = (
+    _event: React.SyntheticEvent<Element, Event>,
+    value: { label: string; id: string } | null
+  ) => {
+    if (value) {
+      setWbsNum(value.id);
+    } else {
+      setWbsNum('');
+    }
+  };
 
   return (
     <NERFormModal
@@ -224,6 +303,57 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
           />
         </FormControl>
       </Box>
+      <Box>
+        <Typography sx={{ fontWeight: 'bold' }} display="inline">
+          Required Members:
+        </Typography>
+        <Grid container direction={'row'}>
+          <Grid item xs={9} md={10} lg={11}>
+            <Autocomplete
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              filterSelectedOptions
+              multiple
+              id="tags-standard"
+              options={memberOptions}
+              value={requiredMembers}
+              onChange={(_event, newValue) => setRequiredMembers(newValue)}
+              getOptionLabel={(option) => option.label}
+              renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+      <Box>
+        <Typography sx={{ fontWeight: 'bold' }} display="inline">
+          Optional Members:
+        </Typography>
+        <Grid container direction={'row'}>
+          <Grid item xs={9} md={10} lg={11}>
+            <Autocomplete
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              filterSelectedOptions
+              multiple
+              id="tags-standard"
+              options={memberOptions}
+              value={optionalMembers}
+              onChange={(_event, newValue) => setOptionalMembers(newValue)}
+              getOptionLabel={(option) => option.label}
+              renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+      <Grid item xs={12}>
+        <FormLabel>WBS</FormLabel>
+        <NERAutocomplete
+          id="wbs-autocomplete"
+          onChange={wbsAutocompleteOnChange}
+          options={wbsDropdownOptions}
+          size="small"
+          placeholder="Select a project or work package"
+          value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+        />
+      </Grid>
     </NERFormModal>
   );
 };
