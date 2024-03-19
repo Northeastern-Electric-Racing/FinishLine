@@ -8,9 +8,11 @@ interface AvailabilityViewProps {
   title: string;
   usersToAvailabilities: Map<User, number[]>;
   existingMeetingData: Map<number, string>;
+  designReviewName: string;
+  selectedDateTime: Date | null;
 }
 
-const AvailabilityView: React.FC<AvailabilityViewProps> = ({ usersToAvailabilities, existingMeetingData }) => {
+const AvailabilityView: React.FC<AvailabilityViewProps> = ({ usersToAvailabilities, existingMeetingData, designReviewName, selectedDateTime }) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
@@ -33,6 +35,8 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ usersToAvailabiliti
           currentAvailableUsers={currentAvailableUsers}
           currentUnavailableUsers={currentUnavailableUsers}
           usersToAvailabilities={usersToAvailabilities}
+          designReviewName={designReviewName}
+          selectedDateTime={selectedDateTime}
         />
       </Grid>
     </Grid>

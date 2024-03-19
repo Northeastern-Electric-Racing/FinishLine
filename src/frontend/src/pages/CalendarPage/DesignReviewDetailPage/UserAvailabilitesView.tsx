@@ -13,12 +13,16 @@ interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
   currentUnavailableUsers: User[];
   usersToAvailabilities: Map<User, number[]>;
+  designReviewName: string;
+  selectedDateTime: Date | null;
 }
 
 const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentAvailableUsers,
   currentUnavailableUsers,
-  usersToAvailabilities
+  usersToAvailabilities,
+  designReviewName,
+  selectedDateTime,
 }) => {
   const theme = useTheme();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
@@ -108,6 +112,8 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             open={showFinalizeDesignReviewDetailsModal}
             setOpen={setShowFinalizeDesignReviewDetailsModal}
             designReviews={['DRC1', 'DRC2', 'DRC3']}
+            designReviewName={designReviewName}
+            selectedDateTime={selectedDateTime}
           />
         </Box>
       </Box>

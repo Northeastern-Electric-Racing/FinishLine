@@ -16,18 +16,34 @@ interface DesignReviewDetailPageProps {
   designReview: DesignReview;
 }
 
-const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview, designReview: { teamType } }) => {
+const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview }) => {
   const theme = useTheme();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [selectedTime, setSelectedTime] = useState<Date | null>(new Date());
+  const [selectedDateTime, setSelectedDateTime] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
+  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
-  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+
   const users = allUsers.map(userToAutocompleteOption);
+
+  const handleDateChange = (newDate: Date | null) => {
+    if (newDate) {
+      const updatedDateTime = new Date(selectedDateTime);
+      updatedDateTime.setFullYear(newDate.getFullYear(), newDate.getMonth(), newDate.getDate());
+      setSelectedDateTime(updatedDateTime);
+    }
+  };
+
+  const handleTimeChange = (newTime: Date | null) => {
+    if (newTime) {
+      const updatedDateTime = new Date(selectedDateTime);
+      updatedDateTime.setHours(newTime.getHours(), newTime.getMinutes());
+      setSelectedDateTime(updatedDateTime);
+    }
+  };
 
   return (
     <PageLayout title="Scheduling">
@@ -76,10 +92,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         </Grid>
         <Grid item xs={3}>
           <DatePicker
-            value={selectedDate}
-            onChange={(newValue: Date | null) => {
-              setSelectedDate(newValue);
-            }}
+            value={selectedDateTime}
+            onChange={handleDateChange}
             renderInput={(params) => <TextField {...params} />}
           />
         </Grid>
@@ -99,10 +113,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         </Grid>
         <Grid item xs={3}>
           <TimePicker
-            value={selectedTime}
-            onChange={(newValue: Date | null) => {
-              setSelectedTime(newValue);
-            }}
+            views={['hours']}
+            value={selectedDateTime}
+            onChange={handleTimeChange}
             renderInput={(params) => <TextField {...params} />}
           />
         </Grid>
@@ -127,7 +140,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             <Grid item xs={4}>
               <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
                 <Autocomplete
-                  isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
                   disableCloseOnSelect
                   limitTags={1}
@@ -173,7 +186,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             <Grid item xs={4}>
               <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
                 <Autocomplete
-                  isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
                   disableCloseOnSelect
                   limitTags={1}
@@ -207,6 +220,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         title={'Battery'}
         usersToAvailabilities={usersToAvailabilities}
         existingMeetingData={existingMeetingData}
+        designReviewName={designReviewName}
+        selectedDateTime={selectedDateTime}
       />
     </PageLayout>
   );

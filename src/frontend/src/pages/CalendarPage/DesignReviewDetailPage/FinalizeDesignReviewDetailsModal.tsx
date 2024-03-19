@@ -17,10 +17,19 @@ interface FinalizeDesignReviewProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   onSubmit?: () => void;
+  designReviewName: string;
+  selectedDateTime: Date | null;
   designReviews?: String[];
 }
 
-const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, designReviews }: FinalizeDesignReviewProps) => {
+const FinalizeDesignReviewDetailsModal = ({
+  open,
+  setOpen,
+  onSubmit,
+  designReviewName,
+  selectedDateTime,
+  designReviews
+}: FinalizeDesignReviewProps) => {
   const handleClose = () => {
     setOpen(false);
   };
@@ -28,6 +37,7 @@ const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, designRevie
   const [docTemplate, setDocTemplate] = useState('');
   const [meetingType, setMeetingType] = useState<string[]>([]);
   const [location, setLocation] = useState('');
+  const [zoomLink, setZoomLink] = useState('');
 
   const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
     setMeetingType(newMeetingType);
@@ -36,9 +46,14 @@ const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, designRevie
   const handleLocationChange = (event: any) => {
     setLocation(event.target.value);
   };
-
   return (
-    <NERModal open={open} title={''} onHide={handleClose} onSubmit={onSubmit} submitText="Finalize Design Review Details">
+    <NERModal
+      open={open}
+      title={`${designReviewName} on ${selectedDateTime?.toDateString()} at ${selectedDateTime?.toLocaleTimeString()}`}
+      onHide={handleClose}
+      onSubmit={onSubmit}
+      submitText="Finalize Design Review Details"
+    >
       <Grid>
         <Grid>
           <Grid style={{ display: 'flex', marginBottom: 20 }}>
@@ -62,6 +77,17 @@ const FinalizeDesignReviewDetailsModal = ({ open, setOpen, onSubmit, designRevie
               <ToggleButton value="virtual">Virtual</ToggleButton>
               <ToggleButton value="inPerson">In-person</ToggleButton>
             </ToggleButtonGroup>
+          </Grid>
+          <Grid style={{ display: 'flex', marginBottom: 20 }}>
+            <Typography style={{ textDecoration: 'underline', fontSize: '1.2em', marginRight: 115 }}>Zoom Link:</Typography>
+            <TextField
+              label="Type here"
+              variant="outlined"
+              value={docTemplate}
+              onChange={(e) => setZoomLink(e.target.value)}
+              style={{ borderRadius: 10 }}
+              size="small"
+            />
           </Grid>
           <Grid style={{ display: 'flex', alignItems: 'center', marginBottom: 50 }}>
             <Typography style={{ textDecoration: 'underline', marginBottom: 10, fontSize: '1.2em', marginRight: 135 }}>
