@@ -4,7 +4,13 @@ import {
   TeamType,
   Design_Review as PrismaDesignReview
 } from '@prisma/client';
-import { batman, sharedBatman, wonderwoman } from './users.test-data';
+import {
+  batman,
+  sharedBatman,
+  wonderwoman,
+  wonderwomanMarkedWithScheduleSettings,
+  wonderwomanWithScheduleSettings
+} from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import {
   DesignReview,
@@ -138,7 +144,7 @@ export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designRe
   docTemplateLink: null,
   wbsElementId: 1,
   requiredMembers: [batman],
-  optionalMembers: [wonderwoman],
+  optionalMembers: [wonderwomanWithScheduleSettings],
   confirmedMembers: [batman],
   deniedMembers: [],
   attendees: [batman],
@@ -200,8 +206,8 @@ export const designReview5: DesignReview = {
   isOnline: true,
   isInPerson: false,
   requiredMembers: [batman],
-  optionalMembers: [wonderwoman],
-  confirmedMembers: [batman],
+  optionalMembers: [wonderwomanMarkedWithScheduleSettings],
+  confirmedMembers: [batman, wonderwomanMarkedWithScheduleSettings],
   deniedMembers: [],
   attendees: [batman],
   wbsName: 'car',
