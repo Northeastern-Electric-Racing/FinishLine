@@ -318,7 +318,7 @@ export default class DesignReviewsService {
   }
 
   /**
-   * Edits a design review but confirming a given user's availability
+   * Edits a design review by confirming a given user's availability and also updating their schedule settings with the given availability
    * @param submitter the member that is being confirmed
    * @param designReviewId the id of the design review
    * @param availability the given member's availabilities
@@ -348,9 +348,15 @@ export default class DesignReviewsService {
     // Update user schedule settings
     const validAvailability = validateMeetingTimes(availability);
 
-    await prisma.schedule_Settings.update({
+    await prisma.schedule_Settings.upsert({
       where: { userId: submitter.userId },
-      data: {
+      update: {
+        availability: validAvailability
+      },
+      create: {
+        userId: submitter.userId,
+        personalGmail: '',
+        personalZoomLink: '',
         availability: validAvailability
       }
     });
