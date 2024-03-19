@@ -80,5 +80,5 @@ export interface UserWithScheduleSettings {
   email: string;
   emailId: string | null;
   role: Role;
-  scheduleSettings?: UserScheduleSettings
+  scheduleSettings?: UserScheduleSettings;
 }

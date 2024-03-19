@@ -12,7 +12,6 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { DesignReview, User, UserWithScheduleSettings } from 'shared';
 import { wbsPipe } from 'shared';
-import { fullNamePipe } from '../../../utils/pipes';
 interface DesignReviewDetailPageProps {
   designReview: DesignReview;
 }
