@@ -2,7 +2,6 @@ import { DesignReview } from 'shared';
 import NERModal from '../../components/NERModal';
 import { Box, IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
 import { useState } from 'react';
 import { DesignReviewDelayModal } from './SummaryComponents/DesignReviewDelayModal';
 import StageGateWorkPackageModalContainer from '../WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
@@ -11,6 +10,8 @@ import DesignReviewSummaryModalCheckBox from './SummaryComponents/DesignReviewSu
 import DesignReviewSummaryModalButtons from './SummaryComponents/DesignReviewSummaryModalButtons';
 import DesignReviewSummaryModalAttendees from './SummaryComponents/DesignReviewSummaryModalAttendees';
 import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -22,7 +23,6 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
   const [checked, setChecked] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
-  const [editing, setEditing] = useState<boolean>(false);
 
   return (
     <NERModal
@@ -34,15 +34,9 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     >
       <Box minWidth="500px">
         <Box position="absolute" right="16px" top="12px">
-          {editing ? (
-            <IconButton onClick={() => setEditing(false)}>
-              <SaveIcon />
-            </IconButton>
-          ) : (
-            <IconButton onClick={() => setEditing(true)}>
-              <EditIcon />
-            </IconButton>
-          )}
+          <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
+            <EditIcon />
+          </IconButton>
         </Box>
         <StageGateWorkPackageModalContainer
           wbsNum={designReview.wbsNum}
@@ -52,7 +46,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         />
         <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} designReview={designReview} />
         <Box>
-          <DesignReviewSummaryModalDetails designReview={designReview} isEditing={editing} />
+          <DesignReviewSummaryModalDetails designReview={designReview} />
           <DesignReviewSummaryModalAttendees designReview={designReview} />
           <DesignReviewSummaryModalCheckBox
             onChange={(checked) => {
