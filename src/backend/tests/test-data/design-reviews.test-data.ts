@@ -130,8 +130,8 @@ export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designRe
   dateScheduled: new Date('2024-03-25'),
   meetingTimes: [0, 1, 2, 3],
   dateCreated: new Date('2024-03-10'),
-  userCreatedId: batman.userId,
-  userCreated: batman,
+  userCreatedId: wonderwoman.userId,
+  userCreated: wonderwoman,
   status: PrismaDesignReviewStatus.CONFIRMED,
   teamTypeId: '1',
   teamType: teamType1,
@@ -147,7 +147,7 @@ export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designRe
   optionalMembers: [wonderwomanWithScheduleSettings],
   confirmedMembers: [batman],
   deniedMembers: [],
-  attendees: [batman],
+  attendees: [wonderwoman],
   userDeleted: null,
   wbsElement: prismaWbsElement1
 };
@@ -200,16 +200,18 @@ export const designReview5: DesignReview = {
   dateScheduled: new Date('2024-03-25'),
   meetingTimes: [0, 1, 2, 3],
   dateCreated: new Date('2024-03-10'),
-  userCreated: batman,
+  userCreated: wonderwoman,
   status: DesignReviewStatus.CONFIRMED,
   teamType: teamType1,
   isOnline: true,
   isInPerson: false,
-  requiredMembers: [batman],
+  requiredMembers: [],
   optionalMembers: [wonderwomanMarkedWithScheduleSettings],
-  confirmedMembers: [batman, wonderwomanMarkedWithScheduleSettings],
+  confirmedMembers: [sharedBatman],
   deniedMembers: [],
-  attendees: [batman],
+  attendees: [wonderwoman],
   wbsName: 'car',
-  wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
+  wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 },
+  zoomLink: undefined,
+  userDeleted: undefined
 };

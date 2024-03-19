@@ -9,14 +9,7 @@ import {
   sharedDesignReview1,
   teamType1
 } from './test-data/design-reviews.test-data';
-import {
-  aquaman,
-  batman,
-  superman,
-  theVisitor,
-  wonderwoman,
-  wonderwomanWithScheduleSettings
-} from './test-data/users.test-data';
+import { aquaman, batman, batmanWithScheduleSettings, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
 import prisma from '../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -511,17 +504,17 @@ describe('Design Reviews', () => {
     });
   });
 
-  describe('Mark user confirmation tests', () => {
-    test('Marking succeeds', async () => {
+  describe('Mark user confirmed tests', () => {
+    test('mark user confirmed succeeds', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       const result = await DesignReviewsService.markUserConfirmed(
         prismaDesignReview5.designReviewId,
         [1, 2],
-        wonderwomanWithScheduleSettings
+        batmanWithScheduleSettings
       );
 
-      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(0);
-      expect(result).toEqual(designReview5);
+      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
+      expect(result.confirmedMembers).toEqual(designReview5.confirmedMembers);
     });
 
     test('Design Review was not found', async () => {

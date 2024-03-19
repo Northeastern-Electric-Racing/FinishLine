@@ -55,6 +55,7 @@ designReviewsRouter.post(
 designReviewsRouter.post(
   '/:designReviewId/confirm-schedule',
   body('availability').isArray(),
+  intMinZero(body('availability.*')),
   validateInputs,
   DesignReviewsController.markUserConfirmed
 );

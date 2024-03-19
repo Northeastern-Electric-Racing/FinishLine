@@ -124,8 +124,8 @@ export default class DesignReviewsController {
       const { designReviewId } = req.params;
       const user = await getCurrentUser(res);
 
-      await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
-      return res.status(200).json({ message: 'Design Review member confirmed successfully' });
+      const updatedDesignReview = await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
+      return res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
       next(error);
     }

@@ -10,7 +10,7 @@ import {
   AccessDeniedException
 } from '../utils/errors.utils';
 import { getUsers, getPrismaQueryUserIds } from '../utils/users.utils';
-import { validateMeetingTimes } from '../utils/design-reviews.utils';
+import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
@@ -334,15 +334,7 @@ export default class DesignReviewsService {
 
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
 
-    // validation
-    const requiredMembers = designReview.requiredMembers.map((user) => user.userId);
-    const optionalMembers = designReview.optionalMembers.map((user) => user.userId);
-
-    const isMemberPresent = (member: User): boolean => {
-      return requiredMembers.includes(member.userId) || optionalMembers.includes(member.userId);
-    };
-
-    if (!isMemberPresent(submitter))
+    if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
     // Update user schedule settings
@@ -361,19 +353,36 @@ export default class DesignReviewsService {
       }
     });
 
-    // update design review confirmed members (works)
-    const newConfirmedMembers: User[] = [...designReview.confirmedMembers, submitter];
-    const updatedConfirmedMembers: { userId: number }[] = getPrismaQueryUserIds(newConfirmedMembers);
-    const markedDesignReview = await prisma.design_Review.update({
-      where: { designReviewId },
-      ...designReviewQueryArgs,
-      data: {
-        confirmedMembers: {
-          set: updatedConfirmedMembers
+    // set submitter as confirmed if they're not already
+    if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
+      const updatedDesignReview = await prisma.design_Review.update({
+        where: { designReviewId },
+        ...designReviewQueryArgs,
+        data: {
+          confirmedMembers: {
+            connect: {
+              userId: submitter.userId
+            }
+          }
         }
-      }
-    });
+      });
 
-    return designReviewTransformer(markedDesignReview);
+      // If all requested attendees have confirmed their schedule, mark design review as confirmed
+      if (
+        designReview.confirmedMembers.length ===
+        designReview.requiredMembers.length + designReview.optionalMembers.length
+      ) {
+        await prisma.design_Review.update({
+          where: { designReviewId },
+          ...designReviewQueryArgs,
+          data: {
+            status: Design_Review_Status.CONFIRMED
+          }
+        });
+      }
+
+      return designReviewTransformer(updatedDesignReview);
+    }
+    return designReviewTransformer(designReview);
   }
 }
