@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import userTransformer from './user.transformer';
-import userWithScheduleSettingsTransformer from './designReviewUser.transformer'
+import userWithScheduleSettingsTransformer from './designReviewUser.transformer';
 import { wbsNumOf } from '../utils/utils';
 import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 
