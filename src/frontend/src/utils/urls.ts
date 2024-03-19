@@ -133,6 +133,7 @@ const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 
 /**************** Design Reviews Endpoints ****************/
 const designReviews = () => `${API_URL}/design-reviews`;
+const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 
 /**************** Other Endpoints ****************/
@@ -191,6 +192,7 @@ export const apiUrls = {
 
   designReviews,
   designReviewById,
+  designReviewsEdit,
 
   teams,
   teamsById,

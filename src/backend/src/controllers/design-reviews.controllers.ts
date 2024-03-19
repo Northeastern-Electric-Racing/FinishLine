@@ -78,8 +78,8 @@ export default class DesignReviewsController {
       const {
         dateScheduled,
         teamType,
-        requiredMembers,
-        optionalMembers,
+        requiredMembersIds,
+        optionalMembersIds,
         isOnline,
         isInPerson,
         zoomLink,
@@ -100,8 +100,8 @@ export default class DesignReviewsController {
         designReviewId,
         dateScheduled,
         teamType.teamTypeId,
-        requiredMembers,
-        optionalMembers,
+        requiredMembersIds,
+        optionalMembersIds,
         isOnline,
         isInPerson,
         zoomLink,
@@ -112,6 +112,20 @@ export default class DesignReviewsController {
         meetingTimes
       );
       return res.status(200).json({ message: 'Design Review updated successfully' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Mark the current user as confirmed for the given design review
+  static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { availability } = req.body;
+      const { designReviewId } = req.params;
+      const user = await getCurrentUser(res);
+
+      const updatedDesignReview = await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
+      return res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
       next(error);
     }
