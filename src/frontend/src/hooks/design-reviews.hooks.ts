@@ -25,9 +25,9 @@ export interface EditDesignReviewPayload {
   optionalMembersIds: number[];
   isOnline: boolean;
   isInPerson: boolean;
-  zoomLink: string;
-  location: string;
-  docTemplateLink: string;
+  zoomLink: string | null;
+  location: string | null;
+  docTemplateLink: string | null;
   status: DesignReviewStatus;
   attendees: number[];
   meetingTimes: number[];
