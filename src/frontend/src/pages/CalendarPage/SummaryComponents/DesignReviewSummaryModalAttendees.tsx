@@ -23,12 +23,9 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
   const optionalMembers = designReview.optionalMembers;
   const currentUser = useCurrentUser();
 
-  const {
-    isLoading: editDesignReviewIsLoading,
-    mutateAsync: editDesignReview,
-    isError: editDesignReviewIsError,
-    error: editDesignReviewError
-  } = useEditDesignReview(designReview.designReviewId);
+  const { isLoading: editDesignReviewIsLoading, mutateAsync: editDesignReview } = useEditDesignReview(
+    designReview.designReviewId
+  );
 
   const handleRemoveRequiredMember = (user: User) => {
     if (currentUser.userId === designReview.userCreated.userId) {
@@ -67,8 +64,7 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
     }
   };
 
-  if (!designReview || editDesignReviewIsLoading) return <LoadingIndicator />;
-  if (editDesignReviewIsError) return <ErrorPage error={editDesignReviewError!} message={editDesignReviewError?.message} />;
+  if (editDesignReviewIsLoading) return <LoadingIndicator />;
 
   return (
     <Box marginLeft="15px" paddingY="6px">
