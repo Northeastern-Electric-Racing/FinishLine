@@ -1,8 +1,8 @@
 import { TableCell } from '@mui/material';
 
-const ColumnHeader = ({ title }: { title: string }) => {
+const ColumnHeader = ({ title, uncenter }: { title: string; uncenter?: boolean }) => {
   return (
-    <TableCell align="center" sx={{ fontSize: '16px', fontWeight: 600 }}>
+    <TableCell align={uncenter ? 'left' : 'center'} sx={{ fontSize: '16px', fontWeight: 600 }}>
       {title}
     </TableCell>
   );
