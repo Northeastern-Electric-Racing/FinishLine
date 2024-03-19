@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
-import PageBlock from '../../layouts/PageBlock';
-import { TextField, FormControl, FormLabel, Select, MenuItem, SelectChangeEvent, TableCell, TableRow } from '@mui/material';
+import {
+  TextField,
+  FormControl,
+  FormLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  TableCell,
+  TableRow,
+  Grid,
+  Typography
+} from '@mui/material';
 import AdminToolTable from './AdminToolTable';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
@@ -37,7 +47,10 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   ));
 
   return (
-    <PageBlock title="Attendee Design Review Information">
+    <Grid>
+      <Typography variant="h5" gutterBottom>
+        Design Review Attendee Info
+      </Typography>
       <FormControl fullWidth sx={{ marginBottom: 2 }}>
         <FormLabel htmlFor="search-by-name">Search by team member name</FormLabel>
         <TextField id="search-by-name" variant="outlined" value={searchQuery} onChange={handleSearchChange} fullWidth />
@@ -68,7 +81,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
         ]}
         rows={attendeeRows}
       />
-    </PageBlock>
+    </Grid>
   );
 };
 

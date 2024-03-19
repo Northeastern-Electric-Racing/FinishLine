@@ -3,9 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
-import { Grid, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Grid, TextField, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useSlackUpcomingDeadlines } from '../../hooks/work-packages.hooks';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -44,9 +43,12 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
   );
 
   return (
-    <PageBlock title="Slack Upcoming Deadlines">
+    <Box>
+      <Typography variant="h5" gutterBottom>
+        Slack Upcoming Deadlines
+      </Typography>
       <Grid container spacing={2} alignItems="center">
-        <Grid item display="flex" xs={12} sm>
+        <Grid item display="flex" xs={12} sm="auto">
           <Tooltip title={tooltipMessage} placement="right" arrow sx={{ fontSize: 24 }}>
             <HelpIcon sx={{ mr: 2, height: 50 }} />
           </Tooltip>
@@ -67,7 +69,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
           </NERButton>
         </Grid>
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 
