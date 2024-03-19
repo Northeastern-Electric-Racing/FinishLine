@@ -9,7 +9,14 @@ import {
   sharedDesignReview1,
   teamType1
 } from './test-data/design-reviews.test-data';
-import { aquaman, batman, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import {
+  aquaman,
+  batman,
+  superman,
+  theVisitor,
+  wonderwoman,
+  wonderwomanWithScheduleSettings
+} from './test-data/users.test-data';
 import prisma from '../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -507,7 +514,11 @@ describe('Design Reviews', () => {
   describe('Mark user confirmation tests', () => {
     test('Marking succeeds', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
-      const result = await DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [1, 2], wonderwoman);
+      const result = await DesignReviewsService.markUserConfirmed(
+        prismaDesignReview5.designReviewId,
+        [1, 2],
+        wonderwomanWithScheduleSettings
+      );
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(0);
       expect(result).toEqual(designReview5);
