@@ -4,7 +4,12 @@
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { DesignReview, TeamType, WbsNumber } from 'shared';
-import { createDesignReviews, getAllDesignReviews, getAllTeamTypes } from '../apis/design-reviews.api';
+import {
+  createDesignReviews,
+  getAllDesignReviews,
+  getAllTeamTypes,
+  getSingleDesignReview
+} from '../apis/design-reviews.api';
 
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
@@ -51,6 +56,18 @@ export const useAllDesignReviews = () => {
 export const useAllTeamTypes = () => {
   return useQuery<TeamType[], Error>(['teamTypes'], async () => {
     const { data } = await getAllTeamTypes();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to get a single design review
+ *
+ * @returns a single design review
+ */
+export const useSingleDesignReview = (id: string) => {
+  return useQuery<DesignReview, Error>(['design-reviews', id], async () => {
+    const { data } = await getSingleDesignReview(id);
     return data;
   });
 };

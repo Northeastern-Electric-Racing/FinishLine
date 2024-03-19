@@ -10,19 +10,20 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { routes } from '../../../utils/routes';
+import { DesignReview, wbsPipe } from 'shared';
 
 interface DesignReviewDetailPageProps {
-  name: string;
+  designReview: DesignReview;
 }
 
-const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name }) => {
+const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview, designReview: { teamType } }) => {
   const theme = useTheme();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
-
+  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
   const users = allUsers.map(userToAutocompleteOption);
 
   return (
@@ -52,7 +53,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
         </Grid>
         <Grid item xs={3}>
           <Box sx={{ padding: 1.5, fontSize: '1.2em', backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
-            {name}
+            {designReviewName}
           </Box>
         </Grid>
         <Grid item xs={1}>
@@ -74,7 +75,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
         <Grid item xs={3}>
           <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
             <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
+              isOptionEqualToValue={(option, value) => option.id === value.id}
               multiple
               disableCloseOnSelect
               limitTags={1}
@@ -120,7 +121,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ name })
         <Grid item xs={3}>
           <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
             <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id} // What is this for
+              isOptionEqualToValue={(option, value) => option.id === value.id}
               multiple
               disableCloseOnSelect
               limitTags={1}

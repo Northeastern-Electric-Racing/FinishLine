@@ -135,6 +135,7 @@ const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 const designReviews = () => `${API_URL}/design-reviews`;
 const designReviewsCreate = () => `${designReviews()}/create`;
 const teamTypes = () => `${designReviews()}/teamType/all`;
+const designReviewById = (id: string) => `${designReviews()}/${id}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -244,6 +245,7 @@ export const apiUrls = {
 
   designReviews,
   designReviewsCreate,
+  designReviewById,
   teamTypes,
 
   version

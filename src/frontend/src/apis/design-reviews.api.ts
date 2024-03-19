@@ -33,3 +33,14 @@ export const getAllTeamTypes = () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Gets a single design review
+ * @param id the ID of the design review to return
+ * @returns the request design review
+ */
+export const getSingleDesignReview = async (id: string) => {
+  return axios.get(apiUrls.designReviewById(id), {
+    transformResponse: (data) => designReviewTransformer(JSON.parse(data))
+  });
+};

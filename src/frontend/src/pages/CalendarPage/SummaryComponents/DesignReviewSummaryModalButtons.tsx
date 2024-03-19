@@ -74,7 +74,7 @@ const DesignReviewSummaryModalButtons: React.FC<DesignReviewSummaryModalButtonsP
             textDecoration: 'none'
           }}
           component={RouterLink}
-          to={`${routes.CALENDAR}/1`}
+          to={`${routes.CALENDAR}/${designReview.designReviewId}`}
         >
           <NERFailButton
             sx={{
