@@ -30,7 +30,7 @@ export const useCreateDesignReviews = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['design reviews']);
+        queryClient.invalidateQueries(['design-reviews']);
       }
     }
   );

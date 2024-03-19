@@ -19,7 +19,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
-import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
+import { TeamType, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -36,7 +36,8 @@ const schema = yup.object().shape({
   endTime: yup
     .number()
     .moreThan(yup.ref('startTime'), `End time must be after the start time`)
-    .required('End time is required')
+    .required('End time is required'),
+  wbsNum: yup.string().required('Work Package is required')
 });
 
 interface CreateDesignReviewFormInput {
@@ -46,7 +47,7 @@ interface CreateDesignReviewFormInput {
   teamTypeId: string;
   requiredMemberIds: number[];
   optionalMemberIds: number[];
-  wbsNum: WbsNumber;
+  wbsNum: string;
 }
 
 interface DesignReviewCreateModalProps {
@@ -69,7 +70,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [requiredMembers, setRequiredMembers] = useState([].map(userToAutocompleteOption));
   const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
-  const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
   const {
     isLoading: allWorkPackagesIsLoading,
@@ -77,9 +77,8 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     error: allWorkPackagesError,
     data: allWorkPackages
   } = useAllWorkPackages();
-  const [teamError, setTeamError] = useState(true);
 
-  const { mutateAsync } = useCreateDesignReviews();
+  const { mutateAsync, isLoading } = useCreateDesignReviews();
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     const day = data.date.getDay();
@@ -93,7 +92,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
         teamTypeId: data.teamTypeId,
         requiredMemberIds: requiredMembers.map((member) => parseInt(member.id)),
         optionalMemberIds: optionalMembers.map((member) => parseInt(member.id)),
-        wbsNum: validateWBS(wbsNum),
+        wbsNum: validateWBS(data.wbsNum),
         meetingTimes: times
       });
     } catch (error: unknown) {
@@ -108,6 +107,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
@@ -115,13 +115,14 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       date: defaultDate,
       startTime: 0,
       endTime: 1,
-      teamTypeId: ''
+      teamTypeId: '',
+      wbsNum: query.get('wbsNum') || ''
     }
   });
 
   if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
   if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
-  if (allUsersIsLoading || !users || allWorkPackagesIsLoading || !allWorkPackages) return <LoadingIndicator />;
+  if (allUsersIsLoading || !users || allWorkPackagesIsLoading || !allWorkPackages || isLoading) return <LoadingIndicator />;
 
   const memberOptions = users.map(userToAutocompleteOption);
 
@@ -135,17 +136,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   });
 
   wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp1.id, wp2.id));
-
-  const wbsAutocompleteOnChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    value: { label: string; id: string } | null
-  ) => {
-    if (value) {
-      setWbsNum(value.id);
-    } else {
-      setWbsNum('');
-    }
-  };
 
   return (
     <NERFormModal
@@ -190,7 +180,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
           />
           <FormHelperText error>{errors.date?.message}</FormHelperText>
         </FormControl>
-
         <FormControl>
           <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Meeting Start Time</FormLabel>
           <Controller
@@ -271,16 +260,30 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       <Grid container gap={1}>
         <Grid item xs={8} sx={{ alignSelf: 'start', paddingTop: '10px', width: '100%' }}>
           <FormLabel>Work Package</FormLabel>
-          <NERAutocomplete
-            id="wbs-autocomplete"
-            sx={{ bgcolor: 'inherit' }}
-            onChange={wbsAutocompleteOnChange}
-            options={wbsDropdownOptions}
-            size="medium"
-            placeholder="Select a work package"
-            value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+          <Controller
+            name="wbsNum"
+            control={control}
+            render={({ field: { onChange, value } }) => {
+              const onClear = () => {
+                setValue('wbsNum', '');
+                onChange('');
+              };
+              return (
+                <NERAutocomplete
+                  id="wbs-autocomplete"
+                  sx={{ bgcolor: 'inherit' }}
+                  onChange={(_event, newValue) => {
+                    newValue ? onChange(newValue.id) : onClear();
+                  }}
+                  options={wbsDropdownOptions}
+                  size="medium"
+                  placeholder="Select a work package"
+                  value={wbsDropdownOptions.find((element) => element.id === value) || null}
+                />
+              );
+            }}
           />
-          {wbsNum === '' && <FormHelperText error>Work Package is required</FormHelperText>}
+          <FormHelperText error>{errors.wbsNum?.message}</FormHelperText>
         </Grid>
         <Grid item xs={3}>
           <FormControl>
@@ -294,17 +297,13 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                   value={value}
                   displayEmpty
                   renderValue={() => {
-                    console.log(value);
                     return value ? (
                       <Typography>{teamTypes.find((teamType) => teamType.teamTypeId === value)?.name} </Typography>
                     ) : (
                       <Typography style={{ color: 'gray' }}>Select Subteam</Typography>
                     );
                   }}
-                  onChange={(event: SelectChangeEvent<string>) => {
-                    setTeamError(false);
-                    return onChange(event.target.value);
-                  }}
+                  onChange={(event: SelectChangeEvent<string>) => onChange(event.target.value)}
                   sx={{ height: 56, width: '100%', textAlign: 'left' }}
                   MenuProps={{
                     anchorOrigin: {
@@ -327,7 +326,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                 </Select>
               )}
             />
-            <FormHelperText error>{teamError ? 'Team Type is required' : errors.teamTypeId?.message}</FormHelperText>
+            <FormHelperText error>{errors.teamTypeId?.message}</FormHelperText>
           </FormControl>
         </Grid>
       </Grid>
