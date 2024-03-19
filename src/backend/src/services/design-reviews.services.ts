@@ -158,11 +158,16 @@ export default class DesignReviewsService {
       throw new NotFoundException('User Settings', 'Cannot find settings of members');
     }
 
+    console.log(memberUserSettings);
     // send a slack message to all leadership invited to the design review
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewNotification(memberUserSetting.slackId, designReview.designReviewId);
+          await sendSlackDesignReviewNotification(
+            memberUserSetting.slackId,
+            designReview.designReviewId,
+            designReview.wbsElement.name
+          );
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
@@ -321,19 +326,16 @@ export default class DesignReviewsService {
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    // Update user schedule settings
-    const validAvailability = validateMeetingTimes(availability);
-
     await prisma.schedule_Settings.upsert({
       where: { userId: submitter.userId },
       update: {
-        availability: validAvailability
+        availability
       },
       create: {
         userId: submitter.userId,
         personalGmail: '',
         personalZoomLink: '',
-        availability: validAvailability
+        availability
       }
     });
 
