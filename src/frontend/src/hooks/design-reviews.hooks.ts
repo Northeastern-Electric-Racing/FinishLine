@@ -2,8 +2,8 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useQuery } from 'react-query';
-import { getAllDesignReviews, getSingleDesignReview } from '../apis/design-reviews.api';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { deleteDesignReview, getAllDesignReviews, getSingleDesignReview } from '../apis/design-reviews.api';
 import { DesignReview } from 'shared';
 
 /**
@@ -28,4 +28,24 @@ export const useSingleDesignReview = (id: string) => {
     const { data } = await getSingleDesignReview(id);
     return data;
   });
+};
+
+/**
+ * Custom react hook to delete a design review
+ */
+
+export const useDeleteDesignReview = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error>(
+    ['design-reviews', 'delete'],
+    async () => {
+      const { data } = await deleteDesignReview(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+      }
+    }
+  );
 };

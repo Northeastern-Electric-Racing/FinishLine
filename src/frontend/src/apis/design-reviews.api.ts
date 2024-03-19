@@ -25,3 +25,11 @@ export const getSingleDesignReview = async (id: string) => {
     transformResponse: (data) => designReviewTransformer(JSON.parse(data))
   });
 };
+
+/**
+ * Deletes a design review
+ * @param id the ID of the design review to delete
+ */
+export const deleteDesignReview = async (id: string) => {
+  return axios.delete(apiUrls.designReviewDelete(id));
+};
