@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import userTransformer from './user.transformer';
-import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
 import { wbsNumOf } from '../utils/utils';
+import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 
 export const designReviewTransformer = (
   designReview: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs>

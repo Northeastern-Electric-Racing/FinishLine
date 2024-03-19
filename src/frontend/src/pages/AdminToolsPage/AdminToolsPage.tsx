@@ -5,6 +5,7 @@
 
 import AdminToolsUserManagement from './AdminToolsUserManagement';
 import AdminToolsSlackUpcomingDeadlines from './AdminToolsSlackUpcomingDeadlines';
+import AdminToolsAttendeeDesignReviewInfo from './AdminToolsAttendeeDesignReviewInfo';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin, isHead } from 'shared';
 import PageLayout from '../../components/PageLayout';
@@ -81,7 +82,10 @@ const AdminToolsPage: React.FC = () => {
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : (
-        <AdminToolsSlackUpcomingDeadlines />
+        <>
+          <AdminToolsSlackUpcomingDeadlines />
+          <AdminToolsAttendeeDesignReviewInfo />
+        </>
       )}
     </PageLayout>
   );

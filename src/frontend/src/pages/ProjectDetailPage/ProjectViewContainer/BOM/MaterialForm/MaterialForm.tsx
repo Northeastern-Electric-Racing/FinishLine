@@ -5,7 +5,6 @@ import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
   useCreateManufacturer,
-  useCreateUnit,
   useGetAllManufacturers,
   useGetAllMaterialTypes,
   useGetAllUnits
@@ -92,7 +91,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     resolver: yupResolver(schema)
   });
 
-  const { mutateAsync: createUnit, isLoading: isLoadingCreateUnit } = useCreateUnit();
   const { mutateAsync: createManufacturer, isLoading: isLoadingCreateManufacturer } = useCreateManufacturer();
 
   const {
@@ -123,7 +121,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     !materialTypes ||
     !units ||
     !manufactuers ||
-    isLoadingCreateUnit ||
     isLoadingCreateManufacturer
   ) {
     return <LoadingIndicator />;
@@ -133,17 +130,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     const price = Math.round(data.price * 100);
     const subtotal = parseFloat((data.quantity * price).toFixed(2));
     onSubmit({ ...data, subtotal: subtotal, price: price, quantity: new Decimal(data.quantity) });
-  };
-
-  const createUnitWrapper = async (unitName: string): Promise<void> => {
-    try {
-      const createdUnit = await createUnit({ name: unitName });
-      setValue('unitName', createdUnit.name);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
-    }
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
@@ -171,7 +157,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       errors={errors}
       open={open}
       watch={watch}
-      createUnit={createUnitWrapper}
       createManufacturer={createManufacturerWrapper}
       setValue={setValue}
     />

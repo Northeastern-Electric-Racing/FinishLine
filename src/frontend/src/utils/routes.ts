@@ -46,6 +46,10 @@ const SETTINGS_PREFERENCES = '/preferences';
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
 
+/**************** Design Review Calendar ****************/
+const CALENDAR = `/design-review-calendar`;
+const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
+
 export const routes = {
   HOME,
   LOGIN,
@@ -82,5 +86,8 @@ export const routes = {
   SETTINGS_DETAILS,
   SETTINGS_PREFERENCES,
 
-  ADMIN_TOOLS
+  ADMIN_TOOLS,
+
+  CALENDAR,
+  DESIGN_REVIEW_BY_ID
 };
