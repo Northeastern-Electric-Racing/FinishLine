@@ -326,6 +326,12 @@ export default class DesignReviewsService {
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
+    availability.forEach((time) => {
+      if (time < 0 || time > 83) {
+        throw new HttpException(400, 'Availability times have to be in range 0-83');
+      }
+    });
+
     await prisma.schedule_Settings.upsert({
       where: { userId: submitter.userId },
       update: {
