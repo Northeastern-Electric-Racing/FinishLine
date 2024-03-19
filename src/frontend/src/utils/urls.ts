@@ -135,6 +135,7 @@ const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 const designReviews = () => `${API_URL}/design-reviews`;
 const designReviewsCreate = () => `${designReviews()}/create`;
 const teamTypes = () => `${designReviews()}/teamType/all`;
+const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 
 /**************** Other Endpoints ****************/
@@ -246,6 +247,7 @@ export const apiUrls = {
   designReviews,
   designReviewsCreate,
   designReviewById,
+  designReviewsEdit,
   teamTypes,
 
   version

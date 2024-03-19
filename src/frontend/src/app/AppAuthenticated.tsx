@@ -9,7 +9,7 @@ import ChangeRequests from '../pages/ChangeRequestsPage/ChangeRequests';
 import Projects from '../pages/ProjectsPage/Projects';
 import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
-import Settings from '../pages/SettingsPage/Settings';
+import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
 import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
 import Teams from '../pages/TeamsPage/Teams';

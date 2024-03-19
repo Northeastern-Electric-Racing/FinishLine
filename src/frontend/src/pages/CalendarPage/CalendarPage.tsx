@@ -37,6 +37,14 @@ const CalendarPage = () => {
   const confirmedDesignReviews = allDesignReviews.filter(isConfirmed);
 
   const eventDict = new Map<string, DesignReview[]>();
+  confirmedDesignReviews.sort((designReview1, designReview2) => {
+    if (designReview1.dateScheduled.getTime() === designReview2.dateScheduled.getTime()) {
+      return designReview1.meetingTimes[0] - designReview2.meetingTimes[0];
+    } else {
+      return designReview1.dateScheduled.getTime() - designReview2.dateScheduled.getTime();
+    }
+  });
+
   confirmedDesignReviews.forEach((designReview) => {
     // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
     const date = datePipe(

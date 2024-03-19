@@ -2,6 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+import { EditDesignReviewPayload } from '../hooks/design-reviews.hooks';
 import axios from '../utils/axios';
 import { DesignReview } from 'shared';
 import { apiUrls } from '../utils/urls';
@@ -31,6 +32,18 @@ export const getAllDesignReviews = () => {
 export const getAllTeamTypes = () => {
   return axios.get(apiUrls.teamTypes(), {
     transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * Edit a design review
+ *
+ * @param designReviewId The id of the design review being edited
+ * @param payload The new information for the design review
+ */
+export const editDesignReview = (designReviewId: string, payload: EditDesignReviewPayload) => {
+  return axios.post<{ message: string }>(apiUrls.designReviewsEdit(designReviewId), {
+    ...payload
   });
 };
 

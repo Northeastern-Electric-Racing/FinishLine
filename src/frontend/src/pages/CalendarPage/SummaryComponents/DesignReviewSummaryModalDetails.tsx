@@ -1,5 +1,4 @@
-import { FormControl, FormLabel, Grid, TextField } from '@mui/material';
-import { ChangeEvent, useState } from 'react';
+import { Grid } from '@mui/material';
 import { DesignReview } from 'shared';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -10,14 +9,9 @@ import { meetingStartTimePipe } from '../../../utils/pipes';
 
 interface DesignReviewSummaryModalDetailsProps {
   designReview: DesignReview;
-  isEditing: boolean;
 }
 
-const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsProps> = ({ designReview, isEditing }) => {
-  const [locationState, setLocationState] = useState<string>(designReview.location || '');
-  const [documentState, setDocumentState] = useState<string>(designReview.docTemplateLink || '');
-  const [zoomState, setZoomState] = useState<string>(designReview.zoomLink || '');
-
+const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsProps> = ({ designReview }) => {
   return (
     <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={5} paddingBottom={2}>
       <Grid item xs={3}>
@@ -28,66 +22,27 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
         />
       </Grid>
       <Grid item xs={3}>
-        {isEditing ? (
-          <FormControl>
-            <FormLabel sx={{ whiteSpace: 'nowrap' }}>Enter Location</FormLabel>
-            <TextField
-              variant="standard"
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setLocationState(event.target.value);
-              }}
-              value={locationState}
-            />
-          </FormControl>
-        ) : (
-          <DesignReviewPill
-            icon={<LocationOnIcon />}
-            isLink={false}
-            displayText={locationState ? locationState : 'Online'}
-          />
-        )}
+        <DesignReviewPill
+          icon={<LocationOnIcon />}
+          isLink={false}
+          displayText={designReview.location ? designReview.location : 'Online'}
+        />
       </Grid>
       <Grid item xs={3}>
-        {isEditing ? (
-          <FormControl>
-            <FormLabel sx={{ whiteSpace: 'nowrap' }}>Enter Docs URL</FormLabel>
-            <TextField
-              variant="standard"
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setDocumentState(event.target.value);
-              }}
-              value={documentState}
-            />
-          </FormControl>
-        ) : (
-          <DesignReviewPill
-            isLink
-            icon={<DescriptionIcon />}
-            linkURL={documentState ?? ''}
-            displayText={documentState ? 'Question Doc' : 'No Doc'}
-          />
-        )}
+        <DesignReviewPill
+          isLink
+          icon={<DescriptionIcon />}
+          linkURL={designReview.docTemplateLink ?? ''}
+          displayText={designReview.docTemplateLink ? 'Question Doc' : 'No Doc'}
+        />
       </Grid>
       <Grid item xs={3}>
-        {isEditing ? (
-          <FormControl>
-            <FormLabel sx={{ overflow: 'hidden', width: '100%', height: '23px' }}>Enter Zoom URL</FormLabel>
-            <TextField
-              variant="standard"
-              onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                setZoomState(event.target.value);
-              }}
-              value={zoomState}
-            />
-          </FormControl>
-        ) : (
-          <DesignReviewPill
-            isLink
-            icon={<VideocamIcon />}
-            linkURL={zoomState ?? ''}
-            displayText={zoomState ? 'Zoom Link' : 'No Zoom'}
-          />
-        )}
+        <DesignReviewPill
+          isLink
+          icon={<VideocamIcon />}
+          linkURL={designReview.zoomLink ?? ''}
+          displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
+        />
       </Grid>
     </Grid>
   );

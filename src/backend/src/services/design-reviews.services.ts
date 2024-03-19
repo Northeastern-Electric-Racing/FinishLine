@@ -10,7 +10,7 @@ import {
   AccessDeniedException
 } from '../utils/errors.utils';
 import { getUsers, getPrismaQueryUserIds } from '../utils/users.utils';
-import { validateMeetingTimes } from '../utils/design-reviews.utils';
+import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
@@ -299,5 +299,74 @@ export default class DesignReviewsService {
       }
     });
     return designReviewTransformer(updateDesignReview);
+  }
+
+  /**
+   * Edits a design review by confirming a given user's availability and also updating their schedule settings with the given availability
+   * @param submitter the member that is being confirmed
+   * @param designReviewId the id of the design review
+   * @param availability the given member's availabilities
+   * @returns the modified design review with its updated confirmedMembers
+   */
+  static async markUserConfirmed(designReviewId: string, availability: number[], submitter: User): Promise<DesignReview> {
+    const designReview = await prisma.design_Review.findUnique({
+      where: { designReviewId },
+      ...designReviewQueryArgs
+    });
+
+    if (!designReview) throw new NotFoundException('Design Review', designReviewId);
+
+    if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+
+    if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
+      throw new HttpException(400, 'Current user is not in the list of this design reviews members');
+
+    // Update user schedule settings
+    const validAvailability = validateMeetingTimes(availability);
+
+    await prisma.schedule_Settings.upsert({
+      where: { userId: submitter.userId },
+      update: {
+        availability: validAvailability
+      },
+      create: {
+        userId: submitter.userId,
+        personalGmail: '',
+        personalZoomLink: '',
+        availability: validAvailability
+      }
+    });
+
+    // set submitter as confirmed if they're not already
+    if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
+      const updatedDesignReview = await prisma.design_Review.update({
+        where: { designReviewId },
+        ...designReviewQueryArgs,
+        data: {
+          confirmedMembers: {
+            connect: {
+              userId: submitter.userId
+            }
+          }
+        }
+      });
+
+      // If all requested attendees have confirmed their schedule, mark design review as confirmed
+      if (
+        designReview.confirmedMembers.length ===
+        designReview.requiredMembers.length + designReview.optionalMembers.length
+      ) {
+        await prisma.design_Review.update({
+          where: { designReviewId },
+          ...designReviewQueryArgs,
+          data: {
+            status: Design_Review_Status.CONFIRMED
+          }
+        });
+      }
+
+      return designReviewTransformer(updatedDesignReview);
+    }
+    return designReviewTransformer(designReview);
   }
 }
