@@ -6,6 +6,7 @@ import {
   Autocomplete,
   Box,
   FormControl,
+  FormHelperText,
   FormLabel,
   Grid,
   MenuItem,
@@ -32,7 +33,10 @@ const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
   startTime: yup.number().required('Start time is required'),
   teamTypeId: yup.string().required('Team Type is required'),
-  endTime: yup.number().min(yup.ref('startTime'), `End time can't be before start time`).required('End time is required')
+  endTime: yup
+    .number()
+    .moreThan(yup.ref('startTime'), `End time must be after the start time`)
+    .required('End time is required')
 });
 
 interface CreateDesignReviewFormInput {
@@ -73,6 +77,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     error: allWorkPackagesError,
     data: allWorkPackages
   } = useAllWorkPackages();
+  const [teamError, setTeamError] = useState(true);
 
   const { mutateAsync } = useCreateDesignReviews();
 
@@ -183,6 +188,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
               />
             )}
           />
+          <FormHelperText error>{errors.date?.message}</FormHelperText>
         </FormControl>
 
         <FormControl>
@@ -221,6 +227,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
               </Select>
             )}
           />
+          <FormHelperText error>{errors.startTime?.message}</FormHelperText>
         </FormControl>
         <FormControl>
           <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Meeting End Time</FormLabel>
@@ -258,6 +265,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
               </Select>
             )}
           />
+          <FormHelperText error>{errors.endTime?.message}</FormHelperText>
         </FormControl>
       </Box>
       <Grid container gap={1}>
@@ -272,6 +280,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             placeholder="Select a work package"
             value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
           />
+          {wbsNum === '' && <FormHelperText error>Work Package is required</FormHelperText>}
         </Grid>
         <Grid item xs={3}>
           <FormControl>
@@ -292,7 +301,10 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                       <Typography style={{ color: 'gray' }}>Select Subteam</Typography>
                     );
                   }}
-                  onChange={(event: SelectChangeEvent<string>) => onChange(event.target.value)}
+                  onChange={(event: SelectChangeEvent<string>) => {
+                    setTeamError(false);
+                    return onChange(event.target.value);
+                  }}
                   sx={{ height: 56, width: '100%', textAlign: 'left' }}
                   MenuProps={{
                     anchorOrigin: {
@@ -315,6 +327,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                 </Select>
               )}
             />
+            <FormHelperText error>{teamError ? 'Team Type is required' : errors.teamTypeId?.message}</FormHelperText>
           </FormControl>
         </Grid>
       </Grid>
