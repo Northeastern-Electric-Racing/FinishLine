@@ -49,9 +49,15 @@ interface DesignReviewCreateModalProps {
   showModal: boolean;
   handleClose: () => void;
   teamTypes: TeamType[];
+  defaultDate: Date;
 }
 
-export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = ({ showModal, handleClose, teamTypes }) => {
+export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = ({
+  showModal,
+  handleClose,
+  teamTypes,
+  defaultDate
+}) => {
   const HOURS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   const query = useQuery();
 
@@ -101,9 +107,9 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      date: new Date(),
+      date: defaultDate,
       startTime: 0,
-      endTime: 0,
+      endTime: 1,
       teamTypeId: ''
     }
   });
@@ -139,7 +145,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       open={showModal}
       onHide={handleClose}
       title="Create Design Review"
-      reset={() => reset({ date: new Date() })}
+      reset={() => reset({ date: defaultDate })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="create-design-review-form"
@@ -158,7 +164,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                 onClose={() => setDatePickerOpen(false)}
                 onOpen={() => setDatePickerOpen(true)}
                 onChange={(newValue) => {
-                  onChange(newValue ?? new Date());
+                  onChange(newValue ?? defaultDate);
                 }}
                 PopperProps={{
                   placement: 'right'
@@ -221,9 +227,9 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             control={control}
             render={({ field: { onChange, value } }) => (
               <Select
-                id="start-time-autocomplete"
+                id="end-time-autocomplete"
                 displayEmpty
-                renderValue={(value) => meetingStartTimePipe([value + 1])}
+                renderValue={(value) => meetingStartTimePipe([value])}
                 value={value}
                 onChange={(event: SelectChangeEvent<number>) => onChange(Number(event.target.value))}
                 size={'small'}
@@ -240,10 +246,10 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                   }
                 }}
               >
-                {HOURS.map((hour) => {
+                {HOURS.slice(1).map((hour) => {
                   return (
                     <MenuItem key={hour} value={hour}>
-                      {meetingStartTimePipe([hour + 1])}
+                      {meetingStartTimePipe([hour])}
                     </MenuItem>
                   );
                 })}

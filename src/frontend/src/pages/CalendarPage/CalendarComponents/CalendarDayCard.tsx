@@ -155,6 +155,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           setIsCreateModalOpen(false);
         }}
         teamTypes={teamTypes}
+        defaultDate={cardDate}
       />
       <CardContent sx={{ padding: 0 }}>
         <DayCardTitle />
