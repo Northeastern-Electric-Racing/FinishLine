@@ -1,5 +1,5 @@
 import { Design_Review_Status, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { DesignReview, TeamType, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -25,6 +25,11 @@ export default class DesignReviewsService {
       ...designReviewQueryArgs
     });
     return designReviews.map(designReviewTransformer);
+  }
+
+  static async getAllTeamTypes(): Promise<TeamType[]> {
+    const teamTypes = await prisma.teamType.findMany();
+    return teamTypes;
   }
 
   /**
@@ -55,20 +60,15 @@ export default class DesignReviewsService {
   }
 
   /**
-   * Creates a design review
-   * @param submitter user who submitted the design review
+   * Create a design review
+   * @param submitter User submitting the design review
    * @param dateScheduled when the design review is scheduled for
-   * @param teamTypeId team type id of the design review
-   * @param requiredMemberIds ids of the required members to attend the design review
-   * @param optionalMemberIds ids of the optional members to attend the design reivew
-   * @param isOnline if design review is online
-   * @param isInPerson if design review is in person
-   * @param docTemplateLink link to the doc template
-   * @param wbsNum wbs number for the design review
-   * @param meetingTimes the meeting times for the design review
-   * @param zoomLink link for the zoom if design review is online
-   * @param location location of the design review if in person
-   * @returns a design review
+   * @param teamTypeId team type id
+   * @param requiredMemberIds ids of members who are required to go
+   * @param optionalMemberIds ids of members who do not have to go
+   * @param wbsNum wbs num related to the design review
+   * @param meetingTimes meeting times of the design review
+   * @returns a new design review
    */
   static async createDesignReview(
     submitter: User,
@@ -76,13 +76,8 @@ export default class DesignReviewsService {
     teamTypeId: string,
     requiredMemberIds: number[],
     optionalMemberIds: number[],
-    isOnline: boolean,
-    isInPerson: boolean,
-    docTemplateLink: string,
     wbsNum: WbsNumber,
-    meetingTimes: number[],
-    zoomLink?: string,
-    location?: string
+    meetingTimes: number[]
   ): Promise<DesignReview> {
     if (!isLeadership(submitter.role)) throw new AccessDeniedException('create design review');
 
@@ -125,14 +120,6 @@ export default class DesignReviewsService {
       }
     }
 
-    if (isOnline && !zoomLink) {
-      throw new HttpException(400, 'If the design review is online then there needs to be a zoom link');
-    }
-
-    if (isInPerson && !location) {
-      throw new HttpException(400, 'If the design review is in person then there needs to be a location');
-    }
-
     if (dateScheduled.valueOf() < new Date().valueOf()) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
@@ -142,11 +129,8 @@ export default class DesignReviewsService {
         dateScheduled,
         dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
-        location,
-        isOnline,
-        isInPerson,
-        zoomLink,
-        docTemplateLink,
+        isOnline: false,
+        isInPerson: false,
         userCreated: { connect: { userId: submitter.userId } },
         teamType: { connect: { teamTypeId: teamType.teamTypeId } },
         requiredMembers: { connect: requiredMemberIds.map((memberId) => ({ userId: memberId })) },
