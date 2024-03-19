@@ -47,7 +47,7 @@ export const useEditDesignReview = (designReviewId: string) => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['design-reviews', designReviewId]);
+        queryClient.invalidateQueries(['design-reviews']);
       }
     }
   );

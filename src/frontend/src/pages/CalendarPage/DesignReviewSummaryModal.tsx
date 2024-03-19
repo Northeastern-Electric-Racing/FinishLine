@@ -10,6 +10,8 @@ import DesignReviewSummaryModalCheckBox from './SummaryComponents/DesignReviewSu
 import DesignReviewSummaryModalButtons from './SummaryComponents/DesignReviewSummaryModalButtons';
 import DesignReviewSummaryModalAttendees from './SummaryComponents/DesignReviewSummaryModalAttendees';
 import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
+import { Link as RouterLink } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -17,17 +19,10 @@ interface DRCSummaryModalProps {
   designReview: DesignReview;
 }
 
-/*
-  status: DesignReviewStatus;
-  attendees: number[];
-  meetingTimes: number[];
- */
-
 const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview }) => {
   const [checked, setChecked] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
-  const [editing, setEditing] = useState<boolean>(false);
 
   return (
     <NERModal
@@ -39,13 +34,9 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     >
       <Box minWidth="500px">
         <Box position="absolute" right="16px" top="12px">
-          {editing ? (
-            <></>
-          ) : (
-            <IconButton onClick={() => setEditing(true)}>
-              <EditIcon />
-            </IconButton>
-          )}
+          <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
+            <EditIcon />
+          </IconButton>
         </Box>
         <StageGateWorkPackageModalContainer
           wbsNum={designReview.wbsNum}
@@ -55,7 +46,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
         />
         <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} designReview={designReview} />
         <Box>
-          <DesignReviewSummaryModalDetails designReview={designReview} isEditing={editing} setEditing={setEditing} />
+          <DesignReviewSummaryModalDetails designReview={designReview} />
           <DesignReviewSummaryModalAttendees designReview={designReview} />
           <DesignReviewSummaryModalCheckBox
             onChange={(checked) => {

@@ -23,7 +23,6 @@ export const getAllDesignReviews = () => {
  * @param payload The new information for the design review
  */
 export const editDesignReview = (designReviewId: string, payload: EditDesignReviewPayload) => {
-  console.log(payload);
   return axios.post<{ message: string }>(apiUrls.designReviewsEdit(designReviewId), {
     ...payload
   });

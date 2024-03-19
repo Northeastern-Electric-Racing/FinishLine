@@ -192,6 +192,7 @@ export const apiUrls = {
 
   designReviews,
   designReviewById,
+  designReviewsEdit,
 
   teams,
   teamsById,
@@ -245,7 +246,5 @@ export const apiUrls = {
   bomCreateMaterialType,
   bomCreateUnit,
 
-  version,
-
-  designReviewsEdit
+  version
 };

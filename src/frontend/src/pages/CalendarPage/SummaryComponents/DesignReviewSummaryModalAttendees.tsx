@@ -1,16 +1,12 @@
 import { Grid, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { DesignReview, User } from 'shared';
-import { useState } from 'react';
 import { MemberPill } from '../../../components/MemberPill';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import { Controller, useForm } from 'react-hook-form';
-import * as yup from 'yup';
 import { useEditDesignReview } from '../../../hooks/design-reviews.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { yupResolver } from '@hookform/resolvers/yup';
 
 interface DesignReviewSummaryModalAttendeesProps {
   designReview: DesignReview;
@@ -21,15 +17,10 @@ interface DesignReviewEditAttendeesProps {
   optionalMembers: User[];
 }
 
-const schema = yup.object().shape({
-  requiredMembers: yup.array(yup.string()),
-  optionalMembers: yup.array(yup.string())
-});
-
 const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttendeesProps> = ({ designReview }) => {
   const toast = useToast();
-  const [requiredMembers, setRequiredMembers] = useState<User[]>(designReview.requiredMembers);
-  const [optionalMembers, setOptionalMembers] = useState<User[]>(designReview.optionalMembers);
+  const requiredMembers = designReview.requiredMembers;
+  const optionalMembers = designReview.optionalMembers;
   const currentUser = useCurrentUser();
 
   const {
@@ -39,24 +30,22 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
     error: editDesignReviewError
   } = useEditDesignReview(designReview.designReviewId);
 
-  const handleRemoveRequiredMember = (user: User, onChange: (event: User[]) => void) => {
+  const handleRemoveRequiredMember = (user: User) => {
     if (currentUser.userId === designReview.userCreated.userId) {
-      setRequiredMembers(requiredMembers.filter((member) => member.userId !== user.userId));
+      const updatedMembers = requiredMembers.filter((member) => member.userId !== user.userId);
+      saveMembers({ requiredMembers: updatedMembers, optionalMembers });
     } else {
       toast.error('Only the creator of the Design Review can edit attendees');
     }
-    onChange(requiredMembers);
-    saveMembers({ requiredMembers, optionalMembers });
   };
 
-  const handleRemoveOptionalMember = (user: User, onChange: (event: User[]) => void) => {
+  const handleRemoveOptionalMember = (user: User) => {
     if (currentUser.userId === designReview.userCreated.userId) {
-      setOptionalMembers(optionalMembers.filter((member) => member.userId !== user.userId));
+      const updatedMembers = optionalMembers.filter((member) => member.userId !== user.userId);
+      saveMembers({ requiredMembers, optionalMembers: updatedMembers });
     } else {
       toast.error('Only the creator of the Design Review can edit attendees');
     }
-    onChange(optionalMembers);
-    saveMembers({ requiredMembers, optionalMembers });
   };
 
   const saveMembers = async (payload: DesignReviewEditAttendeesProps) => {
@@ -78,20 +67,6 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
     }
   };
 
-  // TODO handle errors and submit
-  const {
-    //handleSubmit,
-    control
-    //formState: { errors }
-  } = useForm<DesignReviewEditAttendeesProps>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      ...designReview,
-      requiredMembers: designReview.requiredMembers ?? [],
-      optionalMembers: designReview.optionalMembers ?? []
-    }
-  });
-
   if (!designReview || editDesignReviewIsLoading) return <LoadingIndicator />;
   if (editDesignReviewIsError) return <ErrorPage error={editDesignReviewError!} message={editDesignReviewError?.message} />;
 
@@ -101,48 +76,34 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
         <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
           <Typography>Required: </Typography>
         </Grid>
-        <Controller
-          name="requiredMembers"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { onChange, value } }) => (
-            <Grid item xs={10} container>
-              {value.map((member, index) => (
-                <Grid item key={index}>
-                  <MemberPill
-                    user={member}
-                    handleClick={() => {
-                      handleRemoveRequiredMember(member, onChange);
-                    }}
-                  />
-                </Grid>
-              ))}
+        <Grid item xs={10} container>
+          {requiredMembers.map((member, index) => (
+            <Grid item key={index}>
+              <MemberPill
+                user={member}
+                handleClick={() => {
+                  handleRemoveRequiredMember(member);
+                }}
+              />
             </Grid>
-          )}
-        />
+          ))}
+        </Grid>
         <Grid container>
           <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
             <Typography>Optional: </Typography>
           </Grid>
-          <Controller
-            name="optionalMembers"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <Grid item xs={10} container>
-                {value.map((member, index) => (
-                  <Grid item key={index}>
-                    <MemberPill
-                      user={member}
-                      handleClick={() => {
-                        handleRemoveOptionalMember(member, onChange);
-                      }}
-                    />
-                  </Grid>
-                ))}
+          <Grid item xs={10} container>
+            {optionalMembers.map((member, index) => (
+              <Grid item key={index}>
+                <MemberPill
+                  user={member}
+                  handleClick={() => {
+                    handleRemoveOptionalMember(member);
+                  }}
+                />
               </Grid>
-            )}
-          />
+            ))}
+          </Grid>
         </Grid>
       </Grid>
     </Box>

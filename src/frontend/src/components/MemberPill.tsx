@@ -19,7 +19,13 @@ export const MemberPill: React.FC<{ user: User; handleClick: () => void }> = ({ 
       <Typography fontSize="15px" marginLeft="10px" color="#242526">
         {fullNamePipe(user)}
       </Typography>
-      <IconButton onClick={handleClick} size="small">
+      <IconButton
+        onClick={(event) => {
+          event.stopPropagation();
+          handleClick();
+        }}
+        size="small"
+      >
         <RemoveCircleOutlineIcon sx={{ color: '#242526', width: '18px' }} />
       </IconButton>
     </Box>
