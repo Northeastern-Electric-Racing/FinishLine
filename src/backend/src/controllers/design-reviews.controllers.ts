@@ -36,14 +36,7 @@ export default class DesignReviewsController {
   static async createDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const submitter: User = await getCurrentUser(res);
-      const {
-        dateScheduled,
-        teamTypeId,
-        requiredMemberIds,
-        optionalMemberIds,
-        wbsNum,
-        meetingTimes
-      } = req.body;
+      const { dateScheduled, teamTypeId, requiredMemberIds, optionalMemberIds, wbsNum, meetingTimes } = req.body;
 
       const createdDesignReview = await DesignReviewsService.createDesignReview(
         submitter,

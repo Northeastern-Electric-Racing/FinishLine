@@ -77,7 +77,7 @@ export default class DesignReviewsService {
     requiredMemberIds: number[],
     optionalMemberIds: number[],
     wbsNum: WbsNumber,
-    meetingTimes: number[],
+    meetingTimes: number[]
   ): Promise<DesignReview> {
     if (!isLeadership(submitter.role)) throw new AccessDeniedException('create design review');
 
