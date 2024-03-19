@@ -20,7 +20,6 @@ interface DRCSummaryModalProps {
 }
 
 const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview }) => {
-  console.log(designReview);
   const [checked, setChecked] = useState<boolean>(false);
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
