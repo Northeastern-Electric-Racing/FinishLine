@@ -5,6 +5,7 @@ import {
   prismaDesignReview1,
   prismaDesignReview2,
   prismaDesignReview3,
+  prismaDesignReview5,
   sharedDesignReview1,
   teamType1
 } from './test-data/design-reviews.test-data';
@@ -250,7 +251,7 @@ describe('Design Reviews', () => {
           [],
           [1, 4, 2, 3]
         )
-      ).rejects.toThrow(new HttpException(400, 'meeting times must be consecutive'));
+      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be consecutive'));
     });
 
     test('Edit Design Review fails when meeting times are consecutive and *above* 83', async () => {
@@ -272,7 +273,7 @@ describe('Design Reviews', () => {
           [],
           [84, 85]
         )
-      ).rejects.toThrow(new HttpException(400, 'meeting time must be between 0-83'));
+      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be in range 0-83'));
     });
 
     test('Edit Design Review fails when no docTemplateLink, and status is scheduled or done', async () => {
@@ -505,8 +506,8 @@ describe('Design Reviews', () => {
 
   describe('Mark user confirmation tests', () => {
     test('Marking succeeds', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
-      const result = await DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [1, 2], wonderwoman);
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
+      const result = await DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [1, 2], wonderwoman);
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(0);
       expect(result).toEqual(designReview5);
@@ -515,35 +516,35 @@ describe('Design Reviews', () => {
     test('Design Review was not found', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 1, 2], batman)
-      ).rejects.toThrow(new NotFoundException('Design Review', prismaDesignReview1.designReviewId));
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batman)
+      ).rejects.toThrow(new NotFoundException('Design Review', prismaDesignReview5.designReviewId));
     });
 
     test('Design Review was deleted', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue({ ...prismaDesignReview1, dateDeleted: new Date() });
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 1, 2], batman)
-      ).rejects.toThrow(new DeletedException('Design Review', prismaDesignReview1.designReviewId));
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batman)
+      ).rejects.toThrow(new DeletedException('Design Review', prismaDesignReview5.designReviewId));
     });
 
     test('User was not in required/optional members of design review', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 1, 2], superman)
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], superman)
       ).rejects.toThrow(new HttpException(400, 'Current user is not in the list of this design reviews members'));
     });
 
     test('Availabilities were invalid - out of bounds', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [0, 85], batman)
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batman)
       ).rejects.toThrow(new HttpException(400, 'Meeting times have to be in range 0-83'));
     });
 
     test('Availabilities were invalid - non-consecutive', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview1);
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview1.designReviewId, [1, 3], batman)
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [1, 3], batman)
       ).rejects.toThrow(new HttpException(400, 'Meeting times have to be consecutive'));
     });
   });
