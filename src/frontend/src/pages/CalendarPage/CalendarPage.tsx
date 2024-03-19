@@ -12,13 +12,21 @@ import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
 import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth, isConfirmed } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe } from '../../utils/pipes';
+import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const CalendarPage = () => {
   const theme = useTheme();
+  const {
+    data: allTeamTypes,
+    isLoading: allTeamTypesLoading,
+    isError: allTeamTypesIsError,
+    error: allTeamTypesError
+  } = useAllTeamTypes();
+
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
   const user = useCurrentUser();
@@ -90,6 +98,9 @@ const CalendarPage = () => {
     </ActionsMenu>
   );
 
+  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
+  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+
   return (
     <PageLayout
       title="Design Review Calendar"
@@ -127,6 +138,7 @@ const CalendarPage = () => {
                             eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
                             []
                           }
+                          teamTypes={allTeamTypes}
                         />
                       )}
                     </Box>

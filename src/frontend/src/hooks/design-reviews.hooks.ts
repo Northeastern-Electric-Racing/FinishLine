@@ -3,8 +3,39 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { editDesignReview, getAllDesignReviews, getSingleDesignReview } from '../apis/design-reviews.api';
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { DesignReview, TeamType, WbsNumber, DesignReviewStatus } from 'shared';
+import {
+  editDesignReview,
+  createDesignReviews,
+  getAllDesignReviews,
+  getAllTeamTypes,
+  getSingleDesignReview
+} from '../apis/design-reviews.api';
+
+export interface CreateDesignReviewsPayload {
+  dateScheduled: Date;
+  teamTypeId: string;
+  requiredMemberIds: number[];
+  optionalMemberIds: number[];
+  wbsNum: WbsNumber;
+  meetingTimes: number[];
+}
+
+export const useCreateDesignReviews = () => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, CreateDesignReviewsPayload>(
+    ['design reviews', 'create'],
+    async (formData: CreateDesignReviewsPayload) => {
+      const { data } = await createDesignReviews(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+      }
+    }
+  );
+};
 
 /**
  * Custom react hook to get all design reviews
@@ -51,6 +82,18 @@ export const useEditDesignReview = (designReviewId: string) => {
       }
     }
   );
+};
+
+/**
+ * Custom react hook to get all team types
+ *
+ * @returns all the team types
+ */
+export const useAllTeamTypes = () => {
+  return useQuery<TeamType[], Error>(['teamTypes'], async () => {
+    const { data } = await getAllTeamTypes();
+    return data;
+  });
 };
 
 /**
