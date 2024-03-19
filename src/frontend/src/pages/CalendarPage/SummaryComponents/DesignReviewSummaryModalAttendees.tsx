@@ -6,7 +6,6 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useEditDesignReview } from '../../../hooks/design-reviews.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 
 interface DesignReviewSummaryModalAttendeesProps {
   designReview: DesignReview;
