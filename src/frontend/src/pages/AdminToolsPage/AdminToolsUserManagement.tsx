@@ -4,8 +4,7 @@
  */
 
 import { NERButton } from '../../components/NERButton';
-import { Grid, Typography, useTheme } from '@mui/material';
-import PageBlock from '../../layouts/PageBlock';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
@@ -21,7 +20,6 @@ const AdminToolsUserManagement: React.FC = () => {
   const [role, setRole] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [isDisabled, setIsDisabled] = useState(true);
-  const [hideSuccessLabel, setHideSuccessLabel] = useState(true);
   const { isLoading, isError, error, data: users } = useAllUsers();
   const updateUserRole = useUpdateUserRole();
   const theme = useTheme();
@@ -52,7 +50,6 @@ const AdminToolsUserManagement: React.FC = () => {
       if (user) {
         setUser(user);
         setRole(user.role);
-        setHideSuccessLabel(true);
       }
     } else {
       setUser(null);
@@ -69,11 +66,10 @@ const AdminToolsUserManagement: React.FC = () => {
   };
 
   const handleClick = async () => {
-    setHideSuccessLabel(true);
     if (!user) return;
     try {
       await updateUserRole.mutateAsync({ userId: user.userId, role });
-      setHideSuccessLabel(false);
+      toast.success('Role updated successfully!');
       setUser(null);
     } catch (e) {
       if (e instanceof Error) {
@@ -87,9 +83,12 @@ const AdminToolsUserManagement: React.FC = () => {
   };
 
   return (
-    <PageBlock title={'Role Management'}>
+    <Box>
+      <Typography variant="h5" gutterBottom>
+        Role Management
+      </Typography>
       <Grid container spacing={2}>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={7}>
           <NERAutocomplete
             id="users-autocomplete"
             onChange={usersSearchOnChange}
@@ -99,7 +98,7 @@ const AdminToolsUserManagement: React.FC = () => {
             value={user ? userToAutocompleteOptionWithRole(user) : null}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3} mt={1}>
           <Select
             displayEmpty={true}
             renderValue={(value) => (value ? value : user ? user.role : 'Current Role')}
@@ -126,19 +125,18 @@ const AdminToolsUserManagement: React.FC = () => {
                   ))}
           </Select>
         </Grid>
+        <Grid item xs={12} md={'auto'} mt={-1.5}>
+          <NERButton
+            sx={{ mt: '20px', float: 'right' }}
+            variant="contained"
+            disabled={isDisabled || !user}
+            onClick={handleClick}
+          >
+            Confirm
+          </NERButton>
+        </Grid>
       </Grid>
-      <NERButton
-        sx={{ mt: '20px', float: 'right' }}
-        variant="contained"
-        disabled={isDisabled || !user}
-        onClick={handleClick}
-      >
-        Confirm
-      </NERButton>
-      <Typography hidden={hideSuccessLabel} style={{ color: theme.palette.primary.main, marginTop: '20px' }}>
-        Successfully Updated User
-      </Typography>
-    </PageBlock>
+    </Box>
   );
 };
 

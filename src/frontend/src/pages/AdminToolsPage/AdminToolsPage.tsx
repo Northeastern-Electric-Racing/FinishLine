@@ -16,6 +16,7 @@ import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
 import { useState } from 'react';
 import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
+import { Box } from '@mui/system';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -42,10 +43,12 @@ const AdminToolsPage: React.FC = () => {
 
   const UserManagementTab = () => {
     return isUserAdmin ? (
-      <>
-        <AdminToolsUserManagement />
+      <Box>
+        <Box mb={2}>
+          <AdminToolsUserManagement />
+        </Box>
         <TeamsTools />
-      </>
+      </Box>
     ) : (
       <AdminToolsUserManagement />
     );
