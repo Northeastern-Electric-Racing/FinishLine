@@ -18,7 +18,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
-import { Project, TeamType, WbsNumber, WorkPackage, validateWBS, wbsPipe } from 'shared';
+import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -26,7 +26,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { userToAutocompleteOption } from '../../utils/teams.utils';
 import { useQuery } from '../../hooks/utils.hooks';
 import NERAutocomplete from '../../components/NERAutocomplete';
-import { useAllProjects } from '../../hooks/projects.hooks';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
@@ -61,18 +61,21 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
-  const { data: projects } = useAllProjects();
+  const {
+    isLoading: allWorkPackagesIsLoading,
+    isError: allWorkPackagesIsError,
+    error: allWorkPackagesError,
+    data: allWorkPackages
+  } = useAllWorkPackages();
 
   const { mutateAsync } = useCreateDesignReviews();
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     const day = data.date.getDay();
-    console.log('Day: ' + day);
     const times = [];
     for (let i = day * 12 + data.startTime; i <= day * 12 + data.endTime; i++) {
       times.push(i);
     }
-    console.log('times: ' + times);
     try {
       await mutateAsync({
         dateScheduled: data.date,
@@ -105,29 +108,18 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     }
   });
 
-  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
-  if (allUsersIsLoading || !users || !projects) return <LoadingIndicator />;
+  if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
+  if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
+  if (allUsersIsLoading || !users || allWorkPackagesIsLoading || !allWorkPackages) return <LoadingIndicator />;
 
   const memberOptions = users.map(userToAutocompleteOption);
 
-  const projectOptions: { label: string; id: string }[] = [];
-
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
-  projects.forEach((project: Project) => {
+  allWorkPackages.forEach((workPackage: WorkPackage) => {
     wbsDropdownOptions.push({
-      label: `${wbsNamePipe(project)}`,
-      id: wbsPipe(project.wbsNum)
-    });
-    projectOptions.push({
-      label: `${wbsNamePipe(project)}`,
-      id: wbsPipe(project.wbsNum)
-    });
-    project.workPackages.forEach((workPackage: WorkPackage) => {
-      wbsDropdownOptions.push({
-        label: `${wbsNamePipe(workPackage)}`,
-        id: wbsPipe(workPackage.wbsNum)
-      });
+      label: `${wbsNamePipe(workPackage)}`,
+      id: wbsPipe(workPackage.wbsNum)
     });
   });
 
@@ -184,50 +176,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             )}
           />
         </FormControl>
-        <FormControl>
-          <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Team</FormLabel>
-          <Controller
-            name={'teamTypeId'}
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Select
-                id="teamType-select"
-                value={value}
-                displayEmpty
-                renderValue={() => {
-                  console.log(value);
-                  return value ? (
-                    <Typography>{teamTypes.find((teamType) => teamType.teamTypeId === value)?.name} </Typography>
-                  ) : (
-                    <Typography style={{ color: 'gray' }}>Select Subteam</Typography>
-                  );
-                }}
-                onChange={(event: SelectChangeEvent<string>) => onChange(event.target.value)}
-                sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                MenuProps={{
-                  anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'right'
-                  },
-                  transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right'
-                  }
-                }}
-              >
-                {teamTypes.map((teamType) => {
-                  return (
-                    <MenuItem key={teamType.teamTypeId} value={teamType.teamTypeId}>
-                      {teamType.name}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            )}
-          />
-        </FormControl>
-      </Box>
-      <Box display="flex" flexDirection={'row'} gap={2}>
+
         <FormControl>
           <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Meeting Start Time</FormLabel>
           <Controller
@@ -303,57 +252,92 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
           />
         </FormControl>
       </Box>
-      <Box>
-        <Typography sx={{ fontWeight: 'bold' }} display="inline">
-          Required Members:
-        </Typography>
-        <Grid container direction={'row'}>
-          <Grid item xs={9} md={10} lg={11}>
-            <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              filterSelectedOptions
-              multiple
-              id="tags-standard"
-              options={memberOptions}
-              value={requiredMembers}
-              onChange={(_event, newValue) => setRequiredMembers(newValue)}
-              getOptionLabel={(option) => option.label}
-              renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
-            />
-          </Grid>
+      <Grid container gap={1}>
+        <Grid item xs={8} sx={{ alignSelf: 'start', paddingTop: '10px', width: '100%' }}>
+          <FormLabel>Work Package</FormLabel>
+          <NERAutocomplete
+            id="wbs-autocomplete"
+            sx={{ bgcolor: 'inherit' }}
+            onChange={wbsAutocompleteOnChange}
+            options={wbsDropdownOptions}
+            size="medium"
+            placeholder="Select a work package"
+            value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+          />
         </Grid>
-      </Box>
-      <Box>
-        <Typography sx={{ fontWeight: 'bold' }} display="inline">
-          Optional Members:
-        </Typography>
-        <Grid container direction={'row'}>
-          <Grid item xs={9} md={10} lg={11}>
-            <Autocomplete
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              filterSelectedOptions
-              multiple
-              id="tags-standard"
-              options={memberOptions}
-              value={optionalMembers}
-              onChange={(_event, newValue) => setOptionalMembers(newValue)}
-              getOptionLabel={(option) => option.label}
-              renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+        <Grid item xs={3}>
+          <FormControl>
+            <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Team</FormLabel>
+            <Controller
+              name={'teamTypeId'}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select
+                  id="teamType-select"
+                  value={value}
+                  displayEmpty
+                  renderValue={() => {
+                    console.log(value);
+                    return value ? (
+                      <Typography>{teamTypes.find((teamType) => teamType.teamTypeId === value)?.name} </Typography>
+                    ) : (
+                      <Typography style={{ color: 'gray' }}>Select Subteam</Typography>
+                    );
+                  }}
+                  onChange={(event: SelectChangeEvent<string>) => onChange(event.target.value)}
+                  sx={{ height: 56, width: '100%', textAlign: 'left' }}
+                  MenuProps={{
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'right'
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right'
+                    }
+                  }}
+                >
+                  {teamTypes.map((teamType) => {
+                    return (
+                      <MenuItem key={teamType.teamTypeId} value={teamType.teamTypeId}>
+                        {teamType.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              )}
             />
-          </Grid>
+          </FormControl>
         </Grid>
-      </Box>
-      <Grid item xs={12}>
-        <FormLabel>WBS</FormLabel>
-        <NERAutocomplete
-          id="wbs-autocomplete"
-          onChange={wbsAutocompleteOnChange}
-          options={wbsDropdownOptions}
-          size="small"
-          placeholder="Select a project or work package"
-          value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
-        />
       </Grid>
+      <Box sx={{ alignSelf: 'start', paddingTop: '10px' }}>
+        <FormLabel> Required Members</FormLabel>
+        <Autocomplete
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          filterSelectedOptions
+          multiple
+          id="tags-standard"
+          options={memberOptions}
+          value={requiredMembers}
+          onChange={(_event, newValue) => setRequiredMembers(newValue)}
+          getOptionLabel={(option) => option.label}
+          renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+        />
+      </Box>
+      <Box sx={{ alignSelf: 'start', paddingTop: '10px' }}>
+        <FormLabel> Optional Members</FormLabel>
+        <Autocomplete
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          filterSelectedOptions
+          multiple
+          id="tags-standard"
+          options={memberOptions}
+          value={optionalMembers}
+          onChange={(_event, newValue) => setOptionalMembers(newValue)}
+          getOptionLabel={(option) => option.label}
+          renderInput={(params) => <TextField {...params} variant="standard" placeholder="Select A User" />}
+        />
+      </Box>
     </NERFormModal>
   );
 };
