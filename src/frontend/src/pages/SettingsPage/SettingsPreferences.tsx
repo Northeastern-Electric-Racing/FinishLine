@@ -102,7 +102,7 @@ const SettingsPreferences: React.FC = () => {
   };
 
   return (
-    <PageLayout>
+    <PageLayout title="Preferences">
       {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
       <UserSettings currentSettings={userSettingsData} />
       <UserSecureSettings currentSettings={userSecureSettings} />

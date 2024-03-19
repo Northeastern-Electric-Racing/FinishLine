@@ -45,7 +45,7 @@ const SettingsDetails: React.FC = () => {
   );
 
   return (
-    <PageLayout>
+    <PageLayout title="User Details">
       <Typography variant="h5" mb={1}>
         User Details
       </Typography>
