@@ -6,7 +6,6 @@
 /**************** General Section ****************/
 const HOME = `/`;
 const LOGIN = `/login`;
-const SETTINGS = `/settings`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
@@ -39,6 +38,11 @@ const CHANGE_REQUESTS_NEW = CHANGE_REQUESTS + `/new`;
 const CHANGE_REQUESTS_NEW_WITH_WBS = CHANGE_REQUESTS_NEW + `?wbsNum=`;
 const CHANGE_REQUESTS_OVERVIEW = CHANGE_REQUESTS + `/overview`;
 
+/****************** Settings Section  *********************/
+const SETTINGS = `/settings`;
+const SETTINGS_DETAILS = '/details';
+const SETTINGS_PREFERENCES = '/preferences';
+
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
 
@@ -49,7 +53,6 @@ const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 export const routes = {
   HOME,
   LOGIN,
-  SETTINGS,
   INFO,
   CREDITS,
 
@@ -78,6 +81,10 @@ export const routes = {
   REIMBURSEMENT_REQUESTS,
   REIMBURSEMENT_REQUEST_BY_ID,
   REIMBURSEMENT_REQUEST_EDIT,
+
+  SETTINGS,
+  SETTINGS_DETAILS,
+  SETTINGS_PREFERENCES,
 
   ADMIN_TOOLS,
 
