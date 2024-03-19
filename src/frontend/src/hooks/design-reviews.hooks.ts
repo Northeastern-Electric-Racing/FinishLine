@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { editDesignReview, getAllDesignReviews } from '../apis/design-reviews.api';
+import { editDesignReview, getAllDesignReviews, getSingleDesignReview } from '../apis/design-reviews.api';
 import { DesignReview, DesignReviewStatus } from 'shared';
 
 /**
@@ -51,4 +51,16 @@ export const useEditDesignReview = (designReviewId: string) => {
       }
     }
   );
+};
+
+/**
+ * Custom react hook to get a single design review
+ *
+ * @returns a single design review
+ */
+export const useSingleDesignReview = (id: string) => {
+  return useQuery<DesignReview, Error>(['design-reviews', id], async () => {
+    const { data } = await getSingleDesignReview(id);
+    return data;
+  });
 };

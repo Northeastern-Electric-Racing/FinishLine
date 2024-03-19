@@ -26,5 +26,16 @@ export const editDesignReview = (designReviewId: string, payload: EditDesignRevi
   console.log('Editing design review' + designReviewId + payload.meetingTimes);
   return axios.post<{ message: string }>(apiUrls.designReviewsEdit(designReviewId), {
     ...payload
+  };
+};
+
+/**
+ * Gets a single design review
+ * @param id the ID of the design review to return
+ * @returns the request design review
+ */
+export const getSingleDesignReview = async (id: string) => {
+  return axios.get(apiUrls.designReviewById(id), {
+    transformResponse: (data) => designReviewTransformer(JSON.parse(data))
   });
 };
