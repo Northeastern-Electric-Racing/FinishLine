@@ -345,19 +345,15 @@ export default class DesignReviewsService {
     if (!isMemberPresent(submitter))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    // update user schedule settings (in progress)
-
     // Update user schedule settings
-    if (availability) {
-      const validAvailability = validateMeetingTimes(availability);
-      console.log(validAvailability);
-      if (!validAvailability) throw new HttpException(400, 'This availability is invalid');
+    const validAvailability = validateMeetingTimes(availability);
 
-      // Update user schedule settings with the new availability here...
-      // Example: await updateUserScheduleSettings(submitter, availability);
-    }
-
-    console.log(availability);
+    await prisma.schedule_Settings.update({
+      where: { userId: submitter.userId },
+      data: {
+        availability: validAvailability
+      }
+    });
 
     // update design review confirmed members (works)
     const newConfirmedMembers: User[] = [...designReview.confirmedMembers, submitter];
