@@ -64,7 +64,18 @@ export const prismaDesignReview1: Prisma.Design_ReviewGetPayload<typeof designRe
   wbsElementId: 1,
   requiredMembers: [batman],
   optionalMembers: [],
-  confirmedMembers: [batman],
+  confirmedMembers: [
+    {
+      ...batman,
+      drScheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3],
+        userId: 1
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [batman],
   userDeleted: null,
@@ -90,7 +101,18 @@ export const prismaDesignReview2: Prisma.Design_ReviewGetPayload<typeof designRe
   userCreated: wonderwoman,
   requiredMembers: [wonderwoman],
   optionalMembers: [],
-  confirmedMembers: [wonderwoman],
+  confirmedMembers: [
+    {
+      ...wonderwoman,
+      drScheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3],
+        userId: 1
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [wonderwoman],
   userDeleted: null,
@@ -117,7 +139,18 @@ export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designRe
   userCreated: batman,
   requiredMembers: [batman],
   optionalMembers: [],
-  confirmedMembers: [batman],
+  confirmedMembers: [
+    {
+      ...batman,
+      drScheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3],
+        userId: 1
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [batman],
   userDeleted: null,
@@ -145,7 +178,18 @@ export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designRe
   wbsElementId: 1,
   requiredMembers: [batman],
   optionalMembers: [wonderwomanWithScheduleSettings],
-  confirmedMembers: [batman],
+  confirmedMembers: [
+    {
+      ...batman,
+      drScheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3],
+        userId: 1
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [wonderwoman],
   userDeleted: null,

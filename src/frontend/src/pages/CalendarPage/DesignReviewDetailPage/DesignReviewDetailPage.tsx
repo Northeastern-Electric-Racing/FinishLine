@@ -23,7 +23,18 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
   const [selectedDateTime, setSelectedDateTime] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
   const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+
   const [usersToAvailabilities, setUsersToAvailabilities] = useState<Map<User, number[]>>(new Map());
+
+  useEffect(() => {
+    if (designReview && designReview.confirmedMembers.length > 0) {
+      const newUsersToAvailabilities = new Map<User, number[]>();
+      designReview.confirmedMembers.forEach((user: UserWithScheduleSettings) => {
+        newUsersToAvailabilities.set(user, user.scheduleSettings?.availability ?? []);
+      });
+      setUsersToAvailabilities(newUsersToAvailabilities);
+    }
+  }, [designReview]);
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
@@ -45,16 +56,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       setSelectedDateTime(updatedDateTime);
     }
   };
-
-  useEffect(() => {
-    if (designReview && designReview.confirmedMembers.length > 0) {
-      const newUsersToAvailabilities = new Map<User, number[]>();
-      designReview.confirmedMembers.forEach((user: UserWithScheduleSettings) => {
-        newUsersToAvailabilities.set(user, user.scheduleSettings?.availability ?? []);
-      });
-      setUsersToAvailabilities(newUsersToAvailabilities);
-    }
-  }, [designReview]);
 
   return (
     <PageLayout title="Scheduling">
