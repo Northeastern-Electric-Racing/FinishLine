@@ -26,7 +26,7 @@ import { wbsNumOf } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import workPackageTransformer from '../transformers/work-packages.transformer';
-import { validateChangeRequestAccepted } from '../utils/change-requests.utils';
+import { updateBlocking, validateChangeRequestAccepted } from '../utils/change-requests.utils';
 import { sendSlackUpcomingDeadlineNotification } from '../utils/slack.utils';
 import { createChange, createListChanges } from '../utils/changes.utils';
 import {
@@ -713,25 +713,20 @@ export default class WorkPackagesService {
     user: User,
     workPackageTemplateId: string,
     templateName: string,
-    crId: number,
     templateNotes: string,
     expectedActivities: string[],
     deliverables: string[],
     blockedBy: Blocked_By_Info[],
-    stage?: WorkPackageStage,
-    duration?: number,
-    workPackageName?: string,
+    stage: WorkPackageStage | null,
+    duration: number | null,
+    workPackageName: string | null
   ): Promise<void> {
-    // verify user is allowed to edit work package templates
     if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
 
-    const { userId } = user;
-
-    // get the original work package template so we can compare things
     const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
       where: { workPackageTemplateId },
       include: {
-        blockedBy: true,
+        blockedBy: true
       }
     });
 
@@ -750,112 +745,23 @@ export default class WorkPackagesService {
       })
     );
 
-    let changes = [];
-    // get the changes or undefined for each of the fields
-    const workPackageChangeJson = createChange('workPackage', originalWorkPackageTemplate.workPackageName, workPackageName, crId, userId, workPackageTemplateId!);
-    const templateNotesChangeJson = createChange('templateNotes', originalWorkPackageTemplate.templateNotes, templateNotes, crId, userId, workPackageTemplateId!);
-    const nameChangeJson = createChange('name', originalWorkPackageTemplate.templateName, templateName, crId, userId, workPackageTemplateId!);
-    const stageChangeJson = createChange('stage', originalWorkPackageTemplate.stage, stage, crId, userId, wbsElementId!);
-    const durationChangeJson = createChange('duration', originalWorkPackageTemplate.duration, duration, crId, userId, wbsElementId!);
-    const blockedByChangeJson = createListChanges(
-      'blocked by',
-      originalWorkPackageTemplate.blockedBy.map((element) => {
-        return {
-          element,
-          comparator: `${element.workPackageTemplateId}`,
-          displayValue: element.blockedByInfoId
-        };
-      }),
-      updatedBlockedBys.map((element) => {
-        return {
-          element,
-          comparator: `${element?.blockedByInfoId}`,
-          displayValue: element?.blockedByInfoId 
-        };
-      }),
-      crId,
-      user.userId,
-      workPackageTemplateId 
-    );
-    
-    const expectedActivitiesChangeJson = createListChanges(
-      'expected activity',
-      descriptionBulletsToChangeListValues(originalWorkPackageTemplate.expectedActivities.filter((ele: { dateDeleted: any; }) => !ele.dateDeleted)),
-      expectedActivities.map(descriptionBulletToChangeListValue),
-      crId,
-      userId,
-      templateName!
-    );
-    const deliverablesChangeJson = createListChanges(
-      'deliverable',
-
-      descriptionBulletsToChangeListValues(originalWorkPackageTemplate.deliverables.filter((ele) => !ele.dateDeleted)),
-      deliverables.map(descriptionBulletToChangeListValue),
-      crId,
-      userId,
-      workPackageTemplateId!
-    );
-
-    if (nameChangeJson !== undefined) changes.push(nameChangeJson);
-    if (durationChangeJson !== undefined) changes.push(durationChangeJson);
-    if (stageChangeJson !== undefined) changes.push(stageChangeJson);
-    if (workPackageName !== undefined) changes.push(workPackageChangeJson);
-    if (templateNotes !== undefined) changes.push(templateNotesChangeJson);
-
-
-    // add the changes for each of blockers, expected activities, and deliverables
-    changes = changes
-      .concat(blockedByChangeJson.changes)
-      .concat(expectedActivitiesChangeJson.changes)
-      .concat(deliverablesChangeJson.changes);
-
     // update the work package with the input fields
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
       where: { workPackageTemplateId },
       data: {
+        workPackageTemplateId,
+        templateName,
+        templateNotes,
+        expectedActivities,
+        deliverables,
+        workPackageName,
         duration,
-        wbsElement: {
-          update: {
-            templateName
-          }
-        },
         stage,
         blockedBy: {
           set: [], // remove all the connections then add all the given ones
-          connect: updatedBlockedBys.map((ele) => ({ wbsElementId: ele?.workPackageTemplateId }))
+          connect: updatedBlockedBys.map((ele) => ({ blockedByInfoId: ele?.workPackageTemplateId }))
         }
       }
     });
-
-    // Update any deleted description bullets to have their date deleted as right now
-    const deletedElements: DescriptionBulletPreview[] = expectedActivitiesChangeJson.deletedElements.concat(
-      deliverablesChangeJson.deletedElements
-    );
-    if (deletedElements.length > 0) {
-      await prisma.description_Bullet.updateMany({
-        where: { descriptionId: { in: deletedElements.map((descriptionBullet) => descriptionBullet.id) } },
-        data: { dateDeleted: new Date() }
-      });
-    }
-
-    // Add the expected activities to the workpackage
-    await addDescriptionBullets(
-      expectedActivitiesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedWorkPackageTemplate.workPackageTemplateId,
-      'workPackageTemplateIdExpectedActivities'
-    );
-
-    // Add the deliverables to the workpackage
-    await addDescriptionBullets(
-      deliverablesChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-      updatedWorkPackageTemplate.workPackageTemplateId,
-      'workPackageTemplateIdDeliverables'
-    );
-
-    // edit the expected changes and deliverables
-    await editDescriptionBullets(expectedActivitiesChangeJson.editedElements.concat(deliverablesChangeJson.editedElements));
-
-    // create the changes in prisma
-    await prisma.change.createMany({ data: changes });
   }
 }
