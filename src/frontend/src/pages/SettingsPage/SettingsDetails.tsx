@@ -1,5 +1,5 @@
 import { useAuth } from '../../hooks/auth.hooks';
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
@@ -46,6 +46,9 @@ const SettingsDetails: React.FC = () => {
 
   return (
     <PageLayout>
+      <Typography variant="h5" mb={1}>
+        User Details
+      </Typography>
       <Grid container direction="column" spacing={0.5}>
         <Grid item xs={12} sm={6} md={4} lg={2}>
           <DetailDisplay label="First Name" content={user.firstName} />

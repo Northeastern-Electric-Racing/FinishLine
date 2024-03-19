@@ -5,7 +5,7 @@ import PageLayout from '../../components/PageLayout';
 import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import { Grid, FormGroup, FormControlLabel, Switch, SwitchProps, styled, Alert } from '@mui/material';
+import { Grid, FormGroup, FormControlLabel, Switch, SwitchProps, styled, Alert, Typography } from '@mui/material';
 import { GoogleLogout } from 'react-google-login';
 import DetailDisplay from '../../components/DetailDisplay';
 import PageBlock from '../../layouts/PageBlock';
@@ -104,34 +104,32 @@ const SettingsPreferences: React.FC = () => {
   return (
     <PageLayout>
       {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
-      <PageBlock title={'Organization Settings'}>
-        <Grid container>
-          <Grid item xs={6} md={12}>
-            <DetailDisplay label="Name" content="Northeastern Electric Racing" />
-          </Grid>
-          <Grid item xs={6} md={12}>
-            <FormGroup>
-              <FormControlLabel
-                label="Trickster Mode"
-                control={
-                  import.meta.env.MODE === 'development' ? (
-                    <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
-                  ) : (
-                    <GoogleLogout
-                      clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID || ''}
-                      onLogoutSuccess={logout}
-                      render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
-                    />
-                  )
-                }
-              />
-            </FormGroup>
-          </Grid>
-        </Grid>
-      </PageBlock>
       <UserSettings currentSettings={userSettingsData} />
       <UserSecureSettings currentSettings={userSecureSettings} />
       <UserScheduleSettings user={user} />
+      <Grid container mt={1.5}>
+        <Grid item xs={12}>
+          <Typography variant="h5">Other Settings</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <FormGroup>
+            <FormControlLabel
+              label="Trickster Mode"
+              control={
+                import.meta.env.MODE === 'development' ? (
+                  <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={logout} />
+                ) : (
+                  <GoogleLogout
+                    clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID || ''}
+                    onLogoutSuccess={logout}
+                    render={(renderProps) => <NERSwitch id="trick-switch" sx={{ m: 1 }} onClick={renderProps.onClick} />}
+                  />
+                )
+              }
+            />
+          </FormGroup>
+        </Grid>
+      </Grid>
     </PageLayout>
   );
 };

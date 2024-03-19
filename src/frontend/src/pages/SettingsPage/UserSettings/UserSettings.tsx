@@ -14,7 +14,7 @@ import UserSettingsEdit from './UserSettingsEdit';
 import UserSettingsView from './UserSettingsView';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { Grid, IconButton, Box } from '@mui/material';
+import { Grid, IconButton, Box, Typography } from '@mui/material';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 interface UserSettingsProps {
@@ -57,27 +57,30 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
   };
 
   return (
-    <PageBlock
-      title="User Settings"
-      headerRight={
-        !edit ? (
-          <IconButton onClick={() => setEdit(true)}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        ) : (
-          <Box
-            sx={{
-              display: { xs: 'none', sm: 'flex' }
-            }}
-          >
-            <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-            <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
-              Save
-            </NERSuccessButton>
-          </Box>
-        )
-      }
-    >
+    <>
+      <Grid container direction={'row'} spacing={edit ? 2 : 1}>
+        <Grid item>
+          <Typography variant="h5">User Settings</Typography>
+        </Grid>
+        <Grid item>
+          {!edit ? (
+            <IconButton onClick={() => setEdit(true)}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          ) : (
+            <Box
+              sx={{
+                display: { xs: 'none', sm: 'flex' }
+              }}
+            >
+              <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
+              <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
+                Save
+              </NERSuccessButton>
+            </Box>
+          )}
+        </Grid>
+      </Grid>
       <Grid container>
         {!edit ? (
           <UserSettingsView settings={currentSettings} />
@@ -85,21 +88,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
           <UserSettingsEdit currentSettings={currentSettings} onSubmit={handleConfirm} />
         )}
       </Grid>
-      {edit && (
-        <Box
-          className="d-flex flex-col"
-          sx={{
-            display: { xs: 'flex', sm: 'none' },
-            marginTop: '20px'
-          }}
-        >
-          <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-          <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
-            Save
-          </NERSuccessButton>
-        </Box>
-      )}
-    </PageBlock>
+    </>
   );
 };
 
