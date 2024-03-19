@@ -18,7 +18,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
-import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsPipe } from 'shared';
+import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -128,6 +128,8 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       id: wbsPipe(workPackage.wbsNum)
     });
   });
+
+  wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp1.id, wp2.id));
 
   const wbsAutocompleteOnChange = (
     _event: React.SyntheticEvent<Element, Event>,
