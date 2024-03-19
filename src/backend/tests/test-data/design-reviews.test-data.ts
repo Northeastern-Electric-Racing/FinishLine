@@ -4,7 +4,13 @@ import {
   TeamType,
   Design_Review as PrismaDesignReview
 } from '@prisma/client';
-import { batman, sharedBatman, wonderwoman } from './users.test-data';
+import {
+  batman,
+  sharedBatman,
+  wonderwoman,
+  wonderwomanMarkedWithScheduleSettings,
+  wonderwomanWithScheduleSettings
+} from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import {
   DesignReview,
@@ -119,6 +125,33 @@ export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designRe
   teamType: teamType1
 };
 
+export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs> = {
+  designReviewId: '1',
+  dateScheduled: new Date('2024-03-25'),
+  meetingTimes: [0, 1, 2, 3],
+  dateCreated: new Date('2024-03-10'),
+  userCreatedId: wonderwoman.userId,
+  userCreated: wonderwoman,
+  status: PrismaDesignReviewStatus.CONFIRMED,
+  teamTypeId: '1',
+  teamType: teamType1,
+  location: null,
+  isOnline: true,
+  isInPerson: false,
+  zoomLink: null,
+  dateDeleted: null,
+  userDeletedId: null,
+  docTemplateLink: null,
+  wbsElementId: 1,
+  requiredMembers: [batman],
+  optionalMembers: [wonderwomanWithScheduleSettings],
+  confirmedMembers: [batman],
+  deniedMembers: [],
+  attendees: [wonderwoman],
+  userDeleted: null,
+  wbsElement: prismaWbsElement1
+};
+
 export const designReview3: DesignReview = {
   designReviewId: '2',
   dateScheduled: new Date('2024-03-25'),
@@ -160,4 +193,25 @@ export const sharedDesignReview1: SharedDesignReview = {
   teamType: teamType1,
   wbsName: 'car',
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 }
+};
+
+export const designReview5: DesignReview = {
+  designReviewId: '1',
+  dateScheduled: new Date('2024-03-25'),
+  meetingTimes: [0, 1, 2, 3],
+  dateCreated: new Date('2024-03-10'),
+  userCreated: wonderwoman,
+  status: DesignReviewStatus.CONFIRMED,
+  teamType: teamType1,
+  isOnline: true,
+  isInPerson: false,
+  requiredMembers: [],
+  optionalMembers: [wonderwomanMarkedWithScheduleSettings],
+  confirmedMembers: [sharedBatman],
+  deniedMembers: [],
+  attendees: [wonderwoman],
+  wbsName: 'car',
+  wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 },
+  zoomLink: undefined,
+  userDeleted: undefined
 };
