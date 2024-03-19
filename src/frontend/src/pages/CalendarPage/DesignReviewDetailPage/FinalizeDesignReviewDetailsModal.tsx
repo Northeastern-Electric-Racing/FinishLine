@@ -83,7 +83,7 @@ const FinalizeDesignReviewDetailsModal = ({
             <TextField
               label="Type here"
               variant="outlined"
-              value={docTemplate}
+              value={zoomLink}
               onChange={(e) => setZoomLink(e.target.value)}
               style={{ borderRadius: 10 }}
               size="small"

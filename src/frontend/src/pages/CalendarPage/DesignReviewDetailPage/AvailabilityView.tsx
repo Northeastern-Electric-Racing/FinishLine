@@ -12,7 +12,12 @@ interface AvailabilityViewProps {
   selectedDateTime: Date | null;
 }
 
-const AvailabilityView: React.FC<AvailabilityViewProps> = ({ usersToAvailabilities, existingMeetingData, designReviewName, selectedDateTime }) => {
+const AvailabilityView: React.FC<AvailabilityViewProps> = ({
+  usersToAvailabilities,
+  existingMeetingData,
+  designReviewName,
+  selectedDateTime
+}) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);

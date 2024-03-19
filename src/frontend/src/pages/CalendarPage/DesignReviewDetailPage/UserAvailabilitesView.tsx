@@ -22,7 +22,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentUnavailableUsers,
   usersToAvailabilities,
   designReviewName,
-  selectedDateTime,
+  selectedDateTime
 }) => {
   const theme = useTheme();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
