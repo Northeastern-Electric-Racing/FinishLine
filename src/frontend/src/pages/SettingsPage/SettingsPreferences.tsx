@@ -11,6 +11,7 @@ import DetailDisplay from '../../components/DetailDisplay';
 import PageBlock from '../../layouts/PageBlock';
 import { useState } from 'react';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
+import UserScheduleSettings from './UserScheduleSettings/UserScheduleSettings';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -130,6 +131,7 @@ const SettingsPreferences: React.FC = () => {
       </PageBlock>
       <UserSettings currentSettings={userSettingsData} />
       <UserSecureSettings currentSettings={userSecureSettings} />
+      <UserScheduleSettings user={user} />
     </PageLayout>
   );
 };
