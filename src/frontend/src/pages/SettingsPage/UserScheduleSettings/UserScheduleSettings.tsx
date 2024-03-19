@@ -10,7 +10,6 @@ import NERFailButton from '../../../components/NERFailButton';
 import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
-import PageBlock from '../../../layouts/PageBlock';
 import { User } from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';

@@ -7,7 +7,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import { useUpdateUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
@@ -16,8 +15,6 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import UserSecureSettingsView from './UserSecureSettingsView';
 import UserSecureSettingsEdit from './UserSecureSettingsEdit';
 import { UserSecureSettings as UserSecureSettingsType } from 'shared';
-import { useCurrentUser } from '../../../hooks/users.hooks';
-import { isGuest } from 'shared';
 
 interface SecureSettingsProps {
   currentSettings: UserSecureSettingsType;

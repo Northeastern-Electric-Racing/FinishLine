@@ -7,8 +7,6 @@ import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { Grid, FormGroup, FormControlLabel, Switch, SwitchProps, styled, Alert, Typography } from '@mui/material';
 import { GoogleLogout } from 'react-google-login';
-import DetailDisplay from '../../components/DetailDisplay';
-import PageBlock from '../../layouts/PageBlock';
 import { useState } from 'react';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import UserScheduleSettings from './UserScheduleSettings/UserScheduleSettings';
