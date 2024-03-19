@@ -1,22 +1,23 @@
 import { Grid } from '@mui/material';
-import { User } from 'shared';
+import { DesignReview, User } from 'shared';
 import { useState } from 'react';
 import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
 
 interface AvailabilityViewProps {
-  title: string;
   usersToAvailabilities: Map<User, number[]>;
   existingMeetingData: Map<number, string>;
   designReviewName: string;
   selectedDateTime: Date | null;
+  conflictingDesignReviews: DesignReview[];
 }
 
 const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   usersToAvailabilities,
   existingMeetingData,
   designReviewName,
-  selectedDateTime
+  selectedDateTime,
+  conflictingDesignReviews
 }) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
@@ -42,6 +43,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           usersToAvailabilities={usersToAvailabilities}
           designReviewName={designReviewName}
           selectedDateTime={selectedDateTime}
+          conflictingDesignReviews={conflictingDesignReviews}
         />
       </Grid>
     </Grid>

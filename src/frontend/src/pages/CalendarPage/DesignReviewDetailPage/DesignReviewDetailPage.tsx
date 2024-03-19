@@ -12,19 +12,34 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { DesignReview, User, UserWithScheduleSettings } from 'shared';
 import { wbsPipe } from 'shared';
+import { useAllDesignReviews } from '../../../hooks/design-reviews.hooks';
 interface DesignReviewDetailPageProps {
   designReview: DesignReview;
 }
 
 const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview }) => {
   const theme = useTheme();
+
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
+  const {
+    data: allDesignReviews,
+    isError: allDesignReviewsIsError,
+    error: allDesignReviewsError,
+    isLoading: allDesignReviewsIsLoading
+  } = useAllDesignReviews();
+
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
   const [selectedDateTime, setSelectedDateTime] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
-  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
-
   const [usersToAvailabilities, setUsersToAvailabilities] = useState<Map<User, number[]>>(new Map());
+  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+  const conflictingDesignReviews = allDesignReviews
+    ? allDesignReviews.filter(
+        (currDr) =>
+          currDr.dateScheduled.toLocaleDateString === designReview.dateScheduled.toLocaleDateString &&
+          currDr.designReviewId !== designReview.designReviewId
+      )
+    : [];
 
   useEffect(() => {
     if (designReview && designReview.confirmedMembers.length > 0) {
@@ -37,7 +52,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   }, [designReview]);
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
-  if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
+  if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
+  if (allUsersIsLoading || !allUsers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
 
   const users = allUsers.map(userToAutocompleteOption);
 
@@ -229,11 +245,11 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         </Grid>
       </Grid>
       <AvailabilityView
-        title={'Battery'}
         usersToAvailabilities={usersToAvailabilities}
         existingMeetingData={existingMeetingData}
         designReviewName={designReviewName}
         selectedDateTime={selectedDateTime}
+        conflictingDesignReviews={conflictingDesignReviews}
       />
     </PageLayout>
   );

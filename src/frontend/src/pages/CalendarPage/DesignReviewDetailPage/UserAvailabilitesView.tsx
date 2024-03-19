@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { User } from 'shared';
+import { DesignReview, User, wbsPipe } from 'shared';
 import { HeatmapColors } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERFailButton from '../../../components/NERFailButton';
@@ -15,6 +15,7 @@ interface UserAvailabilitiesProps {
   usersToAvailabilities: Map<User, number[]>;
   designReviewName: string;
   selectedDateTime: Date | null;
+  conflictingDesignReviews: DesignReview[];
 }
 
 const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
@@ -22,7 +23,8 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentUnavailableUsers,
   usersToAvailabilities,
   designReviewName,
-  selectedDateTime
+  selectedDateTime,
+  conflictingDesignReviews
 }) => {
   const theme = useTheme();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
@@ -111,7 +113,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
           <FinalizeDesignReviewDetailsModal
             open={showFinalizeDesignReviewDetailsModal}
             setOpen={setShowFinalizeDesignReviewDetailsModal}
-            designReviews={['DRC1', 'DRC2', 'DRC3']}
+            designReviews={conflictingDesignReviews.map(designReview => `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`)}
             designReviewName={designReviewName}
             selectedDateTime={selectedDateTime}
           />
