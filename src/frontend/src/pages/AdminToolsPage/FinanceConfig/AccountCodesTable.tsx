@@ -64,9 +64,6 @@ const AccountCodesTable = () => {
           accountCode={clickedAccountCode}
         />
       )}
-      <Typography variant="subtitle1" textAlign="left">
-        Account Codes
-      </Typography>
       <AdminToolTable
         columns={[
           { name: 'Account Name', width: '25%' },
