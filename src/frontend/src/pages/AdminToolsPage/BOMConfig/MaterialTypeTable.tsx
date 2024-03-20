@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Typography, Box } from '@mui/material';
+import { TableRow, TableCell, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
@@ -36,7 +36,6 @@ const MaterialTypeTable: React.FC = () => {
   return (
     <Box>
       <CreateMaterialTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <Typography variant="subtitle1">Registered Material Types</Typography>
       <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Material Type' }]} rows={materialTypesTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton

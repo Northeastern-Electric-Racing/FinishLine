@@ -5,7 +5,7 @@ import AccountCodesTable from './FinanceConfig/AccountCodesTable';
 const AdminToolsFinanceConfig: React.FC = () => {
   return (
     <Box padding="5px">
-      <Typography marginBottom="15px" variant="h5">
+      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'}>
         Finance Config
       </Typography>
       <Grid container spacing="3%">

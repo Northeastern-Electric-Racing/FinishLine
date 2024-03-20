@@ -1,11 +1,15 @@
-import PageBlock from '../../layouts/PageBlock';
+import { Box } from '@mui/system';
 import LinkTypeTable from './ProjectsConfig/LinkTypeTable';
+import { Typography } from '@mui/material';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
-    <PageBlock title="Projects Config">
+    <Box>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'}>
+        Links Config
+      </Typography>
       <LinkTypeTable />
-    </PageBlock>
+    </Box>
   );
 };
 
