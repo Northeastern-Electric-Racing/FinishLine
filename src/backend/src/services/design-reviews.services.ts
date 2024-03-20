@@ -158,7 +158,6 @@ export default class DesignReviewsService {
       throw new NotFoundException('User Settings', 'Cannot find settings of members');
     }
 
-    console.log(memberUserSettings);
     // send a slack message to all leadership invited to the design review
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
@@ -355,7 +354,7 @@ export default class DesignReviewsService {
 
       // If all requested attendees have confirmed their schedule, mark design review as confirmed
       if (
-        designReview.confirmedMembers.length ===
+        updatedDesignReview.confirmedMembers.length ===
         designReview.requiredMembers.length + designReview.optionalMembers.length
       ) {
         await prisma.design_Review.update({

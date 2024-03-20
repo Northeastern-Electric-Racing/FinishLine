@@ -28,9 +28,11 @@ const UserScheduleSettingsView = ({
   const [confirmAvailabilityOpen, setConfirmAvailabilityOpen] = useState(defaultOpen || false);
   const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(scheduleSettings.availability);
   const { mutateAsync } = useMarkUserConfirmed(designReview?.designReviewId || '');
-  const confirmModalTitle = `Update your availability for the ${
-    designReview?.wbsName
-  } Design Review on the week of ${designReview?.dateScheduled.toLocaleDateString()}`;
+  const confirmModalTitle = designReview
+    ? `Update your availability for the ${
+        designReview?.wbsName
+      } Design Review on the week of ${designReview?.dateScheduled.toLocaleDateString()}`
+    : '';
 
   const handleConfirm = async (payload: { availability: number[] }) => {
     setConfirmAvailabilityOpen(false);

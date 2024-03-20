@@ -46,7 +46,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
     isError: designReviewIsError,
     error: designReviewError,
     isLoading: designReviewIsLoading
-  } = useSingleDesignReview(designReviewId || '');
+  } = useSingleDesignReview(designReviewId ?? undefined);
 
   if (designReviewId && (!designReview || designReviewIsLoading)) return <LoadingIndicator />;
   if (!data || isLoading || updateUserScheduleSettingsIsLoading) return <LoadingIndicator />;

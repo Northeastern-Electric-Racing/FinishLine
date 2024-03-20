@@ -103,11 +103,15 @@ export const useAllTeamTypes = () => {
  *
  * @returns a single design review
  */
-export const useSingleDesignReview = (id: string) => {
-  return useQuery<DesignReview, Error>(['design-reviews', id], async () => {
-    const { data } = await getSingleDesignReview(id);
-    return data;
-  });
+export const useSingleDesignReview = (id?: string) => {
+  return useQuery<DesignReview, Error>(
+    ['design-reviews', id],
+    async () => {
+      const { data } = await getSingleDesignReview(id!);
+      return data;
+    },
+    { enabled: !!id }
+  );
 };
 
 export const useMarkUserConfirmed = (id: string) => {
