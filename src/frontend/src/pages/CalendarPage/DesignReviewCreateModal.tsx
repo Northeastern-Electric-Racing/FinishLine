@@ -28,6 +28,7 @@ import { userToAutocompleteOption } from '../../utils/teams.utils';
 import { useQuery } from '../../hooks/utils.hooks';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import { HOURS } from '../../utils/design-review.utils';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
@@ -63,7 +64,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   teamTypes,
   defaultDate
 }) => {
-  const HOURS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   const query = useQuery();
 
   const toast = useToast();

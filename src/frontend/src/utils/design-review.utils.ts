@@ -1,13 +1,3 @@
-import {
-  batman,
-  superman,
-  theVisitor,
-  greenlantern,
-  wonderwoman,
-  flash,
-  aquaman,
-  alfred
-} from '../../../backend/tests/test-data/users.test-data';
 import { DesignReview, DesignReviewStatus } from 'shared';
 
 export const EnumToArray = (en: { [key: number]: string | number }) => {
@@ -17,13 +7,13 @@ export const EnumToArray = (en: { [key: number]: string | number }) => {
 export const NOON_IN_MINUTES = 720;
 
 export enum DAY_NAMES {
+  Sunday,
   Monday,
   Tuesday,
   Wednesday,
   Thursday,
   Friday,
   Saturday,
-  Sunday
 }
 
 export enum MONTH_NAMES {
@@ -56,6 +46,8 @@ export enum REVIEW_TIMES {
   '9-10 PM'
 }
 
+export const HOURS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
 export const HeatmapColors = ['#D9D9D9', '#E0C0C1', '#E89A9B', '#E4797A', '#EF4345', '#D70C0F'];
 
 export const NUMBER_OF_TIME_SLOTS = EnumToArray(REVIEW_TIMES).length * EnumToArray(DAY_NAMES).length;
@@ -79,6 +71,29 @@ export const daysInMonth = (month: Date): number => {
 export const calendarPaddingDays = (month: Date): number => {
   return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
 };
+
+export const getStartOfWeek = (currentDate: Date) => {
+  const currentDay = currentDate.getDay();
+  const currentMonth = currentDate.getDate();
+  const startOfWeek = new Date(currentDate);
+  startOfWeek.setDate(currentMonth - currentDay);
+  return startOfWeek;
+};
+
+export const getDateRange = (selectedDate: Date) => {
+  const startDate = getStartOfWeek(selectedDate);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 6);
+  return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+}
+
+export const getHourOfDate = (currentDate: Date) => {
+  let hours = currentDate.getHours();
+  const amPm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${hours}${amPm}`;
+}
 
 // TODO: We will have to maker a call to the backend to get this data
 export const existingMeetingData = new Map<number, string>();

@@ -1,6 +1,6 @@
 import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
-import { existingMeetingData } from '../../../utils/design-review.utils';
+import { existingMeetingData, getDateRange } from '../../../utils/design-review.utils';
 import AvailabilityView from './AvailabilityView';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -13,6 +13,7 @@ import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { DesignReview, User, UserWithScheduleSettings } from 'shared';
 import { wbsPipe } from 'shared';
 import { useAllDesignReviews } from '../../../hooks/design-reviews.hooks';
+
 interface DesignReviewDetailPageProps {
   designReview: DesignReview;
 }
@@ -30,8 +31,12 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
 
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
-  const [selectedDateTime, setSelectedDateTime] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
+  const [selectedStartDateTime, setselectedStartDateTime] = useState(
+    new Date(`${new Date().toLocaleDateString()} 12:00:00`)
+  );
+  const [selectedEndDateTime, setselectedEndDateTime] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
   const [usersToAvailabilities, setUsersToAvailabilities] = useState<Map<User, number[]>>(new Map());
+  const [dateRange, setDateRange] = useState('');
   const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
   const conflictingDesignReviews = allDesignReviews
     ? allDesignReviews.filter(
@@ -51,6 +56,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     }
   }, [designReview]);
 
+  useEffect(() => {
+    setDateRange(getDateRange(selectedStartDateTime));
+  }, [selectedStartDateTime]);
+
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
   if (allUsersIsLoading || !allUsers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
@@ -59,17 +68,17 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
 
   const handleDateChange = (newDate: Date | null) => {
     if (newDate) {
-      const updatedDateTime = new Date(selectedDateTime);
+      const updatedDateTime = new Date(selectedStartDateTime);
       updatedDateTime.setFullYear(newDate.getFullYear(), newDate.getMonth(), newDate.getDate());
-      setSelectedDateTime(updatedDateTime);
+      setselectedStartDateTime(updatedDateTime);
     }
   };
 
-  const handleTimeChange = (newTime: Date | null) => {
+  const handleTimeChange = (newTime: Date | null, isStartTime: boolean) => {
     if (newTime) {
-      const updatedDateTime = new Date(selectedDateTime);
+      const updatedDateTime = new Date(selectedStartDateTime);
       updatedDateTime.setHours(newTime.getHours(), newTime.getMinutes());
-      setSelectedDateTime(updatedDateTime);
+      isStartTime ? setselectedStartDateTime(updatedDateTime) : setselectedEndDateTime(updatedDateTime);
     }
   };
 
@@ -98,52 +107,35 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               backgroundColor: 'grey',
               borderRadius: 3,
               textAlign: 'center',
-              width: '80%'
+              width: '100%'
             }}
           >
             {designReviewName}
           </Box>
         </Grid>
-        <Grid item xs={1}>
-          <Box
-            sx={{
-              padding: 1.5,
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 3,
-              textAlign: 'center',
-              textDecoration: 'underline',
-              fontSize: '1.2em'
-            }}
-          >
-            Date
-          </Box>
-        </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={2}>
           <DatePicker
-            value={selectedDateTime}
+            label={'Date'}
+            value={selectedStartDateTime}
             onChange={handleDateChange}
             renderInput={(params) => <TextField {...params} />}
           />
         </Grid>
-        <Grid item xs={1}>
-          <Box
-            sx={{
-              padding: 1.5,
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 3,
-              textAlign: 'center',
-              textDecoration: 'underline',
-              fontSize: '1.2em'
-            }}
-          >
-            Time
-          </Box>
-        </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={2}>
           <TimePicker
+            label={'Start Time'}
             views={['hours']}
-            value={selectedDateTime}
-            onChange={handleTimeChange}
+            value={selectedStartDateTime}
+            onChange={(newTime) => handleTimeChange(newTime, true)}
+            renderInput={(params) => <TextField {...params} />}
+          />
+        </Grid>
+        <Grid item xs={2}>
+          <TimePicker
+            label={'End Time'}
+            views={['hours']}
+            value={selectedEndDateTime}
+            onChange={(newTime) => handleTimeChange(newTime, false)}
             renderInput={(params) => <TextField {...params} />}
           />
         </Grid>
@@ -248,8 +240,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         usersToAvailabilities={usersToAvailabilities}
         existingMeetingData={existingMeetingData}
         designReviewName={designReviewName}
-        selectedDateTime={selectedDateTime}
+        selectedStartDateTime={selectedStartDateTime}
         conflictingDesignReviews={conflictingDesignReviews}
+        dateRange={dateRange}
       />
     </PageLayout>
   );

@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
 import { DesignReview, User, wbsPipe } from 'shared';
-import { HeatmapColors } from '../../../utils/design-review.utils';
+import { HeatmapColors, getHourOfDate } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -14,7 +14,7 @@ interface UserAvailabilitiesProps {
   currentUnavailableUsers: User[];
   usersToAvailabilities: Map<User, number[]>;
   designReviewName: string;
-  selectedDateTime: Date | null;
+  selectedStartDateTime: Date | null;
   conflictingDesignReviews: DesignReview[];
 }
 
@@ -23,13 +23,17 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentUnavailableUsers,
   usersToAvailabilities,
   designReviewName,
-  selectedDateTime,
+  selectedStartDateTime,
   conflictingDesignReviews
 }) => {
   const theme = useTheme();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
   const totalUsers = usersToAvailabilities.size;
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
+  const designReviewConflicts = conflictingDesignReviews.map(
+    (designReview) =>
+      `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${getHourOfDate(designReview.dateScheduled)}`
+  );
 
   return (
     <Box
@@ -113,9 +117,9 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
           <FinalizeDesignReviewDetailsModal
             open={showFinalizeDesignReviewDetailsModal}
             setOpen={setShowFinalizeDesignReviewDetailsModal}
-            designReviews={conflictingDesignReviews.map(designReview => `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`)}
+            designReviewConflicts={designReviewConflicts}
             designReviewName={designReviewName}
-            selectedDateTime={selectedDateTime}
+            selectedStartDateTime={selectedStartDateTime}
           />
         </Box>
       </Box>

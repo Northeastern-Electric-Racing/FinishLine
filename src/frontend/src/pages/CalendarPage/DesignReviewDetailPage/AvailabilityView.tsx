@@ -8,16 +8,18 @@ interface AvailabilityViewProps {
   usersToAvailabilities: Map<User, number[]>;
   existingMeetingData: Map<number, string>;
   designReviewName: string;
-  selectedDateTime: Date | null;
+  selectedStartDateTime: Date | null;
   conflictingDesignReviews: DesignReview[];
+  dateRange: string;
 }
 
 const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   usersToAvailabilities,
   existingMeetingData,
   designReviewName,
-  selectedDateTime,
-  conflictingDesignReviews
+  selectedStartDateTime,
+  conflictingDesignReviews,
+  dateRange
 }) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
@@ -34,6 +36,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           existingMeetingData={existingMeetingData}
           setCurrentAvailableUsers={setCurrentAvailableUsers}
           setCurrentUnavailableUsers={setCurrentUnavailableUsers}
+          dateRange={dateRange}
         />
       </Grid>
       <Grid item xs={3}>
@@ -42,7 +45,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           currentUnavailableUsers={currentUnavailableUsers}
           usersToAvailabilities={usersToAvailabilities}
           designReviewName={designReviewName}
-          selectedDateTime={selectedDateTime}
+          selectedStartDateTime={selectedStartDateTime}
           conflictingDesignReviews={conflictingDesignReviews}
         />
       </Grid>
