@@ -182,11 +182,11 @@ export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designRe
     {
       ...batman,
       drScheduleSettings: {
-        drScheduleSettingsId: '123',
-        personalGmail: 'batman@gmail.com',
-        personalZoomLink: 'https://zoom.us/j/123456789',
-        availability: [1, 2, 3],
-        userId: 1
+        drScheduleSettingsId: 'bmschedule',
+        personalGmail: 'brucewayne@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/gotham',
+        availability: [],
+        userId: 69
       }
     }
   ],
@@ -213,7 +213,17 @@ export const designReview3: DesignReview = {
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 },
   requiredMembers: [sharedBatman],
   optionalMembers: [],
-  confirmedMembers: [sharedBatman],
+  confirmedMembers: [
+    {
+      ...sharedBatman,
+      scheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3]
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [sharedBatman],
   userDeleted: undefined,
@@ -231,7 +241,17 @@ export const sharedDesignReview1: SharedDesignReview = {
   isInPerson: false,
   requiredMembers: [sharedBatman],
   optionalMembers: [],
-  confirmedMembers: [sharedBatman],
+  confirmedMembers: [
+    {
+      ...sharedBatman,
+      scheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3]
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [sharedBatman],
   teamType: teamType1,
@@ -251,7 +271,17 @@ export const designReview5: DesignReview = {
   isInPerson: false,
   requiredMembers: [],
   optionalMembers: [wonderwomanMarkedWithScheduleSettings],
-  confirmedMembers: [sharedBatman],
+  confirmedMembers: [
+    {
+      ...sharedBatman,
+      scheduleSettings: {
+        drScheduleSettingsId: 'bmschedule',
+        personalGmail: 'brucewayne@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/gotham',
+        availability: []
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [wonderwoman],
   wbsName: 'car',

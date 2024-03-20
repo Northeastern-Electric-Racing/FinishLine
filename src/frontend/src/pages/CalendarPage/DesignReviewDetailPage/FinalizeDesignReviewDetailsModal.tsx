@@ -1,11 +1,4 @@
-import {
-  Box,
-  Grid,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography
-} from '@mui/material';
+import { Box, Grid, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
 import { useState } from 'react';
 import { getHourFromDate } from '../../../utils/design-review.utils';
@@ -39,7 +32,9 @@ const FinalizeDesignReviewDetailsModal = ({
     return null;
   }
 
-  const title = `${designReviewName} on ${selectedStartDateTime?.toDateString()} at ${getHourFromDate(selectedStartDateTime)}`;
+  const title = `${designReviewName} on ${selectedStartDateTime?.toDateString()} at ${getHourFromDate(
+    selectedStartDateTime
+  )}`;
 
   const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
     setMeetingType(newMeetingType);
