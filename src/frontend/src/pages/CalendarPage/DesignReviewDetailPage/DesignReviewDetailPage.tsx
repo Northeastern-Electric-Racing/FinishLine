@@ -1,6 +1,6 @@
 import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
-import { existingMeetingData, getDateRange } from '../../../utils/design-review.utils';
+import { getDateRange } from '../../../utils/design-review.utils';
 import AvailabilityView from './AvailabilityView';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -36,6 +36,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   );
   const [selectedEndDateTime, setselectedEndDateTime] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
   const [usersToAvailabilities, setUsersToAvailabilities] = useState<Map<User, number[]>>(new Map());
+  const [existingMeetingData, setexistingMeetingData] = useState<Map<number, string>>(new Map());
   const [dateRange, setDateRange] = useState('');
   const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
   const conflictingDesignReviews = allDesignReviews
@@ -48,6 +49,18 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           currDr.designReviewId !== designReview.designReviewId
       )
     : [];
+
+  useEffect(() => {
+    if (allDesignReviews) {
+      const newExistingMeetingData = new Map<number, string>();
+      allDesignReviews?.forEach((designReview) =>
+        designReview.meetingTimes.forEach((meetingTime) =>
+          newExistingMeetingData.set(meetingTime, designReview.teamType.iconName)
+        )
+      );
+      setexistingMeetingData(newExistingMeetingData);
+    }
+  }, [allDesignReviews]);
 
   useEffect(() => {
     if (designReview && designReview.confirmedMembers.length > 0) {

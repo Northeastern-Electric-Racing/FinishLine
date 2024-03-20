@@ -28,6 +28,7 @@ const FinalizeDesignReviewDetailsModal = ({
   const [location, setLocation] = useState('');
   const [zoomLink, setZoomLink] = useState('');
 
+  // Need to do this so it can be called in the title
   if (!selectedStartDateTime) {
     return null;
   }
