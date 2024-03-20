@@ -84,9 +84,7 @@ export const getDateRange = (selectedDate: Date) => {
   const startDate = getStartOfWeek(selectedDate);
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 6);
-  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
-    endDate.getMonth() + 1
-  ).toString()}/${endDate.getDate().toString()}`;
+  return [startDate, endDate];
 };
 
 export const getHourFromDate = (currentDate: Date) => {
@@ -96,13 +94,6 @@ export const getHourFromDate = (currentDate: Date) => {
   hours = hours ? hours : 12;
   return `${hours}${amPm}`;
 };
-
-// TODO: We will have to maker a call to the backend to get this data
-export const existingMeetingData = new Map<number, string>();
-existingMeetingData.set(5, 'warning');
-existingMeetingData.set(10, 'build');
-existingMeetingData.set(20, 'computer');
-existingMeetingData.set(50, 'electrical');
 
 export const isConfirmed = (designReview: DesignReview): boolean => {
   return (

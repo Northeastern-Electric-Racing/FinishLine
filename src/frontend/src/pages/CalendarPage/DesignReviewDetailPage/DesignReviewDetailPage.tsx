@@ -6,7 +6,7 @@ import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
@@ -39,28 +39,46 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [existingMeetingData, setexistingMeetingData] = useState<Map<number, string>>(new Map());
   const [dateRange, setDateRange] = useState('');
   const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
-  const conflictingDesignReviews = allDesignReviews
-    ? allDesignReviews.filter(
-        (currDr) =>
-          currDr.dateScheduled.toLocaleDateString() === selectedStartDateTime.toLocaleDateString() &&
-          allDesignReviews.some((designReview) =>
-            designReview.meetingTimes.some((time) => currDr.meetingTimes.includes(time))
-          ) &&
-          currDr.designReviewId !== designReview.designReviewId
-      )
-    : [];
+  const [startDateRange, endDateRange] = getDateRange(selectedStartDateTime);
 
+  const conflictingDesignReviews = useMemo(
+    () =>
+      allDesignReviews
+        ? allDesignReviews.filter(
+            (currDr) =>
+              currDr.dateScheduled.toLocaleDateString() === selectedStartDateTime.toLocaleDateString() &&
+              allDesignReviews.some((designReview) =>
+                designReview.meetingTimes.some((time) => currDr.meetingTimes.includes(time))
+              ) &&
+              currDr.designReviewId !== designReview.designReviewId
+          )
+        : [],
+    [allDesignReviews, selectedStartDateTime, designReview]
+  );
+
+  // Ensures the existing meeting data information only shows up on the current date range
+  const currentWeekDesignReviews = useMemo(() => {
+    return allDesignReviews
+      ? allDesignReviews.filter((currDr) => {
+          const drDate = new Date(currDr.dateScheduled).getTime();
+          const startRange = startDateRange.getTime();
+          const endRange = endDateRange.getTime();
+
+          return drDate >= startRange && drDate <= endRange;
+        })
+      : [];
+  }, [allDesignReviews, startDateRange, endDateRange]);
+
+  // Sets the existing meeting data for the icons that get displayed on the calander
   useEffect(() => {
-    if (allDesignReviews) {
+    if (currentWeekDesignReviews) {
       const newExistingMeetingData = new Map<number, string>();
-      allDesignReviews?.forEach((designReview) =>
-        designReview.meetingTimes.forEach((meetingTime) =>
-          newExistingMeetingData.set(meetingTime, designReview.teamType.iconName)
-        )
+      currentWeekDesignReviews?.forEach((designReview) =>
+        designReview.meetingTimes.forEach((meetingTime) => newExistingMeetingData.set(meetingTime, 'build'))
       );
       setexistingMeetingData(newExistingMeetingData);
     }
-  }, [allDesignReviews]);
+  }, [currentWeekDesignReviews]);
 
   useEffect(() => {
     if (designReview && designReview.confirmedMembers.length > 0) {
@@ -73,8 +91,12 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   }, [designReview]);
 
   useEffect(() => {
-    setDateRange(getDateRange(selectedStartDateTime));
-  }, [selectedStartDateTime]);
+    setDateRange(
+      `${(startDateRange.getMonth() + 1).toString()}/${startDateRange.getDate().toString()} - ${(
+        endDateRange.getMonth() + 1
+      ).toString()}/${endDateRange.getDate().toString()}`
+    );
+  }, [startDateRange, endDateRange]);
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
