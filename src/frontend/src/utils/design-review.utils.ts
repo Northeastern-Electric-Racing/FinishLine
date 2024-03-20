@@ -84,7 +84,9 @@ export const getDateRange = (selectedDate: Date) => {
   const startDate = getStartOfWeek(selectedDate);
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 6);
-  return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
+    endDate.getMonth() + 1
+  ).toString()}/${endDate.getDate().toString()}`;
 };
 
 export const getHourFromDate = (currentDate: Date) => {
