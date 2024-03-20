@@ -12,7 +12,7 @@ interface DesignReviewAttendeeModalProps {
 
 export const DesignReviewAttendeeModal: React.FC<DesignReviewAttendeeModalProps> = ({ open, onHide, designReview }) => {
   return (
-    <NERModal open={open} title={designReview.wbsName} onHide={onHide} hideFormButtons>
+    <NERModal open={open} title={designReview.wbsName} onHide={onHide} hideFormButtons showCloseButton>
       <Grid container columnSpacing={8} rowSpacing={2}>
         <Grid item>
           <TableContainer>
@@ -20,8 +20,8 @@ export const DesignReviewAttendeeModal: React.FC<DesignReviewAttendeeModalProps>
               <TableHead>
                 <Typography variant="h6">Required Members</Typography>
                 <TableRow>
-                  <ColumnHeader uncenter title="Name" />
-                  <ColumnHeader uncenter title="Confirmed?" />
+                  <ColumnHeader leftAlign title="Name" />
+                  <ColumnHeader leftAlign title="Confirmed?" />
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -49,8 +49,8 @@ export const DesignReviewAttendeeModal: React.FC<DesignReviewAttendeeModalProps>
               <TableHead>
                 <Typography variant="h6">Optional Members</Typography>
                 <TableRow>
-                  <ColumnHeader uncenter title="Name" />
-                  <ColumnHeader uncenter title="Confirmed?" />
+                  <ColumnHeader leftAlign title="Name" />
+                  <ColumnHeader leftAlign title="Confirmed?" />
                 </TableRow>
               </TableHead>
               <TableBody>
