@@ -1,5 +1,5 @@
 import { Design_Review_Status, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { DesignReview, TeamType, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -10,7 +10,7 @@ import {
   AccessDeniedException
 } from '../utils/errors.utils';
 import { getUsers, getPrismaQueryUserIds } from '../utils/users.utils';
-import { validateMeetingTimes } from '../utils/design-reviews.utils';
+import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
@@ -25,6 +25,11 @@ export default class DesignReviewsService {
       ...designReviewQueryArgs
     });
     return designReviews.map(designReviewTransformer);
+  }
+
+  static async getAllTeamTypes(): Promise<TeamType[]> {
+    const teamTypes = await prisma.teamType.findMany();
+    return teamTypes;
   }
 
   /**
@@ -55,20 +60,15 @@ export default class DesignReviewsService {
   }
 
   /**
-   * Creates a design review
-   * @param submitter user who submitted the design review
+   * Create a design review
+   * @param submitter User submitting the design review
    * @param dateScheduled when the design review is scheduled for
-   * @param teamTypeId team type id of the design review
-   * @param requiredMemberIds ids of the required members to attend the design review
-   * @param optionalMemberIds ids of the optional members to attend the design reivew
-   * @param isOnline if design review is online
-   * @param isInPerson if design review is in person
-   * @param docTemplateLink link to the doc template
-   * @param wbsNum wbs number for the design review
-   * @param meetingTimes the meeting times for the design review
-   * @param zoomLink link for the zoom if design review is online
-   * @param location location of the design review if in person
-   * @returns a design review
+   * @param teamTypeId team type id
+   * @param requiredMemberIds ids of members who are required to go
+   * @param optionalMemberIds ids of members who do not have to go
+   * @param wbsNum wbs num related to the design review
+   * @param meetingTimes meeting times of the design review
+   * @returns a new design review
    */
   static async createDesignReview(
     submitter: User,
@@ -76,13 +76,8 @@ export default class DesignReviewsService {
     teamTypeId: string,
     requiredMemberIds: number[],
     optionalMemberIds: number[],
-    isOnline: boolean,
-    isInPerson: boolean,
-    docTemplateLink: string,
     wbsNum: WbsNumber,
-    meetingTimes: number[],
-    zoomLink?: string,
-    location?: string
+    meetingTimes: number[]
   ): Promise<DesignReview> {
     if (!isLeadership(submitter.role)) throw new AccessDeniedException('create design review');
 
@@ -125,14 +120,6 @@ export default class DesignReviewsService {
       }
     }
 
-    if (isOnline && !zoomLink) {
-      throw new HttpException(400, 'If the design review is online then there needs to be a zoom link');
-    }
-
-    if (isInPerson && !location) {
-      throw new HttpException(400, 'If the design review is in person then there needs to be a location');
-    }
-
     if (dateScheduled.valueOf() < new Date().valueOf()) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
@@ -142,11 +129,8 @@ export default class DesignReviewsService {
         dateScheduled,
         dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
-        location,
-        isOnline,
-        isInPerson,
-        zoomLink,
-        docTemplateLink,
+        isOnline: false,
+        isInPerson: false,
         userCreated: { connect: { userId: submitter.userId } },
         teamType: { connect: { teamTypeId: teamType.teamTypeId } },
         requiredMembers: { connect: requiredMemberIds.map((memberId) => ({ userId: memberId })) },
@@ -178,7 +162,11 @@ export default class DesignReviewsService {
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewNotification(memberUserSetting.slackId, designReview.designReviewId);
+          await sendSlackDesignReviewNotification(
+            memberUserSetting.slackId,
+            designReview.designReviewId,
+            designReview.wbsElement.name
+          );
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
@@ -315,5 +303,77 @@ export default class DesignReviewsService {
       }
     });
     return designReviewTransformer(updateDesignReview);
+  }
+
+  /**
+   * Edits a design review by confirming a given user's availability and also updating their schedule settings with the given availability
+   * @param submitter the member that is being confirmed
+   * @param designReviewId the id of the design review
+   * @param availability the given member's availabilities
+   * @returns the modified design review with its updated confirmedMembers
+   */
+  static async markUserConfirmed(designReviewId: string, availability: number[], submitter: User): Promise<DesignReview> {
+    const designReview = await prisma.design_Review.findUnique({
+      where: { designReviewId },
+      ...designReviewQueryArgs
+    });
+
+    if (!designReview) throw new NotFoundException('Design Review', designReviewId);
+
+    if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+
+    if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
+      throw new HttpException(400, 'Current user is not in the list of this design reviews members');
+
+    availability.forEach((time) => {
+      if (time < 0 || time > 83) {
+        throw new HttpException(400, 'Availability times have to be in range 0-83');
+      }
+    });
+
+    await prisma.schedule_Settings.upsert({
+      where: { userId: submitter.userId },
+      update: {
+        availability
+      },
+      create: {
+        userId: submitter.userId,
+        personalGmail: '',
+        personalZoomLink: '',
+        availability
+      }
+    });
+
+    // set submitter as confirmed if they're not already
+    if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
+      const updatedDesignReview = await prisma.design_Review.update({
+        where: { designReviewId },
+        ...designReviewQueryArgs,
+        data: {
+          confirmedMembers: {
+            connect: {
+              userId: submitter.userId
+            }
+          }
+        }
+      });
+
+      // If all requested attendees have confirmed their schedule, mark design review as confirmed
+      if (
+        updatedDesignReview.confirmedMembers.length ===
+        designReview.requiredMembers.length + designReview.optionalMembers.length
+      ) {
+        await prisma.design_Review.update({
+          where: { designReviewId },
+          ...designReviewQueryArgs,
+          data: {
+            status: Design_Review_Status.CONFIRMED
+          }
+        });
+      }
+
+      return designReviewTransformer(updatedDesignReview);
+    }
+    return designReviewTransformer(designReview);
   }
 }

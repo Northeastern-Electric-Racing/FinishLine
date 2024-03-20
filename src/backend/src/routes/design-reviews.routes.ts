@@ -7,6 +7,8 @@ const designReviewsRouter = express.Router();
 
 designReviewsRouter.get('/', DesignReviewsController.getAllDesignReviews);
 
+designReviewsRouter.get('/teamType/all', DesignReviewsController.getAllTeamTypes);
+
 designReviewsRouter.delete('/:designReviewId/delete', DesignReviewsController.deleteDesignReview);
 designReviewsRouter.get('/:designReviewId', DesignReviewsController.getSingleDesignReview);
 
@@ -18,12 +20,9 @@ designReviewsRouter.post(
   intMinZero(body('requiredMemberIds.*')),
   body('optionalMemberIds').isArray(),
   intMinZero(body('optionalMemberIds.*')),
-  nonEmptyString(body('location').optional()),
-  body('isOnline').isBoolean(),
-  body('isInPerson').isBoolean(),
-  nonEmptyString(body('zoomLink').optional()),
-  nonEmptyString(body('docTemplateLink')).optional(),
-  body('wbsNum'),
+  intMinZero(body('wbsNum.carNumber')),
+  intMinZero(body('wbsNum.projectNumber')),
+  intMinZero(body('wbsNum.workPackageNumber')),
   body('meetingTimes').isArray(),
   intMinZero(body('meetingTimes.*')),
   validateInputs,
@@ -50,6 +49,14 @@ designReviewsRouter.post(
   intMinZero(body('meetingTimes.*')),
   validateInputs,
   DesignReviewsController.editDesignReviews
+);
+
+designReviewsRouter.post(
+  '/:designReviewId/confirm-schedule',
+  body('availability').isArray(),
+  intMinZero(body('availability.*')),
+  validateInputs,
+  DesignReviewsController.markUserConfirmed
 );
 
 export default designReviewsRouter;

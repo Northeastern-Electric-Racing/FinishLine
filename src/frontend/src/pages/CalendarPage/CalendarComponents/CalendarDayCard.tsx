@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { DesignReview } from 'shared';
+import { DesignReview, TeamType } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -8,6 +8,7 @@ import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import { useState } from 'react';
 import DRCSummaryModal from '../DesignReviewSummaryModal';
+import { DesignReviewCreateModal } from '../DesignReviewCreateModal';
 import DynamicTooltip from '../../../components/DynamicTooltip';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
@@ -23,13 +24,16 @@ export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
 interface CalendarDayCardProps {
   cardDate: Date;
   events: DesignReview[];
+  teamTypes: TeamType[];
 }
 
-const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) => {
+const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, teamTypes }) => {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
       <Grid item>
-        <IconButton>
+        <IconButton onClick={() => setIsCreateModalOpen(true)}>
           <AddCircleOutlineIcon fontSize="small" />
         </IconButton>
       </Grid>
@@ -145,6 +149,14 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events }) =
 
   return (
     <Card sx={{ borderRadius: 2, minWidth: 150, maxWidth: 150, minHeight: 90, maxHeight: 90 }}>
+      <DesignReviewCreateModal
+        showModal={isCreateModalOpen}
+        handleClose={() => {
+          setIsCreateModalOpen(false);
+        }}
+        teamTypes={teamTypes}
+        defaultDate={cardDate}
+      />
       <CardContent sx={{ padding: 0 }}>
         <DayCardTitle />
         {events.length < 3 ? (

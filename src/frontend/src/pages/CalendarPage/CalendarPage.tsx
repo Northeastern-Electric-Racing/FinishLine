@@ -12,16 +12,26 @@ import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
 import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth, isConfirmed } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe } from '../../utils/pipes';
+import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { DesignReviewAttendeeModal } from './DesignReviewAttendeeModal';
 
 const CalendarPage = () => {
   const theme = useTheme();
+  const {
+    data: allTeamTypes,
+    isLoading: allTeamTypesLoading,
+    isError: allTeamTypesIsError,
+    error: allTeamTypesError
+  } = useAllTeamTypes();
+
   const [displayMonthYear, setDisplayMonthYear] = useState<Date>(new Date());
   const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
   const user = useCurrentUser();
+  const [unconfirmedDesignReview, setUnconfirmedDesignReview] = useState<DesignReview>();
 
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -29,6 +39,14 @@ const CalendarPage = () => {
   const confirmedDesignReviews = allDesignReviews.filter(isConfirmed);
 
   const eventDict = new Map<string, DesignReview[]>();
+  confirmedDesignReviews.sort((designReview1, designReview2) => {
+    if (designReview1.dateScheduled.getTime() === designReview2.dateScheduled.getTime()) {
+      return designReview1.meetingTimes[0] - designReview2.meetingTimes[0];
+    } else {
+      return designReview1.dateScheduled.getTime() - designReview2.dateScheduled.getTime();
+    }
+  });
+
   confirmedDesignReviews.forEach((designReview) => {
     // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
     const date = datePipe(
@@ -56,7 +74,9 @@ const CalendarPage = () => {
       return {
         icon: getTeamTypeIcon(designReview.teamType.name),
         title: designReview.wbsName,
-        onClick: () => {},
+        onClick: () => {
+          setUnconfirmedDesignReview(designReview);
+        },
         disabled: false
       };
     });
@@ -82,54 +102,70 @@ const CalendarPage = () => {
     </ActionsMenu>
   );
 
+  if (!allTeamTypes || allTeamTypesLoading) return <LoadingIndicator />;
+  if (allTeamTypesIsError) return <ErrorPage error={allTeamTypesError} message={allTeamTypesError?.message} />;
+
   return (
-    <PageLayout
-      title="Design Review Calendar"
-      headerRight={
-        <Stack direction="row" justifyContent="flex-end">
-          <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
-          <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
-        </Stack>
-      }
-    >
-      <Grid container>
-        {EnumToArray(DAY_NAMES).map((day) => (
-          <Grid item xs={12 / 7}>
-            <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
-              {day}
-            </Typography>
-          </Grid>
-        ))}
-      </Grid>
-      <Box sx={{ border: '2px solid grey', borderRadius: 2, bgcolor: theme.palette.background.paper }}>
-        <Grid container marginBottom={2}>
-          {startOfEachWeek.map((week) => (
-            <Grid container>
-              {daysThisMonth.slice(week, week + 7).map((day) => {
-                const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
-                return (
-                  <Grid item xs={12 / 7}>
-                    <Box marginLeft={1.5} marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
-                      {isDayInDifferentMonth(day, week) ? (
-                        <FillerCalendarDayCard day={day} />
-                      ) : (
-                        <CalendarDayCard
-                          cardDate={cardDate}
-                          events={
-                            eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
-                            []
-                          }
-                        />
-                      )}
-                    </Box>
-                  </Grid>
-                );
-              })}
+    <>
+      {unconfirmedDesignReview && (
+        <DesignReviewAttendeeModal
+          open={!!unconfirmedDesignReview}
+          onHide={() => {
+            setUnconfirmedDesignReview(undefined);
+          }}
+          designReview={unconfirmedDesignReview as DesignReview}
+        />
+      )}
+      <PageLayout
+        title="Design Review Calendar"
+        headerRight={
+          <Stack direction="row" justifyContent="flex-end">
+            <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
+            <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
+          </Stack>
+        }
+      >
+        <Grid container>
+          {EnumToArray(DAY_NAMES).map((day) => (
+            <Grid item xs={12 / 7}>
+              <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
+                {day}
+              </Typography>
             </Grid>
           ))}
         </Grid>
-      </Box>
-    </PageLayout>
+        <Box sx={{ border: '2px solid grey', borderRadius: 2, bgcolor: theme.palette.background.paper }}>
+          <Grid container marginBottom={2}>
+            {startOfEachWeek.map((week) => (
+              <Grid container>
+                {daysThisMonth.slice(week, week + 7).map((day) => {
+                  const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
+                  return (
+                    <Grid item xs={12 / 7}>
+                      <Box marginLeft={1.5} marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
+                        {isDayInDifferentMonth(day, week) ? (
+                          <FillerCalendarDayCard day={day} />
+                        ) : (
+                          <CalendarDayCard
+                            cardDate={cardDate}
+                            events={
+                              eventDict.get(
+                                datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))
+                              ) ?? []
+                            }
+                            teamTypes={allTeamTypes}
+                          />
+                        )}
+                      </Box>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      </PageLayout>
+    </>
   );
 };
 

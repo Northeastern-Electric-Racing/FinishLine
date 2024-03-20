@@ -13,6 +13,15 @@ export default class DesignReviewsController {
     }
   }
 
+  static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teamTypes = await DesignReviewsService.getAllTeamTypes();
+      return res.status(200).json(teamTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async deleteDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const drId: string = req.params.designReviewId;
@@ -27,19 +36,7 @@ export default class DesignReviewsController {
   static async createDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const submitter: User = await getCurrentUser(res);
-      const {
-        dateScheduled,
-        teamTypeId,
-        requiredMemberIds,
-        optionalMemberIds,
-        location,
-        isOnline,
-        isInPerson,
-        zoomLink,
-        docTemplateLink,
-        wbsNum,
-        meetingTimes
-      } = req.body;
+      const { dateScheduled, teamTypeId, requiredMemberIds, optionalMemberIds, wbsNum, meetingTimes } = req.body;
 
       const createdDesignReview = await DesignReviewsService.createDesignReview(
         submitter,
@@ -47,13 +44,8 @@ export default class DesignReviewsController {
         teamTypeId,
         requiredMemberIds,
         optionalMemberIds,
-        isOnline,
-        isInPerson,
-        docTemplateLink,
         wbsNum,
-        meetingTimes,
-        zoomLink,
-        location
+        meetingTimes
       );
       return res.status(200).json(createdDesignReview);
     } catch (error: unknown) {
@@ -78,8 +70,8 @@ export default class DesignReviewsController {
       const {
         dateScheduled,
         teamType,
-        requiredMembers,
-        optionalMembers,
+        requiredMembersIds,
+        optionalMembersIds,
         isOnline,
         isInPerson,
         zoomLink,
@@ -100,8 +92,8 @@ export default class DesignReviewsController {
         designReviewId,
         dateScheduled,
         teamType.teamTypeId,
-        requiredMembers,
-        optionalMembers,
+        requiredMembersIds,
+        optionalMembersIds,
         isOnline,
         isInPerson,
         zoomLink,
@@ -112,6 +104,20 @@ export default class DesignReviewsController {
         meetingTimes
       );
       return res.status(200).json({ message: 'Design Review updated successfully' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Mark the current user as confirmed for the given design review
+  static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { availability } = req.body;
+      const { designReviewId } = req.params;
+      const user = await getCurrentUser(res);
+
+      const updatedDesignReview = await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
+      return res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
       next(error);
     }

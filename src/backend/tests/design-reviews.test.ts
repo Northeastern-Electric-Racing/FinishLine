@@ -1,13 +1,23 @@
 import {
   designReview1,
   designReview3,
+  designReview5,
   prismaDesignReview1,
   prismaDesignReview2,
   prismaDesignReview3,
+  prismaDesignReview5,
   sharedDesignReview1,
   teamType1
 } from './test-data/design-reviews.test-data';
-import { aquaman, batman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import {
+  aquaman,
+  batman,
+  batmanScheduleSettings,
+  batmanWithScheduleSettings,
+  superman,
+  theVisitor,
+  wonderwoman
+} from './test-data/users.test-data';
 import prisma from '../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
@@ -249,7 +259,7 @@ describe('Design Reviews', () => {
           [],
           [1, 4, 2, 3]
         )
-      ).rejects.toThrow(new HttpException(400, 'meeting times must be consecutive'));
+      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be consecutive'));
     });
 
     test('Edit Design Review fails when meeting times are consecutive and *above* 83', async () => {
@@ -271,7 +281,7 @@ describe('Design Reviews', () => {
           [],
           [84, 85]
         )
-      ).rejects.toThrow(new HttpException(400, 'meeting time must be between 0-83'));
+      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be in range 0-83'));
     });
 
     test('Edit Design Review fails when no docTemplateLink, and status is scheduled or done', async () => {
@@ -416,16 +426,12 @@ describe('Design Reviews', () => {
         '1',
         [],
         [],
-        true,
-        false,
-        'doc temp',
         {
           carNumber: 1,
           projectNumber: 2,
           workPackageNumber: 0
         },
-        [0, 1, 2, 3],
-        'zoooooom'
+        [0, 1, 2, 3]
       );
 
       expect(res.teamType).toBe(teamType1);
@@ -439,16 +445,12 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 1,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new AccessDeniedException('create design review'));
     });
@@ -462,16 +464,12 @@ describe('Design Reviews', () => {
           '15',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 1,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new NotFoundException('Team Type', '15'));
     });
@@ -487,18 +485,57 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 15,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new NotFoundException('WBS Element', 15));
+    });
+  });
+
+  describe('Mark user confirmed tests', () => {
+    test('mark user confirmed succeeds', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
+      vi.spyOn(prisma.schedule_Settings, 'upsert').mockResolvedValue(batmanScheduleSettings);
+      const result = await DesignReviewsService.markUserConfirmed(
+        prismaDesignReview5.designReviewId,
+        [1, 2],
+        batmanWithScheduleSettings
+      );
+
+      expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
+      expect(result.confirmedMembers).toEqual(designReview5.confirmedMembers);
+    });
+
+    test('Design Review was not found', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batman)
+      ).rejects.toThrow(new NotFoundException('Design Review', prismaDesignReview5.designReviewId));
+    });
+
+    test('Design Review was deleted', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue({ ...prismaDesignReview1, dateDeleted: new Date() });
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batman)
+      ).rejects.toThrow(new DeletedException('Design Review', prismaDesignReview5.designReviewId));
+    });
+
+    test('User was not in required/optional members of design review', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], superman)
+      ).rejects.toThrow(new HttpException(400, 'Current user is not in the list of this design reviews members'));
+    });
+
+    test('Availabilities were invalid - out of bounds', async () => {
+      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
+      await expect(() =>
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batman)
+      ).rejects.toThrow(new HttpException(400, 'Availability times have to be in range 0-83'));
     });
   });
 });

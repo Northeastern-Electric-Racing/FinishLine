@@ -53,6 +53,7 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
         <AvailabilityEditModal
           open={editAvailabilityOpen}
           onHide={() => setEditAvailability(false)}
+          onSubmit={() => setEditAvailability(false)}
           header="Edit Availability"
           availabilites={availabilities}
           setAvailabilities={setAvailabilities}
