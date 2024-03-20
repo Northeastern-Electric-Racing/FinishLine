@@ -17,7 +17,7 @@ const schema = yup.object().shape({
   zoomLink: yup
     .string()
     .optional()
-    .test('zoom-link', 'Must be a valid zoom link', (value) => value!.includes('zoom.us/')),
+    .test('zoom-link', 'Must be a valid zoom link', (value) => (value ? value.includes('zoom.us/') : true)),
   location: yup.string().optional(),
   docTemplateLink: yup.string().required('Question Doc is Required')
 });

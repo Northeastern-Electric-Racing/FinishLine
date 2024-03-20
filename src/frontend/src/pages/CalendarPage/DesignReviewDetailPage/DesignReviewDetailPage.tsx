@@ -50,8 +50,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [startTime, setStateTime] = useState(0);
-  const [endTime, setEndTime] = useState(1);
+  const [startTime, setStateTime] = useState(designReview.meetingTimes[0] % 12);
+  const [endTime, setEndTime] = useState((designReview.meetingTimes[designReview.meetingTimes.length - 1] % 12) + 1);
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const {

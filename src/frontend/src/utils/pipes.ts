@@ -132,9 +132,9 @@ export const designReviewNamePipe = (designReview: DesignReview) => {
 };
 
 export const dateRangePipe = (startDate: Date, endDate: Date) => {
-  return `${(startDate.getMonth() + 1).toString()}/${endDate.getDate().toString()} - ${(
+  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
     endDate.getMonth() + 1
-  ).toString()}/${startDate.getDate().toString()}`;
+  ).toString()}/${endDate.getDate().toString()}`;
 };
 
 export const undefinedPipe = (element: any) => {
