@@ -16,6 +16,8 @@ import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../..
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useSingleDesignReview } from '../../../hooks/design-reviews.hooks';
+import { useQuery } from '../../../hooks/utils.hooks';
 
 export interface ScheduleSettingsFormInput {
   personalGmail: string;
@@ -29,6 +31,8 @@ export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {
 const UserScheduleSettings = ({ user }: { user: User }) => {
   const [edit, setEdit] = useState(false);
   const toast = useToast();
+  const query = useQuery();
+  const designReviewId = query.get('drId');
 
   const { data, isLoading, isError, error } = useUserScheduleSettings(user.userId);
   const {
@@ -37,9 +41,17 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
     isError: updateUserScheduleSettingsIsError,
     error: updateUserScheduleSettingsError
   } = useUpdateUserScheduleSettings();
+  const {
+    data: designReview,
+    isError: designReviewIsError,
+    error: designReviewError,
+    isLoading: designReviewIsLoading
+  } = useSingleDesignReview(designReviewId ?? undefined);
 
+  if (designReviewId && (!designReview || designReviewIsLoading)) return <LoadingIndicator />;
   if (!data || isLoading || updateUserScheduleSettingsIsLoading) return <LoadingIndicator />;
 
+  if (designReviewId && designReviewIsError) return <ErrorPage message={designReviewError.message} />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
   if (updateUserScheduleSettingsIsError)
     return <ErrorPage error={updateUserScheduleSettingsError!} message={updateUserScheduleSettingsError?.message} />;
@@ -81,7 +93,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
       }
     >
       {!edit ? (
-        <UserScheduleSettingsView scheduleSettings={data} />
+        <UserScheduleSettingsView scheduleSettings={data} designReview={designReview} />
       ) : (
         <UserScheduleSettingsEdit onSubmit={handleConfirm} defaultValues={data} />
       )}

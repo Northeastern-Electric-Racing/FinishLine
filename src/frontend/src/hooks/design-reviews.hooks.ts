@@ -9,8 +9,10 @@ import {
   createDesignReviews,
   getAllDesignReviews,
   getAllTeamTypes,
-  getSingleDesignReview
+  getSingleDesignReview,
+  markUserConfirmed
 } from '../apis/design-reviews.api';
+import { useCurrentUser } from './users.hooks';
 
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
@@ -101,9 +103,31 @@ export const useAllTeamTypes = () => {
  *
  * @returns a single design review
  */
-export const useSingleDesignReview = (id: string) => {
-  return useQuery<DesignReview, Error>(['design-reviews', id], async () => {
-    const { data } = await getSingleDesignReview(id);
-    return data;
-  });
+export const useSingleDesignReview = (id?: string) => {
+  return useQuery<DesignReview, Error>(
+    ['design-reviews', id],
+    async () => {
+      const { data } = await getSingleDesignReview(id!);
+      return data;
+    },
+    { enabled: !!id }
+  );
+};
+
+export const useMarkUserConfirmed = (id: string) => {
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, { availability: number[] }>(
+    ['design-reviews', 'mark-confirmed'],
+    async (designReviewPayload: { availability: number[] }) => {
+      const { data } = await markUserConfirmed(id, designReviewPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
 };
