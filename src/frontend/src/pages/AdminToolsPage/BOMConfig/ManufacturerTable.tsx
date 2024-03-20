@@ -26,7 +26,7 @@ const ManufacturerTable: React.FC = () => {
   } = useGetAllManufacturers();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [manufacturerList, setManufacturerList] = useState<Manufacturer[]>([]);
-  const { isLoading, isError, error, mutateAsync } = useDeleteManufacturer();
+  const { mutateAsync } = useDeleteManufacturer();
   const toast = useToast();
 
   useEffect(() => {
