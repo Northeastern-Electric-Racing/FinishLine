@@ -2,13 +2,15 @@ import { Box, Grid, TextField, ToggleButton, ToggleButtonGroup, Typography } fro
 import NERModal from '../../../components/NERModal';
 import { useState } from 'react';
 import { getHourFromDate } from '../../../utils/design-review.utils';
+import { DesignReview } from 'shared';
+import { designReviewNamePipe } from '../../../utils/pipes';
 
 interface FinalizeDesignReviewProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   onSubmit?: () => void;
-  designReviewName: string;
-  selectedStartDateTime: Date | null;
+  designReview: DesignReview;
+  selectedDate: Date;
   designReviewConflicts?: String[];
 }
 
@@ -16,8 +18,8 @@ const FinalizeDesignReviewDetailsModal = ({
   open,
   setOpen,
   onSubmit,
-  designReviewName,
-  selectedStartDateTime,
+  designReview,
+  selectedDate,
   designReviewConflicts
 }: FinalizeDesignReviewProps) => {
   const handleClose = () => {
@@ -28,13 +30,8 @@ const FinalizeDesignReviewDetailsModal = ({
   const [location, setLocation] = useState('');
   const [zoomLink, setZoomLink] = useState('');
 
-  // Need to do this so it can be called in the title
-  if (!selectedStartDateTime) {
-    return null;
-  }
-
-  const title = `${designReviewName} on ${selectedStartDateTime?.toDateString()} at ${getHourFromDate(
-    selectedStartDateTime
+  const title = `${designReviewNamePipe(designReview)} on ${selectedDate.toDateString()} at ${getHourFromDate(
+    selectedDate
   )}`;
 
   const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {

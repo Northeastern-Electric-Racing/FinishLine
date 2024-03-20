@@ -80,7 +80,7 @@ export const getStartOfWeek = (currentDate: Date) => {
   return startOfWeek;
 };
 
-export const getDateRange = (selectedDate: Date) => {
+export const getWeekDateRange = (selectedDate: Date) => {
   const startDate = getStartOfWeek(selectedDate);
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 6);

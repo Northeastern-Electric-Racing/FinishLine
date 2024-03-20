@@ -13,8 +13,8 @@ interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
   currentUnavailableUsers: User[];
   usersToAvailabilities: Map<User, number[]>;
-  designReviewName: string;
-  selectedStartDateTime: Date | null;
+  designReview: DesignReview;
+  selectedDate: Date;
   conflictingDesignReviews: DesignReview[];
 }
 
@@ -22,8 +22,8 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentAvailableUsers,
   currentUnavailableUsers,
   usersToAvailabilities,
-  designReviewName,
-  selectedStartDateTime,
+  designReview,
+  selectedDate,
   conflictingDesignReviews
 }) => {
   const theme = useTheme();
@@ -118,8 +118,8 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             open={showFinalizeDesignReviewDetailsModal}
             setOpen={setShowFinalizeDesignReviewDetailsModal}
             designReviewConflicts={designReviewConflicts}
-            designReviewName={designReviewName}
-            selectedStartDateTime={selectedStartDateTime}
+            designReview={designReview}
+            selectedDate={selectedDate}
           />
         </Box>
       </Box>

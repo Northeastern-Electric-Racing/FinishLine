@@ -1,18 +1,17 @@
 import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
-import { getDateRange } from '../../../utils/design-review.utils';
 import AvailabilityView from './AvailabilityView';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { DesignReview, User, UserWithScheduleSettings } from 'shared';
-import { wbsPipe } from 'shared';
 import { useAllDesignReviews } from '../../../hooks/design-reviews.hooks';
+import { designReviewNamePipe } from '../../../utils/pipes';
 
 interface DesignReviewDetailPageProps {
   designReview: DesignReview;
@@ -20,6 +19,11 @@ interface DesignReviewDetailPageProps {
 
 const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview }) => {
   const theme = useTheme();
+  const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
+  const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
+  const [date, setDate] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
+
+  const usersToAvailabilities = new Map<User, number[]>();
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const {
@@ -29,75 +33,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     isLoading: allDesignReviewsIsLoading
   } = useAllDesignReviews();
 
-  const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
-  const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
-  const [selectedStartDateTime, setselectedStartDateTime] = useState(
-    new Date(`${new Date().toLocaleDateString()} 12:00:00`)
-  );
-  const [selectedEndDateTime, setselectedEndDateTime] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
-  const [usersToAvailabilities, setUsersToAvailabilities] = useState<Map<User, number[]>>(new Map());
-  const [existingMeetingData, setexistingMeetingData] = useState<Map<number, string>>(new Map());
-  const [dateRange, setDateRange] = useState('');
-  const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
-  const [startDateRange, endDateRange] = getDateRange(selectedStartDateTime);
-
-  const conflictingDesignReviews = useMemo(
-    () =>
-      allDesignReviews
-        ? allDesignReviews.filter(
-            (currDr) =>
-              currDr.dateScheduled.toLocaleDateString() === selectedStartDateTime.toLocaleDateString() &&
-              allDesignReviews.some((designReview) =>
-                designReview.meetingTimes.some((time) => currDr.meetingTimes.includes(time))
-              ) &&
-              currDr.designReviewId !== designReview.designReviewId
-          )
-        : [],
-    [allDesignReviews, selectedStartDateTime, designReview]
-  );
-
-  // Ensures the existing meeting data information only shows up on the current date range
-  const currentWeekDesignReviews = useMemo(() => {
-    return allDesignReviews
-      ? allDesignReviews.filter((currDr) => {
-          const drDate = new Date(currDr.dateScheduled).getTime();
-          const startRange = startDateRange.getTime();
-          const endRange = endDateRange.getTime();
-
-          return drDate >= startRange && drDate <= endRange;
-        })
-      : [];
-  }, [allDesignReviews, startDateRange, endDateRange]);
-
-  // Sets the existing meeting data for the icons that get displayed on the calander
-  useEffect(() => {
-    if (currentWeekDesignReviews) {
-      const newExistingMeetingData = new Map<number, string>();
-      currentWeekDesignReviews?.forEach((designReview) =>
-        designReview.meetingTimes.forEach((meetingTime) => newExistingMeetingData.set(meetingTime, 'build'))
-      );
-      setexistingMeetingData(newExistingMeetingData);
-    }
-  }, [currentWeekDesignReviews]);
-
-  useEffect(() => {
-    if (designReview && designReview.confirmedMembers.length > 0) {
-      const newUsersToAvailabilities = new Map<User, number[]>();
-      designReview.confirmedMembers.forEach((user: UserWithScheduleSettings) => {
-        newUsersToAvailabilities.set(user, user.scheduleSettings?.availability ?? []);
-      });
-      setUsersToAvailabilities(newUsersToAvailabilities);
-    }
-  }, [designReview]);
-
-  useEffect(() => {
-    setDateRange(
-      `${(startDateRange.getMonth() + 1).toString()}/${startDateRange.getDate().toString()} - ${(
-        endDateRange.getMonth() + 1
-      ).toString()}/${endDateRange.getDate().toString()}`
-    );
-  }, [startDateRange, endDateRange]);
-
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
   if (allUsersIsLoading || !allUsers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
@@ -106,19 +41,15 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
 
   const handleDateChange = (newDate: Date | null) => {
     if (newDate) {
-      const updatedDateTime = new Date(selectedStartDateTime);
+      const updatedDateTime = new Date();
       updatedDateTime.setFullYear(newDate.getFullYear(), newDate.getMonth(), newDate.getDate());
-      setselectedStartDateTime(updatedDateTime);
+      setDate(updatedDateTime);
     }
   };
 
-  const handleTimeChange = (newTime: Date | null, isStartTime: boolean) => {
-    if (newTime) {
-      const updatedDateTime = new Date(selectedStartDateTime);
-      updatedDateTime.setHours(newTime.getHours(), newTime.getMinutes());
-      isStartTime ? setselectedStartDateTime(updatedDateTime) : setselectedEndDateTime(updatedDateTime);
-    }
-  };
+  designReview.confirmedMembers.forEach((user: UserWithScheduleSettings) => {
+    usersToAvailabilities.set(user, user.scheduleSettings?.availability ?? []);
+  });
 
   return (
     <PageLayout title="Scheduling">
@@ -148,13 +79,13 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               width: '100%'
             }}
           >
-            {designReviewName}
+            {designReviewNamePipe(designReview)}
           </Box>
         </Grid>
         <Grid item xs={2}>
           <DatePicker
             label={'Date'}
-            value={selectedStartDateTime}
+            value={setDate}
             onChange={handleDateChange}
             renderInput={(params) => <TextField {...params} />}
           />
@@ -163,8 +94,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           <TimePicker
             label={'Start Time'}
             views={['hours']}
-            value={selectedStartDateTime}
-            onChange={(newTime) => handleTimeChange(newTime, true)}
+            value={date}
+            onChange={(newTime) => {}}
             renderInput={(params) => <TextField {...params} />}
           />
         </Grid>
@@ -172,8 +103,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           <TimePicker
             label={'End Time'}
             views={['hours']}
-            value={selectedEndDateTime}
-            onChange={(newTime) => handleTimeChange(newTime, false)}
+            value={date}
+            onChange={(newTime) => {}}
             renderInput={(params) => <TextField {...params} />}
           />
         </Grid>
@@ -276,11 +207,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       </Grid>
       <AvailabilityView
         usersToAvailabilities={usersToAvailabilities}
-        existingMeetingData={existingMeetingData}
-        designReviewName={designReviewName}
-        selectedStartDateTime={selectedStartDateTime}
-        conflictingDesignReviews={conflictingDesignReviews}
-        dateRange={dateRange}
+        designReview={designReview}
+        selectedDate={date}
+        allDesignReviews={allDesignReviews}
       />
     </PageLayout>
   );

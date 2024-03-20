@@ -17,7 +17,7 @@ interface AvailabilityScheduleViewProps {
   existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
-  dateRange: string;
+  dateRangeTitle: string;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
@@ -27,7 +27,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   existingMeetingData,
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
-  dateRange
+  dateRangeTitle
 }) => {
   const totalUsers = usersToAvailabilities.size;
 
@@ -63,7 +63,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
 
   return (
     <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors[0]} text={dateRange} />
+      <TimeSlot backgroundColor={HeatmapColors[0]} text={dateRangeTitle} />
       {EnumToArray(DAY_NAMES).map((day) => (
         <TimeSlot backgroundColor={HeatmapColors[0]} text={day} fontSize={'1em'} />
       ))}
