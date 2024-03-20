@@ -88,10 +88,12 @@ const AdminToolsPage: React.FC = () => {
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : (
-        <>
-          <AdminToolsSlackUpcomingDeadlines />
+        <Box>
+          <Box pb={2}>
+            <AdminToolsSlackUpcomingDeadlines />
+          </Box>
           <AdminToolsAttendeeDesignReviewInfo />
-        </>
+        </Box>
       )}
     </PageLayout>
   );
