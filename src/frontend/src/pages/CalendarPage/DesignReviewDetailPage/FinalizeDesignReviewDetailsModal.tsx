@@ -34,7 +34,6 @@ const FinalizeDesignReviewDetailsModal = ({
   const handleClose = () => {
     setOpen(false);
   };
-  const locations = ['The Bay', 'Zoom'];
   const [docTemplate, setDocTemplate] = useState('');
   const [meetingType, setMeetingType] = useState<string[]>([]);
   const [location, setLocation] = useState('');
@@ -50,10 +49,6 @@ const FinalizeDesignReviewDetailsModal = ({
     setMeetingType(newMeetingType);
   };
 
-  const handleLocationChange = (event: any) => {
-    setLocation(event.target.value);
-  };
-
   return (
     <NERModal open={open} title={title} onHide={handleClose} onSubmit={onSubmit} submitText="Finalize Design Review Details">
       <Grid>
@@ -67,7 +62,6 @@ const FinalizeDesignReviewDetailsModal = ({
               <ToggleButton value="inPerson">In-person</ToggleButton>
             </ToggleButtonGroup>
           </Grid>
-
           <Grid style={{ display: 'flex', marginBottom: 20 }}>
             <Typography style={{ textDecoration: 'underline', fontSize: '1.2em', marginRight: 53 }}>
               Add Doc Template:

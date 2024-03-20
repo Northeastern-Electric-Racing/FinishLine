@@ -41,7 +41,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const conflictingDesignReviews = allDesignReviews
     ? allDesignReviews.filter(
         (currDr) =>
-          currDr.dateScheduled.toLocaleDateString === designReview.dateScheduled.toLocaleDateString &&
+          currDr.dateScheduled.toLocaleDateString() === designReview.dateScheduled.toLocaleDateString() &&
+          allDesignReviews.some((designReview) =>
+            designReview.meetingTimes.some((time) => currDr.meetingTimes.includes(time))
+          ) &&
           currDr.designReviewId !== designReview.designReviewId
       )
     : [];

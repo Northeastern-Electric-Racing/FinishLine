@@ -13,7 +13,7 @@ export enum DAY_NAMES {
   Wednesday,
   Thursday,
   Friday,
-  Saturday,
+  Saturday
 }
 
 export enum MONTH_NAMES {
@@ -84,8 +84,8 @@ export const getDateRange = (selectedDate: Date) => {
   const startDate = getStartOfWeek(selectedDate);
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 6);
-  return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
-}
+  return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+};
 
 export const getHourOfDate = (currentDate: Date) => {
   let hours = currentDate.getHours();
@@ -93,7 +93,7 @@ export const getHourOfDate = (currentDate: Date) => {
   hours = hours % 12;
   hours = hours ? hours : 12;
   return `${hours}${amPm}`;
-}
+};
 
 // TODO: We will have to maker a call to the backend to get this data
 export const existingMeetingData = new Map<number, string>();
