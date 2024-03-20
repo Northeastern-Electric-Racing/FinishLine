@@ -10,7 +10,8 @@ import {
   RoleEnum,
   isHead,
   UserSecureSettings,
-  UserScheduleSettings
+  UserScheduleSettings,
+  UserWithScheduleSettings
 } from 'shared';
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
@@ -23,17 +24,22 @@ import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
+import userWithScheduleSettingsTransformer from '../transformers/designReviewUser.transformer';
 
 export default class UsersService {
   /**
    * Gets all of the users from the database
    * @returns a list of all the users
    */
-  static async getAllUsers(): Promise<User[]> {
-    const users = await prisma.user.findMany();
+  static async getAllUsers(): Promise<UserWithScheduleSettings[]> {
+    const users = await prisma.user.findMany({
+      include: {
+        drScheduleSettings: true
+      }
+    });
     users.sort((a, b) => a.firstName.localeCompare(b.firstName));
 
-    return users.map(userTransformer);
+    return users.map(userWithScheduleSettingsTransformer);
   }
 
   /**

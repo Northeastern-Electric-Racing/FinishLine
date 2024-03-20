@@ -64,7 +64,18 @@ export const prismaDesignReview1: Prisma.Design_ReviewGetPayload<typeof designRe
   wbsElementId: 1,
   requiredMembers: [batman],
   optionalMembers: [],
-  confirmedMembers: [batman],
+  confirmedMembers: [
+    {
+      ...batman,
+      drScheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3],
+        userId: 1
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [batman],
   userDeleted: null,
@@ -90,7 +101,18 @@ export const prismaDesignReview2: Prisma.Design_ReviewGetPayload<typeof designRe
   userCreated: wonderwoman,
   requiredMembers: [wonderwoman],
   optionalMembers: [],
-  confirmedMembers: [wonderwoman],
+  confirmedMembers: [
+    {
+      ...wonderwoman,
+      drScheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3],
+        userId: 1
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [wonderwoman],
   userDeleted: null,
@@ -117,7 +139,18 @@ export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designRe
   userCreated: batman,
   requiredMembers: [batman],
   optionalMembers: [],
-  confirmedMembers: [batman],
+  confirmedMembers: [
+    {
+      ...batman,
+      drScheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3],
+        userId: 1
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [batman],
   userDeleted: null,
@@ -145,7 +178,18 @@ export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designRe
   wbsElementId: 1,
   requiredMembers: [batman],
   optionalMembers: [wonderwomanWithScheduleSettings],
-  confirmedMembers: [batman],
+  confirmedMembers: [
+    {
+      ...batman,
+      drScheduleSettings: {
+        drScheduleSettingsId: 'bmschedule',
+        personalGmail: 'brucewayne@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/gotham',
+        availability: [],
+        userId: 69
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [wonderwoman],
   userDeleted: null,
@@ -169,7 +213,17 @@ export const designReview3: DesignReview = {
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 },
   requiredMembers: [sharedBatman],
   optionalMembers: [],
-  confirmedMembers: [sharedBatman],
+  confirmedMembers: [
+    {
+      ...sharedBatman,
+      scheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3]
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [sharedBatman],
   userDeleted: undefined,
@@ -187,7 +241,17 @@ export const sharedDesignReview1: SharedDesignReview = {
   isInPerson: false,
   requiredMembers: [sharedBatman],
   optionalMembers: [],
-  confirmedMembers: [sharedBatman],
+  confirmedMembers: [
+    {
+      ...sharedBatman,
+      scheduleSettings: {
+        drScheduleSettingsId: '123',
+        personalGmail: 'batman@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/123456789',
+        availability: [1, 2, 3]
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [sharedBatman],
   teamType: teamType1,
@@ -207,7 +271,17 @@ export const designReview5: DesignReview = {
   isInPerson: false,
   requiredMembers: [],
   optionalMembers: [wonderwomanMarkedWithScheduleSettings],
-  confirmedMembers: [sharedBatman],
+  confirmedMembers: [
+    {
+      ...sharedBatman,
+      scheduleSettings: {
+        drScheduleSettingsId: 'bmschedule',
+        personalGmail: 'brucewayne@gmail.com',
+        personalZoomLink: 'https://zoom.us/j/gotham',
+        availability: []
+      }
+    }
+  ],
   deniedMembers: [],
   attendees: [wonderwoman],
   wbsName: 'car',

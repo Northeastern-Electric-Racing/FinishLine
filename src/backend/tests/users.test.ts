@@ -38,7 +38,10 @@ describe('Users', () => {
     expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     // note that batman was sorted to the front because his first name is before supermans alphabetically
     // and also that we don't return the google auth id for security reasons
-    expect(res).toStrictEqual([restOfBatman, restOfSuperman]);
+    expect(res).toStrictEqual([
+      { scheduleSettings: undefined, ...restOfBatman },
+      { scheduleSettings: undefined, ...restOfSuperman }
+    ]);
   });
 
   test('getSingleUser', async () => {

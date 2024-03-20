@@ -3,7 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, ClubAccount, ExpenseType } from 'shared';
+import {
+  WbsNumber,
+  User,
+  wbsPipe,
+  WbsElement,
+  isProject,
+  WorkPackage,
+  ClubAccount,
+  ExpenseType,
+  DesignReview
+} from 'shared';
 
 /**
  * Pipes:
@@ -115,6 +125,16 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
 /** Display WBS number as string "1.2.0 - Project Name" */
 export const wbsNamePipe = (wbsElement: WbsElement) => {
   return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
+};
+
+export const designReviewNamePipe = (designReview: DesignReview) => {
+  return `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+};
+
+export const dateRangePipe = (startDate: Date, endDate: Date) => {
+  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
+    endDate.getMonth() + 1
+  ).toString()}/${endDate.getDate().toString()}`;
 };
 
 export const undefinedPipe = (element: any) => {

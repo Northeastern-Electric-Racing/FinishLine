@@ -1,9 +1,5 @@
 import { Box } from '@mui/system';
-import { ReactElement } from 'react';
-import WarningIcon from '@mui/icons-material/Warning';
-import BuildIcon from '@mui/icons-material/Build';
-import ComputerIcon from '@mui/icons-material/Computer';
-import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
+import { Icon } from '@mui/material';
 
 interface TimeSlotProps {
   text?: string;
@@ -28,23 +24,6 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   onMouseUp,
   onMouseOver
 }) => {
-  const getIcon = (icon: string, small: boolean): ReactElement | null => {
-    const iconFont = small ? { fontSize: '1.4em' } : { fontSize: '2em' };
-
-    switch (icon) {
-      case 'warning':
-        return <WarningIcon sx={iconFont} />;
-      case 'build':
-        return <BuildIcon sx={iconFont} />;
-      case 'computer':
-        return <ComputerIcon sx={iconFont} />;
-      case 'electrical':
-        return <ElectricalServicesIcon sx={iconFont} />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <Box
       sx={{
@@ -61,14 +40,15 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
         fontWeight: 'bold',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        alignItems: 'center'
       }}
       onMouseDown={onMouseDown}
       onMouseEnter={onMouseEnter}
       onMouseUp={onMouseUp}
       onMouseOver={onMouseOver}
     >
-      {icon && <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getIcon(icon, small)}</Box>}
+      {icon && <Icon>{icon}</Icon>}
       {text}
     </Box>
   );
