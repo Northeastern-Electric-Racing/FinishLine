@@ -535,14 +535,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
         DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batman)
-      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be in range 0-83'));
-    });
-
-    test('Availabilities were invalid - non-consecutive', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
-      await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [1, 3], batman)
-      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be consecutive'));
+      ).rejects.toThrow(new HttpException(400, 'Availability times have to be in range 0-83'));
     });
   });
 });
