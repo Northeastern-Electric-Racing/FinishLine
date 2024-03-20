@@ -162,7 +162,11 @@ export default class DesignReviewsService {
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewNotification(memberUserSetting.slackId, designReview.designReviewId);
+          await sendSlackDesignReviewNotification(
+            memberUserSetting.slackId,
+            designReview.designReviewId,
+            designReview.wbsElement.name
+          );
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
@@ -321,19 +325,22 @@ export default class DesignReviewsService {
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    // Update user schedule settings
-    const validAvailability = validateMeetingTimes(availability);
+    availability.forEach((time) => {
+      if (time < 0 || time > 83) {
+        throw new HttpException(400, 'Availability times have to be in range 0-83');
+      }
+    });
 
     await prisma.schedule_Settings.upsert({
       where: { userId: submitter.userId },
       update: {
-        availability: validAvailability
+        availability
       },
       create: {
         userId: submitter.userId,
         personalGmail: '',
         personalZoomLink: '',
-        availability: validAvailability
+        availability
       }
     });
 
@@ -353,7 +360,7 @@ export default class DesignReviewsService {
 
       // If all requested attendees have confirmed their schedule, mark design review as confirmed
       if (
-        designReview.confirmedMembers.length ===
+        updatedDesignReview.confirmedMembers.length ===
         designReview.requiredMembers.length + designReview.optionalMembers.length
       ) {
         await prisma.design_Review.update({

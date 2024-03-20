@@ -57,3 +57,7 @@ export const getSingleDesignReview = async (id: string) => {
     transformResponse: (data) => designReviewTransformer(JSON.parse(data))
   });
 };
+
+export const markUserConfirmed = async (id: string, payload: { availability: number[] }) => {
+  return axios.post<DesignReview>(apiUrls.designReviewMarkUserConfirmed(id), payload);
+};

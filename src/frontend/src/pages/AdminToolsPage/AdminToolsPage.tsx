@@ -43,10 +43,12 @@ const AdminToolsPage: React.FC = () => {
 
   const UserManagementTab = () => {
     return isUserAdmin ? (
-      <>
-        <AdminToolsUserManagement />
+      <Box>
+        <Box mb={2}>
+          <AdminToolsUserManagement />
+        </Box>
         <TeamsTools />
-      </>
+      </Box>
     ) : (
       <AdminToolsUserManagement />
     );
@@ -67,13 +69,16 @@ const AdminToolsPage: React.FC = () => {
     <PageLayout
       title="Admin Tools"
       tabs={
-        <NERTabs
-          setTab={setTabIndex}
-          tabsLabels={tabs}
-          baseUrl={routes.ADMIN_TOOLS}
-          defaultTab={defaultTab}
-          id="admin-tools-tabs"
-        />
+        <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
+          <NERTabs
+            noUnderline
+            setTab={setTabIndex}
+            tabsLabels={tabs}
+            baseUrl={routes.ADMIN_TOOLS}
+            defaultTab={defaultTab}
+            id="admin-tools-tabs"
+          />
+        </Box>
       }
     >
       {tabIndex === 0 ? (
