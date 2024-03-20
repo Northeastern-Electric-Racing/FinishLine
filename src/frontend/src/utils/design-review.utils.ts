@@ -87,7 +87,7 @@ export const getDateRange = (selectedDate: Date) => {
   return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
 };
 
-export const getHourOfDate = (currentDate: Date) => {
+export const getHourFromDate = (currentDate: Date) => {
   let hours = currentDate.getHours();
   const amPm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;

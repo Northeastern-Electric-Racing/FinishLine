@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
 import { DesignReview, User, wbsPipe } from 'shared';
-import { HeatmapColors, getHourOfDate } from '../../../utils/design-review.utils';
+import { HeatmapColors, getHourFromDate } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
@@ -32,7 +32,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
   const designReviewConflicts = conflictingDesignReviews.map(
     (designReview) =>
-      `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${getHourOfDate(designReview.dateScheduled)}`
+      `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${getHourFromDate(designReview.dateScheduled)}`
   );
 
   return (

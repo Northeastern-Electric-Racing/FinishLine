@@ -1,10 +1,6 @@
 import {
   Box,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -12,7 +8,7 @@ import {
 } from '@mui/material';
 import NERModal from '../../../components/NERModal';
 import { useState } from 'react';
-import { getHourOfDate } from '../../../utils/design-review.utils';
+import { getHourFromDate } from '../../../utils/design-review.utils';
 
 interface FinalizeDesignReviewProps {
   open: boolean;
@@ -43,7 +39,7 @@ const FinalizeDesignReviewDetailsModal = ({
     return null;
   }
 
-  const title = `${designReviewName} on ${selectedStartDateTime?.toDateString()} at ${getHourOfDate(selectedStartDateTime)}`;
+  const title = `${designReviewName} on ${selectedStartDateTime?.toDateString()} at ${getHourFromDate(selectedStartDateTime)}`;
 
   const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
     setMeetingType(newMeetingType);
