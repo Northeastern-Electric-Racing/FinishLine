@@ -61,7 +61,9 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
     <>
       <Grid container direction={'row'} spacing={edit ? 2 : 1} mt={1}>
         <Grid item>
-          <Typography variant="h5">Schedule Settings</Typography>
+          <Typography gutterBottom color={'red'} borderBottom={1} borderColor={'white'} variant="h5">
+            Schedule Settings
+          </Typography>
         </Grid>
         <Grid item>
           {!edit ? (

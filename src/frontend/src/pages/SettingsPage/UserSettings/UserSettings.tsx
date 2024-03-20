@@ -59,7 +59,9 @@ const UserSettings: React.FC<UserSettingsProps> = ({ currentSettings }) => {
     <>
       <Grid container direction={'row'} spacing={edit ? 2 : 1}>
         <Grid item>
-          <Typography variant="h5">User Settings</Typography>
+          <Typography gutterBottom variant="h5" color={'red'} borderBottom={1} borderColor={'white'}>
+            User Settings
+          </Typography>
         </Grid>
         <Grid item>
           {!edit ? (

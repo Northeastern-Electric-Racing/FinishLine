@@ -67,7 +67,9 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
     <>
       <Grid container direction={'row'} spacing={edit ? 2 : 1} mt={1}>
         <Grid item>
-          <Typography variant="h5">Secure Settings</Typography>
+          <Typography gutterBottom borderBottom={1} color={'red'} borderColor={'white'} variant="h5">
+            Secure Settings
+          </Typography>
         </Grid>
         <Grid item>
           {!edit ? (

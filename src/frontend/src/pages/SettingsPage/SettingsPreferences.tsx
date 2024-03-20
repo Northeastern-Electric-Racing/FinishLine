@@ -10,6 +10,7 @@ import { GoogleLogout } from 'react-google-login';
 import { useState } from 'react';
 import UserSecureSettings from './UserSecureSettings/UserSecureSettings';
 import UserScheduleSettings from './UserScheduleSettings/UserScheduleSettings';
+import { Box } from '@mui/system';
 
 const NERSwitch = styled((props: SwitchProps) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -100,14 +101,16 @@ const SettingsPreferences: React.FC = () => {
   };
 
   return (
-    <PageLayout title="Preferences">
+    <Box>
       {showAlert && <Alert severity="info">Haha {auth.user?.firstName} bye bye!</Alert>}
       <UserSettings currentSettings={userSettingsData} />
       <UserSecureSettings currentSettings={userSecureSettings} />
       <UserScheduleSettings user={user} />
       <Grid container mt={1.5}>
         <Grid item xs={12}>
-          <Typography variant="h5">Other Settings</Typography>
+          <Typography variant="h5" color={'red'} borderBottom={1} borderColor={'white'}>
+            Other Settings
+          </Typography>
         </Grid>
         <Grid item xs={12}>
           <FormGroup>
@@ -128,7 +131,7 @@ const SettingsPreferences: React.FC = () => {
           </FormGroup>
         </Grid>
       </Grid>
-    </PageLayout>
+    </Box>
   );
 };
 

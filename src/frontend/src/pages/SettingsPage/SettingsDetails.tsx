@@ -1,5 +1,5 @@
 import { useAuth } from '../../hooks/auth.hooks';
-import { Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
@@ -45,8 +45,8 @@ const SettingsDetails: React.FC = () => {
   );
 
   return (
-    <PageLayout title="User Details">
-      <Typography variant="h5" mb={1}>
+    <Box>
+      <Typography variant="h5" gutterBottom color={'red'} borderBottom={1} borderColor={'white'}>
         User Details
       </Typography>
       <Grid container direction="column" spacing={0.5}>
@@ -69,7 +69,7 @@ const SettingsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
-    </PageLayout>
+    </Box>
   );
 };
 
