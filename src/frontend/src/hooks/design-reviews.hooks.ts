@@ -5,12 +5,15 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { DesignReview, TeamType, WbsNumber, DesignReviewStatus } from 'shared';
 import {
+  deleteDesignReview,
   editDesignReview,
   createDesignReviews,
   getAllDesignReviews,
   getAllTeamTypes,
-  getSingleDesignReview
+  getSingleDesignReview,
+  markUserConfirmed
 } from '../apis/design-reviews.api';
+import { useCurrentUser } from './users.hooks';
 
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
@@ -97,13 +100,55 @@ export const useAllTeamTypes = () => {
 };
 
 /**
+ * Custom react hook to delete a design review
+ */
+
+export const useDeleteDesignReview = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error>(
+    ['design-reviews', 'delete'],
+    async () => {
+      const { data } = await deleteDesignReview(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to get a single design review
  *
  * @returns a single design review
  */
-export const useSingleDesignReview = (id: string) => {
-  return useQuery<DesignReview, Error>(['design-reviews', id], async () => {
-    const { data } = await getSingleDesignReview(id);
-    return data;
-  });
+export const useSingleDesignReview = (id?: string) => {
+  return useQuery<DesignReview, Error>(
+    ['design-reviews', id],
+    async () => {
+      const { data } = await getSingleDesignReview(id!);
+      return data;
+    },
+    { enabled: !!id }
+  );
+};
+
+export const useMarkUserConfirmed = (id: string) => {
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, { availability: number[] }>(
+    ['design-reviews', 'mark-confirmed'],
+    async (designReviewPayload: { availability: number[] }) => {
+      const { data } = await markUserConfirmed(id, designReviewPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
 };

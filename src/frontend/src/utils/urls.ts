@@ -137,6 +137,8 @@ const designReviewsCreate = () => `${designReviews()}/create`;
 const teamTypes = () => `${designReviews()}/teamType/all`;
 const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
+const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
+const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -248,7 +250,9 @@ export const apiUrls = {
   designReviewsCreate,
   designReviewById,
   designReviewsEdit,
+  designReviewMarkUserConfirmed,
   teamTypes,
+  designReviewDelete,
 
   version
 };
