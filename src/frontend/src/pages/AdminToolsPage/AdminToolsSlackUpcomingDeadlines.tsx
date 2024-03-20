@@ -44,7 +44,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom color={'red'} borderBottom={1} borderColor={'white'}>
         Slack Upcoming Deadlines
       </Typography>
       <Grid container spacing={2} alignItems="center">
