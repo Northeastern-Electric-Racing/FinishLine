@@ -1,8 +1,8 @@
-import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
+import { Autocomplete, Box, Checkbox, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
 import { usersToAvailabilities, existingMeetingData } from '../../../utils/design-review.utils';
 import AvailabilityView from './AvailabilityView';
-import { useAllUsers } from '../../../hooks/users.hooks';
+import { useAllUsers, useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { userToAutocompleteOption } from '../../../utils/teams.utils';
@@ -10,7 +10,12 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { routes } from '../../../utils/routes';
-import { DesignReview, wbsPipe } from 'shared';
+import { DesignReview, isAdmin, wbsPipe } from 'shared';
+import { useDeleteDesignReview } from '../../../hooks/design-reviews.hooks';
+import { useHistory } from 'react-router-dom';
+import { useToast } from '../../../hooks/toasts.hooks';
+import NERModal from '../../../components/NERModal';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface DesignReviewDetailPageProps {
   designReview: DesignReview;
@@ -18,16 +23,56 @@ interface DesignReviewDetailPageProps {
 
 const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview, designReview: { teamType } }) => {
   const theme = useTheme();
+  const user = useCurrentUser();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { mutateAsync: deleteDesignReview } = useDeleteDesignReview(designReview.designReviewId);
+  const history = useHistory();
+  const toast = useToast();
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
   if (allUsersIsLoading || !allUsers) return <LoadingIndicator />;
   const designReviewName = `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
   const users = allUsers.map(userToAutocompleteOption);
 
+  const handleDelete = () => {
+    try {
+      deleteDesignReview();
+      history.push(routes.CALENDAR);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const DeleteModal = () => {
+    return (
+      <NERModal
+        open={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleDelete}
+      >
+        <Typography>Are you sure you want to delete this design review?</Typography>
+      </NERModal>
+    );
+  };
+
+  const hasDeletePerms = user.userId === designReview.userCreated.userId || isAdmin(user.role);
+
   return (
     <PageLayout
+      headerRight={
+        hasDeletePerms && (
+          <IconButton onClick={() => setShowDeleteModal(true)}>
+            <DeleteIcon />
+          </IconButton>
+        )
+      }
       title="Scheduling"
       previousPages={[
         {
@@ -36,6 +81,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         }
       ]}
     >
+      <DeleteModal />
       <Grid container spacing={3} display={'flex'} paddingBottom={2}>
         <Grid item xs={1}>
           <Box
