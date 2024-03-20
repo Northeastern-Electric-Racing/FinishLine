@@ -426,16 +426,12 @@ describe('Design Reviews', () => {
         '1',
         [],
         [],
-        true,
-        false,
-        'doc temp',
         {
           carNumber: 1,
           projectNumber: 2,
           workPackageNumber: 0
         },
-        [0, 1, 2, 3],
-        'zoooooom'
+        [0, 1, 2, 3]
       );
 
       expect(res.teamType).toBe(teamType1);
@@ -449,16 +445,12 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 1,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new AccessDeniedException('create design review'));
     });
@@ -472,16 +464,12 @@ describe('Design Reviews', () => {
           '15',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 1,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new NotFoundException('Team Type', '15'));
     });
@@ -497,16 +485,12 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 15,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new NotFoundException('WBS Element', 15));
     });
@@ -551,14 +535,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
         DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batman)
-      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be in range 0-83'));
-    });
-
-    test('Availabilities were invalid - non-consecutive', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
-      await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [1, 3], batman)
-      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be consecutive'));
+      ).rejects.toThrow(new HttpException(400, 'Availability times have to be in range 0-83'));
     });
   });
 });
