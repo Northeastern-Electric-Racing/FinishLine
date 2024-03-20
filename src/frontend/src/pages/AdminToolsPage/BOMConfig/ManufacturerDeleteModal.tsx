@@ -1,62 +1,24 @@
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, IconButton, Typography } from '@mui/material';
-import { useState } from 'react';
+import { Typography } from '@mui/material';
 import NERModal from '../../../components/NERModal';
 
-interface ManufacturerDeleteButtonProps {
+interface ManufacturerDeleteModalProps {
   name: string;
-  onDelete: (name: string) => void;
+  onDelete: () => void;
+  onHide: () => void;
 }
 
-const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({
+const ManufacturerDeleteModal: React.FC<ManufacturerDeleteModalProps> = ({
   name,
-  onDelete
-}: ManufacturerDeleteButtonProps) => {
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const handleDeleteSubmit = async () => {
-    onDelete(name);
-    setShowDeleteModal(false);
-  };
-
+  onDelete,
+  onHide
+}: ManufacturerDeleteModalProps) => {
   return (
     <>
-      <IconButton
-        onClick={() => setShowDeleteModal(true)}
-        sx={{
-          color: 'Red',
-          width: 'auto',
-          height: 'auto',
-          padding: 0.1,
-          borderRadius: '5px'
-        }}
-      >
-        <Box
-          sx={{
-            border: '2px solid red',
-            borderRadius: '5px',
-            width: '24px',
-            height: '24px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-        >
-          <DeleteIcon sx={{ fontSize: 'small' }} />
-        </Box>
-      </IconButton>
-      <NERModal
-        open={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
-        title="Warning!"
-        cancelText="Cancel"
-        submitText="Delete"
-        onSubmit={() => handleDeleteSubmit()}
-      >
+      <NERModal open={true} onHide={onHide} title="Warning!" cancelText="Cancel" submitText="Delete" onSubmit={onDelete}>
         <Typography>Are you sure you want to delete this manufacturer: {name}</Typography>
       </NERModal>
     </>
   );
 };
 
-export default ManufacturerDeleteButton;
+export default ManufacturerDeleteModal;

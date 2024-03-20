@@ -1,33 +1,41 @@
-import { Box, Grid, TableCell, TableRow, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Grid, IconButton, TableCell, TableRow, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Manufacturer } from 'shared';
-import { deleteManufacturer } from '../../../apis/bom.api';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
-import { useGetAllManufacturers } from '../../../hooks/bom.hooks';
+import { useDeleteManufacturer, useGetAllManufacturers } from '../../../hooks/bom.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import AdminToolTable from '../AdminToolTable';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
-import ManufacturerDeleteButton from './ManufacturerDeleteModal';
+import ManufacturerDeleteModal from './ManufacturerDeleteModal';
+
+interface ManufacturerDeleteButtonProps {
+  name: string;
+  onDelete: (name: string) => void;
+}
 
 const ManufacturerTable: React.FC = () => {
   const {
-    data: manufactureres,
-    isLoading: manufactureresIsLoading,
+    data: manufacturers,
+    isLoading: manufacturersIsLoading,
     isError: manufacturersIsError,
     error: manufacturersError
   } = useGetAllManufacturers();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [manufacturerList, setManufacturerList] = useState<Manufacturer[]>([]);
+  const { isLoading, isError, error, mutateAsync } = useDeleteManufacturer();
+  const toast = useToast();
 
   useEffect(() => {
-    if (manufactureres) {
-      setManufacturerList(manufactureres);
+    if (manufacturers) {
+      setManufacturerList(manufacturers);
     }
-  }, [manufactureres]);
+  }, [manufacturers]);
 
-  if (!manufactureres || manufactureresIsLoading) {
+  if (!manufacturers || manufacturersIsLoading) {
     return <LoadingIndicator />;
   }
   if (manufacturersIsError) {
@@ -36,15 +44,57 @@ const ManufacturerTable: React.FC = () => {
 
   const handleDeleteManufacturer = async (manufacturerName: string) => {
     try {
-      deleteManufacturer(manufacturerName);
+      mutateAsync({ manufacturerName: manufacturerName });
       const updatedManufacturersTableRows = manufacturerList.filter(
         (manufacturer) => manufacturer.name !== manufacturerName
       );
+      toast.success(`Manufacturer: ${manufacturerName} Deleted Successfully!`);
 
       setManufacturerList(updatedManufacturersTableRows);
     } catch (error) {
-      console.error('Error deleting manufacturer:', error);
+      toast.error(`Error Deleting Manufacturer!`);
     }
+  };
+
+  const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({ name, onDelete }) => {
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const handleDeleteSubmit = async () => {
+      onDelete(name);
+      setShowDeleteModal(false);
+    };
+
+    return (
+      <>
+        <IconButton
+          onClick={() => setShowDeleteModal(true)}
+          sx={{
+            color: 'Red',
+            width: 'auto',
+            height: 'auto',
+            padding: 0.1,
+            borderRadius: '5px'
+          }}
+        >
+          <Box
+            sx={{
+              border: '2px solid red',
+              borderRadius: '5px',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <DeleteIcon sx={{ fontSize: 'small' }} />
+          </Box>
+        </IconButton>
+        {showDeleteModal && (
+          <ManufacturerDeleteModal name={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
+        )}
+      </>
+    );
   };
 
   const manufacturersTableRows = manufacturerList.map((manufacturer) => (

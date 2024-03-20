@@ -182,11 +182,17 @@ export const useCreateManufacturer = () => {
  * @returns mutation function to delete a material
  */
 export const useDeleteManufacturer = () => {
+  const queryClient = useQueryClient();
   return useMutation<any, Error, { manufacturerName: string }>(
     ['manufacturer', 'delete'],
     async (payload: { manufacturerName: string }) => {
       const data = await deleteManufacturer(payload.manufacturerName);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'manufacturers']);
+      }
     }
   );
 };
