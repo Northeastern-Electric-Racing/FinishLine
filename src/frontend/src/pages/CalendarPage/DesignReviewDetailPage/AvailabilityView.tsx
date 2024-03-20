@@ -1,27 +1,26 @@
 import { Grid } from '@mui/material';
-import { DesignReview, User } from 'shared';
+import { DesignReview, DesignReviewStatus, User, UserWithScheduleSettings } from 'shared';
 import { useState } from 'react';
 import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
 import { getWeekDateRange } from '../../../utils/design-review.utils';
 import { dateRangePipe } from '../../../utils/pipes';
+import { DesignReviewEditData } from './DesignReviewDetailPage';
 
 interface AvailabilityViewProps {
-  usersToAvailabilities: Map<User, number[]>;
   designReview: DesignReview;
-  selectedDate: Date;
   allDesignReviews: DesignReview[];
+  allUsers: UserWithScheduleSettings[];
+  editPayload: DesignReviewEditData;
 }
 
-const AvailabilityView: React.FC<AvailabilityViewProps> = ({
-  usersToAvailabilities,
-  designReview,
-  selectedDate,
-  allDesignReviews
-}) => {
+const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDesignReviews, allUsers, editPayload }) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const existingMeetingData = new Map<number, string>();
+  const usersToAvailabilities = new Map<User, number[]>();
+
+  const { selectedDate, requiredUserIds, optionalUserIds } = editPayload;
 
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
@@ -35,18 +34,32 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
     return drDate >= startRange && drDate <= endRange;
   });
 
-  const conflictingDesignReviews = allDesignReviews.filter(
-    (currDr) =>
-      currDr.dateScheduled.toLocaleDateString() === selectedDate.toLocaleDateString() &&
-      allDesignReviews.some((designReview) =>
-        designReview.meetingTimes.some((time) => currDr.meetingTimes.includes(time))
-      ) &&
+  const conflictingDesignReviews = allDesignReviews.filter((currDr) => {
+    const day = editPayload.selectedDate.getDay();
+    const times = [];
+    for (let i = day * 12 + editPayload.startTime; i <= day * 12 + editPayload.endTime; i++) {
+      times.push(i);
+    }
+    const cleanDate = new Date(currDr.dateScheduled.getTime() - currDr.dateScheduled.getTimezoneOffset() * -60000);
+    return (
+      currDr.status === DesignReviewStatus.SCHEDULED &&
+      cleanDate.toLocaleDateString() === selectedDate.toLocaleDateString() &&
+      times.some((time) => currDr.meetingTimes.includes(time)) &&
       currDr.designReviewId !== designReview.designReviewId
-  );
+    );
+  });
 
   currentWeekDesignReviews.forEach((designReview) =>
-    designReview.meetingTimes.forEach((meetingTime) => existingMeetingData.set(meetingTime, 'build'))
+    designReview.meetingTimes.forEach((meetingTime) => {
+      if (designReview.status === DesignReviewStatus.SCHEDULED) existingMeetingData.set(meetingTime, 'build');
+    })
   );
+
+  allUsers
+    .filter((user) => requiredUserIds.concat(optionalUserIds).includes(user.userId))
+    .forEach((user: UserWithScheduleSettings) => {
+      usersToAvailabilities.set(user, user.scheduleSettings?.availability ?? []);
+    });
 
   return (
     <Grid container>
@@ -67,8 +80,8 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           currentUnavailableUsers={currentUnavailableUsers}
           usersToAvailabilities={usersToAvailabilities}
           designReview={designReview}
-          selectedDate={selectedDate}
           conflictingDesignReviews={conflictingDesignReviews}
+          editPayload={editPayload}
         />
       </Grid>
     </Grid>

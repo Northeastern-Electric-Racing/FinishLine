@@ -47,9 +47,7 @@ const CalendarPage = () => {
 
   confirmedDesignReviews.forEach((designReview) => {
     // Accessing the date actually converts it to local time, which causes the date to be off. This is a workaround.
-    const date = datePipe(
-      new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
-    );
+    const date = datePipe(designReview.dateScheduled);
     if (eventDict.has(date)) {
       eventDict.get(date)?.push(designReview);
     } else {
@@ -134,10 +132,7 @@ const CalendarPage = () => {
                       ) : (
                         <CalendarDayCard
                           cardDate={cardDate}
-                          events={
-                            eventDict.get(datePipe(new Date(cardDate.getTime() - cardDate.getTimezoneOffset() * -60000))) ??
-                            []
-                          }
+                          events={eventDict.get(datePipe(cardDate)) ?? []}
                           teamTypes={allTeamTypes}
                         />
                       )}

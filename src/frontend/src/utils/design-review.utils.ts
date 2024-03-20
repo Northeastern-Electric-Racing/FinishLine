@@ -87,14 +87,6 @@ export const getWeekDateRange = (selectedDate: Date) => {
   return [startDate, endDate];
 };
 
-export const getHourFromDate = (currentDate: Date) => {
-  let hours = currentDate.getHours();
-  const amPm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  return `${hours}${amPm}`;
-};
-
 export const isConfirmed = (designReview: DesignReview): boolean => {
   return (
     designReview.status === DesignReviewStatus.CONFIRMED ||

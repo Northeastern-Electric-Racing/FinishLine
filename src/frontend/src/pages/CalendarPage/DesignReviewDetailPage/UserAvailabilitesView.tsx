@@ -1,21 +1,21 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { DesignReview, User, wbsPipe } from 'shared';
-import { HeatmapColors, getHourFromDate } from '../../../utils/design-review.utils';
+import { DesignReview, User } from 'shared';
+import { HeatmapColors } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import WarningIcon from '@mui/icons-material/Warning';
 import { useState } from 'react';
 import FinalizeDesignReviewDetailsModal from './FinalizeDesignReviewDetailsModal';
+import { DesignReviewEditData } from './DesignReviewDetailPage';
 
 interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
   currentUnavailableUsers: User[];
   usersToAvailabilities: Map<User, number[]>;
   designReview: DesignReview;
-  selectedDate: Date;
   conflictingDesignReviews: DesignReview[];
+  editPayload: DesignReviewEditData;
 }
 
 const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
@@ -23,17 +23,13 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentUnavailableUsers,
   usersToAvailabilities,
   designReview,
-  selectedDate,
-  conflictingDesignReviews
+  conflictingDesignReviews,
+  editPayload
 }) => {
   const theme = useTheme();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
   const totalUsers = usersToAvailabilities.size;
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
-  const designReviewConflicts = conflictingDesignReviews.map(
-    (designReview) =>
-      `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${getHourFromDate(designReview.dateScheduled)}`
-  );
 
   return (
     <Box
@@ -104,7 +100,6 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             gap: '10px'
           }}
         >
-          <WarningIcon style={{ color: 'yellow', fontSize: '2em', marginTop: '5px' }} />
           <NERFailButton>Cancel</NERFailButton>
           <NERSuccessButton
             variant="contained"
@@ -117,9 +112,9 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
           <FinalizeDesignReviewDetailsModal
             open={showFinalizeDesignReviewDetailsModal}
             setOpen={setShowFinalizeDesignReviewDetailsModal}
-            designReviewConflicts={designReviewConflicts}
+            conflictingDesignReviews={conflictingDesignReviews}
             designReview={designReview}
-            selectedDate={selectedDate}
+            editData={editPayload}
           />
         </Box>
       </Box>

@@ -83,7 +83,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     const day = data.date.getDay();
     const times = [];
-    for (let i = day * 12 + data.startTime; i <= day * 12 + data.endTime; i++) {
+    for (let i = day * 12 + data.startTime; i < day * 12 + data.endTime; i++) {
       times.push(i);
     }
     try {

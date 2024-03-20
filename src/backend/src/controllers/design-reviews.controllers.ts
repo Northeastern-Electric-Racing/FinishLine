@@ -69,7 +69,7 @@ export default class DesignReviewsController {
     try {
       const {
         dateScheduled,
-        teamType,
+        teamTypeId,
         requiredMembersIds,
         optionalMembersIds,
         isOnline,
@@ -91,7 +91,7 @@ export default class DesignReviewsController {
         user,
         designReviewId,
         dateScheduled,
-        teamType.teamTypeId,
+        teamTypeId,
         requiredMembersIds,
         optionalMembersIds,
         isOnline,

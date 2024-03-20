@@ -1,4 +1,15 @@
-import { Autocomplete, Box, Checkbox, Grid, TextField, useTheme } from '@mui/material';
+import {
+  Autocomplete,
+  Box,
+  Checkbox,
+  Grid,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography,
+  useTheme
+} from '@mui/material';
 import PageLayout from '../../../components/PageLayout';
 import AvailabilityView from './AvailabilityView';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -8,22 +19,30 @@ import { userToAutocompleteOption } from '../../../utils/teams.utils';
 import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import { DatePicker, TimePicker } from '@mui/x-date-pickers';
-import { DesignReview, User, UserWithScheduleSettings } from 'shared';
+import { DatePicker } from '@mui/x-date-pickers';
+import { DesignReview } from 'shared';
 import { useAllDesignReviews } from '../../../hooks/design-reviews.hooks';
-import { designReviewNamePipe } from '../../../utils/pipes';
+import { designReviewNamePipe, meetingStartTimePipe } from '../../../utils/pipes';
+import { HOURS } from '../../../utils/design-review.utils';
 
+export interface DesignReviewEditData {
+  requiredUserIds: number[];
+  optionalUserIds: number[];
+  selectedDate: Date;
+  startTime: number;
+  endTime: number;
+}
 interface DesignReviewDetailPageProps {
   designReview: DesignReview;
 }
 
 const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview }) => {
   const theme = useTheme();
-  const [requiredUsers, setRequiredUsers] = useState([].map(userToAutocompleteOption));
-  const [optionalUsers, setOptionalUsers] = useState([].map(userToAutocompleteOption));
-  const [date, setDate] = useState(new Date(`${new Date().toLocaleDateString()} 12:00:00`));
-
-  const usersToAvailabilities = new Map<User, number[]>();
+  const [requiredUsers, setRequiredUsers] = useState(designReview.requiredMembers.map(userToAutocompleteOption));
+  const [optionalUsers, setOptionalUsers] = useState(designReview.optionalMembers.map(userToAutocompleteOption));
+  const [date, setDate] = useState(designReview.dateScheduled);
+  const [startTime, setStateTime] = useState(0);
+  const [endTime, setEndTime] = useState(1);
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const {
@@ -37,7 +56,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
   if (allUsersIsLoading || !allUsers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
 
-  const users = allUsers.map(userToAutocompleteOption);
+  const users = allUsers.filter((user) => user.scheduleSettings).map(userToAutocompleteOption);
 
   const handleDateChange = (newDate: Date | null) => {
     if (newDate) {
@@ -46,10 +65,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       setDate(updatedDateTime);
     }
   };
-
-  designReview.confirmedMembers.forEach((user: UserWithScheduleSettings) => {
-    usersToAvailabilities.set(user, user.scheduleSettings?.availability ?? []);
-  });
 
   return (
     <PageLayout title="Scheduling">
@@ -68,7 +83,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             Name
           </Box>
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={6}>
           <Box
             sx={{
               padding: 1.5,
@@ -83,30 +98,48 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           </Box>
         </Grid>
         <Grid item xs={2}>
-          <DatePicker
-            label={'Date'}
-            value={setDate}
-            onChange={handleDateChange}
-            renderInput={(params) => <TextField {...params} />}
-          />
+          <DatePicker value={date} onChange={handleDateChange} renderInput={(params) => <TextField {...params} />} />
         </Grid>
-        <Grid item xs={2}>
-          <TimePicker
-            label={'Start Time'}
-            views={['hours']}
-            value={date}
-            onChange={(newTime) => {}}
-            renderInput={(params) => <TextField {...params} />}
-          />
-        </Grid>
-        <Grid item xs={2}>
-          <TimePicker
-            label={'End Time'}
-            views={['hours']}
-            value={date}
-            onChange={(newTime) => {}}
-            renderInput={(params) => <TextField {...params} />}
-          />
+        <Grid item xs={3} display="flex" gap={3}>
+          <Select
+            id="start-time-autocomplete"
+            displayEmpty
+            renderValue={(value) => meetingStartTimePipe([value])}
+            value={startTime}
+            onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
+            size={'small'}
+            placeholder={'Start Time'}
+            sx={{ height: 56, width: '100%', textAlign: 'left' }}
+          >
+            {HOURS.map((hour) => {
+              return (
+                <MenuItem key={hour} value={hour}>
+                  {meetingStartTimePipe([hour])}
+                </MenuItem>
+              );
+            })}
+          </Select>
+          <Typography minWidth={'20px'} display={'flex'} flexDirection="column" justifyContent="center">
+            to
+          </Typography>
+          <Select
+            id="end-time-autocomplete"
+            displayEmpty
+            renderValue={(value) => meetingStartTimePipe([value])}
+            value={endTime}
+            onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
+            size={'small'}
+            placeholder={'End Time'}
+            sx={{ height: 56, width: '100%', textAlign: 'left' }}
+          >
+            {HOURS.map((hour) => {
+              return (
+                <MenuItem key={hour} value={hour}>
+                  {meetingStartTimePipe([hour])}
+                </MenuItem>
+              );
+            })}
+          </Select>
         </Grid>
         <Grid item xs={12}>
           <Grid container spacing={2}>
@@ -127,7 +160,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               </Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
+              <Box sx={{ padding: 1, border: 1, borderColors: 'grey', borderRadius: 3, textAlign: 'center' }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
@@ -151,7 +184,12 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
                     </li>
                   )}
                   renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder={`${requiredUsers.length} users selected`} />
+                    <TextField
+                      {...params}
+                      InputProps={{ ...params.InputProps, disableUnderline: true }}
+                      variant="standard"
+                      placeholder={`${requiredUsers.length} users selected`}
+                    />
                   )}
                 />
               </Box>
@@ -173,7 +211,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               </Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ padding: 1, backgroundColor: 'grey', borderRadius: 3, textAlign: 'center' }}>
+              <Box sx={{ padding: 1, border: 1, borderColors: 'grey', borderRadius: 3, textAlign: 'center' }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
@@ -197,7 +235,12 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
                     </li>
                   )}
                   renderInput={(params) => (
-                    <TextField {...params} variant="standard" placeholder={`${optionalUsers.length} users selected`} />
+                    <TextField
+                      {...params}
+                      InputProps={{ ...params.InputProps, disableUnderline: true }}
+                      variant="standard"
+                      placeholder={`${optionalUsers.length} users selected`}
+                    />
                   )}
                 />
               </Box>
@@ -206,10 +249,16 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         </Grid>
       </Grid>
       <AvailabilityView
-        usersToAvailabilities={usersToAvailabilities}
+        editPayload={{
+          requiredUserIds: requiredUsers.map((option) => Number(option.id)),
+          optionalUserIds: optionalUsers.map((option) => Number(option.id)),
+          selectedDate: date,
+          startTime,
+          endTime
+        }}
         designReview={designReview}
-        selectedDate={date}
         allDesignReviews={allDesignReviews}
+        allUsers={allUsers}
       />
     </PageLayout>
   );
