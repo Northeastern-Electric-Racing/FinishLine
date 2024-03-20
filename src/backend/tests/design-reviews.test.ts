@@ -178,7 +178,7 @@ describe('Design Reviews', () => {
 
       await expect(() =>
         DesignReviewsService.editDesignReview(
-          batman, 
+          batman,
           designReview1.designReviewId,
           designReview1.dateScheduled,
           designReview1.teamTypeId,
