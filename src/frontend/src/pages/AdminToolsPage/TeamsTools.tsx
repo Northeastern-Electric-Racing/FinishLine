@@ -90,7 +90,7 @@ const TeamsTools = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'}>
         Team Management
       </Typography>
       <Grid container columnSpacing={2}>
