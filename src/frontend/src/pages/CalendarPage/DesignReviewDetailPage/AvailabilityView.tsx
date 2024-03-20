@@ -36,13 +36,12 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDe
 
   const conflictingDesignReviews = allDesignReviews.filter((currDr) => {
     const day = editPayload.selectedDate.getDay();
+    const adjustedDay = day === 0 ? 6 : day - 1;
     const times = [];
-    for (let i = day * 12 + editPayload.startTime; i <= day * 12 + editPayload.endTime; i++) {
+    for (let i = adjustedDay * 12 + editPayload.startTime; i < adjustedDay * 12 + editPayload.endTime; i++) {
       times.push(i);
     }
     const cleanDate = new Date(currDr.dateScheduled.getTime() - currDr.dateScheduled.getTimezoneOffset() * -60000);
-    if (currDr.designReviewId !== designReview.designReviewId)
-      console.log(cleanDate.toLocaleDateString() === selectedDate.toLocaleDateString());
     return (
       currDr.status === DesignReviewStatus.SCHEDULED &&
       cleanDate.toLocaleDateString() === selectedDate.toLocaleDateString() &&

@@ -59,8 +59,9 @@ const FinalizeDesignReviewDetailsModal = ({
 
   const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
     const day = editData.selectedDate.getDay();
+    const adjustedDay = day === 0 ? 6 : day - 1;
     const times = [];
-    for (let i = day * 12 + editData.startTime; i < day * 12 + editData.endTime; i++) {
+    for (let i = adjustedDay * 12 + editData.startTime; i < adjustedDay * 12 + editData.endTime; i++) {
       times.push(i);
     }
     try {
