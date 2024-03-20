@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User, UserScheduleSettings, UserSecureSettings } from 'shared';
+import { Project, User, UserScheduleSettings, UserSecureSettings, UserWithScheduleSettings } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -14,7 +14,7 @@ import { projectTransformer } from './transformers/projects.transformers';
  * Fetches all users.
  */
 export const getAllUsers = () => {
-  return axios.get<User[]>(apiUrls.users(), {
+  return axios.get<UserWithScheduleSettings[]>(apiUrls.users(), {
     transformResponse: (data) => JSON.parse(data).map(userTransformer)
   });
 };
