@@ -7,6 +7,7 @@ import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
+import { DesignReviewStatus } from 'shared';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,22 +39,24 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const missedDict: Map<number, number> = new Map();
 
   allDesignReviews.forEach((review) => {
-    review.attendees.forEach((member) => {
-      if (attendanceDict.has(member.userId)) {
-        attendanceDict.set(member.userId, attendanceDict.get(member.userId)! + 1);
-      } else {
-        attendanceDict.set(member.userId, 1);
-      }
-    });
-    review.requiredMembers.forEach((member) => {
-      if (!review.attendees.map((user) => user.userId).includes(member.userId)) {
-        if (missedDict.has(member.userId)) {
-          missedDict.set(member.userId, missedDict.get(member.userId)! + 1);
+    if (review.status === DesignReviewStatus.DONE) {
+      review.attendees.forEach((member) => {
+        if (attendanceDict.has(member.userId)) {
+          attendanceDict.set(member.userId, attendanceDict.get(member.userId)! + 1);
         } else {
-          missedDict.set(member.userId, 1);
+          attendanceDict.set(member.userId, 1);
         }
-      }
-    });
+      });
+      review.requiredMembers.forEach((member) => {
+        if (!review.attendees.map((user) => user.userId).includes(member.userId)) {
+          if (missedDict.has(member.userId)) {
+            missedDict.set(member.userId, missedDict.get(member.userId)! + 1);
+          } else {
+            missedDict.set(member.userId, 1);
+          }
+        }
+      });
+    }
   });
 
   const attendeeRows = filteredMembers.map((member, index) => (
