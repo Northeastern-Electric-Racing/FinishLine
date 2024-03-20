@@ -118,7 +118,7 @@ export const useDeleteDesignReview = (id: string) => {
     }
   );
 };
-      
+
 /**
  * Custom react hook to get a single design review
  *

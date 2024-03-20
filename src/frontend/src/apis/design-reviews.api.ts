@@ -58,7 +58,6 @@ export const getSingleDesignReview = async (id: string) => {
   });
 };
 
-
 /**
  * Deletes a design review
  * @param id the ID of the design review to delete
