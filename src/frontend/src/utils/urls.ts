@@ -137,6 +137,7 @@ const designReviewsCreate = () => `${designReviews()}/create`;
 const teamTypes = () => `${designReviews()}/teamType/all`;
 const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
+const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
 /**************** Other Endpoints ****************/
@@ -251,6 +252,7 @@ export const apiUrls = {
   designReviewsEdit,
   designReviewMarkUserConfirmed,
   teamTypes,
+  designReviewDelete,
 
   version
 };

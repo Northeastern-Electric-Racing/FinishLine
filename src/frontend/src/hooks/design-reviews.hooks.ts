@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { DesignReview, TeamType, WbsNumber, DesignReviewStatus } from 'shared';
 import {
+  deleteDesignReview,
   editDesignReview,
   createDesignReviews,
   getAllDesignReviews,
@@ -96,6 +97,26 @@ export const useAllTeamTypes = () => {
     const { data } = await getAllTeamTypes();
     return data;
   });
+};
+
+/**
+ * Custom react hook to delete a design review
+ */
+
+export const useDeleteDesignReview = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error>(
+    ['design-reviews', 'delete'],
+    async () => {
+      const { data } = await deleteDesignReview(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+      }
+    }
+  );
 };
 
 /**
