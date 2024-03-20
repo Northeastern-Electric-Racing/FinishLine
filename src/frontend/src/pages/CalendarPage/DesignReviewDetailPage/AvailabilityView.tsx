@@ -41,6 +41,8 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDe
       times.push(i);
     }
     const cleanDate = new Date(currDr.dateScheduled.getTime() - currDr.dateScheduled.getTimezoneOffset() * -60000);
+    if (currDr.designReviewId !== designReview.designReviewId)
+      console.log(cleanDate.toLocaleDateString() === selectedDate.toLocaleDateString());
     return (
       currDr.status === DesignReviewStatus.SCHEDULED &&
       cleanDate.toLocaleDateString() === selectedDate.toLocaleDateString() &&
@@ -49,9 +51,10 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDe
     );
   });
 
-  currentWeekDesignReviews.forEach((designReview) =>
-    designReview.meetingTimes.forEach((meetingTime) => {
-      if (designReview.status === DesignReviewStatus.SCHEDULED) existingMeetingData.set(meetingTime, 'build');
+  currentWeekDesignReviews.forEach((dr) =>
+    dr.meetingTimes.forEach((meetingTime) => {
+      if (dr.status === DesignReviewStatus.SCHEDULED && dr.designReviewId !== designReview.designReviewId)
+        existingMeetingData.set(meetingTime, dr.teamType.iconName);
     })
   );
 

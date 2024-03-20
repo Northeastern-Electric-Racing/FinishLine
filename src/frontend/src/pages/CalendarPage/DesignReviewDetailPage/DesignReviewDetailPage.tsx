@@ -40,7 +40,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const theme = useTheme();
   const [requiredUsers, setRequiredUsers] = useState(designReview.requiredMembers.map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState(designReview.optionalMembers.map(userToAutocompleteOption));
-  const [date, setDate] = useState(designReview.dateScheduled);
+  const [date, setDate] = useState(
+    new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
+  );
   const [startTime, setStateTime] = useState(0);
   const [endTime, setEndTime] = useState(1);
 
