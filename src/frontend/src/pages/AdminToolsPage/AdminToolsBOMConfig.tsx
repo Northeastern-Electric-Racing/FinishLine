@@ -7,7 +7,7 @@ import { Box } from '@mui/system';
 const AdminToolsBOMConfig: React.FC = () => {
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'}>
         Bill of Materials Config
       </Typography>
       <Grid container spacing="3%">

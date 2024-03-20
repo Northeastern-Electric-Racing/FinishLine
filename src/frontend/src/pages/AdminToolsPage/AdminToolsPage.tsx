@@ -16,6 +16,7 @@ import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
 import { useState } from 'react';
 import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
+import { Box } from '@mui/material';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -66,13 +67,16 @@ const AdminToolsPage: React.FC = () => {
     <PageLayout
       title="Admin Tools"
       tabs={
-        <NERTabs
-          setTab={setTabIndex}
-          tabsLabels={tabs}
-          baseUrl={routes.ADMIN_TOOLS}
-          defaultTab={defaultTab}
-          id="admin-tools-tabs"
-        />
+        <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
+          <NERTabs
+            noUnderline
+            setTab={setTabIndex}
+            tabsLabels={tabs}
+            baseUrl={routes.ADMIN_TOOLS}
+            defaultTab={defaultTab}
+            id="admin-tools-tabs"
+          />
+        </Box>
       }
     >
       {tabIndex === 0 ? (
