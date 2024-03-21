@@ -6,7 +6,11 @@ const designReviewQueryArgs = Prisma.validator<Prisma.Design_ReviewArgs>()({
     teamType: true,
     requiredMembers: true,
     optionalMembers: true,
-    confirmedMembers: true,
+    confirmedMembers: {
+      include: {
+        drScheduleSettings: true
+      }
+    },
     deniedMembers: true,
     attendees: true,
     userDeleted: true,
