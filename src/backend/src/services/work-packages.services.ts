@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -707,5 +707,18 @@ export default class WorkPackagesService {
     );
 
     return;
+  }
+
+  static async getSingleWorkPackageTemplate(wpt: string): Promise<Work_Package_Template> {
+    const wp = await prisma.work_Package_Template.findFirst({
+      where: {
+        dateDeleted: null,
+        workPackageTemplateId: wpt
+      }
+    });
+
+    if (!wp) throw new HttpException(400, `Work package template with id ${wpt} not found`);
+
+    return workPackageTransformer(wp);
   }
 }

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
+import { Work_Package_Template } from '@prisma/client';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -142,6 +143,16 @@ export default class WorkPackagesController {
       const { deadline } = req.body;
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+  static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { workPackageTemplateId } = req.params;
+      const wpt: Work_Package_Template = await WorkPackagesService.getSingleWorkPackageTemplate(workPackageTemplateId);
+
+      res.status(200).json(wpt);
     } catch (error: unknown) {
       next(error);
     }
