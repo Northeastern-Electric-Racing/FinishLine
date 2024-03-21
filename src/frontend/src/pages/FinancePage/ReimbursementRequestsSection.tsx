@@ -1,7 +1,7 @@
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { ReimbursementRequest, isAdmin, Vendor, ReimbursementStatusType } from 'shared';
+import { ReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import {
   centsToDollar,
@@ -13,10 +13,17 @@ import {
 } from '../../utils/pipes';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
-import { cleanReimbursementRequestStatus, createReimbursementRequestRowData } from '../../utils/reimbursement-request.utils';
+import {
+  descendingComparator,
+  statusDescendingComparator,
+  vendorDescendingComparator,
+  submitterDescendingComparator,
+  cleanReimbursementRequestStatus,
+  createReimbursementRequestRowData
+} from '../../utils/reimbursement-request.utils';
 import { ReimbursementRequestRow } from '../../../../shared/src/types/reimbursement-requests-types';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import { User } from '../../../../shared/src/types/user-types';
+// import TableSortLabel from '@mui/material/TableSortLabel';
+import ColumnHeader from './FinanceComponents/ColumnHeader';
 
 interface ReimbursementRequestTableProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -43,59 +50,6 @@ const ReimbursementRequestTable = ({
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
-  const descendingComparator = <T,>(a: T, b: T, orderBy: keyof T) => {
-    if (b[orderBy] < a[orderBy]) {
-      return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-      return 1;
-    }
-    return 0;
-  };
-
-  const statusDescendingComparator = (a: ReimbursementStatusType, b: ReimbursementStatusType) => {
-    const statusOrder = new Map<ReimbursementStatusType, number>([
-      [ReimbursementStatusType.PENDING_FINANCE, 1],
-      [ReimbursementStatusType.SABO_SUBMITTED, 2],
-      [ReimbursementStatusType.ADVISOR_APPROVED, 3],
-      [ReimbursementStatusType.REIMBURSED, 4],
-      [ReimbursementStatusType.DENIED, 5]
-    ]);
-
-    const bConverted = statusOrder.get(b);
-    const aConverted = statusOrder.get(a);
-
-    if (bConverted !== undefined && aConverted !== undefined) {
-      if (bConverted < aConverted) {
-        return -1;
-      }
-      if (bConverted > aConverted) {
-        return 1;
-      }
-    }
-    return 0;
-  };
-
-  const vendorDescendingComparator = (a: Vendor, b: Vendor) => {
-    if (b.name < a.name) {
-      return -1;
-    }
-    if (b.name > a.name) {
-      return 1;
-    }
-    return 0;
-  };
-
-  const submitterDescendingComparator = (a: User, b: User) => {
-    if (b.firstName < a.firstName) {
-      return -1;
-    }
-    if (b.firstName > a.firstName) {
-      return 1;
-    }
-    return 0;
-  };
-
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
     if (orderBy === 'vendor') {
       return !isAscendingOrder
@@ -120,11 +74,6 @@ const ReimbursementRequestTable = ({
 
   const tabs = [{ label: 'My Requests', value: 0 }];
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Requests', value: 1 });
-
-  const handleRequestSort = (property: keyof ReimbursementRequestRow) => {
-    setAscendingOrder(!isAscendingOrder);
-    setOrderBy(property);
-  };
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
@@ -171,19 +120,14 @@ const ReimbursementRequestTable = ({
               {headCells.map((headCell, i) => {
                 if (tabValue === 1 || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) {
                   return (
-                    <TableCell
-                      align="center"
-                      sx={{ fontSize: '16px', fontWeight: 600 }}
-                      sortDirection={orderBy === headCell.id ? (isAscendingOrder ? 'asc' : 'desc') : false}
-                    >
-                      <TableSortLabel
-                        active={orderBy === headCell.id}
-                        direction={orderBy === headCell.id ? (isAscendingOrder ? 'asc' : 'desc') : 'asc'}
-                        onClick={() => handleRequestSort(headCell.id)}
-                      >
-                        {headCell.label}
-                      </TableSortLabel>
-                    </TableCell>
+                    <ColumnHeader
+                      id={headCell.id}
+                      title={headCell.label}
+                      setAscendingOrder={setAscendingOrder}
+                      isAscendingOrder={isAscendingOrder}
+                      setOrderBy={setOrderBy}
+                      orderBy={orderBy}
+                    />
                   );
                 } else {
                   return null;

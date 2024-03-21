@@ -6,6 +6,8 @@ import {
   ReimbursementRequestRow,
   ReimbursementStatus,
   ReimbursementStatusType,
+  User,
+  Vendor,
   WBSElementData,
   WbsNumber,
   wbsPipe
@@ -29,6 +31,59 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
     }
   });
   return uniqueWbsElementsWithProducts;
+};
+
+export const descendingComparator = <T>(a: T, b: T, orderBy: keyof T) => {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+};
+
+export const statusDescendingComparator = (a: ReimbursementStatusType, b: ReimbursementStatusType) => {
+  const statusOrder = new Map<ReimbursementStatusType, number>([
+    [ReimbursementStatusType.PENDING_FINANCE, 1],
+    [ReimbursementStatusType.SABO_SUBMITTED, 2],
+    [ReimbursementStatusType.ADVISOR_APPROVED, 3],
+    [ReimbursementStatusType.REIMBURSED, 4],
+    [ReimbursementStatusType.DENIED, 5]
+  ]);
+
+  const bConverted = statusOrder.get(b);
+  const aConverted = statusOrder.get(a);
+
+  if (bConverted !== undefined && aConverted !== undefined) {
+    if (bConverted < aConverted) {
+      return -1;
+    }
+    if (bConverted > aConverted) {
+      return 1;
+    }
+  }
+  return 0;
+};
+
+export const vendorDescendingComparator = (a: Vendor, b: Vendor) => {
+  if (b.name < a.name) {
+    return -1;
+  }
+  if (b.name > a.name) {
+    return 1;
+  }
+  return 0;
+};
+
+export const submitterDescendingComparator = (a: User, b: User) => {
+  if (b.firstName < a.firstName) {
+    return -1;
+  }
+  if (b.firstName > a.firstName) {
+    return 1;
+  }
+  return 0;
 };
 
 export const getAllWbsElements = (projects: Project[]): { wbsNum: WbsNumber; wbsName: string }[] => {
