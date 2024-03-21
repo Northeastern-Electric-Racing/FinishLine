@@ -55,7 +55,6 @@ const AccountCodesTable = () => {
       onClick={() => {
         setClickedAccountCode(expenseType);
       }}
-      key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell
@@ -118,6 +117,7 @@ const AccountCodesTable = () => {
   return (
     <Box>
       <CreateAccountCodeModal showModal={showCreateModal} handleClose={() => setShowCreateModal(false)} />
+      <DeleteAccountCodeModal />
       {clickedAccountCode && (
         <EditAccountCodeModal
           showModal={showEditModal}
