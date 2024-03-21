@@ -48,10 +48,10 @@ const ReimbursementRequestTable = ({
           <TableHead>
             <TableRow>
               {tabValue === 1 && <ColumnHeader title="Recipient" />}
+              <ColumnHeader title="" />
               <ColumnHeader title="Sabo ID" />
               <ColumnHeader title="Amount ($)" />
               <ColumnHeader title="Date Submitted" />
-              <ColumnHeader title="ID" />
               <ColumnHeader title="Date Submitted To Sabo" />
               <ColumnHeader title="Vendor" />
               {tabValue === 1 && <ColumnHeader title="Refund Source" />}
@@ -67,10 +67,10 @@ const ReimbursementRequestTable = ({
                 sx={{ textDecoration: 'none', '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
+                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
-                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
                 <TableCell align="center">{row.vendor.name}</TableCell>
                 {tabValue === 1 && <TableCell align="center">{codeAndRefundSourceName(row.refundSource)}</TableCell>}
