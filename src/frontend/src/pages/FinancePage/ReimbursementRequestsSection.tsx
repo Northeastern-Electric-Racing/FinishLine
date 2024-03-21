@@ -117,9 +117,9 @@ const ReimbursementRequestTable = ({
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              {headCells.map((headCell, i) => {
-                if (tabValue === 1 || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) {
-                  return (
+              {headCells.map(
+                (headCell, i) =>
+                  (tabValue === 1 || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) && (
                     <ColumnHeader
                       id={headCell.id}
                       title={headCell.label}
@@ -128,11 +128,8 @@ const ReimbursementRequestTable = ({
                       setOrderBy={setOrderBy}
                       orderBy={orderBy}
                     />
-                  );
-                } else {
-                  return null;
-                }
-              })}
+                  )
+              )}
             </TableRow>
           </TableHead>
           <TableBody>
