@@ -82,7 +82,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               defaultValue={control._defaultValues.status}
               render={({ field }) => (
                 <TextField {...field} select variant="outlined" error={!!errors.status} helperText={errors.status?.message}>
-                  {['ORDERED', 'UNORDERED', 'SHIPPED', 'RECEIVED'].map((status) => (
+                  {['ORDERED', 'NOT_READY_TO_ORDER', 'SHIPPED', 'RECEIVED', 'READY_TO_ORDER'].map((status) => (
                     <MenuItem key={status} value={status}>
                       {status}
                     </MenuItem>

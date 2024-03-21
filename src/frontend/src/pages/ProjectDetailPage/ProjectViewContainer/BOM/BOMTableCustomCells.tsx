@@ -15,7 +15,7 @@ const getStatusColor = (status: MaterialStatus) => {
   switch (status) {
     case MaterialStatus.Ordered:
       return '#dba63e';
-    case MaterialStatus.Unordered:
+    case MaterialStatus.NotReadyToOrder:
       return '#a63737';
     case MaterialStatus.Received:
       return '#2a712a';
