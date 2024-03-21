@@ -1,3 +1,4 @@
+import { Design_Review_Status } from '@prisma/client';
 import { body, ValidationChain } from 'express-validator';
 import { ClubAccount, MaterialStatus } from 'shared';
 import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
@@ -72,4 +73,15 @@ export const isMaterialStatus = (validationObject: ValidationChain): ValidationC
   return validationObject
     .isString()
     .isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered, MaterialStatus.Shipped]);
+};
+
+export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      Design_Review_Status.CONFIRMED,
+      Design_Review_Status.DONE,
+      Design_Review_Status.SCHEDULED,
+      Design_Review_Status.UNCONFIRMED
+    ]);
 };

@@ -14,6 +14,7 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import NavPageLink from './NavPageLink';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
@@ -61,6 +62,11 @@ const Sidebar = ({ defaultOpen = false }: SidebarProps) => {
       name: 'Teams',
       icon: <GroupIcon />,
       route: routes.TEAMS
+    },
+    {
+      name: 'Calendar',
+      icon: <CalendarTodayIcon />,
+      route: routes.CALENDAR
     },
     {
       name: 'Info',
