@@ -6,7 +6,7 @@
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { isLeadership, isHead, ChangeRequest, ChangeRequestRowInfo, Project, WorkPackage, equalsWbsNumber } from 'shared';
+import { isLeadership, isHead, ChangeRequest, Project, WorkPackage, equalsWbsNumber } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -77,18 +77,18 @@ const ChangeRequestsOverview: React.FC = () => {
     )
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crToReviewRow: ChangeRequestRowInfo = {
+  const crToReviewRow = {
     title: 'To Review',
     changeRequests: crToReview,
     noChangeRequestsMessage: 'No change requests to review'
   };
-  const crUnreviewedRow: ChangeRequestRowInfo = {
+  const crUnreviewedRow = {
     title: 'My Un-reviewed Change Requests',
     changeRequests: crUnreviewed,
     noChangeRequestsMessage: 'No un-reviewed change requests'
   };
 
-  const crApprovedRow: ChangeRequestRowInfo = {
+  const crApprovedRow = {
     title: 'My Recently Approved Change Requests',
     changeRequests: crApproved,
     noChangeRequestsMessage: 'No recently approved change requests'
@@ -99,8 +99,12 @@ const ChangeRequestsOverview: React.FC = () => {
 
   return (
     <>
-      {overviewRowList.map((crRow: ChangeRequestRowInfo) => (
-        <ChangeRequestRow cr={crRow} />
+      {overviewRowList.map((crRow) => (
+        <ChangeRequestRow
+          title={crRow.title}
+          changeRequests={crRow.changeRequests}
+          noChangeRequestsMessage={crRow.noChangeRequestsMessage}
+        />
       ))}
     </>
   );

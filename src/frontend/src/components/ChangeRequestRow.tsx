@@ -5,10 +5,16 @@
 
 import { Typography, Grid, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
-import { ChangeRequest, ChangeRequestRowInfo } from 'shared/src/types/change-request-types';
+import { ChangeRequest } from 'shared/src/types/change-request-types';
 import ChangeRequestDetailCard from './ChangeRequestDetailCard';
 
-const ChangeRequestRow = ({ cr }: { cr: ChangeRequestRowInfo }) => {
+interface ChangeRequestRowProps {
+  title: string;
+  changeRequests: ChangeRequest[];
+  noChangeRequestsMessage: string;
+}
+
+const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeRequests, noChangeRequestsMessage }) => {
   const theme = useTheme();
 
   const displayCRCards = (crList: ChangeRequest[]) => (
@@ -54,6 +60,6 @@ const ChangeRequestRow = ({ cr }: { cr: ChangeRequestRowInfo }) => {
     );
   };
 
-  return <Box>{renderChangeRequests(cr.title, cr.changeRequests, cr.noChangeRequestsMessage)}</Box>;
+  return <Box>{renderChangeRequests(title, changeRequests, noChangeRequestsMessage)}</Box>;
 };
 export default ChangeRequestRow;

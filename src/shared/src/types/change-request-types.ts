@@ -105,9 +105,3 @@ export interface ProposedSolutionCreateArgs {
   budgetImpact: number;
   timelineImpact: number;
 }
-
-export interface ChangeRequestRowInfo {
-  title: string;
-  changeRequests: ChangeRequest[];
-  noChangeRequestsMessage: string;
-}
