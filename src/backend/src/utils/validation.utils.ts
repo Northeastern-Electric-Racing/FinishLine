@@ -1,9 +1,17 @@
+import { Design_Review_Status } from '@prisma/client';
 import { body, ValidationChain } from 'express-validator';
 import { ClubAccount, MaterialStatus } from 'shared';
 import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
+};
+
+export const decimalMinZero = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isDecimal()
+    .custom((value) => parseFloat(value) >= 0)
+    .withMessage('Value must be greater than or equal to zero');
 };
 
 //Const to return if an input is a string and is not empty
@@ -52,6 +60,7 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
       WorkPackageStage.Design,
       WorkPackageStage.Manufacturing,
       WorkPackageStage.Install,
+      WorkPackageStage.Testing,
       'NONE'
     ]);
 };
@@ -64,4 +73,15 @@ export const isMaterialStatus = (validationObject: ValidationChain): ValidationC
   return validationObject
     .isString()
     .isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered, MaterialStatus.Shipped]);
+};
+
+export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      Design_Review_Status.CONFIRMED,
+      Design_Review_Status.DONE,
+      Design_Review_Status.SCHEDULED,
+      Design_Review_Status.UNCONFIRMED
+    ]);
 };

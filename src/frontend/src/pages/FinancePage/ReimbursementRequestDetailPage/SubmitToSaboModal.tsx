@@ -1,5 +1,5 @@
 import NERModal from '../../../components/NERModal';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, Stack } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
@@ -7,8 +7,9 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { centsToDollar, datePipe } from '../../../utils/pipes';
 import DetailDisplay from '../../../components/DetailDisplay';
-import { imagePreviewUrl } from '../../../utils/reimbursement-request.utils';
+import { imagePreviewUrl, isReimbursementRequestSaboSubmitted } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -23,7 +24,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
-
+  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
   if (!user.isFinance) return <></>;
   if (isLoading || !userInfo) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -57,8 +58,9 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       open={open}
       onHide={() => setOpen(false)}
       title="Input these fields into the Sabo Form"
-      cancelText="Cancel"
-      submitText="Submit to Sabo"
+      submitText={isSaboSubmitted ? '' : 'Submit to Sabo'}
+      showCloseButton={isSaboSubmitted}
+      hideFormButtons={isSaboSubmitted}
       onSubmit={() => handleSubmitToSabo()}
     >
       <Grid container spacing={1}>
@@ -108,10 +110,32 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <DetailDisplay label="Business Purpose" content={filteredProductsNames} />
         </Grid>
         <Grid item xs={6}>
-          <DetailDisplay label="SABO Form Index" content="800462" />
+          <DetailDisplay label="SABO Form Index" content={codeAndRefundSourceName(reimbursementRequest.account)} />
         </Grid>
         <Grid item xs={6}>
           <DetailDisplay label="Expense Type" content={`${expenseType.code} - ${expenseType.name}`} />
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={4}>
+          <Typography sx={{ fontWeight: 'bold' }}>Treasurer:</Typography>
+        </Grid>
+        <Grid item xs={8}>
+          <Stack>
+            <Typography>Brody Pearlman</Typography>
+            <Typography>pearlman.br@northeastern.edu</Typography>
+          </Stack>
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={4}>
+          <Typography sx={{ fontWeight: 'bold' }}>Club Advisor:</Typography>
+        </Grid>
+        <Grid item xs={8}>
+          <Stack>
+            <Typography>Andrew Gouldstone</Typography>
+            <Typography>a.gouldstone@northeastern.edu</Typography>
+          </Stack>
         </Grid>
       </Grid>
       <Box sx={{ maxHeight: `250px`, marginTop: 2 }}>

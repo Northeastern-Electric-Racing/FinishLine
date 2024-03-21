@@ -41,6 +41,19 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
           approved: false
         }
       ]
+    : query.get('timelineDelay')
+    ? [
+        {
+          id: '',
+          description: 'Timeline Delay',
+          budgetImpact: 0,
+          timelineImpact: Number(query.get('timelineDelay')),
+          scopeImpact: 'No Changes',
+          createdBy: user,
+          dateCreated: new Date(),
+          approved: false
+        }
+      ]
     : [];
   const [proposedSolutions, setProposedSolutions] = useState<ProposedSolution[]>(defaultProposedSolution);
   const [wbsNum, setWbsNum] = useState(query.get('wbsNum') || '');
@@ -52,7 +65,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   const handleConfirm = async (data: FormInput) => {
     const requestHasASolution: boolean = proposedSolutions.length !== 0;
     try {
-      if (!requestHasASolution) throw new Error('Error: You must have at least one Proposed Solution Added');
+      if (!requestHasASolution) throw new Error('You must have at least one proposed solution added!');
       await mutateAsync({
         ...data,
         wbsNum: validateWBS(wbsNum),

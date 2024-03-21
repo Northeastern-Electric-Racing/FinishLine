@@ -31,6 +31,7 @@ export interface Receipt {
 
 export interface ReimbursementRequest {
   reimbursementRequestId: string;
+  identifier: number;
   saboId?: number;
   dateCreated: Date;
   dateDeleted?: Date;
@@ -68,6 +69,7 @@ export interface ReimbursementProduct {
 export interface Vendor {
   vendorId: string;
   dateCreated: Date;
+  dateDeleted?: Date;
   name: string;
 }
 
@@ -77,6 +79,7 @@ export interface ExpenseType {
   code: number;
   allowed: boolean;
   allowedRefundSources: ClubAccount[];
+  dateDeleted?: Date;
 }
 
 export interface ReimbursementProductCreateArgs {

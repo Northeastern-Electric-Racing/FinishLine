@@ -22,6 +22,8 @@ const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
+const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -32,6 +34,7 @@ const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
 const projectsLinkTypes = () => `${projects()}/link-types`;
+const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -128,6 +131,15 @@ const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
 const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
 const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 
+/************** Design Review Endpoints *******************************/
+const designReviews = () => `${API_URL}/design-reviews`;
+const designReviewsCreate = () => `${designReviews()}/create`;
+const teamTypes = () => `${designReviews()}/teamType/all`;
+const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
+const designReviewById = (id: string) => `${designReviews()}/${id}`;
+const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
+const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -142,6 +154,8 @@ export const apiUrls = {
   userRoleByUserId,
   userFavoriteProjects,
   userSecureSettings,
+  userScheduleSettings,
+  userScheduleSettingsSet,
 
   projects,
   projectsByWbsNum,
@@ -151,6 +165,7 @@ export const apiUrls = {
   projectsDelete,
   projectsToggleFavorite,
   projectsLinkTypes,
+  projectsCreateLinkTypes,
 
   tasksCreate,
   tasks,
@@ -230,6 +245,14 @@ export const apiUrls = {
   bomCreateManufacturer,
   bomCreateMaterialType,
   bomCreateUnit,
+
+  designReviews,
+  designReviewsCreate,
+  designReviewById,
+  designReviewsEdit,
+  designReviewMarkUserConfirmed,
+  teamTypes,
+  designReviewDelete,
 
   version
 };

@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, TextField } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, Select, TextField } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -6,18 +6,20 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDownloadPDFOfImages } from '../../../hooks/finance.hooks';
-import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { ReimbursementRequest } from 'shared';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   startDate: yup.date().required('Start Date is required'),
-  endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required')
+  endDate: yup.date().min(yup.ref('startDate'), `end date can't be before start date`).required('End Date is required'),
+  refundSource: yup.string().required()
 });
 
 interface GenerateReceiptsFormInput {
   startDate: Date;
   endDate: Date;
+  refundSource: string;
 }
 
 interface GenerateReceiptsModalProps {
@@ -28,13 +30,17 @@ interface GenerateReceiptsModalProps {
 
 const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: GenerateReceiptsModalProps) => {
   const toast = useToast();
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
+
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
 
   const { mutateAsync, isLoading } = useDownloadPDFOfImages();
 
+  const refundSourceOptions = ['BUDGET', 'CASH', 'BOTH'];
+
   const onGenerateReceiptsSubmit = async (data: GenerateReceiptsFormInput) => {
     if (!allReimbursementRequests) return;
+
     const filteredRequests = allReimbursementRequests
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) >= new Date(data.startDate.toDateString())
@@ -42,11 +48,20 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
       .filter(
         (val: ReimbursementRequest) => new Date(val.dateCreated.toDateString()) <= new Date(data.endDate.toDateString())
       )
-      .filter((val: ReimbursementRequest) => !val.dateDeleted);
+      .filter((val: ReimbursementRequest) => !val.dateDeleted)
+      .filter(
+        (val: ReimbursementRequest) =>
+          !val.dateDeleted && (data.refundSource === 'BOTH' || val.account === data.refundSource)
+      );
+
     const receipts = filteredRequests?.flatMap((request: ReimbursementRequest) => request.receiptPictures);
+
     try {
       await mutateAsync({
-        fileIds: receipts.map((receipt) => receipt.googleFileId)
+        fileIds: receipts.map((receipt) => receipt.googleFileId),
+        startDate: data.startDate,
+        endDate: data.endDate,
+        refundSource: data.refundSource
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -62,7 +77,12 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
     reset,
     formState: { errors, isValid }
   } = useForm({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      startDate: new Date(),
+      endDate: new Date(),
+      refundSource: refundSourceOptions[2]
+    }
   });
 
   return (
@@ -137,6 +157,22 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                     />
                   )}
                 />
+              )}
+            />
+          </FormControl>
+          <FormControl fullWidth>
+            <FormLabel>Receipt Type</FormLabel>
+            <Controller
+              name="refundSource"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select value={value} onChange={(event) => onChange(event.target.value)}>
+                  {refundSourceOptions.map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status}
+                    </MenuItem>
+                  ))}
+                </Select>
               )}
             />
           </FormControl>

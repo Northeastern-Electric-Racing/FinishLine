@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link, Typography, useTheme } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -20,6 +20,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { useState } from 'react';
 import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
 import { fullNamePipe } from '../../../../utils/pipes';
@@ -88,20 +89,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
     setAssignees([]);
     onAddCancel();
   };
-
-  const renderNotes = (params: GridRenderCellParams<Task>) =>
-    params.id === -1 ? (
-      <Link color="#808080">See Notes</Link>
-    ) : (
-      <Link
-        onClick={() => {
-          setSelectedTask(params.row.task);
-          setModalShow(true);
-        }}
-      >
-        See Notes
-      </Link>
-    );
 
   const renderAssignees = (params: GridRenderCellParams) => {
     let assigneeString = '';
@@ -251,6 +238,16 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             disabled={!editTaskPermissions(params.row.task)}
           />
         );
+        actions.push(
+          <GridActionsCellItem
+            icon={<DescriptionIcon fontSize="small" />}
+            label="notes"
+            onClick={() => {
+              setSelectedTask(params.row.task);
+              setModalShow(true);
+            }}
+          />
+        );
       }
     }
     return actions;
@@ -273,13 +270,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       width: 90,
       renderEditCell: renderTitleEdit,
       editable: true
-    },
-    {
-      ...baseColDef,
-      flex: 1,
-      field: 'notes',
-      headerName: 'Notes',
-      renderCell: renderNotes
     },
     {
       ...baseColDef,
@@ -311,9 +301,9 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       editable: true
     },
     {
+      flex: 1,
       field: 'actions',
       type: 'actions',
-      headerName: 'Actions',
       width: 70,
       getActions
     }

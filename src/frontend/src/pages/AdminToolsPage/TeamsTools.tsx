@@ -1,5 +1,6 @@
-import { Box, FormControl, FormLabel, Grid, TableCell, TableRow } from '@mui/material';
-import PageBlock from '../../layouts/PageBlock';
+import { Box, FormControl, FormLabel, Grid, TableCell, TableRow, Typography } from '@mui/material';
+import { routes } from '../../utils/routes';
+import { Link as RouterLink } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { useAllTeams, useCreateTeam } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -78,7 +79,7 @@ const TeamsTools = () => {
     .map(userToAutocompleteOption);
 
   const teamTableRows = allTeams.map((team) => (
-    <TableRow>
+    <TableRow component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`} sx={{ color: 'inherit', textDecoration: 'none' }}>
       <TableCell sx={{ border: '2px solid black' }}>{team.teamName}</TableCell>
       <TableCell sx={{ border: '2px solid black' }}>{fullNamePipe(team.head)}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black' }}>
@@ -88,7 +89,10 @@ const TeamsTools = () => {
   ));
 
   return (
-    <PageBlock title="Team Management">
+    <Box>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'}>
+        Team Management
+      </Typography>
       <Grid container columnSpacing={2}>
         <Grid item xs={12} md={6}>
           <form
@@ -152,7 +156,7 @@ const TeamsTools = () => {
           />
         </Grid>
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 
