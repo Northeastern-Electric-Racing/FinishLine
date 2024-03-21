@@ -21,6 +21,8 @@ const getStatusColor = (status: MaterialStatus) => {
       return '#2a712a';
     case MaterialStatus.Shipped:
       return '#1b537a';
+    case MaterialStatus.ReadyToOrder:
+      return '#50C878';
     default:
       return 'grey';
   }
