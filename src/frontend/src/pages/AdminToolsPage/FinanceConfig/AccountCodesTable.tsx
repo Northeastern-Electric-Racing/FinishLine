@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Typography, Box } from '@mui/material';
+import { TableRow, TableCell, Typography, Box, IconButton } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
@@ -9,6 +9,8 @@ import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
+import DeleteIcon from '@mui/icons-material/Delete';
+import NERModal from '../../../components/NERModal';
 
 const AccountCodesTable = () => {
   const {
@@ -20,6 +22,7 @@ const AccountCodesTable = () => {
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [clickedAccountCode, setClickedAccountCode] = useState<ExpenseType>();
+  const [showDeleteAccountCodeModal, setShowDeleteAccountCodeModal] = useState(false);
 
   if (!expenseTypes || expenseTypesIsLoading) {
     return <LoadingIndicator />;
@@ -29,24 +32,85 @@ const AccountCodesTable = () => {
     return <ErrorPage message={expenseTypesError.message} />;
   }
 
+  const handleDeleteAccountCode = () => {};
+
+  const DeleteAccountCodeModal = () => {
+    return (
+      <NERModal
+        open={showDeleteAccountCodeModal}
+        onHide={() => setShowDeleteAccountCodeModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleDeleteAccountCode}
+      >
+        <Typography>Are you sure you want to delete this account code?</Typography>
+      </NERModal>
+    );
+  };
+
   const accountCodesTableRows = expenseTypes.map((expenseType, index) => (
     <TableRow
+      key={`account-code-${index}`}
       onClick={() => {
         setClickedAccountCode(expenseType);
-        setShowEditModal(true);
       }}
       key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell sx={{ border: '2px solid black' }}>{expenseType.name}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{expenseType.code}</TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell
+        onClick={() => {
+          setShowEditModal(true);
+        }}
+        sx={{ border: '2px solid black' }}
+      >
+        {expenseType.name}
+      </TableCell>
+      <TableCell
+        onClick={() => {
+          setShowEditModal(true);
+        }}
+        sx={{ border: '2px solid black' }}
+      >
+        {expenseType.code}
+      </TableCell>
+      <TableCell
+        align="left"
+        onClick={() => {
+          setShowEditModal(true);
+        }}
+        sx={{ border: '2px solid black' }}
+      >
         <Typography>{expenseType.allowed ? 'Yes' : 'No'}</Typography>
       </TableCell>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+      <TableCell
+        align="left"
+        onClick={() => {
+          setShowEditModal(true);
+        }}
+        sx={{ border: '2px solid black' }}
+      >
         {expenseType.allowedRefundSources.map((refundSource, idx) => (
           <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
         ))}
+      </TableCell>
+      <TableCell align="left" sx={{ border: '2px solid black' }}>
+        <IconButton
+          type="button"
+          sx={{
+            mx: 1,
+            color: 'red',
+            marginLeft: '15px',
+            marginTop: '3px',
+            borderRadius: '4px',
+            outline: 'solid'
+          }}
+          onClick={() => {
+            setShowDeleteAccountCodeModal(true);
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
       </TableCell>
     </TableRow>
   ));
