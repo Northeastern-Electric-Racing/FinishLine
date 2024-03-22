@@ -59,7 +59,7 @@ export const mockUseQueryResult = <Return>(isLoading: boolean, isError: boolean,
   } as UseQueryResult<Return, Error>;
 };
 
-export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolean, input: Input, err?: Error) => {
+export const mockUseMutationResult = <Input, Payload>(isLoading: boolean, isError: boolean, input: Input, err?: Error) => {
   return {
     error: err ?? null,
     isError,
@@ -77,7 +77,7 @@ export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolea
     mutateAsync: () => {
       return new Promise((_res, _rej) => 5);
     }
-  } as UseMutationResult<Input, Error>;
+  } as UseMutationResult<Input, Error, Payload>;
 };
 
 export const mockAuth = (isLoading: boolean, user?: User) => {

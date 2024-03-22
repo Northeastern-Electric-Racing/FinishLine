@@ -7,14 +7,19 @@ import { useMutation, useQueryClient } from 'react-query';
 import { checkDescriptionBullet } from '../apis/description-bullets.api';
 import { DescriptionBullet } from 'shared';
 
+export interface checkDescriptionBulletRequestPayload {
+  userId: number;
+  descriptionId: number;
+}
+
 /**
  * Custom React hook to check a description bullet.
  */
 export const useCheckDescriptionBullet = () => {
   const queryClient = useQueryClient();
-  return useMutation<DescriptionBullet, Error, any>(
+  return useMutation<DescriptionBullet, Error, checkDescriptionBulletRequestPayload>(
     ['description bullets', 'check'],
-    async (payload: { userId: number; descriptionId: number }) => {
+    async (payload: checkDescriptionBulletRequestPayload) => {
       const { data } = await checkDescriptionBullet(payload.userId, payload.descriptionId);
       return data;
     },
