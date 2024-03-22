@@ -16,12 +16,12 @@ interface GanttPageProps {
 
 const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, onExpanderClick }) => {
   const data = [
-    { id: '1', start: new Date('2023-12-25'), end: new Date('2024-01-05'), title: 'First event' },
-    { id: '2', start: new Date('2023-12-27'), end: new Date('2024-01-31'), title: 'Second event' }
+    { id: '1', start: new Date('2023-12-25'), end: new Date('2024-02-05'), title: 'First event' },
+    { id: '2', start: new Date('2024-01-01'), end: new Date('2024-02-19'), title: 'Second event' }
   ];
   return ganttTasks.length > 0 ? (
     <>
-      <NewGanttChart start={new Date('2023-12-25')} end={new Date('2024-12-5')} data={data} />
+      <NewGanttChart start={new Date('2023-12-25')} end={new Date('2024-12-2')} data={data} />
 
       <div style={{ marginBottom: 100, backgroundColor: 'red' }} />
       <Gantt
