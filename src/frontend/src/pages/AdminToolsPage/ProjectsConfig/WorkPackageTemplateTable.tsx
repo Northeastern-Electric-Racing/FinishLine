@@ -1,7 +1,11 @@
 import { TableRow, TableCell, Box } from '@mui/material';
 import AdminToolTable from '../AdminToolTable';
+import { NERButton } from '../../../components/NERButton';
+import { isAdmin } from 'shared/src/permission-utils';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 const WorkPackageTemplateTable = () => {
+  const currentUser = useCurrentUser();
   const workPackageTemplate1 = {
     workPackageTemplateId: 'id',
     templateName: 'Template 1',
@@ -36,6 +40,9 @@ const WorkPackageTemplateTable = () => {
   return (
     <Box>
       <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={workPackageTemplateRows} />
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+        {isAdmin(currentUser.role) && <NERButton variant="contained">New Work Package Template</NERButton>}
+      </Box>
     </Box>
   );
 };
