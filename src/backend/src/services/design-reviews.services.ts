@@ -392,7 +392,7 @@ export default class DesignReviewsService {
       throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
 
-    const teamType = prisma.teamType.create({
+    const teamType = await prisma.teamType.create({
       data: {
         name,
         iconName
