@@ -555,7 +555,8 @@ describe('Design Reviews', () => {
     });
 
     test('Create team type fails if there is already another team type with the same name', async () => {
-      await expect(() => DesignReviewsService.createTeamType(batman, 'sdkhadkjsa', 'Warning icon')).rejects.toThrow(
+      await DesignReviewsService.createTeamType(superman, 'teamType1', 'YouTubeIcon');
+      await expect(() => DesignReviewsService.createTeamType(batman, 'teamType1', 'Warning icon')).rejects.toThrow(
         new HttpException(400, 'Cannot create a teamType with a name that already exists')
       );
     });
@@ -565,16 +566,18 @@ describe('Design Reviews', () => {
       expect(prisma.teamType.findFirst).toBeCalledTimes(1);
       expect(result).toEqual({
         name: 'teamType3',
-        iconName: 'YouTubeIcon'
+        iconName: 'YouTubeIcon',
+        teamTypeId: result.teamTypeId
       });
     });
   });
 
-  // describe('Get all team types works', () => {
-  //   test('Get all team types works', async () => {
-  //     vi.spyOn(prisma.teamType, 'findMany').mockResolvedValue(teamType1);
-  //     const result = await DesignReviewsService.getAllTeamTypes();
-  //     expect(result).toStrictEqual(teamType1);
-  //   });
-  // });
+  describe('Get all team types works', () => {
+    test('Get all team types works', async () => {
+      const teamType1 = await DesignReviewsService.createTeamType(superman, 'teamType1', 'YouTubeIcon');
+      const teamType2 = await DesignReviewsService.createTeamType(batman, 'teamType2', 'WarningIcon');
+      const result = await DesignReviewsService.getAllTeamTypes();
+      expect(result).toStrictEqual([teamType1, teamType2]);
+    });
+  });
 });
