@@ -1,7 +1,7 @@
 import {
   Design_Review_Status as PrismaDesignReviewStatus,
   Prisma,
-  TeamType,
+  TeamType as PrismaTeamType,
   Design_Review as PrismaDesignReview
 } from '@prisma/client';
 import {
@@ -38,7 +38,7 @@ export const designReview1: PrismaDesignReview = {
   wbsElementId: 1
 };
 
-export const teamType1: TeamType = {
+export const teamType1: PrismaTeamType = {
   teamTypeId: '1',
   name: 'teamType1',
   iconName: 'YouTubeIcon'

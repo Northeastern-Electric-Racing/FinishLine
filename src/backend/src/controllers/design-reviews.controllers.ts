@@ -13,15 +13,6 @@ export default class DesignReviewsController {
     }
   }
 
-  static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
-    try {
-      const teamTypes = await DesignReviewsService.getAllTeamTypes();
-      return res.status(200).json(teamTypes);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async deleteDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const drId: string = req.params.designReviewId;
@@ -118,6 +109,26 @@ export default class DesignReviewsController {
 
       const updatedDesignReview = await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
       return res.status(200).json(updatedDesignReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async createTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, iconName } = req.body;
+      const submitter = await getCurrentUser(res);
+      const createdTeamType = await DesignReviewsService.createTeamType(submitter, name, iconName);
+      return res.status(200).json(createdTeamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teamTypes = await DesignReviewsService.getAllTeamTypes();
+      return res.status(200).json(teamTypes);
     } catch (error: unknown) {
       next(error);
     }

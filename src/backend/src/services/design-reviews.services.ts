@@ -27,11 +27,6 @@ export default class DesignReviewsService {
     return designReviews.map(designReviewTransformer);
   }
 
-  static async getAllTeamTypes(): Promise<TeamType[]> {
-    const teamTypes = await prisma.teamType.findMany();
-    return teamTypes;
-  }
-
   /**
    * Deletes a design review
    * @param submitter the user who deleted the design review
@@ -375,5 +370,44 @@ export default class DesignReviewsService {
       return designReviewTransformer(updatedDesignReview);
     }
     return designReviewTransformer(designReview);
+  }
+
+  /**
+   * Creates a team type
+   * @param submitter the user who is creating the team type
+   * @param name the name of the team type
+   * @param iconName the name of the icon
+   * @returns the created team
+   */
+  static async createTeamType(submitter: User, name: string, iconName: string): Promise<TeamType> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedAdminOnlyException('create a team type');
+    }
+
+    const duplicateName = await prisma.teamType.findFirst({
+      where: { name }
+    });
+
+    if (duplicateName) {
+      throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
+    }
+
+    const teamType = prisma.teamType.create({
+      data: {
+        name,
+        iconName
+      }
+    });
+
+    return teamType;
+  }
+
+  /**
+   * Gets all the team types in the database
+   * @returns all the team types
+   */
+  static async getAllTeamTypes(): Promise<TeamType[]> {
+    const teamTypes = await prisma.teamType.findMany();
+    return teamTypes;
   }
 }

@@ -7,8 +7,6 @@ const designReviewsRouter = express.Router();
 
 designReviewsRouter.get('/', DesignReviewsController.getAllDesignReviews);
 
-designReviewsRouter.get('/teamType/all', DesignReviewsController.getAllTeamTypes);
-
 designReviewsRouter.delete('/:designReviewId/delete', DesignReviewsController.deleteDesignReview);
 designReviewsRouter.get('/:designReviewId', DesignReviewsController.getSingleDesignReview);
 
@@ -57,6 +55,18 @@ designReviewsRouter.post(
   intMinZero(body('availability.*')),
   validateInputs,
   DesignReviewsController.markUserConfirmed
+);
+
+/**************** Team Type Section ****************/
+
+designReviewsRouter.get('/teamType/all', DesignReviewsController.getAllTeamTypes);
+
+designReviewsRouter.post(
+  '/teamType/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('iconName')),
+  validateInputs,
+  DesignReviewsController.createTeamType
 );
 
 export default designReviewsRouter;

@@ -538,4 +538,35 @@ describe('Design Reviews', () => {
       ).rejects.toThrow(new HttpException(400, 'Availability times have to be in range 0-83'));
     });
   });
+
+  describe('Create Team Type', () => {
+    test('Create team type fails if user is not an admin', async () => {
+      await expect(() => DesignReviewsService.createTeamType(theVisitor, 'Team 2', 'Warning icon')).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('create a team type')
+      );
+    });
+
+    test('Create team type fails if there is already another team type with the same name', async () => {
+      await expect(() => DesignReviewsService.createTeamType(batman, 'sdkhadkjsa', 'Warning icon')).rejects.toThrow(
+        new HttpException(400, 'Cannot create a teamType with a name that already exists')
+      );
+    });
+
+    // test('Create team type works', async () => {
+    //   const result = await DesignReviewsService.createTeamType(superman, 'teamType3', 'YouTubeIcon');
+    //   expect(prisma.teamType.findFirst).toBeCalledTimes(1);
+    //   expect(result).toEqual({
+    //     name: 'teamType3',
+    //     iconName: 'YouTubeIcon'
+    //   });
+    // });
+  });
+  
+  // describe('Get all team types works', () => {
+  //   test('Get all team types works', async () => {
+  //     vi.spyOn(prisma.teamType, 'findMany').mockResolvedValue(teamType1);
+  //     const result = await DesignReviewsService.getAllTeamTypes();
+  //     expect(result).toStrictEqual(teamType1);
+  //   });
+  // });
 });
