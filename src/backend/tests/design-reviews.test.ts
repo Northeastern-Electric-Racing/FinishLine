@@ -32,7 +32,7 @@ import DesignReviewsService from '../src/services/design-reviews.services';
 import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 
 describe('Design Reviews', () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
