@@ -379,7 +379,7 @@ export default class DesignReviewsService {
    * @param iconName the name of the icon
    * @returns the created team
    */
-  static createTeamType = async (submitter: User, name: string, iconName: string): Promise<TeamType> => {
+  static async createTeamType(submitter: User, name: string, iconName: string): Promise<TeamType> {
     if (!isAdmin(submitter.role)) {
       throw new AccessDeniedAdminOnlyException('create a team type');
     }
