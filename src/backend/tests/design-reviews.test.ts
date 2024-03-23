@@ -105,7 +105,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when TeamTypeId does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(null);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(null);
       await expect(() =>
         DesignReviewsService.editDesignReview(
           batman,
@@ -150,7 +150,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when required member doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
 
       await expect(() =>
         DesignReviewsService.editDesignReview(
@@ -174,7 +174,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when optionalMember doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
 
       await expect(() =>
         DesignReviewsService.editDesignReview(
@@ -286,7 +286,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when no docTemplateLink, and status is scheduled or done', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
       await expect(() =>
         DesignReviewsService.editDesignReview(
           batman,
@@ -309,7 +309,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review succeeds when user is lead or above', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview3);
       vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview3);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
 
       const res = await DesignReviewsService.editDesignReview(
         aquaman,
@@ -416,7 +416,7 @@ describe('Design Reviews', () => {
 
   describe('Create design review tests', () => {
     test('Create design review succeeds', async () => {
-      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValueOnce(teamType1);
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(teamType1);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
       vi.spyOn(prisma.design_Review, 'create').mockResolvedValue(prismaDesignReview1);
 
@@ -456,7 +456,7 @@ describe('Design Reviews', () => {
     });
 
     test('Create design review team type not found', async () => {
-      // vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValueOnce(null);
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(null);
       await expect(
         DesignReviewsService.createDesignReview(
           batman,
@@ -475,7 +475,7 @@ describe('Design Reviews', () => {
     });
 
     test('Create design review wbs element not found', async () => {
-      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValueOnce(teamType1);
+      vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(teamType1);
 
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(null);
       await expect(
