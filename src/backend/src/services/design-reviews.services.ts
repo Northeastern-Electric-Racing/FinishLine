@@ -400,7 +400,7 @@ export default class DesignReviewsService {
     });
 
     return teamType;
-  };
+  }
 
   /**
    * Gets all the team types in the database
