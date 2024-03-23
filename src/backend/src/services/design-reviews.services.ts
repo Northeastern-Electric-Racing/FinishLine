@@ -379,12 +379,12 @@ export default class DesignReviewsService {
    * @param iconName the name of the icon
    * @returns the created team
    */
-  static async createTeamType(submitter: User, name: string, iconName: string): Promise<TeamType> {
+  static createTeamType = async (submitter: User, name: string, iconName: string): Promise<TeamType> => {
     if (!isAdmin(submitter.role)) {
       throw new AccessDeniedAdminOnlyException('create a team type');
     }
 
-    const duplicateName = await prisma.teamType.findFirst({
+    const duplicateName = await prisma.teamType.findUnique({
       where: { name }
     });
 
@@ -400,7 +400,7 @@ export default class DesignReviewsService {
     });
 
     return teamType;
-  }
+  };
 
   /**
    * Gets all the team types in the database

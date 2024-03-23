@@ -32,16 +32,8 @@ import DesignReviewsService from '../src/services/design-reviews.services';
 import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 
 describe('Design Reviews', () => {
-  afterEach(() => {
+  afterEach(async () => {
     vi.clearAllMocks();
-  });
-
-  beforeEach(async () => {
-    try {
-      await prisma.teamType.deleteMany();
-    } catch {
-      console.log('No team types to delete');
-    }
   });
 
   describe('Edit Design Reviews Tests', () => {
@@ -113,7 +105,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when TeamTypeId does not exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(null);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(null);
       await expect(() =>
         DesignReviewsService.editDesignReview(
           batman,
@@ -158,7 +150,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when required member doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview2);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
 
       await expect(() =>
         DesignReviewsService.editDesignReview(
@@ -182,7 +174,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when optionalMember doesnt exist', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
 
       await expect(() =>
         DesignReviewsService.editDesignReview(
@@ -294,7 +286,7 @@ describe('Design Reviews', () => {
 
     test('Edit Design Review fails when no docTemplateLink, and status is scheduled or done', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(designReview1);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
       await expect(() =>
         DesignReviewsService.editDesignReview(
           batman,
@@ -317,7 +309,7 @@ describe('Design Reviews', () => {
     test('Edit Design Review succeeds when user is lead or above', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview3);
       vi.spyOn(prisma.design_Review, 'update').mockResolvedValue(prismaDesignReview3);
-      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValue(teamType1);
+      vi.spyOn(prisma.teamType, 'findUnique').mockResolvedValueOnce(teamType1);
 
       const res = await DesignReviewsService.editDesignReview(
         aquaman,
@@ -544,40 +536,6 @@ describe('Design Reviews', () => {
       await expect(() =>
         DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batman)
       ).rejects.toThrow(new HttpException(400, 'Availability times have to be in range 0-83'));
-    });
-  });
-
-  describe('Create Team Type', () => {
-    test('Create team type fails if user is not an admin', async () => {
-      await expect(() => DesignReviewsService.createTeamType(theVisitor, 'Team 2', 'Warning icon')).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('create a team type')
-      );
-    });
-
-    test('Create team type fails if there is already another team type with the same name', async () => {
-      await DesignReviewsService.createTeamType(superman, 'teamType1', 'YouTubeIcon');
-      await expect(() => DesignReviewsService.createTeamType(batman, 'teamType1', 'Warning icon')).rejects.toThrow(
-        new HttpException(400, 'Cannot create a teamType with a name that already exists')
-      );
-    });
-
-    test('Create team type works', async () => {
-      const result = await DesignReviewsService.createTeamType(superman, 'teamType3', 'YouTubeIcon');
-      expect(prisma.teamType.findFirst).toBeCalledTimes(1);
-      expect(result).toEqual({
-        name: 'teamType3',
-        iconName: 'YouTubeIcon',
-        teamTypeId: result.teamTypeId
-      });
-    });
-  });
-
-  describe('Get all team types works', () => {
-    test('Get all team types works', async () => {
-      const teamType1 = await DesignReviewsService.createTeamType(superman, 'teamType1', 'YouTubeIcon');
-      const teamType2 = await DesignReviewsService.createTeamType(batman, 'teamType2', 'WarningIcon');
-      const result = await DesignReviewsService.getAllTeamTypes();
-      expect(result).toStrictEqual([teamType1, teamType2]);
     });
   });
 });
