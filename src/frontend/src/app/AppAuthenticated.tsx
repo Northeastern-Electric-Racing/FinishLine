@@ -9,7 +9,7 @@ import ChangeRequests from '../pages/ChangeRequestsPage/ChangeRequests';
 import Projects from '../pages/ProjectsPage/Projects';
 import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
-import Settings from '../pages/SettingsPage/Settings';
+import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
 import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
 import Teams from '../pages/TeamsPage/Teams';
@@ -25,12 +25,15 @@ import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
 import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
+import { Role, isGuest } from 'shared';
+import Calendar from '../pages/CalendarPage/Calendar';
 
 interface AppAuthenticatedProps {
   userId: number;
+  userRole: Role;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
@@ -43,7 +46,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
     }
   }
 
-  return userSettingsData.slackId ? (
+  return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
       <Box display={'flex'}>
         <Sidebar />
@@ -59,6 +62,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId }) => {
             <Route path={routes.INFO} component={InfoPage} />
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
+            <Route path={routes.CALENDAR} component={Calendar} />
             <Route exact path={routes.HOME} component={Home} />
             <Route path="*" component={PageNotFound} />
           </Switch>

@@ -1139,7 +1139,7 @@ export default class ProjectsService {
    * @param submitter user requesting the edit
    */
   static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
-    if (!isHead(submitter.role)) throw new AccessDeniedException('Only the head or admin can update the linkType');
+    if (!isAdmin(submitter.role)) throw new AccessDeniedException('Only an admin can update the linkType');
 
     // check if the linkType we are trying to update exists
     const linkType = await prisma.linkType.findUnique({
