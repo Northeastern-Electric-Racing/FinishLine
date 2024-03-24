@@ -3,6 +3,7 @@ import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'reac
 import useMeasure from 'react-use-measure';
 import { Date_Event, EventChange, applyChangesToEvents } from './event';
 import { dateFormatMonthDate, dateToString } from './date.utils';
+import { Task } from '../../pages/GanttPage/GanttPackage/types/public-types';
 import useId from '@mui/material/utils/useId';
 import dayjs from 'dayjs';
 import { Box, Typography, useTheme } from '@mui/material';
@@ -11,10 +12,13 @@ import { purple } from '@mui/material/colors';
 interface GanttChartProps {
   start: Date;
   end: Date;
-  data: Date_Event[];
+  tasks: Task[];
 }
 
-export function GanttChart({ start, end, data }: GanttChartProps) {
+const CHART_GAP_SIZE = '0.75rem';
+const CHART_CELL_SIZE = '2.25rem';
+
+export function GanttChart({ start, end, tasks }: GanttChartProps) {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
@@ -25,7 +29,7 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
     setEventChanges([...eventChanges.filter((ec) => ec.id !== changeId)]);
   };
 
-  const displayEvents = applyChangesToEvents(data, eventChanges);
+  const displayEvents = applyChangesToEvents(tasks, eventChanges);
 
   return (
     <Box>
@@ -34,7 +38,7 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
         <Box
           sx={{
             display: 'grid',
-            gap: '0.75rem',
+            gap: CHART_GAP_SIZE,
             gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
             gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`
           }}
@@ -50,8 +54,8 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
                   lineHeight: '1rem',
                   textAlign: 'center',
                   height: '3.25rem',
-                  minWidth: '2.25rem',
-                  maxWidth: '2.25rem'
+                  minWidth: CHART_CELL_SIZE,
+                  maxWidth: CHART_CELL_SIZE
                 }}
               >
                 <Typography fontWeight="bold">{dayjs(day).format('MMM')}</Typography>
@@ -77,18 +81,18 @@ export function GanttChart({ start, end, data }: GanttChartProps) {
           </div>
         )}
         {eventChanges.map((ec) => {
-          const event = data.find((e) => e.id === ec.eventId);
+          const event = tasks.find((e) => e.id === ec.eventId);
           return (
             <div key={ec.id} className="p-5 rounded border flex items-center justify-between">
               {ec.type === 'change-end-date' && (
                 <div>
-                  <b>{event?.title}</b>: Change end date from {dateFormatMonthDate(ec.originalEnd)} to{' '}
+                  <b>{event?.name}</b>: Change end date from {dateFormatMonthDate(ec.originalEnd)} to{' '}
                   {dateFormatMonthDate(ec.newEnd)}
                 </div>
               )}
               {ec.type === 'shift-by-days' && (
                 <div>
-                  <b>{event?.title}</b>: Shift by {ec.days} days
+                  <b>{event?.name}</b>: Shift by {ec.days} days
                 </div>
               )}
               <button onClick={() => removeChange(ec.id)}>remove</button>
@@ -105,10 +109,9 @@ function Event({
   event,
   createChange,
   ...props
-}: { days: Date[]; event: Date_Event; createChange: (change: EventChange) => void } & ComponentProps<'div'>) {
-  const startCol =
-    days.findIndex((day) => dateToString(day) === dateToString(dayjs(event.start).add(1, 'day').toDate())) + 1;
-  const endCol = days.findIndex((day) => dateToString(day) === dateToString(dayjs(event.end).add(1, 'day').toDate())) + 2;
+}: { days: Date[]; event: Task; createChange: (change: EventChange) => void } & ComponentProps<'div'>) {
+  const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
+  const endCol = days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
 
   const id = useId() || 'id'; // id for creating event changes
   const [measureRef, bounds] = useMeasure();
@@ -116,6 +119,11 @@ function Event({
   const [width, setWidth] = useState(0); // current width of component, will change on resize
 
   const theme = useTheme();
+
+  // used to make sure that any changes to the start and end dates are made in multiples of 7
+  const roundToMultipleOf7 = (num: number) => {
+    return Math.round(num / 7) * 7;
+  };
 
   useEffect(() => {
     if (bounds.width !== 0 && width === 0) {
@@ -145,9 +153,8 @@ function Event({
   const handleMouseUp = () => {
     if (isResizing) {
       setIsResizing(false);
-      console.log(initialWidth);
       // Use change in width to calculate new length
-      const newEventLengthInDays = Math.round((lengthInDays / initialWidth) * width);
+      const newEventLengthInDays = roundToMultipleOf7(Math.round((lengthInDays / initialWidth) * width));
       const newEndDate = addDays(event.start, newEventLengthInDays);
       createChange({ id, eventId: event.id, type: 'change-end-date', originalEnd: event.end, newEnd: newEndDate });
     }
@@ -166,8 +173,7 @@ function Event({
     e.preventDefault();
   };
   const onDrop = (day: Date) => {
-    // makes sure that days is a multiple of 7
-    const days = Math.round(differenceInDays(day, event.start) / 7) * 7;
+    const days = roundToMultipleOf7(differenceInDays(day, event.start));
     createChange({ id, eventId: event.id, type: 'shift-by-days', days });
   };
 
@@ -177,7 +183,7 @@ function Event({
         sx={{
           width: '100%',
           display: 'grid',
-          gap: '0.75rem',
+          gap: CHART_GAP_SIZE,
           gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
           gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`,
           position: 'absolute',
@@ -195,8 +201,8 @@ function Event({
               sx={{
                 borderRadius: '0.25rem',
                 height: '2.75rem',
-                minWidth: '2.25rem',
-                maxWidth: '2.25rem',
+                minWidth: CHART_CELL_SIZE,
+                maxWidth: CHART_CELL_SIZE,
                 backgroundColor: `rgba(37, 99, 235, 0.1)`
               }}
             />
@@ -205,9 +211,9 @@ function Event({
       <Box
         sx={{
           display: 'grid',
-          gap: '0.75rem',
+          gap: CHART_GAP_SIZE,
           gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-          gridTemplateColumns: `repeat(${days.length}, minmax(2.25rem, 1fr))`,
+          gridTemplateColumns: `repeat(${days.length}, minmax(${CHART_CELL_SIZE}, 1fr))`,
           width: '100%'
         }}
       >
@@ -249,7 +255,7 @@ function Event({
                 userSelect: 'none'
               }}
             >
-              {event.title} ({dayjs(event.start).format('MMM D')}-{dayjs(event.end).format('MMM D')})
+              {event.name} ({dayjs(event.start).format('MMM D')}-{dayjs(event.end).format('MMM D')})
             </Box>
             <Box
               sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
