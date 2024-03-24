@@ -1,9 +1,10 @@
 import { Blocked_By_Info, Prisma, Work_Package_Template } from '@prisma/client';
 import workPackageQueryArgs from '../../src/prisma-query-args/work-packages.query-args';
 import { batman } from './users.test-data';
-import { WorkPackage, WbsElementStatus, TimelineStatus } from 'shared';
+import { WorkPackage, WbsElementStatus, TimelineStatus, WorkPackageStage } from 'shared';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { prismaProject1 } from './projects.test-data';
+import { mock } from 'node:test';
 
 export const prismaWorkPackage1: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs> = {
   workPackageId: 1,
@@ -39,16 +40,14 @@ export const mockWorkPackageTemplate1: Work_Package_Template = {
   templateName: "template 1",
   templateNotes: "template 1 notes",
   workPackageName: "Work Package 1",
-  stage: "DESIGN",
+  stage: null,
   duration: 2,
-  expectedActivities    String[]
-  deliverables          String[]
-  dateCreated           DateTime
-  userCreated           User                @relation(fields: [userCreatedId], references: [userId], name: "workPackageTemplateCreator")
-  userCreatedId         Int
-  dateDeleted           DateTime?
-  userDeleted           User?               @relation(fields: [userDeletedId], references: [userId], name: "workPackageTemplateDeleter")
-  userDeletedId         Int?
+  expectedActivities: ["hi"],
+  deliverables: ["hi"],
+  dateCreated: new Date(),
+  userCreatedId: 324,
+  dateDeleted: new Date(),
+  userDeletedId: 324
 };
 
 export const sharedWorkPackage: WorkPackage = {

@@ -1,5 +1,5 @@
 import prisma from '../src/prisma/prisma';
-import { batman, wonderwoman } from './test-data/users.test-data';
+import { aquaman, batman, wonderwoman } from './test-data/users.test-data';
 import { prismaWbsElement1, prismaWbsElement2 } from './test-data/wbs-element.test-data';
 import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
 import { calculateWorkPackageProgress } from '../src/utils/work-packages.utils';
@@ -16,9 +16,11 @@ import { User } from '@prisma/client';
 import { WorkPackageStage } from 'shared';
 import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import * as slackUtils from '../src/utils/slack.utils';
-import { prismaProject1 } from './test-data/projects.test-data';
+import { mockLinkType1, prismaProject1, transformedMockLinkType1 } from './test-data/projects.test-data';
 import * as workPackageTransformer from '../src/transformers/work-packages.transformer';
-import { prismaWorkPackage1, sharedWorkPackage } from './test-data/work-packages.test-data';
+import { mockWorkPackageTemplate1, prismaWorkPackage1, sharedWorkPackage } from './test-data/work-packages.test-data';
+import linkTypeQueryArgs from '../src/prisma-query-args/link-types.query-args';
+import ProjectsService from '../src/services/projects.services';
 
 describe('Work Packages', () => {
   /* WORK PACKAGE SERVICE FUNCTION DEFAULT INPUT ARGUMENTS */
@@ -315,9 +317,20 @@ describe('Work Packages', () => {
 
   describe('editWorkPackageTemplate', () => {
     test('Edit WorkPackageTemplate fails if the submitter is not an admin', async () => {
-      vi.spyOn(prisma.work_Package_Template, 'findUnique').mockResolvedValue({ ...mockWorkPackageTemplate1, creatorId: batman.userId });
+      vi.spyOn(prisma.work_Package_Template, 'findUnique').mockResolvedValue({ ...mockWorkPackageTemplate1 });
       await expect(
-        ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, aquaman)
+        WorkPackageService.editWorkPackageTemplate(
+          batman,
+          mockWorkPackageTemplate1.workPackageTemplateId,
+          mockWorkPackageTemplate1.templateName,
+          mockWorkPackageTemplate1.templateNotes,
+          mockWorkPackageTemplate1.expectedActivities,
+          mockWorkPackageTemplate1.deliverables,
+          mockWorkPackageTemplate1.blockedBy,
+          mockWorkPackageTemplate1.stage,
+          mockWorkPackageTemplate1.duration,
+          mockWorkPackageTemplate1.workPackageName
+        )
       ).rejects.toThrow(new AccessDeniedException('Only an admin can update the linkType'));
     });
     test('Throws error if linkType not found', async () => {
