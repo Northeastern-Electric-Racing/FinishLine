@@ -108,7 +108,6 @@ export default class TeamsController {
     }
   }
 
-
   static async createTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, iconName } = req.body;

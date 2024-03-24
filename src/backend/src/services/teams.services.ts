@@ -334,43 +334,42 @@ export default class TeamsService {
     return teamTransformer(updatedTeam);
   }
 
-    /**
+  /**
    * Creates a team type
    * @param submitter the user who is creating the team type
    * @param name the name of the team type
    * @param iconName the name of the icon
    * @returns the created team
    */
-    static async createTeamType(submitter: User, name: string, iconName: string): Promise<TeamType> {
-      if (!isAdmin(submitter.role)) {
-        throw new AccessDeniedAdminOnlyException('create a team type');
-      }
-  
-      const duplicateName = await prisma.teamType.findUnique({
-        where: { name }
-      });
-  
-      if (duplicateName) {
-        throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
-      }
-  
-      const teamType = await prisma.teamType.create({
-        data: {
-          name,
-          iconName
-        }
-      });
-  
-      return teamType;
+  static async createTeamType(submitter: User, name: string, iconName: string): Promise<TeamType> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedAdminOnlyException('create a team type');
     }
-  
-    /**
-     * Gets all the team types in the database
-     * @returns all the team types
-     */
-    static async getAllTeamTypes(): Promise<TeamType[]> {
-      const teamTypes = await prisma.teamType.findMany();
-      return teamTypes;
+
+    const duplicateName = await prisma.teamType.findUnique({
+      where: { name }
+    });
+
+    if (duplicateName) {
+      throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
-  
+
+    const teamType = await prisma.teamType.create({
+      data: {
+        name,
+        iconName
+      }
+    });
+
+    return teamType;
+  }
+
+  /**
+   * Gets all the team types in the database
+   * @returns all the team types
+   */
+  static async getAllTeamTypes(): Promise<TeamType[]> {
+    const teamTypes = await prisma.teamType.findMany();
+    return teamTypes;
+  }
 }
