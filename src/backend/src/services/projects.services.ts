@@ -1133,25 +1133,33 @@ export default class ProjectsService {
 
   /**
    * Updates the linkType's name, iconName, or required.
-   * @param linkTypeId the current name/id of the linkType
+   * @param linkTypePrevName the previous name of the linkType to reference the linkType
+   * @param linkTypeNewName the new name to change to
    * @param iconName the new iconName
    * @param required the new required status
    * @param submitter user requesting the edit
    */
-  static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
+  static async editLinkType(
+    linkTypePrevName: string,
+    linkTypeNewName: string,
+    iconName: string,
+    required: boolean,
+    submitter: User
+  ) {
     if (!isAdmin(submitter.role)) throw new AccessDeniedException('Only an admin can update the linkType');
 
     // check if the linkType we are trying to update exists
     const linkType = await prisma.linkType.findUnique({
-      where: { name: linkTypeId }
+      where: { name: linkTypePrevName }
     });
 
-    if (!linkType) throw new NotFoundException('Link Type', linkTypeId);
+    if (!linkType) throw new NotFoundException('Link Type', linkTypePrevName);
 
     // update the LinkType
     const linkTypeUpdated = await prisma.linkType.update({
-      where: { name: linkTypeId },
+      where: { name: linkTypePrevName },
       data: {
+        name: linkTypeNewName,
         iconName,
         required
       },

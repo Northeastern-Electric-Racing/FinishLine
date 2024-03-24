@@ -17,12 +17,26 @@ interface LinkTypeFormModalProps {
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
+  linkTypeBeingChanged?: LinkType;
 }
 
-const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
+const LinkTypeFormModal = ({
+  showModal,
+  handleClose,
+  defaultValues,
+  onSubmit,
+  linkTypes,
+  linkTypeBeingChanged
+}: LinkTypeFormModalProps) => {
   const toast = useToast();
 
-  const uniqueLinkTypeTest = (name?: string) => !!name && linkTypes && !linkTypes.map((v) => v.name).includes(name);
+  const uniqueLinkTypeTest = (name?: string) =>
+    !!name &&
+    linkTypes &&
+    !linkTypes
+      .filter((v) => v !== linkTypeBeingChanged)
+      .map((v) => v.name)
+      .includes(name);
 
   const schema = yup.object().shape({
     name: yup

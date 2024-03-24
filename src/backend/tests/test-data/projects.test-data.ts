@@ -309,3 +309,11 @@ export const transformedMockLinkType1 = {
   iconName: 'Doc2',
   required: true
 };
+
+export const mockLinkType2 = {
+  name: 'Doc2',
+  dateCreated: new Date('2024-01-23'),
+  creator: batman,
+  iconName: 'sampleIcon',
+  required: false
+};

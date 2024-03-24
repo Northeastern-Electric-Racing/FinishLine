@@ -19,6 +19,7 @@ import {
   prismaProject2,
   mockLinkType1,
   transformedMockLinkType1,
+  mockLinkType2,
   manufacturer1,
   manufacturer2
 } from './test-data/projects.test-data';
@@ -1151,13 +1152,25 @@ describe('Projects', () => {
     test('Edit LinkType fails if the submitter is not an admin', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
       await expect(
-        ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, aquaman)
+        ProjectsService.editLinkType(
+          mockLinkType1.name,
+          mockLinkType1.name,
+          mockLinkType1.iconName,
+          !mockLinkType1.required,
+          aquaman
+        )
       ).rejects.toThrow(new AccessDeniedException('Only an admin can update the linkType'));
     });
     test('Throws error if linkType not found', async () => {
       vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);
       await expect(
-        ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, batman)
+        ProjectsService.editLinkType(
+          mockLinkType1.name,
+          mockLinkType1.name,
+          mockLinkType1.iconName,
+          !mockLinkType1.required,
+          batman
+        )
       ).rejects.toThrow(new NotFoundException('Link Type', mockLinkType1.name));
     });
     test('LinkType edits successfully, changes its foreign key in Link objects as well', async () => {
@@ -1168,14 +1181,42 @@ describe('Projects', () => {
         iconName: 'Doc2'
       });
 
-      const updated = await ProjectsService.editLinkType(mockLinkType1.name, 'Doc2', mockLinkType1.required, batman);
+      const updated = await ProjectsService.editLinkType(
+        mockLinkType1.name,
+        mockLinkType1.name,
+        'Doc2',
+        mockLinkType1.required,
+        batman
+      );
 
       expect(updated).toEqual(transformedMockLinkType1);
       expect(prisma.linkType.update).toHaveBeenCalledWith({
         where: { name: mockLinkType1.name },
         data: {
+          name: mockLinkType1.name,
           iconName: 'Doc2',
           required: mockLinkType1.required
+        },
+        ...linkTypeQueryArgs
+      });
+    });
+    test('LinkType edits successfully, changing name as well', async () => {
+      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue({ ...mockLinkType1, creatorId: batman.userId });
+      vi.spyOn(prisma.linkType, 'update').mockResolvedValue({
+        ...mockLinkType2,
+        creatorId: batman.userId,
+        iconName: 'sampleIcon'
+      });
+
+      const updated = await ProjectsService.editLinkType(mockLinkType1.name, 'Doc2', 'sampleIcon', false, batman);
+
+      expect(updated).toEqual(mockLinkType2);
+      expect(prisma.linkType.update).toHaveBeenCalledWith({
+        where: { name: mockLinkType1.name },
+        data: {
+          name: mockLinkType2.name,
+          iconName: 'sampleIcon',
+          required: mockLinkType2.required
         },
         ...linkTypeQueryArgs
       });
