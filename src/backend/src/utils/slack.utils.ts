@@ -4,6 +4,8 @@ import { getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
+import { UserWithSettings } from './auth.utils';
+import { usersToSlackPings } from './notifications.utils';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -47,15 +49,23 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
  * @param changeRequest the requested change request to be reviewed
  */
 export const sendSlackRequestedReviewNotification = async (
-  slackIds: string[],
-  changeRequest: ChangeRequest
+  reviewers: UserWithSettings[],
+  changeRequest: ChangeRequest,
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number;
+  }[]
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
+  const btnText = `View CR#${changeRequest.crId}`;
   const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
+  const fullMsg =
+    usersToSlackPings(reviewers) + `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
 
-  const fullMsg = `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
-  await sendMessage(slackId, fullMsg);
+  threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, changeRequestLink, btnText));
 };
 
 /**
