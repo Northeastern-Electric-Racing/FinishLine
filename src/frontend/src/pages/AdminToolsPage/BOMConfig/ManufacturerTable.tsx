@@ -1,5 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Grid, IconButton, TableCell, TableRow, Typography } from '@mui/material';
+import { Box, Grid, IconButton, TableCell, TableRow } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Manufacturer } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
