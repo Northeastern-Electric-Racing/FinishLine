@@ -57,16 +57,4 @@ designReviewsRouter.post(
   DesignReviewsController.markUserConfirmed
 );
 
-/**************** Team Type Section ****************/
-
-designReviewsRouter.get('/teamType/all', DesignReviewsController.getAllTeamTypes);
-
-designReviewsRouter.post(
-  '/teamType/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('iconName')),
-  validateInputs,
-  DesignReviewsController.createTeamType
-);
-
 export default designReviewsRouter;

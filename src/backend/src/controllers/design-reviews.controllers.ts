@@ -113,24 +113,4 @@ export default class DesignReviewsController {
       next(error);
     }
   }
-
-  static async createTeamType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { name, iconName } = req.body;
-      const submitter = await getCurrentUser(res);
-      const createdTeamType = await DesignReviewsService.createTeamType(submitter, name, iconName);
-      return res.status(200).json(createdTeamType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
-    try {
-      const teamTypes = await DesignReviewsService.getAllTeamTypes();
-      return res.status(200).json(teamTypes);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }
