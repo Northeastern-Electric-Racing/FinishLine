@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - A unique constraint covering the columns `[identifier]` on the table `Reimbursement_Request` will be added. If there are existing duplicate values, this will fail.
-
-*/
 -- DropForeignKey
 ALTER TABLE "_blockedBy" DROP CONSTRAINT "_blockedBy_B_fkey";
 
@@ -19,9 +13,6 @@ ADD COLUMN     "wpProposedChangesExpectedActivitiesId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Link" ADD COLUMN     "proposedWbsChangeId" TEXT;
-
--- AlterTable
-ALTER TABLE "Reimbursement_Request" ADD COLUMN     "identifier" SERIAL NOT NULL;
 
 -- AlterTable
 ALTER TABLE "_blockedBy" ALTER COLUMN "B" SET DATA TYPE TEXT;
@@ -81,9 +72,6 @@ CREATE UNIQUE INDEX "_proposedProjectTeams_AB_unique" ON "_proposedProjectTeams"
 
 -- CreateIndex
 CREATE INDEX "_proposedProjectTeams_B_index" ON "_proposedProjectTeams"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Reimbursement_Request_identifier_key" ON "Reimbursement_Request"("identifier");
 
 -- AddForeignKey
 ALTER TABLE "Link" ADD CONSTRAINT "Link_proposedWbsChangeId_fkey" FOREIGN KEY ("proposedWbsChangeId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
