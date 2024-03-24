@@ -9,6 +9,7 @@ import DetailDisplay from '../../../../../components/DetailDisplay';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
+import { useState, useEffect } from 'react';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -54,6 +55,20 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
   };
+
+  const [showPackInput, setShowPackInput] = useState(true);
+
+  // Watch the unitName field to determine if "Pack" is selected
+  const unitName = watch('unitName');
+
+  // Update showPackInput based on the selected unit
+  useEffect(() => {
+    if (unitName === 'Pack') {
+      setShowPackInput(true);
+    } else {
+      setShowPackInput(false);
+    }
+  }, [unitName]);
 
   return (
     <NERFormModal
@@ -230,6 +245,15 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </FormControl>
           </Box>
         </Grid>
+        {/** Conditionally render the Pack input field **/}
+        {showPackInput && (
+          <Grid item xs={6}>
+            <FormControl fullWidth>
+              <FormLabel>Pack Size</FormLabel>
+              <ReactHookTextField name="packSize" control={control} placeholder="Enter Pack Size" type="number" />
+            </FormControl>
+          </Grid>
+        )}
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel>Price</FormLabel>
