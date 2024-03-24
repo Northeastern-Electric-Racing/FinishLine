@@ -777,11 +777,9 @@ export default class ChangeRequestsService {
       }
     });
 
-    // send slack message to CR reviewers
-    /* newReviewers.forEach(async (user) => {
-      await sendSlackRequestedReviewNotification(user.userSettings!.slackId, changeRequestTransformer(foundCR));
-    }); */
+    const newReviewerIds = newReviewers.map((user) => user.userSettings!.slackId);
 
-    await sendSlackRequestedReviewNotification(newReviewers, changeRequestTransformer(foundCR));
+    // send slack message to CR reviewers
+    await sendSlackRequestedReviewNotification(newReviewerIds, changeRequestTransformer(foundCR));
   }
 }
