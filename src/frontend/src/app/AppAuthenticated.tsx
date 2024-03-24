@@ -27,6 +27,8 @@ import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
+import Apply from '../pages/HomePage/Apply';
+import SubApps from '../pages/HomePage/SubApps';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -64,6 +66,8 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
             <Route exact path={routes.HOME} component={Home} />
+            <Route path={routes.APPLY} component={Apply} />
+            <Route path={routes.SUBMITTED_APPS} component={SubApps} />
             <Route path="*" component={PageNotFound} />
           </Switch>
         </Container>

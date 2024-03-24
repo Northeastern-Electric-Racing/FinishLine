@@ -5,6 +5,8 @@
 
 /**************** General Section ****************/
 const HOME = `/`;
+const APPLY = `/apply`;
+const SUBMITTED_APPS = '/apps';
 const LOGIN = `/login`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
@@ -52,6 +54,8 @@ const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 
 export const routes = {
   HOME,
+  APPLY,
+  SUBMITTED_APPS,
   LOGIN,
   INFO,
   CREDITS,
