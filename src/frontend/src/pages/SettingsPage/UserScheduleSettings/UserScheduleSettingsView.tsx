@@ -47,7 +47,7 @@ const UserScheduleSettingsView = ({
   };
 
   return (
-    <Grid container spacing={6} sx={{ pt: '10px' }}>
+    <Grid container rowSpacing={1} columnSpacing={4}>
       <SingleAvailabilityModal
         open={availabilityOpen}
         onHide={() => setAvailabilityOpen(false)}
@@ -62,13 +62,13 @@ const UserScheduleSettingsView = ({
         setAvailabilities={setConfirmedAvailabilities}
         onSubmit={() => handleConfirm({ availability: confirmedAvailabilities })}
       />
-      <Grid item xs={12} sm={6} lg={4}>
+      <Grid item xs={12} md={'auto'}>
         <DetailDisplay label="Personal Google Email" content={scheduleSettings.personalGmail} />
       </Grid>
-      <Grid item xs={12} sm={6} lg={5}>
+      <Grid item xs={12} md={'auto'} pb={-1}>
         <DetailDisplay label="Personal Zoom Link" content={scheduleSettings.personalZoomLink} />
       </Grid>
-      <Grid item xs={12} lg={3} display="flex" justifyContent={'flex-end'}>
+      <Grid item xs={12} md={'auto'} mt={-1} display="flex" justifyContent={'flex-end'}>
         <NERButton variant="contained" onClick={() => setAvailabilityOpen(true)}>
           View Availability
         </NERButton>

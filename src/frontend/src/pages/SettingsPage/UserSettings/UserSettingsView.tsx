@@ -25,11 +25,11 @@ const SlackId: React.FC<UserSettingsViewProps> = ({ settings }) => {
 /** Component to display user settings */
 const UserSettingsView: React.FC<UserSettingsViewProps> = ({ settings }) => {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} sm={6}>
+    <Grid container spacing={4}>
+      <Grid item>
         <DetailDisplay label="Default Theme" content={displayEnum(settings.defaultTheme)} />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item>
         <SlackId settings={settings} />
       </Grid>
     </Grid>

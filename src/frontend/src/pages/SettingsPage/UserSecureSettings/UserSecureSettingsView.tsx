@@ -25,14 +25,14 @@ interface UserSecureSettingsViewProps {
 
 const UserSecureSettingsView: React.FC<UserSecureSettingsViewProps> = ({ settings }) => {
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} md={6}>
+    <Grid container columnSpacing={4} rowSpacing={1}>
+      <Grid item xs={12} md={'auto'} lg={'auto'}>
         <Address settings={settings} />
       </Grid>
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={12} md={'auto'}>
         <PhoneNumber settings={settings} />
       </Grid>
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={12} md={'auto'}>
         <NUID settings={settings} />
       </Grid>
     </Grid>
