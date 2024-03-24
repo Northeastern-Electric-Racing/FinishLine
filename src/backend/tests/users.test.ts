@@ -6,7 +6,10 @@ import {
   superman,
   batmanSecureSettings,
   sharedBatman,
-  theVisitor
+  theVisitor,
+  batmanWithScheduleSettings,
+  batmanScheduleSettings,
+  batmanUserScheduleSettings
 } from './test-data/users.test-data';
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
@@ -35,19 +38,24 @@ describe('Users', () => {
     expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     // note that batman was sorted to the front because his first name is before supermans alphabetically
     // and also that we don't return the google auth id for security reasons
-    expect(res).toStrictEqual([restOfBatman, restOfSuperman]);
+    expect(res).toStrictEqual([
+      { scheduleSettings: undefined, ...restOfBatman },
+      { scheduleSettings: undefined, ...restOfSuperman }
+    ]);
   });
 
   test('getSingleUser', async () => {
-    vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+    const res = await UsersService.getSingleUser(0);
 
-    const res = await UsersService.getSingleUser(1);
-
-    const { googleAuthId, ...restOfBatman } = batman;
-
-    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
     // we don't return the google auth id for security reasons
-    expect(res).toStrictEqual(restOfBatman);
+    expect(res).toStrictEqual({
+      userId: 0,
+      firstName: 'Admin',
+      email: 'admin@gmail.com',
+      lastName: 'User',
+      role: Role.GUEST,
+      emailId: null
+    });
   });
 
   describe('updateUserRole', () => {
@@ -134,6 +142,53 @@ describe('Users', () => {
           batmanSecureSettings.phoneNumber
         )
       ).rejects.toThrow(new HttpException(400, 'Phone number already in use'));
+    });
+  });
+
+  describe('getUserScheduleSettings', () => {
+    test('getUserScheduleSettings for user with no settings', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
+      vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(null);
+      await expect(() => UsersService.getUserScheduleSettings(batman.userId, batman)).rejects.toThrow(
+        new HttpException(404, 'User Schedule Settings Not Found')
+      );
+    });
+
+    test('non-valid user tries to get someone elses settings', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
+      vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
+      await expect(() => UsersService.getUserScheduleSettings(superman.userId, batmanWithScheduleSettings)).rejects.toThrow(
+        new AccessDeniedException('You can only access your own schedule settings')
+      );
+    });
+
+    test('getUserScheduleSettings works successfully', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batmanWithScheduleSettings);
+      vi.spyOn(prisma.schedule_Settings, 'findUnique').mockResolvedValue(batmanScheduleSettings);
+      const res = await UsersService.getUserScheduleSettings(batmanWithScheduleSettings.userId, batmanWithScheduleSettings);
+
+      expect(prisma.schedule_Settings.findUnique).toHaveBeenCalledTimes(1);
+      expect(res).toStrictEqual(batmanUserScheduleSettings);
+    });
+
+    test('setUserScheduleSettings works successfully', async () => {
+      vi.spyOn(prisma.schedule_Settings, 'findFirst').mockResolvedValue(null);
+      vi.spyOn(prisma.schedule_Settings, 'upsert').mockResolvedValue(batmanScheduleSettings);
+      const res = await UsersService.setUserScheduleSettings(batman, 'batman@gmail.com', 'https://zoom.com', [1, 2]);
+
+      expect(res).toStrictEqual(batmanUserScheduleSettings);
+    });
+
+    test('setting same email does not work', async () => {
+      vi.spyOn(prisma.schedule_Settings, 'findFirst').mockResolvedValue(batmanScheduleSettings);
+      await expect(() =>
+        UsersService.setUserScheduleSettings(
+          batmanWithScheduleSettings,
+          batmanScheduleSettings.personalGmail,
+          batmanScheduleSettings.personalZoomLink,
+          batmanScheduleSettings.availability
+        )
+      ).rejects.toThrow(new HttpException(400, 'Email already in use'));
     });
   });
 });

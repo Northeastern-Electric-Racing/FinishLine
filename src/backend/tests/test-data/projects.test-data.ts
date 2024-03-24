@@ -244,6 +244,14 @@ export const manufacturer2: Manufacturer = {
   materials: [material1]
 };
 
+export const manufacturer3: Manufacturer = {
+  name: 'Amazon',
+  dateCreated: new Date('03-13-2024'),
+  userCreatedId: 2,
+  userCreated: superman,
+  materials: [material1]
+};
+
 export const toolMaterial: PrismaMaterialType = {
   name: 'NERSoftwareTools',
   dateCreated: new Date(),

@@ -11,6 +11,8 @@ import changeRequestsRouter from './src/routes/change-requests.routes';
 import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 import tasksRouter from './src/routes/tasks.routes';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes';
+import notificationsRouter from './src/routes/notifications.routes';
+import designReviewsRouter from './src/routes/design-reviews.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -52,6 +54,8 @@ app.use('/change-requests', changeRequestsRouter);
 app.use('/description-bullets', descriptionBulletsRouter);
 app.use('/tasks', tasksRouter);
 app.use('/reimbursement-requests', reimbursementRequestsRouter);
+app.use('/design-reviews', designReviewsRouter);
+app.use('/notifications', notificationsRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });

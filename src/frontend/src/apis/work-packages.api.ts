@@ -9,9 +9,9 @@ import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
 
-interface WorkPackageApiInputs {
+export interface WorkPackageApiInputs {
   name: string;
-  startDate: Date;
+  startDate: String;
   duration: number;
   crId: number;
   stage: WorkPackageStage | null;
@@ -53,7 +53,7 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all the necessary data to create a work package.
  */
-export const createSingleWorkPackage = (payload: CreateWorkPackageApiInputs) => {
+export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
     ...payload
   });

@@ -8,6 +8,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
+import { useTheme } from '@mui/material/styles';
 
 const schema = yup.object().shape({
   code: yup.number().typeError('Account Code must be a number').required('Account Code is Required'),
@@ -38,6 +39,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
       allowedRefundSources: defaultValues?.allowedRefundSources ?? []
     }
   });
+  const theme = useTheme();
 
   const onFormSubmit = async (data: ExpenseTypePayload) => {
     try {
@@ -93,7 +95,13 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
         <FormHelperText error>{errors.code?.message}</FormHelperText>
       </FormControl>
       <FormControl>
-        <FormLabel>Allowed?</FormLabel>
+        <FormLabel
+          sx={{
+            '&.Mui-focused': { color: theme.palette.text.secondary }
+          }}
+        >
+          Allowed?
+        </FormLabel>
         <Controller
           name="allowed"
           control={control}
