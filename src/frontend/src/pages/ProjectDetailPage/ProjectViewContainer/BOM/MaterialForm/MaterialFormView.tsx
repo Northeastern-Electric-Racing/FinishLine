@@ -232,7 +232,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={3}>
           <FormControl fullWidth>
-            <FormLabel>Price</FormLabel>
+            <FormLabel style={{ whiteSpace: 'normal' }}>Price per Unit</FormLabel>
             <Controller
               name={`price`}
               control={control}
