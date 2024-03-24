@@ -43,10 +43,13 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
 
 /**
  * Send CR requested review notification to reviewer in Slack
- * @param slackId the slack id of the reviewer
+ * @param slackIds the slack ids of the reviewers
  * @param changeRequest the requested change request to be reviewed
  */
-export const sendSlackRequestedReviewNotification = async (slackId: string, changeRequest: ChangeRequest): Promise<void> => {
+export const sendSlackRequestedReviewNotification = async (
+  slackIds: string[],
+  changeRequest: ChangeRequest
+): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
