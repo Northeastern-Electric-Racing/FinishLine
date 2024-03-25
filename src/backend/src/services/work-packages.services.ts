@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -11,7 +11,8 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackageStage,
+  WorkPackageTemplate
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -35,6 +36,7 @@ import {
   descriptionBulletsToChangeListValues
 } from '../utils/description-bullets.utils';
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
+import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -709,16 +711,16 @@ export default class WorkPackagesService {
     return;
   }
 
-  static async getSingleWorkPackageTemplate(wpt: string): Promise<Work_Package_Template> {
+  static async getSingleWorkPackageTemplate(workPackageTemplateId: string): Promise<WorkPackageTemplate> {
     const wp = await prisma.work_Package_Template.findFirst({
       where: {
         dateDeleted: null,
-        workPackageTemplateId: wpt
+        workPackageTemplateId
       }
     });
 
-    if (!wp) throw new HttpException(400, `Work package template with id ${wpt} not found`);
+    if (!wp) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
 
-    return workPackageTransformer(wp);
+    return workPackageTemplateTransformer(wp);
   }
 }

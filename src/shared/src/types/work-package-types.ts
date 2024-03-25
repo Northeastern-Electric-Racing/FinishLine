@@ -20,12 +20,10 @@ export enum WorkPackageStage {
   Testing = 'TESTING'
 }
 
-export interface Blocked_By_Info {
+export interface BlockedByInfo {
   blockedByInfoId: string;
   stage?: WorkPackageStage;
   name: string;
-  workPackageTemplate: WorkPackageTemplate;
-  workPackageTemplateId: String;
 }
 
 export interface WorkPackageTemplate {
@@ -35,7 +33,7 @@ export interface WorkPackageTemplate {
   workPackageName?: string;
   stage?: WorkPackageStage;
   duration?: number;
-  blockedBy: Blocked_By_Info[];
+  blockedBy: BlockedByInfo[];
   expectedActivities: String[];
   deliverables: String[];
   dateCreated: Date;
