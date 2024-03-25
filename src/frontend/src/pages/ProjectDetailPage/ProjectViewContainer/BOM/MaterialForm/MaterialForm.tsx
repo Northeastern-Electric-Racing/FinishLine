@@ -12,6 +12,7 @@ import {
 import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 import { Decimal } from 'decimal.js';
+import { Unit } from 'shared';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -36,6 +37,7 @@ export interface MaterialFormInput {
   price: number;
   quantity: number;
   unitName?: string;
+  packSize?: string;
   linkUrl: string;
   notes?: string;
   assemblyId?: string;
@@ -143,12 +145,34 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     }
   };
 
+  const mockUnits: Unit[] = [
+    { name: 'kg', materials: [] },
+    { name: 'Pack of 10', materials: [] },
+    { name: 'Pack of 20', materials: [] },
+    { name: 'Pack of 30', materials: [] },
+    { name: 'meters', materials: [] }
+  ];
+
+  const adjustedUnits = mockUnits
+    .map((unit) => {
+      if (unit.name.startsWith('Pack of')) {
+        return { ...unit, name: 'Pack', materials: [] };
+      }
+      return unit;
+    })
+    .filter((unit, index, self) => index === self.findIndex((t) => t.name === unit.name));
+
+  const packSizes = mockUnits
+    .filter((unit) => unit.name.startsWith('Pack of'))
+    .map((unit) => unit.name.replace('Pack of ', ''));
+
   return (
     <MaterialFormView
       assemblies={assemblies}
       allManufacturers={manufactuers}
       allMaterialTypes={materialTypes}
-      allUnits={units}
+      allUnits={adjustedUnits}
+      packSizes={packSizes}
       onSubmit={onSubmitWrapper}
       handleSubmit={handleSubmit}
       submitText={submitText}

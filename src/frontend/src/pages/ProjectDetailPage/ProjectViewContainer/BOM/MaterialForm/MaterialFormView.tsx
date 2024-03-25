@@ -20,6 +20,7 @@ export interface MaterialFormViewProps {
   errors: FieldErrors<MaterialFormInput>;
   allMaterialTypes: MaterialType[];
   allUnits: Unit[];
+  packSizes: string[];
   allManufacturers: Manufacturer[];
   assemblies: Assembly[];
   open: boolean;
@@ -41,6 +42,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   errors,
   allMaterialTypes,
   allUnits,
+  packSizes,
   allManufacturers,
   assemblies,
   open,
@@ -58,16 +60,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
 
   const [showPackInput, setShowPackInput] = useState(true);
 
-  // Watch the unitName field to determine if "Pack" is selected
+  // Existing logic to watch unit selection
   const unitName = watch('unitName');
 
-  // Update showPackInput based on the selected unit
+  // useEffect to update showPackInput based on unitName
   useEffect(() => {
-    if (unitName === 'Pack') {
-      setShowPackInput(true);
-    } else {
-      setShowPackInput(false);
-    }
+    setShowPackInput(unitName === 'Pack');
   }, [unitName]);
 
   return (
@@ -250,7 +248,19 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           <Grid item xs={6}>
             <FormControl fullWidth>
               <FormLabel>Pack Size</FormLabel>
-              <ReactHookTextField name="packSize" control={control} placeholder="Enter Pack Size" type="number" />
+              <Controller
+                name="packSize"
+                control={control}
+                render={({ field }) => (
+                  <TextField {...field} select variant="outlined">
+                    {packSizes.map((size) => (
+                      <MenuItem key={size} value={size}>
+                        {size}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
             </FormControl>
           </Grid>
         )}
