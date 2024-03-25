@@ -18,6 +18,7 @@ interface ProposedSolutionFormProps {
   timelineImpact?: number;
   scopeImpact?: string;
   readOnly?: boolean;
+  isEditing?: boolean;
   onAdd: (data: ProposedSolution) => void;
   open: boolean;
   onClose: () => void;
@@ -44,14 +45,20 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   timelineImpact,
   scopeImpact,
   readOnly,
+  isEditing = false,
   onAdd,
   open,
   onClose
 }) => {
-  const { formState, handleSubmit, control } = useForm<ProposedSolution>({
+  const { formState, handleSubmit, control, reset } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
     defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }
   });
+
+  const handleAdd = (data: ProposedSolution) => {
+    onAdd(data);
+    reset();
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -80,7 +87,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleSubmit(onAdd)(e);
+            handleSubmit(handleAdd)(e);
           }}
         >
           <Controller
@@ -198,7 +205,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                Add
+                {isEditing ? 'Save' : 'Add'}
               </NERSuccessButton>
             </Box>
           )}

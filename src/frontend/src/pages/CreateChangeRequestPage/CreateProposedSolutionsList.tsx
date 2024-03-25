@@ -32,6 +32,13 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
     setProposedSolutions(proposedSolutions.filter((proposedSolution) => proposedSolution !== data));
   };
 
+  const editProposedSolution = (editedData: ProposedSolution, originalData: ProposedSolution) => {
+    const updatedSolutions = proposedSolutions.map((proposedSolution) =>
+      proposedSolution === originalData ? editedData : proposedSolution
+    );
+    setProposedSolutions(updatedSolutions);
+  };
+
   return (
     <>
       {!isGuest(user.role) && (
@@ -50,6 +57,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
             key={i}
             proposedSolution={proposedSolution}
             onDelete={removeProposedSolution}
+            onEdit={editProposedSolution}
             showDeleteButton
           />
         ))}
