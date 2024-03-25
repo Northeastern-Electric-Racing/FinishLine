@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import workPackageQueryArgs from '../../src/prisma-query-args/work-packages.query-args';
-import { batman } from './users.test-data';
+import { batman, thomasEmrax } from './users.test-data';
 import { WorkPackage, WbsElementStatus, TimelineStatus, WorkPackageTemplate } from 'shared';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { prismaProject1 } from './projects.test-data';
@@ -63,7 +63,7 @@ export const WorkPackageTemplate1: WorkPackageTemplate = {
   dateCreated: new Date('03/25/2024'),
   blockedBy: [],
   dateDeleted: undefined,
-  userCreated: batman,
+  userCreated: thomasEmrax,
   deliverables: [],
   duration: undefined,
   expectedActivities: [],

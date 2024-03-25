@@ -1,7 +1,7 @@
 import prisma from '../src/prisma/prisma';
 import WorkPackageService from '../src/services/work-packages.services';
 import { AccessDeniedGuestException, HttpException } from '../src/utils/errors.utils';
-import { batman, batmanWithUserSettings, theVisitor } from './test-data/users.test-data';
+import { batman, theVisitor, thomasEmrax } from './test-data/users.test-data';
 import { WorkPackageTemplate1 } from './test-data/work-packages.test-data';
 
 describe('Work Package Template Tests', () => {
@@ -37,7 +37,7 @@ describe('Work Package Template Tests', () => {
         }
       });
 
-      const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(batman, 'id1');
+      const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(thomasEmrax, 'id1');
       expect(recievedWorkPackageTemplate).toBe(WorkPackageTemplate1);
     });
   });
