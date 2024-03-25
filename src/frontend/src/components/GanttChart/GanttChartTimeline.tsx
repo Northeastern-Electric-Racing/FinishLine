@@ -17,7 +17,8 @@ export function GanttChartTimeline({ startDate, endDate }: GanttChartTimelinePro
         display: 'grid',
         gap: GANTT_CHART_GAP_SIZE,
         gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-        gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`
+        gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`,
+        maxWidth: 10
       }}
     >
       {days.map((day) => {

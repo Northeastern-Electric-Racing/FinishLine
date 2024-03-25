@@ -180,8 +180,18 @@ const GanttPageWrapper: FC = () => {
     if (!tasks) return <></>;
 
     return (
-      <Box key={teamName} sx={{ my: 3, maxWidth: '90vw' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+      <Box key={teamName} sx={{ my: 3, width: 'fit-content' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            mb: 1,
+            position: 'sticky',
+            left: 0,
+            width: 'fit-content'
+          }}
+        >
           <Typography variant="h5">{teamName}</Typography>
           {/**Add IconButton */}
           <EditIcon />
@@ -218,7 +228,7 @@ const GanttPageWrapper: FC = () => {
         resetHandler={resetHandler}
       />*/}
 
-      <Box sx={{ width: '100%', overflow: 'scroll', padding: 1, paddingBottom: 2 }}>
+      <Box sx={{ width: '100%', overflow: 'scroll' }}>
         {/**TODO: calculate start and end date based on all gantt tasks */}
         <GanttChartTimeline startDate={new Date('2023-01-16')} endDate={new Date('2024-12-2')} />
         {ganttCharts}
