@@ -319,7 +319,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
+      title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
       chips={
         <Box id="status" display="flex">
           {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
