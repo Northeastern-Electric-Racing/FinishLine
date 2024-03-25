@@ -17,7 +17,7 @@ export const thomasEmrax: PrismaUser = {
   emailId: 'emrax.t',
   role: PrismaRole.APP_ADMIN,
   googleAuthId: '1'
-}
+};
 
 export const batman: PrismaUser = {
   userId: 1,
