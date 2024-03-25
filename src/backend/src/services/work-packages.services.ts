@@ -37,6 +37,7 @@ import {
 } from '../utils/description-bullets.utils';
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
 import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
+import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -716,7 +717,8 @@ export default class WorkPackagesService {
       where: {
         dateDeleted: null,
         workPackageTemplateId
-      }
+      },
+      ...workPackageTemplateQueryArgs
     });
 
     if (!wp) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
