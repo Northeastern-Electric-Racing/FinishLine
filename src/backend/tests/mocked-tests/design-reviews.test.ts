@@ -422,7 +422,7 @@ describe('Design Reviews', () => {
 
       const res = await DesignReviewsService.createDesignReview(
         batman,
-        new Date('2024-03-25'),
+        new Date(),
         '1',
         [],
         [],
