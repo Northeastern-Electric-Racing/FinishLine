@@ -8,8 +8,4 @@ export const workPackageTemplateQueryArgs = Prisma.validator<Prisma.Work_Package
   }
 });
 
-export const blockedByInfoQueryArgs = Prisma.validator<Prisma.Blocked_By_InfoArgs>()({
-  include: {
-    workPackageTemplate: true
-  }
-});
+export const blockedByInfoQueryArgs = Prisma.validator<Prisma.Blocked_By_InfoArgs>()({});
