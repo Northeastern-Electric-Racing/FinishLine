@@ -39,7 +39,7 @@ export interface WorkPackageTemplate {
   dateCreated: Date;
   userCreated: User;
   userCreatedId: Number;
-  dateDeleted: Date;
+  dateDeleted?: Date;
   userDeleted?: User;
   userDeletedId?: Number;
 }

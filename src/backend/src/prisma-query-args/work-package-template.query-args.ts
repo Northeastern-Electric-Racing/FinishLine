@@ -7,5 +7,3 @@ export const workPackageTemplateQueryArgs = Prisma.validator<Prisma.Work_Package
     blockedBy: true
   }
 });
-
-export const blockedByInfoQueryArgs = Prisma.validator<Prisma.Blocked_By_InfoArgs>()({});

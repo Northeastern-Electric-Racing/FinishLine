@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage } from 'shared';
+import { validateWBS, WbsNumber, WorkPackage, WorkPackageTemplate } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
-import { Work_Package_Template } from '@prisma/client';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -149,10 +148,14 @@ export default class WorkPackagesController {
   }
   static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
+      const user = await getCurrentUser(res);
       const { workPackageTemplateId } = req.params;
-      const wpt: Work_Package_Template = await WorkPackagesService.getSingleWorkPackageTemplate(workPackageTemplateId);
+      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
+        user,
+        workPackageTemplateId
+      );
 
-      res.status(200).json(wpt);
+      res.status(200).json(workPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }
