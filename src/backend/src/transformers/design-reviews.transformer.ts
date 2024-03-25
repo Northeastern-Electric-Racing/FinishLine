@@ -1,8 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import userTransformer from './user.transformer';
-import designReviewQueryArgs from '../prisma-query-args/design-review.query-args';
+import userWithScheduleSettingsTransformer from './designReviewUser.transformer';
 import { wbsNumOf } from '../utils/utils';
+import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 
 export const designReviewTransformer = (
   designReview: Prisma.Design_ReviewGetPayload<typeof designReviewQueryArgs>
@@ -15,7 +16,7 @@ export const designReviewTransformer = (
     userCreated: userTransformer(designReview.userCreated),
     requiredMembers: designReview.requiredMembers.map(userTransformer),
     optionalMembers: designReview.optionalMembers.map(userTransformer),
-    confirmedMembers: designReview.confirmedMembers.map(userTransformer),
+    confirmedMembers: designReview.confirmedMembers.map(userWithScheduleSettingsTransformer),
     deniedMembers: designReview.deniedMembers.map(userTransformer),
     location: designReview.location ?? undefined,
     isOnline: designReview.isOnline,

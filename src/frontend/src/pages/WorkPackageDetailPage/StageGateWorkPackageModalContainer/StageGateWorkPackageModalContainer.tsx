@@ -17,6 +17,7 @@ interface StageGateWorkPackageModalContainerProps {
   wbsNum: WbsNumber;
   modalShow: boolean;
   handleClose: () => void;
+  hideStatus?: boolean;
 }
 
 export interface FormInput {
@@ -26,7 +27,8 @@ export interface FormInput {
 const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalContainerProps> = ({
   wbsNum,
   modalShow,
-  handleClose
+  handleClose,
+  hideStatus = false
 }) => {
   const auth = useAuth();
   const history = useHistory();
@@ -51,9 +53,10 @@ const StageGateWorkPackageModalContainer: React.FC<StageGateWorkPackageModalCont
     }
   };
 
-  if (isLoading) return <LoadingIndicator />;
-
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (!hideStatus) {
+    if (isLoading) return <LoadingIndicator />;
+    if (isError) return <ErrorPage message={error?.message} />;
+  }
 
   return <StageGateWorkPackageModal wbsNum={wbsNum} modalShow={modalShow} onHide={handleClose} onSubmit={handleConfirm} />;
 };
