@@ -6,6 +6,8 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
+import DynamicTooltip from '../../../../../components/DynamicTooltip';
+import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
@@ -124,7 +126,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer</FormLabel>
+            <FormLabel>
+              Manufacturer
+              <DynamicTooltip title={`Make sure to enter the manufacturer and not the distributor!`}>
+                <InfoIcon sx={{ height: 11 }} />
+              </DynamicTooltip>
+            </FormLabel>
             <Controller
               name="manufacturerName"
               control={control}
@@ -232,7 +239,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={3}>
           <FormControl fullWidth>
-            <FormLabel>Price</FormLabel>
+            <FormLabel style={{ whiteSpace: 'normal' }}>Price per Unit</FormLabel>
             <Controller
               name={`price`}
               control={control}
