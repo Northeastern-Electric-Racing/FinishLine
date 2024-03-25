@@ -419,9 +419,10 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.teamType, 'findFirst').mockResolvedValue(teamType1);
       vi.spyOn(prisma.wBS_Element, 'findUnique').mockResolvedValue(prismaWbsElement1);
       vi.spyOn(prisma.design_Review, 'create').mockResolvedValue(prismaDesignReview1);
-      
+
+      // the date for the design review is always in the future
       const newDate = new Date();
-      newDate.setDate(newDate.getDate() + 1); 
+      newDate.setDate(newDate.getDate() + 1);
 
       const res = await DesignReviewsService.createDesignReview(
         batman,
