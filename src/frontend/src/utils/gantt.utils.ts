@@ -10,6 +10,9 @@ import { projectWbsPipe } from './pipes';
 
 export const NO_TEAM = 'No Team';
 
+export const GANTT_CHART_GAP_SIZE = '0.75rem';
+export const GANTT_CHART_CELL_SIZE = '2.25rem';
+
 export interface GanttFilters {
   showCar0: boolean;
   showCar1: boolean;

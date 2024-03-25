@@ -11,6 +11,7 @@ import GanttChart from './GanttChart';
 import GanttPageFilter from './GanttPageFilter';
 import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
+import EditIcon from '@mui/icons-material/Edit';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
 import {
@@ -24,9 +25,9 @@ import {
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
-import { Box, createTheme, Paper, ThemeProvider, Typography } from '@mui/material';
-import { nerThemeOptions, lightThemeOptions } from '../../utils/themes';
+import { Box, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
+import { GanttChartTimeline } from '../../components/GanttChart/GanttChartTimeline';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -180,12 +181,12 @@ const GanttPageWrapper: FC = () => {
 
     return (
       <Box key={teamName} sx={{ my: 3, maxWidth: '90vw' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
-          <Typography variant="h5" sx={{ flexGrow: 1 }}>
-            {teamName}
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+          <Typography variant="h5">{teamName}</Typography>
+          {/**Add IconButton */}
+          <EditIcon />
         </Box>
-        <Paper>
+        <Box>
           <GanttChart
             ganttTasks={tasks}
             onExpanderClick={(newTask) => {
@@ -193,14 +194,14 @@ const GanttPageWrapper: FC = () => {
               setGanttTasks(newTasks);
             }}
           />
-        </Paper>
+        </Box>
       </Box>
     );
   });
 
   return (
     <PageLayout title="Gantt Chart">
-      <GanttPageFilter
+      {/** <GanttPageFilter
         car0Handler={car0Handler}
         car1Handler={car1Handler}
         car2Handler={car2Handler}
@@ -215,8 +216,13 @@ const GanttPageWrapper: FC = () => {
         currentStart={start}
         currentEnd={end}
         resetHandler={resetHandler}
-      />
-      <ThemeProvider theme={createTheme(nerThemeOptions, lightThemeOptions)}>{ganttCharts}</ThemeProvider>
+      />*/}
+
+      <Box sx={{ width: '100%', overflow: 'scroll', padding: 1, paddingBottom: 2 }}>
+        {/**TODO: calculate start and end date based on all gantt tasks */}
+        <GanttChartTimeline startDate={new Date('2023-01-16')} endDate={new Date('2024-12-2')} />
+        {ganttCharts}
+      </Box>
     </PageLayout>
   );
 };

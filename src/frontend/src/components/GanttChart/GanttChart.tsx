@@ -1,12 +1,13 @@
 import { addDays, differenceInDays, eachDayOfInterval, isMonday } from 'date-fns';
 import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
-import { Date_Event, EventChange, applyChangesToEvents } from './event';
+import { EventChange, applyChangesToEvents } from './event';
 import { dateFormatMonthDate, dateToString } from './date.utils';
 import { Task } from '../../pages/GanttPage/GanttPackage/types/public-types';
+import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
 import dayjs from 'dayjs';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { purple } from '@mui/material/colors';
 
 interface GanttChartProps {
@@ -14,9 +15,6 @@ interface GanttChartProps {
   end: Date;
   tasks: Task[];
 }
-
-const CHART_GAP_SIZE = '0.75rem';
-const CHART_CELL_SIZE = '2.25rem';
 
 export function GanttChart({ start, end, tasks }: GanttChartProps) {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
@@ -33,37 +31,7 @@ export function GanttChart({ start, end, tasks }: GanttChartProps) {
 
   return (
     <Box>
-      <Box sx={{ overflow: 'scroll', padding: 1, paddingBottom: 2 }}>
-        {/* Calendar/timeline */}
-        <Box
-          sx={{
-            display: 'grid',
-            gap: CHART_GAP_SIZE,
-            gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-            gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`
-          }}
-        >
-          {days.map((day) => {
-            return (
-              <Box
-                key={day.toISOString()}
-                sx={{
-                  backgroundColor: '#424242',
-                  borderRadius: '0.25rem',
-                  color: 'white',
-                  lineHeight: '1rem',
-                  textAlign: 'center',
-                  height: '3.25rem',
-                  minWidth: CHART_CELL_SIZE,
-                  maxWidth: CHART_CELL_SIZE
-                }}
-              >
-                <Typography fontWeight="bold">{dayjs(day).format('MMM')}</Typography>
-                <Typography fontWeight="bold">{dayjs(day).format('D')}</Typography>
-              </Box>
-            );
-          })}
-        </Box>
+      <Box>
         {/* Data display: reset list of events every time eventChanges list changes using key */}
         <div style={{ marginTop: '1rem', width: '100%' }} key={eventChanges.length}>
           {displayEvents.map((event) => {
@@ -183,7 +151,7 @@ function Event({
         sx={{
           width: '100%',
           display: 'grid',
-          gap: CHART_GAP_SIZE,
+          gap: GANTT_CHART_GAP_SIZE,
           gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
           gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`,
           position: 'absolute',
@@ -201,8 +169,8 @@ function Event({
               sx={{
                 borderRadius: '0.25rem',
                 height: '2.75rem',
-                minWidth: CHART_CELL_SIZE,
-                maxWidth: CHART_CELL_SIZE,
+                minWidth: GANTT_CHART_CELL_SIZE,
+                maxWidth: GANTT_CHART_CELL_SIZE,
                 backgroundColor: `rgba(37, 99, 235, 0.1)`
               }}
             />
@@ -211,9 +179,9 @@ function Event({
       <Box
         sx={{
           display: 'grid',
-          gap: CHART_GAP_SIZE,
+          gap: GANTT_CHART_GAP_SIZE,
           gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-          gridTemplateColumns: `repeat(${days.length}, minmax(${CHART_CELL_SIZE}, 1fr))`,
+          gridTemplateColumns: `repeat(${days.length}, minmax(${GANTT_CHART_CELL_SIZE}, 1fr))`,
           width: '100%'
         }}
       >
@@ -227,7 +195,7 @@ function Event({
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? 'rgb(37 99 235)' : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            backgroundColor: purple[100]
+            backgroundColor: event.styles ? event.styles.backgroundColor : purple[300]
           }}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
