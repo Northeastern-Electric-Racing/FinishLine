@@ -6,6 +6,18 @@ export enum ClubAccount {
   BUDGET = 'BUDGET'
 }
 
+export interface ReimbursementRequestRow {
+  id: string;
+  saboId: number | undefined;
+  amount: number;
+  dateSubmitted: Date;
+  status: ReimbursementStatusType;
+  dateSubmittedToSabo: Date | undefined;
+  submitter: User;
+  vendor: Vendor;
+  refundSource: ClubAccount;
+}
+
 export enum ReimbursementStatusType {
   PENDING_FINANCE = 'PENDING_FINANCE',
   SABO_SUBMITTED = 'SABO_SUBMITTED',
