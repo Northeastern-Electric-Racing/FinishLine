@@ -1,10 +1,3 @@
-/*
-  Warnings:
-
-  - The values [UNORDERED] on the enum `Material_Status` will be removed. If these variants are still used in the database, this will fail.
-
-*/
--- AlterEnum
 BEGIN;
 CREATE TYPE "Material_Status_new" AS ENUM ('RECEIVED', 'ORDERED', 'SHIPPED', 'NOT_READY_TO_ORDER', 'READY_TO_ORDER');
 ALTER TABLE "Material" ALTER COLUMN "status" TYPE "Material_Status_new" USING (
