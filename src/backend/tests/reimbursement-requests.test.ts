@@ -1,13 +1,13 @@
 import { ClubAccount, ReimbursementStatusType } from 'shared';
-import prisma from '../../src/prisma/prisma';
-import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
+import prisma from '../src/prisma/prisma';
+import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
-} from '../../src/utils/errors.utils';
+} from '../src/utils/errors.utils';
 import {
   GiveMeMoneyProduct,
   GiveMeMyMoney,
@@ -26,7 +26,7 @@ import {
   sharedGiveMeMyMoney,
   KFC,
   reimbursementMock
-} from '../test-data/reimbursement-requests.test-data';
+} from './test-data/reimbursement-requests.test-data';
 import {
   alfred,
   batman,
@@ -38,15 +38,15 @@ import {
   aquaman,
   greenlantern,
   batmanSettings
-} from '../test-data/users.test-data';
-import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
+} from './test-data/users.test-data';
+import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementTransformer
-} from '../../src/transformers/reimbursement-requests.transformer';
-import { justiceLeague, prismaTeam1, primsaTeam2 } from '../test-data/teams.test-data';
+} from '../src/transformers/reimbursement-requests.transformer';
+import { justiceLeague, prismaTeam1, primsaTeam2 } from './test-data/teams.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});

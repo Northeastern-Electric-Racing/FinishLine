@@ -1,7 +1,7 @@
-import prisma from '../../src/prisma/prisma';
-import TeamsService from '../../src/services/teams.services';
-import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
-import { batman, superman, theVisitor } from '../test-data/users.test-data';
+import prisma from '../src/prisma/prisma';
+import TeamsService from '../src/services/teams.services';
+import { AccessDeniedAdminOnlyException, HttpException } from '../src/utils/errors.utils';
+import { batman, superman, theVisitor } from './test-data/users.test-data';
 
 describe('Team Type Tests', () => {
   beforeEach(async () => {

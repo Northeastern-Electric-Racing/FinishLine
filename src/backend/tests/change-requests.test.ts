@@ -1,4 +1,4 @@
-import prisma from '../../src/prisma/prisma';
+import prisma from '../src/prisma/prisma';
 import {
   aquaman,
   batman,
@@ -8,7 +8,7 @@ import {
   wonderwoman,
   supermanWithUserSettings,
   batmanWithUserSettings
-} from '../test-data/users.test-data';
+} from './test-data/users.test-data';
 import {
   prismaProposedSolution1,
   whipExpectedActivites,
@@ -16,12 +16,12 @@ import {
   prismaScopeChangeRequest1,
   prismaChangeRequest1,
   sharedChangeRequest
-} from '../test-data/change-requests.test-data';
-import { prismaWbsElement1 } from '../test-data/wbs-element.test-data';
-import { prismaWorkPackage1 } from '../test-data/work-packages.test-data';
-import { prismaProject1 } from '../test-data/projects.test-data';
+} from './test-data/change-requests.test-data';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
+import { prismaWorkPackage1 } from './test-data/work-packages.test-data';
+import { prismaProject1 } from './test-data/projects.test-data';
 import { CR_Type } from '@prisma/client';
-import ChangeRequestsService from '../../src/services/change-requests.services';
+import ChangeRequestsService from '../src/services/change-requests.services';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -30,10 +30,10 @@ import {
   HttpException,
   NotFoundException,
   DeletedException
-} from '../../src/utils/errors.utils';
-import * as changeRequestTransformer from '../../src/transformers/change-requests.transformer';
-import * as changeRequestUtils from '../../src/utils/change-requests.utils';
-import * as slackUtils from '../../src/utils/slack.utils';
+} from '../src/utils/errors.utils';
+import * as changeRequestTransformer from '../src/transformers/change-requests.transformer';
+import * as changeRequestUtils from '../src/utils/change-requests.utils';
+import * as slackUtils from '../src/utils/slack.utils';
 
 describe('Change Requests', () => {
   beforeEach(() => {

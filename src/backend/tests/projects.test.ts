@@ -1,7 +1,7 @@
-import prisma from '../../src/prisma/prisma';
-import { getHighestProjectNumber } from '../../src/utils/projects.utils';
-import * as changeRequestUtils from '../../src/utils/change-requests.utils';
-import { aquaman, batman, wonderwoman, superman, theVisitor } from '../test-data/users.test-data';
+import prisma from '../src/prisma/prisma';
+import { getHighestProjectNumber } from '../src/utils/projects.utils';
+import * as changeRequestUtils from '../src/utils/change-requests.utils';
+import { aquaman, batman, wonderwoman, superman, theVisitor } from './test-data/users.test-data';
 import {
   prismaProject1,
   sharedProject1,
@@ -21,11 +21,11 @@ import {
   transformedMockLinkType1,
   manufacturer1,
   manufacturer2
-} from '../test-data/projects.test-data';
-import { prismaChangeRequest1 } from '../test-data/change-requests.test-data';
-import { primsaTeam2, prismaTeam1 } from '../test-data/teams.test-data';
-import * as projectTransformer from '../../src/transformers/projects.transformer';
-import ProjectsService from '../../src/services/projects.services';
+} from './test-data/projects.test-data';
+import { prismaChangeRequest1 } from './test-data/change-requests.test-data';
+import { primsaTeam2, prismaTeam1 } from './test-data/teams.test-data';
+import * as projectTransformer from '../src/transformers/projects.transformer';
+import ProjectsService from '../src/services/projects.services';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
@@ -33,13 +33,13 @@ import {
   DeletedException,
   HttpException,
   NotFoundException
-} from '../../src/utils/errors.utils';
-import { prismaWbsElement1 } from '../test-data/wbs-element.test-data';
-import WorkPackagesService from '../../src/services/work-packages.services';
+} from '../src/utils/errors.utils';
+import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
+import WorkPackagesService from '../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { Material, Material_Status, User } from '@prisma/client';
 import { Decimal } from 'decimal.js';
-import linkTypeQueryArgs from '../../src/prisma-query-args/link-types.query-args';
+import linkTypeQueryArgs from '../src/prisma-query-args/link-types.query-args';
 
 vi.mock('../src/utils/projects.utils');
 const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;

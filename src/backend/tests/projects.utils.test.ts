@@ -1,4 +1,4 @@
-import { createListChanges } from '../../src/utils/changes.utils';
+import { createListChanges } from '../src/utils/changes.utils';
 
 describe('CreateRulesChangesJson', () => {
   test('createRulesChangesJson with empty old + new lists', () => {
