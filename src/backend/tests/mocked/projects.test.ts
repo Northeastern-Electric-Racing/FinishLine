@@ -131,7 +131,7 @@ describe('Projects', () => {
       otherConstraints: []
     };
     vi.spyOn(prisma.project, 'findUnique').mockResolvedValue(project);
-    vi.spyOn(prisma.project, 'update').mockResolvedValue(sharedProject1);
+    vi.spyOn(prisma.project, 'update').mockResolvedValue(prismaProject1);
     const changes: Prisma.BatchPayload = { count: 0 };
     vi.spyOn(prisma.change, 'createMany').mockResolvedValue(changes);
 
