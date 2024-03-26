@@ -12,6 +12,7 @@ import GanttPageFilter from './GanttPageFilter';
 import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
 import EditIcon from '@mui/icons-material/Edit';
+import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
 import {
@@ -27,7 +28,7 @@ import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { Box, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { GanttChartTimeline } from './GanttPackage/components/calendar/GanttChartCalendar';
+import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -90,6 +91,7 @@ const GanttPageWrapper: FC = () => {
     const tasks: GanttTask[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
     setGanttTasks(tasks);
+    // find the date of the earliest start date and subtract 2 weeks for the first date on chart
   }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
 
   if (isLoading) return <LoadingIndicator />;
@@ -173,6 +175,32 @@ const GanttPageWrapper: FC = () => {
     teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
   });
 
+  // find the date of the earliest start date and subtract 2 weeks for the first date on calendar
+  const ganttStartDate =
+    ganttTasks.length !== 0
+      ? sub(
+          ganttTasks
+            .map((task) => task.start)
+            .reduce((previous, current) => {
+              return previous < current ? previous : current;
+            }, new Date('2070-03-21T04:00:00.000Z')),
+          { weeks: 2 }
+        )
+      : sub(Date.now(), { weeks: 5 });
+
+  // find the date of the latest end date and add 3 weeks for the last date on calendar
+  const ganttEndDate =
+    ganttTasks.length !== 0
+      ? add(
+          ganttTasks
+            .map((task) => task.end)
+            .reduce((previous, current, index) => {
+              return previous > current ? previous : current;
+            }, new Date('1995-03-27T04:00:00.000Z')),
+          { weeks: 3 }
+        )
+      : add(Date.now(), { weeks: 5 });
+
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   const ganttCharts: JSX.Element[] = sortedTeamList.map((teamName: string) => {
@@ -180,7 +208,7 @@ const GanttPageWrapper: FC = () => {
     if (!tasks) return <></>;
 
     return (
-      <Box key={teamName} sx={{ my: 3, width: 'fit-content' }}>
+      <Box key={teamName} sx={{ my: 3, maxWidth: '90vw' }}>
         <Box
           sx={{
             display: 'flex',
@@ -199,6 +227,8 @@ const GanttPageWrapper: FC = () => {
         <Box>
           <GanttChart
             ganttTasks={tasks}
+            start={ganttStartDate}
+            end={ganttEndDate}
             onExpanderClick={(newTask) => {
               const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
               setGanttTasks(newTasks);
@@ -229,8 +259,7 @@ const GanttPageWrapper: FC = () => {
       />*/}
 
       <Box sx={{ width: '100%', overflow: 'scroll' }}>
-        {/**TODO: calculate start and end date based on all gantt tasks */}
-        <GanttChartTimeline startDate={new Date('2023-01-16')} endDate={new Date('2024-12-2')} />
+        <GanttChartCalendar start={ganttStartDate} end={ganttEndDate} />
         {ganttCharts}
       </Box>
     </PageLayout>

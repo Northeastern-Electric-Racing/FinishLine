@@ -1,30 +1,30 @@
 import { Box, Typography, useTheme } from '@mui/material';
-import { eachDayOfInterval, isMonday, format } from 'date-fns';
+import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
 import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../../../../utils/gantt.utils';
 
-interface GanttChartTimelineProps {
-  startDate: Date;
-  endDate: Date;
+interface GanttChartCalendarProps {
+  start: Date;
+  end: Date;
 }
 
-export function GanttChartTimeline({ startDate, endDate }: GanttChartTimelineProps) {
+export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
   const theme = useTheme();
-  const days = eachDayOfInterval({ start: startDate, end: endDate }).filter((day) => isMonday(day));
+  const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
   return (
     <Box>
+      {/* Year Display */}
       <Box
         sx={{
           display: 'grid',
           gap: GANTT_CHART_GAP_SIZE,
           gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
-          gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`,
-          maxWidth: 10
+          gridTemplateColumns: `repeat(${days.length}, minmax(auto, 1fr))`
         }}
       >
-        {days.map((day) => {
-          // TODO: have year only display once on the first jan monday
-          const yearDisplay = day.getMonth() === 0 ? format(day, 'y') : '';
+        {days.map((day, index) => {
+          // Show the year on the first date and on the first day of a new year
+          const yearDisplay = index === 0 || (day.getMonth() === 0 && getDate(day) <= 7) ? format(day, 'y') : '';
           return (
             <Box
               key={day.toISOString()}
@@ -38,11 +38,14 @@ export function GanttChartTimeline({ startDate, endDate }: GanttChartTimelinePro
                 maxWidth: GANTT_CHART_CELL_SIZE
               }}
             >
-              <Typography fontWeight="bold">{yearDisplay}</Typography>
+              <Typography fontWeight="bold" variant="h6">
+                {yearDisplay}
+              </Typography>
             </Box>
           );
         })}
       </Box>
+      {/* Day & Month Display */}
       <Box
         sx={{
           display: 'grid',
