@@ -30,7 +30,7 @@ const renderComponent = (path?: string, route?: string) => {
   const RouterWrapper = routerWrapperBuilder({ path, route });
   return render(
     <RouterWrapper>
-      <AppAuthenticated userId={1} />
+      <AppAuthenticated userId={1} userRole={'GUEST'} />
     </RouterWrapper>
   );
 };

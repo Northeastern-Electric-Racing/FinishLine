@@ -49,7 +49,8 @@ import {
   vendorTransformer
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
-import { UserWithSettings } from '../utils/auth.utils';
+import { UserWithSecureSettings } from '../utils/auth.utils';
+import { sendReimbursementRequestDeniedNotification } from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -110,7 +111,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursement request
    */
   static async createReimbursementRequest(
-    recipient: UserWithSettings,
+    recipient: UserWithSecureSettings,
     dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
@@ -300,6 +301,25 @@ export default class ReimbursementRequestService {
     await removeDeletedReceiptPictures(receiptPictures, oldReimbursementRequest.receiptPictures || [], submitter);
 
     return updatedReimbursementRequest;
+  }
+
+  static async editReimbursement(reimbursementId: string, editor: User, amount: number, dateCreated: Date) {
+    const request = await prisma.reimbursement.findUnique({
+      where: { reimbursementId }
+    });
+
+    if (!request) throw new NotFoundException('Reimbursement', reimbursementId);
+    if (request.userSubmittedId !== editor.userId)
+      throw new AccessDeniedException(
+        'You do not have access to edit this refund, only the submitter can edit their refund'
+      );
+
+    const updatedReimbursement = await prisma.reimbursement.update({
+      where: { reimbursementId },
+      data: { dateCreated, amount }
+    });
+
+    return updatedReimbursement;
   }
 
   /**
@@ -808,6 +828,14 @@ export default class ReimbursementRequestService {
         user: true
       }
     });
+
+    const recipientSettings = await prisma.user_Settings.findUnique({
+      where: { userId: reimbursementRequest.recipientId }
+    });
+
+    if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+
+    await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }

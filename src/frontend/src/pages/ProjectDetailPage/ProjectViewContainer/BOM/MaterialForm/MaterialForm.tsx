@@ -5,7 +5,6 @@ import * as yup from 'yup';
 import LoadingIndicator from '../../../../../components/LoadingIndicator';
 import {
   useCreateManufacturer,
-  useCreateUnit,
   useGetAllManufacturers,
   useGetAllMaterialTypes,
   useGetAllUnits
@@ -21,10 +20,10 @@ const schema = yup.object().shape({
   manufacturerName: yup.string().required('Select a Manufacturer'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
   quantity: yup.number().required('Enter a quantity!'),
-  price: yup.number().required('Price is required!'),
+  price: yup.number().required('Price per Unit is required!'),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
-  notes: yup.string().required('Notes are required!')
+  notes: yup.string().optional()
 });
 
 export interface MaterialFormInput {
@@ -38,7 +37,7 @@ export interface MaterialFormInput {
   quantity: number;
   unitName?: string;
   linkUrl: string;
-  notes: string;
+  notes?: string;
   assemblyId?: string;
 }
 
@@ -53,7 +52,7 @@ export interface MaterialDataSubmission {
   quantity: Decimal;
   unitName?: string;
   linkUrl: string;
-  notes: string;
+  notes?: string;
   assemblyId?: string;
   subtotal: number;
 }
@@ -86,13 +85,12 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       price: defaultValues?.price ?? 0,
       unitName: defaultValues?.unitName,
       linkUrl: defaultValues?.linkUrl ?? '',
-      notes: defaultValues?.notes ?? '',
+      notes: defaultValues?.notes,
       assemblyId: defaultValues?.assemblyId
     },
     resolver: yupResolver(schema)
   });
 
-  const { mutateAsync: createUnit, isLoading: isLoadingCreateUnit } = useCreateUnit();
   const { mutateAsync: createManufacturer, isLoading: isLoadingCreateManufacturer } = useCreateManufacturer();
 
   const {
@@ -123,7 +121,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     !materialTypes ||
     !units ||
     !manufactuers ||
-    isLoadingCreateUnit ||
     isLoadingCreateManufacturer
   ) {
     return <LoadingIndicator />;
@@ -133,17 +130,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     const price = Math.round(data.price * 100);
     const subtotal = parseFloat((data.quantity * price).toFixed(2));
     onSubmit({ ...data, subtotal: subtotal, price: price, quantity: new Decimal(data.quantity) });
-  };
-
-  const createUnitWrapper = async (unitName: string): Promise<void> => {
-    try {
-      const createdUnit = await createUnit({ name: unitName });
-      setValue('unitName', createdUnit.name);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
-    }
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
@@ -171,7 +157,6 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       errors={errors}
       open={open}
       watch={watch}
-      createUnit={createUnitWrapper}
       createManufacturer={createManufacturerWrapper}
       setValue={setValue}
     />

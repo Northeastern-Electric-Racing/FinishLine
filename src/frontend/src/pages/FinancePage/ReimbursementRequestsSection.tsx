@@ -3,7 +3,14 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import { ReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { centsToDollar, datePipe, dateUndefinedPipe, fullNamePipe, undefinedPipe } from '../../utils/pipes';
+import {
+  centsToDollar,
+  codeAndRefundSourceName,
+  datePipe,
+  dateUndefinedPipe,
+  fullNamePipe,
+  undefinedPipe
+} from '../../utils/pipes';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { routes } from '../../utils/routes';
@@ -40,12 +47,14 @@ const ReimbursementRequestTable = ({
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
+              <ColumnHeader title="" />
               {tabValue === 1 && <ColumnHeader title="Recipient" />}
               <ColumnHeader title="Sabo ID" />
               <ColumnHeader title="Amount ($)" />
               <ColumnHeader title="Date Submitted" />
               <ColumnHeader title="Date Submitted To Sabo" />
               <ColumnHeader title="Vendor" />
+              {tabValue === 1 && <ColumnHeader title="Refund Source" />}
               <ColumnHeader title="Status" />
             </TableRow>
           </TableHead>
@@ -57,12 +66,14 @@ const ReimbursementRequestTable = ({
                 key={`$${row.amount}-${index}`}
                 sx={{ textDecoration: 'none', '&:last-child td, &:last-child th': { border: 0 } }}
               >
+                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                 <TableCell align="center">{datePipe(row.dateSubmitted)}</TableCell>
                 <TableCell align="center">{dateUndefinedPipe(row.dateSubmittedToSabo)}</TableCell>
                 <TableCell align="center">{row.vendor.name}</TableCell>
+                {tabValue === 1 && <TableCell align="center">{codeAndRefundSourceName(row.refundSource)}</TableCell>}
                 <TableCell align="center">{cleanReimbursementRequestStatus(row.status)}</TableCell>
               </TableRow>
             ))}

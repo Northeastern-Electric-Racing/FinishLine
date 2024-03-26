@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Link } from '@mui/material';
+import { Box, useTheme } from '@mui/system';
 import {
   DataGrid,
   GridColDef,
@@ -13,17 +15,15 @@ import {
   GridToolbarFilterButton,
   GridToolbarQuickFilter
 } from '@mui/x-data-grid';
-import { routes } from '../../utils/routes';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
-import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
-import { Box, useTheme } from '@mui/system';
 import { useEffect, useState } from 'react';
-import { ChangeRequest, ChangeRequestType, validateWBS, WbsNumber } from 'shared';
-import { GridColDefStyle } from '../../utils/tables';
-import { Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { ChangeRequest, ChangeRequestType, WbsNumber, validateWBS } from 'shared';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
+import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { routes } from '../../utils/routes';
+import { GridColDefStyle } from '../../utils/tables';
+import ErrorPage from '../ErrorPage';
 
 const CustomToolbar = () => (
   <GridToolbarContainer>
@@ -218,7 +218,7 @@ const ChangeRequestsTable: React.FC = () => {
         sx={{
           border: 0,
           '& .MuiDataGrid-row:hover': {
-            backgroundColor: '#ef4345'
+            backgroundColor: 'rgba(239, 67, 69, 0.6)'
           },
           '& .MuiDataGrid-columnHeader': {
             borderRight: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`,
