@@ -5,7 +5,7 @@
 
 import { Typography } from '@mui/material';
 import { Task, ViewMode } from './GanttPackage/types/public-types';
-import { GanttChart as Gantt } from '../../components/GanttChart/GanttChart';
+import { GanttChart as Gantt } from './GanttPackage/components/gantt/GanttChart';
 
 interface GanttPageProps {
   ganttTasks: Task[];

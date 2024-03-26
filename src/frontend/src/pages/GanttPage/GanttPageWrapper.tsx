@@ -27,7 +27,7 @@ import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
 import { Box, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { GanttChartTimeline } from '../../components/GanttChart/GanttChartTimeline';
+import { GanttChartTimeline } from './GanttPackage/components/calendar/GanttChartCalendar';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react

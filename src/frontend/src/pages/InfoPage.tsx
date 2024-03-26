@@ -12,7 +12,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ExternalLink from '../components/ExternalLink';
 import PageBlock from '../layouts/PageBlock';
 import PageLayout from '../components/PageLayout';
-import { GanttChart } from '../components/GanttChart/GanttChart';
+import { GanttChart } from './GanttPage/GanttPackage/components/gantt/GanttChart';
 
 const InfoPage: React.FC = () => {
   const data = [

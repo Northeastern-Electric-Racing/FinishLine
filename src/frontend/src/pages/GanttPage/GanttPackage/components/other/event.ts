@@ -1,4 +1,4 @@
-import { Task } from '../../pages/GanttPage/GanttPackage/types/public-types';
+import { Task } from '../../types/public-types';
 import dayjs from 'dayjs';
 
 export type Date_Event = { id: string; start: Date; end: Date; title: string };
