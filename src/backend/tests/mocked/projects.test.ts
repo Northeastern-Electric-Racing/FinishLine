@@ -36,7 +36,7 @@ import {
 import { prismaWbsElement1 } from '../test-data/wbs-element.test-data';
 import WorkPackagesService from '../../src/services/work-packages.services';
 import { validateWBS, WbsNumber } from 'shared';
-import { Material, Material_Status, User } from '@prisma/client';
+import { Material, Material_Status, Prisma, User } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 import linkTypeQueryArgs from '../../src/prisma-query-args/link-types.query-args';
 
@@ -123,15 +123,17 @@ describe('Projects', () => {
     vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     const projectCreateResult = { ...prismaWbsElement1, project: prismaProject2 };
     vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(projectCreateResult);
-    vi.spyOn(prisma.project, 'findUnique').mockResolvedValue({
+    const project = {
       ...prismaProject2,
       wbsElement: { ...prismaWbsElement1, links: [] },
       goals: [],
       features: [],
       otherConstraints: []
-    });
+    };
+    vi.spyOn(prisma.project, 'findUnique').mockResolvedValue(project);
     vi.spyOn(prisma.project, 'update').mockResolvedValue(sharedProject1);
-    vi.spyOn(prisma.change, 'createMany').mockResolvedValue([]);
+    const changes: Prisma.BatchPayload = { count: 0 };
+    vi.spyOn(prisma.change, 'createMany').mockResolvedValue(changes);
 
     const res = await ProjectsService.createProject(
       batman,
