@@ -451,6 +451,36 @@ const performSeed: () => Promise<void> = async () => {
     joeBlow.userId
   );
 
+  /** Project 6 */
+  const { projectWbsNumber: project6WbsNumber, projectId: project6Id } = await seedProject(
+    aang,
+    changeRequest1.crId,
+    0,
+    'Appa Plush',
+    'Manufacture plushes of Appa for moral support.',
+    [avatarBenders.teamId],
+    aang,
+    99999,
+    [],
+    ['Boost team moral by 100000000%'],
+    ['10inch plush', '10ft plush', '30ft plush'],
+    [''],
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
+    aang.userId,
+    katara.userId
+  );
+
   /**
    * Change Requests for Creating Work Packages
    */
@@ -494,6 +524,46 @@ const performSeed: () => Promise<void> = async () => {
 
   // approve the change request
   await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP1Id, 'LGTM', true, proposedSolution2Id);
+
+  const changeRequestP6 = await ChangeRequestsService.createStandardChangeRequest(
+    cyborg,
+    project6WbsNumber.carNumber,
+    project6WbsNumber.projectNumber,
+    project6WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ],
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ]
+  );
+
+  const changeRequestP6Id = changeRequestP6.crId;
+
+  // make a proposed solution for it
+  const proposedSolution6 = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestP6Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact'
+  );
+
+  const proposedSolution6Id = proposedSolution6.id;
+
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestP6Id, 'LGTM', true, proposedSolution6Id);
 
   const changeRequestWP5 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -566,7 +636,7 @@ const performSeed: () => Promise<void> = async () => {
     'ACTIVATION',
     workPackage1.project.wbsElement.projectLeadId!,
     workPackage1.project.wbsElement.projectManagerId!,
-    new Date(),
+    new Date('2024-03-25T04:00:00.000Z'),
     true
   );
 
@@ -636,6 +706,37 @@ const performSeed: () => Promise<void> = async () => {
     joeShmoe.userId,
     thomasEmrax.userId
   );
+
+  /** Work Package 5 */
+  const { workPackageWbsNumber: workPackage5WbsNumber, workPackage: workPackage5 } = await seedWorkPackage(
+    aang,
+    'Design Plush',
+    changeRequestP6Id,
+    WorkPackageStage.Design,
+    '04/02/2023',
+    7,
+    [],
+    ['Make sketches', 'Get sketches reviewed', 'Finalize sketches'],
+    ['Sketch of designs for plush is finalized'],
+    aang,
+    WbsElementStatus.Active,
+    katara.userId,
+    aang.userId
+  );
+
+  const workPackage5ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    aang,
+    workPackage5WbsNumber.carNumber,
+    workPackage5WbsNumber.projectNumber,
+    workPackage5WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    workPackage5.project.wbsElement.projectLeadId!,
+    workPackage5.project.wbsElement.projectManagerId!,
+    new Date('2023-05-08T04:00:00.000Z'),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage5ActivationCrId, 'Very cute LGTM!', true, null);
 
   /**
    * Change Requests
