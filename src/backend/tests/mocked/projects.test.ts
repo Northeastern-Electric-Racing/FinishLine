@@ -42,7 +42,6 @@ import { Decimal } from 'decimal.js';
 import linkTypeQueryArgs from '../../src/prisma-query-args/link-types.query-args';
 
 vi.mock('../src/utils/projects.utils');
-const mockGetHighestProjectNumber = getHighestProjectNumber as jest.Mock<Promise<number>>;
 
 describe('Projects', () => {
   beforeEach(() => {
