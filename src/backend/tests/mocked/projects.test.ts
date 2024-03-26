@@ -125,6 +125,15 @@ describe('Projects', () => {
     vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     const projectCreateResult = { ...prismaWbsElement1, project: prismaProject2 };
     vi.spyOn(prisma.wBS_Element, 'create').mockResolvedValue(projectCreateResult);
+    vi.spyOn(prisma.project, 'findUnique').mockResolvedValue({
+      ...prismaProject2,
+      wbsElement: { ...prismaWbsElement1, links: [] },
+      goals: [],
+      features: [],
+      otherConstraints: []
+    });
+    vi.spyOn(prisma.project, 'update').mockResolvedValue(sharedProject1);
+    vi.spyOn(prisma.change, 'createMany').mockResolvedValue([]);
 
     const res = await ProjectsService.createProject(
       batman,
