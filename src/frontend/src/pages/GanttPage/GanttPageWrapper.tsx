@@ -29,6 +29,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { Box, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
+import { NERButton } from '../../components/NERButton';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -183,7 +184,7 @@ const GanttPageWrapper: FC = () => {
             .map((task) => task.start)
             .reduce((previous, current) => {
               return previous < current ? previous : current;
-            }, new Date('2070-03-21T04:00:00.000Z')),
+            }, new Date(8.64e15)),
           { weeks: 2 }
         )
       : sub(Date.now(), { weeks: 5 });
@@ -196,7 +197,7 @@ const GanttPageWrapper: FC = () => {
             .map((task) => task.end)
             .reduce((previous, current, index) => {
               return previous > current ? previous : current;
-            }, new Date('1995-03-27T04:00:00.000Z')),
+            }, new Date(-8.64e15)),
           { weeks: 3 }
         )
       : add(Date.now(), { weeks: 5 });
@@ -208,7 +209,7 @@ const GanttPageWrapper: FC = () => {
     if (!tasks) return <></>;
 
     return (
-      <Box key={teamName} sx={{ my: 3, maxWidth: '90vw' }}>
+      <>
         <Box
           sx={{
             display: 'flex',
@@ -224,23 +225,31 @@ const GanttPageWrapper: FC = () => {
           {/**Add IconButton */}
           <EditIcon />
         </Box>
-        <Box>
-          <GanttChart
-            ganttTasks={tasks}
-            start={ganttStartDate}
-            end={ganttEndDate}
-            onExpanderClick={(newTask) => {
-              const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-              setGanttTasks(newTasks);
-            }}
-          />
+        <Box key={teamName} sx={{ my: 3, width: 'fit-content', maxWidth: '90vw' }}>
+          <Box>
+            <GanttChart
+              ganttTasks={tasks}
+              start={ganttStartDate}
+              end={ganttEndDate}
+              onExpanderClick={(newTask) => {
+                const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
+                setGanttTasks(newTasks);
+              }}
+            />
+          </Box>
         </Box>
-      </Box>
+      </>
     );
   });
 
+  const headerRight = (
+    <NERButton variant="contained" onClick={() => console.log('TODO: filters popup')}>
+      Filters
+    </NERButton>
+  );
+
   return (
-    <PageLayout title="Gantt Chart">
+    <PageLayout title="Gantt Chart" headerRight={headerRight}>
       {/** <GanttPageFilter
         car0Handler={car0Handler}
         car1Handler={car1Handler}

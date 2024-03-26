@@ -12,7 +12,7 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: '90vw' }}>
       {/* Year Display */}
       <Box
         sx={{
