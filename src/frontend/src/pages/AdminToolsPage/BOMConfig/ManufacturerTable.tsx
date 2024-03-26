@@ -1,7 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Grid, IconButton, TableCell, TableRow } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { Manufacturer } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
 import { useDeleteManufacturer, useGetAllManufacturers } from '../../../hooks/bom.hooks';
@@ -11,6 +9,7 @@ import ErrorPage from '../../ErrorPage';
 import AdminToolTable from '../AdminToolTable';
 import CreateManufacturerModal from './CreateManufacturerFormModal';
 import ManufacturerDeleteModal from './ManufacturerDeleteModal';
+import { useState } from 'react';
 
 interface ManufacturerDeleteButtonProps {
   name: string;
@@ -25,15 +24,8 @@ const ManufacturerTable: React.FC = () => {
     error: manufacturersError
   } = useGetAllManufacturers();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const [manufacturerList, setManufacturerList] = useState<Manufacturer[]>([]);
   const { mutateAsync } = useDeleteManufacturer();
   const toast = useToast();
-
-  useEffect(() => {
-    if (manufacturers) {
-      setManufacturerList(manufacturers);
-    }
-  }, [manufacturers]);
 
   if (!manufacturers || manufacturersIsLoading) {
     return <LoadingIndicator />;
@@ -42,15 +34,10 @@ const ManufacturerTable: React.FC = () => {
     return <ErrorPage message={manufacturersError?.message} />;
   }
 
-  const handleDeleteManufacturer = async (manufacturerName: string) => {
+  const handleDeleteManufacturer = (manufacturerName: string) => {
     try {
       mutateAsync({ manufacturerName: manufacturerName });
-      const updatedManufacturersTableRows = manufacturerList.filter(
-        (manufacturer) => manufacturer.name !== manufacturerName
-      );
       toast.success(`Manufacturer: ${manufacturerName} Deleted Successfully!`);
-
-      setManufacturerList(updatedManufacturersTableRows);
     } catch (error) {
       toast.error(`Error Deleting Manufacturer!`);
     }
@@ -59,7 +46,7 @@ const ManufacturerTable: React.FC = () => {
   const ManufacturerDeleteButton: React.FC<ManufacturerDeleteButtonProps> = ({ name, onDelete }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const handleDeleteSubmit = async () => {
+    const handleDeleteSubmit = () => {
       onDelete(name);
       setShowDeleteModal(false);
     };
@@ -97,16 +84,16 @@ const ManufacturerTable: React.FC = () => {
     );
   };
 
-  const manufacturersTableRows = manufacturerList.map((manufacturer) => (
+  const manufacturersTableRows = manufacturers.map((manufacturers) => (
     <TableRow>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {datePipe(manufacturer.dateCreated)}
+        {datePipe(manufacturers.dateCreated)}
       </TableCell>
       <TableCell sx={{ border: '2px solid black' }}>
         <Grid container justifyContent="space-between">
-          <Grid sx={{ align: 'left' }}>{manufacturer.name}</Grid>
+          <Grid sx={{ align: 'left' }}>{manufacturers.name}</Grid>
           <Grid>
-            <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
+            <ManufacturerDeleteButton name={manufacturers.name} onDelete={handleDeleteManufacturer} />
           </Grid>
         </Grid>
       </TableCell>
