@@ -34,12 +34,14 @@ const ManufacturerTable: React.FC = () => {
     return <ErrorPage message={manufacturersError?.message} />;
   }
 
-  const handleDeleteManufacturer = (manufacturerName: string) => {
+  const handleDeleteManufacturer = async (manufacturerName: string) => {
     try {
-      mutateAsync({ manufacturerName: manufacturerName });
+      await mutateAsync({ manufacturerName: manufacturerName });
       toast.success(`Manufacturer: ${manufacturerName} Deleted Successfully!`);
-    } catch (error) {
-      toast.error(`Error Deleting Manufacturer!`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
     }
   };
 
