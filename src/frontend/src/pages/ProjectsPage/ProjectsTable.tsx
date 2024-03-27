@@ -128,9 +128,10 @@ const ProjectsTable: React.FC = () => {
     statusColumn
   ];
 
+  const localFilter = localStorage.getItem('projectsTableFilter');
   const filterValues = JSON.parse(
     // sets filter to a default value if no filter is stored in local storage
-    localStorage.getItem('projectsTableFilter') ?? '{"columnField": "carNumber", "operatorValue": "=", "value": ""}'
+    localFilter ? localFilter : '{"columnField": "carNumber", "operatorValue": "=", "value": ""}'
   );
 
   const theme = useTheme();
