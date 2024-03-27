@@ -115,7 +115,7 @@ export default class DesignReviewsService {
       }
     }
 
-    if (dateScheduled.valueOf() < new Date().valueOf()) {
+    if (new Date(dateScheduled.toDateString()) < new Date(new Date().toDateString())) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
 
