@@ -17,49 +17,43 @@ interface ChangeRequestRowProps {
 const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeRequests, noChangeRequestsMessage }) => {
   const theme = useTheme();
 
-  const displayCRCards = (crList: ChangeRequest[]) => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        overflow: 'auto',
-        justifyContent: 'flex-start',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.divider,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        }
-      }}
-    >
-      {crList.map((cr: ChangeRequest) => (
-        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
-      ))}
+  return (
+    <Box>
+      <Typography variant="h5" gutterBottom>
+        {title}
+      </Typography>
+      {changeRequests.length > 0 ? (
+        <Grid container>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              overflow: 'auto',
+              justifyContent: 'flex-start',
+              '&::-webkit-scrollbar': {
+                height: '20px'
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: 'transparent'
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: theme.palette.divider,
+                borderRadius: '20px',
+                border: '6px solid transparent',
+                backgroundClip: 'content-box'
+              }
+            }}
+          >
+            {changeRequests.map((cr: ChangeRequest) => (
+              <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
+            ))}
+          </Box>
+        </Grid>
+      ) : (
+        <Typography gutterBottom>{noChangeRequestsMessage}</Typography>
+      )}
     </Box>
   );
-
-  const renderChangeRequests = (title: string, crList: ChangeRequest[], emptyMessage: string) => {
-    return (
-      <>
-        <Typography variant="h5" gutterBottom>
-          {title}
-        </Typography>
-        {crList.length > 0 ? (
-          <Grid container>{displayCRCards(crList)}</Grid>
-        ) : (
-          <Typography gutterBottom>{emptyMessage}</Typography>
-        )}
-      </>
-    );
-  };
-
-  return <Box>{renderChangeRequests(title, changeRequests, noChangeRequestsMessage)}</Box>;
 };
 export default ChangeRequestRow;

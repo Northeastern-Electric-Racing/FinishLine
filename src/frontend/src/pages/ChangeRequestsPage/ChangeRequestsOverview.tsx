@@ -77,35 +77,25 @@ const ChangeRequestsOverview: React.FC = () => {
     )
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crToReviewRow = {
-    title: 'To Review',
-    changeRequests: crToReview,
-    noChangeRequestsMessage: 'No change requests to review'
-  };
-  const crUnreviewedRow = {
-    title: 'My Un-reviewed Change Requests',
-    changeRequests: crUnreviewed,
-    noChangeRequestsMessage: 'No un-reviewed change requests'
-  };
-
-  const crApprovedRow = {
-    title: 'My Recently Approved Change Requests',
-    changeRequests: crApproved,
-    noChangeRequestsMessage: 'No recently approved change requests'
-  };
-
-  const overviewRowList = [crUnreviewedRow, crApprovedRow];
-  if (showToReview) overviewRowList.unshift(crToReviewRow);
-
   return (
     <>
-      {overviewRowList.map((crRow) => (
+      {showToReview && (
         <ChangeRequestRow
-          title={crRow.title}
-          changeRequests={crRow.changeRequests}
-          noChangeRequestsMessage={crRow.noChangeRequestsMessage}
+          title="Change Requests To Review"
+          changeRequests={crToReview}
+          noChangeRequestsMessage="No change requests to review"
         />
-      ))}
+      )}
+      <ChangeRequestRow
+        title="My Un-reviewed Change Requests"
+        changeRequests={crUnreviewed}
+        noChangeRequestsMessage="No un-reviewed change requests"
+      />
+      <ChangeRequestRow
+        title="My Approved Change Requests"
+        changeRequests={crApproved}
+        noChangeRequestsMessage="No approved change requests"
+      />
     </>
   );
 };

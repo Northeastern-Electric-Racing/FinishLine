@@ -24,27 +24,18 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
     .filter((cr: ChangeRequest) => cr.accepted && equalsWbsNumber(wbsNum, cr.wbsNum))
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const crUnreviewedRow = {
-    title: 'Un-reviewed Change Requests',
-    changeRequests: unReviewedChangeRequests,
-    noChangeRequestsMessage: 'No un-reviewed change requests'
-  };
-
-  const crApprovedRow = {
-    title: 'Approved Change Requests',
-    changeRequests: approvedChangeRequests,
-    noChangeRequestsMessage: 'No recently approved change requests'
-  };
-
   return (
     <>
-      {[crUnreviewedRow, crApprovedRow].map((crRow) => (
-        <ChangeRequestRow
-          title={crRow.title}
-          changeRequests={crRow.changeRequests}
-          noChangeRequestsMessage={crRow.noChangeRequestsMessage}
-        />
-      ))}
+      <ChangeRequestRow
+        title="Un-reviewed Change Requests"
+        changeRequests={unReviewedChangeRequests}
+        noChangeRequestsMessage="No un-reviewed change requests"
+      />
+      <ChangeRequestRow
+        title="Approved Change Requests"
+        changeRequests={approvedChangeRequests}
+        noChangeRequestsMessage="No recently approved change requests"
+      />
     </>
   );
 };
