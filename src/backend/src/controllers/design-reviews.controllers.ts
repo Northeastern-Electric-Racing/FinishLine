@@ -27,19 +27,7 @@ export default class DesignReviewsController {
   static async createDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const submitter: User = await getCurrentUser(res);
-      const {
-        dateScheduled,
-        teamTypeId,
-        requiredMemberIds,
-        optionalMemberIds,
-        location,
-        isOnline,
-        isInPerson,
-        zoomLink,
-        docTemplateLink,
-        wbsNum,
-        meetingTimes
-      } = req.body;
+      const { dateScheduled, teamTypeId, requiredMemberIds, optionalMemberIds, wbsNum, meetingTimes } = req.body;
 
       const createdDesignReview = await DesignReviewsService.createDesignReview(
         submitter,
@@ -47,13 +35,8 @@ export default class DesignReviewsController {
         teamTypeId,
         requiredMemberIds,
         optionalMemberIds,
-        isOnline,
-        isInPerson,
-        docTemplateLink,
         wbsNum,
-        meetingTimes,
-        zoomLink,
-        location
+        meetingTimes
       );
       return res.status(200).json(createdDesignReview);
     } catch (error: unknown) {
@@ -77,7 +60,7 @@ export default class DesignReviewsController {
     try {
       const {
         dateScheduled,
-        teamType,
+        teamTypeId,
         requiredMembersIds,
         optionalMembersIds,
         isOnline,
@@ -99,7 +82,7 @@ export default class DesignReviewsController {
         user,
         designReviewId,
         dateScheduled,
-        teamType.teamTypeId,
+        teamTypeId,
         requiredMembersIds,
         optionalMembersIds,
         isOnline,

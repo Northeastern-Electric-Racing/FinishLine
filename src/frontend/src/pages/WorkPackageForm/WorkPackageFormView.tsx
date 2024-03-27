@@ -29,7 +29,7 @@ const schema = yup.object().shape({
   startDate: yup
     .date()
     .required('Start Date is required!')
-    .test('start-date-valid', 'start date is not valid', startDateTester),
+    .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
   duration: yup.number().required(),
   crId: yup
     .number()

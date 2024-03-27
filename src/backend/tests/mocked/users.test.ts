@@ -1,4 +1,4 @@
-import prisma from '../src/prisma/prisma';
+import prisma from '../../src/prisma/prisma';
 import {
   batman,
   batmanSettings,
@@ -10,11 +10,11 @@ import {
   batmanWithScheduleSettings,
   batmanScheduleSettings,
   batmanUserScheduleSettings
-} from './test-data/users.test-data';
+} from '../test-data/users.test-data';
 import { Role } from '@prisma/client';
-import UsersService from '../src/services/users.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
-import userTransformer from '../src/transformers/user.transformer';
+import { userTransformer } from '../../src/transformers/user.transformer';
+import UsersService from '../../src/services/users.services';
+import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 
 describe('Users', () => {
   afterEach(() => {
@@ -38,7 +38,10 @@ describe('Users', () => {
     expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     // note that batman was sorted to the front because his first name is before supermans alphabetically
     // and also that we don't return the google auth id for security reasons
-    expect(res).toStrictEqual([restOfBatman, restOfSuperman]);
+    expect(res).toStrictEqual([
+      { scheduleSettings: undefined, ...restOfBatman },
+      { scheduleSettings: undefined, ...restOfSuperman }
+    ]);
   });
 
   test('getSingleUser', async () => {

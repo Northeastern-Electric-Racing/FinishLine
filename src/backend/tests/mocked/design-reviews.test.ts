@@ -8,7 +8,7 @@ import {
   prismaDesignReview5,
   sharedDesignReview1,
   teamType1
-} from './test-data/design-reviews.test-data';
+} from '../test-data/design-reviews.test-data';
 import {
   aquaman,
   batman,
@@ -17,8 +17,8 @@ import {
   superman,
   theVisitor,
   wonderwoman
-} from './test-data/users.test-data';
-import prisma from '../src/prisma/prisma';
+} from '../test-data/users.test-data';
+import prisma from '../../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -26,9 +26,9 @@ import {
   DeletedException,
   HttpException,
   NotFoundException
-} from '../src/utils/errors.utils';
-import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
-import DesignReviewsService from '../src/services/design-reviews.services';
+} from '../../src/utils/errors.utils';
+import { prismaWbsElement1 } from '../test-data/wbs-element.test-data';
+import DesignReviewsService from '../../src/services/design-reviews.services';
 import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 
 describe('Design Reviews', () => {
@@ -422,20 +422,16 @@ describe('Design Reviews', () => {
 
       const res = await DesignReviewsService.createDesignReview(
         batman,
-        new Date('2024-03-25'),
+        new Date(),
         '1',
         [],
         [],
-        true,
-        false,
-        'doc temp',
         {
           carNumber: 1,
           projectNumber: 2,
           workPackageNumber: 0
         },
-        [0, 1, 2, 3],
-        'zoooooom'
+        [0, 1, 2, 3]
       );
 
       expect(res.teamType).toBe(teamType1);
@@ -449,16 +445,12 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 1,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new AccessDeniedException('create design review'));
     });
@@ -472,16 +464,12 @@ describe('Design Reviews', () => {
           '15',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 1,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new NotFoundException('Team Type', '15'));
     });
@@ -497,16 +485,12 @@ describe('Design Reviews', () => {
           '1',
           [],
           [],
-          true,
-          false,
-          'doc temp',
           {
             carNumber: 15,
             projectNumber: 2,
             workPackageNumber: 0
           },
-          [0, 1, 2, 3],
-          'zoom'
+          [0, 1, 2, 3]
         )
       ).rejects.toThrow(new NotFoundException('WBS Element', 15));
     });
@@ -551,14 +535,7 @@ describe('Design Reviews', () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
         DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batman)
-      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be in range 0-83'));
-    });
-
-    test('Availabilities were invalid - non-consecutive', async () => {
-      vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
-      await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [1, 3], batman)
-      ).rejects.toThrow(new HttpException(400, 'Meeting times have to be consecutive'));
+      ).rejects.toThrow(new HttpException(400, 'Availability times have to be in range 0-83'));
     });
   });
 });

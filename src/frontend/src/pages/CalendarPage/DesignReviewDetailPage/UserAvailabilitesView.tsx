@@ -1,26 +1,36 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { User } from 'shared';
+import { DesignReview, User } from 'shared';
 import { HeatmapColors } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
-import WarningIcon from '@mui/icons-material/Warning';
+import { useState } from 'react';
+import FinalizeDesignReviewDetailsModal from './FinalizeDesignReviewDetailsModal';
+import { DesignReviewEditData } from './DesignReviewDetailPage';
 
 interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
   currentUnavailableUsers: User[];
   usersToAvailabilities: Map<User, number[]>;
+  designReview: DesignReview;
+  conflictingDesignReviews: DesignReview[];
+  editPayload: DesignReviewEditData;
 }
 
 const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   currentAvailableUsers,
   currentUnavailableUsers,
-  usersToAvailabilities
+  usersToAvailabilities,
+  designReview,
+  conflictingDesignReviews,
+  editPayload
 }) => {
   const theme = useTheme();
+  const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
   const totalUsers = usersToAvailabilities.size;
   const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
+
   return (
     <Box
       style={{
@@ -90,9 +100,22 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             gap: '10px'
           }}
         >
-          <WarningIcon style={{ color: 'yellow', fontSize: '2em', marginTop: '5px' }} />
           <NERFailButton>Cancel</NERFailButton>
-          <NERSuccessButton>Finalize</NERSuccessButton>
+          <NERSuccessButton
+            variant="contained"
+            type="submit"
+            sx={{ mx: 1 }}
+            onClick={() => setShowFinalizeDesignReviewDetailsModal(true)}
+          >
+            Finalize
+          </NERSuccessButton>
+          <FinalizeDesignReviewDetailsModal
+            open={showFinalizeDesignReviewDetailsModal}
+            setOpen={setShowFinalizeDesignReviewDetailsModal}
+            conflictingDesignReviews={conflictingDesignReviews}
+            designReview={designReview}
+            editData={editPayload}
+          />
         </Box>
       </Box>
     </Box>

@@ -42,7 +42,6 @@ const LinkTypeTable = () => {
   return (
     <Box>
       <CreateLinkTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} linkTypes={linkTypes} />
-      <Typography variant="subtitle1">Registered LinkTypes</Typography>
       <AdminToolTable columns={[{ name: 'Name' }, { name: 'Icon Name' }, { name: 'Required' }]} rows={linkTypeTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         {isAdmin(currentUser.role) && (

@@ -55,20 +55,15 @@ export default class DesignReviewsService {
   }
 
   /**
-   * Creates a design review
-   * @param submitter user who submitted the design review
+   * Create a design review
+   * @param submitter User submitting the design review
    * @param dateScheduled when the design review is scheduled for
-   * @param teamTypeId team type id of the design review
-   * @param requiredMemberIds ids of the required members to attend the design review
-   * @param optionalMemberIds ids of the optional members to attend the design reivew
-   * @param isOnline if design review is online
-   * @param isInPerson if design review is in person
-   * @param docTemplateLink link to the doc template
-   * @param wbsNum wbs number for the design review
-   * @param meetingTimes the meeting times for the design review
-   * @param zoomLink link for the zoom if design review is online
-   * @param location location of the design review if in person
-   * @returns a design review
+   * @param teamTypeId team type id
+   * @param requiredMemberIds ids of members who are required to go
+   * @param optionalMemberIds ids of members who do not have to go
+   * @param wbsNum wbs num related to the design review
+   * @param meetingTimes meeting times of the design review
+   * @returns a new design review
    */
   static async createDesignReview(
     submitter: User,
@@ -76,13 +71,8 @@ export default class DesignReviewsService {
     teamTypeId: string,
     requiredMemberIds: number[],
     optionalMemberIds: number[],
-    isOnline: boolean,
-    isInPerson: boolean,
-    docTemplateLink: string,
     wbsNum: WbsNumber,
-    meetingTimes: number[],
-    zoomLink?: string,
-    location?: string
+    meetingTimes: number[]
   ): Promise<DesignReview> {
     if (!isLeadership(submitter.role)) throw new AccessDeniedException('create design review');
 
@@ -125,15 +115,7 @@ export default class DesignReviewsService {
       }
     }
 
-    if (isOnline && !zoomLink) {
-      throw new HttpException(400, 'If the design review is online then there needs to be a zoom link');
-    }
-
-    if (isInPerson && !location) {
-      throw new HttpException(400, 'If the design review is in person then there needs to be a location');
-    }
-
-    if (dateScheduled.valueOf() < new Date().valueOf()) {
+    if (new Date(dateScheduled.toDateString()) < new Date(new Date().toDateString())) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
 
@@ -142,11 +124,8 @@ export default class DesignReviewsService {
         dateScheduled,
         dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
-        location,
-        isOnline,
-        isInPerson,
-        zoomLink,
-        docTemplateLink,
+        isOnline: false,
+        isInPerson: false,
         userCreated: { connect: { userId: submitter.userId } },
         teamType: { connect: { teamTypeId: teamType.teamTypeId } },
         requiredMembers: { connect: requiredMemberIds.map((memberId) => ({ userId: memberId })) },
@@ -178,7 +157,11 @@ export default class DesignReviewsService {
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewNotification(memberUserSetting.slackId, designReview.designReviewId);
+          await sendSlackDesignReviewNotification(
+            memberUserSetting.slackId,
+            designReview.designReviewId,
+            designReview.wbsElement.name
+          );
         } catch (err: unknown) {
           if (err instanceof Error) {
             throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
@@ -337,19 +320,22 @@ export default class DesignReviewsService {
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    // Update user schedule settings
-    const validAvailability = validateMeetingTimes(availability);
+    availability.forEach((time) => {
+      if (time < 0 || time > 83) {
+        throw new HttpException(400, 'Availability times have to be in range 0-83');
+      }
+    });
 
     await prisma.schedule_Settings.upsert({
       where: { userId: submitter.userId },
       update: {
-        availability: validAvailability
+        availability
       },
       create: {
         userId: submitter.userId,
         personalGmail: '',
         personalZoomLink: '',
-        availability: validAvailability
+        availability
       }
     });
 
@@ -369,7 +355,7 @@ export default class DesignReviewsService {
 
       // If all requested attendees have confirmed their schedule, mark design review as confirmed
       if (
-        designReview.confirmedMembers.length ===
+        updatedDesignReview.confirmedMembers.length ===
         designReview.requiredMembers.length + designReview.optionalMembers.length
       ) {
         await prisma.design_Review.update({

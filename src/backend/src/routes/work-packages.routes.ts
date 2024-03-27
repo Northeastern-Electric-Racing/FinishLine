@@ -65,4 +65,6 @@ workPackagesRouter.post(
   WorkPackagesController.slackMessageUpcomingDeadlines
 );
 
+workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
+
 export default workPackagesRouter;
