@@ -10,6 +10,10 @@ describe('Work Package Template Tests', () => {
     await resetUsers();
   });
 
+  afterEach(async () => {
+    await resetUsers();
+  });
+
   describe('Get single work package template', () => {
     it('fails if user is a guest', async () => {
       await expect(async () => await WorkPackageService.getSingleWorkPackageTemplate(theVisitor, 'id')).rejects.toThrow(
@@ -25,7 +29,6 @@ describe('Work Package Template Tests', () => {
 
     it('get single work package template succeeds', async () => {
       const createdUser = await createTestUser(thomasEmrax);
-      console.log(createdUser.userId);
       await prisma.work_Package_Template.create({
         data: {
           workPackageTemplateId: 'id1',
@@ -38,7 +41,11 @@ describe('Work Package Template Tests', () => {
       });
 
       const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(thomasEmrax, 'id1');
-      expect(recievedWorkPackageTemplate).toStrictEqual({ ...WorkPackageTemplate1, userCreatedId: createdUser.userId });
+      expect(recievedWorkPackageTemplate).toStrictEqual({
+        ...WorkPackageTemplate1,
+        userCreated: { ...thomasEmrax, userId: createdUser.userId },
+        userCreatedId: createdUser.userId
+      });
     });
   });
 });
