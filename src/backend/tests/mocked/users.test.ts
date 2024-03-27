@@ -12,9 +12,9 @@ import {
   batmanUserScheduleSettings
 } from '../test-data/users.test-data';
 import { Role } from '@prisma/client';
+import { userTransformer } from '../../src/transformers/user.transformer';
 import UsersService from '../../src/services/users.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import userTransformer from '../../src/transformers/user.transformer';
 
 describe('Users', () => {
   afterEach(() => {
