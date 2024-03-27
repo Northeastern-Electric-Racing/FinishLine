@@ -119,13 +119,10 @@ export default class DesignReviewsService {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
 
-    const futureDay = new Date();
-    futureDay.setDate(futureDay.getDate() + 1);
-
     const designReview = await prisma.design_Review.create({
       data: {
         dateScheduled,
-        dateCreated: futureDay,
+        dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
         isOnline: false,
         isInPerson: false,
