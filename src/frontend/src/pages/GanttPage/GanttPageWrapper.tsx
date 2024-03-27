@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
+import React from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
@@ -26,7 +26,7 @@ import {
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
-import { Box, Typography } from '@mui/material';
+import { Box, Popover, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
 import { NERButton } from '../../components/NERButton';
@@ -41,6 +41,7 @@ const GanttPageWrapper: FC = () => {
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttTasks, setGanttTasks] = useState<GanttTask[]>([]);
+  const [anchorFilterEl, setAnchorFilterEl] = React.useState<HTMLButtonElement | null>(null);
   const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
@@ -242,31 +243,53 @@ const GanttPageWrapper: FC = () => {
     );
   });
 
+  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorFilterEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setAnchorFilterEl(null);
+  };
+
+  const open = Boolean(anchorFilterEl);
+
   const headerRight = (
-    <NERButton variant="contained" onClick={() => console.log('TODO: filters popup')}>
-      Filters
-    </NERButton>
+    <>
+      <NERButton variant="contained" onClick={handleFilterClick}>
+        Filters
+      </NERButton>
+      <Popover
+        open={open}
+        anchorEl={anchorFilterEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left'
+        }}
+        sx={{ minWidth: 'fit-content' }}
+      >
+        <GanttPageFilter
+          car0Handler={car0Handler}
+          car1Handler={car1Handler}
+          car2Handler={car2Handler}
+          status={status}
+          statusHandler={statusHandler}
+          teamHandler={teamHandler}
+          startHandler={startHandler}
+          endHandler={endHandler}
+          expandedHandler={expandedHandler}
+          teamList={teamList}
+          selectedTeam={selectedTeam}
+          currentStart={start}
+          currentEnd={end}
+          resetHandler={resetHandler}
+        />
+      </Popover>
+    </>
   );
 
   return (
     <PageLayout title="Gantt Chart" headerRight={headerRight}>
-      {/** <GanttPageFilter
-        car0Handler={car0Handler}
-        car1Handler={car1Handler}
-        car2Handler={car2Handler}
-        status={status}
-        statusHandler={statusHandler}
-        teamHandler={teamHandler}
-        startHandler={startHandler}
-        endHandler={endHandler}
-        expandedHandler={expandedHandler}
-        teamList={teamList}
-        selectedTeam={selectedTeam}
-        currentStart={start}
-        currentEnd={end}
-        resetHandler={resetHandler}
-      />*/}
-
       <Box sx={{ width: '100%', overflow: 'scroll' }}>
         <GanttChartCalendar start={ganttStartDate} end={ganttEndDate} />
         {ganttCharts}
