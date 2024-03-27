@@ -67,8 +67,8 @@ export const WorkPackageTemplate1: WorkPackageTemplate = {
   stage: undefined,
   duration: undefined,
   dateCreated: new Date('03/25/2024'),
-  userCreated: thomasEmrax,
-  userCreatedId: thomasEmrax.userId,
+  userCreated: batman,
+  userCreatedId: batman.userId,
   dateDeleted: undefined,
   userDeleted: undefined,
   userDeletedId: undefined

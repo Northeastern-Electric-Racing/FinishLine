@@ -2,7 +2,7 @@ import prisma from '../../src/prisma/prisma';
 import WorkPackageService from '../../src/services/work-packages.services';
 import { AccessDeniedGuestException, HttpException } from '../../src/utils/errors.utils';
 import { createTestUser, resetUsers } from '../test-utils';
-import { batman, theVisitor, thomasEmrax } from '../test-data/users.test-data';
+import { batman, theVisitor } from '../test-data/users.test-data';
 import { WorkPackageTemplate1 } from '../test-data/work-packages.test-data';
 
 describe('Work Package Template Tests', () => {
@@ -28,7 +28,8 @@ describe('Work Package Template Tests', () => {
     });
 
     it('get single work package template succeeds', async () => {
-      const createdUser = await createTestUser(thomasEmrax);
+      const createdUser = await createTestUser(batman);
+      console.log(createdUser)
       await prisma.work_Package_Template.create({
         data: {
           workPackageTemplateId: 'id1',
@@ -40,10 +41,10 @@ describe('Work Package Template Tests', () => {
         }
       });
 
-      const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(thomasEmrax, 'id1');
+      const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(batman, 'id1');
       expect(recievedWorkPackageTemplate).toStrictEqual({
         ...WorkPackageTemplate1,
-        userCreated: { ...thomasEmrax, userId: createdUser.userId },
+        userCreated: { ...batman, userId: createdUser.userId },
         userCreatedId: createdUser.userId
       });
     });

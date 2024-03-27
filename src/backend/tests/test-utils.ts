@@ -15,6 +15,7 @@ export const createTestUser = async ({
   firstName,
   lastName,
   email,
+  emailId,
   googleAuthId,
   role
 }: CreateTestUserParams): Promise<User> => {
@@ -23,6 +24,7 @@ export const createTestUser = async ({
       firstName,
       lastName,
       email,
+      emailId,
       googleAuthId,
       role
     }
@@ -52,5 +54,6 @@ export const resetUsers = async () => {
   await prisma.linkType.deleteMany();
   await prisma.work_Package_Template.deleteMany();
   await prisma.user_Settings.deleteMany();
+  await prisma.session.deleteMany();
   await prisma.user.deleteMany();
 };
