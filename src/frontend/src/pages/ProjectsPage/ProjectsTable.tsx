@@ -5,7 +5,7 @@
 
 import { Box, Link, useTheme } from '@mui/material';
 import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, WbsElementStatus } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
@@ -22,6 +22,7 @@ const ProjectsTable: React.FC = () => {
   const { isLoading, data, error } = useAllProjects();
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
+  const [windowSize, setWindowSize] = useState(window.innerWidth);
 
   const baseColDef: GridColDefStyle = {
     flex: 1,
@@ -37,32 +38,65 @@ const ProjectsTable: React.FC = () => {
     return formatter.format(amount);
   };
 
+  const wbsNumColumn: GridColDef = {
+    ...baseColDef,
+    field: 'wbsNum',
+    headerName: 'WBS #',
+    valueFormatter: (params) => wbsPipe(params.value),
+    maxWidth: 100,
+    filterable: false,
+    sortComparator: (v1, v2, param1, param2) => {
+      if (param1.value.carNumber !== param2.value.carNumber) {
+        return param1.value.carNumber - param2.value.carNumber;
+      } else if (param1.value.projectNumber !== param2.value.projectNumber) {
+        return param1.value.projectNumber - param2.value.projectNumber;
+      } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
+        return param1.value.workPackageNumber - param2.value.workPackageNumber;
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const projectNameColumn: GridColDef = {
+    ...baseColDef,
+    field: 'name',
+    headerName: 'Project Name'
+  };
+
+  const durationColumn: GridColDef = {
+    ...baseColDef,
+    field: 'duration',
+    headerName: 'Duration',
+    type: 'number',
+    valueFormatter: (params) => weeksPipe(params.value),
+    maxWidth: 100
+  };
+
+  const budgetColumn: GridColDef = {
+    ...baseColDef,
+    field: 'budget',
+    headerName: 'Budget',
+    type: 'number',
+    valueFormatter: (params) => dollars(params.value),
+    maxWidth: 100
+  };
+
+  const statusColumn: GridColDef = {
+    ...baseColDef,
+    field: 'status',
+    headerName: 'Status',
+    type: 'singleSelect',
+    valueOptions: Object.values(WbsElementStatus),
+    maxWidth: 100
+  };
+
+  const smallColumns: GridColDef[] = [wbsNumColumn, projectNameColumn, durationColumn, budgetColumn, statusColumn];
+
   const columns: GridColDef[] = [
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
-    {
-      ...baseColDef,
-      field: 'wbsNum',
-      headerName: 'WBS #',
-      valueFormatter: (params) => wbsPipe(params.value),
-      maxWidth: 100,
-      filterable: false,
-      sortComparator: (v1, v2, param1, param2) => {
-        if (param1.value.carNumber !== param2.value.carNumber) {
-          return param1.value.carNumber - param2.value.carNumber;
-        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
-          return param1.value.projectNumber - param2.value.projectNumber;
-        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
-          return param1.value.workPackageNumber - param2.value.workPackageNumber;
-        } else {
-          return 0;
-        }
-      }
-    },
-    {
-      ...baseColDef,
-      field: 'name',
-      headerName: 'Project Name'
-    },
+    wbsNumColumn,
+    projectNameColumn,
     {
       ...baseColDef,
       field: 'projectLead',
@@ -81,22 +115,8 @@ const ProjectsTable: React.FC = () => {
       headerName: 'Team',
       maxWidth: 200
     },
-    {
-      ...baseColDef,
-      field: 'duration',
-      headerName: 'Duration',
-      type: 'number',
-      valueFormatter: (params) => weeksPipe(params.value),
-      maxWidth: 100
-    },
-    {
-      ...baseColDef,
-      field: 'budget',
-      headerName: 'Budget',
-      type: 'number',
-      valueFormatter: (params) => dollars(params.value),
-      maxWidth: 100
-    },
+    durationColumn,
+    budgetColumn,
     {
       ...baseColDef,
       field: 'workPackages',
@@ -105,14 +125,7 @@ const ProjectsTable: React.FC = () => {
       maxWidth: 150,
       valueFormatter: (params) => params.value.length
     },
-    {
-      ...baseColDef,
-      field: 'status',
-      headerName: 'Status',
-      type: 'singleSelect',
-      valueOptions: Object.values(WbsElementStatus),
-      maxWidth: 100
-    }
+    statusColumn
   ];
 
   const filterValues = JSON.parse(
@@ -121,6 +134,21 @@ const ProjectsTable: React.FC = () => {
   );
 
   const theme = useTheme();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize(window.innerWidth);
+    };
+
+    // Attach the event listener to the window object
+    window.addEventListener('resize', handleResize);
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   return (
     <Box
       sx={{
@@ -153,7 +181,7 @@ const ProjectsTable: React.FC = () => {
             team: getProjectTeamsName(v)
           })) || []
         }
-        columns={columns}
+        columns={windowSize < 900 ? smallColumns : columns}
         sx={{
           border: 0,
           '& .MuiDataGrid-row:hover': {
