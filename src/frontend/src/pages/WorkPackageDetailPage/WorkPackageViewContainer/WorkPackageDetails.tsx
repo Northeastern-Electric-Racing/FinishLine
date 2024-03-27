@@ -79,7 +79,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
         variant="h5"
         sx={{
           mb: 1,
-          mt: 3
+          mt: 5
         }}
       >
         Blocked By
