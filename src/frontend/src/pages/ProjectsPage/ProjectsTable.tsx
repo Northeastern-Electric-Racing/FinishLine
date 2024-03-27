@@ -3,8 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Link, useTheme } from '@mui/material';
-import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
+import { Box, Link, useTheme } from '@mui/material';
+import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, WbsElementStatus } from 'shared';
@@ -13,6 +13,7 @@ import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
 import { getProjectTeamsName } from '../../utils/gantt.utils';
+import TableCustomToolbar from '../../components/TableCustomToolbar';
 
 /**
  * Table of all projects.
@@ -121,7 +122,15 @@ const ProjectsTable: React.FC = () => {
 
   const theme = useTheme();
   return (
-    <Grid container xs={12}>
+    <Box
+      sx={{
+        '& .Mui-even': {
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+        },
+        '& .Mui-odd': { border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}` }
+      }}
+    >
       <DataGrid
         autoHeight
         disableSelectionOnClick
@@ -145,9 +154,25 @@ const ProjectsTable: React.FC = () => {
           })) || []
         }
         columns={columns}
-        sx={{ background: theme.palette.background.paper }}
+        sx={{
+          border: 0,
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: 'rgba(239, 67, 69, 0.6)'
+          },
+          '& .MuiDataGrid-columnHeader': {
+            borderRight: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`,
+            borderLeft: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+          },
+          '& .MuiDataGrid-columnHeaders': {
+            border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+          },
+          '.MuiDataGrid-columnSeparator': {
+            display: 'none'
+          }
+        }}
+        getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'Mui-even' : 'Mui-odd')}
         components={{
-          Toolbar: GridToolbar,
+          Toolbar: TableCustomToolbar,
           Row: (props: GridRowProps & { row: Project }) => {
             const wbsNum = props.row.wbsNum;
             return (
@@ -193,7 +218,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
       />
-    </Grid>
+    </Box>
   );
 };
 
