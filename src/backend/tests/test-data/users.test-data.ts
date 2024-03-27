@@ -14,7 +14,7 @@ export const thomasEmrax: PrismaUser = {
   firstName: 'Thomas',
   lastName: 'Emrax',
   email: 'emrax.t@husky.neu.edu',
-  emailId: 'emrax.t',
+  emailId: null,
   role: PrismaRole.APP_ADMIN,
   googleAuthId: '1'
 };

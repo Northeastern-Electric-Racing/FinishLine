@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
 
 interface CreateTestUserParams {
@@ -17,8 +17,8 @@ export const createTestUser = async ({
   email,
   googleAuthId,
   role
-}: CreateTestUserParams): Promise<void> => {
-  await prisma.user.create({
+}: CreateTestUserParams): Promise<User> => {
+  const createdUser = await prisma.user.create({
     data: {
       firstName,
       lastName,
@@ -27,4 +27,5 @@ export const createTestUser = async ({
       role
     }
   });
+  return createdUser;
 };
