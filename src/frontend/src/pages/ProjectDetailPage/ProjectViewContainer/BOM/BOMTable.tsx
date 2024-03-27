@@ -1,5 +1,11 @@
 import { Box } from '@mui/system';
-import { GridColumns, GridRowParams, GridValidRowModel } from '@mui/x-data-grid';
+import {
+  GridCallbackDetails,
+  GridColumnVisibilityModel,
+  GridColumns,
+  GridRowParams,
+  GridValidRowModel
+} from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
 import { BomRow, bomTableStyles, materialToRow, BomStyledDataGrid } from '../../../../utils/bom.utils';
 import { addMaterialCosts } from '../BOMTab';
@@ -59,6 +65,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
   };
 
   assemblies.forEach((assembly) => {
+    console.log(assembly);
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
     rows.push({
       id: `assembly-${assembly.name}`,
@@ -101,6 +108,20 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
       }}
     >
       <BomStyledDataGrid
+        onColumnVisibilityModelChange={(model: GridColumnVisibilityModel, details: GridCallbackDetails) => {
+          console.log(model, details);
+          console.log(rows);
+          Object.keys(model).forEach((column) => {
+            if (!model[column]) {
+              console.log('removing column', column);
+              columns = columns.filter((col) => col.field !== column);
+              rows.forEach((row) => {
+                delete row[column];
+              });
+              console.log(rows);
+            }
+          });
+        }}
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.filter(isAssemblyOpen)}
         getRowClassName={(params) =>
