@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import workPackageQueryArgs from '../../src/prisma-query-args/work-packages.query-args';
-import { batman, thomasEmrax } from './users.test-data';
+import { batman } from './users.test-data';
 import { WorkPackage, WbsElementStatus, TimelineStatus, WorkPackageTemplate } from 'shared';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { prismaProject1 } from './projects.test-data';

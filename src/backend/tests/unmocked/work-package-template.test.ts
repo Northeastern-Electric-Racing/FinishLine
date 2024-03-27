@@ -29,7 +29,6 @@ describe('Work Package Template Tests', () => {
 
     it('get single work package template succeeds', async () => {
       const createdUser = await createTestUser(batman);
-      console.log(createdUser)
       await prisma.work_Package_Template.create({
         data: {
           workPackageTemplateId: 'id1',
