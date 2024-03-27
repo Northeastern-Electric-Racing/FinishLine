@@ -38,11 +38,17 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
         backgroundColor: theme.palette.background.paper,
         padding: '20px',
         borderRadius: '10px',
-        height: '100%',
-        overflow: 'auto'
+        height: '100%'
       }}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, marginBottom: '10px' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 1,
+          marginBottom: '10px'
+        }}
+      >
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Typography style={{ marginRight: '10px' }}>0/0</Typography>
           {Array.from({ length: 6 }, (_, i) => (
@@ -71,9 +77,11 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             >
               Available
             </Typography>
-            {currentAvailableUsers.map((user) => (
-              <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
-            ))}
+            <Box sx={{ maxHeight: '350px', overflowY: 'auto' }}>
+              {currentAvailableUsers.map((user) => (
+                <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
+              ))}
+            </Box>
           </Box>
           <Box>
             <Typography
@@ -85,11 +93,13 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
                 width: '10vw'
               }}
             >
-              Unvailable
+              Unavailable
             </Typography>
-            {currentUnavailableUsers.map((user) => (
-              <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
-            ))}
+            <Box sx={{ maxHeight: '350px', overflowY: 'auto' }}>
+              {currentUnavailableUsers.map((user) => (
+                <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
+              ))}
+            </Box>
           </Box>
         </Box>
         <Box
@@ -97,7 +107,8 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             marginTop: 'auto',
             display: 'flex',
             justifyContent: 'flex-end',
-            gap: '10px'
+            gap: '10px',
+            overflow: 'auto'
           }}
         >
           <NERFailButton>Cancel</NERFailButton>

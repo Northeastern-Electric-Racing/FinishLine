@@ -9,6 +9,7 @@ import {
   getBackgroundColor
 } from '../../../utils/design-review.utils';
 import TimeSlot from '../../../components/TimeSlot';
+import React from 'react';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
@@ -30,6 +31,19 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   dateRangeTitle
 }) => {
   const totalUsers = usersToAvailabilities.size;
+  const [selectedTimeslot, setSelectedTimeslot] = React.useState<number | null>(null);
+
+  const handleTimeslotClick = (index: number) => {
+    if (selectedTimeslot === index) {
+      setSelectedTimeslot(null); // unselect
+      setCurrentAvailableUsers([]);
+      setCurrentUnavailableUsers([]);
+    } else {
+      setSelectedTimeslot(index); // select
+      setCurrentAvailableUsers(availableUsers.get(index) || []);
+      setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
+    }
+  };
 
   const handleOnMouseOver = (index: number) => {
     setCurrentAvailableUsers(availableUsers.get(index) || []);
@@ -37,8 +51,10 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   };
 
   const handleOnMouseLeave = () => {
-    setCurrentAvailableUsers([]);
-    setCurrentUnavailableUsers([]);
+    if (selectedTimeslot === null) {
+      setCurrentAvailableUsers([]);
+      setCurrentUnavailableUsers([]);
+    }
   };
 
   // Populates the availableUsers map
@@ -76,6 +92,8 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
               <TimeSlot
                 key={index}
                 backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
+                selected={selectedTimeslot === index}
+                onClick={() => handleTimeslotClick(index)}
                 onMouseOver={() => handleOnMouseOver(index)}
                 icon={existingMeetingData.get(index)}
               />
