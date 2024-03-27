@@ -15,13 +15,13 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage }) =>
   if (crIsLoading || !changeRequests) return <LoadingIndicator />;
   if (crIsError) return <ErrorPage message={crError?.message} />;
 
-  const crUnreviewed = changeRequests
+  const unReviewedChangeRequests = changeRequests
     ? changeRequests
         .filter((cr: ChangeRequest) => !cr.dateReviewed && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
         .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime())
     : [];
 
-  const crApproved = changeRequests
+  const approvedChangeRequests = changeRequests
     ? changeRequests
         .filter(
           (cr: ChangeRequest) =>
@@ -37,13 +37,13 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage }) =>
     <>
       <ChangeRequestRow
         title="Un-reviewed Change Requests"
-        changeRequests={crUnreviewed}
+        changeRequests={unReviewedChangeRequests}
         noChangeRequestsMessage="No un-reviewed change requests"
       />
 
       <ChangeRequestRow
         title="Reviewed Change Requests"
-        changeRequests={crApproved}
+        changeRequests={approvedChangeRequests}
         noChangeRequestsMessage="No Approved change requests"
       />
     </>
