@@ -18,7 +18,6 @@ import {
   Vendor
 } from 'shared';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import userTransformer from './user.transformer';
 import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
 import {
   reimbursementProductReasonQueryArgs,
@@ -27,6 +26,7 @@ import {
 import { wbsNumOf } from '../utils/utils';
 import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
+import { userTransformer } from './user.transformer';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
   return {
@@ -43,6 +43,7 @@ export const reimbursementRequestTransformer = (
 ): ReimbursementRequest => {
   return {
     reimbursementRequestId: reimbursementRequest.reimbursementRequestId,
+    identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
     dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
