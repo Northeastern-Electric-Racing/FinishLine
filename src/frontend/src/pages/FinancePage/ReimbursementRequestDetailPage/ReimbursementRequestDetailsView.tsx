@@ -50,10 +50,21 @@ import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
+import NERFormModal from '../../../components/NERFormModal';
+import { FormControl, FormLabel, TextField } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { Controller, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
 }
+
+const schema = yup.object().shape({
+  dateReceived: yup.date().required()
+});
 
 const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewProps> = ({ reimbursementRequest }) => {
   const theme = useTheme();
@@ -77,6 +88,18 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   );
   const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
 
+  const {
+    handleSubmit,
+    control,
+    reset
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      dateReceived: new Date()
+    },
+    mode: 'onChange'
+  });
+
   const handleDelete = () => {
     try {
       deleteReimbursementRequest();
@@ -99,16 +122,30 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleMarkDelivered = () => {
+  const handleMarkDelivered = async (data: { dateDelivered: Date }) => {
     try {
-      markDelivered();
+      await markDelivered({
+        dateDelivered: data.dateDelivered.toISOString()
+      });
       setShowMarkDelivered(false);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 3000);
+      toast.success('New Account Credit Reported Successfully');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
       }
     }
   };
+
+    // const handleMarkDelivered = () => {
+    //   try {
+    //     markDelivered();
+    //     setShowMarkDelivered(false);
+    //   } catch (e: unknown) {
+    //     if (e instanceof Error) {
+    //       toast.error(e.message, 3000);
+    //     }
+    //   }
+    // };
 
   const handleMarkReimbursed = () => {
     try {
@@ -151,17 +188,49 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
+
   const MarkDeliveredModal = () => (
-    <NERModal
+    // <NERModal
+    //   open={showMarkDelivered}
+    //   onHide={() => setShowMarkDelivered(false)}
+    //   title="Warning!"
+    //   cancelText="No"
+    //   submitText="Yes"
+    //   onSubmit={handleMarkDelivered}
+    // >
+    //   <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
+    // </NERModal>
+
+
+    <NERFormModal
       open={showMarkDelivered}
       onHide={() => setShowMarkDelivered(false)}
       title="Warning!"
       cancelText="No"
       submitText="Yes"
-      onSubmit={handleMarkDelivered}
+      reset={reset}
+      handleUseFormSubmit={handleSubmit}
+      onFormSubmit={handleMarkDelivered}
     >
-      <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
-    </NERModal>
+      <FormControl>
+        <FormLabel>Date Received</FormLabel>
+        <Controller
+          name="dateReceived"
+          control={control}
+          rules={{ required: true }}
+          render={({ field: { onChange, value } }) => (
+            <DatePicker
+              inputFormat="yyyy-MM-dd"
+              onChange={(e) => onChange(e ?? new Date())}
+              className={'padding: 10'}
+              value={value}
+              renderInput={(params) => <TextField autoComplete="off" {...params} />}
+            />
+          )}
+        />
+      </FormControl>
+      <Typography>Are you sure the items in this reimbursement<br/>request have all been delivered?</Typography>
+    </NERFormModal>
   );
 
   const MarkReimbursedModal = () => (

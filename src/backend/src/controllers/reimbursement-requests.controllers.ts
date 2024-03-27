@@ -54,6 +54,7 @@ export default class ReimbursementRequestsController {
     try {
       const {
         dateOfExpense,
+        dateDelivered,
         vendorId,
         account,
         otherReimbursementProducts,
@@ -65,6 +66,7 @@ export default class ReimbursementRequestsController {
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
+        dateDelivered,
         vendorId,
         account,
         otherReimbursementProducts,
@@ -290,8 +292,9 @@ export default class ReimbursementRequestsController {
   static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
+      const { dateDelivered } = req.body;
       const user = await getCurrentUser(res);
-      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId);
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(user, requestId, dateDelivered);
       res.status(200).json(updatedRequest);
     } catch (error: unknown) {
       next(error);

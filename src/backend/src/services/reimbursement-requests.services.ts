@@ -103,6 +103,7 @@ export default class ReimbursementRequestService {
    * Creates a reimbursement request in the database
    * @param recipient the user who is creating the reimbursement request
    * @param dateOfExpense the date that the expense occured
+   * @param dateDelivered the date that the shipment for the reimbursement request was delivered
    * @param vendorId the id of the vendor that the expense was made for
    * @param account the account to be reimbursed from
    * @param reimbursementProducts the products that the user bought
@@ -113,6 +114,7 @@ export default class ReimbursementRequestService {
   static async createReimbursementRequest(
     recipient: UserWithSecureSettings,
     dateOfExpense: Date,
+    dateDelivered: Date,
     vendorId: string,
     account: ClubAccount,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
@@ -643,7 +645,7 @@ export default class ReimbursementRequestService {
    * @throws AccessDeniedException if the creator of the request is not the submitter
    * @returns the updated reimbursement request
    */
-  static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string) {
+  static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string, dateMarkedDelivered: string) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
@@ -658,7 +660,7 @@ export default class ReimbursementRequestService {
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
       data: {
-        dateDelivered: new Date()
+        dateDelivered: new Date(dateMarkedDelivered)
       }
     });
 

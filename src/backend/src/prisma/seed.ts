@@ -968,6 +968,7 @@ const performSeed: () => Promise<void> = async () => {
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
     new Date(),
+    new Date(),
     vendor.vendorId,
     ClubAccount.CASH,
     [],
@@ -988,6 +989,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
+    new Date(),
     new Date(),
     vendor.vendorId,
     ClubAccount.BUDGET,
