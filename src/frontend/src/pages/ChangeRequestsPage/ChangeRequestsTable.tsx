@@ -5,16 +5,7 @@
 
 import { Link } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import {
-  DataGrid,
-  GridColDef,
-  GridFilterModel,
-  GridRow,
-  GridRowProps,
-  GridToolbarContainer,
-  GridToolbarFilterButton,
-  GridToolbarQuickFilter
-} from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { ChangeRequest, ChangeRequestType, WbsNumber, validateWBS } from 'shared';
@@ -24,13 +15,7 @@ import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
 import ErrorPage from '../ErrorPage';
-
-const CustomToolbar = () => (
-  <GridToolbarContainer>
-    <GridToolbarQuickFilter />
-    <GridToolbarFilterButton />
-  </GridToolbarContainer>
-);
+import TableCustomToolbar from '../../components/TableCustomToolbar';
 
 const ChangeRequestsTable: React.FC = () => {
   const [windowSize, setWindowSize] = useState(window.innerWidth);
@@ -233,7 +218,7 @@ const ChangeRequestsTable: React.FC = () => {
         }}
         getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'Mui-even' : 'Mui-odd')}
         components={{
-          Toolbar: CustomToolbar,
+          Toolbar: TableCustomToolbar,
           Row: (props: GridRowProps & { row: ChangeRequest }) => {
             return (
               <Link
