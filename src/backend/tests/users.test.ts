@@ -14,7 +14,7 @@ import {
 import { Role } from '@prisma/client';
 import UsersService from '../src/services/users.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
-import userTransformer from '../src/transformers/user.transformer';
+import { userTransformer } from '../src/transformers/user.transformer';
 
 describe('Users', () => {
   afterEach(() => {
