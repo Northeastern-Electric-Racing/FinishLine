@@ -1,8 +1,8 @@
 import { Prisma } from '@prisma/client';
 
-const blockedByInfoQueryArgs = Prisma.validator<Prisma.Work_Package_TemplateArgs>()({
+const blockedByInfoQueryArgs = Prisma.validator<Prisma.Blocked_By_InfoArgs>()({
   include: {
-    : true
+    workPackageTemplate: true
   }
 });
 

@@ -149,9 +149,9 @@ export default class WorkPackagesController {
 
   static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { workPackageTemplateId } = req.params;
+      //const { workPackageTemplateId } = req.params;
 
-      const { templateName, templateNotes, duration, stage, blockedBy, expectedActivities, deliverables, workPackageName } =
+      const { workPackageTemplateId, templateName, templateNotes, duration, stage, blockedBy, expectedActivities, deliverables, workPackageName } =
         req.body;
 
       const user = await getCurrentUser(res);
@@ -166,7 +166,7 @@ export default class WorkPackagesController {
         blockedBy,
         expectedActivities,
         deliverables,
-        workPackageName
+        workPackageName,
       );
       return res.status(200).json({ message: 'Work package template updated successfully' });
     } catch (error: unknown) {

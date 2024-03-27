@@ -67,6 +67,7 @@ workPackagesRouter.post(
 
 workPackagesRouter.post(
   '/template/:workpackageTemplateId/edit',
+  nonEmptyString(body('workPackageTemplateId')),
   nonEmptyString(body('templateName')),
   nonEmptyString(body('templateNotes')),
   intMinZero(body('duration')),

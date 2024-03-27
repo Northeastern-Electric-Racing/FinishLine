@@ -19,6 +19,16 @@ export const batman: PrismaUser = {
   googleAuthId: 'b'
 };
 
+export const thomasEmrax: PrismaUser = {
+  userId: 2,
+  firstName: 'Thomas',
+  lastName: 'Emrax',
+  email: 'emrax.t@husky.neu.edu',
+  emailId: 'emrax.t',
+  role: PrismaRole.APP_ADMIN,
+  googleAuthId: '1'
+};
+
 export const theVisitor: PrismaUser = {
   userId: 7,
   firstName: 'The',

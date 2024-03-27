@@ -18,9 +18,10 @@ import * as changeRequestUtils from '../src/utils/change-requests.utils';
 import * as slackUtils from '../src/utils/slack.utils';
 import { mockLinkType1, prismaProject1, transformedMockLinkType1 } from './test-data/projects.test-data';
 import * as workPackageTransformer from '../src/transformers/work-packages.transformer';
-import { mockWorkPackageTemplate1, prismaWorkPackage1, sharedWorkPackage } from './test-data/work-packages.test-data';
+import { WorkPackageTemplate1, mockWorkPackageTemplate1, prismaWorkPackage1, sharedWorkPackage } from './test-data/work-packages.test-data';
 import linkTypeQueryArgs from '../src/prisma-query-args/link-types.query-args';
 import ProjectsService from '../src/services/projects.services';
+import { blockedByInfoTransformer } from '../src/transformers/blocked-by-info.transformer';
 
 describe('Work Packages', () => {
   /* WORK PACKAGE SERVICE FUNCTION DEFAULT INPUT ARGUMENTS */
@@ -317,24 +318,24 @@ describe('Work Packages', () => {
 
   describe('editWorkPackageTemplate', () => {
     test('Edit WorkPackageTemplate fails if the submitter is not an admin', async () => {
-      vi.spyOn(prisma.work_Package_Template, 'findUnique').mockResolvedValue({ ...mockWorkPackageTemplate1 });
+      vi.spyOn(prisma.work_Package_Template, 'findUnique').mockResolvedValue({ ...WorkPackageTemplate1 });
       await expect(
         WorkPackageService.editWorkPackageTemplate(
           batman,
-          mockWorkPackageTemplate1.workPackageTemplateId,
-          mockWorkPackageTemplate1.templateName,
-          mockWorkPackageTemplate1.templateNotes,
-          mockWorkPackageTemplate1.expectedActivities,
-          mockWorkPackageTemplate1.deliverables,
-          mockWorkPackageTemplate1.blockedBy,
-          mockWorkPackageTemplate1.stage,
-          mockWorkPackageTemplate1.duration,
-          mockWorkPackageTemplate1.workPackageName
+          WorkPackageTemplate1.workPackageTemplateId,
+          WorkPackageTemplate1.templateName,
+          WorkPackageTemplate1.templateNotes,
+          WorkPackageTemplate1.duration,
+          WorkPackageTemplate1.stage,
+          WorkPackageTemplate1.blockedBy,
+          WorkPackageTemplate1.expectedActivities,
+          WorkPackageTemplate1.deliverables,
+          WorkPackageTemplate1.workPackageName
         )
-      ).rejects.toThrow(new AccessDeniedException('Only an admin can update the linkType'));
+      ).rejects.toThrow(new AccessDeniedException('Only an admin can update the workPackageTemplate'));
     });
-    test('Throws error if linkType not found', async () => {
-      vi.spyOn(prisma.linkType, 'findUnique').mockResolvedValue(null);
+    test('Throws error if workPackageTemplate not found', async () => {
+      vi.spyOn(prisma.work_Package_Template, 'findUnique').mockResolvedValue(null);
       await expect(
         ProjectsService.editLinkType(mockLinkType1.name, mockLinkType1.iconName, !mockLinkType1.required, batman)
       ).rejects.toThrow(new NotFoundException('Link Type', mockLinkType1.name));

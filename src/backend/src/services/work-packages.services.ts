@@ -1,4 +1,12 @@
-import { Blocked_By_Info, Blocked_By_InfoPayload, Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import {
+  Blocked_By_Info,
+  Blocked_By_InfoPayload,
+  Prisma,
+  Role,
+  User,
+  WBS_Element,
+  WBS_Element_Status
+} from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -11,7 +19,9 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackageStage,
+  WorkPackageTemplate,
+  BlockedByInfo
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -35,8 +45,8 @@ import {
   descriptionBulletsToChangeListValues
 } from '../utils/description-bullets.utils';
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
-import workPackageTemplateQueryArgs from '../prisma-query-args/work-package-template.query-args';
 import { blockedByInfoTransformer } from '../transformers/blocked-by-info.transformer';
+import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -716,16 +726,16 @@ export default class WorkPackagesService {
     workPackageTemplateId: string,
     templateName: string,
     templateNotes: string,
-    duration: number | null,
-    stage: WorkPackageStage | null,
-    blockedBy: Blocked_By_Info[],
+    duration: number | undefined,
+    stage: WorkPackageStage | undefined,
+    blockedBy: BlockedByInfo[],
     expectedActivities: string[],
     deliverables: string[],
-    workPackageName: string | null
+    workPackageName: string | undefined
   ): Promise<void> {
     if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
 
-    const originalWorkPackageTemplate = await prisma.work_Package_Template.findFirst({
+    const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
       where: {
         workPackageTemplateId
       },
@@ -735,20 +745,20 @@ export default class WorkPackagesService {
     if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package', workPackageTemplateId);
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package', workPackageTemplateId);
 
-    const updatedBlockedBys = await Promise.all(
-      blockedBy.map(async (blockedBy: Blocked_By_Info) => {
-        const blockedByInfoID = await prisma.blocked_By_Info.findFirst({
-          where: {
-            blockedByInfoId: blockedBy.blockedByInfoId
-          },
-          include: {
-            workPackageTemplate: true
-          }
-        });
+    const updatedBlockedBys = await (
+      await Promise.all(
+        blockedBy.map(async (blockedBy: BlockedByInfo) => {
+          const blockedByInfoID = await prisma.blocked_By_Info.findFirst({
+            where: {
+              blockedByInfoId: blockedBy.blockedByInfoId
+            }
+          });
+          return blockedByInfoID;
+        })
+      )
+    ).filter((item): item is Prisma.Blocked_By_InfoGetPayload<{}> => item !== null);
 
-        return blockedByInfoID;
-      })
-    );
+    const transformedBlockedBys = updatedBlockedBys.map(blockedByInfoTransformer);
 
     await prisma.work_Package_Template.update({
       where: {
@@ -759,7 +769,11 @@ export default class WorkPackagesService {
         templateNotes,
         duration,
         stage,
-        blockedBy: blockedByInfoTransformer(updatedBlockedBys),
+        blockedBy: {
+          connect: transformedBlockedBys.map((blockedByInfo) => ({
+            blockedByInfoId: blockedByInfo.blockedByInfoId
+          }))
+        },
         expectedActivities,
         deliverables,
         workPackageName

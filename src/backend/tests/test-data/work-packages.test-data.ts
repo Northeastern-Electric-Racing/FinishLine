@@ -1,7 +1,7 @@
 import { Blocked_By_Info, Prisma, Work_Package_Template } from '@prisma/client';
 import workPackageQueryArgs from '../../src/prisma-query-args/work-packages.query-args';
-import { batman } from './users.test-data';
-import { WorkPackage, WbsElementStatus, TimelineStatus, WorkPackageStage } from 'shared';
+import { batman, thomasEmrax } from './users.test-data';
+import { WorkPackage, WbsElementStatus, TimelineStatus, WorkPackageStage, WorkPackageTemplate, BlockedByInfo } from 'shared';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { prismaProject1 } from './projects.test-data';
 import { mock } from 'node:test';
@@ -28,26 +28,35 @@ export const prismaWorkPackage1: Prisma.Work_PackageGetPayload<typeof workPackag
   stage: null
 };
 
-export const mockBlockedByInfo1: Blocked_By_Info = {
+export const mockBlockedByInfo1: BlockedByInfo = {
   blockedByInfoId: "efwfwef",
-  stage: "DESIGN",
+  stage: WorkPackageStage.Design,
   name: "Blocked By Info 1",
-  workPackageTemplateId: "wopejfoi"
 }
 
-export const mockWorkPackageTemplate1: Work_Package_Template = {
-  workPackageTemplateId: "wopejfoi",
-  templateName: "template 1",
-  templateNotes: "template 1 notes",
-  workPackageName: "Work Package 1",
-  stage: null,
-  duration: 2,
-  expectedActivities: ["hi"],
-  deliverables: ["hi"],
-  dateCreated: new Date(),
-  userCreatedId: 324,
-  dateDeleted: new Date(),
-  userDeletedId: 324
+export const BlockedByInfo1: Blocked_By_Info = {
+  blockedByInfoId: "efwfwef",
+  stage: WorkPackageStage.Design,
+  name: "Blocked By Info 1",
+  workPackageTemplateId: "id1"
+}
+
+export const WorkPackageTemplate1: WorkPackageTemplate = {
+  workPackageTemplateId: 'id1',
+  templateName: 'Template 1',
+  templateNotes: 'This is a new work package template',
+  dateCreated: new Date('03/25/2024'),
+  blockedBy:[mockBlockedByInfo1],
+  dateDeleted: undefined,
+  userCreated: thomasEmrax,
+  deliverables: [],
+  duration: undefined,
+  expectedActivities: [],
+  stage: undefined,
+  userCreatedId: 1,
+  userDeleted: undefined,
+  userDeletedId: undefined,
+  workPackageName: ''
 };
 
 export const sharedWorkPackage: WorkPackage = {
