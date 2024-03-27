@@ -11,6 +11,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
+import { useState, useEffect } from 'react';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -21,6 +22,7 @@ export interface MaterialFormViewProps {
   errors: FieldErrors<MaterialFormInput>;
   allMaterialTypes: MaterialType[];
   allUnits: Unit[];
+  packSizes: string[];
   allManufacturers: Manufacturer[];
   assemblies: Assembly[];
   open: boolean;
@@ -42,6 +44,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   errors,
   allMaterialTypes,
   allUnits,
+  packSizes,
   allManufacturers,
   assemblies,
   open,
@@ -56,6 +59,16 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
   };
+
+  const [showPackInput, setShowPackInput] = useState(true);
+
+  // Existing logic to watch unit selection
+  const unitName = watch('unitName');
+
+  // useEffect to update showPackInput based on unitName
+  useEffect(() => {
+    setShowPackInput(unitName === 'Pack');
+  }, [unitName]);
 
   return (
     <NERFormModal
@@ -237,6 +250,27 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </FormControl>
           </Box>
         </Grid>
+        {/** Conditionally render the Pack input field **/}
+        {showPackInput && (
+          <Grid item xs={6}>
+            <FormControl fullWidth>
+              <FormLabel>Pack Size</FormLabel>
+              <Controller
+                name="packSize"
+                control={control}
+                render={({ field }) => (
+                  <TextField {...field} select variant="outlined">
+                    {packSizes.map((size) => (
+                      <MenuItem key={size} value={size}>
+                        {size}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+            </FormControl>
+          </Grid>
+        )}
         <Grid item xs={3}>
           <FormControl fullWidth>
             <FormLabel style={{ whiteSpace: 'normal' }}>Price per Unit</FormLabel>
