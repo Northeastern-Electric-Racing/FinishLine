@@ -198,7 +198,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         ) : tabValue === 2 ? (
           <ChangesList changes={workPackage.changes} />
         ) : (
-          <ChangeRequestsTab workPackage={workPackage} dependencies={dependencies} />
+          <ChangeRequestsTab workPackage={workPackage} />
         )}
         {showActivateModal && (
           <ActivateWorkPackageModalContainer

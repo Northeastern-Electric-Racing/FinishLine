@@ -1,17 +1,14 @@
 import { ChangeRequest, WorkPackage } from 'shared';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
-import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { projectWbsPipe } from '../../../utils/pipes';
+import ChangeRequestRow from '../../../components/ChangeRequestRow';
 interface ChangeRequestsTabProps {
   workPackage: WorkPackage;
-  dependencies: WorkPackage[];
 }
 
-const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage, dependencies }) => {
-  const theme = useTheme();
+const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage }) => {
   const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
   const currentDate = new Date();
 
@@ -36,66 +33,20 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage, depe
         .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0))
     : [];
 
-  const displayCRCards = (crList: ChangeRequest[]) => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        overflow: 'auto',
-        justifyContent: 'flex-start',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.divider,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        }
-      }}
-    >
-      {crList.map((cr: ChangeRequest) => (
-        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
-      ))}
-    </Box>
-  );
-
-  const renderChangeRequests = (title: string, crList: ChangeRequest[], emptyMessage: string) => {
-    return (
-      <>
-        <Typography variant="h5" gutterBottom>
-          {title}
-        </Typography>
-        {crList.length > 0 ? (
-          <Grid container>{displayCRCards(crList)}</Grid>
-        ) : (
-          <Typography gutterBottom>{emptyMessage}</Typography>
-        )}
-      </>
-    );
-  };
   return (
     <>
-      <Grid
-        sx={{
-          mt: 3
-        }}
-      >
-        <Grid
-          sx={{
-            mb: 3
-          }}
-        >
-          {renderChangeRequests('Un-reviewed Change Requests', crUnreviewed, 'No un-reviewed change requests')}
-        </Grid>
-        {renderChangeRequests('Recently Approved Change Requests', crApproved, 'No recently approved change requests')}
-      </Grid>
+      <ChangeRequestRow
+        title="Un-reviewed Change Requests"
+        changeRequests={crUnreviewed}
+        noChangeRequestsMessage="No un-reviewed change requests"
+      />
+
+      <ChangeRequestRow
+        title="Reviewed Change Requests"
+        changeRequests={crApproved}
+        noChangeRequestsMessage="No Approved change requests"
+      />
     </>
   );
 };
-
 export default ChangeRequestsTab;
