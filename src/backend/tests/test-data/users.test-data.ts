@@ -10,7 +10,7 @@ import {
 import { User as SharedUser, UserScheduleSettings } from 'shared';
 
 export const thomasEmrax: PrismaUser = {
-  userId: 2,
+  userId: 1,
   firstName: 'Thomas',
   lastName: 'Emrax',
   email: 'emrax.t@husky.neu.edu',

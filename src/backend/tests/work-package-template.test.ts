@@ -38,7 +38,7 @@ describe('Work Package Template Tests', () => {
       });
 
       const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(thomasEmrax, 'id1');
-      expect(recievedWorkPackageTemplate).toBe(WorkPackageTemplate1);
+      expect(recievedWorkPackageTemplate).toStrictEqual(WorkPackageTemplate1);
     });
   });
 });
