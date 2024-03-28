@@ -24,7 +24,7 @@ export const workPackageTemplateTransformer = (
   } as WorkPackageTemplate;
 };
 
-const blockedByInfoTransformer = (bbInput: Prisma.Blocked_By_InfoGetPayload<{}>): BlockedByInfo => {
+export const blockedByInfoTransformer = (bbInput: Prisma.Blocked_By_InfoGetPayload<{}>): BlockedByInfo => {
   return {
     blockedByInfoId: bbInput.blockedByInfoId,
     stage: (bbInput.stage as WorkPackageStage) ?? undefined,
