@@ -27,19 +27,7 @@ export default class DesignReviewsController {
   static async createDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const submitter: User = await getCurrentUser(res);
-      const {
-        dateScheduled,
-        teamTypeId,
-        requiredMemberIds,
-        optionalMemberIds,
-        location,
-        isOnline,
-        isInPerson,
-        zoomLink,
-        docTemplateLink,
-        wbsNum,
-        meetingTimes
-      } = req.body;
+      const { dateScheduled, teamTypeId, requiredMemberIds, optionalMemberIds, wbsNum, meetingTimes } = req.body;
 
       const createdDesignReview = await DesignReviewsService.createDesignReview(
         submitter,
@@ -47,13 +35,8 @@ export default class DesignReviewsController {
         teamTypeId,
         requiredMemberIds,
         optionalMemberIds,
-        isOnline,
-        isInPerson,
-        docTemplateLink,
         wbsNum,
-        meetingTimes,
-        zoomLink,
-        location
+        meetingTimes
       );
       return res.status(200).json(createdDesignReview);
     } catch (error: unknown) {
@@ -77,9 +60,9 @@ export default class DesignReviewsController {
     try {
       const {
         dateScheduled,
-        teamType,
-        requiredMembers,
-        optionalMembers,
+        teamTypeId,
+        requiredMembersIds,
+        optionalMembersIds,
         isOnline,
         isInPerson,
         zoomLink,
@@ -99,9 +82,9 @@ export default class DesignReviewsController {
         user,
         designReviewId,
         dateScheduled,
-        teamType.teamTypeId,
-        requiredMembers,
-        optionalMembers,
+        teamTypeId,
+        requiredMembersIds,
+        optionalMembersIds,
         isOnline,
         isInPerson,
         zoomLink,
@@ -112,6 +95,20 @@ export default class DesignReviewsController {
         meetingTimes
       );
       return res.status(200).json({ message: 'Design Review updated successfully' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Mark the current user as confirmed for the given design review
+  static async markUserConfirmed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { availability } = req.body;
+      const { designReviewId } = req.params;
+      const user = await getCurrentUser(res);
+
+      const updatedDesignReview = await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
+      return res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
       next(error);
     }

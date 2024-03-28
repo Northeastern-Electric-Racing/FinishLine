@@ -1,6 +1,5 @@
-import { TableRow, TableCell, Typography, Box } from '@mui/material';
+import { TableRow, TableCell, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-// import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
@@ -35,7 +34,6 @@ const UnitTypeTable: React.FC = () => {
   return (
     <Box>
       <CreateUnitFormModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <Typography variant="subtitle1">Registered Units</Typography>
       <AdminToolTable columns={[{ name: 'Unit' }]} rows={unitTypesTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton

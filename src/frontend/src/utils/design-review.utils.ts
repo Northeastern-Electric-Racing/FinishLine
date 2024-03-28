@@ -1,13 +1,3 @@
-import {
-  batman,
-  superman,
-  theVisitor,
-  greenlantern,
-  wonderwoman,
-  flash,
-  aquaman,
-  alfred
-} from '../../../backend/tests/test-data/users.test-data';
 import { DesignReview, DesignReviewStatus } from 'shared';
 
 export const EnumToArray = (en: { [key: number]: string | number }) => {
@@ -56,6 +46,8 @@ export enum REVIEW_TIMES {
   '9-10 PM'
 }
 
+export const HOURS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
 export const HeatmapColors = ['#D9D9D9', '#E0C0C1', '#E89A9B', '#E4797A', '#EF4345', '#D70C0F'];
 
 export const NUMBER_OF_TIME_SLOTS = EnumToArray(REVIEW_TIMES).length * EnumToArray(DAY_NAMES).length;
@@ -80,68 +72,25 @@ export const calendarPaddingDays = (month: Date): number => {
   return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
 };
 
-// TODO remove during wire up ticket
-export const testDesignReview1: DesignReview = {
-  designReviewId: 'Meeting',
-  dateScheduled: new Date(),
-  meetingTimes: [16],
-  dateCreated: new Date(),
-  userCreated: batman,
-  status: DesignReviewStatus.UNCONFIRMED,
-  teamType: { teamTypeId: 'Mechanical', name: 'Mechanical', iconName: '' },
-  requiredMembers: [],
-  optionalMembers: [],
-  confirmedMembers: [],
-  deniedMembers: [],
-  isOnline: false,
-  isInPerson: false,
-  attendees: [],
-  wbsName: 'bruh',
-  wbsNum: { carNumber: 1, workPackageNumber: 1, projectNumber: 1 }
+export const getStartOfWeek = (currentDate: Date) => {
+  const currentDay = currentDate.getDay();
+  const currentMonth = currentDate.getDate();
+  const startOfWeek = new Date(currentDate);
+  startOfWeek.setDate(currentMonth - currentDay);
+  return startOfWeek;
 };
 
-// TODO remove during wire up ticket
-export const exampleDesignReview1: DesignReview = {
-  designReviewId: 'Wiring',
-  dateScheduled: new Date(),
-  meetingTimes: [1, 2, 5],
-  dateCreated: new Date(),
-  userCreated: superman,
-  status: DesignReviewStatus.DONE,
-  teamType: {
-    teamTypeId: 'Electrical',
-    name: 'thisteam',
-    iconName: ''
-  },
-  requiredMembers: [batman, superman, greenlantern, flash, aquaman],
-  optionalMembers: [wonderwoman, alfred],
-  confirmedMembers: [],
-  deniedMembers: [],
-  location: 'Room 101',
-  isOnline: true,
-  isInPerson: false,
-  zoomLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-  attendees: [],
-  wbsName: 'Battery',
-  wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 1 },
-  docTemplateLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+export const getWeekDateRange = (selectedDate: Date) => {
+  const startDate = getStartOfWeek(selectedDate);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 6);
+  return [startDate, endDate];
 };
 
-// TODO: We will have to make a call to the backend to get this data
-export const usersToAvailabilities = new Map([
-  [superman, [1, 2, 3, 4, 5, 6, 7]],
-  [batman, [2, 3, 4, 5, 6, 7]],
-  [theVisitor, [3, 4, 5, 6, 7]],
-  [greenlantern, [4, 5, 6, 7]],
-  [wonderwoman, [5, 6, 7]],
-  [flash, [6, 7]],
-  [aquaman, [7]],
-  [alfred, [7]]
-]);
-
-// TODO: We will have to maker a call to the backend to get this data
-export const existingMeetingData = new Map<number, string>();
-existingMeetingData.set(5, 'warning');
-existingMeetingData.set(10, 'build');
-existingMeetingData.set(20, 'computer');
-existingMeetingData.set(50, 'electrical');
+export const isConfirmed = (designReview: DesignReview): boolean => {
+  return (
+    designReview.status === DesignReviewStatus.CONFIRMED ||
+    designReview.status === DesignReviewStatus.SCHEDULED ||
+    designReview.status === DesignReviewStatus.DONE
+  );
+};

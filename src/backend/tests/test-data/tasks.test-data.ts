@@ -4,7 +4,7 @@ import { TaskPriority, TaskStatus } from 'shared';
 import { Prisma } from '@prisma/client';
 import taskQueryArgs from '../../src/prisma-query-args/tasks.query-args';
 import { prismaWbsElement1 } from './wbs-element.test-data';
-import userTransformer from '../../src/transformers/user.transformer';
+import { userTransformer } from '../../src/transformers/user.transformer';
 
 export const taskSaveTheDayPrisma: Prisma.TaskGetPayload<typeof taskQueryArgs> = {
   taskId: '1',

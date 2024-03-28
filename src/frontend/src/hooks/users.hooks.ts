@@ -26,7 +26,8 @@ import {
   UpdateUserRolePayload,
   Project,
   UserSecureSettings,
-  UserScheduleSettings
+  UserScheduleSettings,
+  UserWithScheduleSettings
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -45,7 +46,7 @@ export const useCurrentUser = (): AuthenticatedUser => {
  * Custom React Hook to supply all users.
  */
 export const useAllUsers = () => {
-  return useQuery<User[], Error>(['users'], async () => {
+  return useQuery<UserWithScheduleSettings[], Error>(['users'], async () => {
     const { data } = await getAllUsers();
     return data;
   });

@@ -72,3 +72,13 @@ export interface UserScheduleSettings {
   personalZoomLink: string;
   availability: number[];
 }
+
+export interface UserWithScheduleSettings {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  emailId: string | null;
+  role: Role;
+  scheduleSettings?: UserScheduleSettings;
+}

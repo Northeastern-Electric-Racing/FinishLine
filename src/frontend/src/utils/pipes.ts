@@ -3,8 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement, isProject, WorkPackage, ClubAccount, ExpenseType } from 'shared';
-import { NOON_IN_MINUTES } from './design-review.utils';
+import {
+  WbsNumber,
+  User,
+  wbsPipe,
+  WbsElement,
+  isProject,
+  WorkPackage,
+  ClubAccount,
+  ExpenseType,
+  DesignReview
+} from 'shared';
 
 /**
  * Pipes:
@@ -118,6 +127,16 @@ export const wbsNamePipe = (wbsElement: WbsElement) => {
   return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
 };
 
+export const designReviewNamePipe = (designReview: DesignReview) => {
+  return `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+};
+
+export const dateRangePipe = (startDate: Date, endDate: Date) => {
+  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
+    endDate.getMonth() + 1
+  ).toString()}/${endDate.getDate().toString()}`;
+};
+
 export const undefinedPipe = (element: any) => {
   return element != null ? element : '-----';
 };
@@ -165,10 +184,9 @@ export const displayEnum = (enumString: string) => {
 };
 
 export const meetingStartTimePipe = (times: number[]) => {
-  const time = times[0] * 15 + 9 * 60;
-  const minutes = time % 60;
-  const hours = ((time - minutes) / 60) % 12 === 0 ? 12 : ((time - minutes) / 60) % 12;
-  return hours + (minutes !== 0 ? ':' + minutes : '') + (time >= NOON_IN_MINUTES ? 'pm' : 'am');
+  const time = (times[0] % 12) + 10;
+
+  return time <= 12 ? time + 'am' : time - 12 + 'pm';
 };
 
 // takes in a Date and returns it as a string in the form mm/dd/yy

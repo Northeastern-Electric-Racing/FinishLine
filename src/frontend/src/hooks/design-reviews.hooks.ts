@@ -2,9 +2,43 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { useQuery } from 'react-query';
-import { getAllDesignReviews } from '../apis/design-reviews.api';
-import { DesignReview } from 'shared';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { DesignReview, TeamType, WbsNumber, DesignReviewStatus } from 'shared';
+import {
+  deleteDesignReview,
+  editDesignReview,
+  createDesignReviews,
+  getAllDesignReviews,
+  getAllTeamTypes,
+  getSingleDesignReview,
+  markUserConfirmed
+} from '../apis/design-reviews.api';
+import { useCurrentUser } from './users.hooks';
+
+export interface CreateDesignReviewsPayload {
+  dateScheduled: Date;
+  teamTypeId: string;
+  requiredMemberIds: number[];
+  optionalMemberIds: number[];
+  wbsNum: WbsNumber;
+  meetingTimes: number[];
+}
+
+export const useCreateDesignReviews = () => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, CreateDesignReviewsPayload>(
+    ['design reviews', 'create'],
+    async (formData: CreateDesignReviewsPayload) => {
+      const { data } = await createDesignReviews(formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+      }
+    }
+  );
+};
 
 /**
  * Custom react hook to get all design reviews
@@ -16,4 +50,105 @@ export const useAllDesignReviews = () => {
     const { data } = await getAllDesignReviews();
     return data;
   });
+};
+
+export interface EditDesignReviewPayload {
+  dateScheduled: Date;
+  teamTypeId: string;
+  requiredMembersIds: number[];
+  optionalMembersIds: number[];
+  isOnline: boolean;
+  isInPerson: boolean;
+  zoomLink?: string;
+  location?: string;
+  docTemplateLink?: string;
+  status: DesignReviewStatus;
+  attendees: number[];
+  meetingTimes: number[];
+}
+
+/**
+ * Custom React Hook to edit a Design Review
+ * @param designReviewId the design review being edited
+ */
+export const useEditDesignReview = (designReviewId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, EditDesignReviewPayload>(
+    ['design-reviews', 'edit'],
+    async (designReviewPayload: EditDesignReviewPayload) => {
+      const { data } = await editDesignReview(designReviewId, designReviewPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to get all team types
+ *
+ * @returns all the team types
+ */
+export const useAllTeamTypes = () => {
+  return useQuery<TeamType[], Error>(['teamTypes'], async () => {
+    const { data } = await getAllTeamTypes();
+    return data;
+  });
+};
+
+/**
+ * Custom react hook to delete a design review
+ */
+
+export const useDeleteDesignReview = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error>(
+    ['design-reviews', 'delete'],
+    async () => {
+      const { data } = await deleteDesignReview(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to get a single design review
+ *
+ * @returns a single design review
+ */
+export const useSingleDesignReview = (id?: string) => {
+  return useQuery<DesignReview, Error>(
+    ['design-reviews', id],
+    async () => {
+      const { data } = await getSingleDesignReview(id!);
+      return data;
+    },
+    { enabled: !!id }
+  );
+};
+
+export const useMarkUserConfirmed = (id: string) => {
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, { availability: number[] }>(
+    ['design-reviews', 'mark-confirmed'],
+    async (designReviewPayload: { availability: number[] }) => {
+      const { data } = await markUserConfirmed(id, designReviewPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews']);
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
 };
