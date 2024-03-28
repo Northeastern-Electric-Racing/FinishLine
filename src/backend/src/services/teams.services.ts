@@ -73,8 +73,12 @@ export default class TeamsService {
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
-    if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId)))
-      throw new HttpException(400, 'team leads cannot be members!');
+    // if the new members array includes a current lead on that team, that member will be deleted as a lead of that team
+    // this should work in theory, but there is a block on the front-end that prevents the user from adding a current lead as a member of a team (they won't show up in the new member dropdown)
+    if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId))) {
+      const newLeadsArr = team.leads.filter((lead) => !userIds.includes(lead.userId)).map((lead) => lead.userId);
+      this.setTeamLeads(submitter, teamId, newLeadsArr);
+    }
 
     // retrieve userId for every given users to update team's members in the database
     const transformedUsers = users.map((user) => {
@@ -152,8 +156,20 @@ export default class TeamsService {
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
 
-    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId))
-      throw new HttpException(400, 'Error: Team head cannot be a member');
+    // if the new head is a current member on the team, this will remove them as a member
+    if (newHead && team.members.map((user) => user.userId).includes(userId)) {
+      const newTeamArr: number[] = team.members
+        .filter((member) => member.userId !== newHead.userId)
+        .map((member) => member.userId);
+      this.setTeamMembers(submitter, teamId, newTeamArr);
+    }
+
+    // if the new head is a current leader on the team, they will be removed as a leader
+    // this will work in theory, but there is a block on the front-end that prevents the user from adding a current lead as the head of a team (they won't show up in the new head dropdown)
+    if (newHead && team.leads.map((lead) => lead.userId).includes(userId)) {
+      const newLeadsArr: number[] = team.leads.map((lead) => lead.userId).filter((leadId) => leadId !== userId);
+      this.setTeamLeads(submitter, teamId, newLeadsArr);
+    }
 
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
@@ -272,8 +288,12 @@ export default class TeamsService {
       throw new HttpException(400, 'A lead cannot be the head of the team!');
     }
 
+    // removes the new leads as current members of the given team (if they are current members of that team)
     if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
-      throw new HttpException(400, 'A lead cannot be a member of the team!');
+      const newMembersArr: number[] = team.members
+        .map((member) => member.userId)
+        .filter((memberId) => !userIds.includes(memberId));
+      this.setTeamMembers(submitter, teamId, newMembersArr);
     }
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
