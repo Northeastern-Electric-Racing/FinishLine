@@ -160,4 +160,40 @@ export default class WorkPackagesController {
       next(error);
     }
   }
+
+  static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      //const { workPackageTemplateId } = req.params;
+
+      const {
+        workPackageTemplateId,
+        templateName,
+        templateNotes,
+        duration,
+        stage,
+        blockedBy,
+        expectedActivities,
+        deliverables,
+        workPackageName
+      } = req.body;
+
+      const user = await getCurrentUser(res);
+
+      await WorkPackagesService.editWorkPackageTemplate(
+        user,
+        workPackageTemplateId,
+        templateName,
+        templateNotes,
+        duration,
+        stage,
+        blockedBy,
+        expectedActivities,
+        deliverables,
+        workPackageName
+      );
+      return res.status(200).json({ message: 'Work package template updated successfully' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

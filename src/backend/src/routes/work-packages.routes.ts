@@ -67,4 +67,21 @@ workPackagesRouter.post(
 
 workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
 
+workPackagesRouter.post(
+  '/template/:workpackageTemplateId/edit',
+  nonEmptyString(body('workPackageTemplateId')),
+  nonEmptyString(body('templateName')),
+  nonEmptyString(body('templateNotes')),
+  intMinZero(body('duration')),
+  isWorkPackageStageOrNone(body('stage')),
+  body('blockedBy').isArray(),
+  isWorkPackageStageOrNone(body('blockedBy.*.stage')),
+  nonEmptyString(body('blockedBy.*.name')),
+  body('expectedActivities').isArray(),
+  body('deliverables').isArray(),
+  nonEmptyString(body('workPackageName')),
+  validateInputs,
+  WorkPackagesController.editWorkPackageTemplate
+);
+
 export default workPackagesRouter;
