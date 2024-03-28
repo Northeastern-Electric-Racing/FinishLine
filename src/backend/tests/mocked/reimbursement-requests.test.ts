@@ -439,13 +439,12 @@ describe('Reimbursement Requests', () => {
 
     test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, superman)
       ).rejects.toThrow(
         new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
-        )
+          'You do not have access to delete this reimbursement request, only the creator or finance leads can delete a reimbursement request'
+          )
       );
     });
 
