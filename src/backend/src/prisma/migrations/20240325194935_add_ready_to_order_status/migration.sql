@@ -1,3 +1,4 @@
+-- AlterTable
 BEGIN;
 CREATE TYPE "Material_Status_new" AS ENUM ('RECEIVED', 'ORDERED', 'SHIPPED', 'NOT_READY_TO_ORDER', 'READY_TO_ORDER');
 ALTER TABLE "Material" ALTER COLUMN "status" TYPE "Material_Status_new" USING (
