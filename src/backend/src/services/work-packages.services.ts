@@ -47,6 +47,7 @@ import {
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
 import { blockedByInfoTransformer } from '../transformers/blocked-by-info.transformer';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
+import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -779,5 +780,23 @@ export default class WorkPackagesService {
         workPackageName
       }
     });
+  }
+
+  static async getSingleWorkPackageTemplate(submitter: User, workPackageTemplateId: string): Promise<WorkPackageTemplate> {
+    if (isGuest(submitter.role)) {
+      throw new AccessDeniedGuestException('get a work package template');
+    }
+
+    const workPackage = await prisma.work_Package_Template.findFirst({
+      where: {
+        dateDeleted: null,
+        workPackageTemplateId
+      },
+      ...workPackageTemplateQueryArgs
+    });
+
+    if (!workPackage) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
+
+    return workPackageTemplateTransformer(workPackage);
   }
 }
