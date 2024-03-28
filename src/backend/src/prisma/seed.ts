@@ -22,15 +22,7 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import WorkPackagesService from '../services/work-packages.services';
-import {
-  ClubAccount,
-  DesignReviewStatus,
-  MaterialStatus,
-  StandardChangeRequest,
-  validateWBS,
-  WbsElementStatus,
-  WorkPackageStage
-} from 'shared';
+import { ClubAccount, MaterialStatus, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
@@ -39,7 +31,6 @@ import ReimbursementRequestService from '../services/reimbursement-requests.serv
 import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
-import DesignReviewsService from '../services/design-reviews.services';
 
 const prisma = new PrismaClient();
 
@@ -128,6 +119,15 @@ const performSeed: () => Promise<void> = async () => {
   const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
+  const zayFlowers = await prisma.user.create({ data: dbSeedAllUsers.zayFlowers });
+  const patrickRicard = await prisma.user.create({ data: dbSeedAllUsers.patrickRicard });
+  const patrickQueen = await prisma.user.create({ data: dbSeedAllUsers.patrickQueen });
+  const jadeveonClowney = await prisma.user.create({ data: dbSeedAllUsers.jadeveonClowney });
+  const marlonHumphrey = await prisma.user.create({ data: dbSeedAllUsers.marlonHumphrey });
+  const kyleHamilton = await prisma.user.create({ data: dbSeedAllUsers.kyleHamilton });
+  const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
+  const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
+  const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
   const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
   const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
   const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
@@ -208,12 +208,13 @@ const performSeed: () => Promise<void> = async () => {
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
 
+  /** Write to .env file the FINANCE_TEAM_ID as the justiceLeague TeamId */
+  const financeTeamId = justiceLeague.teamId;
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
-
   /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
-    currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
+    currentEnv.FINANCE_TEAM_ID = financeTeamId;
     /** Write the new .env file */
     let stringifiedEnv = '';
     Object.keys(currentEnv).forEach((key) => {
@@ -248,18 +249,6 @@ const performSeed: () => Promise<void> = async () => {
     justiceLeague.teamId,
     [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
   );
-
-  await TeamsService.setTeamMembers(
-    monopolyMan,
-    financeTeam.teamId,
-    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId)
-  );
-  await TeamsService.setTeamLeads(
-    monopolyMan,
-    financeTeam.teamId,
-    [mrKrabs, richieRich].map((user) => user.userId)
-  );
-
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
@@ -279,7 +268,16 @@ const performSeed: () => Promise<void> = async () => {
       chrisHorton,
       mikeMacdonald,
       toddMonken,
-      stephenBisciotti
+      stephenBisciotti,
+      zayFlowers,
+      patrickRicard,
+      patrickQueen,
+      jadeveonClowney,
+      marlonHumphrey,
+      kyleHamilton,
+      marcusWilliams,
+      roquanSmith,
+      justinTucker
     ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
@@ -986,27 +984,6 @@ const performSeed: () => Promise<void> = async () => {
     100
   );
 
-  await ReimbursementRequestService.createReimbursementRequest(
-    thomasEmrax,
-    new Date(),
-    vendor.vendorId,
-    ClubAccount.BUDGET,
-    [],
-    [
-      {
-        name: 'BOX',
-        reason: {
-          carNumber: 1,
-          projectNumber: 1,
-          workPackageNumber: 0
-        },
-        cost: 10000
-      }
-    ],
-    expenseType.expenseTypeId,
-    200
-  );
-
   /**
    * Bill of Materials
    */
@@ -1056,43 +1033,6 @@ const performSeed: () => Promise<void> = async () => {
     },
     'Here are some more notes',
     assembly1.assemblyId
-  );
-
-  const teamType1 = await TeamsService.createTeamType(batman, 'team 1', 'YouTubeIcon');
-
-  // Need to do this because the design review cannot be scheduled for a past day
-  const nextDay = new Date();
-  nextDay.setDate(nextDay.getDate() + 1);
-
-  const designReview1 = await DesignReviewsService.createDesignReview(
-    batman,
-    nextDay,
-    teamType1.teamTypeId,
-    [1, 2],
-    [3, 4],
-    {
-      carNumber: 1,
-      projectNumber: 1,
-      workPackageNumber: 0
-    },
-    [3, 4, 5, 6, 7]
-  );
-
-  await DesignReviewsService.editDesignReview(
-    batman,
-    designReview1.designReviewId,
-    nextDay,
-    teamType1.teamTypeId,
-    [1, 2, 3, 4],
-    [5, 6, 7],
-    false,
-    true,
-    null,
-    'The Bay',
-    null,
-    DesignReviewStatus.CONFIRMED,
-    [1, 2],
-    [1, 2, 3, 4, 5, 6, 7]
   );
 };
 
