@@ -4,58 +4,27 @@
  */
 
 import { WbsElementStatus } from 'shared';
-import { Box, Button, Checkbox, Chip, FormLabel, Grid, Typography } from '@mui/material';
+import { Button, Checkbox, Chip, FormLabel, Grid, Typography, useTheme } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent, FC } from 'react';
 
-interface FilterButton {
-  label: string;
-  onChange: () => void;
-}
-
-const FilterChipButton = ({
-  buttonText,
-  onChange
-}: {
-  buttonText: string;
-  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-}) => <Chip label={buttonText} sx={{ minWidth: '200px', borderRadius: '20px' }} onChange={onChange} />;
-
-const FilterRow = ({ label, buttons }: { label: string; buttons: FilterButton[] }) => (
-  <Grid item container xs={12} sx={{ display: 'flex', alignItems: 'center' }}>
-    <Grid item xs={3} sx={{ minHeight: '100%' }}>
-      <FormLabel>
-        <Typography variant="h6" textAlign="right">
-          {label}
-        </Typography>
-      </FormLabel>
-    </Grid>
-    <Grid container spacing={1} item xs={9} sx={{ display: 'flex', alignItems: 'center' }}>
-      {buttons.map((button) => (
-        <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <FilterChipButton buttonText={button.label} onChange={button.onChange} />
-        </Grid>
-      ))}
-    </Grid>
-  </Grid>
-);
-
 interface GanttPageFilterProps {
   car0Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   car1Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   car2Handler: (event: ChangeEvent<HTMLInputElement>) => void;
+  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
   status: string;
-  statusHandler: (event: SelectChangeEvent) => void;
   selectedTeam: string;
   teamList: string[];
   teamHandler: (event: SelectChangeEvent) => void;
   currentStart: Date | null;
-  startHandler: (value: Date | null) => void;
   currentEnd: Date | null;
-  endHandler: (value: Date | null) => void;
   expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
 }
@@ -64,11 +33,12 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   car0Handler,
   car1Handler,
   car2Handler,
+  carHandlers,
+  teamCategoriesHandlers,
+  teamsHandlers,
+  overdueHandler,
   status,
-  statusHandler,
   teamHandler,
-  startHandler,
-  endHandler,
   expandedHandler,
   teamList,
   selectedTeam,
@@ -76,31 +46,60 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   currentEnd,
   resetHandler
 }) => {
-  const carFilterButtons: FilterButton[] = [
-    { label: 'Car 1', onChange: () => {} },
-    { label: 'Car 2', onChange: () => {} }
-  ];
-  const teamCategoryFilterButtons: FilterButton[] = [
-    { label: 'Electrical', onChange: () => {} },
-    { label: 'Mechanical', onChange: () => {} },
-    { label: 'Software', onChange: () => {} },
-    { label: 'Business', onChange: () => {} }
-  ];
-  const teamFilterButtons: FilterButton[] = [
-    { label: 'Ergonomics', onChange: () => {} },
-    { label: 'Tractive', onChange: () => {} },
-    { label: 'Low Voltage', onChange: () => {} },
-    { label: 'Data and Controls', onChange: () => {} },
-    { label: 'Software', onChange: () => {} }
-  ];
-  const overdueFilterButtons: FilterButton[] = [{ label: 'Overdue', onChange: () => {} }];
+  const theme = useTheme();
+
+  const FilterChipButton = ({
+    buttonText,
+    onChange
+  }: {
+    buttonText: string;
+    onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  }) => (
+    <Checkbox
+      defaultChecked
+      onChange={onChange}
+      sx={{
+        '&:hover': {
+          backgroundColor: 'transparent'
+        }
+      }}
+      icon={
+        <Chip
+          label={buttonText}
+          sx={{ minWidth: '150px', borderRadius: '20px', backgroundColor: theme.palette.primary.main }}
+        />
+      }
+      checkedIcon={<Chip label={buttonText} sx={{ minWidth: '150px', borderRadius: '20px' }} />}
+    />
+  );
+
+  const FilterRow = ({
+    label,
+    buttons
+  }: {
+    label: string;
+    buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  }) => (
+    <Grid item container xs={12} sx={{ display: 'flex', alignItems: 'center', maxWidth: '50vw' }}>
+      <Grid item xs={3} sx={{ minHeight: '100%' }}>
+        <FormLabel>
+          <Typography variant="h6" textAlign="right">
+            {label}
+          </Typography>
+        </FormLabel>
+      </Grid>
+      <Grid container item xs={9} sx={{ display: 'flex', alignItems: 'center' }}>
+        {buttons.map((button) => (
+          <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} />
+          </Grid>
+        ))}
+      </Grid>
+    </Grid>
+  );
 
   const buttons = (
-    <Grid
-      item
-      container
-      sx={{ justifyContent: 'end', alignItems: 'center', alignSelf: 'center', justifySelf: 'end', mt: 2 }}
-    >
+    <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'center', mt: 2 }}>
       <Grid item>
         <Button
           onClick={() => {
@@ -130,11 +129,12 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   );
 
   return (
-    <Grid container rowSpacing={3} sx={{ justifyContent: 'start', alignItems: 'start', paddingY: 3, maxWidth: '50vw' }}>
-      <FilterRow label="Cars" buttons={carFilterButtons} />
-      <FilterRow label="Team Category" buttons={teamCategoryFilterButtons} />
-      <FilterRow label="Team" buttons={teamFilterButtons} />
-      <FilterRow label="Overdue" buttons={overdueFilterButtons} />
+    <Grid container rowSpacing={2} sx={{ justifyContent: 'start', alignItems: 'start', paddingY: 3, maxWidth: '50vw' }}>
+      <FilterRow label="Cars" buttons={carHandlers} />
+      <FilterRow label="Team Category" buttons={teamCategoriesHandlers} />
+      <FilterRow label="Team" buttons={teamsHandlers} />
+      <FilterRow label="Overdue" buttons={[{ filterLabel: 'Overdue', handler: overdueHandler }]} />
+      {buttons}
     </Grid>
   );
 };

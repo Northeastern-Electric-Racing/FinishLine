@@ -63,11 +63,8 @@ const GanttPageWrapper: FC = () => {
     showCar0,
     showCar1,
     showCar2,
-    status,
     selectedTeam,
-    expanded,
-    start,
-    end
+    expanded
   };
 
   useEffect(() => {
@@ -79,11 +76,9 @@ const GanttPageWrapper: FC = () => {
       showCar0,
       showCar1,
       showCar2,
-      status,
+
       selectedTeam,
-      expanded,
-      start,
-      end
+      expanded
     };
 
     const filteredProjects = filterGanttProjects(projects, ganttFilters);
@@ -93,7 +88,6 @@ const GanttPageWrapper: FC = () => {
     const tasks: GanttTask[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
     setGanttTasks(tasks);
-    // find the date of the earliest start date and subtract 2 weeks for the first date on chart
   }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
 
   if (isLoading) return <LoadingIndicator />;
@@ -114,9 +108,80 @@ const GanttPageWrapper: FC = () => {
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
-  const statusHandler = (event: SelectChangeEvent) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, status: event.target.value as string };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  const carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
+    { filterLabel: 'Car 1', handler: car1Handler },
+    { filterLabel: 'Car 2', handler: car2Handler }
+  ];
+
+  const electricalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const mechanicalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const softwareTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const businessTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
+    { filterLabel: 'Electrical', handler: electricalTeamCategoryHandler },
+    { filterLabel: 'Mechanical', handler: mechanicalTeamCategoryHandler },
+    { filterLabel: 'Software', handler: softwareTeamCategoryHandler },
+    { filterLabel: 'Business', handler: businessTeamCategoryHandler }
+  ];
+
+  const ergonomicsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const lowVoltageTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const tractiveTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const dataAndControlsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const softwareTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
+    { filterLabel: 'Ergonomics', handler: ergonomicsTeamHandler },
+    { filterLabel: 'Low Voltage', handler: lowVoltageTeamHandler },
+    { filterLabel: 'Tractive', handler: tractiveTeamHandler },
+    { filterLabel: 'Data and Controls', handler: dataAndControlsTeamHandler },
+    { filterLabel: 'Software', handler: softwareTeamHandler }
+  ];
+
+  const overdueHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const teamHandler = (event: SelectChangeEvent) => {
@@ -139,18 +204,6 @@ const GanttPageWrapper: FC = () => {
       const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     }
-  };
-
-  const startHandler = (value: Date | null) => {
-    if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, start: value };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
-  const endHandler = (value: Date | null) => {
-    if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, end: value };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const resetHandler = () => {
@@ -264,19 +317,24 @@ const GanttPageWrapper: FC = () => {
         onClose={handleFilterClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left'
+          horizontal: 'right'
         }}
-        sx={{ minWidth: 'fit-content' }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+        sx={{ dispaly: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
         <GanttPageFilter
           car0Handler={car0Handler}
           car1Handler={car1Handler}
           car2Handler={car2Handler}
+          carHandlers={carHandlers}
+          teamCategoriesHandlers={teamCategoriesHandlers}
+          teamsHandlers={teamsHandlers}
+          overdueHandler={overdueHandler}
           status={status}
-          statusHandler={statusHandler}
           teamHandler={teamHandler}
-          startHandler={startHandler}
-          endHandler={endHandler}
           expandedHandler={expandedHandler}
           teamList={teamList}
           selectedTeam={selectedTeam}

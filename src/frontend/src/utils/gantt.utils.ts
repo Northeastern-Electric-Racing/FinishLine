@@ -15,12 +15,36 @@ export const GANTT_CHART_CELL_SIZE = '2.25rem';
 
 export interface GanttFilters {
   showCar0: boolean;
+
+  /**
+   * Cars
+   */
   showCar1: boolean;
   showCar2: boolean;
-  status: string;
+
   selectedTeam: string;
-  start: Date | null;
-  end: Date | null;
+
+  /**
+   * Team Categories
+   */
+  showElectricalTeamCategory?: boolean;
+  showMechanicalTeamCategory?: boolean;
+  showSoftwareTeamCategory?: boolean;
+  showBusinessTeamCategory?: boolean;
+
+  /**
+   * Teams
+   */
+  showErgonomicsTeam?: boolean;
+  showLowVoltageTeam?: boolean;
+  showTractiveTeam?: boolean;
+  showDataAndControlsTeam?: boolean;
+  showSoftwareTeam?: boolean;
+
+  /**
+   * Overdue
+   */
+  showOnlyOverdue?: boolean;
   expanded: boolean;
 }
 
@@ -39,18 +63,10 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   const car2Check = (project: Project) => {
     return project.wbsNum.carNumber !== 2;
   };
-  const statusCheck = (project: Project) => {
-    return project.status.toString() === ganttFilters.status;
-  };
   const teamCheck = (project: Project) => {
     return getProjectTeamsName(project).includes(decodedTeam);
   };
-  const startCheck = (project: Project) => {
-    return project.startDate && ganttFilters.start ? project.startDate >= ganttFilters.start : false;
-  };
-  const endCheck = (project: Project) => {
-    return project.endDate && ganttFilters.end ? project.endDate <= ganttFilters.end : false;
-  };
+
   if (!ganttFilters.showCar0) {
     projects = projects.filter(car0Check);
   }
@@ -60,31 +76,20 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   if (!ganttFilters.showCar2) {
     projects = projects.filter(car2Check);
   }
-  if (ganttFilters.status !== 'All Statuses') {
-    projects = projects.filter(statusCheck);
-  }
   if (decodedTeam !== 'All Teams') {
     projects = projects.filter(teamCheck);
   }
-  if (ganttFilters.start) {
-    projects = projects.filter(startCheck);
-  }
-  if (ganttFilters.end) {
-    projects = projects.filter(endCheck);
-  }
+
   return projects;
 };
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
   return (
-    `?status=${ganttFilters.status}` +
     `&showCar0=${ganttFilters.showCar0}` +
     `&showCar1=${ganttFilters.showCar1}` +
     `&showCar2=${ganttFilters.showCar2}` +
     `&selectedTeam=${encodeURIComponent(ganttFilters.selectedTeam)}` +
-    `&expanded=${ganttFilters.expanded}` +
-    `&start=${ganttFilters.start?.toLocaleDateString() ?? null}` +
-    `&end=${ganttFilters.end?.toLocaleDateString() ?? null}`
+    `&expanded=${ganttFilters.expanded}`
   );
 };
 
