@@ -4,29 +4,19 @@
  */
 
 import { Typography } from '@mui/material';
-import { calculateEndDate } from 'shared';
-import { Gantt } from './GanttPackage/components/gantt/gantt';
-import { Task, ViewMode } from './GanttPackage/types/public-types';
+import { Task } from './GanttPackage/types/public-types';
+import { GanttChart as Gantt } from './GanttPackage/components/gantt/GanttChart';
 
 interface GanttPageProps {
   ganttTasks: Task[];
+  start: Date;
+  end: Date;
   onExpanderClick: (ganttTasks: Task) => void;
 }
 
-const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, onExpanderClick }) => {
+const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, start, end, onExpanderClick }) => {
   return ganttTasks.length > 0 ? (
-    <Gantt
-      tasks={ganttTasks}
-      viewMode={ViewMode.Week}
-      viewDate={calculateEndDate(new Date(), -3)}
-      preStepsCount={1}
-      locale={'US'}
-      onExpanderClick={onExpanderClick}
-      columnWidth={35}
-      onClick={(task) => {
-        if (task.onClick) task.onClick();
-      }}
-    />
+    <Gantt start={start} end={end} tasks={ganttTasks} />
   ) : (
     <Typography sx={{ mx: 1 }}>No items to display</Typography>
   );

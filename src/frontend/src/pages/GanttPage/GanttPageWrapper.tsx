@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
+import React from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
@@ -11,6 +11,8 @@ import GanttChart from './GanttChart';
 import GanttPageFilter from './GanttPageFilter';
 import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { SelectChangeEvent } from '@mui/material/Select';
+import EditIcon from '@mui/icons-material/Edit';
+import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
 import {
@@ -24,9 +26,10 @@ import {
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
-import { Box, createTheme, Paper, ThemeProvider, Typography } from '@mui/material';
-import { nerThemeOptions, lightThemeOptions } from '../../utils/themes';
+import { Box, Popover, Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
+import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
+import { NERButton } from '../../components/NERButton';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -38,6 +41,7 @@ const GanttPageWrapper: FC = () => {
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttTasks, setGanttTasks] = useState<GanttTask[]>([]);
+  const [anchorFilterEl, setAnchorFilterEl] = React.useState<HTMLButtonElement | null>(null);
   const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
@@ -59,11 +63,8 @@ const GanttPageWrapper: FC = () => {
     showCar0,
     showCar1,
     showCar2,
-    status,
     selectedTeam,
-    expanded,
-    start,
-    end
+    expanded
   };
 
   useEffect(() => {
@@ -75,11 +76,9 @@ const GanttPageWrapper: FC = () => {
       showCar0,
       showCar1,
       showCar2,
-      status,
+
       selectedTeam,
-      expanded,
-      start,
-      end
+      expanded
     };
 
     const filteredProjects = filterGanttProjects(projects, ganttFilters);
@@ -109,9 +108,80 @@ const GanttPageWrapper: FC = () => {
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
-  const statusHandler = (event: SelectChangeEvent) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, status: event.target.value as string };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  const carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
+    { filterLabel: 'Car 1', handler: car1Handler },
+    { filterLabel: 'Car 2', handler: car2Handler }
+  ];
+
+  const electricalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const mechanicalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const softwareTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const businessTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
+    { filterLabel: 'Electrical', handler: electricalTeamCategoryHandler },
+    { filterLabel: 'Mechanical', handler: mechanicalTeamCategoryHandler },
+    { filterLabel: 'Software', handler: softwareTeamCategoryHandler },
+    { filterLabel: 'Business', handler: businessTeamCategoryHandler }
+  ];
+
+  const ergonomicsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const lowVoltageTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const tractiveTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const dataAndControlsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+  const softwareTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  };
+
+  const teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
+    { filterLabel: 'Ergonomics', handler: ergonomicsTeamHandler },
+    { filterLabel: 'Low Voltage', handler: lowVoltageTeamHandler },
+    { filterLabel: 'Tractive', handler: tractiveTeamHandler },
+    { filterLabel: 'Data and Controls', handler: dataAndControlsTeamHandler },
+    { filterLabel: 'Software', handler: softwareTeamHandler }
+  ];
+
+  const overdueHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    //TODO:
+    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
+    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const teamHandler = (event: SelectChangeEvent) => {
@@ -134,18 +204,6 @@ const GanttPageWrapper: FC = () => {
       const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     }
-  };
-
-  const startHandler = (value: Date | null) => {
-    if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, start: value };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
-  const endHandler = (value: Date | null) => {
-    if (value?.toString() === 'Invalid Date') return toast.error('Invalid Date', 2000);
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, end: value };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const resetHandler = () => {
@@ -172,6 +230,32 @@ const GanttPageWrapper: FC = () => {
     teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
   });
 
+  // find the date of the earliest start date and subtract 2 weeks for the first date on calendar
+  const ganttStartDate =
+    ganttTasks.length !== 0
+      ? sub(
+          ganttTasks
+            .map((task) => task.start)
+            .reduce((previous, current) => {
+              return previous < current ? previous : current;
+            }, new Date(8.64e15)),
+          { weeks: 2 }
+        )
+      : sub(Date.now(), { weeks: 5 });
+
+  // find the date of the latest end date and add 3 weeks for the last date on calendar
+  const ganttEndDate =
+    ganttTasks.length !== 0
+      ? add(
+          ganttTasks
+            .map((task) => task.end)
+            .reduce((previous, current, index) => {
+              return previous > current ? previous : current;
+            }, new Date(-8.64e15)),
+          { weeks: 3 }
+        )
+      : add(Date.now(), { weeks: 5 });
+
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   const ganttCharts: JSX.Element[] = sortedTeamList.map((teamName: string) => {
@@ -179,44 +263,95 @@ const GanttPageWrapper: FC = () => {
     if (!tasks) return <></>;
 
     return (
-      <Box key={teamName} sx={{ my: 3, maxWidth: '90vw' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', mb: 1 }}>
-          <Typography variant="h5" sx={{ flexGrow: 1 }}>
-            {teamName}
-          </Typography>
+      <>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            mb: 1,
+            position: 'sticky',
+            left: 0,
+            width: 'fit-content'
+          }}
+        >
+          <Typography variant="h5">{teamName}</Typography>
+          {/**Add IconButton */}
+          <EditIcon />
         </Box>
-        <Paper>
-          <GanttChart
-            ganttTasks={tasks}
-            onExpanderClick={(newTask) => {
-              const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-              setGanttTasks(newTasks);
-            }}
-          />
-        </Paper>
-      </Box>
+        <Box key={teamName} sx={{ my: 3, width: 'fit-content', maxWidth: '90vw' }}>
+          <Box>
+            <GanttChart
+              ganttTasks={tasks}
+              start={ganttStartDate}
+              end={ganttEndDate}
+              onExpanderClick={(newTask) => {
+                const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
+                setGanttTasks(newTasks);
+              }}
+            />
+          </Box>
+        </Box>
+      </>
     );
   });
 
+  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorFilterEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setAnchorFilterEl(null);
+  };
+
+  const open = Boolean(anchorFilterEl);
+
+  const headerRight = (
+    <>
+      <NERButton variant="contained" onClick={handleFilterClick}>
+        Filters
+      </NERButton>
+      <Popover
+        open={open}
+        anchorEl={anchorFilterEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+        sx={{ dispaly: 'flex', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <GanttPageFilter
+          car0Handler={car0Handler}
+          car1Handler={car1Handler}
+          car2Handler={car2Handler}
+          carHandlers={carHandlers}
+          teamCategoriesHandlers={teamCategoriesHandlers}
+          teamsHandlers={teamsHandlers}
+          overdueHandler={overdueHandler}
+          status={status}
+          teamHandler={teamHandler}
+          expandedHandler={expandedHandler}
+          teamList={teamList}
+          selectedTeam={selectedTeam}
+          currentStart={start}
+          currentEnd={end}
+          resetHandler={resetHandler}
+        />
+      </Popover>
+    </>
+  );
+
   return (
-    <PageLayout title="Gantt Chart">
-      <GanttPageFilter
-        car0Handler={car0Handler}
-        car1Handler={car1Handler}
-        car2Handler={car2Handler}
-        status={status}
-        statusHandler={statusHandler}
-        teamHandler={teamHandler}
-        startHandler={startHandler}
-        endHandler={endHandler}
-        expandedHandler={expandedHandler}
-        teamList={teamList}
-        selectedTeam={selectedTeam}
-        currentStart={start}
-        currentEnd={end}
-        resetHandler={resetHandler}
-      />
-      <ThemeProvider theme={createTheme(nerThemeOptions, lightThemeOptions)}>{ganttCharts}</ThemeProvider>
+    <PageLayout title="Gantt Chart" headerRight={headerRight}>
+      <Box sx={{ width: '100%', overflow: 'scroll' }}>
+        <GanttChartCalendar start={ganttStartDate} end={ganttEndDate} />
+        {ganttCharts}
+      </Box>
     </PageLayout>
   );
 };
