@@ -65,29 +65,33 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
           </Grid>
           <Grid item>{proposedSolution.approved && <Chip label="Approved" color="success" />}</Grid>
           <Grid item>
-            <Button
-              color="info"
-              variant="outlined"
-              onClick={() => {
-                onEdit(proposedSolution);
-              }}
-            >
-              <Edit />
-            </Button>
-          </Grid>
-          {showDeleteButton && onDelete !== undefined && (
-            <Grid item>
-              <Button
-                color="error"
-                variant="outlined"
-                onClick={() => {
-                  onDelete(proposedSolution);
-                }}
-              >
-                <DeleteIcon />
-              </Button>
+            <Grid container direction="row" spacing={2}>
+              <Grid item>
+                <Button
+                  color="info"
+                  variant="outlined"
+                  onClick={() => {
+                    onEdit(proposedSolution);
+                  }}
+                >
+                  <Edit />
+                </Button>
+              </Grid>
+              {showDeleteButton && onDelete !== undefined && (
+                <Grid item>
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    onClick={() => {
+                      onDelete(proposedSolution);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </Grid>
+              )}
             </Grid>
-          )}
+          </Grid>
         </Grid>
       </Grid>
     </Grid>
