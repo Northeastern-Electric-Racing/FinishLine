@@ -3,7 +3,7 @@ import { Team } from 'shared';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
-import userTransformer from './user.transformer';
+import { userTransformer } from './user.transformer';
 
 const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Team => {
   return {
