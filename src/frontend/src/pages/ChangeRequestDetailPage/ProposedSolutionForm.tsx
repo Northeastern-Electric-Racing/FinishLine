@@ -11,6 +11,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
 import { TextField, Typography, IconButton } from '@mui/material';
+import crypto from 'crypto';
 
 interface ProposedSolutionFormProps {
   description?: string;
