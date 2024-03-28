@@ -56,9 +56,9 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     <NERModal
       open={open}
       onHide={() => setOpen(false)}
-      title="Input these fields into the Sabo Form"
+      title="Input these fields into the SABO Form"
       cancelText="Cancel"
-      submitText="Submit to Sabo"
+      submitText="Submit to SABO"
       onSubmit={() => handleSubmitToSabo()}
     >
       <Grid container spacing={1}>

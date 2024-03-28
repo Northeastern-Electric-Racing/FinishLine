@@ -40,10 +40,10 @@ const ReimbursementRequestTable = ({
           <TableHead>
             <TableRow>
               {tabValue === 1 && <ColumnHeader title="Recipient" />}
-              <ColumnHeader title="Sabo ID" />
+              <ColumnHeader title="SABO ID" />
               <ColumnHeader title="Amount ($)" />
               <ColumnHeader title="Date Submitted" />
-              <ColumnHeader title="Date Submitted To Sabo" />
+              <ColumnHeader title="Date Submitted To SABO" />
               <ColumnHeader title="Status" />
             </TableRow>
           </TableHead>
