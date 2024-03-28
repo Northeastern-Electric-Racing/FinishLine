@@ -20,7 +20,7 @@ const renderComponent = (readOnly: boolean, description = '', budgetImpact = 0, 
     <RouterWrapper>
       <ProposedSolutionForm
         readOnly={readOnly}
-        onAdd={mockHandleSubmit}
+        onSubmit={mockHandleSubmit}
         description={description}
         budgetImpact={budgetImpact}
         timelineImpact={timelineImpact}
