@@ -5,7 +5,7 @@
 
 import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
 import { Button, Typography } from '@mui/material';
 import { useCurrentUser } from '../../hooks/users.hooks';
@@ -21,11 +21,22 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   setProposedSolutions
 }) => {
   const user = useCurrentUser();
-  const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
+  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
+  const [showEditForm, setShowEditForm] = useState<boolean>(false);
+  const [editingProposedSolution, setEditingProposedSolution] = useState<ProposedSolution>();
+
+  useEffect(() => {
+    setShowEditForm(!!editingProposedSolution);
+  }, [editingProposedSolution]);
 
   const addProposedSolution = async (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
-    setShowEditableForm(false);
+    setShowCreateForm(false);
+  };
+
+  const editProposedSolution = async (data: ProposedSolution) => {
+    setProposedSolutions([...proposedSolutions.filter((proposedSolution) => proposedSolution.id !== data.id), data]);
+    setShowEditForm(false);
   };
 
   const removeProposedSolution = (data: ProposedSolution) => {
@@ -39,7 +50,7 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
           <Typography variant="h5" sx={{ mt: 2 }}>
             Proposed Solutions
           </Typography>
-          <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ mt: 2 }}>
+          <Button onClick={() => setShowCreateForm(true)} variant="contained" color="success" sx={{ mt: 2 }}>
             + Add Solution
           </Button>
         </Box>
@@ -51,11 +62,32 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
             proposedSolution={proposedSolution}
             onDelete={removeProposedSolution}
             showDeleteButton
+            onEdit={(proposedSolution) => {
+              setEditingProposedSolution(proposedSolution);
+            }}
           />
         ))}
       </div>
-
-      <ProposedSolutionForm onAdd={addProposedSolution} open={showEditableForm} onClose={() => setShowEditableForm(false)} />
+      {showCreateForm && (
+        <ProposedSolutionForm
+          onSubmit={addProposedSolution}
+          open={showCreateForm}
+          onClose={() => setShowCreateForm(false)}
+        />
+      )}
+      {showEditForm && (
+        <ProposedSolutionForm
+          editing
+          onSubmit={editProposedSolution}
+          open={showEditForm}
+          onClose={() => setEditingProposedSolution(undefined)}
+          description={editingProposedSolution?.description}
+          budgetImpact={editingProposedSolution?.budgetImpact}
+          timelineImpact={editingProposedSolution?.timelineImpact}
+          scopeImpact={editingProposedSolution?.scopeImpact}
+          id={editingProposedSolution?.id}
+        />
+      )}
     </>
   );
 };

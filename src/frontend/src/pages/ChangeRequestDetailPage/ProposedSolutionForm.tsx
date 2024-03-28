@@ -17,10 +17,12 @@ interface ProposedSolutionFormProps {
   budgetImpact?: number;
   timelineImpact?: number;
   scopeImpact?: string;
+  id?: string;
   readOnly?: boolean;
-  onAdd: (data: ProposedSolution) => void;
+  onSubmit: (data: ProposedSolution) => void;
   open: boolean;
   onClose: () => void;
+  editing?: boolean;
 }
 
 const schema = yup.object().shape({
@@ -43,19 +45,27 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   budgetImpact,
   timelineImpact,
   scopeImpact,
+  id,
   readOnly,
-  onAdd,
+  onSubmit,
   open,
-  onClose
+  onClose,
+  editing
 }) => {
   const { formState, handleSubmit, control } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
-    defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }
+    defaultValues: {
+      description,
+      budgetImpact,
+      timelineImpact,
+      scopeImpact,
+      id: id ? id : crypto.randomUUID()
+    }
   });
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Propose a Solution</DialogTitle>
+      <DialogTitle>{editing ? 'Edit Proposed Solution' : 'Propose a Solution'}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onClose}
@@ -80,7 +90,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleSubmit(onAdd)(e);
+            handleSubmit(onSubmit)(e);
           }}
         >
           <Controller
@@ -198,7 +208,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                Add
+                {editing ? 'Save' : 'Add'}
               </NERSuccessButton>
             </Box>
           )}
