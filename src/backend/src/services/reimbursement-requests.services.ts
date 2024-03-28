@@ -795,7 +795,6 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursment status
    */
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User) {
-    await validateUserIsPartOfFinanceTeam(submitter);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -809,6 +808,8 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
+
+    await validateUserEditRRPermissions(submitter, reimbursementRequest);
 
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');
