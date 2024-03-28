@@ -38,6 +38,16 @@ export const createManufacturer = async (name: string) => {
 };
 
 /**
+ * Requests to delete a manufacturer.
+ * @param manufacturer The manufacturer to delete
+ * @returns The deleted manufacturer
+ */
+export const deleteManufacturer = async (name: string) => {
+  const { data } = await axios.delete(apiUrls.bomDeleteManufacturer(name));
+  return data;
+};
+
+/**
  * Requests to create a material type.
  * @param materialType The material type to create
  * @returns The created material type

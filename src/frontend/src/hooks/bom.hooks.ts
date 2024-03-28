@@ -4,6 +4,7 @@ import {
   assignMaterialToAssembly,
   createAssembly,
   createManufacturer,
+  deleteManufacturer,
   createMaterial,
   createMaterialType,
   createUnit,
@@ -165,6 +166,27 @@ export const useCreateManufacturer = () => {
     ['manufacturer', 'create'],
     async (payload: { name: string }) => {
       const data = await createManufacturer(payload.name);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'manufacturers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to delete a material.
+ * @param materialId The material to delete's id
+ * @returns mutation function to delete a material
+ */
+export const useDeleteManufacturer = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { manufacturerName: string }>(
+    ['manufacturer', 'delete'],
+    async (payload: { manufacturerName: string }) => {
+      const data = await deleteManufacturer(payload.manufacturerName);
       return data;
     },
     {
