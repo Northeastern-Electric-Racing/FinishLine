@@ -74,15 +74,12 @@ export default class TeamsService {
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
     // if the new members array includes a current lead on that team, that member will be deleted as a lead of that team
-    const newLeadsArr: number[] = [];
+    // this should work in theory, but there is a block on the front-end that prevents the user from adding a current lead as a member of a team (they won't show up in the new member dropdown)
     if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId))) {
-      for (let i = 0; i < team.leads.length; i++) {
-        if (!userIds.includes(team.leads[i].userId)) {
-          newLeadsArr.push(team.leads[i].userId);
-        }
-      }
+      const newLeadsArr = team.leads.filter((lead) => !userIds.includes(lead.userId)).map((lead) => lead.userId);
       this.setTeamLeads(submitter, teamId, newLeadsArr);
     }
+
     // retrieve userId for every given users to update team's members in the database
     const transformedUsers = users.map((user) => {
       return {
@@ -160,7 +157,7 @@ export default class TeamsService {
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
 
     // if the new head is a current member on the team, this will remove them as a member
-    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId)) {
+    if (newHead && team.members.map((user) => user.userId).includes(userId)) {
       const newTeamArr: number[] = team.members
         .filter((member) => member.userId !== newHead.userId)
         .map((member) => member.userId);
@@ -169,7 +166,7 @@ export default class TeamsService {
 
     // if the new head is a current leader on the team, they will be removed as a leader
     // this will work in theory, but there is a block on the front-end that prevents the user from adding a current lead as the head of a team (they won't show up in the new head dropdown)
-    if (team.leads.map((lead) => lead.userId).includes(userId)) {
+    if (newHead && team.leads.map((lead) => lead.userId).includes(userId)) {
       const newLeadsArr: number[] = team.leads.map((lead) => lead.userId).filter((leadId) => leadId !== userId);
       this.setTeamLeads(submitter, teamId, newLeadsArr);
     }

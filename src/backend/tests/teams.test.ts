@@ -3,7 +3,16 @@ import prisma from '../src/prisma/prisma';
 import * as teamsTransformer from '../src/transformers/teams.transformer';
 import { prismaTeam1, sharedTeam1, justiceLeague, primsaTeam2 } from './test-data/teams.test-data';
 import teamQueryArgs from '../src/prisma-query-args/teams.query-args';
-import { alfred, batman, flash, greenlantern, superman, theVisitor, wonderwoman } from './test-data/users.test-data';
+import {
+  alfred,
+  aquaman,
+  batman,
+  flash,
+  greenlantern,
+  superman,
+  theVisitor,
+  wonderwoman
+} from './test-data/users.test-data';
 import * as userUtils from '../src/utils/users.utils';
 import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
 import teamTransformer from '../src/transformers/teams.transformer';
@@ -262,6 +271,16 @@ describe('Teams', () => {
       );
 
       await expect(callSetTeamLeads).rejects.toThrow(expectedException);
+    });
+
+    test('setTeamLeads lead is a member', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(aquaman);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
+
+      const res = await TeamsService.setTeamLeads(flash, justiceLeague.teamId, [aquaman.userId]);
+
+      //expect(res.leads.map((user) => user.userId)).toContain(aquaman.userId);
+      expect(res.members.map((user) => user.userId)).not.toContain(aquaman.userId);
     });
 
     test('setTeamLeads lead is a head', async () => {
