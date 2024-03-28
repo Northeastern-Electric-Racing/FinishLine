@@ -45,7 +45,7 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
 
 /**
  * Send CR requested review notification to reviewer in Slack
- * @param slackIds the slack ids of the reviewers
+ * @param reviewers the user information of the reviewers
  * @param changeRequest the requested change request to be reviewed
  */
 export const sendSlackRequestedReviewNotification = async (
@@ -65,7 +65,9 @@ export const sendSlackRequestedReviewNotification = async (
   const fullMsg =
     usersToSlackPings(reviewers) + `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
 
-  threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, changeRequestLink, btnText));
+  threads.forEach((thread) =>
+    replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, changeRequestLink, btnText)
+  );
 };
 
 /**
