@@ -15,9 +15,20 @@ import {
   getUsersFavoriteProjects,
   updateUserSecureSettings,
   getCurrentUserSecureSettings,
-  getUserSecureSettings
+  getUserSecureSettings,
+  getUserScheduleSettings,
+  updateUserScheduleSettings
 } from '../apis/users.api';
-import { User, AuthenticatedUser, UserSettings, UpdateUserRolePayload, Project, UserSecureSettings } from 'shared';
+import {
+  User,
+  AuthenticatedUser,
+  UserSettings,
+  UpdateUserRolePayload,
+  Project,
+  UserSecureSettings,
+  UserScheduleSettings,
+  UserWithScheduleSettings
+} from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
 import { UserContext } from '../app/AppContextUser';
@@ -35,7 +46,7 @@ export const useCurrentUser = (): AuthenticatedUser => {
  * Custom React Hook to supply all users.
  */
 export const useAllUsers = () => {
-  return useQuery<User[], Error>(['users'], async () => {
+  return useQuery<UserWithScheduleSettings[], Error>(['users'], async () => {
     const { data } = await getAllUsers();
     return data;
   });
@@ -113,6 +124,23 @@ export const useUserSecureSettings = (id: number) => {
 };
 
 /**
+ * Custom React Hook to supply a single user's schedule settings
+ *
+ * @param id User ID of the requested user's schedule settings
+ * @returns the user's schedule settings
+ */
+export const useUserScheduleSettings = (id: number) => {
+  return useQuery<UserScheduleSettings, Error>(['users', id, 'schedule-settings'], async () => {
+    try {
+      const { data } = await getUserScheduleSettings(id);
+      return data;
+    } catch (error: unknown) {
+      return { drScheduleSettingsId: '', personalGmail: '', personalZoomLink: '', availability: [] };
+    }
+  });
+};
+
+/**
  * Custom React Hook to supply a single user's settings.
  *
  * @param id User ID of the requested user's settings.
@@ -157,6 +185,28 @@ export const useUpdateUserSecureSettings = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['users', 'secure-settings']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom Hook to update a user's schedule settings
+ *
+ * @returns The mutation to update a user's schedule settings
+ */
+export const useUpdateUserScheduleSettings = () => {
+  const user = useCurrentUser();
+  const queryClient = useQueryClient();
+  return useMutation<UserScheduleSettings, Error, UserScheduleSettings>(
+    ['users', 'schedule-settings', 'update'],
+    async (settings: UserScheduleSettings) => {
+      const { data } = await updateUserScheduleSettings(settings);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
       }
     }
   );

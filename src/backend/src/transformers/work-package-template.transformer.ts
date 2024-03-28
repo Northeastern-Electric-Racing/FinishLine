@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { WorkPackageStage, WorkPackageTemplate } from 'shared';
+import { BlockedByInfo, WorkPackageStage, WorkPackageTemplate } from 'shared';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
-import { blockedByInfoTransformer } from './blocked-by-info.transformer';
 
 export const workPackageTemplateTransformer = (
   wptInput: Prisma.Work_Package_TemplateGetPayload<typeof workPackageTemplateQueryArgs>
@@ -11,7 +10,7 @@ export const workPackageTemplateTransformer = (
     templateName: wptInput.templateName,
     templateNotes: wptInput.templateNotes,
     workPackageName: wptInput.workPackageName ?? '',
-    stage: (wptInput.stage as WorkPackageStage) || undefined,
+    stage: (wptInput.stage as WorkPackageStage) ?? undefined,
     duration: wptInput.duration ?? undefined,
     blockedBy: wptInput.blockedBy.map((info) => blockedByInfoTransformer(info)),
     expectedActivities: wptInput.expectedActivities,
@@ -23,4 +22,12 @@ export const workPackageTemplateTransformer = (
     userDeleted: wptInput.userDeleted ?? undefined,
     userDeletedId: wptInput.userDeletedId ?? undefined
   } as WorkPackageTemplate;
+};
+
+const blockedByInfoTransformer = (bbInput: Prisma.Blocked_By_InfoGetPayload<{}>): BlockedByInfo => {
+  return {
+    blockedByInfoId: bbInput.blockedByInfoId,
+    stage: (bbInput.stage as WorkPackageStage) ?? undefined,
+    name: bbInput.name
+  };
 };

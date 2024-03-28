@@ -81,5 +81,6 @@ workPackagesRouter.post(
   validateInputs,
   WorkPackagesController.editWorkPackageTemplate
 );
+workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
 
 export default workPackagesRouter;

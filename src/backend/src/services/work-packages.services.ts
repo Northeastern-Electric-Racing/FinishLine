@@ -20,8 +20,12 @@ import {
   wbsPipe,
   WorkPackage,
   WorkPackageStage,
+<<<<<<< HEAD
   WorkPackageTemplate,
   BlockedByInfo
+=======
+  WorkPackageTemplate
+>>>>>>> develop
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -45,9 +49,14 @@ import {
   descriptionBulletsToChangeListValues
 } from '../utils/description-bullets.utils';
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
+<<<<<<< HEAD
 import { blockedByInfoTransformer } from '../transformers/blocked-by-info.transformer';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
+=======
+import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
+import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
+>>>>>>> develop
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {

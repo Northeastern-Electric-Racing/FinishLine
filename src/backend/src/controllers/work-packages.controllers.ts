@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage } from 'shared';
+import { validateWBS, WbsNumber, WorkPackage, WorkPackageTemplate } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
 
@@ -151,8 +151,17 @@ export default class WorkPackagesController {
     try {
       //const { workPackageTemplateId } = req.params;
 
-      const { workPackageTemplateId, templateName, templateNotes, duration, stage, blockedBy, expectedActivities, deliverables, workPackageName } =
-        req.body;
+      const {
+        workPackageTemplateId,
+        templateName,
+        templateNotes,
+        duration,
+        stage,
+        blockedBy,
+        expectedActivities,
+        deliverables,
+        workPackageName
+      } = req.body;
 
       const user = await getCurrentUser(res);
 
@@ -166,9 +175,23 @@ export default class WorkPackagesController {
         blockedBy,
         expectedActivities,
         deliverables,
-        workPackageName,
+        workPackageName
       );
       return res.status(200).json({ message: 'Work package template updated successfully' });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+  static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { workPackageTemplateId } = req.params;
+      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
+        user,
+        workPackageTemplateId
+      );
+
+      res.status(200).json(workPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }

@@ -37,6 +37,20 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
 };
 
 /**
+ * Produce a array of primsa formated userIds, given the array of User
+ * @param userIds the userIds to get as users
+ * @returns userIds in prisma format
+ */
+export const getPrismaQueryUserIds = (users: User[]) => {
+  const userIds = users.map((user) => {
+    return {
+      userId: user.userId
+    };
+  });
+  return userIds;
+};
+
+/**
  * Gets the users for the given Ids with their user settings
  * @param userIds the userIds to get as users
  * @returns the found users with their user settings

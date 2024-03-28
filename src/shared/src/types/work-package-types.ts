@@ -34,8 +34,8 @@ export interface WorkPackageTemplate {
   stage?: WorkPackageStage;
   duration?: number;
   blockedBy: BlockedByInfo[];
-  expectedActivities: string[];
-  deliverables: string[];
+  expectedActivities: String[];
+  deliverables: String[];
   dateCreated: Date;
   userCreated: User;
   userCreatedId: Number;
