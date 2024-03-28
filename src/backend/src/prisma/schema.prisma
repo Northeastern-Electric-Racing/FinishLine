@@ -666,6 +666,7 @@ model Wbs_Proposed_Changes {
   changeRequest              Change_Request                 @relation(fields: [changRequestId], references: [crId])
   proposedProjectChanges     Project_Proposed_Changes?      @relation(name: "proposedProjectChanges")
   workPackageProposedChanges Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
+  dateDeleted                DateTime?
 }
 
 model Project_Proposed_Changes {
@@ -679,11 +680,11 @@ model Project_Proposed_Changes {
   teams                    Team[]               @relation(name: "proposedProjectTeams")
   proposedWbsChanges       Wbs_Proposed_Changes @relation(name: "proposedProjectChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique
+  newProject               Boolean
 }
 
 model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String               @id @default(uuid())
-  orderInProject               Int
   startDate                    DateTime
   duration                     Int
   blockedBy                    WBS_Element[]        @relation(name: "blockedBy")
