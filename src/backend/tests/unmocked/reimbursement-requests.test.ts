@@ -1,4 +1,4 @@
-import { superman } from '../test-data/users.test-data';
+import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createFinanceTeamAndLead, createTestReimbursementRequest, resetUsers } from '../test-utils';
@@ -20,7 +20,7 @@ describe('Reimbursement Requests', () => {
       assert(false);
     }
     await expect(() =>
-      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, superman)
+      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, alfred)
     ).rejects.toThrow(
       new AccessDeniedException(
         'You do not have access to delete this reimbursement request, only the creator or finance leads can delete a reimbursement request'
