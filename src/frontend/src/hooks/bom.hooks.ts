@@ -8,6 +8,7 @@ import {
   createMaterialType,
   createUnit,
   deleteSingleMaterial,
+  deleteUnit,
   editMaterial,
   getAllManufacturers,
   getAllMaterialTypes,
@@ -47,6 +48,22 @@ export const useGetAllUnits = () => {
     const data = await getAllUnits();
     return data;
   });
+};
+
+export const useDeleteUnit = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Unit, Error>(
+    ['units', 'delete'],
+    async () => {
+      const { data } = await deleteUnit(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['units']);
+      }
+    }
+  );
 };
 
 /**

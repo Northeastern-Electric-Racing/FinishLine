@@ -56,6 +56,11 @@ export const createUnit = async (name: string) => {
   const { data } = await axios.post(apiUrls.bomCreateUnit(), { name });
   return data;
 };
+
+export const deleteUnit = async (id: string) => {
+  return axios.delete(apiUrls.bomDeleteUnit(id));
+};
+
 /**
  * Requests all the units from the backend.
  * @returns All the units
