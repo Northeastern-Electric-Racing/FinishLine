@@ -58,12 +58,12 @@ const AddSABONumberModal = ({ modalShow, onHide, reimbursementRequestId }: AddSA
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       disabled={!isValid}
-      formId="add-sabo-number"
+      formId="add-SABO-number"
     >
       <FormControl>
         <ReactHookTextField
           control={control}
-          name="saboNumber"
+          name="SABONumber"
           errorMessage={errors.saboNumber}
           placeholder="12345"
           sx={{ width: 1 }}
