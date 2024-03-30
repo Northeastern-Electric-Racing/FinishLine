@@ -6,7 +6,6 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsPipe } from '../../utils/pipes';
 import CreateWorkPackageCRForm from './CreateWorkPackageCRForm';
-import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();

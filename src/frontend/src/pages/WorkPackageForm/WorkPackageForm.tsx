@@ -18,7 +18,14 @@ interface WorkPackageFormProps {
   createCR?: boolean;
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm, createCR }) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
+  wbsNum,
+  mutateAsync,
+  exitActiveMode,
+  crId,
+  createForm,
+  createCR
+}) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
