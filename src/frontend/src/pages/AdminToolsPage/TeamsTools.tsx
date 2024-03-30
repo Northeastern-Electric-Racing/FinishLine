@@ -1,7 +1,17 @@
-import { Box, FormControl, FormLabel, Grid, TableCell, TableRow, Button, TextField, useTheme } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  FormLabel,
+  Grid,
+  TableCell,
+  TableRow,
+  Button,
+  TextField,
+  useTheme,
+  Typography
+} from '@mui/material';
 import { routes } from '../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
-import PageBlock from '../../layouts/PageBlock';
 import { NERButton } from '../../components/NERButton';
 import { useAllTeams, useCreateTeam } from '../../hooks/teams.hooks';
 import { fullNamePipe } from '../../utils/pipes';
@@ -19,7 +29,7 @@ import { isHead, isUnderWordCount, countWords } from 'shared';
 import { userComparator, userToAutocompleteOption } from '../../utils/teams.utils';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERAutocomplete from '../../components/NERAutocomplete';
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   teamName: yup.string().required('Team Name is Required'),
@@ -95,7 +105,10 @@ const TeamsTools = () => {
   ));
 
   return (
-    <PageBlock title="Team Management">
+    <Box>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Team Management
+      </Typography>
       <Grid container columnSpacing={2}>
         <Grid item xs={12} md={6}>
           <form
@@ -204,7 +217,7 @@ const TeamsTools = () => {
           />
         </Grid>
       </Grid>
-    </PageBlock>
+    </Box>
   );
 };
 
