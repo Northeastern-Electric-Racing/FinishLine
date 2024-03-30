@@ -48,6 +48,7 @@ interface WorkPackageFormViewProps {
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
   createForm?: boolean;
+  createCR?: boolean;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -76,7 +77,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  createForm
+  createForm,
+  createCR
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -210,6 +212,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           setLead={setLeadId}
           setManager={setManagerId}
           createForm={createForm}
+          createCR={createCR}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>

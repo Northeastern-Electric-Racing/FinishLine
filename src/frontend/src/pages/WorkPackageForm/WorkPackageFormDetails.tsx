@@ -24,6 +24,7 @@ interface Props {
   control: Control<WorkPackageFormViewPayload>;
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
   createForm?: boolean;
+  createCR?: boolean;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -35,7 +36,8 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   usersForProjectManager,
   control,
   errors,
-  createForm
+  createForm,
+  createCR
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -83,13 +85,15 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={3}>
-          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-        </Grid>
+        {!createCR && (
+          <Grid item xs={12} md={3}>
+            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+          </Grid>
+        )}
         <Grid item xs={12} md={3}>
           <StageSelect />
         </Grid>
-        <Grid item xs={12} md={2}>
+        <Grid item xs={12} md={createCR ? 3 : 2}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller

@@ -5,17 +5,23 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsPipe } from '../../utils/pipes';
+import CreateWorkPackageCRForm from './CreateWorkPackageCRForm';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
-  const crId = query.get('crId');
+  const crId = query.get('crId') || undefined;
   const wbsNum = query.get('wbs');
   const history = useHistory();
+  const newCr = query.get('newCr');
 
   if (!wbsNum) throw new Error('WBS number not included in request.');
-  if (!crId) throw new Error('CR ID not included in request.');
 
   const { mutateAsync } = useCreateSingleWorkPackage();
+
+  if (newCr) {
+    return <CreateWorkPackageCRForm wbsNum={validateWBS(wbsNum)} />;
+  }
 
   return (
     <WorkPackageForm
