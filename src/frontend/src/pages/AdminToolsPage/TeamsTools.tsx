@@ -48,7 +48,6 @@ const TeamsTools = () => {
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
   const theme = useTheme();
   const [currentDescription, setCurrentDescription] = useState('');
-  const [prevDescription, setPrevDescription] = useState('');
   const [isPreview, setIsPreview] = useState(false);
   const toast = useToast();
   const {
@@ -94,57 +93,6 @@ const TeamsTools = () => {
       </TableCell>
     </TableRow>
   ));
-
-  interface DescriptionButtonsProps {
-    toRight: ReactNode;
-  }
-
-  const DescriptionButtons: React.FC<DescriptionButtonsProps> = ({ toRight }) => {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginTop: '6px',
-          marginBottom: '10px'
-        }}
-      >
-        <FormLabel>Description</FormLabel>
-        {toRight}
-      </Box>
-    );
-  };
-
-  const editButtons = (
-    <Box style={{ display: 'flex' }}>
-      <Button
-        onClick={() => {
-          setCurrentDescription(prevDescription);
-          setPrevDescription('');
-          setIsPreview(true);
-        }}
-      >
-        Cancel
-      </Button>
-      <Button
-        onClick={() => {
-          setPrevDescription(currentDescription);
-          setIsPreview(!isPreview);
-        }}
-        sx={{
-          ml: 2,
-          backgroundColor: theme.palette.grey[600],
-          color: theme.palette.getContrastText(theme.palette.grey[600]),
-          '&:hover': {
-            backgroundColor: theme.palette.grey[700]
-          }
-        }}
-      >
-        {isPreview ? 'Edit' : 'Preview'}
-      </Button>
-    </Box>
-  );
 
   return (
     <PageBlock title="Team Management">
@@ -192,7 +140,32 @@ const TeamsTools = () => {
                 rules={{ required: true }}
                 render={({ field }) => (
                   <Box sx={{ display: 'flex-col' }}>
-                    <DescriptionButtons toRight={editButtons} />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginTop: '6px',
+                        marginBottom: '10px'
+                      }}
+                    >
+                      <FormLabel>Description</FormLabel>
+                      <Button
+                        onClick={() => {
+                          setIsPreview(!isPreview);
+                        }}
+                        sx={{
+                          ml: 2,
+                          backgroundColor: theme.palette.grey[600],
+                          color: theme.palette.getContrastText(theme.palette.grey[600]),
+                          '&:hover': {
+                            backgroundColor: theme.palette.grey[700]
+                          }
+                        }}
+                      >
+                        {isPreview ? 'Edit' : 'Preview'}
+                      </Button>
+                    </Box>
                     {isPreview ? (
                       <ReactMarkdown className={styles.markdown}>{currentDescription}</ReactMarkdown>
                     ) : (
