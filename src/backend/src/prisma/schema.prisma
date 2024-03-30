@@ -324,28 +324,36 @@ model Work_Package {
 }
 
 model LinkType {
-  name        String   @id @unique
-  dateCreated DateTime @default(now())
+  name        String     @id @unique
+  dateCreated DateTime   @default(now())
   creatorId   Int
   iconName    String
   required    Boolean
-  creator     User     @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links       Link[]   @relation(name: "linkTypes")
+  creator     User       @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links       Link[]     @relation(name: "linkTypes")
+  linkInfos   LinkInfo[] @relation(name: "linkInfoTypes")
 }
 
 model Link {
-  linkId              String                @id @default(uuid())
+  linkId       String      @id @default(uuid())
+  url          String
+  creatorId    Int
+  creator      User        @relation(name: "linkCreator", fields: [creatorId], references: [userId])
+  dateCreated  DateTime    @default(now())
+  dateDeleted  DateTime?
+  linkTypeName String
+  linkType     LinkType    @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
+  wbsElementId Int
+  wbsElment    WBS_Element @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+}
+
+model LinkInfo {
+  linkInfoId          String                @id @default(uuid())
   url                 String
-  creatorId           Int
-  creator             User                  @relation(name: "linkCreator", fields: [creatorId], references: [userId])
-  dateCreated         DateTime              @default(now())
-  dateDeleted         DateTime?
   linkTypeName        String
-  linkType            LinkType              @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
-  wbsElementId        Int
-  wbsElment           WBS_Element           @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  linkType            LinkType              @relation(name: "linkInfoTypes", fields: [linkTypeName], references: [name])
   proposedWbsChangeId String?
-  wbsProposedChanges  Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [proposedWbsChangeId], references: [wbsProposedChangesId])
+  wbsProposedChanges  Wbs_Proposed_Changes? @relation(name: "proposedChangeLinkInfos", fields: [proposedWbsChangeId], references: [wbsProposedChangesId])
 }
 
 model Description_Bullet {
@@ -661,7 +669,7 @@ model Wbs_Proposed_Changes {
   status                     WBS_Element_Status
   projectLeadId              Int
   projectManagerId           Int
-  links                      Link[]                         @relation(name: "proposedChangeLinks")
+  links                      LinkInfo[]                     @relation(name: "proposedChangeLinkInfos")
   changRequestId             Int                            @unique
   changeRequest              Change_Request                 @relation(fields: [changRequestId], references: [crId])
   proposedProjectChanges     Project_Proposed_Changes?      @relation(name: "proposedProjectChanges")

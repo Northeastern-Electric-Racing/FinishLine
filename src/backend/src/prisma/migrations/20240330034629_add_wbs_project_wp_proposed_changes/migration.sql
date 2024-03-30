@@ -12,10 +12,17 @@ ADD COLUMN     "wpProposedChangesDeliverablesId" TEXT,
 ADD COLUMN     "wpProposedChangesExpectedActivitiesId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Link" ADD COLUMN     "proposedWbsChangeId" TEXT;
-
--- AlterTable
 ALTER TABLE "_blockedBy" ALTER COLUMN "B" SET DATA TYPE TEXT;
+
+-- CreateTable
+CREATE TABLE "LinkInfo" (
+    "linkInfoId" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "linkTypeName" TEXT NOT NULL,
+    "proposedWbsChangeId" TEXT,
+
+    CONSTRAINT "LinkInfo_pkey" PRIMARY KEY ("linkInfoId")
+);
 
 -- CreateTable
 CREATE TABLE "Wbs_Proposed_Changes" (
@@ -25,6 +32,7 @@ CREATE TABLE "Wbs_Proposed_Changes" (
     "projectLeadId" INTEGER NOT NULL,
     "projectManagerId" INTEGER NOT NULL,
     "changRequestId" INTEGER NOT NULL,
+    "dateDeleted" TIMESTAMP(3),
 
     CONSTRAINT "Wbs_Proposed_Changes_pkey" PRIMARY KEY ("wbsProposedChangesId")
 );
@@ -36,6 +44,7 @@ CREATE TABLE "Project_Proposed_Changes" (
     "summary" TEXT NOT NULL,
     "rules" TEXT[],
     "wbsProposedChangesId" TEXT NOT NULL,
+    "newProject" BOOLEAN NOT NULL,
 
     CONSTRAINT "Project_Proposed_Changes_pkey" PRIMARY KEY ("projectProposedChangesId")
 );
@@ -43,7 +52,6 @@ CREATE TABLE "Project_Proposed_Changes" (
 -- CreateTable
 CREATE TABLE "Work_Package_Proposed_Changes" (
     "workPackageProposedChangesId" TEXT NOT NULL,
-    "orderInProject" INTEGER NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "duration" INTEGER NOT NULL,
     "stage" "Work_Package_Stage" NOT NULL,
@@ -74,7 +82,10 @@ CREATE UNIQUE INDEX "_proposedProjectTeams_AB_unique" ON "_proposedProjectTeams"
 CREATE INDEX "_proposedProjectTeams_B_index" ON "_proposedProjectTeams"("B");
 
 -- AddForeignKey
-ALTER TABLE "Link" ADD CONSTRAINT "Link_proposedWbsChangeId_fkey" FOREIGN KEY ("proposedWbsChangeId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LinkInfo" ADD CONSTRAINT "LinkInfo_linkTypeName_fkey" FOREIGN KEY ("linkTypeName") REFERENCES "LinkType"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LinkInfo" ADD CONSTRAINT "LinkInfo_proposedWbsChangeId_fkey" FOREIGN KEY ("proposedWbsChangeId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_proposedProjectChangesGoalsId_fkey" FOREIGN KEY ("proposedProjectChangesGoalsId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
