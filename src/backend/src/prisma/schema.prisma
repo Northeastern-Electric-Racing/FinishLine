@@ -127,6 +127,8 @@ model User {
   drScheduleSettings         Schedule_Settings?
   createdWorkPackageTemplate Work_Package_Template[] @relation(name: "workPackageTemplateCreator")
   deletedWorkPackageTemplate Work_Package_Template[] @relation(name: "workPackageTemplateDeleter")
+  wbsProposedProjectLead     Wbs_Proposed_Changes[]  @relation(name: "wbsProjectLead")
+  wbsProposedProjectManager  Wbs_Proposed_Changes[]  @relation(name: "wbsProjectManager")
 }
 
 model Team {
@@ -667,8 +669,10 @@ model Wbs_Proposed_Changes {
   wbsProposedChangesId       String                         @id @default(uuid())
   name                       String
   status                     WBS_Element_Status
-  projectLeadId              Int
-  projectManagerId           Int
+  projectLeadId              Int?
+  projectLead                User?                          @relation(name: "wbsProjectLead", fields: [projectLeadId], references: [userId])
+  projectManagerId           Int?
+  projectManager             User?                          @relation(name: "wbsProjectManager", fields: [projectManagerId], references: [userId])
   links                      LinkInfo[]                     @relation(name: "proposedChangeLinkInfos")
   changRequestId             Int                            @unique
   changeRequest              Change_Request                 @relation(fields: [changRequestId], references: [crId])
@@ -693,12 +697,12 @@ model Project_Proposed_Changes {
 
 model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String               @id @default(uuid())
-  startDate                    DateTime
+  startDate                    DateTime             @db.Date
   duration                     Int
   blockedBy                    WBS_Element[]        @relation(name: "blockedBy")
   expectedActivities           Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables                 Description_Bullet[] @relation(name: "workPackageDeliverables")
-  stage                        Work_Package_Stage
+  stage                        Work_Package_Stage?
   proposedWbsChanges           Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId         String               @unique
 }
