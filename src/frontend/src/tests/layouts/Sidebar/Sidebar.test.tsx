@@ -17,7 +17,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <Sidebar defaultOpen={true} />
+      <Sidebar drawerOpen={true} setDrawerOpen={(open: boolean) => {}} />
     </RouterWrapper>
   );
 };
