@@ -17,6 +17,9 @@ import WorkPackageCard from './WorkPackageCard';
 const WorkPackagesByTimelineStatus: React.FC = () => {
   const [timelineStatus, setTimelineStatus] = useState<TimelineStatus>(TimelineStatus.VeryBehind);
   const workPackages = useAllWorkPackages({ status: WbsElementStatus.Active, timelineStatus });
+  for (let i = 0; i < 4; i++) {
+    workPackages.data = workPackages.data?.concat(workPackages.data);
+  }
   const theme = useTheme();
 
   useEffect(() => {

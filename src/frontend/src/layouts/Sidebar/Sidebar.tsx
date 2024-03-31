@@ -24,13 +24,12 @@ import { useState } from 'react';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 
 interface SidebarProps {
-  defaultOpen?: boolean;
+  drawerOpen: boolean;
+  setDrawerOpen: (open: boolean) => void;
 }
 
-const Sidebar = ({ defaultOpen = false }: SidebarProps) => {
+const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
   const theme = useTheme();
-
-  const [drawerOpen, setDrawerOpen] = useState(defaultOpen);
 
   const linkItems: LinkItem[] = [
     {
