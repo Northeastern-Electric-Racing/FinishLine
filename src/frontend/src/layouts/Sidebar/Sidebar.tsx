@@ -20,7 +20,6 @@ import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import NERDrawer from '../../components/NERDrawer';
 import { GridMenuIcon } from '@mui/x-data-grid';
-import { useState } from 'react';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 
 interface SidebarProps {
