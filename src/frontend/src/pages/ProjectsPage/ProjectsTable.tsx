@@ -222,7 +222,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
         onFilterModelChange={(filterModel: GridFilterModel) => {
-          localStorage.setItem('projectsTableFilter', JSON.stringify(filterModel.items[0]));
+          localStorage.setItem('projectsTableFilter', JSON.stringify(filterModel.items[0] ?? null));
         }}
         initialState={{
           filter: {
