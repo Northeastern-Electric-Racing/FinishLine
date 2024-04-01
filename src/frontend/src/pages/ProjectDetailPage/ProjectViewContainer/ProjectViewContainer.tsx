@@ -145,7 +145,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   };
 
   const buildURLForCreateWorkPackageCR = () => {
-    return `${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&newCr=${true}`;
+    return `${routes.WORK_PACKAGE_CR_NEW}?wbs=${projectWbsPipe(project.wbsNum)}`;
   };
   const CreateWorkPackageButton = () => {
     return (

@@ -35,6 +35,12 @@ export enum WbsElementStatus {
   Complete = 'COMPLETE'
 }
 
+export enum WPFormType {
+  Create = 'CREATE',
+  Edit = 'EDIT',
+  CrCreate = 'CrCREATE'
+}
+
 export interface Project extends WbsElement {
   summary: string;
   budget: number;

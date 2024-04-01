@@ -1,4 +1,4 @@
-import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
+import { WPFormType, WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -8,14 +8,14 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { isCreate } from './WorkPackageFormUtils';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
   mutateAsync: (data: WorkPackageApiInputs) => void;
-  createForm?: boolean;
-  createCR?: boolean;
+  formType: WPFormType
 }
 
 const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
@@ -23,8 +23,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   mutateAsync,
   exitActiveMode,
   crId,
-  createForm,
-  createCR
+  formType,
 }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
@@ -49,7 +48,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   );
 
   const defaultValues: WorkPackageFormViewPayload | undefined =
-    !createForm && workPackage
+    !isCreate(formType) && workPackage
       ? {
           ...workPackage,
           workPackageId: workPackage.id,
@@ -80,8 +79,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
       crId={crId}
-      createForm={createForm}
-      createCR={createCR}
+      formType={formType}
     />
   );
 };

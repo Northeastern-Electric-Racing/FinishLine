@@ -1,27 +1,27 @@
-import { WbsNumber } from 'shared';
+import { WPFormType, validateWBS } from 'shared';
 import WorkPackageForm from './WorkPackageForm';
-import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
+import { useQuery } from '../../hooks/utils.hooks';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
-interface CreateWorkPackageCrProps {
-  wbsNum: WbsNumber;
-}
-
-const CreateWorkPackageCRForm: React.FC<CreateWorkPackageCrProps> = ({ wbsNum }) => {
+const CreateWorkPackageCRForm: React.FC = () => {
+  const query = useQuery();
+  const wbsNum = query.get('wbs');
   const history = useHistory();
 
   if (!wbsNum) throw new Error('WBS number not included in request.');
 
-  const { mutateAsync } = useCreateSingleWorkPackage();
+  const onSubmit = (paylaod: WorkPackageApiInputs) => {
+    
+  };
 
   return (
     <WorkPackageForm
-      wbsNum={wbsNum}
-      mutateAsync={mutateAsync}
+      wbsNum={validateWBS(wbsNum)}
+      mutateAsync={onSubmit}
       exitActiveMode={() => history.push(`${routes.CHANGE_REQUESTS}`)}
-      createForm
-      createCR
+      formType={WPFormType.CrCreate}
     />
   );
 };

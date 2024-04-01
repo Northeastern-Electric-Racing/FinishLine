@@ -1,4 +1,4 @@
-import { WbsNumber } from 'shared';
+import { WPFormType, WbsNumber } from 'shared';
 import WorkPackageForm from './WorkPackageForm';
 import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
@@ -24,6 +24,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
         setPageMode(false);
         history.push(`${history.location.pathname}`);
       }}
+      formType={WPFormType.Edit}
     />
   );
 };
