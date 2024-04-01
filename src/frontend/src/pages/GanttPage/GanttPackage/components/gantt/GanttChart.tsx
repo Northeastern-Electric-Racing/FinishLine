@@ -41,6 +41,7 @@ export function GanttChart({ start, end, tasks }: GanttChartProps) {
       </Box>
 
       {/* List of changes */}
+      {/*
       <h2 className="mt-10 text-3xl font-bold">Changes</h2>
       <div className="mt-5 space-y-2">
         {eventChanges.length === 0 && (
@@ -68,6 +69,7 @@ export function GanttChart({ start, end, tasks }: GanttChartProps) {
           );
         })}
       </div>
+       */}
     </Box>
   );
 }

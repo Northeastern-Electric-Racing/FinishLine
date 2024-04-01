@@ -63,13 +63,13 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
           backgroundColor: 'transparent'
         }
       }}
-      icon={
+      icon={<Chip label={buttonText} sx={{ minWidth: '150px', borderRadius: '20px' }} />}
+      checkedIcon={
         <Chip
           label={buttonText}
           sx={{ minWidth: '150px', borderRadius: '20px', backgroundColor: theme.palette.primary.main }}
         />
       }
-      checkedIcon={<Chip label={buttonText} sx={{ minWidth: '150px', borderRadius: '20px' }} />}
     />
   );
 
@@ -80,13 +80,11 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
     label: string;
     buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   }) => (
-    <Grid item container xs={12} sx={{ display: 'flex', alignItems: 'center', maxWidth: '50vw' }}>
-      <Grid item xs={3} sx={{ minHeight: '100%' }}>
-        <FormLabel>
-          <Typography variant="h6" textAlign="right">
-            {label}
-          </Typography>
-        </FormLabel>
+    <Grid item container xs={12}>
+      <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Typography variant="h6" component="label" textAlign="right">
+          {label}
+        </Typography>
       </Grid>
       <Grid container item xs={9} sx={{ display: 'flex', alignItems: 'center' }}>
         {buttons.map((button) => (
@@ -129,7 +127,11 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   );
 
   return (
-    <Grid container rowSpacing={2} sx={{ justifyContent: 'start', alignItems: 'start', paddingY: 3, maxWidth: '50vw' }}>
+    <Grid
+      container
+      rowSpacing={2}
+      sx={{ justifyContent: 'start', alignItems: 'start', paddingY: 3, paddingX: 5, minWidth: '550px', maxWidth: '550px' }}
+    >
       <FilterRow label="Cars" buttons={carHandlers} />
       <FilterRow label="Team Category" buttons={teamCategoriesHandlers} />
       <FilterRow label="Team" buttons={teamsHandlers} />

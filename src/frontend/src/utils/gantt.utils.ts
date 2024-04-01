@@ -3,10 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsNumber, wbsPipe, WorkPackage } from 'shared';
+import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
 import { WorkPackageStageColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
+import { useAllWorkPackages } from '../hooks/work-packages.hooks';
 
 export const NO_TEAM = 'No Team';
 
@@ -14,11 +15,10 @@ export const GANTT_CHART_GAP_SIZE = '0.75rem';
 export const GANTT_CHART_CELL_SIZE = '2.25rem';
 
 export interface GanttFilters {
-  showCar0: boolean;
-
   /**
    * Cars
    */
+  showCar0: boolean;
   showCar1: boolean;
   showCar2: boolean;
 

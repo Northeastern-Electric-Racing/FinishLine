@@ -2,15 +2,14 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import React from 'react';
+import React, { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
+import { SelectChangeEvent } from '@mui/material/Select';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import { WbsElementStatus } from 'shared';
 import GanttChart from './GanttChart';
 import GanttPageFilter from './GanttPageFilter';
-import { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
-import { SelectChangeEvent } from '@mui/material/Select';
 import EditIcon from '@mui/icons-material/Edit';
 import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
@@ -26,7 +25,7 @@ import {
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { useToast } from '../../hooks/toasts.hooks';
-import { Box, Popover, Typography } from '@mui/material';
+import { Box, Popover, Typography, IconButton } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
 import { NERButton } from '../../components/NERButton';
@@ -61,9 +60,11 @@ const GanttPageWrapper: FC = () => {
 
   const defaultGanttFilters: GanttFilters = {
     showCar0,
+
     showCar1,
     showCar2,
     selectedTeam,
+
     expanded
   };
 
@@ -76,7 +77,6 @@ const GanttPageWrapper: FC = () => {
       showCar0,
       showCar1,
       showCar2,
-
       selectedTeam,
       expanded
     };
@@ -241,7 +241,7 @@ const GanttPageWrapper: FC = () => {
             }, new Date(8.64e15)),
           { weeks: 2 }
         )
-      : sub(Date.now(), { weeks: 5 });
+      : sub(Date.now(), { weeks: 15 });
 
   // find the date of the latest end date and add 3 weeks for the last date on calendar
   const ganttEndDate =
@@ -254,7 +254,7 @@ const GanttPageWrapper: FC = () => {
             }, new Date(-8.64e15)),
           { weeks: 3 }
         )
-      : add(Date.now(), { weeks: 5 });
+      : add(Date.now(), { weeks: 15 });
 
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
@@ -276,8 +276,9 @@ const GanttPageWrapper: FC = () => {
           }}
         >
           <Typography variant="h5">{teamName}</Typography>
-          {/**Add IconButton */}
-          <EditIcon />
+          <IconButton>
+            <EditIcon />
+          </IconButton>
         </Box>
         <Box key={teamName} sx={{ my: 3, width: 'fit-content', maxWidth: '90vw' }}>
           <Box>
@@ -348,7 +349,7 @@ const GanttPageWrapper: FC = () => {
 
   return (
     <PageLayout title="Gantt Chart" headerRight={headerRight}>
-      <Box sx={{ width: '100%', overflow: 'scroll' }}>
+      <Box sx={{ width: '100%', height: '100%', overflow: 'scroll' }}>
         <GanttChartCalendar start={ganttStartDate} end={ganttEndDate} />
         {ganttCharts}
       </Box>
