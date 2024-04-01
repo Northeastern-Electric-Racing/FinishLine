@@ -23,7 +23,7 @@ interface ProposedSolutionFormProps {
   onSubmit: (data: ProposedSolution) => void;
   open: boolean;
   onClose: () => void;
-  editing?: boolean;
+  isEditing?: boolean;
 }
 
 const schema = yup.object().shape({
@@ -51,7 +51,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
   onSubmit,
   open,
   onClose,
-  editing
+  isEditing: editing
 }) => {
   const { formState, handleSubmit, control } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
