@@ -12,9 +12,7 @@ const CreateWorkPackageCRForm: React.FC = () => {
 
   if (!wbsNum) throw new Error('WBS number not included in request.');
 
-  const onSubmit = (paylaod: WorkPackageApiInputs) => {
-    
-  };
+  const onSubmit = (paylaod: WorkPackageApiInputs) => {};
 
   return (
     <WorkPackageForm

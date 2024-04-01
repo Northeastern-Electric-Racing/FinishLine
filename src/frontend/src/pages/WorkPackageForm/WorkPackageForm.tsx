@@ -15,16 +15,10 @@ interface WorkPackageFormProps {
   exitActiveMode: () => void;
   crId?: string;
   mutateAsync: (data: WorkPackageApiInputs) => void;
-  formType: WPFormType
+  formType: WPFormType;
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
-  wbsNum,
-  mutateAsync,
-  exitActiveMode,
-  crId,
-  formType,
-}) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, formType }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,

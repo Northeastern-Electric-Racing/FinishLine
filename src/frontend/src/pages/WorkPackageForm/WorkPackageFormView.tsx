@@ -175,7 +175,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             isCreate(formType)
               ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
               : { name: 'Projects', route: routes.PROJECTS },
-              isCreate(formType) && crIdDisplay
+            isCreate(formType) && crIdDisplay
               ? {
                   name: `Change Request #${crIdDisplay}`,
                   route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
