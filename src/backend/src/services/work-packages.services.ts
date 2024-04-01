@@ -745,7 +745,7 @@ export default class WorkPackagesService {
   ): Promise<void> {
     if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
 
-    const originalWorkPackageTemplate = await prisma.work_Package_Template.findFirst({
+    const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
       where: {
         workPackageTemplateId
       },
@@ -758,7 +758,7 @@ export default class WorkPackagesService {
     const updatedBlockedBys = await (
       await Promise.all(
         blockedBy.map(async (blockedBy: BlockedByInfo) => {
-          const blockedByInfoID = await prisma.blocked_By_Info.findFirst({
+          const blockedByInfoID = await prisma.blocked_By_Info.findUnique({
             where: {
               blockedByInfoId: blockedBy.blockedByInfoId
             }
