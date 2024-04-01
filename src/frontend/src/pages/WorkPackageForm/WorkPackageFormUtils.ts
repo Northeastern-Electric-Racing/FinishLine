@@ -5,9 +5,9 @@ export const isCreateCr = (formType: WPFormType): boolean => {
 };
 
 export const isCreate = (formType: WPFormType): boolean => {
-    return formType === WPFormType.Create;
-  };
+  return formType === WPFormType.Create;
+};
 
-  export const isEdit = (formType: WPFormType): boolean => {
-    return formType === WPFormType.Edit;
-  };
+export const isEdit = (formType: WPFormType): boolean => {
+  return formType === WPFormType.Edit;
+};
