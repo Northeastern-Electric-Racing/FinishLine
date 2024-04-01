@@ -29,12 +29,12 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
     setShowEditForm(!!editingProposedSolution);
   }, [editingProposedSolution]);
 
-  const addProposedSolution = async (data: ProposedSolution) => {
+  const addProposedSolution = (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
     setShowCreateForm(false);
   };
 
-  const editProposedSolution = async (data: ProposedSolution) => {
+  const editProposedSolution = (data: ProposedSolution) => {
     setProposedSolutions(
       proposedSolutions.map((proposedSolution) => (proposedSolution.id === data.id ? data : proposedSolution))
     );
