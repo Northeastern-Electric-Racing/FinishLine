@@ -11,7 +11,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
 import { TextField, Typography, IconButton } from '@mui/material';
-import crypto from 'crypto';
+import { uuidv4 } from '../../utils/form';
 
 interface ProposedSolutionFormProps {
   description?: string;
@@ -60,7 +60,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
       budgetImpact,
       timelineImpact,
       scopeImpact,
-      id: id ? id : crypto.randomUUID()
+      id: id ? id : uuidv4()
     }
   });
 

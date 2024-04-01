@@ -35,7 +35,9 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   };
 
   const editProposedSolution = async (data: ProposedSolution) => {
-    setProposedSolutions([...proposedSolutions.filter((proposedSolution) => proposedSolution.id !== data.id), data]);
+    setProposedSolutions(
+      proposedSolutions.map((proposedSolution) => (proposedSolution.id === data.id ? data : proposedSolution))
+    );
     setShowEditForm(false);
   };
 
