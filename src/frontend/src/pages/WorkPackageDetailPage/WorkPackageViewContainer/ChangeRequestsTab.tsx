@@ -16,16 +16,12 @@ const ChangeRequestsTab: React.FC<ChangeRequestsTabProps> = ({ workPackage }) =>
   if (crIsError) return <ErrorPage message={crError?.message} />;
 
   const unReviewedChangeRequests = changeRequests
-    ? changeRequests
-        .filter((cr: ChangeRequest) => !cr.dateReviewed && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
-        .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime())
-    : [];
+    .filter((cr: ChangeRequest) => !cr.dateReviewed && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
+    .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
   const approvedChangeRequests = changeRequests
-    ? changeRequests
-        .filter((cr: ChangeRequest) => cr.accepted && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
-        .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0))
-    : [];
+    .filter((cr: ChangeRequest) => cr.accepted && projectWbsPipe(cr.wbsNum) === projectWbsPipe(workPackage.wbsNum))
+    .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
   return (
     <>
