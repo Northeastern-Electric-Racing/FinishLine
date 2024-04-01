@@ -29,8 +29,8 @@ CREATE TABLE "Wbs_Proposed_Changes" (
     "wbsProposedChangesId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "status" "WBS_Element_Status" NOT NULL,
-    "projectLeadId" INTEGER NOT NULL,
-    "projectManagerId" INTEGER NOT NULL,
+    "projectLeadId" INTEGER,
+    "projectManagerId" INTEGER,
     "changRequestId" INTEGER NOT NULL,
     "dateDeleted" TIMESTAMP(3),
 
@@ -52,9 +52,9 @@ CREATE TABLE "Project_Proposed_Changes" (
 -- CreateTable
 CREATE TABLE "Work_Package_Proposed_Changes" (
     "workPackageProposedChangesId" TEXT NOT NULL,
-    "startDate" TIMESTAMP(3) NOT NULL,
+    "startDate" DATE NOT NULL,
     "duration" INTEGER NOT NULL,
-    "stage" "Work_Package_Stage" NOT NULL,
+    "stage" "Work_Package_Stage",
     "wbsProposedChangesId" TEXT NOT NULL,
 
     CONSTRAINT "Work_Package_Proposed_Changes_pkey" PRIMARY KEY ("workPackageProposedChangesId")
@@ -101,6 +101,12 @@ ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_wpProposedCh
 
 -- AddForeignKey
 ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_wpProposedChangesDeliverablesId_fkey" FOREIGN KEY ("wpProposedChangesDeliverablesId") REFERENCES "Work_Package_Proposed_Changes"("workPackageProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_projectLeadId_fkey" FOREIGN KEY ("projectLeadId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_projectManagerId_fkey" FOREIGN KEY ("projectManagerId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changRequestId_fkey" FOREIGN KEY ("changRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
