@@ -16,7 +16,7 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { startDateTester, mapBulletsToPayload, WPFormType, isCreate, isCreateCr } from '../../utils/form';
+import { startDateTester, mapBulletsToPayload, WPFormType, isCreateCr, isCreateWP } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
@@ -31,12 +31,17 @@ const schema = yup.object().shape({
     .required('Start Date is required!')
     .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
   duration: yup.number().required(),
-  crId: yup
-    .number()
-    .required('CR ID is required')
-    .typeError('CR ID must be a number')
-    .integer('CR ID must be an integer')
-    .min(1, 'CR ID must be greater than or equal to 1')
+  needsCRId: yup.boolean(),
+  crId: yup.number().when('needsCRId', {
+    is: true,
+    then: yup
+      .number()
+      .required('CR ID is required')
+      .typeError('CR ID must be a number')
+      .integer('CR ID must be an integer')
+      .min(1, 'CR ID must be greater than or equal to 1'),
+    otherwise: yup.number().optional()
+  })
 });
 
 interface WorkPackageFormViewProps {
@@ -55,6 +60,7 @@ export interface WorkPackageFormViewPayload {
   workPackageId: number;
   startDate: Date;
   duration: number;
+  needsCrId: boolean;
   crId: string;
   stage: string;
   blockedBy: string[];
@@ -92,6 +98,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       workPackageId: defaultValues?.workPackageId ?? 0,
       startDate: defaultValues?.startDate ?? getMonday(new Date()),
       duration: defaultValues?.duration ?? 0,
+      needsCrId: !isCreateCr(formType),
       crId: crId ?? defaultValues?.crId ?? '',
       blockedBy: defaultValues?.blockedBy ?? [],
       expectedActivities: defaultValues?.expectedActivities ?? [],
@@ -135,12 +142,15 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        crId: !isCreateCr(formType) ? parseInt(crId) : undefined,
+        needsCrId: !isCreateCr(formType),
+        crId: isCreateCr(formType) ? parseInt(crId) : undefined,
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities: isCreate(formType) ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
-        deliverables: isCreate(formType) ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
+        expectedActivities: isCreateWP(formType)
+          ? expectedActivities.map((activity) => activity.detail)
+          : expectedActivities,
+        deliverables: isCreateWP(formType) ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
         stage: stage as WorkPackageStage
       };
       await mutateAsync(payload);
@@ -169,12 +179,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     >
       <Box mb={-1}>
         <PageBreadcrumbs
-          currentPageTitle={`${isCreate(formType) ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+          currentPageTitle={`${isCreateWP(formType) ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
           previousPages={[
-            isCreate(formType)
+            isCreateWP(formType)
               ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
               : { name: 'Projects', route: routes.PROJECTS },
-            isCreate(formType) && crIdDisplay
+            isCreateWP(formType) && crIdDisplay
               ? {
                   name: `Change Request #${crIdDisplay}`,
                   route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
@@ -188,7 +198,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       </Box>
       <PageLayout
         stickyHeader
-        title={`${isCreate(formType) ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        title={`${isCreateWP(formType) ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>

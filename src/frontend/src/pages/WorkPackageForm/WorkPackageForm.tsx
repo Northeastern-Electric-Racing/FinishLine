@@ -1,6 +1,6 @@
 import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { bulletsToObject } from '../../utils/form';
+import { bulletsToObject, isCreateCr, isCreateWP, isEdit } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -8,7 +8,7 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
-import { WPFormType, isCreate } from '../../utils/form';
+import { WPFormType } from '../../utils/form';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -42,10 +42,11 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
   );
 
   const defaultValues: WorkPackageFormViewPayload | undefined =
-    !isCreate(formType) && workPackage
+    isCreateWP(formType) && workPackage
       ? {
           ...workPackage,
           workPackageId: workPackage.id,
+          needsCrId: !isCreateCr(formType),
           crId: query.get('crId') || workPackage!.changes[0].changeRequestId.toString(),
           stage: workPackage!.stage ?? 'NONE',
           blockedBy: workPackage!.blockedBy.map(wbsPipe),

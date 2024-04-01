@@ -13,7 +13,7 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { WPFormType, isCreate, isCreateCr } from '../../utils/form';
+import { WPFormType, isCreateCr, isEdit } from '../../utils/form';
 
 interface Props {
   lead?: string;
@@ -133,7 +133,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {!isCreate(formType) && (
+        {isEdit(formType) && (
           <>
             <Grid item xs={12} md={5}>
               <FormLabel> Project Lead</FormLabel>

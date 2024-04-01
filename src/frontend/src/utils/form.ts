@@ -77,8 +77,8 @@ export const isCreateCr = (formType: WPFormType): boolean => {
  * @param formType the given form type
  * @returns if the form type is a Create Form type
  */
-export const isCreate = (formType: WPFormType): boolean => {
-  return formType === WPFormType.CREATE;
+export const isCreateWP = (formType: WPFormType): boolean => {
+  return formType === WPFormType.CREATE || formType === WPFormType.CREATEWITHCR;
 };
 
 /**
