@@ -1,10 +1,11 @@
-import { WPFormType, validateWBS } from 'shared';
+import { validateWBS } from 'shared';
 import { useQuery } from '../../hooks/utils.hooks';
 import WorkPackageForm from './WorkPackageForm';
 import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsPipe } from '../../utils/pipes';
+import { WPFormType } from '../../utils/form';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
@@ -23,7 +24,7 @@ const CreateWorkPackageForm: React.FC = () => {
       mutateAsync={mutateAsync}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       crId={crId}
-      formType={WPFormType.Create}
+      formType={WPFormType.CREATE}
     />
   );
 };

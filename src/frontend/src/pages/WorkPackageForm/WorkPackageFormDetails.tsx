@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, WPFormType, WorkPackageStage } from 'shared';
+import { User, WorkPackageStage } from 'shared';
 import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -13,7 +13,7 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { isCreate, isCreateCr } from './WorkPackageFormUtils';
+import { WPFormType, isCreate, isCreateCr } from '../../utils/form';
 
 interface Props {
   lead?: string;

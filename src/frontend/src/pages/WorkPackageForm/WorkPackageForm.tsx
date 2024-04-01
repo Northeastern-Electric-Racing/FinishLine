@@ -1,4 +1,4 @@
-import { WPFormType, WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
+import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -8,7 +8,7 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
-import { isCreate } from './WorkPackageFormUtils';
+import { WPFormType, isCreate } from '../../utils/form';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
