@@ -52,7 +52,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
               }}
               disabled={button.disabled}
             >
-              <ListItemIcon>{button.icon}</ListItemIcon>
+              {button.icon && <ListItemIcon>{button.icon}</ListItemIcon>}
               {button.title}
             </MenuItem>
           ];
