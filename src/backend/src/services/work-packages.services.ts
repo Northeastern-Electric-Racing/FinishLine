@@ -745,7 +745,7 @@ export default class WorkPackagesService {
   ): Promise<void> {
     if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
 
-    const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
+    const originalWorkPackageTemplate = await prisma.work_Package_Template.findFirst({
       where: {
         workPackageTemplateId
       },

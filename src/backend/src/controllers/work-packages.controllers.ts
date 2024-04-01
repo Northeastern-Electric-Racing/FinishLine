@@ -163,25 +163,16 @@ export default class WorkPackagesController {
 
   static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      //const { workPackageTemplateId } = req.params;
+      const { workpackageTemplateId } = req.params;
 
-      const {
-        workPackageTemplateId,
-        templateName,
-        templateNotes,
-        duration,
-        stage,
-        blockedBy,
-        expectedActivities,
-        deliverables,
-        workPackageName
-      } = req.body;
+      const { templateName, templateNotes, duration, stage, blockedBy, expectedActivities, deliverables, workPackageName } =
+        req.body;
 
       const user = await getCurrentUser(res);
 
       await WorkPackagesService.editWorkPackageTemplate(
         user,
-        workPackageTemplateId,
+        workpackageTemplateId,
         templateName,
         templateNotes,
         duration,
