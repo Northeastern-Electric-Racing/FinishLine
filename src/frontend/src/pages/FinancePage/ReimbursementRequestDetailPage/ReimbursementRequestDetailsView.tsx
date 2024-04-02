@@ -49,6 +49,7 @@ import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
+import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -188,7 +189,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Sabo Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
+            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
@@ -282,7 +283,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled: !!reimbursementRequest.dateDelivered
     },
     {
-      title: 'Add Sabo #',
+      title: 'Add SABO #',
       onClick: () => setAddSaboNumberModalShow(true),
       icon: <ConfirmationNumberIcon />,
       disabled: !user.isFinance
@@ -297,7 +298,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         isReimbursementRequestDenied(reimbursementRequest)
     },
     {
-      title: isSaboSubmitted ? 'Sabo Info' : 'Submit to Sabo',
+      title: isSaboSubmitted ? 'SABO Info' : 'Submit to SABO',
       onClick: () => setShowSubmitToSaboModal(true),
       icon: isSaboSubmitted ? <Assignment /> : <CheckIcon />,
       disabled: !user.isFinance
@@ -313,13 +314,17 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   ];
 
+  const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
+  const statusTypes = sortedStatus.map((status) => status.type);
+  const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
-      title={`${
-        isReimbursementRequestDenied(reimbursementRequest)
-          ? `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request - Denied`
-          : `${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`
-      }`}
+      title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
+      chips={
+        <Box id="status" display="flex">
+          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
+        </Box>
+      }
       previousPages={[
         {
           name: 'Finance',

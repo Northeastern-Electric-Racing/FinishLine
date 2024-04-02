@@ -62,6 +62,10 @@ export const bomTableStyles = {
     },
     '.MuiDataGrid-columnHeader:focus-within': {
       outline: 'none'
+    },
+    '& .MuiDataGrid-columnHeaderTitle': {
+      whiteSpace: 'normal',
+      lineHeight: 'normal'
     }
   }
 };
@@ -71,9 +75,9 @@ export const BomStyledDataGrid = styled(DataGrid)(({ theme }) => ({
     backgroundColor: '#ef4345'
   },
   '& .super-app-theme--assembly': {
-    backgroundColor: '#997570',
+    backgroundColor: theme.palette.grey[600],
     '&:hover': {
-      backgroundColor: '#997570'
+      backgroundColor: theme.palette.grey[700]
     },
     '&.Mui-selected': {
       backgroundColor: '#997570',

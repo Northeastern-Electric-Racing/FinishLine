@@ -120,4 +120,6 @@ type ExceptionObjectNames =
   | 'Manufacturer'
   | 'Unit'
   | 'Material'
-  | 'Link Type';
+  | 'Link Type'
+  | 'Design Review'
+  | 'Team Type';

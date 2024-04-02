@@ -15,8 +15,8 @@ import { alfred, batman } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { ClubAccount, ReimbursementRequest } from 'shared';
 import { wbsNumOf } from '../../src/utils/utils';
-import userTransformer from '../../src/transformers/user.transformer';
 import { vendorTransformer, expenseTypeTransformer } from '../../src/transformers/reimbursement-requests.transformer';
+import { userTransformer } from '../../src/transformers/user.transformer';
 
 export const PopEyes: PrismaVendor = {
   vendorId: 'CHICKEN',
@@ -43,6 +43,7 @@ export const Parts: PrismaExpenseType = {
 
 export const GiveMeMyMoney: PrismaReimbursementRequest = {
   reimbursementRequestId: '',
+  identifier: 1,
   saboId: null,
   dateCreated: new Date('20/8/2023'),
   dateDeleted: null,
@@ -57,6 +58,7 @@ export const GiveMeMyMoney: PrismaReimbursementRequest = {
 
 export const GiveMeMyMoney2: PrismaReimbursementRequest = {
   reimbursementRequestId: '',
+  identifier: 2,
   saboId: null,
   dateCreated: new Date('20/8/2023'),
   dateDeleted: new Date('25/8/2023'),
@@ -210,6 +212,7 @@ export const prismaGiveMeMyMoney3Approved: Prisma.Reimbursement_RequestGetPayloa
 
 export const sharedGiveMeMyMoney: ReimbursementRequest = {
   reimbursementRequestId: GiveMeMyMoney.reimbursementRequestId,
+  identifier: GiveMeMyMoney.identifier,
   dateCreated: GiveMeMyMoney.dateCreated,
   dateOfExpense: GiveMeMyMoney.dateOfExpense,
   totalCost: GiveMeMyMoney.totalCost,

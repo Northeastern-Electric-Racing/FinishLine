@@ -4,6 +4,7 @@ import { Assembly, Material } from 'shared';
 import { BomRow, bomTableStyles, materialToRow, BomStyledDataGrid } from '../../../../utils/bom.utils';
 import { addMaterialCosts } from '../BOMTab';
 import { centsToDollar } from '../../../../utils/pipes';
+import { useTheme } from '@mui/material';
 import { useState } from 'react';
 
 interface BOMTableProps {
@@ -20,6 +21,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
   };
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
+  const theme = useTheme();
   const miscAssembly: BomRow = {
     id: `assembly-misc`,
     materialId: '',
@@ -82,7 +84,20 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 180px)'
+        height: 'calc(100vh - 180px)',
+        width: '100%',
+        '& .super-app-theme--header': {
+          backgroundColor: '#ef4345'
+        },
+        '& .super-app-theme--assembly': {
+          backgroundColor: theme.palette.grey[600],
+          '&:hover': {
+            backgroundColor: theme.palette.grey[700]
+          },
+          '&:focus': {
+            backgroundColor: '#997570'
+          }
+        }
       }}
     >
       <BomStyledDataGrid
