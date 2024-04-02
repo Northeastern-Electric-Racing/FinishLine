@@ -79,15 +79,10 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
       )}
       {showEditForm && (
         <ProposedSolutionForm
-          isEditing
           onSubmit={editProposedSolution}
           open={showEditForm}
           onClose={() => setEditingProposedSolution(undefined)}
-          description={editingProposedSolution?.description}
-          budgetImpact={editingProposedSolution?.budgetImpact}
-          timelineImpact={editingProposedSolution?.timelineImpact}
-          scopeImpact={editingProposedSolution?.scopeImpact}
-          id={editingProposedSolution?.id}
+          defaultValues={editingProposedSolution}
         />
       )}
     </>

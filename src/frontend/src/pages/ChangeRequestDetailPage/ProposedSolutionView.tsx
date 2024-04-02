@@ -68,7 +68,7 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
             <Grid container direction="row" spacing={2}>
               <Grid item>
                 <Button
-                  color="info"
+                  color="success"
                   variant="outlined"
                   onClick={() => {
                     onEdit(proposedSolution);

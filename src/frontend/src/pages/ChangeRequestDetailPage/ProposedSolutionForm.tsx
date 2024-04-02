@@ -14,16 +14,11 @@ import { TextField, Typography, IconButton } from '@mui/material';
 import { generateUUID } from '../../utils/form';
 
 interface ProposedSolutionFormProps {
-  description?: string;
-  budgetImpact?: number;
-  timelineImpact?: number;
-  scopeImpact?: string;
-  id?: string;
+  defaultValues?: ProposedSolution;
   readOnly?: boolean;
   onSubmit: (data: ProposedSolution) => void;
   open: boolean;
   onClose: () => void;
-  isEditing?: boolean;
 }
 
 const schema = yup.object().shape({
@@ -41,32 +36,21 @@ const schema = yup.object().shape({
     .integer('Timeline Impact must be an integer')
 });
 
-const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
-  description,
-  budgetImpact,
-  timelineImpact,
-  scopeImpact,
-  id,
-  readOnly,
-  onSubmit,
-  open,
-  onClose,
-  isEditing: editing
-}) => {
+const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({ defaultValues, readOnly, onSubmit, open, onClose }) => {
   const { formState, handleSubmit, control } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
     defaultValues: {
-      description,
-      budgetImpact,
-      timelineImpact,
-      scopeImpact,
-      id: id ? id : generateUUID()
+      description: defaultValues?.description,
+      budgetImpact: defaultValues?.budgetImpact,
+      timelineImpact: defaultValues?.timelineImpact,
+      scopeImpact: defaultValues?.scopeImpact,
+      id: defaultValues ? defaultValues.id : generateUUID()
     }
   });
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{editing ? 'Edit Proposed Solution' : 'Propose a Solution'}</DialogTitle>
+      <DialogTitle>{defaultValues ? 'Edit Proposed Solution' : 'Propose a Solution'}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onClose}
@@ -209,7 +193,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                {editing ? 'Save' : 'Add'}
+                {defaultValues ? 'Save' : 'Add'}
               </NERSuccessButton>
             </Box>
           )}
