@@ -19,6 +19,7 @@ const UnitTypeTable: React.FC = () => {
   } = useGetAllUnits();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const toast = useToast();
+  const { mutateAsync: deleteUnit } = useDeleteUnit();
 
   if (!unitTypes || unitTypesIsLoading) {
     return <LoadingIndicator />;
@@ -27,9 +28,9 @@ const UnitTypeTable: React.FC = () => {
     return <ErrorPage message={unitTypesError?.message} />;
   }
 
-  const handleDeleteUnit = (unit: Unit) => {
+  const handleDeleteUnit = (id: string) => {
     try {
-      useDeleteUnit(unit.name);
+      deleteUnit(id);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -48,7 +49,7 @@ const UnitTypeTable: React.FC = () => {
           sx={{
             mx: 1
           }}
-          onClick={handleDeleteUnit}
+          onClick={() => handleDeleteUnit(unitType.name)}
         >
           <DeleteIcon />
         </IconButton>

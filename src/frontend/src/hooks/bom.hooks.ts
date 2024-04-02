@@ -50,17 +50,21 @@ export const useGetAllUnits = () => {
   });
 };
 
-export const useDeleteUnit = (id: string) => {
+/**
+ * Custom react hook to delete a unit
+ */
+
+export const useDeleteUnit = () => {
   const queryClient = useQueryClient();
-  return useMutation<Unit, Error>(
+  return useMutation<Unit, Error, string>(
     ['units', 'delete'],
-    async () => {
+    async (id: string) => {
       const { data } = await deleteUnit(id);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['units']);
+        queryClient.invalidateQueries(['units', 'materials']);
       }
     }
   );
