@@ -36,7 +36,7 @@ const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: strin
 function formatEnumValue(value: string) {
   return value
     .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
 
