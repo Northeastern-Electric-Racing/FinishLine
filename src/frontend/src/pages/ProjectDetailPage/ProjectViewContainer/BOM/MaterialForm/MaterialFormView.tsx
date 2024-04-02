@@ -33,6 +33,13 @@ const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: strin
   return { label: manufacturer.name, id: manufacturer.name };
 };
 
+function formatEnumValue(value: string) {
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   submitText,
   handleSubmit,
@@ -91,7 +98,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                 <TextField {...field} select variant="outlined" error={!!errors.status} helperText={errors.status?.message}>
                   {['ORDERED', 'NOT_READY_TO_ORDER', 'SHIPPED', 'RECEIVED', 'READY_TO_ORDER'].map((status) => (
                     <MenuItem key={status} value={status}>
-                      {status}
+                      {formatEnumValue(status)}
                     </MenuItem>
                   ))}
                 </TextField>
