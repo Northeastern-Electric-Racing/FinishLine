@@ -7,7 +7,6 @@ import AdminToolTable from '../AdminToolTable';
 import { useGetAllUnits, useDeleteUnit } from '../../../hooks/bom.hooks';
 import CreateUnitFormModal from './CreateUnitFormModal';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Unit } from 'shared';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const UnitTypeTable: React.FC = () => {
