@@ -4,8 +4,8 @@ import changeRequestRelationArgs from '../prisma-query-args/change-requests.quer
 import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
 import proposedSolutionTransformer from './proposed-solutions.transformer';
-import userTransformer from './user.transformer';
 import { getDateImplemented } from '../utils/change-requests.utils';
+import { userTransformer } from './user.transformer';
 
 const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
