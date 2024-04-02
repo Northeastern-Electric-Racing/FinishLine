@@ -1066,7 +1066,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const designReview1 = await DesignReviewsService.createDesignReview(
     batman,
-    nextDay,
+    nextDay.toDateString(),
     teamType1.teamTypeId,
     [1, 2],
     [3, 4],
