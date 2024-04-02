@@ -67,7 +67,7 @@ export default class DesignReviewsService {
    */
   static async createDesignReview(
     submitter: User,
-    dateScheduled: Date,
+    dateScheduled: string,
     teamTypeId: string,
     requiredMemberIds: number[],
     optionalMemberIds: number[],
@@ -115,7 +115,7 @@ export default class DesignReviewsService {
       }
     }
 
-    if (dateScheduled < new Date()) {
+    if (new Date(new Date(dateScheduled).toDateString()) < new Date(new Date().toDateString())) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
 
