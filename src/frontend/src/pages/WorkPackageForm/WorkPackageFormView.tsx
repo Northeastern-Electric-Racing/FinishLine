@@ -23,6 +23,7 @@ import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
+import { Crib } from '@mui/icons-material';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -135,7 +136,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        crId: 4,
+        crId: parseInt(crId),
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
