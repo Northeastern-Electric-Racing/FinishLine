@@ -122,4 +122,5 @@ type ExceptionObjectNames =
   | 'Material'
   | 'Link Type'
   | 'Design Review'
-  | 'Team Type';
+  | 'Team Type' 
+  | 'Work Package Template'

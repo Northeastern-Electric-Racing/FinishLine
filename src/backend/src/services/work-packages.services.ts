@@ -770,6 +770,8 @@ export default class WorkPackagesService {
 
     const transformedBlockedBys = updatedBlockedBys.map(blockedByInfoTransformer);
 
+    if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
+
     await prisma.work_Package_Template.update({
       where: {
         workPackageTemplateId
