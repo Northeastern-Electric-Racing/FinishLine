@@ -511,7 +511,8 @@ export default class WorkPackagesService {
           update: {
             name,
             projectLeadId,
-            projectManagerId
+            projectManagerId,
+            status: WBS_Element_Status.ACTIVE // set the status to active if it was not already
           }
         },
         stage,
