@@ -42,11 +42,10 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
   );
 
   const defaultValues: WorkPackageFormViewPayload | undefined =
-    isCreateWP(formType) && workPackage
+    isEdit(formType) && workPackage
       ? {
           ...workPackage,
           workPackageId: workPackage.id,
-          needsCrId: !isCreateCr(formType),
           crId: query.get('crId') || workPackage!.changes[0].changeRequestId.toString(),
           stage: workPackage!.stage ?? 'NONE',
           blockedBy: workPackage!.blockedBy.map(wbsPipe),

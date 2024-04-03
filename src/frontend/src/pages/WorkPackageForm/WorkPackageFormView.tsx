@@ -31,17 +31,12 @@ const schema = yup.object().shape({
     .required('Start Date is required!')
     .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
   duration: yup.number().required(),
-  needsCRId: yup.boolean(),
-  crId: yup.number().when('needsCRId', {
-    is: true,
-    then: yup
-      .number()
-      .required('CR ID is required')
-      .typeError('CR ID must be a number')
-      .integer('CR ID must be an integer')
-      .min(1, 'CR ID must be greater than or equal to 1'),
-    otherwise: yup.number().optional()
-  })
+  crId: yup
+    .number()
+    .required('CR ID is required')
+    .typeError('CR ID must be a number')
+    .integer('CR ID must be an integer')
+    .min(1, 'CR ID must be greater than or equal to 1')
 });
 
 interface WorkPackageFormViewProps {
@@ -60,7 +55,6 @@ export interface WorkPackageFormViewPayload {
   workPackageId: number;
   startDate: Date;
   duration: number;
-  needsCrId: boolean;
   crId: string;
   stage: string;
   blockedBy: string[];
@@ -98,7 +92,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       workPackageId: defaultValues?.workPackageId ?? 0,
       startDate: defaultValues?.startDate ?? getMonday(new Date()),
       duration: defaultValues?.duration ?? 0,
-      needsCrId: !isCreateCr(formType),
       crId: crId ?? defaultValues?.crId ?? '',
       blockedBy: defaultValues?.blockedBy ?? [],
       expectedActivities: defaultValues?.expectedActivities ?? [],
@@ -142,8 +135,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        needsCrId: !isCreateCr(formType),
-        crId: isCreateCr(formType) ? parseInt(crId) : undefined,
+        crId: 4,
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
