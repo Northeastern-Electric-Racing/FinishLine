@@ -16,14 +16,13 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { startDateTester, mapBulletsToPayload, WPFormType, isCreateCr, isCreateWP } from '../../utils/form';
+import { startDateTester, mapBulletsToPayload, WPFormType, isCreateWP } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
-import { Crib } from '@mui/icons-material';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),

@@ -1,6 +1,6 @@
 import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { bulletsToObject, isCreateCr, isCreateWP, isEdit } from '../../utils/form';
+import { bulletsToObject, isEdit } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';

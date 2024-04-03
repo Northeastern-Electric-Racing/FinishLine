@@ -1,4 +1,4 @@
-import {  WbsNumber } from 'shared';
+import { WbsNumber } from 'shared';
 import WorkPackageForm from './WorkPackageForm';
 import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
