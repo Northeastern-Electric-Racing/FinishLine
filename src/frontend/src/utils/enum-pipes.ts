@@ -68,3 +68,10 @@ export const ChangeRequestStatusTextPipe: (status: ChangeRequestStatus) => strin
       return 'Open';
   }
 };
+
+export function formatEnumValue(value: string) {
+  return value
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}

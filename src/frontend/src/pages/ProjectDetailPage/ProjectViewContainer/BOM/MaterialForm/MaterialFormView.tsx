@@ -11,6 +11,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
+import { formatEnumValue } from '../../../../../utils/enum-pipes';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -32,13 +33,6 @@ export interface MaterialFormViewProps {
 const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
   return { label: manufacturer.name, id: manufacturer.name };
 };
-
-function formatEnumValue(value: string) {
-  return value
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
 
 const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   submitText,
