@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { Task } from 'shared';
 import { wbsNumOf } from '../utils/utils';
-import userTransformer from './user.transformer';
 import taskQueryArgs from '../prisma-query-args/tasks.query-args';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils';
+import { userTransformer } from './user.transformer';
 
 const taskTransformer = (task: Prisma.TaskGetPayload<typeof taskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);

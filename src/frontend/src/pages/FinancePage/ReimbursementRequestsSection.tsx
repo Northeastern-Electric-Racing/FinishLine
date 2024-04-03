@@ -77,6 +77,10 @@ const ReimbursementRequestTable = ({
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
+      id: 'identifier',
+      label: 'Identifier'
+    },
+    {
       id: 'submitter',
       label: 'Recipient'
     },
@@ -140,6 +144,7 @@ const ReimbursementRequestTable = ({
                 key={`$${row.amount}-${index}`}
                 sx={{ textDecoration: 'none', '&:last-child td, &:last-child th': { border: 0 } }}
               >
+                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{centsToDollar(row.amount)}</TableCell>

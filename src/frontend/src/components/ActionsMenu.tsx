@@ -3,6 +3,8 @@ import { ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
 import { Divider, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { isGuest } from 'shared';
+import { useCurrentUser } from '../hooks/users.hooks';
 
 export type ButtonInfo = {
   title: string;
@@ -29,12 +31,14 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
   };
 
   const dropdownOpen = Boolean(anchorEl);
+  const user = useCurrentUser();
 
   return (
     <Box>
       <NERButton
         endIcon={<ArrowDropDown style={{ fontSize: 28 }} />}
         variant="contained"
+        disabled={isGuest(user.role)}
         id="reimbursement-request-actions-dropdown"
         onClick={handleClick}
       >

@@ -1,13 +1,13 @@
 import { Task, Task_Priority, Task_Status } from '@prisma/client';
 import { WbsNumber } from 'shared';
-import taskQueryArgs from '../src/prisma-query-args/tasks.query-args';
-import prisma from '../src/prisma/prisma';
-import TasksService from '../src/services/tasks.services';
-import * as taskTransformer from '../src/transformers/tasks.transformer';
-import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../src/utils/errors.utils';
-import * as userUtils from '../src/utils/users.utils';
-import * as taskUtils from '../src/utils/tasks.utils';
-import * as teamUtils from '../src/utils/teams.utils';
+import taskQueryArgs from '../../src/prisma-query-args/tasks.query-args';
+import prisma from '../../src/prisma/prisma';
+import TasksService from '../../src/services/tasks.services';
+import * as taskTransformer from '../../src/transformers/tasks.transformer';
+import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../../src/utils/errors.utils';
+import * as userUtils from '../../src/utils/users.utils';
+import * as taskUtils from '../../src/utils/tasks.utils';
+import * as teamUtils from '../../src/utils/teams.utils';
 import {
   invalidTaskNotes,
   taskSaveTheDayDeletedPrisma,
@@ -15,7 +15,7 @@ import {
   taskSaveTheDayInProgressShared,
   taskSaveTheDayPrisma,
   taskSaveTheDayShared
-} from './test-data/tasks.test-data';
+} from '../test-data/tasks.test-data';
 import {
   aquaman,
   batman,
@@ -25,10 +25,10 @@ import {
   supermanSettings,
   theVisitor,
   wonderwoman
-} from './test-data/users.test-data';
-import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
-import { prismaProject1 } from './test-data/projects.test-data';
-import { justiceLeague, prismaTeam1 } from './test-data/teams.test-data';
+} from '../test-data/users.test-data';
+import { prismaWbsElement1 } from '../test-data/wbs-element.test-data';
+import { prismaProject1 } from '../test-data/projects.test-data';
+import { justiceLeague, prismaTeam1 } from '../test-data/teams.test-data';
 
 describe('Tasks', () => {
   const mockDate = new Date('2022-12-25T00:00:00.000Z');
