@@ -1,4 +1,4 @@
-import { Prisma, Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Prisma, Role, User, WBS_Element, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -39,6 +39,7 @@ import {
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
 import { blockedByInfoTransformer, workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
+import { updateReimbursementProducts } from '../utils/reimbursement-requests.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -742,7 +743,7 @@ export default class WorkPackagesService {
     expectedActivities: string[],
     deliverables: string[],
     workPackageName: string | undefined
-  ): Promise<void> {
+  ): Promise<Work_Package_Template> {
     if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
 
     const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
@@ -772,7 +773,7 @@ export default class WorkPackagesService {
 
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
 
-    await prisma.work_Package_Template.update({
+    const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
       where: {
         workPackageTemplateId
       },
@@ -791,5 +792,7 @@ export default class WorkPackagesService {
         workPackageName
       }
     });
+
+    return updatedWorkPackageTemplate;
   }
 }

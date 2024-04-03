@@ -71,14 +71,14 @@ workPackagesRouter.post(
   '/template/:workpackageTemplateId/edit',
   nonEmptyString(body('templateName')),
   nonEmptyString(body('templateNotes')),
-  intMinZero(body('duration')),
+  intMinZero(body('duration').optional()),
   isWorkPackageStageOrNone(body('stage')),
   body('blockedBy').isArray(),
-  isWorkPackageStageOrNone(body('blockedBy.*.stage')),
+  isWorkPackageStageOrNone(body('blockedBy.*.stage').optional()),
   nonEmptyString(body('blockedBy.*.name')),
   body('expectedActivities').isArray(),
   body('deliverables').isArray(),
-  nonEmptyString(body('workPackageName')),
+  nonEmptyString(body('workPackageName').optional()),
   validateInputs,
   WorkPackagesController.editWorkPackageTemplate
 );
