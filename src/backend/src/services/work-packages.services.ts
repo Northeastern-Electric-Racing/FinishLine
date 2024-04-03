@@ -39,7 +39,6 @@ import {
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
 import { blockedByInfoTransformer, workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
-import { updateReimbursementProducts } from '../utils/reimbursement-requests.utils';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
