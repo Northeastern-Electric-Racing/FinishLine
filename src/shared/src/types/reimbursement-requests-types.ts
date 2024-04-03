@@ -7,6 +7,7 @@ export enum ClubAccount {
 }
 
 export interface ReimbursementRequestRow {
+  identifier: number;
   id: string;
   saboId: number | undefined;
   amount: number;
