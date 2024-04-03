@@ -117,8 +117,15 @@ export default class WorkPackagesController {
     try {
       const user = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
+      const crID = req.query.crId;
 
-      await WorkPackagesService.deleteWorkPackage(user, wbsNum);
+      if (!crID) {
+        return res.status(400).json({ message: "Missing crId"});
+      }
+
+      const crIdInt = parseInt(crID as string, 10);
+  
+      await WorkPackagesService.deleteWorkPackage(user, wbsNum, crIdInt);
       return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
       next(error);

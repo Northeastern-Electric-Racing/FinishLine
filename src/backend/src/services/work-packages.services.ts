@@ -559,13 +559,18 @@ export default class WorkPackagesService {
    * @param submitter The user who deleted the work package
    * @param wbsNum The work package number to be deleted
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, crId: number): Promise<void> {
     // Verify submitter is allowed to delete work packages
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('delete work packages');
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
     if (workPackageNumber === 0) throw new HttpException(400, `${wbsPipe(wbsNum)} is not a valid work package WBS!`);
+
+    const changeRequest = await validateChangeRequestAccepted(crId);
+    if (!changeRequest) {
+      throw new NotFoundException('Change Request', crId);
+    }
 
     // Verify if the work package to be deleted exist and if it already has been deleted
     const workPackage = await prisma.work_Package.findFirst({
@@ -586,6 +591,20 @@ export default class WorkPackagesService {
 
     const dateDeleted = new Date();
     const deletedByUserId = submitter.userId;
+
+    try {
+      await prisma.change.create({
+        data: {
+          changeRequestId: crId,
+          implementerId: submitter.userId,
+          detail: `Deleted work package: ${wbsPipe(wbsNum)}`,
+          wbsElementId: workPackage.wbsElementId,
+          dateImplemented: new Date()
+        }
+      });
+    } catch (error) {
+      throw new HttpException(500, 'Failed to record the deletion change');
+    }
 
     // Soft delete the work package by updating its related "deleted" fields
     await prisma.work_Package.update({
