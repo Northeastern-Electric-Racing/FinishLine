@@ -714,7 +714,7 @@ export default class WorkPackagesService {
 
   static async getSingleWorkPackageTemplate(submitter: User, workPackageTemplateId: string): Promise<WorkPackageTemplate> {
     if (isGuest(submitter.role)) {
-      throw new AccessDeniedGuestException('get a work package template');
+      throw new AccessDeniedGuestException('You must be at least a member to access this function.');
     }
 
     const workPackage = await prisma.work_Package_Template.findFirst({
@@ -728,5 +728,16 @@ export default class WorkPackagesService {
     if (!workPackage) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
 
     return workPackageTemplateTransformer(workPackage);
+  }
+
+  static async getAllWorkPackageTemplates(submitter: User): Promise<WorkPackageTemplate[]> {
+    if (isGuest(submitter.role)) {
+      throw new AccessDeniedGuestException('You must be at least a member to access this function.');
+    }
+    const workPackageTemplates = await prisma.work_Package_Template.findMany({
+      where: { dateDeleted: null },
+      ...workPackageTemplateQueryArgs
+    });
+    return workPackageTemplates.map(workPackageTemplateTransformer);
   }
 }
