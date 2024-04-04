@@ -20,7 +20,6 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import styles from '../../stylesheets/pages/teams.module.css';
 import ReactMarkdown from 'react-markdown';
 import * as yup from 'yup';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -57,8 +56,7 @@ const TeamsTools = () => {
   const { isLoading, mutateAsync } = useCreateTeam();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
   const theme = useTheme();
-  const [currentDescription, setCurrentDescription] = useState('');
-  const [isPreview, setIsPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const toast = useToast();
   const {
     handleSubmit,
@@ -81,7 +79,6 @@ const TeamsTools = () => {
     try {
       await mutateAsync({ ...data, headId: Number(data.headId) });
       reset(defaultValues);
-      setCurrentDescription('');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message, 5000);
@@ -121,15 +118,15 @@ const TeamsTools = () => {
             noValidate
           >
             <FormControl sx={{ width: '50%', marginRight: '10px' }}>
-              <FormLabel>Team Name</FormLabel>
+              <FormLabel sx={{ marginTop: '6px' }}>Team Name</FormLabel>
               <ReactHookTextField name="teamName" control={control} fullWidth errorMessage={errors.teamName} />
             </FormControl>
             <FormControl sx={{ width: '45%' }}>
-              <FormLabel>Slack Channel ID</FormLabel>
+              <FormLabel sx={{ marginTop: '6px' }}>Slack Channel ID</FormLabel>
               <ReactHookTextField name="slackId" control={control} fullWidth errorMessage={errors.slackId} />
             </FormControl>
             <FormControl fullWidth>
-              <FormLabel>Head</FormLabel>
+              <FormLabel sx={{ marginTop: '6px' }}>Head</FormLabel>
               <Controller
                 name="headId"
                 control={control}
@@ -155,20 +152,18 @@ const TeamsTools = () => {
                   <Box sx={{ display: 'flex-col' }}>
                     <Box
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
                         marginTop: '6px',
-                        marginBottom: '10px'
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'end'
                       }}
                     >
                       <FormLabel>Description</FormLabel>
                       <Button
                         onClick={() => {
-                          setIsPreview(!isPreview);
+                          setShowPreview(!showPreview);
                         }}
                         sx={{
-                          ml: 2,
                           backgroundColor: theme.palette.grey[600],
                           color: theme.palette.getContrastText(theme.palette.grey[600]),
                           '&:hover': {
@@ -176,26 +171,24 @@ const TeamsTools = () => {
                           }
                         }}
                       >
-                        {isPreview ? 'Edit' : 'Preview'}
+                        {showPreview ? 'Edit' : 'Preview'}
                       </Button>
                     </Box>
-                    {isPreview ? (
-                      <ReactMarkdown className={styles.markdown}>{currentDescription}</ReactMarkdown>
+                    {showPreview ? (
+                      <ReactMarkdown {...field}>{field.value}</ReactMarkdown>
                     ) : (
                       <TextField
                         fullWidth
                         multiline
                         rows={5}
-                        value={currentDescription}
                         id={'description-input'}
-                        onChange={(e) => {
-                          setCurrentDescription(e.target.value);
-                          field.onChange(e);
-                        }}
                         inputProps={{
                           maxLength: isUnderWordCount(field.value, 300) ? null : 0
                         }}
-                        error={!!errors.description || !isUnderWordCount(currentDescription, 300)}
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
+                        error={!!errors.description || !isUnderWordCount(field.value, 300)}
                         helperText={errors.description ? errors.description.message : `${countWords(field.value)}/300 words`}
                       />
                     )}
