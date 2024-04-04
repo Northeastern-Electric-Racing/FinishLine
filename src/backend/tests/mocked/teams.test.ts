@@ -279,7 +279,6 @@ describe('Teams', () => {
 
       const res = await TeamsService.setTeamLeads(flash, justiceLeague.teamId, [aquaman.userId]);
 
-      //expect(res.leads.map((user) => user.userId)).toContain(aquaman.userId);
       expect(res.members.map((user) => user.userId)).not.toContain(aquaman.userId);
     });
 
