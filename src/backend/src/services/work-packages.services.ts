@@ -714,7 +714,7 @@ export default class WorkPackagesService {
 
   static async getSingleWorkPackageTemplate(submitter: User, workPackageTemplateId: string): Promise<WorkPackageTemplate> {
     if (isGuest(submitter.role)) {
-      throw new AccessDeniedGuestException('You must be at least a member to access this function.');
+      throw new AccessDeniedGuestException('get a work package template');
     }
 
     const workPackage = await prisma.work_Package_Template.findFirst({
