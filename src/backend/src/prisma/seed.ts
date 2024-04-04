@@ -136,6 +136,20 @@ const performSeed: () => Promise<void> = async () => {
   const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
   const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
   const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
+  const regina = await prisma.user.create({ data: dbSeedAllUsers.regina });
+  const gretchen = await prisma.user.create({ data: dbSeedAllUsers.gretchen });
+  const karen = await prisma.user.create({ data: dbSeedAllUsers.karen });
+  const janis = await prisma.user.create({ data: dbSeedAllUsers.janis });
+  const aaron = await prisma.user.create({ data: dbSeedAllUsers.aaron });
+  const cady = await prisma.user.create({ data: dbSeedAllUsers.cady });
+  const damian = await prisma.user.create({ data: dbSeedAllUsers.damian });
+  const glen = await prisma.user.create({ data: dbSeedAllUsers.glen });
+  const shane = await prisma.user.create({ data: dbSeedAllUsers.shane });
+  const june = await prisma.user.create({ data: dbSeedAllUsers.june });
+  const kevin = await prisma.user.create({ data: dbSeedAllUsers.kevin });
+  const norbury = await prisma.user.create({ data: dbSeedAllUsers.norbury });
+  const carr = await prisma.user.create({ data: dbSeedAllUsers.carr });
+  const trang = await prisma.user.create({ data: dbSeedAllUsers.trang });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -207,6 +221,7 @@ const performSeed: () => Promise<void> = async () => {
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
+  const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
@@ -324,6 +339,17 @@ const performSeed: () => Promise<void> = async () => {
       johnTerry,
       dennisBergkamp
     ].map((user) => user.userId)
+  );
+
+  await TeamsService.setTeamMembers(
+    regina,
+    meanGirls.teamId,
+    [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    regina,
+    meanGirls.teamId,
+    [janis, cady, damian].map((user) => user.userId)
   );
 
   /**
