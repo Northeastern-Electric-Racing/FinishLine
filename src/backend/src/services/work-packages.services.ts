@@ -499,6 +499,7 @@ export default class WorkPackagesService {
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const date = new Date(startDate);
+    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
 
     // set the status of the wbs element to active if an edit is made to a completed version
     const status =
