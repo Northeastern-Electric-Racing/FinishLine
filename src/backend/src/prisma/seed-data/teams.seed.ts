@@ -96,7 +96,7 @@ const financeTeam = (headId: number): Prisma.TeamCreateArgs => {
 const meanGirls = (headId: number): Prisma.TeamCreateArgs => {
   return {
     data: {
-      teamName: 'Mean Girls',
+      teamName: 'Slack Bot Testing',
       slackId: 'C06HR7WTTKM',
       description: meanGirlsDescription,
       headId
