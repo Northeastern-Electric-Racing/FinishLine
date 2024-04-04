@@ -1,4 +1,4 @@
-import { Prisma, Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
