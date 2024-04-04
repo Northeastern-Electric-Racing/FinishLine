@@ -778,7 +778,6 @@ export default class ChangeRequestsService {
     });
 
     // send slack message to CR reviewers
-    const relevantThreads = await prisma.message_Info.findMany({ where: { changeRequestId: foundCR.crId } });
-    await sendSlackRequestedReviewNotification(newReviewers, changeRequestTransformer(foundCR), relevantThreads);
+    await sendSlackRequestedReviewNotification(newReviewers, changeRequestTransformer(foundCR), foundCR.crId);
   }
 }

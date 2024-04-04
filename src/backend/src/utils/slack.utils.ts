@@ -47,16 +47,12 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
  * Send CR requested review notification to reviewer in Slack
  * @param reviewers the user information of the reviewers
  * @param changeRequest the requested change request to be reviewed
+ * @param crId the id of the requested change request to be reviewed
  */
 export const sendSlackRequestedReviewNotification = async (
   reviewers: UserWithSettings[],
   changeRequest: ChangeRequest,
-  threads: {
-    messageInfoId: string;
-    channelId: string;
-    timestamp: string;
-    changeRequestId: number;
-  }[]
+  crId: number
 ): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
@@ -64,6 +60,8 @@ export const sendSlackRequestedReviewNotification = async (
   const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
   const fullMsg =
     usersToSlackPings(reviewers) + `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
+
+  const threads = await prisma.message_Info.findMany({ where: { changeRequestId: crId } });
 
   threads.forEach((thread) =>
     replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, changeRequestLink, btnText)
