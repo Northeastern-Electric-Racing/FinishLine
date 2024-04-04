@@ -16,7 +16,7 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { startDateTester, mapBulletsToPayload, WPFormType, isCreateWP } from '../../utils/form';
+import { startDateTester, mapBulletsToPayload, WPFormType, isCreateWP, isCreateCr } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
@@ -24,7 +24,7 @@ import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 
-const schema = yup.object().shape({
+const createSchema = yup.object().shape({
   name: yup.string().required('Name is required!'),
   startDate: yup
     .date()
@@ -34,6 +34,21 @@ const schema = yup.object().shape({
   crId: yup
     .number()
     .required('CR ID is required')
+    .typeError('CR ID must be a number')
+    .integer('CR ID must be an integer')
+    .min(1, 'CR ID must be greater than or equal to 1')
+});
+
+const createCRSchema = yup.object().shape({
+  name: yup.string().required('Name is required!'),
+  startDate: yup
+    .date()
+    .required('Start Date is required!')
+    .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
+  duration: yup.number().required(),
+  crId: yup
+    .number()
+    .optional()
     .typeError('CR ID must be a number')
     .integer('CR ID must be an integer')
     .min(1, 'CR ID must be greater than or equal to 1')
@@ -86,7 +101,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     control,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(isCreateCr(formType) ? createCRSchema : createSchema),
     defaultValues: {
       name: defaultValues?.name ?? '',
       workPackageId: defaultValues?.workPackageId ?? 0,
