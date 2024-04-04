@@ -82,7 +82,7 @@ const CalendarPage = () => {
     });
   };
 
-  const noUnconfirmedDRSButton = () => {
+  const NoUnconfirmedDRSButton = () => {
     return [
       {
         title: 'No Unconfirmed DRS',
@@ -110,7 +110,7 @@ const CalendarPage = () => {
     <ActionsMenu
       title="My Unconfirmed DRS"
       buttons={
-        unconfirmedDesignReviews.length === 0 ? noUnconfirmedDRSButton() : designReviewButtons(unconfirmedDesignReviews)
+        unconfirmedDesignReviews.length === 0 ? NoUnconfirmedDRSButton() : designReviewButtons(unconfirmedDesignReviews)
       }
     >
       My Unconfirmed DRs
