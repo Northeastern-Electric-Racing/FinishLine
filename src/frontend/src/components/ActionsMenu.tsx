@@ -1,4 +1,4 @@
-import { Box } from '@mui/system';
+import { Box, minWidth } from '@mui/system';
 import { ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
@@ -40,7 +40,16 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
       >
         {title}
       </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        onClose={handleDropdownClose}
+        sx={{
+          '& .MuiPaper-root': {
+            minWidth: anchorEl ? anchorEl.clientWidth : undefined
+          }
+        }}
+      >
         {buttons.flatMap((button, index) => {
           return [
             button.dividerTop && <Divider key={`${index}-divider`} />,
