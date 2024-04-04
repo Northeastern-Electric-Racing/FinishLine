@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField, Tooltip } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
@@ -11,6 +11,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
+import HelpIcon from '@mui/icons-material/Help';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -178,7 +179,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer Part Number</FormLabel>
+            <FormLabel>
+              Manufacturer Part Number
+              <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="left" style={{ marginRight: '2px' }}>
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
+            </FormLabel>
             <ReactHookTextField
               name="manufacturerPartNumber"
               control={control}
