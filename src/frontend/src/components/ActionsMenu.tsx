@@ -1,4 +1,4 @@
-import { Box, minWidth } from '@mui/system';
+import { Box } from '@mui/system';
 import { ReactElement, useState } from 'react';
 import { NERButton } from './NERButton';
 import { ArrowDropDown } from '@mui/icons-material';
