@@ -575,6 +575,7 @@ model Material_Type {
 model Manufacturer {
   name          String     @id
   dateCreated   DateTime
+  dateDeleted   DateTime?
   userCreatedId Int
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
   materials     Material[]

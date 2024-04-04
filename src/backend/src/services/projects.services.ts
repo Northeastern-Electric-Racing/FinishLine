@@ -775,6 +775,7 @@ export default class ProjectsService {
 
     return (
       await prisma.manufacturer.findMany({
+        where: { dateDeleted: null },
         ...manufacturerQueryArgs
       })
     ).map(manufacturerTransformer);
