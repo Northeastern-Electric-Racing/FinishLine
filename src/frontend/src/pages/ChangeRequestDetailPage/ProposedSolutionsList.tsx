@@ -60,7 +60,7 @@ const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedS
     <Box>
       {showEditableForm ? (
         <ProposedSolutionForm
-          onAdd={addProposedSolution}
+          onSubmit={addProposedSolution}
           open={showEditableForm}
           onClose={() => setShowEditableForm(false)}
         />

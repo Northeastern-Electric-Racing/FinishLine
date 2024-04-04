@@ -47,11 +47,12 @@ const ReimbursementRequestTable = ({
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
+              <ColumnHeader title="" />
               {tabValue === 1 && <ColumnHeader title="Recipient" />}
-              <ColumnHeader title="Sabo ID" />
+              <ColumnHeader title="SABO ID" />
               <ColumnHeader title="Amount ($)" />
               <ColumnHeader title="Date Submitted" />
-              <ColumnHeader title="Date Submitted To Sabo" />
+              <ColumnHeader title="Date Submitted To SABO" />
               <ColumnHeader title="Vendor" />
               {tabValue === 1 && <ColumnHeader title="Refund Source" />}
               <ColumnHeader title="Status" />
@@ -65,6 +66,7 @@ const ReimbursementRequestTable = ({
                 key={`$${row.amount}-${index}`}
                 sx={{ textDecoration: 'none', '&:last-child td, &:last-child th': { border: 0 } }}
               >
+                <TableCell align="center">{undefinedPipe(row.identifier)}</TableCell>
                 {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.submitter)}</TableCell>}
                 <TableCell align="center">{undefinedPipe(row.saboId)}</TableCell>
                 <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
