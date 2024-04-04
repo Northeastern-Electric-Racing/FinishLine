@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Prisma, Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -499,7 +499,12 @@ export default class WorkPackagesService {
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const date = new Date(startDate);
-    date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
+
+    // set the status of the wbs element to active if an edit is made to a completed version
+    const status =
+      originalWorkPackage.wbsElement.status === WbsElementStatus.Complete
+        ? WbsElementStatus.Active
+        : originalWorkPackage.wbsElement.status;
 
     // update the work package with the input fields
     const updatedWorkPackage = await prisma.work_Package.update({
@@ -512,7 +517,7 @@ export default class WorkPackagesService {
             name,
             projectLeadId,
             projectManagerId,
-            status: WBS_Element_Status.ACTIVE // set the status to active if it was not already
+            status // set the status to active if it was not already
           }
         },
         stage,
