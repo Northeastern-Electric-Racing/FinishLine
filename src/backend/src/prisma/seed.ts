@@ -22,7 +22,15 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { ClubAccount, MaterialStatus, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
+import {
+  ClubAccount,
+  DesignReviewStatus,
+  MaterialStatus,
+  StandardChangeRequest,
+  validateWBS,
+  WbsElementStatus,
+  WorkPackageStage
+} from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
@@ -31,6 +39,7 @@ import ReimbursementRequestService from '../services/reimbursement-requests.serv
 import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
+import DesignReviewsService from '../services/design-reviews.services';
 
 const prisma = new PrismaClient();
 
@@ -1047,6 +1056,43 @@ const performSeed: () => Promise<void> = async () => {
     },
     'Here are some more notes',
     assembly1.assemblyId
+  );
+
+  const teamType1 = await TeamsService.createTeamType(batman, 'team 1', 'YouTubeIcon');
+
+  // Need to do this because the design review cannot be scheduled for a past day
+  const nextDay = new Date();
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  const designReview1 = await DesignReviewsService.createDesignReview(
+    batman,
+    nextDay.toDateString(),
+    teamType1.teamTypeId,
+    [1, 2],
+    [3, 4],
+    {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    [3, 4, 5, 6, 7]
+  );
+
+  await DesignReviewsService.editDesignReview(
+    batman,
+    designReview1.designReviewId,
+    nextDay,
+    teamType1.teamTypeId,
+    [1, 2, 3, 4],
+    [5, 6, 7],
+    false,
+    true,
+    null,
+    'The Bay',
+    null,
+    DesignReviewStatus.CONFIRMED,
+    [1, 2],
+    [1, 2, 3, 4, 5, 6, 7]
   );
 };
 

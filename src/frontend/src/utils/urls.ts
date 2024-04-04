@@ -79,6 +79,7 @@ const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const teamTypes = () => `${teams()}/teamType/all`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -129,6 +130,14 @@ const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${mate
 const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
 const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
 const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
+
+/************** Design Review Endpoints *******************************/
+const designReviews = () => `${API_URL}/design-reviews`;
+const designReviewsCreate = () => `${designReviews()}/create`;
+const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
+const designReviewById = (id: string) => `${designReviews()}/${id}`;
+const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
+const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;

@@ -1,5 +1,5 @@
 import { Design_Review_Status, User } from '@prisma/client';
-import { DesignReview, TeamType, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -25,11 +25,6 @@ export default class DesignReviewsService {
       ...designReviewQueryArgs
     });
     return designReviews.map(designReviewTransformer);
-  }
-
-  static async getAllTeamTypes(): Promise<TeamType[]> {
-    const teamTypes = await prisma.teamType.findMany();
-    return teamTypes;
   }
 
   /**
@@ -72,7 +67,7 @@ export default class DesignReviewsService {
    */
   static async createDesignReview(
     submitter: User,
-    dateScheduled: Date,
+    dateScheduled: string,
     teamTypeId: string,
     requiredMemberIds: number[],
     optionalMemberIds: number[],
@@ -120,13 +115,14 @@ export default class DesignReviewsService {
       }
     }
 
-    if (dateScheduled.valueOf() < new Date().valueOf()) {
+    const date = new Date(dateScheduled);
+    if (new Date(date.toDateString()) < new Date(new Date().toDateString())) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
 
     const designReview = await prisma.design_Review.create({
       data: {
-        dateScheduled,
+        dateScheduled: date,
         dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
         isOnline: false,

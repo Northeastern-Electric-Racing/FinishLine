@@ -5,7 +5,7 @@ import { Typography } from '@mui/material';
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
     <Box>
-      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'}>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
       </Typography>
       <LinkTypeTable />

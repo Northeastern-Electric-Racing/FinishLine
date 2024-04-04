@@ -224,7 +224,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     {
       ...bomBaseColDef,
       field: 'price',
-      headerName: 'Price',
+      headerName: 'Price per Unit',
       type: 'number',
       sortable: false,
       filterable: false
