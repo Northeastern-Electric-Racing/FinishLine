@@ -123,6 +123,10 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
 
+  const doSomething = () => {
+    console.log("hello world");
+  }
+
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
@@ -196,6 +200,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             </NERFailButton>
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
               Submit
+            </NERSuccessButton>
+            <NERSuccessButton variant="contained" onClick={doSomething} sx={{ mx: 1 }}>
+              Create a scope CR
             </NERSuccessButton>
           </Box>
         }

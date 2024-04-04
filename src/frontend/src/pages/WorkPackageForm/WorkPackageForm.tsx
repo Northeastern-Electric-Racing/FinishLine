@@ -1,4 +1,4 @@
-import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
+import { StandardChangeRequest, WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
 import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
@@ -8,6 +8,7 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -15,6 +16,7 @@ interface WorkPackageFormProps {
   crId?: string;
   mutateAsync: (data: WorkPackageApiInputs) => void;
   createForm?: boolean;
+  createStandardCr: (data: CreateStandardChangeRequestPayload) => void;
 }
 
 const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm }) => {

@@ -3,6 +3,7 @@ import WorkPackageForm from './WorkPackageForm';
 import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 
 interface EditWorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -13,8 +14,9 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
   const history = useHistory();
 
   const { mutateAsync, isLoading } = useEditWorkPackage(wbsNum);
+  const { isLoading: createStandardCRIsloading, mutateAsync: createStandardCr } = useCreateStandardChangeRequest();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || createStandardCRIsloading) return <LoadingIndicator />;
 
   return (
     <WorkPackageForm
@@ -24,6 +26,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
         setPageMode(false);
         history.push(`${history.location.pathname}`);
       }}
+      createStandardCr={createStandardCr}
     />
   );
 };
