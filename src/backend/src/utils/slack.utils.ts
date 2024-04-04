@@ -71,6 +71,37 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
 };
 
 /**
+ * Send a notification to users that a reimbursement request is created on Slack
+ * @param slackId the slack id of the finance channel
+ * @param requestId the id if the reimbursement request
+ */
+export const sendReimbursementRequestCreatedNotification = async (requestId: string): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `A reimbursement request has been created.`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const linkButtonText = 'View Reimbursement Request';
+
+  if (!process.env.FINANCE_TEAM_ID) {
+    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
+  }
+
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  try {
+    await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
+    }
+  }
+};
+
+/**
  * Send a notification to users that reimbursement request is denied on Slack
  * @param slackId the slack id of the assignee
  * @param denial the denial if the reimbursement request
