@@ -46,7 +46,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const editMembersPerms = hasPerms || team.leads.map((lead) => lead.userId).includes(user.userId);
 
   const memberOptions = users
-    .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
+    //.filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
     .sort(userComparator)
     .map(userToAutocompleteOption);
 
