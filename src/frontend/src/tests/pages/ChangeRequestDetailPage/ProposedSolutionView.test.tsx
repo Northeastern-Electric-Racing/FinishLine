@@ -37,7 +37,7 @@ const renderComponent = (proposedSolution = exampleProposedSolution) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProposedSolutionView proposedSolution={proposedSolution} />
+      <ProposedSolutionView onEdit={() => {}} proposedSolution={proposedSolution} />
     </RouterWrapper>
   );
 };
