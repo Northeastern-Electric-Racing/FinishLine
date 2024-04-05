@@ -6,7 +6,6 @@
 import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
@@ -16,43 +15,13 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { startDateTester, mapBulletsToPayload, WPFormType, isCreateWP, isCreateCr } from '../../utils/form';
+import { mapBulletsToPayload, WPFormType, isCreateWP } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
-
-const createSchema = yup.object().shape({
-  name: yup.string().required('Name is required!'),
-  startDate: yup
-    .date()
-    .required('Start Date is required!')
-    .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
-  duration: yup.number().required(),
-  crId: yup
-    .number()
-    .required('CR ID is required')
-    .typeError('CR ID must be a number')
-    .integer('CR ID must be an integer')
-    .min(1, 'CR ID must be greater than or equal to 1')
-});
-
-const createCRSchema = yup.object().shape({
-  name: yup.string().required('Name is required!'),
-  startDate: yup
-    .date()
-    .required('Start Date is required!')
-    .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
-  duration: yup.number().required(),
-  crId: yup
-    .number()
-    .optional()
-    .typeError('CR ID must be a number')
-    .integer('CR ID must be an integer')
-    .min(1, 'CR ID must be greater than or equal to 1')
-});
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -63,6 +32,7 @@ interface WorkPackageFormViewProps {
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
   formType: WPFormType;
+  schema: any
 }
 
 export interface WorkPackageFormViewPayload {
@@ -91,7 +61,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  formType
+  formType,
+  schema
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -101,7 +72,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     control,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(isCreateCr(formType) ? createCRSchema : createSchema),
+    resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',
       workPackageId: defaultValues?.workPackageId ?? 0,

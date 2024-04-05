@@ -16,9 +16,10 @@ interface WorkPackageFormProps {
   crId?: string;
   mutateAsync: (data: WorkPackageApiInputs) => void;
   formType: WPFormType;
+  schema: any
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, formType }) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, formType, schema }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -74,6 +75,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
       blockedByOptions={blockedByOptions}
       crId={crId}
       formType={formType}
+      schema={schema}
     />
   );
 };
