@@ -4,10 +4,14 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
+  isProject,
+  ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
   StandardChangeRequest,
-  wbsPipe
+  wbsPipe,
+  WBSProposedChangesCreateArgs,
+  WorkPackageProposedChangesCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
@@ -539,6 +543,9 @@ export default class ChangeRequestsService {
    * @param what  the description of the change
    * @param why  the reason for the change
    * @param budgetImpact  the impact on the budget
+   * @param proposedSolutions the proposed solutions of the scope cr
+   * @param wbsProposedChanges the proposed changes of the wbs element
+   * @param projectProposedChanges the project proposed changes
    * @returns  the id of the created cr
    * @throws if user is not allowed to create crs, if wbs element does not exist, or if the cr type is not standard
    */
@@ -550,7 +557,10 @@ export default class ChangeRequestsService {
     type: CR_Type,
     what: string,
     why: { type: Scope_CR_Why_Type; explain: string }[],
-    proposedSolutions: ProposedSolutionCreateArgs[]
+    proposedSolutions: ProposedSolutionCreateArgs[],
+    wbsProposedChanges: WBSProposedChangesCreateArgs,
+    projectProposedChanges: ProjectProposedChangesCreateArgs | null,
+    workPackageProposedChanges: WorkPackageProposedChangesCreateArgs | null
   ): Promise<StandardChangeRequest> {
     // verify user is allowed to create standard change requests
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
@@ -586,6 +596,12 @@ export default class ChangeRequestsService {
             budgetImpact: 0,
             why: { createMany: { data: why } }
           }
+        },
+        wbsProposedChanges: {
+          create: {
+            name: wbsProposedChanges.name,
+            status: wbsElement.status
+          }
         }
       },
       include: {
@@ -601,6 +617,32 @@ export default class ChangeRequestsService {
         }
       }
     });
+
+    if (!createdCR.wbsProposedChangesId) throw new HttpException(500, 'Failed to create wbs proposed changes');
+
+    // verify either project or work package proposed changes are defined and create one of them
+    if (workPackageNumber === 0) {
+      if (!projectProposedChanges)
+        throw new HttpException(400, 'No project proposed changes selected for scope change request');
+      await prisma.project_Proposed_Changes.create({
+        data: {
+          budget: projectProposedChanges.budget,
+          summary: projectProposedChanges.summary,
+          newProject: true,
+          proposedWbsChanges: { connect: { wbsProposedChangesId: createdCR.wbsProposedChangesId } }
+        }
+      });
+    } else {
+      if (!workPackageProposedChanges)
+        throw new HttpException(400, 'No work package proposed changes selected for scope change request');
+      await prisma.work_Package_Proposed_Changes.create({
+        data: {
+          startDate: new Date(),
+          duration: workPackageProposedChanges.duration,
+          proposedWbsChanges: { connect: { wbsProposedChangesId: createdCR.wbsProposedChangesId } }
+        }
+      });
+    }
 
     const proposedSolutionPromises = proposedSolutions.map(async (proposedSolution) => {
       return await this.addProposedSolution(

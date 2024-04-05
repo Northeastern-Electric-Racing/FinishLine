@@ -105,3 +105,16 @@ export interface ProposedSolutionCreateArgs {
   budgetImpact: number;
   timelineImpact: number;
 }
+
+export interface WBSProposedChangesCreateArgs {
+  name: string;
+}
+
+export interface ProjectProposedChangesCreateArgs {
+  budget: number;
+  summary: string;
+}
+
+export interface WorkPackageProposedChangesCreateArgs {
+  duration: number;
+}

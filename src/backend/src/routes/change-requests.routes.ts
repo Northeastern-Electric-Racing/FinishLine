@@ -66,6 +66,13 @@ changeRequestsRouter.post(
   nonEmptyString(body('proposedSolutions.*.scopeImpact')),
   body('proposedSolutions.*.timelineImpact').isInt(),
   body('proposedSolutions.*.budgetImpact').isInt(),
+  body('wbsProposedChanges'),
+  nonEmptyString(body('wbsProposedChanges.*.name')),
+  body('projectProposedChanges').optional(),
+  body('projectProposedChanges.*.budget').isInt(),
+  nonEmptyString(body('projectProposedChanges.*.summary')),
+  body('workPackageProposedChanges').optional(),
+  body('workPackageProposedChanges.*.duration').isInt(),
   validateInputs,
   ChangeRequestsController.createStandardChangeRequest
 );
