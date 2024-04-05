@@ -198,7 +198,15 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         budgetImpact: 0
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change'
+    },
+    {
+      budget: 0,
+      summary: 'Add more work packages'
+    },
+    null
   );
 
   // approve the change request
@@ -530,7 +538,15 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         scopeImpact: 'no scope impact'
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change'
+    },
+    {
+      budget: 0,
+      summary: 'Add more work packages'
+    },
+    null
   );
 
   const changeRequestWP1Id = changeRequestWP1.crId;
@@ -570,7 +586,15 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         scopeImpact: 'no scope impact'
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change'
+    },
+    {
+      budget: 0,
+      summary: 'Add more work packages'
+    },
+    null
   );
 
   const changeRequestWP5Id = changeRequestWP5.crId;
@@ -728,7 +752,15 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 1,
         budgetImpact: 40
       }
-    ]
+    ],
+    {
+      name: 'Change the bodywork through pink paint purchase'
+    },
+    {
+      budget: 50,
+      summary: 'Buy hot pink paint'
+    },
+    null
   );
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
 
