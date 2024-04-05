@@ -63,6 +63,7 @@ export default class ChangeRequestsService {
     return changeRequests.map(changeRequestTransformer);
   }
 
+  //thoughts for PR
   /**
    * reviews the change request for the given Id and automates any changes that are made
    * @param reviewer The user reviewing the change request
