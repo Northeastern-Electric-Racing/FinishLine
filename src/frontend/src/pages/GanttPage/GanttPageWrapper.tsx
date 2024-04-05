@@ -24,8 +24,7 @@ import {
   getProjectTeamsName
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
-import { useToast } from '../../hooks/toasts.hooks';
-import { Box, Popover, Typography, IconButton } from '@mui/material';
+import { Box, Popover, Typography, IconButton, useTheme, Chip } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
 import { NERButton } from '../../components/NERButton';
@@ -34,13 +33,19 @@ import { NERButton } from '../../components/NERButton';
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
  */
 const GanttPageWrapper: FC = () => {
-  const toast = useToast();
   const query = useQuery();
   const history = useHistory();
+  const theme = useTheme();
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttTasks, setGanttTasks] = useState<GanttTask[]>([]);
-  const [anchorFilterEl, setAnchorFilterEl] = React.useState<HTMLButtonElement | null>(null);
+  const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
+  const [chartEditingState, setChartEditingState] = React.useState<
+    Array<{
+      teamName: string;
+      editing: boolean;
+    }>
+  >([]);
   const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
@@ -260,10 +265,33 @@ const GanttPageWrapper: FC = () => {
 
   const ganttCharts: JSX.Element[] = sortedTeamList.map((teamName: string) => {
     const tasks = teamNameToGanttTasksMap.get(teamName);
+
+    if (!chartEditingState.map((entry) => entry.teamName).includes(teamName)) {
+      setChartEditingState([...chartEditingState, { teamName, editing: false }]);
+    }
+
+    const isEditMode = chartEditingState.find((entry) => entry.teamName === teamName)?.editing || false;
+
+    const handleEdit = () => {
+      const index = chartEditingState.findIndex((entry) => entry.teamName === teamName);
+      if (index !== -1) {
+        chartEditingState[index] = { teamName, editing: !isEditMode };
+      }
+
+      setChartEditingState([...chartEditingState]);
+    };
+
     if (!tasks) return <></>;
 
     return (
-      <>
+      <Box
+        sx={{
+          mt: 2,
+          py: 1,
+          background: isEditMode ? theme.palette.divider : 'transparent',
+          width: 'fit-content'
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -276,24 +304,27 @@ const GanttPageWrapper: FC = () => {
           }}
         >
           <Typography variant="h5">{teamName}</Typography>
-          <IconButton>
-            <EditIcon />
-          </IconButton>
+          {isEditMode ? (
+            <Chip label="Save" onClick={handleEdit} />
+          ) : (
+            <IconButton onClick={handleEdit}>
+              <EditIcon />
+            </IconButton>
+          )}
         </Box>
-        <Box key={teamName} sx={{ my: 3, width: 'fit-content', maxWidth: '90vw' }}>
-          <Box>
-            <GanttChart
-              ganttTasks={tasks}
-              start={ganttStartDate}
-              end={ganttEndDate}
-              onExpanderClick={(newTask) => {
-                const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-                setGanttTasks(newTasks);
-              }}
-            />
-          </Box>
+        <Box key={teamName} sx={{ my: 3, width: 'fit-content' }}>
+          <GanttChart
+            ganttTasks={tasks}
+            start={ganttStartDate}
+            end={ganttEndDate}
+            isEditMode={isEditMode}
+            onExpanderClick={(newTask) => {
+              const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
+              setGanttTasks(newTasks);
+            }}
+          />
         </Box>
-      </>
+      </Box>
     );
   });
 

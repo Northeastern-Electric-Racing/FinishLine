@@ -14,9 +14,10 @@ interface GanttChartProps {
   start: Date;
   end: Date;
   tasks: Task[];
+  isEditMode: boolean;
 }
 
-export function GanttChart({ start, end, tasks }: GanttChartProps) {
+export function Gantt({ start, end, tasks, isEditMode }: GanttChartProps) {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
@@ -30,14 +31,12 @@ export function GanttChart({ start, end, tasks }: GanttChartProps) {
   const displayEvents = applyChangesToEvents(tasks, eventChanges);
 
   return (
-    <Box>
-      <Box>
-        {/* Data display: reset list of events every time eventChanges list changes using key */}
-        <div style={{ marginTop: '1rem', width: '100%' }} key={eventChanges.length}>
-          {displayEvents.map((event) => {
-            return <Event key={event.id} days={days} event={event} createChange={createChange} />;
-          })}
-        </div>
+    <Box sx={{ width: 'fit-content' }}>
+      {/* Data display: reset list of events every time eventChanges list changes using key */}
+      <Box sx={{ mt: '1rem', width: 'fit-content' }} key={eventChanges.length}>
+        {displayEvents.map((event) => {
+          return <Event key={event.id} days={days} event={event} isEditMode={isEditMode} createChange={createChange} />;
+        })}
       </Box>
 
       {/* List of changes */}
@@ -78,8 +77,9 @@ function Event({
   days,
   event,
   createChange,
+  isEditMode,
   ...props
-}: { days: Date[]; event: Task; createChange: (change: EventChange) => void } & ComponentProps<'div'>) {
+}: { days: Date[]; event: Task; createChange: (change: EventChange) => void; isEditMode: boolean } & ComponentProps<'div'>) {
   const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
   const endCol = days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
 
@@ -148,7 +148,7 @@ function Event({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
+    <Box style={{ position: 'relative', width: '100%' }}>
       <Box
         sx={{
           width: '100%',
@@ -213,7 +213,7 @@ function Event({
             }}
           >
             <Box
-              draggable
+              draggable={isEditMode}
               onDrag={onDragStart}
               onDragEnd={onDragEnd}
               style={{
@@ -227,13 +227,15 @@ function Event({
             >
               {event.name} ({dayjs(event.start).format('MMM D')}-{dayjs(event.end).format('MMM D')})
             </Box>
-            <Box
-              sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
-              onMouseDown={handleMouseDown}
-            />
+            {isEditMode && (
+              <Box
+                sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
+                onMouseDown={handleMouseDown}
+              />
+            )}
           </Box>
         </div>
       </Box>
-    </div>
+    </Box>
   );
 }
