@@ -1,4 +1,4 @@
-import { Prisma, Role, User, WBS_Element, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -37,7 +37,7 @@ import {
   descriptionBulletsToChangeListValues
 } from '../utils/description-bullets.utils';
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
-import { blockedByInfoTransformer, workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
+import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 
 /** Service layer containing logic for work package controller functions. */
