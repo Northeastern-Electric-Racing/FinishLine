@@ -29,7 +29,6 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   const theme = useTheme();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
   const totalUsers = usersToAvailabilities.size;
-  const fontSize = totalUsers > 10 ? '1em' : totalUsers > 15 ? '0.8em' : '1.2em';
 
   return (
     <Box
@@ -77,9 +76,9 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             >
               Available
             </Typography>
-            <Box sx={{ maxHeight: '350px', overflowY: 'auto' }}>
+            <Box sx={{ maxHeight: '350px', overflowY: 'scroll' }}>
               {currentAvailableUsers.map((user) => (
-                <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
+                <Typography style={{ textAlign: 'center', fontSize: '16px' }}>{fullNamePipe(user)}</Typography>
               ))}
             </Box>
           </Box>
@@ -95,9 +94,9 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             >
               Unavailable
             </Typography>
-            <Box sx={{ maxHeight: '350px', overflowY: 'auto' }}>
+            <Box sx={{ maxHeight: '350px', overflowY: 'scroll' }}>
               {currentUnavailableUsers.map((user) => (
-                <Typography style={{ textAlign: 'center', fontSize }}>{fullNamePipe(user)}</Typography>
+                <Typography style={{ textAlign: 'center', fontSize: '16px' }}>{fullNamePipe(user)}</Typography>
               ))}
             </Box>
           </Box>
@@ -108,7 +107,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             display: 'flex',
             justifyContent: 'flex-end',
             gap: '10px',
-            overflow: 'auto'
+            overflow: 'scroll'
           }}
         >
           <NERFailButton>Cancel</NERFailButton>

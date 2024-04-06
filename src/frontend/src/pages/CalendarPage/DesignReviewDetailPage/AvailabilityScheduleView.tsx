@@ -9,7 +9,7 @@ import {
   getBackgroundColor
 } from '../../../utils/design-review.utils';
 import TimeSlot from '../../../components/TimeSlot';
-import React from 'react';
+import React, { useState } from 'react';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
@@ -31,7 +31,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   dateRangeTitle
 }) => {
   const totalUsers = usersToAvailabilities.size;
-  const [selectedTimeslot, setSelectedTimeslot] = React.useState<number | null>(null);
+  const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
 
   const handleTimeslotClick = (index: number) => {
     if (selectedTimeslot === index) {
