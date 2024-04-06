@@ -784,13 +784,13 @@ export default class WorkPackagesService {
     return prisma.work_Package_Template.update({
       where: { workPackageTemplateId },
       data: {
-        templateName,
-        templateNotes,
-        duration,
-        stage,
-        expectedActivities,
-        deliverables,
-        workPackageName
+        templateName: templateName,
+        templateNotes: templateNotes,
+        duration: duration,
+        stage: stage,
+        expectedActivities: expectedActivities,
+        deliverables: deliverables,
+        workPackageName: workPackageName
       }
     });
   }
