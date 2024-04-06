@@ -1,5 +1,5 @@
 import NERModal from '../../../components/NERModal';
-import { Box, Grid, Typography, Stack } from '@mui/material';
+import { Box, Grid, Typography, Stack, Button } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
@@ -10,6 +10,8 @@ import DetailDisplay from '../../../components/DetailDisplay';
 import { imagePreviewUrl, isReimbursementRequestSaboSubmitted } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useState } from 'react';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -53,6 +55,37 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     setOpen(false);
   };
 
+  const CopyToClipboardButton = ({ msg }: { msg: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    const copyToClipboard = () => {
+      navigator.clipboard.writeText(msg);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); //to only show "Copied!" for 2 secs
+    };
+
+    return (
+      <>
+        {copied ? (
+          <span style={{ marginLeft: '0.7rem', color: 'green', fontSize: '12px' }}>Copied!</span>
+        ) : (
+          <Button onClick={copyToClipboard}>
+            <ContentCopyIcon style={{ fontSize: '13px' }} />
+          </Button>
+        )}
+      </>
+    );
+  };
+
+  const DetailDisplayWithCopyToClipboard = ({ label, content }: { label: string; content: string }) => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <DetailDisplay label={label} content={content}></DetailDisplay>
+        <CopyToClipboardButton msg={content} />
+      </div>
+    );
+  };
+
   return (
     <NERModal
       open={open}
@@ -65,55 +98,63 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     >
       <Grid container spacing={1}>
         <Grid item xs={4}>
-          <DetailDisplay label="First Name" content={recipient.firstName}></DetailDisplay>
+          <DetailDisplayWithCopyToClipboard label={'First Name'} content={recipient.firstName} />
         </Grid>
         <Grid item xs={4}>
-          <DetailDisplay label="Phone #" content={userInfo.phoneNumber} />
+          <DetailDisplayWithCopyToClipboard label={'Phone #'} content={userInfo.phoneNumber} />
         </Grid>
         <Grid item xs={4}>
-          <DetailDisplay label="NUID" content={userInfo.nuid} />
-        </Grid>
-        <Grid item xs={4}>
-          <DetailDisplay label="Last Name" content={recipient.lastName} />
-        </Grid>
-        <Grid item xs={8}>
-          <DetailDisplay label="Email" content={recipient.email} />
+          <DetailDisplayWithCopyToClipboard label={'NUID'} content={userInfo.nuid} />
         </Grid>
       </Grid>
-      <Grid container spacing={1} sx={{ marginTop: 2 }}>
-        <Grid item xs={6}>
-          <DetailDisplay label="Street Address" content={userInfo.street} />
+      <Grid container spacing={1}>
+        <Grid item xs={4}>
+          <DetailDisplayWithCopyToClipboard label={'Last Name'} content={recipient.lastName} />
         </Grid>
-        <Grid item xs={3}>
-          <DetailDisplay label="City" content={userInfo.city} />
-        </Grid>
-        <Grid item xs={3}>
-          <DetailDisplay label="State" content={userInfo.state} />
-        </Grid>
-        <Grid item xs={12}>
-          <DetailDisplay label="Zip Code" content={userInfo.zipcode} />
+        <Grid item xs={8}>
+          <DetailDisplayWithCopyToClipboard label={'Email'} content={recipient.email} />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={5}>
-          <DetailDisplay label="Date Of Expense" content={datePipe(dateOfExpense)} />
+          <DetailDisplayWithCopyToClipboard label={'Street Address'} content={userInfo.street} />
         </Grid>
-        <Grid item xs={7}>
-          <DetailDisplay label="Total Expense" content={`$${centsToDollar(totalCost)}`} />
+        <Grid item xs={3}>
+          <DetailDisplayWithCopyToClipboard label={'City'} content={userInfo.city} />
+        </Grid>
+        <Grid item xs={3}>
+          <DetailDisplayWithCopyToClipboard label={'State'} content={userInfo.state} />
         </Grid>
         <Grid item xs={12}>
-          <DetailDisplay label="Expense Description" content={`${vendor.name}[${centsToDollar(totalCost)}]`} />
+          <DetailDisplayWithCopyToClipboard label={'Zip Code'} content={userInfo.zipcode} />
+        </Grid>
+      </Grid>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={6}>
+          <DetailDisplayWithCopyToClipboard label={'Date Of Expense'} content={datePipe(dateOfExpense)} />
+        </Grid>
+        <Grid item xs={7}>
+          <DetailDisplayWithCopyToClipboard label={'Total Expense'} content={`$${centsToDollar(totalCost)}`} />
+        </Grid>
+        <Grid item xs={12}>
+          <DetailDisplayWithCopyToClipboard
+            label={'Expense Decription'}
+            content={`${vendor.name}[${centsToDollar(totalCost)}]`}
+          />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={12}>
-          <DetailDisplay label="Business Purpose" content={filteredProductsNames} />
+          <DetailDisplayWithCopyToClipboard label={'Business Purpose'} content={filteredProductsNames} />
+        </Grid>
+        <Grid item xs={7}>
+          <DetailDisplayWithCopyToClipboard
+            label={'SABO Form Index'}
+            content={codeAndRefundSourceName(reimbursementRequest.account)}
+          />
         </Grid>
         <Grid item xs={6}>
-          <DetailDisplay label="SABO Form Index" content={codeAndRefundSourceName(reimbursementRequest.account)} />
-        </Grid>
-        <Grid item xs={6}>
-          <DetailDisplay label="Expense Type" content={`${expenseType.code} - ${expenseType.name}`} />
+          <DetailDisplayWithCopyToClipboard label={'Expense Type'} content={`${expenseType.code} - ${expenseType.name}`} />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
@@ -122,8 +163,14 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         </Grid>
         <Grid item xs={8}>
           <Stack>
-            <Typography>Brody Pearlman</Typography>
-            <Typography>pearlman.br@northeastern.edu</Typography>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Typography>Brody Pearlman</Typography>
+              <CopyToClipboardButton msg={'Brody Pearlman'} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Typography>pearlman.br@northeastern.edu</Typography>
+              <CopyToClipboardButton msg={'pearlman.br@northeastern.edu'} />
+            </div>
           </Stack>
         </Grid>
       </Grid>
@@ -133,8 +180,14 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         </Grid>
         <Grid item xs={8}>
           <Stack>
-            <Typography>Andrew Gouldstone</Typography>
-            <Typography>a.gouldstone@northeastern.edu</Typography>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Typography style={{ marginRight: '0.5rem' }}>Andrew Gouldstone</Typography>
+              <CopyToClipboardButton msg={'Andrew Gouldstone'} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Typography>a.gouldstone@northeastern.edu</Typography>
+              <CopyToClipboardButton msg={'a.gouldstone@northeastern.edu'} />
+            </div>
           </Stack>
         </Grid>
       </Grid>
