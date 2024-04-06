@@ -743,55 +743,55 @@ export default class WorkPackagesService {
     deliverables: string[],
     workPackageName: string | undefined
   ): Promise<Work_Package_Template> {
-    if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
-
     const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
-      where: {
-        workPackageTemplateId
-      },
-      ...workPackageTemplateQueryArgs
+      where: { workPackageTemplateId },
+      include: { blockedBy: true }
     });
 
-    if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package', workPackageTemplateId);
-    if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package', workPackageTemplateId);
-
-    const updatedBlockedBys = await (
-      await Promise.all(
-        blockedBy.map(async (blockedBy: BlockedByInfo) => {
-          const blockedByInfoID = await prisma.blocked_By_Info.findUnique({
-            where: {
-              blockedByInfoId: blockedBy.blockedByInfoId
-            }
-          });
-          return blockedByInfoID;
-        })
-      )
-    ).filter((item): item is Prisma.Blocked_By_InfoGetPayload<{}> => item !== null);
-
-    const transformedBlockedBys = updatedBlockedBys.map(blockedByInfoTransformer);
-
+    if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package Template', workPackageTemplateId);
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
+    if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
 
-    const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
-      where: {
-        workPackageTemplateId
-      },
+    const blockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
+
+    if (blockedByIds.length > 0) {
+      await prisma.blocked_By_Info.deleteMany({
+        where: {
+          blockedByInfoId: {
+            in: blockedByIds
+          }
+        }
+      });
+    }
+
+    const isNewBlockedBy = (blockedByItem: BlockedByInfo) => {
+      return !originalWorkPackageTemplate.blockedBy.some(
+        (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
+      );
+    };
+
+    const blockedByToCreate = blockedBy.filter(isNewBlockedBy);
+
+    for (const blockedByItem of blockedByToCreate) {
+      await prisma.blocked_By_Info.create({
+        data: {
+          ...blockedByItem,
+          workPackageTemplateId: workPackageTemplateId
+        }
+      });
+    }
+
+    return prisma.work_Package_Template.update({
+      where: { workPackageTemplateId },
       data: {
         templateName,
         templateNotes,
         duration,
         stage,
-        blockedBy: {
-          connect: transformedBlockedBys.map((blockedByInfo) => ({
-            blockedByInfoId: blockedByInfo.blockedByInfoId
-          }))
-        },
         expectedActivities,
         deliverables,
         workPackageName
       }
     });
-
-    return updatedWorkPackageTemplate;
   }
 }

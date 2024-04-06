@@ -170,7 +170,7 @@ export default class WorkPackagesController {
 
       const user = await getCurrentUser(res);
 
-      await WorkPackagesService.editWorkPackageTemplate(
+      const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
         user,
         workpackageTemplateId,
         templateName,
@@ -182,7 +182,8 @@ export default class WorkPackagesController {
         deliverables,
         workPackageName
       );
-      return res.status(200).json({ message: 'Work package template updated successfully' });
+
+      return res.status(200).json(updatedWorkPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }
