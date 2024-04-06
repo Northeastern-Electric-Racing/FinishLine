@@ -782,7 +782,9 @@ export default class WorkPackagesService {
     }
 
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
-      where: { workPackageTemplateId },
+      where: {
+        workPackageTemplateId
+      },
       data: {
         templateName,
         templateNotes,
