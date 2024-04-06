@@ -776,7 +776,7 @@ export default class WorkPackagesService {
       await prisma.blocked_By_Info.create({
         data: {
           ...blockedByItem,
-          workPackageTemplateId: workPackageTemplateId
+          workPackageTemplateId
         }
       });
     }
