@@ -92,10 +92,9 @@ const LinkTypeFormModal = ({
           <FormControl fullWidth>
             <FormLabel>LinkType Name</FormLabel>
             {creatingNew ? (
-              <ReactHookTextField name="name" control={control} readOnly />
+              <ReactHookTextField name="name" control={control} />
             ) : (
               <ReactHookTextField name="name" control={control} readOnly />
-              //<Typography>{defaultValues?.name} </Typography>
             )}
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
