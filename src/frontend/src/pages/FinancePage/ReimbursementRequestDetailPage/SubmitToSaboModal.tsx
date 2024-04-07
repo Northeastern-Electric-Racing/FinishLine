@@ -57,8 +57,8 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     <NERModal
       open={open}
       onHide={() => setOpen(false)}
-      title="Input these fields into the Sabo Form"
-      submitText={isSaboSubmitted ? '' : 'Submit to Sabo'}
+      title="Input these fields into the SABO Form"
+      submitText={isSaboSubmitted ? '' : 'Submit to SABO'}
       showCloseButton={isSaboSubmitted}
       hideFormButtons={isSaboSubmitted}
       onSubmit={() => handleSubmitToSabo()}

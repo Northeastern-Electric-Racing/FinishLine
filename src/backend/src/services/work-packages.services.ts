@@ -501,6 +501,12 @@ export default class WorkPackagesService {
     const date = new Date(startDate);
     date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
 
+    // set the status of the wbs element to active if an edit is made to a completed version
+    const status =
+      originalWorkPackage.wbsElement.status === WbsElementStatus.Complete
+        ? WbsElementStatus.Active
+        : originalWorkPackage.wbsElement.status;
+
     // update the work package with the input fields
     const updatedWorkPackage = await prisma.work_Package.update({
       where: { wbsElementId },
@@ -511,7 +517,8 @@ export default class WorkPackagesService {
           update: {
             name,
             projectLeadId,
-            projectManagerId
+            projectManagerId,
+            status // set the status to active if it was not already
           }
         },
         stage,
