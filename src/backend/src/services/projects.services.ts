@@ -754,14 +754,20 @@ export default class ProjectsService {
       throw new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it');
     }
 
-    const deletedManufacturer = await prisma.manufacturer.delete({
+    if (manufacturer.dateDeleted) {
+      throw new DeletedException('Manufacturer', manufacturer.userCreatedId);
+    }
+
+    const deletedManufacturer = await prisma.manufacturer.update({
       where: {
         name: manufacturer.name
       },
-      ...manufacturerQueryArgs
+      data: {
+        dateDeleted: new Date()
+      }
     });
 
-    return manufacturerTransformer(deletedManufacturer);
+    return deletedManufacturer;
   }
   /**
    * Get all the manufacturers in the database.
