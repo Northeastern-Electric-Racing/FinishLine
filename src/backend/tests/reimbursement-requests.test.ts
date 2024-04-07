@@ -625,7 +625,7 @@ describe('Reimbursement Requests', () => {
         ReimbursementRequestService.approveReimbursementRequest(prismaGiveMeMyMoney2.reimbursementRequestId, alfred)
       ).rejects.toThrow(new HttpException(400, 'This reimbursement request has already been approved'));
     });
-    test('Approve Reimbursment Request success', async () => {
+    test('Approve  Request success', async () => {
       vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(primsaTeam2);
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(prismaGiveMeMyMoney3);
       vi.spyOn(prisma.reimbursement_Status, 'create').mockResolvedValue(prismaReimbursementStatus);

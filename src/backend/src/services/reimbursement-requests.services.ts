@@ -50,6 +50,8 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export default class ReimbursementRequestService {
   /**
@@ -743,10 +745,22 @@ export default class ReimbursementRequestService {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
     }
 
+    if (!process.env.FINANCE_TEAM_ID) {
+      throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
+    }
+
+    const financeTeam = await prisma.team.findUnique({
+      where: { teamId: process.env.FINANCE_TEAM_ID }
+    });
+
+    if (!financeTeam) throw new HttpException(500, 'Finance team does not exist');
+
+    const financeUserId = financeTeam.headId;
+
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
         type: ReimbursementStatusType.DENIED,
-        userId: submitter.userId,
+        userId: financeUserId,
         reimbursementRequestId: reimbursementRequest.reimbursementRequestId
       },
       include: {

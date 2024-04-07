@@ -56,7 +56,7 @@ export const markReimbursementRequestAsDelivered = (id: string) => {
 };
 
 /**
- * Edits a reimbursment request
+ * Edits a  request
  *
  * @param id the id of the reimbursement request to edit
  * @param formData the data to edit the reimbursement request with
