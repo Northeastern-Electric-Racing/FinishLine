@@ -23,6 +23,7 @@ interface ReactHookTextFieldProps {
   errorMessage?: FieldError;
   maxLength?: number;
   required?: boolean;
+  readOnly?: boolean;
 }
 
 const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
@@ -41,7 +42,8 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   endAdornment,
   errorMessage,
   maxLength,
-  required = true
+  required = true,
+  readOnly = false
 }) => {
   const defaultRules = { required: true };
 
@@ -54,6 +56,10 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   }
   if (endAdornment) {
     inputProps = { ...inputProps, endAdornment };
+  }
+
+  if (readOnly) {
+    inputProps = { ...inputProps, readOnly: true };
   }
 
   return (

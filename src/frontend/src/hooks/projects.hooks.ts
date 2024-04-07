@@ -180,8 +180,12 @@ export const useEditLinkType = (linkTypeName: string) => {
     ['linkTypes', 'edit'],
     async (formData: LinkTypeCreatePayload) => {
       const { data } = await editLinkType(linkTypeName, formData);
-      queryClient.invalidateQueries(['linkTypes']);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['linkTypes']);
+      }
     }
   );
 };

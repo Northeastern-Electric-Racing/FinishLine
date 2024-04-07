@@ -24,7 +24,7 @@ const EditLinkTypeModal = ({ showModal, handleClose, linkType, linkTypes }: Edit
       onSubmit={mutateAsync}
       defaultValues={linkType}
       linkTypes={linkTypes}
-      linkTypeBeingChanged={linkType}
+      creatingNew={false}
     />
   );
 };

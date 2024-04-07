@@ -134,8 +134,7 @@ projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
 
 projectRouter.post(
-  '/link-types/:linkTypePrevName/edit',
-  nonEmptyString(body('name')),
+  '/link-types/:linkName/edit',
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
   validateInputs,

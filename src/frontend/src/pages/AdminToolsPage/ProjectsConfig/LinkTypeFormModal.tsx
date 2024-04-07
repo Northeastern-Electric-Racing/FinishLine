@@ -17,7 +17,7 @@ interface LinkTypeFormModalProps {
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
-  linkTypeBeingChanged?: LinkType;
+  creatingNew: boolean;
 }
 
 const LinkTypeFormModal = ({
@@ -26,17 +26,12 @@ const LinkTypeFormModal = ({
   defaultValues,
   onSubmit,
   linkTypes,
-  linkTypeBeingChanged
+  creatingNew
 }: LinkTypeFormModalProps) => {
   const toast = useToast();
 
   const uniqueLinkTypeTest = (name?: string) =>
-    !!name &&
-    linkTypes &&
-    !linkTypes
-      .filter((v) => v !== linkTypeBeingChanged)
-      .map((v) => v.name)
-      .includes(name);
+    !creatingNew || (!!name && linkTypes && !linkTypes.map((v) => v.name).includes(name));
 
   const schema = yup.object().shape({
     name: yup
@@ -96,7 +91,12 @@ const LinkTypeFormModal = ({
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>LinkType Name</FormLabel>
-            <ReactHookTextField name="name" control={control} />
+            {creatingNew ? (
+              <ReactHookTextField name="name" control={control} readOnly />
+            ) : (
+              <ReactHookTextField name="name" control={control} readOnly />
+              //<Typography>{defaultValues?.name} </Typography>
+            )}
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>
