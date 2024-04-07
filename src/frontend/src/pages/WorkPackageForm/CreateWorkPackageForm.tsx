@@ -5,6 +5,7 @@ import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsPipe } from '../../utils/pipes';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 
 const CreateWorkPackageForm: React.FC = () => {
   const query = useQuery();
@@ -16,11 +17,13 @@ const CreateWorkPackageForm: React.FC = () => {
   if (!crId) throw new Error('CR ID not included in request.');
 
   const { mutateAsync } = useCreateSingleWorkPackage();
+  const { mutateAsync: createStandardCr } = useCreateStandardChangeRequest();
 
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
       mutateAsync={mutateAsync}
+      createStandardCr={createStandardCr}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       crId={crId}
       createForm
