@@ -86,6 +86,9 @@ export default class ChangeRequestsController {
         workPackageProposedChanges
       } = req.body;
       const submitter = await getCurrentUser(res);
+      if (workPackageProposedChanges.stage === 'NONE') {
+        workPackageProposedChanges.stage = null;
+      }
       const createdCR = await ChangeRequestsService.createStandardChangeRequest(
         submitter,
         wbsNum.carNumber,

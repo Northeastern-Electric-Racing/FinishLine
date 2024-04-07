@@ -599,7 +599,12 @@ export default class ChangeRequestsService {
         wbsProposedChanges: {
           create: {
             name: wbsProposedChanges.name,
-            status: wbsElement.status
+            status: wbsProposedChanges.status,
+            projectLeadId: wbsProposedChanges.projectLeadId,
+            projectManagerId: wbsProposedChanges.projectManagerId,
+            links: {
+              connect: wbsProposedChanges.linkIds.map((linkInfoId) => ({ linkInfoId }))
+            }
           }
         }
       },
@@ -613,32 +618,48 @@ export default class ChangeRequestsService {
               }
             }
           }
-        }
+        },
+        wbsProposedChanges: true
       }
     });
 
-    if (!createdCR.wbsProposedChangesId) throw new HttpException(500, 'Failed to create wbs proposed changes');
+    if (!createdCR.wbsProposedChanges) throw new HttpException(500, 'Failed to create wbs proposed changes');
 
     // verify either project or work package proposed changes are defined and create one of them
     if (workPackageNumber === 0) {
       if (!projectProposedChanges)
         throw new HttpException(400, 'No project proposed changes selected for scope change request');
+      const { budget, summary, newProject, rules, teamIds } = projectProposedChanges;
       await prisma.project_Proposed_Changes.create({
         data: {
-          budget: projectProposedChanges.budget,
-          summary: projectProposedChanges.summary,
-          newProject: true,
-          proposedWbsChanges: { connect: { wbsProposedChangesId: createdCR.wbsProposedChangesId } }
+          budget,
+          summary,
+          newProject,
+          goals: { connect: projectProposedChanges.goalIds.map((descriptionId) => ({ descriptionId })) },
+          features: { connect: projectProposedChanges.featureIds.map((descriptionId) => ({ descriptionId })) },
+          otherConstraints: {
+            connect: projectProposedChanges.otherConstraintIds.map((descriptionId) => ({ descriptionId }))
+          },
+          rules,
+          teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+          proposedWbsChanges: { connect: { wbsProposedChangesId: createdCR.wbsProposedChanges.wbsProposedChangesId } }
         }
       });
     } else {
       if (!workPackageProposedChanges)
         throw new HttpException(400, 'No work package proposed changes selected for scope change request');
+      const { duration, startDate, stage } = workPackageProposedChanges;
       await prisma.work_Package_Proposed_Changes.create({
         data: {
-          startDate: new Date(),
-          duration: workPackageProposedChanges.duration,
-          proposedWbsChanges: { connect: { wbsProposedChangesId: createdCR.wbsProposedChangesId } }
+          duration,
+          startDate,
+          stage,
+          blockedBy: { connect: workPackageProposedChanges.blockedBy.map((wbsNumber) => ({ wbsNumber })) },
+          expectedActivities: {
+            connect: workPackageProposedChanges.expectedActivityIds.map((descriptionId) => ({ descriptionId }))
+          },
+          deliverables: { connect: workPackageProposedChanges.deliverableIds.map((descriptionId) => ({ descriptionId })) },
+          proposedWbsChanges: { connect: { wbsProposedChangesId: createdCR.wbsProposedChanges.wbsProposedChangesId } }
         }
       });
     }

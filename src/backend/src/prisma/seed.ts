@@ -200,11 +200,21 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     {
-      name: 'Initial CR change'
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      linkIds: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
     },
     {
       budget: 0,
-      summary: 'Add more work packages'
+      summary: 'Add more work packages',
+      newProject: false,
+      goalIds: [],
+      featureIds: [],
+      otherConstraintIds: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
     },
     null
   );
@@ -540,11 +550,21 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     {
-      name: 'Initial CR change'
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      linkIds: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
     },
     {
       budget: 0,
-      summary: 'Add more work packages'
+      summary: 'Add more work packages',
+      newProject: false,
+      goalIds: [],
+      featureIds: [],
+      otherConstraintIds: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
     },
     null
   );
@@ -588,11 +608,21 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     {
-      name: 'Initial CR change'
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      linkIds: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
     },
     {
       budget: 0,
-      summary: 'Add more work packages'
+      summary: 'Add more work packages',
+      newProject: false,
+      goalIds: [],
+      featureIds: [],
+      otherConstraintIds: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
     },
     null
   );
@@ -754,11 +784,21 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     {
-      name: 'Change the bodywork through pink paint purchase'
+      name: 'Change the bodywork through pink paint purchase',
+      status: WbsElementStatus.Active,
+      linkIds: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
     },
     {
       budget: 50,
-      summary: 'Buy hot pink paint'
+      summary: 'Buy hot pink paint',
+      newProject: false,
+      goalIds: [],
+      featureIds: [],
+      otherConstraintIds: [],
+      rules: ['EV3.5.3'],
+      teamIds: []
     },
     null
   );

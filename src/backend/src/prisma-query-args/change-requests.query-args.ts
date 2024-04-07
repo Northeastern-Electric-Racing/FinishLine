@@ -21,7 +21,13 @@ const changeRequestQueryArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
     stageGateChangeRequest: true,
     activationChangeRequest: { include: { projectLead: true, projectManager: true } },
     deletedBy: true,
-    requestedReviewers: true
+    requestedReviewers: true,
+    wbsProposedChanges: {
+      include: {
+        proposedProjectChanges: true,
+        workPackageProposedChanges: true
+      }
+    }
   }
 });
 

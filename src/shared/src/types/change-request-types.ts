@@ -4,7 +4,9 @@
  */
 
 import { User } from './user-types';
-import { WbsNumber } from './project-types';
+import { DescriptionBullet, Link, LinkCreateArgs, WbsElementStatus, WbsNumber } from './project-types';
+import { WorkPackageStage } from './work-package-types';
+import { TeamPreview } from './team-types';
 
 export interface ChangeRequest {
   crId: number;
@@ -21,6 +23,7 @@ export interface ChangeRequest {
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
   requestedReviewers: User[];
+  wbsProposedChanges?: WbsProposedChanges;
 }
 
 export const ChangeRequestType = {
@@ -51,6 +54,46 @@ export interface ProposedSolution {
   createdBy: User;
   dateCreated: Date;
   approved: boolean;
+}
+
+export interface WbsProposedChanges {
+  id: number;
+  wbsNum: WbsNumber;
+  dateCreated: Date;
+  name: string;
+  status: WbsElementStatus;
+  projectLead?: User;
+  projectManager?: User;
+  links: Link[];
+  changeRequest: ChangeRequest;
+  proposedProjectChanges: ProposedProjectChanges;
+  workPackageProposedChanges: WorkPackageProposedChanges;
+}
+
+export interface ProposedProjectChanges {
+  id: number;
+  summary: string;
+  budget: number;
+  rules: string[];
+  goals: DescriptionBullet[];
+  features: DescriptionBullet[];
+  otherConstraints: DescriptionBullet[];
+  teams: TeamPreview[];
+  newProject: boolean;
+  proposedWbsChanges: WbsProposedChanges;
+}
+
+export interface WorkPackageProposedChanges {
+  id: number;
+  duration: number;
+  expectedProgress: number;
+  blockedBy: WbsNumber[];
+  expectedActivities: DescriptionBullet[];
+  deliverables: DescriptionBullet[];
+  projectName: string;
+  stage?: WorkPackageStage;
+  startDate: Date;
+  proposedWbsChanges: WbsProposedChanges;
 }
 
 export interface ActivationChangeRequest extends ChangeRequest {
@@ -108,13 +151,28 @@ export interface ProposedSolutionCreateArgs {
 
 export interface WBSProposedChangesCreateArgs {
   name: string;
+  status: WbsElementStatus;
+  projectLeadId: number;
+  projectManagerId: number;
+  linkIds: string[];
 }
 
 export interface ProjectProposedChangesCreateArgs {
   budget: number;
   summary: string;
+  newProject: boolean;
+  goalIds: number[];
+  featureIds: number[];
+  otherConstraintIds: number[];
+  rules: string[];
+  teamIds: string[];
 }
 
 export interface WorkPackageProposedChangesCreateArgs {
   duration: number;
+  startDate: string;
+  stage: WorkPackageStage | null;
+  blockedBy: WbsNumber[];
+  expectedActivityIds: number[];
+  deliverableIds: number[];
 }

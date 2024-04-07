@@ -34,6 +34,7 @@ const changeRequestTransformer = (
       dateImplemented: change.dateImplemented
     })),
     status,
+    // wbsProposedChanges: changeRequest.wbsProposedChanges ?? undefined,
     // scope cr fields
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({
