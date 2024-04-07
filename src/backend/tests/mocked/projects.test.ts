@@ -39,6 +39,7 @@ import { validateWBS, WbsNumber } from 'shared';
 import { Material, Material_Status, Prisma, User } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 import linkTypeQueryArgs from '../../src/prisma-query-args/link-types.query-args';
+import { GetResult } from '@prisma/client/runtime';
 
 vi.mock('../src/utils/projects.utils');
 
@@ -729,7 +730,12 @@ describe('Projects', () => {
 
     test('deleteManufacturer works', async () => {
       vi.spyOn(prisma.manufacturer, 'findFirst').mockResolvedValue(manufacturer1);
-      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(manufacturer1);
+      vi.spyOn(prisma.manufacturer, 'delete').mockResolvedValue(
+        manufacturer1 as GetResult<
+          { name: string; dateCreated: Date; dateDeleted: Date | null; userCreatedId: number },
+          unknown
+        >
+      );
 
       const manufacturer = await ProjectsService.deleteManufacturer(batman, manufacturer1.name);
       expect(prisma.manufacturer.delete).toBeCalledTimes(1);

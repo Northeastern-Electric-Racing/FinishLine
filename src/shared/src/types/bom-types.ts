@@ -43,7 +43,7 @@ export type AssemblyPreview = Omit<Assembly, 'materials' | 'userCreated' | 'user
 export interface Manufacturer {
   name: string;
   dateCreated: Date;
-  dateDeleted?: Date;
+  dateDeleted?: Date | null;
   userCreatedId: number;
   userCreated: User;
   materials: MaterialPreview[];
