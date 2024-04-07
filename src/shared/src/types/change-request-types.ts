@@ -4,7 +4,7 @@
  */
 
 import { User } from './user-types';
-import { DescriptionBullet, Link, LinkCreateArgs, WbsElementStatus, WbsNumber } from './project-types';
+import { DescriptionBullet, Link, WbsElementStatus, WbsNumber } from './project-types';
 import { WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
 
