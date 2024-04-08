@@ -6,6 +6,8 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WPFormType, startDateTester } from '../../utils/form';
 import * as yup from 'yup';
+import { getCurrentUser } from '../../../../backend/src/utils/auth.utils';
+import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 
 const CreateWorkPackageCRForm: React.FC = () => {
   const query = useQuery();
@@ -14,8 +16,22 @@ const CreateWorkPackageCRForm: React.FC = () => {
 
   if (!wbsNum) throw new Error('WBS number not included in request.');
 
+  const {mutateAsync} = useCreateStandardChangeRequest();
+
   const onSubmit = (payload: WorkPackageApiInputs) => {
-    console.log('submitted');
+    const crPayload = {
+      submitter: getCurrentUser(),
+      carNumber: 1, // harcoded example
+      projectNumber: 2, // harcoded example
+      workPackageNumber: 3, // harcoded example
+      type: CR_Type.ISSUE, // harcoded example
+      what: payload.name, // harcoded example
+      why: { type: Scope_CR_Why_Type; explain: string }[], 
+      proposedSolutions: [], // harcoded example
+      ...payload  
+    };
+
+    await mutateAsync(crPayload);
   };
 
   const schema = yup.object().shape({
@@ -24,9 +40,8 @@ const CreateWorkPackageCRForm: React.FC = () => {
       .date()
       .required('Start Date is required!')
       .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
-    duration: yup.number().required(),
+    duration: yup.number().required()
   });
-  
 
   return (
     <WorkPackageForm
