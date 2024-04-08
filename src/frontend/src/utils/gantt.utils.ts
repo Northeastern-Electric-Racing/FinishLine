@@ -3,11 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
+import { Project, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
 import { WorkPackageStageColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
-import { useAllWorkPackages } from '../hooks/work-packages.hooks';
 
 export const NO_TEAM = 'No Team';
 
@@ -84,13 +83,7 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
 };
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
-  return (
-    `&showCar0=${ganttFilters.showCar0}` +
-    `&showCar1=${ganttFilters.showCar1}` +
-    `&showCar2=${ganttFilters.showCar2}` +
-    `&selectedTeam=${encodeURIComponent(ganttFilters.selectedTeam)}` +
-    `&expanded=${ganttFilters.expanded}`
-  );
+  return `?status=ACTIVE` + `&showCar1=${ganttFilters.showCar1}` + `&showCar2=${ganttFilters.showCar2}`;
 };
 
 export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {

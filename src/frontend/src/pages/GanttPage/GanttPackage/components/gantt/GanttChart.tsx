@@ -10,14 +10,14 @@ import dayjs from 'dayjs';
 import { Box, useTheme } from '@mui/material';
 import { purple } from '@mui/material/colors';
 
-interface GanttChartProps {
+interface GanttProps {
   start: Date;
   end: Date;
   tasks: Task[];
   isEditMode: boolean;
 }
 
-export function Gantt({ start, end, tasks, isEditMode }: GanttChartProps) {
+export function Gantt({ start, end, tasks, isEditMode }: GanttProps) {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
@@ -38,37 +38,6 @@ export function Gantt({ start, end, tasks, isEditMode }: GanttChartProps) {
           return <Event key={event.id} days={days} event={event} isEditMode={isEditMode} createChange={createChange} />;
         })}
       </Box>
-
-      {/* List of changes */}
-      {/*
-      <h2 className="mt-10 text-3xl font-bold">Changes</h2>
-      <div className="mt-5 space-y-2">
-        {eventChanges.length === 0 && (
-          <div>
-            <i>No changes.</i>
-          </div>
-        )}
-        {eventChanges.map((ec) => {
-          const event = tasks.find((e) => e.id === ec.eventId);
-          return (
-            <div key={ec.id} className="p-5 rounded border flex items-center justify-between">
-              {ec.type === 'change-end-date' && (
-                <div>
-                  <b>{event?.name}</b>: Change end date from {dateFormatMonthDate(ec.originalEnd)} to{' '}
-                  {dateFormatMonthDate(ec.newEnd)}
-                </div>
-              )}
-              {ec.type === 'shift-by-days' && (
-                <div>
-                  <b>{event?.name}</b>: Shift by {ec.days} days
-                </div>
-              )}
-              <button onClick={() => removeChange(ec.id)}>remove</button>
-            </div>
-          );
-        })}
-      </div>
-       */}
     </Box>
   );
 }
@@ -148,7 +117,7 @@ function Event({
   };
 
   return (
-    <Box style={{ position: 'relative', width: '100%' }}>
+    <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
       <Box
         sx={{
           width: '100%',
@@ -173,7 +142,7 @@ function Event({
                 height: '2.75rem',
                 minWidth: GANTT_CHART_CELL_SIZE,
                 maxWidth: GANTT_CHART_CELL_SIZE,
-                backgroundColor: `rgba(37, 99, 235, 0.1)`
+                backgroundColor: `color-mix(in srgb, ${theme.palette.background.default}, transparent 75%);`
               }}
             />
           ))}
@@ -195,7 +164,7 @@ function Event({
             gridColumnEnd: endCol,
             height: '2.75rem',
             width: width === 0 ? `unset` : `${width}px`,
-            border: `1px solid ${isResizing ? 'rgb(37 99 235)' : theme.palette.divider}`,
+            border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
             backgroundColor: event.styles ? event.styles.backgroundColor : purple[300]
           }}

@@ -65,11 +65,9 @@ const GanttPageWrapper: FC = () => {
 
   const defaultGanttFilters: GanttFilters = {
     showCar0,
-
     showCar1,
     showCar2,
     selectedTeam,
-
     expanded
   };
 
@@ -235,7 +233,7 @@ const GanttPageWrapper: FC = () => {
     teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
   });
 
-  // find the date of the earliest start date and subtract 2 weeks for the first date on calendar
+  // find the earliest start date and subtract 2 weeks to use as the first date on calendar
   const ganttStartDate =
     ganttTasks.length !== 0
       ? sub(
@@ -248,13 +246,13 @@ const GanttPageWrapper: FC = () => {
         )
       : sub(Date.now(), { weeks: 15 });
 
-  // find the date of the latest end date and add 3 weeks for the last date on calendar
+  // find the latest end date and add 3 weeks to use as the last date on calendar
   const ganttEndDate =
     ganttTasks.length !== 0
       ? add(
           ganttTasks
             .map((task) => task.end)
-            .reduce((previous, current, index) => {
+            .reduce((previous, current) => {
               return previous > current ? previous : current;
             }, new Date(-8.64e15)),
           { weeks: 3 }
@@ -289,7 +287,8 @@ const GanttPageWrapper: FC = () => {
           mt: 2,
           py: 1,
           background: isEditMode ? theme.palette.divider : 'transparent',
-          width: 'fit-content'
+          width: 'fit-content',
+          pl: 2
         }}
       >
         <Box
@@ -300,10 +299,12 @@ const GanttPageWrapper: FC = () => {
             mb: 1,
             position: 'sticky',
             left: 0,
-            width: 'fit-content'
+            width: 'fit-content',
+            height: '30px'
           }}
         >
           <Typography variant="h5">{teamName}</Typography>
+
           {isEditMode ? (
             <Chip label="Save" onClick={handleEdit} />
           ) : (
@@ -380,7 +381,7 @@ const GanttPageWrapper: FC = () => {
 
   return (
     <PageLayout title="Gantt Chart" headerRight={headerRight}>
-      <Box sx={{ width: '100%', height: '100%', overflow: 'scroll' }}>
+      <Box sx={{ width: '100%', height: '100%', overflowX: 'scroll' }}>
         <GanttChartCalendar start={ganttStartDate} end={ganttEndDate} />
         {ganttCharts}
       </Box>
