@@ -175,9 +175,10 @@ const TeamsTools = () => {
                       </Button>
                     </Box>
                     {showPreview ? (
-                      <ReactMarkdown {...field}>{field.value}</ReactMarkdown>
+                      <ReactMarkdown>{field.value}</ReactMarkdown>
                     ) : (
                       <TextField
+                        {...field}
                         fullWidth
                         multiline
                         rows={5}
