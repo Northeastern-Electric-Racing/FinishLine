@@ -90,6 +90,7 @@ export default class ChangeRequestsService {
       include: {
         activationChangeRequest: true,
         scopeChangeRequest: true,
+        wbsProposedChanges: true,
         wbsElement: {
           include: { workPackage: workPackageQueryArgs, project: true }
         }
@@ -200,6 +201,14 @@ export default class ChangeRequestsService {
           approved: true
         }
       });
+
+      if (foundCR.wbsProposedChanges) {
+        const openCRs = await prisma.change_Request.findMany({
+          where: { wbsElementId: foundCR.wbsElementId, accepted: false }
+        });
+        if (openCRs.length > 0)
+          throw new HttpException(400, 'There are other open, unrevied change requests for this WBS element');
+      }
     }
 
     // stage gate cr
