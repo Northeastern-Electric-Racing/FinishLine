@@ -353,8 +353,10 @@ export default class ReimbursementRequestsController {
       const { vendorId } = req.params;
       const { name } = req.body;
       const submitter = await getCurrentUser(res);
-      const editVendors = await ReimbursementRequestService.editVendors(name, vendorId, submitter);
-      res.status(200).json(editVendors);
+      const editedVendors = name
+        ? await ReimbursementRequestService.editVendors(name, vendorId, submitter)
+        : await ReimbursementRequestService.deleteVendor(vendorId, submitter);
+      res.status(200).json(editedVendors);
     } catch (error: unknown) {
       next(error);
     }

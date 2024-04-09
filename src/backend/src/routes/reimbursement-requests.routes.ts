@@ -26,7 +26,9 @@ reimbursementRequestsRouter.get('/reimbursements', ReimbursementRequestControlle
 
 reimbursementRequestsRouter.post(
   '/:vendorId/vendors/edit',
-  nonEmptyString(body('name')),
+  // nonEmptyString(body('name')),
+  // validateInputs,
+  body('name').optional().isString(),
   validateInputs,
   ReimbursementRequestController.editVendor
 );

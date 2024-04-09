@@ -880,4 +880,30 @@ export default class ReimbursementRequestService {
 
     return vendorTransformer(vendor);
   }
+
+  /**
+   * Deletes the given vendor
+   *
+   * @param vendorId the requested vendor to be edited
+   * @param submitter the user editing the vendor dateDeleted
+   * @returns the updated vendor
+   */
+  static async deleteVendor(vendorId: string, submitter: User) {
+    await isUserAdminOrOnFinance(submitter);
+
+    const vendorDelete = await prisma.vendor.findUnique({
+      where: { vendorId }
+    });
+
+    if (!vendorDelete) throw new NotFoundException('Vendor', vendorId);
+
+    if (vendorDelete.dateDeleted) throw new DeletedException('Vendor', vendorId);
+
+    const vendor = await prisma.vendor.update({
+      where: { vendorId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return vendorTransformer(vendor);
+  }
 }
