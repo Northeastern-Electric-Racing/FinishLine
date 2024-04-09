@@ -92,7 +92,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             { tabUrlValue: 'details', tabName: 'Details' },
             { tabUrlValue: 'proposedChanges', tabName: 'Proposed Changes' }
           ]}
-          baseUrl={`${routes.CHANGE_REQUESTS}/7`}
+          baseUrl={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`}
           defaultTab="details"
           id="change-review-tabs"
         />
@@ -172,16 +172,16 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4 }}>
               <Typography>Name: {changeRequest.wbsName}</Typography>
               <Typography>Status: {changeRequest.status}</Typography>
-              <Typography>Lead: {changeRequest.wbsName}</Typography>
-              <Typography>Name: {changeRequest.wbsName}</Typography>
+              <Typography>Project Lead: {changeRequest.wbsName}</Typography>
+              <Typography>Project Manager: {changeRequest.wbsName}</Typography>
             </Box>
           </Grid>
           <Grid item xs={6}>
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4 }}>
               <Typography>Name: {changeRequest.wbsName}</Typography>
               <Typography>Status: {changeRequest.status}</Typography>
-              <Typography>Lead: {changeRequest.wbsName}</Typography>
-              <Typography>Name: {changeRequest.wbsName}</Typography>
+              <Typography>Project Lead: {changeRequest.wbsName}</Typography>
+              <Typography>Project Manager: {changeRequest.wbsName}</Typography>
             </Box>
           </Grid>
         </Grid>
