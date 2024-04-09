@@ -24,6 +24,7 @@ import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
+import NERTabs from '../../components/Tabs';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -54,6 +55,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
+  const [tabIndex, setTabIndex] = useState<number>(0);
   const {
     data: project,
     isLoading,
@@ -83,6 +85,18 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <ChangeRequestStatusPill status={changeRequest.status} />
         </Box>
       }
+      tabs={
+        <NERTabs
+          setTab={setTabIndex}
+          tabsLabels={[
+            { tabUrlValue: 'details', tabName: 'Details' },
+            { tabUrlValue: 'proposedChanges', tabName: 'Proposed Changes' }
+          ]}
+          baseUrl={`${routes.CHANGE_REQUESTS}/7`}
+          defaultTab="details"
+          id="change-review-tabs"
+        />
+      }
       previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
       headerRight={
         <ChangeRequestActionMenu
@@ -95,36 +109,55 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         />
       }
     >
-      <Grid container rowGap={3}>
-        <Grid container columnSpacing={3}>
-          <Grid item xs={'auto'}>
-            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
-              <b>WBS: </b>
-              <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                {wbsPipe(changeRequest.wbsNum)} - {projectName}
-                {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
-              </Link>
-            </Typography>
-          </Grid>
-          <Grid item xs={'auto'}>
-            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
-              <b>Submitter: </b>
-              {fullNamePipe(changeRequest.submitter)} on {datePipe(changeRequest.dateSubmitted)}
-            </Typography>
-          </Grid>
-        </Grid>
-        <Grid container rowSpacing={2}>
-          <Grid container item xs={12} md={isStandard ? 7 : isActivation ? 6 : 12} height={'fit-content'}>
-            {buildDetails(changeRequest)}
-            <Grid item xs={12} md={isStandard ? 12 : isActivation ? 12 : 5} height={'fit-content'}>
-              <ReviewNotes
-                reviewer={changeRequest.reviewer}
-                reviewNotes={changeRequest.reviewNotes}
-                dateReviewed={changeRequest.dateReviewed}
-              />
+      {tabIndex === 0 ? (
+        <Grid container rowGap={3}>
+          <Grid container columnSpacing={3}>
+            <Grid item xs={'auto'}>
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>WBS: </b>
+                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                  {wbsPipe(changeRequest.wbsNum)} - {projectName}
+                  {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
+                </Link>
+              </Typography>
             </Grid>
-            <Grid item md={isStandard ? 12 : isActivation ? 0 : 6} sx={{ mt: { xs: 2, md: isStandard ? 2 : 0 } }}>
-              {!isActivation && (
+            <Grid item xs={'auto'}>
+              <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+                <b>Submitter: </b>
+                {fullNamePipe(changeRequest.submitter)} on {datePipe(changeRequest.dateSubmitted)}
+              </Typography>
+            </Grid>
+          </Grid>
+          <Grid container rowSpacing={2}>
+            <Grid container item xs={12} md={isStandard ? 7 : isActivation ? 6 : 12} height={'fit-content'}>
+              {buildDetails(changeRequest)}
+              <Grid item xs={12} md={isStandard ? 12 : isActivation ? 12 : 5} height={'fit-content'}>
+                <ReviewNotes
+                  reviewer={changeRequest.reviewer}
+                  reviewNotes={changeRequest.reviewNotes}
+                  dateReviewed={changeRequest.dateReviewed}
+                />
+              </Grid>
+              <Grid item md={isStandard ? 12 : isActivation ? 0 : 6} sx={{ mt: { xs: 2, md: isStandard ? 2 : 0 } }}>
+                {!isActivation && (
+                  <ImplementedChangesList
+                    changes={changeRequest.implementedChanges || []}
+                    overallDateImplemented={changeRequest.dateImplemented}
+                  />
+                )}
+              </Grid>
+            </Grid>
+            <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 5 : 0}>
+              {isStandard && (
+                <ProposedSolutionsList
+                  proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
+                  crReviewed={changeRequest.accepted}
+                  crId={changeRequest.crId}
+                />
+              )}
+            </Grid>
+            <Grid item xs={isActivation ? 12 : 0} md={isActivation ? 6 : 0}>
+              {isActivation && (
                 <ImplementedChangesList
                   changes={changeRequest.implementedChanges || []}
                   overallDateImplemented={changeRequest.dateImplemented}
@@ -132,26 +165,27 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               )}
             </Grid>
           </Grid>
-          <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 5 : 0}>
-            {isStandard && (
-              <ProposedSolutionsList
-                proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
-                crReviewed={changeRequest.accepted}
-                crId={changeRequest.crId}
-              />
-            )}
+        </Grid>
+      ) : (
+        <Grid container columnSpacing={4}>
+          <Grid item xs={6}>
+            <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4 }}>
+              <Typography>Name: {changeRequest.wbsName}</Typography>
+              <Typography>Status: {changeRequest.status}</Typography>
+              <Typography>Lead: {changeRequest.wbsName}</Typography>
+              <Typography>Name: {changeRequest.wbsName}</Typography>
+            </Box>
           </Grid>
-          <Grid item xs={isActivation ? 12 : 0} md={isActivation ? 6 : 0}>
-            {isActivation && (
-              <ImplementedChangesList
-                changes={changeRequest.implementedChanges || []}
-                overallDateImplemented={changeRequest.dateImplemented}
-              />
-            )}
+          <Grid item xs={6}>
+            <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4 }}>
+              <Typography>Name: {changeRequest.wbsName}</Typography>
+              <Typography>Status: {changeRequest.status}</Typography>
+              <Typography>Lead: {changeRequest.wbsName}</Typography>
+              <Typography>Name: {changeRequest.wbsName}</Typography>
+            </Box>
           </Grid>
         </Grid>
-      </Grid>
-
+      )}
       {reviewModalShow && (
         <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
       )}
