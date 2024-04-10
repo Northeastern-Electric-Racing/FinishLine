@@ -127,21 +127,16 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
   const memberOptions = users.map(userToAutocompleteOption);
 
-  const wbsDropdownOptionsSorted: { label: string; id: string }[] = [];
   const wbsDropdownOptions: { label: string; id: string }[] = [];
 
   allWorkPackages.forEach((workPackage: WorkPackage) => {
-    wbsDropdownOptionsSorted.push({
+    wbsDropdownOptions.push({
       label: `${wbsNamePipe(workPackage)}`,
       id: wbsPipe(workPackage.wbsNum)
     });
   });
 
-  wbsDropdownOptionsSorted.sort((wp1, wp2) => wbsNumComparator(wp1.id, wp2.id));
-
-  for (let i = wbsDropdownOptionsSorted.length - 1; i >= 0; i--) {
-    wbsDropdownOptions.push(wbsDropdownOptionsSorted[i]);
-  }
+  wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp2.id, wp1.id));
 
   return (
     <NERFormModal
