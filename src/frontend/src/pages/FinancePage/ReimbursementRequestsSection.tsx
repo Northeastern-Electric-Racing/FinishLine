@@ -78,7 +78,7 @@ const ReimbursementRequestTable = ({
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
       id: 'identifier',
-      label: 'Identifier'
+      label: ''
     },
     {
       id: 'submitter',
@@ -86,7 +86,7 @@ const ReimbursementRequestTable = ({
     },
     {
       id: 'saboId',
-      label: 'Sabo ID'
+      label: 'SABO ID'
     },
     {
       id: 'amount',
@@ -98,7 +98,7 @@ const ReimbursementRequestTable = ({
     },
     {
       id: 'dateSubmittedToSabo',
-      label: 'Date Submitted To Sabo'
+      label: 'Date Submitted To SABO'
     },
     {
       id: 'vendor',
