@@ -64,7 +64,7 @@ export const useDeleteUnit = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['units', 'materials']);
+        queryClient.invalidateQueries(['materials', 'units']);
       }
     }
   );

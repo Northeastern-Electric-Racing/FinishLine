@@ -57,6 +57,11 @@ export const createUnit = async (name: string) => {
   return data;
 };
 
+/**
+ * Soft deletes a unit.
+ * @param unitId
+ * @returns
+ */
 export const deleteUnit = async (id: string) => {
   return axios.delete(apiUrls.bomDeleteUnit(id));
 };
