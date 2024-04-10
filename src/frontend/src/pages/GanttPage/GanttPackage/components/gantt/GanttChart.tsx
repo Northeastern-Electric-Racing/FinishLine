@@ -2,7 +2,7 @@ import { addDays, differenceInDays, eachDayOfInterval, isMonday } from 'date-fns
 import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
 import { EventChange, applyChangesToEvents } from '../other/event';
-import { dateFormatMonthDate, dateToString } from './date.utils';
+import { dateToString } from './date.utils';
 import { Task } from '../../types/public-types';
 import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../../../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
@@ -23,9 +23,6 @@ export function Gantt({ start, end, tasks, isEditMode, setChanges }: GanttProps)
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
-  };
-  const removeChange = (changeId: string) => {
-    setEventChanges([...eventChanges.filter((ec) => ec.id !== changeId)]);
   };
 
   useEffect(() => {

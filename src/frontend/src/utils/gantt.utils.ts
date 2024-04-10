@@ -5,7 +5,7 @@
 
 import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
-import { WorkPackageStageColorPipe } from './enum-pipes';
+import { GanttWorkPackageStageColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
 
 export const NO_TEAM = 'No Team';
@@ -89,10 +89,17 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
 };
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
-  return `?status=ACTIVE` + `&showCar1=${ganttFilters.showCar1}` + `&showCar2=${ganttFilters.showCar2}`;
+  return (
+    `?status=ACTIVE` +
+    `&showCar1=${ganttFilters.showCar1}` +
+    `&showCar2=${ganttFilters.showCar2}` +
+    `&selectedTeam=${encodeURIComponent(ganttFilters.selectedTeam)}` +
+    `&expanded=${ganttFilters.expanded}`
+  );
 };
 
 export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {
+  console.log(workPackage);
   return {
     id: wbsPipe(workPackage.wbsNum),
     name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
@@ -104,7 +111,7 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     teamName,
     children: [],
     styles: {
-      backgroundColor: WorkPackageStageColorPipe(workPackage.stage)
+      backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
     },
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
