@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Role, User, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -22,7 +22,7 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException
 } from '../utils/errors.utils';
-import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
+import { addDescriptionBullets, editDescriptionBullets, validateBlockedBys } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
@@ -187,11 +187,7 @@ export default class WorkPackagesService {
 
     const changeRequest = await validateChangeRequestAccepted(crId);
 
-    blockedBy.forEach((dep: WbsNumber) => {
-      if (dep.workPackageNumber === 0) {
-        throw new HttpException(400, 'A Project cannot be a Blocker');
-      }
-    });
+    const blockedByIds: number[] = await validateBlockedBys(blockedBy);
 
     const wbsElem = await prisma.wBS_Element.findUnique({
       where: {
@@ -242,37 +238,6 @@ export default class WorkPackagesService {
       project.workPackages
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
-
-    const blockedByWBSElems: (WBS_Element | null)[] = await Promise.all(
-      blockedBy.map(async (ele: WbsNumber) => {
-        return await prisma.wBS_Element.findUnique({
-          where: {
-            wbsNumber: {
-              carNumber: ele.carNumber,
-              projectNumber: ele.projectNumber,
-              workPackageNumber: ele.workPackageNumber
-            }
-          }
-        });
-      })
-    );
-
-    const blockedByIds: number[] = [];
-    // populate blockedByIds with the element ID's
-    // and return error 400 if any elems are null
-
-    let blockedByHasNulls = false;
-    blockedByWBSElems.forEach((elem) => {
-      if (!elem) {
-        blockedByHasNulls = true;
-        return;
-      }
-      blockedByIds.push(elem.wbsElementId);
-    });
-
-    if (blockedByHasNulls) {
-      throw new HttpException(400, 'One of the blockers was not found.');
-    }
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const date = new Date(startDate.split('T')[0]);

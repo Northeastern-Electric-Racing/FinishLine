@@ -1,7 +1,7 @@
-import { WBS_Element_Status } from '@prisma/client';
+import { WBS_Element, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { LinkCreateArgs, WbsElementStatus } from 'shared';
-import { DeletedException, NotFoundException } from './errors.utils';
+import { LinkCreateArgs, WbsElementStatus, WbsNumber } from 'shared';
+import { DeletedException, HttpException, NotFoundException } from './errors.utils';
 import { ChangeCreateArgs, createChange, createListChanges } from './changes.utils';
 import {
   DescriptionBulletPreview,
@@ -303,4 +303,45 @@ export const checkMaterialInputs = async (
     });
     if (!unit) throw new NotFoundException('Unit', unitName);
   }
+};
+
+export const validateBlockedBys = async (blockedBy: WbsNumber[]) => {
+  blockedBy.forEach((dep: WbsNumber) => {
+    if (dep.workPackageNumber === 0) {
+      throw new HttpException(400, 'A Project cannot be a Blocker');
+    }
+  });
+
+  const blockedByWBSElems: (WBS_Element | null)[] = await Promise.all(
+    blockedBy.map(async (ele: WbsNumber) => {
+      return await prisma.wBS_Element.findUnique({
+        where: {
+          wbsNumber: {
+            carNumber: ele.carNumber,
+            projectNumber: ele.projectNumber,
+            workPackageNumber: ele.workPackageNumber
+          }
+        }
+      });
+    })
+  );
+
+  const blockedByIds: number[] = [];
+  // populate blockedByIds with the element ID's
+  // and return error 400 if any elems are null
+
+  let blockedByHasNulls = false;
+  blockedByWBSElems.forEach((elem) => {
+    if (!elem) {
+      blockedByHasNulls = true;
+      return;
+    }
+    blockedByIds.push(elem.wbsElementId);
+  });
+
+  if (blockedByHasNulls) {
+    throw new HttpException(400, 'One of the blockers was not found.');
+  }
+
+  return blockedByIds;
 };

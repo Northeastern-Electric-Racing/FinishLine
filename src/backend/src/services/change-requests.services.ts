@@ -37,6 +37,7 @@ import {
   sendSlackRequestedReviewNotification
 } from '../utils/slack.utils';
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import { validateBlockedBys } from '../utils/projects.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -620,8 +621,25 @@ export default class ChangeRequestsService {
           'Change Request with proposed changes must have either project or work package proposed changes'
         );
       } else {
-        //TODO: validate WBS entries
         const { name, status, projectLeadId, projectManagerId, links } = wbsProposedChanges;
+
+        if (projectLeadId) {
+          const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+          if (!projectLead) throw new NotFoundException('User', projectLeadId);
+        }
+
+        if (projectManagerId) {
+          const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+          if (!projectManager) throw new NotFoundException('User', projectManagerId);
+        }
+
+        if (links.length > 0) {
+          for (const link of links) {
+            const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
+            if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+          }
+        }
+
         const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
           data: {
             changRequestId: createdCR.crId,
@@ -635,8 +653,15 @@ export default class ChangeRequestsService {
           }
         });
         if (projectProposedChanges) {
-          //TODO: validate project entries
           const { budget, summary, newProject, rules, teamIds, goals, features, otherConstraints } = projectProposedChanges;
+
+          if (teamIds.length > 0) {
+            for (const teamId of teamIds) {
+              const team = await prisma.team.findUnique({ where: { teamId } });
+              if (!team) throw new NotFoundException('Team', teamId);
+            }
+          }
+
           await prisma.project_Proposed_Changes.create({
             data: {
               budget,
@@ -651,14 +676,16 @@ export default class ChangeRequestsService {
             }
           });
         } else if (workPackageProposedChanges) {
-          //TODO: validate work package entries
-          const { duration, startDate, stage, expectedActivities, deliverables } = workPackageProposedChanges;
+          const { duration, startDate, stage, expectedActivities, deliverables, blockedBy } = workPackageProposedChanges;
+
+          await validateBlockedBys(blockedBy);
+
           await prisma.work_Package_Proposed_Changes.create({
             data: {
               duration,
               startDate,
               stage,
-              blockedBy: { connect: workPackageProposedChanges.blockedBy.map((wbsNumber) => ({ wbsNumber })) },
+              blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
               expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },
               deliverables: { create: deliverables.map((value: string) => ({ detail: value })) },
               proposedWbsChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
