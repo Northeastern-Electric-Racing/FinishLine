@@ -5,7 +5,7 @@
 
 import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
-import { GanttWorkPackageStageColorPipe } from './enum-pipes';
+import { GanttWorkPackageStageColorPipe, GanttWorkPackageTextColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
 
 export const NO_TEAM = 'No Team';
@@ -111,6 +111,7 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     teamName,
     children: [],
     styles: {
+      color: GanttWorkPackageTextColorPipe(workPackage.stage),
       backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
     },
     onClick: () => {

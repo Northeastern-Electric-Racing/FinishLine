@@ -21,6 +21,7 @@ export interface Task {
   progress: number;
   children: Task[];
   styles?: {
+    color?: string;
     backgroundColor?: string;
     backgroundSelectedColor?: string;
     progressColor?: string;

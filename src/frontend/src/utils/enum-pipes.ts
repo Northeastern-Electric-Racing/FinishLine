@@ -31,7 +31,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
   if (status === WbsElementStatus.Active) {
     switch (stage) {
       case WorkPackageStage.Research:
-        return orange[900];
+        return orange[800];
       case WorkPackageStage.Design:
         return green[800];
       case WorkPackageStage.Manufacturing:
@@ -46,7 +46,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
   } else if (status === WbsElementStatus.Inactive) {
     switch (stage) {
       case WorkPackageStage.Research:
-        return orange[800];
+        return orange[600];
       case WorkPackageStage.Design:
         return green[600];
       case WorkPackageStage.Manufacturing:
@@ -73,6 +73,21 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       default:
         return grey[500];
     }
+  }
+};
+
+// maps stage to the desired color
+export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
+  switch (stage) {
+    case WorkPackageStage.Research:
+    case WorkPackageStage.Design:
+    case WorkPackageStage.Manufacturing:
+    case WorkPackageStage.Install:
+      return '#ffffff';
+    case WorkPackageStage.Testing:
+      return '#000000';
+    default:
+      return grey[500];
   }
 };
 

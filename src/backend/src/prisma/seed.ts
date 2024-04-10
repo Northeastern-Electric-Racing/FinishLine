@@ -778,7 +778,7 @@ const performSeed: () => Promise<void> = async () => {
     ['Make sketches', 'Get sketches reviewed', 'Finalize sketches'],
     ['Sketch of designs for plush is finalized'],
     aang,
-    WbsElementStatus.Active,
+    WbsElementStatus.Complete,
     katara.userId,
     aang.userId
   );
@@ -797,7 +797,7 @@ const performSeed: () => Promise<void> = async () => {
 
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage5ActivationCrId, 'Very cute LGTM!', true, null);
 
-  /** Work Package 5 */
+  /** Work Package 6 */
   const { workPackageWbsNumber: workPackage6WbsNumber, workPackage: workPackage6 } = await seedWorkPackage(
     aang,
     'Put Plush Together',
@@ -827,6 +827,37 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage6ActivationCrId, 'LGTM!', true, null);
+
+  /** Work Package 7 */
+  const { workPackageWbsNumber: workPackage7WbsNumber, workPackage: workPackage7 } = await seedWorkPackage(
+    aang,
+    'Plush Testing',
+    changeRequestProject6Id,
+    WorkPackageStage.Testing,
+    '04/02/2023',
+    3,
+    [],
+    [],
+    ['Passes quality inspection'],
+    aang,
+    WbsElementStatus.Active,
+    katara.userId,
+    aang.userId
+  );
+
+  const workPackage7ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    aang,
+    workPackage7WbsNumber.carNumber,
+    workPackage7WbsNumber.projectNumber,
+    workPackage7WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    workPackage7.project.wbsElement.projectLeadId!,
+    workPackage7.project.wbsElement.projectManagerId!,
+    new Date('2023-10-09T04:00:00.000Z'),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage7ActivationCrId, 'LFG', true, null);
 
   /**
    * Change Requests

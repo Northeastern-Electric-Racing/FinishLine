@@ -6,8 +6,7 @@ import { dateToString } from './date.utils';
 import { Task } from '../../types/public-types';
 import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../../../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
-import dayjs from 'dayjs';
-import { Box, useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { purple } from '@mui/material/colors';
 
 interface GanttProps {
@@ -196,7 +195,9 @@ function Event({
                 userSelect: 'none'
               }}
             >
-              {event.name} ({dayjs(event.start).format('MMM D')}-{dayjs(event.end).format('MMM D')})
+              <Typography variant="body1" sx={{ color: event.styles ? event.styles.color : theme.palette.text.primary }}>
+                {event.name}
+              </Typography>
             </Box>
             {isEditMode && (
               <Box
