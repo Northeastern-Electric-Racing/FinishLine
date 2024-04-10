@@ -90,7 +90,12 @@ export default class ChangeRequestsService {
       include: {
         activationChangeRequest: true,
         scopeChangeRequest: true,
-        wbsProposedChanges: true,
+        wbsProposedChanges: {
+          include: {
+            workPackageProposedChanges: true,
+            proposedProjectChanges: true
+          }
+        },
         wbsElement: {
           include: { workPackage: workPackageQueryArgs, project: true }
         }
@@ -128,12 +133,13 @@ export default class ChangeRequestsService {
           reviewer.userId,
           foundCR.wbsElementId
         );
-        await prisma.project.update({
-          where: { projectId: foundCR.wbsElement.project.projectId },
-          data: {
-            budget: newBudget
-          }
-        });
+        if (change)
+          await prisma.project.update({
+            where: { projectId: foundCR.wbsElement.project.projectId },
+            data: {
+              budget: newBudget
+            }
+          });
 
         //Make the associated budget change if there was a change
         if (change) await prisma.change.create({ data: change });
@@ -202,12 +208,17 @@ export default class ChangeRequestsService {
         }
       });
 
+      // if there are proposed changes on an wbs element
       if (foundCR.wbsProposedChanges) {
         const openCRs = await prisma.change_Request.findMany({
           where: { wbsElementId: foundCR.wbsElementId, accepted: false }
         });
         if (openCRs.length > 0)
-          throw new HttpException(400, 'There are other open, unrevied change requests for this WBS element');
+          throw new HttpException(400, 'There are other open, unreviewed change requests for this WBS element');
+
+        // if a crID associated with a project has work package proposed changes, then it is creating a new work package.
+
+        const crAssociatedWithProject = foundCR.wbsElement.project;
       }
     }
 
