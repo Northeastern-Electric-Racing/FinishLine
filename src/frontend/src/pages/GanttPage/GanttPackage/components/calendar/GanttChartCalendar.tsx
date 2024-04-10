@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, Typography, Card } from '@mui/material';
 import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
 import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../../../../utils/gantt.utils';
 
@@ -8,7 +8,6 @@ interface GanttChartCalendarProps {
 }
 
 export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
-  const theme = useTheme();
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
   return (
@@ -29,7 +28,6 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
             <Box
               key={day.toISOString()}
               sx={{
-                color: 'white',
                 whiteSpace: 'nowrap',
                 lineHeight: '1rem',
                 textAlign: 'center',
@@ -56,12 +54,10 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
       >
         {days.map((day) => {
           return (
-            <Box
+            <Card
               key={day.toISOString()}
               sx={{
-                backgroundColor: theme.palette.background.default,
                 borderRadius: '0.25rem',
-                color: 'white',
                 lineHeight: '1rem',
                 textAlign: 'center',
                 height: '3.25rem',
@@ -71,7 +67,7 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
             >
               <Typography fontWeight="bold">{format(day, 'MMM')}</Typography>
               <Typography fontWeight="bold">{format(day, 'd')}</Typography>
-            </Box>
+            </Card>
           );
         })}
       </Box>
