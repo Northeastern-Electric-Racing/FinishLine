@@ -202,7 +202,7 @@ const performSeed: () => Promise<void> = async () => {
     {
       name: 'Initial CR change',
       status: WbsElementStatus.Active,
-      linkIds: [],
+      links: [],
       projectLeadId: batman.userId,
       projectManagerId: cyborg.userId
     },
@@ -210,9 +210,9 @@ const performSeed: () => Promise<void> = async () => {
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
-      goalIds: [],
-      featureIds: [],
-      otherConstraintIds: [],
+      goals: [],
+      features: [],
+      otherConstraints: [],
       rules: ['EV3.5.1'],
       teamIds: []
     },
@@ -552,7 +552,7 @@ const performSeed: () => Promise<void> = async () => {
     {
       name: 'Initial CR change',
       status: WbsElementStatus.Active,
-      linkIds: [],
+      links: [],
       projectLeadId: batman.userId,
       projectManagerId: cyborg.userId
     },
@@ -560,9 +560,9 @@ const performSeed: () => Promise<void> = async () => {
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
-      goalIds: [],
-      featureIds: [],
-      otherConstraintIds: [],
+      goals: [],
+      features: [],
+      otherConstraints: [],
       rules: ['EV3.5.1'],
       teamIds: []
     },
@@ -610,7 +610,7 @@ const performSeed: () => Promise<void> = async () => {
     {
       name: 'Initial CR change',
       status: WbsElementStatus.Active,
-      linkIds: [],
+      links: [],
       projectLeadId: batman.userId,
       projectManagerId: cyborg.userId
     },
@@ -618,9 +618,9 @@ const performSeed: () => Promise<void> = async () => {
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
-      goalIds: [],
-      featureIds: [],
-      otherConstraintIds: [],
+      goals: [],
+      features: [],
+      otherConstraints: [],
       rules: ['EV3.5.1'],
       teamIds: []
     },
@@ -786,7 +786,7 @@ const performSeed: () => Promise<void> = async () => {
     {
       name: 'Change the bodywork through pink paint purchase',
       status: WbsElementStatus.Active,
-      linkIds: [],
+      links: [],
       projectLeadId: batman.userId,
       projectManagerId: cyborg.userId
     },
@@ -794,9 +794,9 @@ const performSeed: () => Promise<void> = async () => {
       budget: 50,
       summary: 'Buy hot pink paint',
       newProject: false,
-      goalIds: [],
-      featureIds: [],
-      otherConstraintIds: [],
+      goals: [],
+      features: [],
+      otherConstraints: [],
       rules: ['EV3.5.3'],
       teamIds: []
     },

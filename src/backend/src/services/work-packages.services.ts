@@ -187,8 +187,6 @@ export default class WorkPackagesService {
 
     const changeRequest = await validateChangeRequestAccepted(crId);
 
-    const blockedByIds: number[] = await validateBlockedBys(blockedBy);
-
     const wbsElem = await prisma.wBS_Element.findUnique({
       where: {
         wbsElementId: changeRequest.wbsElementId
@@ -203,6 +201,8 @@ export default class WorkPackagesService {
     });
 
     if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
+
+    const blockedByIds: number[] = await validateBlockedBys(blockedBy);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be

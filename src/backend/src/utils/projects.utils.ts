@@ -334,9 +334,9 @@ export const validateBlockedBys = async (blockedBy: WbsNumber[]) => {
   blockedByWBSElems.forEach((elem) => {
     if (!elem) {
       blockedByHasNulls = true;
-      return;
+    } else {
+      blockedByIds.push(elem.wbsElementId);
     }
-    blockedByIds.push(elem.wbsElementId);
   });
 
   if (blockedByHasNulls) {
