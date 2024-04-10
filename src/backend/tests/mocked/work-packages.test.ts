@@ -19,7 +19,6 @@ import * as slackUtils from '../../src/utils/slack.utils';
 import { prismaProject1 } from '../test-data/projects.test-data';
 import * as workPackageTransformer from '../../src/transformers/work-packages.transformer';
 import { prismaWorkPackage1, sharedWorkPackage } from '../test-data/work-packages.test-data';
-import { validateBlockedBys } from '../../src/utils/projects.utils';
 
 describe('Work Packages', () => {
   /* WORK PACKAGE SERVICE FUNCTION DEFAULT INPUT ARGUMENTS */
