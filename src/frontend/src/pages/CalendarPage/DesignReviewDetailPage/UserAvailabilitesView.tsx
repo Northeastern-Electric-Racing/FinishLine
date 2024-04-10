@@ -96,7 +96,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             </Typography>
             <Box sx={{ maxHeight: '350px', overflowY: 'scroll' }}>
               {currentUnavailableUsers.map((user) => (
-                <Typography style={{ textAlign: 'center', fontSize: '16px' }}>{fullNamePipe(user)}</Typography>
+                <Typography style={{ textAlign: 'center', fontSize: '1em' }}>{fullNamePipe(user)}</Typography>
               ))}
             </Box>
           </Box>
