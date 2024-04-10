@@ -359,4 +359,15 @@ export default class ReimbursementRequestsController {
       next(error);
     }
   }
+
+  static async deleteVendor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { vendorId } = req.params;
+      const submitter = await getCurrentUser(res);
+      const deleteVendors = await ReimbursementRequestService.deleteVendor(vendorId, submitter);
+      res.status(200).json(deleteVendors);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
