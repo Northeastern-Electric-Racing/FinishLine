@@ -47,7 +47,6 @@ const GanttPageWrapper: FC = () => {
       editing: boolean;
     }>
   >([]);
-  const showCar0 = query.get('showCar0') === 'false' || query.get('showCar0') === null;
   const showCar1 = query.get('showCar1') === 'false' || query.get('showCar1') === null;
   const showCar2 = query.get('showCar2') === 'false' || query.get('showCar2') === null;
   const status = query.get('status') || WbsElementStatus.Active.toString();
@@ -65,10 +64,8 @@ const GanttPageWrapper: FC = () => {
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
   const defaultGanttFilters: GanttFilters = {
-    showCar0,
     showCar1,
     showCar2,
-    selectedTeam,
     expanded
   };
 
@@ -78,10 +75,8 @@ const GanttPageWrapper: FC = () => {
     setTeamList(Array.from(new Set(projects.map(getProjectTeamsName))));
 
     const ganttFilters: GanttFilters = {
-      showCar0,
       showCar1,
       showCar2,
-      selectedTeam,
       expanded
     };
 
@@ -92,15 +87,10 @@ const GanttPageWrapper: FC = () => {
     const tasks: GanttTask[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
     setGanttTasks(tasks);
-  }, [end, expanded, projects, showCar0, showCar1, showCar2, start, status, selectedTeam]);
+  }, [end, expanded, projects, showCar1, showCar2, start, status, selectedTeam]);
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-
-  const car0Handler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar0: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
 
   const car1Handler = (event: ChangeEvent<HTMLInputElement>) => {
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
@@ -188,11 +178,6 @@ const GanttPageWrapper: FC = () => {
     //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
-  const teamHandler = (event: SelectChangeEvent) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, selectedTeam: event.target.value as string };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
   const expandedHandler = (value: boolean) => {
     // No more forced reloads
     if (value === expanded) {
@@ -263,8 +248,12 @@ const GanttPageWrapper: FC = () => {
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   // do something here with the data
-  const setChanges = (eventChanges: EventChange[]) => {
-    console.log(eventChanges);
+  const saveChanges = (eventChanges: EventChange[]) => {
+    if (eventChanges.length === 0) {
+      console.log('no changes do nothing');
+    } else {
+      console.log('Changes:', eventChanges);
+    }
   };
 
   const ganttCharts: JSX.Element[] = sortedTeamList.map((teamName: string) => {
@@ -329,7 +318,7 @@ const GanttPageWrapper: FC = () => {
               const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
               setGanttTasks(newTasks);
             }}
-            setChanges={setChanges}
+            saveChanges={saveChanges}
           />
         </Box>
       </Box>
@@ -366,7 +355,6 @@ const GanttPageWrapper: FC = () => {
         sx={{ dispaly: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
         <GanttPageFilter
-          car0Handler={car0Handler}
           car1Handler={car1Handler}
           car2Handler={car2Handler}
           carHandlers={carHandlers}
@@ -374,7 +362,6 @@ const GanttPageWrapper: FC = () => {
           teamsHandlers={teamsHandlers}
           overdueHandler={overdueHandler}
           status={status}
-          teamHandler={teamHandler}
           expandedHandler={expandedHandler}
           teamList={teamList}
           selectedTeam={selectedTeam}

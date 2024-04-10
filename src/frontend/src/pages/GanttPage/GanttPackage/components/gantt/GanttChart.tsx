@@ -14,10 +14,10 @@ interface GanttProps {
   end: Date;
   tasks: Task[];
   isEditMode: boolean;
-  setChanges: (eventChanges: EventChange[]) => void;
+  saveChanges: (eventChanges: EventChange[]) => void;
 }
 
-export function Gantt({ start, end, tasks, isEditMode, setChanges }: GanttProps) {
+export function Gantt({ start, end, tasks, isEditMode, saveChanges }: GanttProps) {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
   const createChange = (change: EventChange) => {
@@ -25,8 +25,12 @@ export function Gantt({ start, end, tasks, isEditMode, setChanges }: GanttProps)
   };
 
   useEffect(() => {
-    setChanges(eventChanges);
-    setEventChanges([]); // reset the changes after sending them
+    // only try to save changes when we're going from non-editing to editing mode
+    if (!isEditMode) {
+      saveChanges(eventChanges);
+      setEventChanges([]); // reset the changes after sending them
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode]);
 
   const displayEvents = applyChangesToEvents(tasks, eventChanges);

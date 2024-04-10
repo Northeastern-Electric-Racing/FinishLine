@@ -12,7 +12,6 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
 
   return (
     <Box sx={{ pl: 2 }}>
-      {/* Year Display */}
       <Box
         sx={{
           display: 'grid',

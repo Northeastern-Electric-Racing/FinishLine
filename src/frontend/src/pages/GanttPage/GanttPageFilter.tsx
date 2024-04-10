@@ -10,7 +10,6 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent, FC } from 'react';
 
 interface GanttPageFilterProps {
-  car0Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   car1Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   car2Handler: (event: ChangeEvent<HTMLInputElement>) => void;
   carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
@@ -20,7 +19,6 @@ interface GanttPageFilterProps {
   status: string;
   selectedTeam: string;
   teamList: string[];
-  teamHandler: (event: SelectChangeEvent) => void;
   currentStart: Date | null;
   currentEnd: Date | null;
   expandedHandler: (expanded: boolean) => void;
@@ -56,7 +54,6 @@ const FilterChipButton = ({
 };
 
 const GanttPageFilter: FC<GanttPageFilterProps> = ({
-  car0Handler,
   car1Handler,
   car2Handler,
   carHandlers,
@@ -64,12 +61,8 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   teamsHandlers,
   overdueHandler,
   status,
-  teamHandler,
   expandedHandler,
   teamList,
-  selectedTeam,
-  currentStart,
-  currentEnd,
   resetHandler
 }) => {
   const FilterRow = ({

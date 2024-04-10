@@ -14,35 +14,17 @@ export const GANTT_CHART_GAP_SIZE = '0.75rem';
 export const GANTT_CHART_CELL_SIZE = '2.25rem';
 
 export interface GanttFilters {
-  /**
-   * Cars
-   */
-  showCar0: boolean;
   showCar1: boolean;
   showCar2: boolean;
-
-  selectedTeam: string;
-
-  /**
-   * Team Categories
-   */
   showElectricalTeamCategory?: boolean;
   showMechanicalTeamCategory?: boolean;
   showSoftwareTeamCategory?: boolean;
   showBusinessTeamCategory?: boolean;
-
-  /**
-   * Teams
-   */
   showErgonomicsTeam?: boolean;
   showLowVoltageTeam?: boolean;
   showTractiveTeam?: boolean;
   showDataAndControlsTeam?: boolean;
   showSoftwareTeam?: boolean;
-
-  /**
-   * Overdue
-   */
   showOnlyOverdue?: boolean;
   expanded: boolean;
 }
@@ -52,35 +34,22 @@ export interface GanttTask extends Task {
 }
 
 export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters): Project[] => {
-  const decodedTeam = decodeURIComponent(ganttFilters.selectedTeam);
-  const car0Check = (project: Project) => {
-    return project.wbsNum.carNumber !== 0;
-  };
   const car1Check = (project: Project) => {
     return project.wbsNum.carNumber !== 1;
   };
   const car2Check = (project: Project) => {
     return project.wbsNum.carNumber !== 2;
   };
-  const teamCheck = (project: Project) => {
-    return getProjectTeamsName(project).includes(decodedTeam);
-  };
 
   const activeCheck = (project: Project) => {
     return project.status === WbsElementStatus.Active;
   };
 
-  if (!ganttFilters.showCar0) {
-    projects = projects.filter(car0Check);
-  }
   if (!ganttFilters.showCar1) {
     projects = projects.filter(car1Check);
   }
   if (!ganttFilters.showCar2) {
     projects = projects.filter(car2Check);
-  }
-  if (decodedTeam !== 'All Teams') {
-    projects = projects.filter(teamCheck);
   }
 
   projects = projects.filter(activeCheck);
@@ -93,13 +62,11 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
     `?status=ACTIVE` +
     `&showCar1=${ganttFilters.showCar1}` +
     `&showCar2=${ganttFilters.showCar2}` +
-    `&selectedTeam=${encodeURIComponent(ganttFilters.selectedTeam)}` +
     `&expanded=${ganttFilters.expanded}`
   );
 };
 
 export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {
-  console.log(workPackage);
   return {
     id: wbsPipe(workPackage.wbsNum),
     name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,

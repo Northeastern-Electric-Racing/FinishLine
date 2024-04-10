@@ -14,12 +14,12 @@ interface GanttPageProps {
   end: Date;
   onExpanderClick: (ganttTasks: Task) => void;
   isEditMode: boolean;
-  setChanges: (eventChanges: EventChange[]) => void;
+  saveChanges: (eventChanges: EventChange[]) => void;
 }
 
-const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, start, end, onExpanderClick, isEditMode, setChanges }) => {
+const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, start, end, onExpanderClick, isEditMode, saveChanges }) => {
   return ganttTasks.length > 0 ? (
-    <Gantt start={start} end={end} tasks={ganttTasks} isEditMode={isEditMode} setChanges={setChanges} />
+    <Gantt start={start} end={end} tasks={ganttTasks} isEditMode={isEditMode} saveChanges={saveChanges} />
   ) : (
     <Typography sx={{ mx: 1 }}>No items to display</Typography>
   );
