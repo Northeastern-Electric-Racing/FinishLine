@@ -3,56 +3,19 @@ import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
 import ChangeRequestsController from '../controllers/change-requests.controllers';
 import { validateInputs } from '../utils/utils';
-import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
+import {
+  intMinZero,
+  nonEmptyString,
+  projectProposedChangesValidators,
+  wbsProposedChangesValidators,
+  workPackageProposedChangesValidators
+} from '../utils/validation.utils';
 
 const changeRequestsRouter = express.Router();
 
 changeRequestsRouter.get('/', ChangeRequestsController.getAllChangeRequests);
 
 changeRequestsRouter.get('/:crId', ChangeRequestsController.getChangeRequestByID);
-
-const wbsProposedChangesValidators = [
-  body('wbsProposedChanges'),
-  nonEmptyString(body('wbsProposedChanges.*.name')),
-  nonEmptyString(body('wbsProposedChanges.*.status')),
-  body('wbsProposedChanges.*.links').isArray(),
-  nonEmptyString(body('wbsProposedChanges.*.links.*.url')),
-  nonEmptyString(body('wbsProposedChanges.*.links.*.linkTypeName')),
-  intMinZero(body('wbsProposedChanges.*.projectLeadId')),
-  intMinZero(body('wbsProposedChanges.*.projectManagerId'))
-];
-
-const projectProposedChangesValidators = [
-  body('projectProposedChanges').optional(),
-  nonEmptyString(body('projectProposedChanges.*.name')),
-  nonEmptyString(body('projectProposedChanges.*.summary')),
-  body('projectProposedChanges.*.rules').isArray(),
-  nonEmptyString(body('projectProposedChanges.*.rules.*')),
-  body('projectProposedChanges.*.goals').isArray(),
-  body('projectProposedChanges.*.goals.*.id').isInt({ min: -1 }).not().isString(),
-  nonEmptyString(body('projectProposedChanges.*.goals.*.detail')),
-  body('projectProposedChanges.*.features').isArray(),
-  body('projectProposedChanges.*.features.*.id').isInt({ min: -1 }).not().isString(),
-  nonEmptyString(body('projectProposedChanges.*.features.*.detail')),
-  body('projectProposedChanges.*.otherConstraints').isArray(),
-  body('projectProposedChanges.*.otherConstraints.*.id').isInt({ min: -1 }).not().isString(),
-  nonEmptyString(body('projectProposedChanges.*.otherConstraints.*.detail'))
-];
-
-const workPackageProposedChangesValidators = [
-  body('workPackageProposedChanges').optional(),
-  isWorkPackageStageOrNone(body('stage')),
-  isDate(body('startDate')),
-  intMinZero(body('duration')),
-  body('blockedBy').isArray(),
-  intMinZero(body('blockedBy.*.carNumber')),
-  intMinZero(body('blockedBy.*.projectNumber')),
-  intMinZero(body('blockedBy.*.workPackageNumber')),
-  body('expectedActivities').isArray(),
-  nonEmptyString(body('expectedActivities.*')),
-  body('deliverables').isArray(),
-  nonEmptyString(body('deliverables.*'))
-];
 
 changeRequestsRouter.post(
   '/review',
@@ -94,6 +57,7 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/standard',
+  nonEmptyString(body('what')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),

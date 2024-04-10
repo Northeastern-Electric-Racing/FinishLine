@@ -3,9 +3,9 @@ import { Scope_CR_Why_Type, User, Prisma, Change_Request, Change } from '@prisma
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
-import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail } from './changes.utils';
+import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -122,7 +122,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 export const calculateChangeRequestStatus = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
 ): ChangeRequestStatus => {
   if (changeRequest.changes.length) {
     return ChangeRequestStatus.Implemented;

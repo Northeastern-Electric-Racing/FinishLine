@@ -1,7 +1,6 @@
 import { Design_Review_Status } from '@prisma/client';
 import { body, ValidationChain } from 'express-validator';
-import { ClubAccount, MaterialStatus } from 'shared';
-import { TaskPriority, TaskStatus, WorkPackageStage, RoleEnum } from 'shared';
+import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -25,6 +24,27 @@ export const isRole = (validationObject: ValidationChain): ValidationChain => {
     .isIn([RoleEnum.APP_ADMIN, RoleEnum.ADMIN, RoleEnum.HEAD, RoleEnum.LEADERSHIP, RoleEnum.MEMBER, RoleEnum.GUEST]);
 };
 
+export const isStatus = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn([WbsElementStatus.Inactive, WbsElementStatus.Active, WbsElementStatus.Complete]);
+};
+
+export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      WorkPackageStage.Research,
+      WorkPackageStage.Design,
+      WorkPackageStage.Manufacturing,
+      WorkPackageStage.Install,
+      WorkPackageStage.Testing,
+      'NONE'
+    ]);
+};
+
+export const isDate = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.custom((value) => !isNaN(Date.parse(value)));
+};
+
 export const validateReimbursementProducts = () => {
   return [
     body('otherReimbursementProducts').isArray(),
@@ -40,9 +60,60 @@ export const validateReimbursementProducts = () => {
   ];
 };
 
-export const isDate = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.custom((value) => !isNaN(Date.parse(value)));
+const wbsProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.if((value: any, { req }: any) => req.body.wbsProposedChanges);
 };
+
+export const wbsProposedChangesValidators = [
+  body('wbsProposedChanges').optional(),
+  nonEmptyString(wbsProposedChangesExists(body('wbsProposedChanges.name'))),
+  isStatus(wbsProposedChangesExists(body('wbsProposedChanges.status'))),
+  wbsProposedChangesExists(body('wbsProposedChanges.links')).isArray(),
+  nonEmptyString(body('wbsProposedChanges.links.*.url')),
+  nonEmptyString(body('wbsProposedChanges.links.*.linkTypeName')),
+  intMinZero(body('wbsProposedChanges.projectLeadId').optional()),
+  intMinZero(body('wbsProposedChanges.projectManagerId').optional())
+];
+
+const projectProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.if((value: any, { req }: any) => req.body.projectProposedChanges);
+};
+
+export const projectProposedChangesValidators = [
+  body('projectProposedChanges').optional(),
+  nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
+  intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
+  projectProposedChangesExists(body('projectProposedChanges.rules')).isArray(),
+  nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.rules.*'))),
+  projectProposedChangesExists(body('projectProposedChanges.goals')).isArray(),
+  nonEmptyString(body('projectProposedChanges.goals.*')),
+  projectProposedChangesExists(body('projectProposedChanges.features')).isArray(),
+  nonEmptyString(body('projectProposedChanges.features.*')),
+  projectProposedChangesExists(body('projectProposedChanges.otherConstraints')).isArray(),
+  nonEmptyString(body('projectProposedChanges.otherConstraints.*')),
+  projectProposedChangesExists(body('projectProposedChanges.newProject')).isBoolean(),
+  projectProposedChangesExists(body('projectProposedChanges.teamIds')).isArray(),
+  nonEmptyString(body('projectProposedChanges.teamIds.*'))
+];
+
+const workPackageProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.if((value: any, { req }: any) => req.body.workPackageProposedChanges);
+};
+
+export const workPackageProposedChangesValidators = [
+  body('workPackageProposedChanges').optional(),
+  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage'))),
+  isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
+  intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
+  workPackageProposedChangesExists(body('workPackageProposedChanges.blockedBy')).isArray(),
+  intMinZero(body('workPackageProposedChanges.blockedBy.*.carNumber')),
+  intMinZero(body('workPackageProposedChanges.blockedBy.*.projectNumber')),
+  intMinZero(body('workPackageProposedChanges.blockedBy.*.workPackageNumber')),
+  workPackageProposedChangesExists(body('workPackageProposedChanges.expectedActivities')).isArray(),
+  nonEmptyString(body('workPackageProposedChanges.expectedActivities.*')),
+  workPackageProposedChangesExists(body('workPackageProposedChanges.deliverables')).isArray(),
+  nonEmptyString(body('workPackageProposedChanges.deliverables.*'))
+];
 
 export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]);
@@ -50,19 +121,6 @@ export const isTaskPriority = (validationObject: ValidationChain): ValidationCha
 
 export const isTaskStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([TaskStatus.DONE, TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS]);
-};
-
-export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject
-    .isString()
-    .isIn([
-      WorkPackageStage.Research,
-      WorkPackageStage.Design,
-      WorkPackageStage.Manufacturing,
-      WorkPackageStage.Install,
-      WorkPackageStage.Testing,
-      'NONE'
-    ]);
 };
 
 export const isAccount = (validationObject: ValidationChain): ValidationChain => {

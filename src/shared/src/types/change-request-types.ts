@@ -4,9 +4,8 @@
  */
 
 import { User } from './user-types';
-import { DescriptionBullet, Link, WbsElementStatus, WbsNumber } from './project-types';
+import { ProjectProposedChanges, WbsElementStatus, WbsNumber, WorkPackageProposedChanges } from './project-types';
 import { WorkPackageStage } from './work-package-types';
-import { TeamPreview } from './team-types';
 
 export interface ChangeRequest {
   crId: number;
@@ -23,7 +22,8 @@ export interface ChangeRequest {
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
   requestedReviewers: User[];
-  wbsProposedChanges?: WbsProposedChanges;
+  projectProposedChanges?: ProjectProposedChanges;
+  workPackageProposedChanges?: WorkPackageProposedChanges;
 }
 
 export const ChangeRequestType = {
@@ -54,46 +54,6 @@ export interface ProposedSolution {
   createdBy: User;
   dateCreated: Date;
   approved: boolean;
-}
-
-export interface WbsProposedChanges {
-  id: number;
-  wbsNum: WbsNumber;
-  dateCreated: Date;
-  name: string;
-  status: WbsElementStatus;
-  projectLead?: User;
-  projectManager?: User;
-  links: Link[];
-  changeRequest: ChangeRequest;
-  proposedProjectChanges: ProposedProjectChanges;
-  workPackageProposedChanges: WorkPackageProposedChanges;
-}
-
-export interface ProposedProjectChanges {
-  id: number;
-  summary: string;
-  budget: number;
-  rules: string[];
-  goals: DescriptionBullet[];
-  features: DescriptionBullet[];
-  otherConstraints: DescriptionBullet[];
-  teams: TeamPreview[];
-  newProject: boolean;
-  proposedWbsChanges: WbsProposedChanges;
-}
-
-export interface WorkPackageProposedChanges {
-  id: number;
-  duration: number;
-  expectedProgress: number;
-  blockedBy: WbsNumber[];
-  expectedActivities: DescriptionBullet[];
-  deliverables: DescriptionBullet[];
-  projectName: string;
-  stage?: WorkPackageStage;
-  startDate: Date;
-  proposedWbsChanges: WbsProposedChanges;
 }
 
 export interface ActivationChangeRequest extends ChangeRequest {
@@ -154,16 +114,16 @@ export interface WBSProposedChangesCreateArgs {
   status: WbsElementStatus;
   projectLeadId: number;
   projectManagerId: number;
-  linkIds: string[];
+  links: { url: string; linkTypeName: string }[];
 }
 
 export interface ProjectProposedChangesCreateArgs {
   budget: number;
   summary: string;
   newProject: boolean;
-  goalIds: number[];
-  featureIds: number[];
-  otherConstraintIds: number[];
+  goals: string[];
+  features: string[];
+  otherConstraints: string[];
   rules: string[];
   teamIds: string[];
 }
@@ -173,6 +133,6 @@ export interface WorkPackageProposedChangesCreateArgs {
   startDate: string;
   stage: WorkPackageStage | null;
   blockedBy: WbsNumber[];
-  expectedActivityIds: number[];
-  deliverableIds: number[];
+  expectedActivities: string[];
+  deliverables: string[];
 }
