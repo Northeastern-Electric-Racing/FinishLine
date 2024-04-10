@@ -39,7 +39,7 @@ const ColumnHeader = ({
         align={leftAlign ? 'left' : 'center'}
         sx={{ fontSize: '16px', fontWeight: 600 }}
         sortDirection={orderBy === id ? (isAscendingOrder ? 'asc' : 'desc') : false}
-        style={{ paddingLeft: '24px', paddingRight: '0px' }}
+        style={{ paddingLeft: '42px' }}
       >
         <TableSortLabel
           active={orderBy === id}
