@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { Button, Checkbox, Chip, Grid, Typography, useTheme } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';

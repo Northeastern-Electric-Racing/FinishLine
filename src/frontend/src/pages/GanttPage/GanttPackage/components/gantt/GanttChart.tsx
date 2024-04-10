@@ -30,7 +30,7 @@ export function Gantt({ start, end, tasks, isEditMode, saveChanges }: GanttProps
       saveChanges(eventChanges);
       setEventChanges([]); // reset the changes after sending them
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode]);
 
   const displayEvents = applyChangesToEvents(tasks, eventChanges);
@@ -55,7 +55,10 @@ function Event({
   ...props
 }: { days: Date[]; event: Task; createChange: (change: EventChange) => void; isEditMode: boolean } & ComponentProps<'div'>) {
   const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
-  const endCol = days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
+  const endCol =
+    days.findIndex((day) => dateToString(day) === dateToString(event.end)) === -1
+      ? days.length + 1
+      : days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
 
   const id = useId() || 'id'; // id for creating event changes
   const [measureRef, bounds] = useMeasure();
@@ -199,7 +202,10 @@ function Event({
                 userSelect: 'none'
               }}
             >
-              <Typography variant="body1" sx={{ color: event.styles ? event.styles.color : theme.palette.text.primary }}>
+              <Typography
+                variant="body1"
+                sx={{ color: event.styles ? event.styles.color : theme.palette.text.primary, px: 1 }}
+              >
                 {event.name}
               </Typography>
             </Box>

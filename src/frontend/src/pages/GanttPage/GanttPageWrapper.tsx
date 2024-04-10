@@ -3,14 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import React, { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
-import { SelectChangeEvent } from '@mui/material/Select';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
-import { WbsElementStatus } from 'shared';
+import { WbsElementStatus, WorkPackageStage } from 'shared';
 import GanttChart from './GanttChart';
 import GanttPageFilter from './GanttPageFilter';
-import EditIcon from '@mui/icons-material/Edit';
+import { Info, Edit } from '@mui/icons-material/';
 import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
@@ -24,11 +23,28 @@ import {
   getProjectTeamsName
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
-import { Box, Popover, Typography, IconButton, useTheme, Chip } from '@mui/material';
+import {
+  Box,
+  Popover,
+  Typography,
+  IconButton,
+  useTheme,
+  Chip,
+  Tooltip,
+  tooltipClasses,
+  TooltipProps,
+  styled
+} from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
 import { NERButton } from '../../components/NERButton';
 import { EventChange } from './GanttPackage/components/other/event';
+import {
+  GanttWorkPackageStageColorPipe,
+  GanttWorkPackageTextColorPipe,
+  WbsElementStatusTextPipe,
+  WorkPackageStageTextPipe
+} from '../../utils/enum-pipes';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -304,7 +320,7 @@ const GanttPageWrapper: FC = () => {
             <Chip label="Save" onClick={handleEdit} />
           ) : (
             <IconButton onClick={handleEdit}>
-              <EditIcon />
+              <Edit />
             </IconButton>
           )}
         </Box>
@@ -335,8 +351,63 @@ const GanttPageWrapper: FC = () => {
 
   const open = Boolean(anchorFilterEl);
 
+  const colorLegend = (
+    <Box sx={{ display: 'flex', width: 'fit-content', gap: 2, p: 2 }}>
+      {
+        // map through all the WP Stages
+        Object.values(WorkPackageStage).map((stage) => (
+          <Box sx={{ display: 'flex', flexDirection: 'column', width: 'fit-content', gap: 1 }}>
+            <Typography variant="h6" sx={{ whiteSpace: 'nowrap' }}>
+              {WorkPackageStageTextPipe(stage)}
+            </Typography>
+            {
+              // map through all the Wbs Element Statuses
+              Object.values(WbsElementStatus).map((status) => (
+                <Box
+                  sx={{
+                    backgroundColor: GanttWorkPackageStageColorPipe(stage, status),
+                    height: '2rem',
+                    width: '8rem',
+                    borderRadius: 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
+                    {WbsElementStatusTextPipe(status)}
+                  </Typography>
+                </Box>
+              ))
+            }
+          </Box>
+        ))
+      }
+    </Box>
+  );
+
+  const NoMaxWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))({
+    [`& .${tooltipClasses.tooltip}`]: {
+      maxWidth: 'none'
+    }
+  });
+
   const headerRight = (
     <>
+      <NoMaxWidthTooltip title={colorLegend} placement="left-start" sx={{ maxWidth: 'none' }}>
+        <Info
+          sx={{
+            color: theme.palette.text.primary,
+            marginX: '1rem',
+            '&:hover': {
+              color: theme.palette.text.secondary
+            }
+          }}
+        />
+      </NoMaxWidthTooltip>
+
       <NERButton variant="contained" onClick={handleFilterClick}>
         Filters
       </NERButton>

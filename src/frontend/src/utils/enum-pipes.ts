@@ -46,7 +46,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
   } else if (status === WbsElementStatus.Inactive) {
     switch (stage) {
       case WorkPackageStage.Research:
-        return orange[600];
+        return orange[500];
       case WorkPackageStage.Design:
         return green[600];
       case WorkPackageStage.Manufacturing:
@@ -54,7 +54,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       case WorkPackageStage.Install:
         return pink[300];
       case WorkPackageStage.Testing:
-        return yellow[400];
+        return yellow[300];
       default:
         return grey[500];
     }
@@ -134,5 +134,16 @@ export const ChangeRequestStatusTextPipe: (status: ChangeRequestStatus) => strin
       return 'Denied';
     case ChangeRequestStatus.Open:
       return 'Open';
+  }
+};
+
+export const WbsElementStatusTextPipe: (status: WbsElementStatus) => string = (status) => {
+  switch (status) {
+    case WbsElementStatus.Inactive:
+      return 'Inactive';
+    case WbsElementStatus.Active:
+      return 'Active';
+    case WbsElementStatus.Complete:
+      return 'Complete';
   }
 };
