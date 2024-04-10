@@ -2,9 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { WbsElementStatus } from 'shared';
-import { Button, Checkbox, Chip, FormLabel, Grid, Typography, useTheme } from '@mui/material';
+import { Button, Checkbox, Chip, Grid, Typography, useTheme } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
@@ -29,6 +27,34 @@ interface GanttPageFilterProps {
   resetHandler: () => void;
 }
 
+const FilterChipButton = ({
+  buttonText,
+  onChange
+}: {
+  buttonText: string;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}) => {
+  const theme = useTheme();
+
+  return (
+    <Checkbox
+      onChange={onChange}
+      sx={{
+        '&:hover': {
+          backgroundColor: 'transparent'
+        }
+      }}
+      icon={<Chip label={buttonText} sx={{ minWidth: '150px', borderRadius: '20px' }} />}
+      checkedIcon={
+        <Chip
+          label={buttonText}
+          sx={{ minWidth: '150px', borderRadius: '20px', backgroundColor: theme.palette.primary.main }}
+        />
+      }
+    />
+  );
+};
+
 const GanttPageFilter: FC<GanttPageFilterProps> = ({
   car0Handler,
   car1Handler,
@@ -46,33 +72,6 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   currentEnd,
   resetHandler
 }) => {
-  const theme = useTheme();
-
-  const FilterChipButton = ({
-    buttonText,
-    onChange
-  }: {
-    buttonText: string;
-    onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  }) => (
-    <Checkbox
-      defaultChecked
-      onChange={onChange}
-      sx={{
-        '&:hover': {
-          backgroundColor: 'transparent'
-        }
-      }}
-      icon={<Chip label={buttonText} sx={{ minWidth: '150px', borderRadius: '20px' }} />}
-      checkedIcon={
-        <Chip
-          label={buttonText}
-          sx={{ minWidth: '150px', borderRadius: '20px', backgroundColor: theme.palette.primary.main }}
-        />
-      }
-    />
-  );
-
   const FilterRow = ({
     label,
     buttons

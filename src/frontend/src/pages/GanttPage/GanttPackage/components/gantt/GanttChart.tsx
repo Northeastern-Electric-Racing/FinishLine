@@ -15,11 +15,11 @@ interface GanttProps {
   end: Date;
   tasks: Task[];
   isEditMode: boolean;
+  setChanges: (eventChanges: EventChange[]) => void;
 }
 
-export function Gantt({ start, end, tasks, isEditMode }: GanttProps) {
+export function Gantt({ start, end, tasks, isEditMode, setChanges }: GanttProps) {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
-
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
@@ -27,6 +27,11 @@ export function Gantt({ start, end, tasks, isEditMode }: GanttProps) {
   const removeChange = (changeId: string) => {
     setEventChanges([...eventChanges.filter((ec) => ec.id !== changeId)]);
   };
+
+  useEffect(() => {
+    setChanges(eventChanges);
+    setEventChanges([]); // reset the changes after sending them
+  }, [isEditMode]);
 
   const displayEvents = applyChangesToEvents(tasks, eventChanges);
 

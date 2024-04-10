@@ -6,6 +6,7 @@
 import { Typography } from '@mui/material';
 import { Task } from './GanttPackage/types/public-types';
 import { Gantt } from './GanttPackage/components/gantt/GanttChart';
+import { EventChange } from './GanttPackage/components/other/event';
 
 interface GanttPageProps {
   ganttTasks: Task[];
@@ -13,11 +14,12 @@ interface GanttPageProps {
   end: Date;
   onExpanderClick: (ganttTasks: Task) => void;
   isEditMode: boolean;
+  setChanges: (eventChanges: EventChange[]) => void;
 }
 
-const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, start, end, onExpanderClick, isEditMode }) => {
+const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, start, end, onExpanderClick, isEditMode, setChanges }) => {
   return ganttTasks.length > 0 ? (
-    <Gantt start={start} end={end} tasks={ganttTasks} isEditMode={isEditMode} />
+    <Gantt start={start} end={end} tasks={ganttTasks} isEditMode={isEditMode} setChanges={setChanges} />
   ) : (
     <Typography sx={{ mx: 1 }}>No items to display</Typography>
   );

@@ -28,6 +28,7 @@ import { Box, Popover, Typography, IconButton, useTheme, Chip } from '@mui/mater
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
 import { NERButton } from '../../components/NERButton';
+import { EventChange } from './GanttPackage/components/other/event';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -46,9 +47,9 @@ const GanttPageWrapper: FC = () => {
       editing: boolean;
     }>
   >([]);
-  const showCar0 = query.get('showCar0') === 'true' || query.get('showCar0') === null;
-  const showCar1 = query.get('showCar1') === 'true' || query.get('showCar1') === null;
-  const showCar2 = query.get('showCar2') === 'true' || query.get('showCar2') === null;
+  const showCar0 = query.get('showCar0') === 'false' || query.get('showCar0') === null;
+  const showCar1 = query.get('showCar1') === 'false' || query.get('showCar1') === null;
+  const showCar2 = query.get('showCar2') === 'false' || query.get('showCar2') === null;
   const status = query.get('status') || WbsElementStatus.Active.toString();
   const selectedTeam = query.get('selectedTeam') || 'All Teams';
   const queryStart = query.get('start');
@@ -261,6 +262,11 @@ const GanttPageWrapper: FC = () => {
 
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
+  // do something here with the data
+  const setChanges = (eventChanges: EventChange[]) => {
+    console.log(eventChanges);
+  };
+
   const ganttCharts: JSX.Element[] = sortedTeamList.map((teamName: string) => {
     const tasks = teamNameToGanttTasksMap.get(teamName);
 
@@ -323,6 +329,7 @@ const GanttPageWrapper: FC = () => {
               const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
               setGanttTasks(newTasks);
             }}
+            setChanges={setChanges}
           />
         </Box>
       </Box>

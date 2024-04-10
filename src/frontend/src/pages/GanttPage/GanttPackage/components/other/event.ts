@@ -17,10 +17,8 @@ export function applyChangeToEvent(event: Task, eventChanges: EventChange[]): Ta
         break;
       }
       case 'shift-by-days': {
-        console.log('applying shift of ', eventChange.days);
         changedEvent.start = dayjs(changedEvent.start).add(eventChange.days, 'days').toDate();
         changedEvent.end = dayjs(changedEvent.end).add(eventChange.days, 'days').toDate();
-        console.log({ changedEvent });
         break;
       }
     }

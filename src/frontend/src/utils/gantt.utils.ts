@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsNumber, wbsPipe, WorkPackage } from 'shared';
+import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
 import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
 import { WorkPackageStageColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
@@ -66,6 +66,10 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return getProjectTeamsName(project).includes(decodedTeam);
   };
 
+  const activeCheck = (project: Project) => {
+    return project.status === WbsElementStatus.Active;
+  };
+
   if (!ganttFilters.showCar0) {
     projects = projects.filter(car0Check);
   }
@@ -78,6 +82,8 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   if (decodedTeam !== 'All Teams') {
     projects = projects.filter(teamCheck);
   }
+
+  projects = projects.filter(activeCheck);
 
   return projects;
 };
