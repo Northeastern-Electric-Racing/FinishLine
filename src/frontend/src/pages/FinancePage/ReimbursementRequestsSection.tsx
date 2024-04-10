@@ -78,7 +78,7 @@ const ReimbursementRequestTable = ({
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
       id: 'identifier',
-      label: ''
+      label: 'ID'
     },
     {
       id: 'submitter',
