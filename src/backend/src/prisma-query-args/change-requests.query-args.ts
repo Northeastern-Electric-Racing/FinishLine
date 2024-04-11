@@ -27,7 +27,7 @@ export const workPackageProposedChangesQueryArgs = Prisma.validator<Prisma.Work_
 
 export const wbsProposedChangeQueryArgs = Prisma.validator<Prisma.Wbs_Proposed_ChangesArgs>()({
   include: {
-    proposedProjectChanges: projectProposedChangesQueryArgs,
+    projectProposedChanges: projectProposedChangesQueryArgs,
     workPackageProposedChanges: workPackageProposedChangesQueryArgs,
     links: linkInfoQueryArgs,
     projectLead: true,

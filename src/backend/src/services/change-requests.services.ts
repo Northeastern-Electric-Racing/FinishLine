@@ -546,6 +546,7 @@ export default class ChangeRequestsService {
    * @param proposedSolutions the proposed solutions of the scope cr
    * @param wbsProposedChanges the proposed changes of the wbs element
    * @param projectProposedChanges the project proposed changes
+   * @param workPackageProposedChanges the work package proposed changes
    * @returns  the id of the created cr
    * @throws if user is not allowed to create crs, if wbs element does not exist, or if the cr type is not standard
    */
@@ -642,7 +643,7 @@ export default class ChangeRequestsService {
 
         const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
           data: {
-            changRequestId: createdCR.crId,
+            changeRequestId: createdCR.crId,
             name,
             status,
             projectLeadId,
@@ -672,7 +673,7 @@ export default class ChangeRequestsService {
               otherConstraints: { create: otherConstraints.map((value: string) => ({ detail: value })) },
               rules,
               teams: { connect: teamIds.map((teamId) => ({ teamId })) },
-              proposedWbsChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
+              wbsProposedChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
             }
           });
         } else if (workPackageProposedChanges) {
@@ -688,7 +689,7 @@ export default class ChangeRequestsService {
               blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
               expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },
               deliverables: { create: deliverables.map((value: string) => ({ detail: value })) },
-              proposedWbsChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
+              wbsProposedChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
             }
           });
         }

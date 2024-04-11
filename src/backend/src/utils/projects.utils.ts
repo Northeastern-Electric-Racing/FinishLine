@@ -326,22 +326,17 @@ export const validateBlockedBys = async (blockedBy: WbsNumber[]) => {
     })
   );
 
-  const blockedByIds: number[] = [];
   // populate blockedByIds with the element ID's
   // and return error 400 if any elems are null
+  const blockedByIds: number[] = [];
 
-  let blockedByHasNulls = false;
   blockedByWBSElems.forEach((elem) => {
     if (!elem) {
-      blockedByHasNulls = true;
+      throw new HttpException(400, 'One of the blockers was not found.');
     } else {
       blockedByIds.push(elem.wbsElementId);
     }
   });
-
-  if (blockedByHasNulls) {
-    throw new HttpException(400, 'One of the blockers was not found.');
-  }
 
   return blockedByIds;
 };

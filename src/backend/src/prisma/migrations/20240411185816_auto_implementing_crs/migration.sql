@@ -5,9 +5,9 @@ ALTER TABLE "_blockedBy" DROP CONSTRAINT "_blockedBy_B_fkey";
 ALTER TABLE "Change_Request" ADD COLUMN     "wbsProposedChangesId" TEXT;
 
 -- AlterTable
-ALTER TABLE "Description_Bullet" ADD COLUMN     "proposedProjectChangesFeaturesId" TEXT,
-ADD COLUMN     "proposedProjectChangesGoalsId" TEXT,
-ADD COLUMN     "proposedProjectChangesOtherConstraintsId" TEXT,
+ALTER TABLE "Description_Bullet" ADD COLUMN     "projectProposedChangesFeaturesId" TEXT,
+ADD COLUMN     "projectProposedChangesGoalsId" TEXT,
+ADD COLUMN     "projectProposedChangesOtherConstraintsId" TEXT,
 ADD COLUMN     "wpProposedChangesDeliverablesId" TEXT,
 ADD COLUMN     "wpProposedChangesExpectedActivitiesId" TEXT;
 
@@ -31,7 +31,7 @@ CREATE TABLE "Wbs_Proposed_Changes" (
     "status" "WBS_Element_Status" NOT NULL,
     "projectLeadId" INTEGER,
     "projectManagerId" INTEGER,
-    "changRequestId" INTEGER NOT NULL,
+    "changeRequestId" INTEGER NOT NULL,
     "dateDeleted" TIMESTAMP(3),
 
     CONSTRAINT "Wbs_Proposed_Changes_pkey" PRIMARY KEY ("wbsProposedChangesId")
@@ -67,7 +67,7 @@ CREATE TABLE "_proposedProjectTeams" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Wbs_Proposed_Changes_changRequestId_key" ON "Wbs_Proposed_Changes"("changRequestId");
+CREATE UNIQUE INDEX "Wbs_Proposed_Changes_changeRequestId_key" ON "Wbs_Proposed_Changes"("changeRequestId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Project_Proposed_Changes_wbsProposedChangesId_key" ON "Project_Proposed_Changes"("wbsProposedChangesId");
@@ -88,13 +88,13 @@ ALTER TABLE "LinkInfo" ADD CONSTRAINT "LinkInfo_linkTypeName_fkey" FOREIGN KEY (
 ALTER TABLE "LinkInfo" ADD CONSTRAINT "LinkInfo_proposedWbsChangeId_fkey" FOREIGN KEY ("proposedWbsChangeId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_proposedProjectChangesGoalsId_fkey" FOREIGN KEY ("proposedProjectChangesGoalsId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_projectProposedChangesGoalsId_fkey" FOREIGN KEY ("projectProposedChangesGoalsId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_proposedProjectChangesFeaturesId_fkey" FOREIGN KEY ("proposedProjectChangesFeaturesId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_projectProposedChangesFeaturesId_fkey" FOREIGN KEY ("projectProposedChangesFeaturesId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_proposedProjectChangesOtherConstraintsI_fkey" FOREIGN KEY ("proposedProjectChangesOtherConstraintsId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_projectProposedChangesOtherConstraintsI_fkey" FOREIGN KEY ("projectProposedChangesOtherConstraintsId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_wpProposedChangesExpectedActivitiesId_fkey" FOREIGN KEY ("wpProposedChangesExpectedActivitiesId") REFERENCES "Work_Package_Proposed_Changes"("workPackageProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -109,7 +109,7 @@ ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_projectL
 ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_projectManagerId_fkey" FOREIGN KEY ("projectManagerId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changRequestId_fkey" FOREIGN KEY ("changRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project_Proposed_Changes" ADD CONSTRAINT "Project_Proposed_Changes_wbsProposedChangesId_fkey" FOREIGN KEY ("wbsProposedChangesId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE RESTRICT ON UPDATE CASCADE;

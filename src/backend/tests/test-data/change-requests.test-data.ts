@@ -56,9 +56,9 @@ export const whipExpectedActivites: PrismaDescriptionBullet = {
   workPackageIdDeliverables: null,
   detail: 'redesign whip',
   workPackageIdExpectedActivities: 1,
-  proposedProjectChangesGoalsId: null,
-  proposedProjectChangesFeaturesId: null,
-  proposedProjectChangesOtherConstraintsId: null,
+  projectProposedChangesGoalsId: null,
+  projectProposedChangesFeaturesId: null,
+  projectProposedChangesOtherConstraintsId: null,
   wpProposedChangesExpectedActivitiesId: null,
   wpProposedChangesDeliverablesId: null
 };
@@ -75,9 +75,9 @@ export const whipDeliverables: PrismaDescriptionBullet = {
   projectIdOtherConstraints: null,
   workPackageIdExpectedActivities: null,
   dateDeleted: null,
-  proposedProjectChangesGoalsId: null,
-  proposedProjectChangesFeaturesId: null,
-  proposedProjectChangesOtherConstraintsId: null,
+  projectProposedChangesGoalsId: null,
+  projectProposedChangesFeaturesId: null,
+  projectProposedChangesOtherConstraintsId: null,
   wpProposedChangesExpectedActivitiesId: null,
   wpProposedChangesDeliverablesId: null
 };

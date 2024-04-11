@@ -34,7 +34,7 @@ const linkInfoTransformer = (linkInfo: Prisma.LinkInfoGetPayload<typeof linkInfo
 const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
 ): ProjectProposedChanges => {
-  const { proposedProjectChanges } = wbsProposedChanges;
+  const { projectProposedChanges } = wbsProposedChanges;
   return {
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
@@ -42,14 +42,14 @@ const projectProposedChangesTransformer = (
     links: wbsProposedChanges.links.map(linkInfoTransformer),
     projectLead: wbsProposedChanges.projectLead ? wbsProposedChanges.projectLead : undefined,
     projectManager: wbsProposedChanges.projectManager ? wbsProposedChanges.projectManager : undefined,
-    summary: proposedProjectChanges!.summary,
-    budget: proposedProjectChanges!.budget,
-    rules: proposedProjectChanges!.rules,
-    goals: proposedProjectChanges!.goals.map(descBulletConverter),
-    features: proposedProjectChanges!.features.map(descBulletConverter),
-    otherConstrains: proposedProjectChanges!.otherConstraints.map(descBulletConverter),
-    teams: proposedProjectChanges!.teams,
-    newProject: proposedProjectChanges!.newProject
+    summary: projectProposedChanges!.summary,
+    budget: projectProposedChanges!.budget,
+    rules: projectProposedChanges!.rules,
+    goals: projectProposedChanges!.goals.map(descBulletConverter),
+    features: projectProposedChanges!.features.map(descBulletConverter),
+    otherConstrains: projectProposedChanges!.otherConstraints.map(descBulletConverter),
+    teams: projectProposedChanges!.teams,
+    newProject: projectProposedChanges!.newProject
   };
 };
 
@@ -101,7 +101,7 @@ const changeRequestTransformer = (
     })),
     status,
     // scope cr fields
-    projectProposedChanges: changeRequest.wbsProposedChanges?.proposedProjectChanges
+    projectProposedChanges: changeRequest.wbsProposedChanges?.projectProposedChanges
       ? projectProposedChangesTransformer(changeRequest.wbsProposedChanges)
       : undefined,
     workPackageProposedChanges: changeRequest.wbsProposedChanges?.workPackageProposedChanges
