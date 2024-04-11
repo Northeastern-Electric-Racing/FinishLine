@@ -14,7 +14,9 @@ import {
   getSingleWorkPackage,
   slackUpcomingDeadlines,
   getManyWorkPackages,
-  WorkPackageApiInputs
+  WorkPackageApiInputs,
+  WorkPackageTemplateApiInputs,
+  editWorkPackageTemplate
 } from '../apis/work-packages.api';
 
 /**
@@ -70,6 +72,27 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['work packages']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to edit a work package.
+ *
+ * @returns React-query tility functions exposed by the useMutation hook
+ */
+export const useEditWorkPackageTemplate = (workPackageTemplateId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
+    ['work package templates', 'edit'],
+    async (wptPayload: WorkPackageTemplateApiInputs) => {
+      const { data } = await editWorkPackageTemplate(wptPayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work package templates']);
       }
     }
   );
