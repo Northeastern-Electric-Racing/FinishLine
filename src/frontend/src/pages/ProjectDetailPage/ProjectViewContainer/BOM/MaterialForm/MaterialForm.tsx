@@ -12,7 +12,7 @@ import {
 import ErrorPage from '../../../../ErrorPage';
 import MaterialFormView from './MaterialFormView';
 import { Decimal } from 'decimal.js';
-import { Unit } from 'shared';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   name: yup.string().required('Enter a name!'),
@@ -23,6 +23,7 @@ const schema = yup.object().shape({
   quantity: yup.number().required('Enter a quantity!'),
   price: yup.number().required('Price is required!'),
   unitName: yup.string().optional(),
+  packSize: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
   notes: yup.string().optional()
 });
@@ -94,6 +95,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   });
 
   const { mutateAsync: createManufacturer, isLoading: isLoadingCreateManufacturer } = useCreateManufacturer();
+  const [showPackInput, setShowPackInput] = useState(true);
 
   const {
     data: materialTypes,
@@ -131,7 +133,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   const onSubmitWrapper = (data: MaterialFormInput): void => {
     const price = Math.round(data.price * 100);
     const subtotal = parseFloat((data.quantity * price).toFixed(2));
-    onSubmit({ ...data, subtotal: subtotal, price: price, quantity: new Decimal(data.quantity) });
+    const unitName = showPackInput ? data.unitName + ' of ' + data.packSize : data.unitName;
+    onSubmit({ ...data, unitName: unitName, subtotal: subtotal, price: price, quantity: new Decimal(data.quantity) });
   };
 
   const createManufacturerWrapper = async (manufacturerName: string): Promise<void> => {
@@ -145,15 +148,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     }
   };
 
-  const mockUnits: Unit[] = [
-    { name: 'kg', materials: [] },
-    { name: 'Pack of 10', materials: [] },
-    { name: 'Pack of 20', materials: [] },
-    { name: 'Pack of 30', materials: [] },
-    { name: 'meters', materials: [] }
-  ];
-
-  const adjustedUnits = mockUnits
+  const adjustedUnits = units
     .map((unit) => {
       if (unit.name.startsWith('Pack of')) {
         return { ...unit, name: 'Pack', materials: [] };
@@ -162,9 +157,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
     })
     .filter((unit, index, self) => index === self.findIndex((t) => t.name === unit.name));
 
-  const packSizes = mockUnits
-    .filter((unit) => unit.name.startsWith('Pack of'))
-    .map((unit) => unit.name.replace('Pack of ', ''));
+  const packSizes = units.filter((unit) => unit.name.startsWith('Pack of')).map((unit) => unit.name.replace('Pack of ', ''));
 
   return (
     <MaterialFormView
@@ -183,6 +176,8 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
       watch={watch}
       createManufacturer={createManufacturerWrapper}
       setValue={setValue}
+      showPackInput={showPackInput}
+      setShowPackInput={setShowPackInput}
     />
   );
 };

@@ -9,7 +9,7 @@ import DetailDisplay from '../../../../../components/DetailDisplay';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
-import { useState, useEffect } from 'react';
+import { Dispatch, SetStateAction, useEffect } from 'react';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -27,6 +27,8 @@ export interface MaterialFormViewProps {
   watch: UseFormWatch<MaterialFormInput>;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
+  showPackInput: boolean;
+  setShowPackInput: Dispatch<SetStateAction<boolean>>;
 }
 
 const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
@@ -48,7 +50,9 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   open,
   watch,
   createManufacturer,
-  setValue
+  setValue,
+  showPackInput,
+  setShowPackInput
 }) => {
   const quantity = watch('quantity');
   const price = watch('price');
@@ -58,15 +62,13 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
     setValue(`price`, parseFloat(value.toFixed(2)));
   };
 
-  const [showPackInput, setShowPackInput] = useState(true);
-
   // Existing logic to watch unit selection
   const unitName = watch('unitName');
 
   // useEffect to update showPackInput based on unitName
   useEffect(() => {
     setShowPackInput(unitName === 'Pack');
-  }, [unitName]);
+  }, [setShowPackInput, unitName]);
 
   return (
     <NERFormModal
@@ -243,7 +245,6 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </FormControl>
           </Box>
         </Grid>
-        {/** Conditionally render the Pack input field **/}
         {showPackInput && (
           <Grid item xs={6}>
             <FormControl fullWidth>
