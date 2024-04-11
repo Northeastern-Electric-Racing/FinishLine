@@ -207,46 +207,46 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid xs={6}>
-          <Box display={'flex'} alignItems={'center'} mt={2} ml={2}>
-            <FormControl fullWidth>
-              <FormLabel>Quantity</FormLabel>
-              <ReactHookTextField
-                name="quantity"
-                control={control}
-                errorMessage={errors.quantity}
-                placeholder="Enter Quantity"
-                type="number"
-              />
-            </FormControl>
-            <FormControl fullWidth>
-              <FormLabel>Unit (optional)</FormLabel>
-              <Controller
-                name="unitName"
-                control={control}
-                defaultValue={control._defaultValues.unitName}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    variant="outlined"
-                    error={!!errors.unitName}
-                    helperText={errors.unitName?.message}
-                    value={field.value || ''}
-                  >
-                    {allUnits.map((unit) => (
-                      <MenuItem key={unit.name} value={unit.name}>
-                        {unit.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            </FormControl>
-          </Box>
+        <Grid item xs={showPackInput ? 4 : 6}>
+          <FormControl fullWidth>
+            <FormLabel>Quantity</FormLabel>
+            <ReactHookTextField
+              name="quantity"
+              control={control}
+              errorMessage={errors.quantity}
+              placeholder="Enter Quantity"
+              type="number"
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={showPackInput ? 4 : 6}>
+          <FormControl fullWidth>
+            <FormLabel>Unit (optional)</FormLabel>
+            <Controller
+              name="unitName"
+              control={control}
+              defaultValue={control._defaultValues.unitName}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  variant="outlined"
+                  error={!!errors.unitName}
+                  helperText={errors.unitName?.message}
+                  value={field.value || ''}
+                >
+                  {allUnits.map((unit) => (
+                    <MenuItem key={unit.name} value={unit.name}>
+                      {unit.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </FormControl>
         </Grid>
         {showPackInput && (
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <FormControl fullWidth>
               <FormLabel>Pack Size</FormLabel>
               <Controller
@@ -265,7 +265,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             </FormControl>
           </Grid>
         )}
-        <Grid item xs={3}>
+        <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>Price</FormLabel>
             <Controller
@@ -290,7 +290,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             <FormHelperText error>{errors.price}</FormHelperText>
           </FormControl>
         </Grid>
-        <Grid item xs={3} display="flex" alignItems="center" mt={2}>
+        <Grid item xs={6} display="flex" alignItems="center" mt={2}>
           <DetailDisplay label="Subtotal" content={'$' + subtotal.toString()} />
         </Grid>
         <Grid item xs={12}>
