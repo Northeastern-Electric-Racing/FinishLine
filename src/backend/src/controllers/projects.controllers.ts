@@ -393,6 +393,18 @@ export default class ProjectsController {
     }
   }
 
+  static async editAssembly(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { assemblyId } = req.params;
+      const { name, pdmFileName } = req.body;
+      const updatedAssembly = await ProjectsService.editAssembly(user, assemblyId, name, pdmFileName);
+      res.status(200).json(updatedAssembly);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
       const { linkTypeId } = req.params;

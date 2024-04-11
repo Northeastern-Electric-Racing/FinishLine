@@ -1132,6 +1132,47 @@ export default class ProjectsService {
   }
 
   /**
+   * Update an assembly
+   * @param submitter the submitter of the request
+   * @param assemblyId the assembly id of the edited material
+   * @param name the name of the edited material
+   * @param pdmFileName the pdm file name of the edited material
+   * @throws if permission denied or material's wbsElement is undefined/deleted
+   * @returns the updated assembly
+   */
+  static async editAssembly(submitter: User, assemblyId: string, name?: string, pdmFileName?: string): Promise<Assembly> {
+    const assembly = await prisma.assembly.findUnique({
+      where: {
+        assemblyId
+      },
+      include: {
+        wbsElement: {
+          include: {
+            project: projectQueryArgs
+          }
+        }
+      }
+    });
+
+    if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
+
+    const perms = isAdmin(submitter.role) || isUserPartOfTeams(assembly.wbsElement.project!.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update assembly');
+
+    const updatedAssembly = await prisma.assembly.update({
+      where: { assemblyId },
+      data: {
+        name,
+        pdmFileName
+      }
+    });
+
+    return updatedAssembly;
+  }
+
+  /**
    * Updates the linkType's name, iconName, or required.
    * @param linkTypeId the current name/id of the linkType
    * @param iconName the new iconName

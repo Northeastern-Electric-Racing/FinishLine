@@ -3,6 +3,8 @@ import { body } from 'express-validator';
 import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ProjectsController from '../controllers/projects.controllers';
+import { isAdmin } from 'shared';
+import { isUserOnTeam } from '../utils/teams.utils';
 
 const projectRouter = express.Router();
 
@@ -121,6 +123,14 @@ projectRouter.post(
   body('notes').isString(),
   validateInputs,
   ProjectsController.editMaterial
+);
+
+projectRouter.post(
+  '/bom/assembly/:assemblyId/edit',
+  nonEmptyString(body('name').optional()),
+  nonEmptyString(body('pdmFileName').optional()),
+  validateInputs,
+  ProjectsController.editAssembly
 );
 
 projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType);
