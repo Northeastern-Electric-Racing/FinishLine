@@ -1,4 +1,4 @@
-import { alfred, theVisitor } from '../test-data/users.test-data';
+import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createFinanceTeamAndLead, createTestReimbursementRequest, resetUsers } from '../test-utils';

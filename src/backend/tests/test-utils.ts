@@ -87,14 +87,8 @@ export const createFinanceTeamAndLead = async () => {
 
   await TeamsService.setTeamLeads(head, team.teamId, [lead.userId]);
 
-  await TeamsService.setTeamMembers(
-    head,
-    team.teamId,
-    [financeMember.userId] 
-  );
+  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId]);
 };
-
-
 
 const setFinanceTeamId = (id: string) => {
   // Check if the last line matches the lineToAdd
@@ -125,8 +119,7 @@ const createTestProject = async (user: User): Promise<Project> => {
   return genesisProject;
 };
 
-export const 
-createTestReimbursementRequest = async (): Promise<Reimbursement_Request | undefined> => {
+export const createTestReimbursementRequest = async (): Promise<Reimbursement_Request | undefined> => {
   const user = await prisma.user.findUnique({
     where: {
       googleAuthId: '1'
