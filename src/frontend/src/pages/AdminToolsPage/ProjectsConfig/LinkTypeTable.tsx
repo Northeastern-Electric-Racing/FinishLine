@@ -50,7 +50,7 @@ const LinkTypeTable = () => {
 
   return (
     <Box>
-      <CreateLinkTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} linkTypes={linkTypes} />
+      <CreateLinkTypeModal open={createModalShow} handleClose={() => setCreateModalShow(false)} linkTypes={linkTypes} />
       {clickedLinkType && (
         <EditLinkTypeModal
           open={showEditModal}
