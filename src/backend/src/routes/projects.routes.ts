@@ -3,8 +3,6 @@ import { body } from 'express-validator';
 import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ProjectsController from '../controllers/projects.controllers';
-import { isAdmin } from 'shared';
-import { isUserOnTeam } from '../utils/teams.utils';
 
 const projectRouter = express.Router();
 
