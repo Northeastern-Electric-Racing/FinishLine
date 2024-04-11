@@ -14,7 +14,8 @@ import {
   deleteProject,
   toggleProjectFavorite,
   getAllLinkTypes,
-  createLinkType
+  createLinkType,
+  getAllWorkPackageTemplates
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
