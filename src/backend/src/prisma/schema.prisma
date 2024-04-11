@@ -622,7 +622,7 @@ model TeamType {
 model Design_Review {
   designReviewId   String               @id @default(uuid())
   dateScheduled    DateTime             @db.Date
-  // Meeting times are an integer between 0 and 83 representing time after 9am in 15 minute increments, eg. 0 = 9:00am, 5 = 10:15 am
+  // Meeting times are an integer between 0 and 83 from 10am - 10pm (Monday - Sunday), eg. 0 = 10:00am Monday, 12 = 10:00am Tuesday
   meetingTimes     Int[]
   dateCreated      DateTime             @default(now()) @db.Timestamp(3)
   userCreated      User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
@@ -651,7 +651,7 @@ model Schedule_Settings {
   drScheduleSettingsId String @id @default(uuid())
   personalGmail        String
   personalZoomLink     String
-  // Availibilies are integers between 0 and 48 representing time after 9am in 15 minute increments, see meetingTime field in Design_Review
+  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
   availability         Int[]
   User                 User   @relation(fields: [userId], references: [userId])
   userId               Int    @unique
@@ -660,7 +660,7 @@ model Schedule_Settings {
 model Meeting {
   meetingId    String @id @default(uuid())
   title        String
-  // meetingTimes are integers between 0 and 48 representing time after 9am in 15 minute increments, see meetingTime field in Design_Review
+  // meetingTimes are integers between 0 and 83 representing time after from 10am - 10pm (from Monday - Sunday) see meetingTime field in Design_Review
   meetingTimes Int[]
   team         Team?  @relation(fields: [teamId], references: [teamId])
   teamId       String
