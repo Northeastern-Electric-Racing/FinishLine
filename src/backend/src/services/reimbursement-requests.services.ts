@@ -92,10 +92,10 @@ export default class ReimbursementRequestService {
 
   /**
    * Get all the vendors in the database.
-   * @returns all the vendors
+   * @returns all the non-deleted vendors
    */
   static async getAllVendors(): Promise<Vendor[]> {
-    const vendors = await prisma.vendor.findMany();
+    const vendors = await prisma.vendor.findMany({ where: { dateDeleted: null } });
     return vendors.map(vendorTransformer);
   }
 
@@ -891,19 +891,19 @@ export default class ReimbursementRequestService {
   static async deleteVendor(vendorId: string, submitter: User) {
     await isUserAdminOrOnFinance(submitter);
 
-    const vendorDelete = await prisma.vendor.findUnique({
+    const vendor = await prisma.vendor.findUnique({
       where: { vendorId }
     });
 
-    if (!vendorDelete) throw new NotFoundException('Vendor', vendorId);
+    if (!vendor) throw new NotFoundException('Vendor', vendorId);
 
-    if (vendorDelete.dateDeleted) throw new DeletedException('Vendor', vendorId);
+    if (vendor.dateDeleted) throw new DeletedException('Vendor', vendorId);
 
-    const vendor = await prisma.vendor.update({
+    const deletedVendor = await prisma.vendor.update({
       where: { vendorId },
       data: { dateDeleted: new Date() }
     });
 
-    return vendorTransformer(vendor);
+    return vendorTransformer(deletedVendor);
   }
 }
