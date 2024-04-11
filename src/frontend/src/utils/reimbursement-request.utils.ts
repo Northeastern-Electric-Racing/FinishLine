@@ -62,7 +62,7 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
       return 'Reimbursed';
     }
     case ReimbursementStatusType.SABO_SUBMITTED: {
-      return 'Submitted to Sabo';
+      return 'Submitted to SABO';
     }
     case ReimbursementStatusType.DENIED: {
       return 'Denied';
@@ -116,6 +116,7 @@ export const getRefundRowData = (refund: Reimbursement) => {
 export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest) => {
   return {
     id: reimbursementRequest.reimbursementRequestId,
+    identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId,
     amount: reimbursementRequest.totalCost,
     dateSubmitted: reimbursementRequest.dateCreated,

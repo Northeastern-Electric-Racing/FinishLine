@@ -13,19 +13,22 @@ import DetailDisplay from '../../components/DetailDisplay';
 import { Typography, useTheme } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import { Edit } from '@mui/icons-material';
 
 interface ProposedSolutionViewProps {
   proposedSolution: ProposedSolution;
   showDeleteButton?: boolean;
   onDelete?: (proposedSolution: ProposedSolution) => void;
   crReviewed?: boolean;
+  onEdit: (proposedSolution: ProposedSolution) => void;
 }
 
 const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
   proposedSolution,
   showDeleteButton,
   onDelete,
-  crReviewed
+  crReviewed,
+  onEdit
 }) => {
   const faded = crReviewed != null && proposedSolution.approved === false;
   const theme = useTheme();
@@ -61,19 +64,34 @@ const ProposedSolutionView: React.FC<ProposedSolutionViewProps> = ({
             <Typography>{weeksPipe(proposedSolution.timelineImpact)}</Typography>
           </Grid>
           <Grid item>{proposedSolution.approved && <Chip label="Approved" color="success" />}</Grid>
-          {showDeleteButton && onDelete !== undefined && (
-            <Grid item>
-              <Button
-                color="error"
-                variant="outlined"
-                onClick={() => {
-                  onDelete(proposedSolution);
-                }}
-              >
-                <DeleteIcon />
-              </Button>
+          <Grid item>
+            <Grid container direction="row" spacing={2}>
+              <Grid item>
+                <Button
+                  color="success"
+                  variant="outlined"
+                  onClick={() => {
+                    onEdit(proposedSolution);
+                  }}
+                >
+                  <Edit />
+                </Button>
+              </Grid>
+              {showDeleteButton && onDelete !== undefined && (
+                <Grid item>
+                  <Button
+                    color="error"
+                    variant="outlined"
+                    onClick={() => {
+                      onDelete(proposedSolution);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </Grid>
+              )}
             </Grid>
-          )}
+          </Grid>
         </Grid>
       </Grid>
     </Grid>

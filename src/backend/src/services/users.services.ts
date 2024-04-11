@@ -16,7 +16,6 @@ import {
 import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
 import prisma from '../prisma/prisma';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
-import userTransformer from '../transformers/user.transformer';
 import { AccessDeniedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { generateAccessToken } from '../utils/auth.utils';
 import projectTransformer from '../transformers/projects.transformer';
@@ -24,7 +23,7 @@ import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
 import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
-import userWithScheduleSettingsTransformer from '../transformers/designReviewUser.transformer';
+import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
 
 export default class UsersService {
   /**
