@@ -22,8 +22,6 @@ export interface ChangeRequest {
   implementedChanges?: ImplementedChange[];
   status: ChangeRequestStatus;
   requestedReviewers: User[];
-  projectProposedChanges?: ProjectProposedChanges;
-  workPackageProposedChanges?: WorkPackageProposedChanges;
 }
 
 export const ChangeRequestType = {
@@ -43,6 +41,8 @@ export interface StandardChangeRequest extends ChangeRequest {
   budgetImpact: number;
   timelineImpact: number;
   proposedSolutions: ProposedSolution[];
+  projectProposedChanges?: ProjectProposedChanges;
+  workPackageProposedChanges?: WorkPackageProposedChanges;
 }
 
 export interface ProposedSolution {
