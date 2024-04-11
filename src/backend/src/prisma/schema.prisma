@@ -146,6 +146,8 @@ model Team {
   userArchived           User?                      @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
   meetings               Meeting[]
   proposedProjectChanges Project_Proposed_Changes[] @relation(name: "proposedProjectTeams")
+  teamType               TeamType?                  @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId             String?
 }
 
 model Session {
@@ -617,6 +619,7 @@ model TeamType {
   name           String          @unique
   iconName       String
   Design_Reviews Design_Review[]
+  Team           Team[]
 }
 
 model Design_Review {

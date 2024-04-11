@@ -372,4 +372,30 @@ export default class TeamsService {
     const teamTypes = await prisma.teamType.findMany();
     return teamTypes;
   }
+
+  static async setTeamType(submitter: User, teamId: string, teamTypeId: string): Promise<Team> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedAdminOnlyException('set a team type');
+    }
+
+    const teamType = await prisma.teamType.findFirst({
+      where: { teamTypeId }
+    });
+
+    if (teamType) {
+      throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
+    }
+
+    const updatedTeam = await prisma.team.update({
+      where: {
+        teamId
+      },
+      data: {
+        teamType,
+        teamTypeId
+      },
+      ...teamQueryArgs
+    })
+    return teamTransformer(updatedTeam);
+  }
 }
