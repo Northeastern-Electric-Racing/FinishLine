@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { LinkType, Project, WbsNumber } from 'shared';
+import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { linkTypeTransformer, projectTransformer } from './transformers/projects.transformers';
@@ -97,4 +97,10 @@ export const getAllLinkTypes = () => {
  */
 export const createLinkType = async (linkTypeData: LinkTypeCreatePayload) => {
   return axios.post(apiUrls.projectsCreateLinkTypes(), linkTypeData);
+};
+
+export const getAllWorkPackageTemplates = () => {
+  return axios.get<WorkPackageTemplate[]>(apiUrls.projectsWorkPackageTemplates(), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageTemplateTransformer)
+  });
 };

@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { LinkType, Project, WbsNumber } from 'shared';
+import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -165,4 +165,10 @@ export const useCreateLinkType = () => {
       }
     }
   );
+};
+export const useAllWorkPackageTemplates = () => {
+  return useQuery<WorkPackageTemplate[], Error>(['workPackageTemplates'], async () => {
+    const { data } = await getAllWorkPackageTemplates();
+    return data;
+  });
 };
