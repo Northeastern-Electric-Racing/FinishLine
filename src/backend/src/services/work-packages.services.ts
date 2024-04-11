@@ -11,7 +11,8 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackageStage,
+  WorkPackageTemplate
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -35,6 +36,8 @@ import {
   descriptionBulletsToChangeListValues
 } from '../utils/description-bullets.utils';
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
+import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
+import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -498,6 +501,12 @@ export default class WorkPackagesService {
     const date = new Date(startDate);
     date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
 
+    // set the status of the wbs element to active if an edit is made to a completed version
+    const status =
+      originalWorkPackage.wbsElement.status === WbsElementStatus.Complete
+        ? WbsElementStatus.Active
+        : originalWorkPackage.wbsElement.status;
+
     // update the work package with the input fields
     const updatedWorkPackage = await prisma.work_Package.update({
       where: { wbsElementId },
@@ -508,7 +517,8 @@ export default class WorkPackagesService {
           update: {
             name,
             projectLeadId,
-            projectManagerId
+            projectManagerId,
+            status // set the status to active if it was not already
           }
         },
         stage,
@@ -707,5 +717,23 @@ export default class WorkPackagesService {
     );
 
     return;
+  }
+
+  static async getSingleWorkPackageTemplate(submitter: User, workPackageTemplateId: string): Promise<WorkPackageTemplate> {
+    if (isGuest(submitter.role)) {
+      throw new AccessDeniedGuestException('get a work package template');
+    }
+
+    const workPackage = await prisma.work_Package_Template.findFirst({
+      where: {
+        dateDeleted: null,
+        workPackageTemplateId
+      },
+      ...workPackageTemplateQueryArgs
+    });
+
+    if (!workPackage) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
+
+    return workPackageTemplateTransformer(workPackage);
   }
 }
