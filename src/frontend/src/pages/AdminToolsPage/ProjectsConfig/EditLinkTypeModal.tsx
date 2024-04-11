@@ -5,13 +5,13 @@ import LinkTypeFormModal from './LinkTypeFormModal';
 import { LinkType } from 'shared';
 
 interface EditLinkTypeModalProps {
-  showModal: boolean;
+  open: boolean;
   handleClose: () => void;
   linkType: LinkType;
   linkTypes: LinkType[];
 }
 
-const EditLinkTypeModal = ({ showModal, handleClose, linkType, linkTypes }: EditLinkTypeModalProps) => {
+const EditLinkTypeModal = ({ open, handleClose, linkType, linkTypes }: EditLinkTypeModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useEditLinkType(linkType.name);
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -19,7 +19,7 @@ const EditLinkTypeModal = ({ showModal, handleClose, linkType, linkTypes }: Edit
 
   return (
     <LinkTypeFormModal
-      showModal={showModal}
+      open={open}
       handleClose={handleClose}
       onSubmit={mutateAsync}
       defaultValues={linkType}

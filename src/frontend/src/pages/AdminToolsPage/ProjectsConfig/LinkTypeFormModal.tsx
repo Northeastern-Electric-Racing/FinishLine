@@ -12,7 +12,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { useTheme } from '@mui/material/styles';
 
 interface LinkTypeFormModalProps {
-  showModal: boolean;
+  open: boolean;
   handleClose: () => void;
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
@@ -21,7 +21,7 @@ interface LinkTypeFormModalProps {
 }
 
 const LinkTypeFormModal = ({
-  showModal,
+  open,
   handleClose,
   defaultValues,
   onSubmit,
@@ -78,7 +78,7 @@ const LinkTypeFormModal = ({
   );
   return (
     <NERFormModal
-      open={showModal}
+      open={open}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit LinkType' : 'Create LinkType'}
       reset={() => reset({ name: '' })}
