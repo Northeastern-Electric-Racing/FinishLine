@@ -2,14 +2,14 @@
 ALTER TABLE "_blockedBy" DROP CONSTRAINT "_blockedBy_B_fkey";
 
 -- AlterTable
-ALTER TABLE "Change_Request" ADD COLUMN     "wbsProposedChangesId" TEXT;
-
--- AlterTable
 ALTER TABLE "Description_Bullet" ADD COLUMN     "projectProposedChangesFeaturesId" TEXT,
 ADD COLUMN     "projectProposedChangesGoalsId" TEXT,
 ADD COLUMN     "projectProposedChangesOtherConstraintsId" TEXT,
 ADD COLUMN     "wpProposedChangesDeliverablesId" TEXT,
 ADD COLUMN     "wpProposedChangesExpectedActivitiesId" TEXT;
+
+-- AlterTable
+ALTER TABLE "Scope_CR" ADD COLUMN     "wbsProposedChangesId" TEXT;
 
 -- AlterTable
 ALTER TABLE "_blockedBy" ALTER COLUMN "B" SET DATA TYPE TEXT;
@@ -109,7 +109,7 @@ ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_projectL
 ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_projectManagerId_fkey" FOREIGN KEY ("projectManagerId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project_Proposed_Changes" ADD CONSTRAINT "Project_Proposed_Changes_wbsProposedChangesId_fkey" FOREIGN KEY ("wbsProposedChangesId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE RESTRICT ON UPDATE CASCADE;

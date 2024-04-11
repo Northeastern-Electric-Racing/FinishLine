@@ -609,7 +609,8 @@ export default class ChangeRequestsService {
               }
             }
           }
-        }
+        },
+        scopeChangeRequest: true
       }
     });
 
@@ -643,7 +644,7 @@ export default class ChangeRequestsService {
 
         const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
           data: {
-            changeRequestId: createdCR.crId,
+            changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
             name,
             status,
             projectLeadId,

@@ -19,8 +19,7 @@ export const prismaChangeRequest1: PrismaChangeRequest = {
   reviewerId: null,
   reviewNotes: null,
   dateDeleted: null,
-  deletedByUserId: null,
-  wbsProposedChangesId: null
+  deletedByUserId: null
 };
 
 export const prismaProposedSolution1: PrismaProposedSolution = {
@@ -41,7 +40,8 @@ export const prismaScopeChangeRequest1: PrismaScopeCR = {
   what: 'redesign whip',
   scopeImpact: 'huge',
   timelineImpact: 10,
-  budgetImpact: 1000
+  budgetImpact: 1000,
+  wbsProposedChangesId: null
 };
 
 export const whipExpectedActivites: PrismaDescriptionBullet = {

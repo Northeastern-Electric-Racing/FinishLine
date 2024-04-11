@@ -15,13 +15,10 @@ import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/ch
 import proposedSolutionTransformer from './proposed-solutions.transformer';
 import { getDateImplemented } from '../utils/change-requests.utils';
 import { userTransformer } from './user.transformer';
-import {
-  changeRequestQueryArgs,
-  linkInfoQueryArgs,
-  wbsProposedChangeQueryArgs
-} from '../prisma-query-args/change-requests.query-args';
+import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { descBulletConverter } from '../utils/description-bullets.utils';
 import { linkTypeTransformer } from './links.transformer';
+import { linkInfoQueryArgs, wbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
 
 const linkInfoTransformer = (linkInfo: Prisma.LinkInfoGetPayload<typeof linkInfoQueryArgs>): LinkInfo => {
   return {
@@ -101,11 +98,11 @@ const changeRequestTransformer = (
     })),
     status,
     // scope cr fields
-    projectProposedChanges: changeRequest.wbsProposedChanges?.projectProposedChanges
-      ? projectProposedChangesTransformer(changeRequest.wbsProposedChanges)
+    projectProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.projectProposedChanges
+      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsProposedChanges)
       : undefined,
-    workPackageProposedChanges: changeRequest.wbsProposedChanges?.workPackageProposedChanges
-      ? workPackageProposedChangesTransformer(changeRequest.wbsProposedChanges)
+    workPackageProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.workPackageProposedChanges
+      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsProposedChanges)
       : undefined,
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({
