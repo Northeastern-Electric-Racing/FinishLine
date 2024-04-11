@@ -1,5 +1,5 @@
 import NERModal from '../../../components/NERModal';
-import { Box, Grid, Typography, Stack, Button } from '@mui/material';
+import { Box, Grid, Typography, Stack, IconButton } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
@@ -55,14 +55,17 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
   };
 
   const CopyToClipboardButton = ({ msg }: { msg: string }) => {
-    const copyToClipboard = () => {
-      navigator.clipboard.writeText(msg);
-      toast.success('Copied to clipboard!');
-    };
     return (
-      <Button onClick={copyToClipboard}>
+      <IconButton
+        size="small"
+        color="primary"
+        onClick={() => {
+          navigator.clipboard.writeText(msg);
+          toast.success('Copied to clipboard!');
+        }}
+      >
         <ContentCopyIcon style={{ fontSize: '13px' }} />
-      </Button>
+      </IconButton>
     );
   };
 
@@ -78,79 +81,77 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     >
       <Grid container spacing={1}>
         <Grid item xs={4}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="left">
             <DetailDisplay label={'First Name'} content={recipient.firstName}></DetailDisplay>
             <CopyToClipboardButton msg={recipient.firstName} />
           </Box>
         </Grid>
         <Grid item xs={4}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Phone #'} content={userInfo.phoneNumber}></DetailDisplay>
             <CopyToClipboardButton msg={userInfo.phoneNumber} />
           </Box>
         </Grid>
         <Grid item xs={4}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'NUID'} content={userInfo.nuid}></DetailDisplay>
             <CopyToClipboardButton msg={userInfo.nuid} />
           </Box>
         </Grid>
-      </Grid>
-      <Grid container spacing={1}>
         <Grid item xs={4}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Last Name'} content={recipient.lastName}></DetailDisplay>
             <CopyToClipboardButton msg={recipient.lastName} />
           </Box>
         </Grid>
         <Grid item xs={8}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Email'} content={recipient.email}></DetailDisplay>
             <CopyToClipboardButton msg={recipient.email} />
           </Box>
         </Grid>
       </Grid>
-      <Grid container spacing={1} sx={{ marginTop: 1.5 }}>
-        <Grid item xs={6}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
+        <Grid item xs={5}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Street Address'} content={userInfo.street}></DetailDisplay>
             <CopyToClipboardButton msg={userInfo.street} />
           </Box>
         </Grid>
         <Grid item xs={3}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'City'} content={userInfo.city}></DetailDisplay>
             <CopyToClipboardButton msg={userInfo.city} />
           </Box>
         </Grid>
         <Grid item xs={3}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'State'} content={userInfo.state}></DetailDisplay>
             <CopyToClipboardButton msg={userInfo.state} />
           </Box>
         </Grid>
         <Grid item xs={12}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Zip Code'} content={userInfo.zipcode}></DetailDisplay>
             <CopyToClipboardButton msg={userInfo.zipcode} />
           </Box>
         </Grid>
       </Grid>
-      <Grid container spacing={1} sx={{ marginTop: 1.5 }}>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={6}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Date Of Expense'} content={datePipe(dateOfExpense)}></DetailDisplay>
             <CopyToClipboardButton msg={datePipe(dateOfExpense)} />
           </Box>
         </Grid>
         <Grid item xs={7}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Total Expense'} content={`$${centsToDollar(totalCost)}`}></DetailDisplay>
             <CopyToClipboardButton msg={`$${centsToDollar(totalCost)}`} />
           </Box>
         </Grid>
         <Grid item xs={12}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay
               label={'Expense Decription'}
               content={`${vendor.name}[${centsToDollar(totalCost)}]`}
@@ -159,15 +160,15 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           </Box>
         </Grid>
       </Grid>
-      <Grid container spacing={1} sx={{ marginTop: 1.5 }}>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={12}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay label={'Business Purpose'} content={filteredProductsNames}></DetailDisplay>
             <CopyToClipboardButton msg={filteredProductsNames} />
           </Box>
         </Grid>
         <Grid item xs={7}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center">
             <DetailDisplay
               label={'SABO Form Index'}
               content={codeAndRefundSourceName(reimbursementRequest.account)}
@@ -182,34 +183,34 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           </Box>
         </Grid>
       </Grid>
-      <Grid container spacing={1} sx={{ marginTop: 1.5 }}>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={4}>
           <Typography sx={{ fontWeight: 'bold' }}>Treasurer:</Typography>
         </Grid>
         <Grid item xs={8}>
           <Stack>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Box display="flex" alignItems="center">
               <Typography>Brody Pearlman</Typography>
               <CopyToClipboardButton msg={'Brody Pearlman'} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            </Box>
+            <Box display="flex" alignItems="center">
               <Typography>pearlman.br@northeastern.edu</Typography>
               <CopyToClipboardButton msg={'pearlman.br@northeastern.edu'} />
-            </div>
+            </Box>
           </Stack>
         </Grid>
       </Grid>
-      <Grid container spacing={1} sx={{ marginTop: 1.5 }}>
+      <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={4}>
           <Typography sx={{ fontWeight: 'bold' }}>Club Advisor:</Typography>
         </Grid>
         <Grid item xs={8}>
           <Stack>
-            <Box style={{ display: 'flex', alignItems: 'center' }}>
+            <Box display="flex" alignItems="center">
               <Typography style={{ marginRight: '0.5rem' }}>Andrew Gouldstone</Typography>
               <CopyToClipboardButton msg={'Andrew Gouldstone'} />
             </Box>
-            <Box style={{ display: 'flex', alignItems: 'center' }}>
+            <Box display="flex" alignItems="center">
               <Typography>a.gouldstone@northeastern.edu</Typography>
               <CopyToClipboardButton msg={'a.gouldstone@northeastern.edu'} />
             </Box>
