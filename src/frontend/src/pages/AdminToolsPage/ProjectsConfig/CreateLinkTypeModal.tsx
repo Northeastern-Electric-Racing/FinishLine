@@ -5,12 +5,12 @@ import { LinkType } from 'shared';
 import { useCreateLinkType } from '../../../hooks/projects.hooks';
 
 interface CreateLinkTypeModalProps {
-  showModal: boolean;
+  open: boolean;
   handleClose: () => void;
   linkTypes: LinkType[];
 }
 
-const CreateLinkTypeModal = ({ showModal, handleClose, linkTypes }: CreateLinkTypeModalProps) => {
+const CreateLinkTypeModal = ({ open, handleClose, linkTypes }: CreateLinkTypeModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useCreateLinkType();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -18,7 +18,7 @@ const CreateLinkTypeModal = ({ showModal, handleClose, linkTypes }: CreateLinkTy
 
   return (
     <LinkTypeFormModal
-      showModal={showModal}
+      open={open}
       handleClose={handleClose}
       onSubmit={mutateAsync}
       linkTypes={linkTypes}
