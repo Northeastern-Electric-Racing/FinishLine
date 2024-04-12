@@ -9,7 +9,7 @@ import ErrorPage from '../ErrorPage';
 import { WbsElementStatus, WorkPackageStage } from 'shared';
 import GanttChart from './GanttChart';
 import GanttPageFilter from './GanttPageFilter';
-import { Info, Edit } from '@mui/icons-material/';
+import { Edit } from '@mui/icons-material/';
 import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
@@ -23,18 +23,7 @@ import {
   getProjectTeamsName
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
-import {
-  Box,
-  Popover,
-  Typography,
-  IconButton,
-  useTheme,
-  Chip,
-  Tooltip,
-  tooltipClasses,
-  TooltipProps,
-  styled
-} from '@mui/material';
+import { Box, Popover, Typography, IconButton, useTheme, Chip, Tooltip, Card } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
 import { NERButton } from '../../components/NERButton';
@@ -248,7 +237,7 @@ const GanttPageWrapper: FC = () => {
         )
       : sub(Date.now(), { weeks: 15 });
 
-  // find the latest end date and add 3 weeks to use as the last date on calendar
+  // find the latest end date and add 6 months to use as the last date on calendar
   const ganttEndDate =
     ganttTasks.length !== 0
       ? add(
@@ -257,7 +246,7 @@ const GanttPageWrapper: FC = () => {
             .reduce((previous, current) => {
               return previous > current ? previous : current;
             }, new Date(-8.64e15)),
-          { weeks: 3 }
+          { months: 6 }
         )
       : add(Date.now(), { weeks: 15 });
 
@@ -351,63 +340,100 @@ const GanttPageWrapper: FC = () => {
 
   const open = Boolean(anchorFilterEl);
 
+  const popupsMap = new Map<WorkPackageStage, JSX.Element>();
+
+  Object.values(WorkPackageStage).map((stage) =>
+    popupsMap.set(
+      stage,
+      <Card
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          px: 2,
+          py: 1
+        }}
+      >
+        {
+          // map through all the Wbs Element Statuses
+          Object.values(WbsElementStatus).map((status) => {
+            return (
+              <Box
+                sx={{
+                  backgroundColor: GanttWorkPackageStageColorPipe(stage, status),
+                  height: '2rem',
+                  width: '8rem',
+                  borderRadius: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
+                  {WbsElementStatusTextPipe(status)}
+                </Typography>
+              </Box>
+            );
+          })
+        }
+      </Card>
+    )
+  );
+
   const colorLegend = (
-    <Box sx={{ display: 'flex', width: 'fit-content', gap: 2, p: 2 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        width: '100%',
+        gap: 1,
+        overflowX: 'scroll'
+      }}
+    >
       {
         // map through all the WP Stages
-        Object.values(WorkPackageStage).map((stage) => (
-          <Box sx={{ display: 'flex', flexDirection: 'column', width: 'fit-content', gap: 1 }}>
-            <Typography variant="h6" sx={{ whiteSpace: 'nowrap' }}>
-              {WorkPackageStageTextPipe(stage)}
-            </Typography>
-            {
-              // map through all the Wbs Element Statuses
-              Object.values(WbsElementStatus).map((status) => (
-                <Box
-                  sx={{
-                    backgroundColor: GanttWorkPackageStageColorPipe(stage, status),
-                    height: '2rem',
-                    width: '8rem',
-                    borderRadius: 1,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }}
+        Object.values(WorkPackageStage).map((stage) => {
+          return (
+            <Box
+              sx={{
+                background: `linear-gradient(90deg, ${GanttWorkPackageStageColorPipe(
+                  stage,
+                  WbsElementStatus.Inactive
+                )} 0%, ${GanttWorkPackageStageColorPipe(
+                  stage,
+                  WbsElementStatus.Active
+                )} 50%, ${GanttWorkPackageStageColorPipe(stage, WbsElementStatus.Complete)} 100%)`,
+                display: 'flex',
+                flexDirection: 'column',
+                height: '2rem',
+                width: '8.25rem',
+                borderRadius: 1,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <Tooltip
+                title={popupsMap.get(stage)}
+                slotProps={{
+                  tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ color: GanttWorkPackageTextColorPipe(stage), overflow: 'hidden', textWrap: 'nowrap' }}
                 >
-                  <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
-                    {WbsElementStatusTextPipe(status)}
-                  </Typography>
-                </Box>
-              ))
-            }
-          </Box>
-        ))
+                  {WorkPackageStageTextPipe(stage)}
+                </Typography>
+              </Tooltip>
+            </Box>
+          );
+        })
       }
     </Box>
   );
 
-  const NoMaxWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} classes={{ popper: className }} />
-  ))({
-    [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth: 'none'
-    }
-  });
-
   const headerRight = (
-    <>
-      <NoMaxWidthTooltip title={colorLegend} placement="left-start" sx={{ maxWidth: 'none' }}>
-        <Info
-          sx={{
-            color: theme.palette.text.primary,
-            marginX: '1rem',
-            '&:hover': {
-              color: theme.palette.text.secondary
-            }
-          }}
-        />
-      </NoMaxWidthTooltip>
-
+    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center', position: 'relative' }}>
+      {colorLegend}
       <NERButton variant="contained" onClick={handleFilterClick}>
         Filters
       </NERButton>
@@ -441,7 +467,7 @@ const GanttPageWrapper: FC = () => {
           resetHandler={resetHandler}
         />
       </Popover>
-    </>
+    </Box>
   );
 
   return (
