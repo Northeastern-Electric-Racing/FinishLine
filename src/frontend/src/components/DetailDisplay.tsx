@@ -4,22 +4,27 @@
  */
 
 import Typography from '@mui/material/Typography';
+import { Box } from '@mui/system';
 
 interface DetailDisplayProps {
   label: string;
   content: string;
   paddingRight?: number;
+  copyButton?: React.ReactElement;
 }
 
-const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRight = 0 }) => {
+const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRight = 0, copyButton }) => {
   return (
-    <div>
-      <Typography sx={{ fontWeight: 'bold', paddingRight: paddingRight }} display="inline">
-        {label}
-        {': '}
-      </Typography>
-      <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{content}</Typography>
-    </div>
+    <Box display="flex" alignItems="center">
+      <div>
+        <Typography sx={{ fontWeight: 'bold', paddingRight: paddingRight }} display="inline">
+          {label}
+          {': '}
+        </Typography>
+        <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{content}</Typography>
+      </div>
+      {copyButton}
+    </Box>
   );
 };
 

@@ -1,5 +1,5 @@
 import NERModal from '../../../components/NERModal';
-import { Box, Grid, Typography, Stack, IconButton } from '@mui/material';
+import { Box, Grid, Typography, Stack } from '@mui/material';
 import { useApproveReimbursementRequest } from '../../../hooks/finance.hooks';
 import { OtherProductReason, ReimbursementRequest, WBSElementData, wbsPipe } from 'shared';
 import { useCurrentUser, useUserSecureSettings } from '../../../hooks/users.hooks';
@@ -10,7 +10,7 @@ import DetailDisplay from '../../../components/DetailDisplay';
 import { imagePreviewUrl, isReimbursementRequestSaboSubmitted } from '../../../utils/reimbursement-request.utils';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { codeAndRefundSourceName } from '../../../utils/pipes';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CopyToClipboardButton from '../../../components/CopyToClipboardButton';
 
 interface SubmitToSaboModalProps {
   open: boolean;
@@ -54,21 +54,6 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     setOpen(false);
   };
 
-  const CopyToClipboardButton = ({ msg }: { msg: string }) => {
-    return (
-      <IconButton
-        size="small"
-        color="primary"
-        onClick={() => {
-          navigator.clipboard.writeText(msg);
-          toast.success('Copied to clipboard!');
-        }}
-      >
-        <ContentCopyIcon style={{ fontSize: '13px' }} />
-      </IconButton>
-    );
-  };
-
   return (
     <NERModal
       open={open}
@@ -82,105 +67,116 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       <Grid container spacing={1}>
         <Grid item xs={4}>
           <Box display="flex" alignItems="left">
-            <DetailDisplay label={'First Name'} content={recipient.firstName}></DetailDisplay>
-            <CopyToClipboardButton msg={recipient.firstName} />
+            <DetailDisplay
+              label={'First Name'}
+              content={recipient.firstName}
+              copyButton={<CopyToClipboardButton msg={recipient.firstName} />}
+            ></DetailDisplay>
           </Box>
         </Grid>
         <Grid item xs={4}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Phone #'} content={userInfo.phoneNumber}></DetailDisplay>
-            <CopyToClipboardButton msg={userInfo.phoneNumber} />
-          </Box>
+          <DetailDisplay
+            label={'Phone #'}
+            content={userInfo.phoneNumber}
+            copyButton={<CopyToClipboardButton msg={userInfo.phoneNumber} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={4}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'NUID'} content={userInfo.nuid}></DetailDisplay>
-            <CopyToClipboardButton msg={userInfo.nuid} />
-          </Box>
+          <DetailDisplay
+            label={'NUID'}
+            content={userInfo.nuid}
+            copyButton={<CopyToClipboardButton msg={userInfo.nuid} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={4}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Last Name'} content={recipient.lastName}></DetailDisplay>
-            <CopyToClipboardButton msg={recipient.lastName} />
-          </Box>
+          <DetailDisplay
+            label={'Last Name'}
+            content={recipient.lastName}
+            copyButton={<CopyToClipboardButton msg={recipient.lastName} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={8}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Email'} content={recipient.email}></DetailDisplay>
-            <CopyToClipboardButton msg={recipient.email} />
-          </Box>
+          <DetailDisplay
+            label={'Email'}
+            content={recipient.email}
+            copyButton={<CopyToClipboardButton msg={recipient.email} />}
+          ></DetailDisplay>
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={5}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Street Address'} content={userInfo.street}></DetailDisplay>
-            <CopyToClipboardButton msg={userInfo.street} />
-          </Box>
+          <DetailDisplay
+            label={'Street Address'}
+            content={userInfo.street}
+            copyButton={<CopyToClipboardButton msg={userInfo.street} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={3}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'City'} content={userInfo.city}></DetailDisplay>
-            <CopyToClipboardButton msg={userInfo.city} />
-          </Box>
+          <DetailDisplay
+            label={'City'}
+            content={userInfo.city}
+            copyButton={<CopyToClipboardButton msg={userInfo.city} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={3}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'State'} content={userInfo.state}></DetailDisplay>
-            <CopyToClipboardButton msg={userInfo.state} />
-          </Box>
+          <DetailDisplay
+            label={'State'}
+            content={userInfo.state}
+            copyButton={<CopyToClipboardButton msg={userInfo.state} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={12}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Zip Code'} content={userInfo.zipcode}></DetailDisplay>
-            <CopyToClipboardButton msg={userInfo.zipcode} />
-          </Box>
+          <DetailDisplay
+            label={'Zip Code'}
+            content={userInfo.zipcode}
+            copyButton={<CopyToClipboardButton msg={userInfo.zipcode} />}
+          ></DetailDisplay>
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={6}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Date Of Expense'} content={datePipe(dateOfExpense)}></DetailDisplay>
-            <CopyToClipboardButton msg={datePipe(dateOfExpense)} />
-          </Box>
+          <DetailDisplay
+            label={'Date Of Expense'}
+            content={datePipe(dateOfExpense)}
+            copyButton={<CopyToClipboardButton msg={datePipe(dateOfExpense)} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={7}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Total Expense'} content={`$${centsToDollar(totalCost)}`}></DetailDisplay>
-            <CopyToClipboardButton msg={`$${centsToDollar(totalCost)}`} />
-          </Box>
+          <DetailDisplay
+            label={'Total Expense'}
+            content={`$${centsToDollar(totalCost)}`}
+            copyButton={<CopyToClipboardButton msg={`$${centsToDollar(totalCost)}`} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={12}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay
-              label={'Expense Decription'}
-              content={`${vendor.name}[${centsToDollar(totalCost)}]`}
-            ></DetailDisplay>
-            <CopyToClipboardButton msg={`${vendor.name}[${centsToDollar(totalCost)}]`} />
-          </Box>
+          <DetailDisplay
+            label={'Expense Decription'}
+            content={`${vendor.name}[${centsToDollar(totalCost)}]`}
+            copyButton={<CopyToClipboardButton msg={`${vendor.name}[${centsToDollar(totalCost)}]`} />}
+          ></DetailDisplay>
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={12}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay label={'Business Purpose'} content={filteredProductsNames}></DetailDisplay>
-            <CopyToClipboardButton msg={filteredProductsNames} />
-          </Box>
+          <DetailDisplay
+            label={'Business Purpose'}
+            content={filteredProductsNames}
+            copyButton={<CopyToClipboardButton msg={filteredProductsNames} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={7}>
-          <Box display="flex" alignItems="center">
-            <DetailDisplay
-              label={'SABO Form Index'}
-              content={codeAndRefundSourceName(reimbursementRequest.account)}
-            ></DetailDisplay>
-            <CopyToClipboardButton msg={codeAndRefundSourceName(reimbursementRequest.account)} />
-          </Box>
+          <DetailDisplay
+            label={'SABO Form Index'}
+            content={codeAndRefundSourceName(reimbursementRequest.account)}
+            copyButton={<CopyToClipboardButton msg={codeAndRefundSourceName(reimbursementRequest.account)} />}
+          ></DetailDisplay>
         </Grid>
         <Grid item xs={6}>
-          <Box style={{ display: 'flex', alignItems: 'center' }}>
-            <DetailDisplay label={'Expense Type'} content={`${expenseType.code} - ${expenseType.name}`}></DetailDisplay>
-            <CopyToClipboardButton msg={`${expenseType.code} - ${expenseType.name}`} />
-          </Box>
+          <DetailDisplay
+            label={'Expense Type'}
+            content={`${expenseType.code} - ${expenseType.name}`}
+            copyButton={<CopyToClipboardButton msg={`${expenseType.code} - ${expenseType.name}`} />}
+          ></DetailDisplay>
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
