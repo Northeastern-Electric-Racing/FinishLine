@@ -59,12 +59,12 @@ export const useCreateSingleWorkPackage = () => {
 /**
  * Custom React Hook to edit a work package.
  *
- * @returns React-query tility functions exposed by the useMutation hook
+ * @returns React-query utility functions exposed by the useMutation hook
  */
 export const useEditWorkPackage = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
-    ['work packages', 'edit'],
+    ['work package templates', 'edit'],
     async (wpPayload: WorkPackageApiInputs) => {
       const { data } = await editWorkPackage(wpPayload);
       return data;
