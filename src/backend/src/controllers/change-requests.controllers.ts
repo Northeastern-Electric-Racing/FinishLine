@@ -75,15 +75,7 @@ export default class ChangeRequestsController {
 
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        wbsNum,
-        type,
-        what,
-        why,
-        proposedSolutions,
-        projectProposedChanges,
-        workPackageProposedChanges,
-      } = req.body;
+      const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
       const submitter = await getCurrentUser(res);
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
         workPackageProposedChanges.stage = null;

@@ -618,7 +618,7 @@ export default class ChangeRequestsService {
     let projectLeadId: number = 0;
     let projectManagerId: number = 0;
     let links: { url: string; linkTypeName: string }[] = [];
-  
+
     if (projectProposedChanges && workPackageProposedChanges) {
       throw new HttpException(400, "Change Request can't be on both a project and a work package");
     } else if (!projectProposedChanges && !workPackageProposedChanges) {
