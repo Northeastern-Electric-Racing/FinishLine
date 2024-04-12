@@ -81,9 +81,8 @@ export default class ChangeRequestsController {
         what,
         why,
         proposedSolutions,
-        wbsProposedChanges,
         projectProposedChanges,
-        workPackageProposedChanges
+        workPackageProposedChanges,
       } = req.body;
       const submitter = await getCurrentUser(res);
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
@@ -98,7 +97,6 @@ export default class ChangeRequestsController {
         what,
         why,
         proposedSolutions,
-        wbsProposedChanges,
         projectProposedChanges,
         workPackageProposedChanges
       );

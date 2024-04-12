@@ -64,23 +64,19 @@ const wbsProposedChangesExists = (validationObject: ValidationChain): Validation
   return validationObject.if((value: any, { req }: any) => req.body.wbsProposedChanges);
 };
 
-export const wbsProposedChangesValidators = [
-  body('wbsProposedChanges').optional(),
-  nonEmptyString(wbsProposedChangesExists(body('wbsProposedChanges.name'))),
-  isStatus(wbsProposedChangesExists(body('wbsProposedChanges.status'))),
-  wbsProposedChangesExists(body('wbsProposedChanges.links')).isArray(),
-  nonEmptyString(body('wbsProposedChanges.links.*.url')),
-  nonEmptyString(body('wbsProposedChanges.links.*.linkTypeName')),
-  intMinZero(body('wbsProposedChanges.projectLeadId').optional()),
-  intMinZero(body('wbsProposedChanges.projectManagerId').optional())
-];
-
 const projectProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.if((value: any, { req }: any) => req.body.projectProposedChanges);
 };
 
 export const projectProposedChangesValidators = [
   body('projectProposedChanges').optional(),
+  nonEmptyString(wbsProposedChangesExists(body('projectProposedChanges.name'))),
+  isStatus(wbsProposedChangesExists(body('projectProposedChanges.status'))),
+  wbsProposedChangesExists(body('projectProposedChanges.links')).isArray(),
+  nonEmptyString(body('projectProposedChanges.links.*.url')),
+  nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
+  intMinZero(body('projectProposedChanges.projectLeadId').optional()),
+  intMinZero(body('projectProposedChanges.projectManagerId').optional()),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
   intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
   projectProposedChangesExists(body('projectProposedChanges.rules')).isArray(),
@@ -102,6 +98,13 @@ const workPackageProposedChangesExists = (validationObject: ValidationChain): Va
 
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
+  nonEmptyString(wbsProposedChangesExists(body('workPackageProposedChanges.name'))),
+  isStatus(wbsProposedChangesExists(body('workPackageProposedChanges.status'))),
+  wbsProposedChangesExists(body('workPackageProposedChanges.links')).isArray(),
+  nonEmptyString(body('workPackageProposedChanges.links.*.url')),
+  nonEmptyString(body('workPackageProposedChanges.links.*.linkTypeName')),
+  intMinZero(body('workPackageProposedChanges.projectLeadId').optional()),
+  intMinZero(body('workPackageProposedChanges.projectManagerId').optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage'))),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
