@@ -863,6 +863,124 @@ const kingJulian: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
+const regina: Prisma.UserCreateInput = {
+  firstName: 'Regina',
+  lastName: 'George',
+  email: 'regina.g@hotmail.com',
+  role: Role.ADMIN,
+  googleAuthId: 'queenBee',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: 'Queen Regina'
+    }
+  }
+};
+
+const cady: Prisma.UserCreateInput = {
+  firstName: 'Cady',
+  lastName: 'Heron',
+  email: 'cadyheron@gmail.com',
+  googleAuthId: 'cady',
+  role: Role.LEADERSHIP
+};
+
+const janis: Prisma.UserCreateInput = {
+  firstName: 'Janis',
+  lastName: 'Ian',
+  email: 'ian.ja@gmail.com',
+  googleAuthId: 'janis',
+  role: Role.LEADERSHIP
+};
+
+const damian: Prisma.UserCreateInput = {
+  firstName: 'Damian',
+  lastName: '',
+  email: 'hotty@hotmail.com',
+  googleAuthId: 'damian',
+  role: Role.LEADERSHIP
+};
+
+const gretchen: Prisma.UserCreateInput = {
+  firstName: 'Gretchen',
+  lastName: 'Wieners',
+  googleAuthId: 'gretch',
+  email: 'gretchen.weiners@hotmail.com',
+  role: Role.MEMBER
+};
+
+const karen: Prisma.UserCreateInput = {
+  firstName: 'Karen',
+  lastName: 'Smith',
+  googleAuthId: 'karen',
+  email: 'smithkaren@hotmail.com',
+  role: Role.MEMBER
+};
+
+const aaron: Prisma.UserCreateInput = {
+  firstName: 'Aaron',
+  lastName: 'Samuels',
+  googleAuthId: 'aaron',
+  email: 'samuels.a@gmail.com',
+  role: Role.MEMBER
+};
+
+const glen: Prisma.UserCreateInput = {
+  firstName: 'Glen',
+  lastName: 'Coco',
+  googleAuthId: 'glen',
+  email: 'glen@gmail.com',
+  role: Role.MEMBER
+};
+
+const shane: Prisma.UserCreateInput = {
+  firstName: 'Shane',
+  lastName: 'Oman',
+  googleAuthId: 'shane',
+  email: 'shane-oman@hotmail.com',
+  role: Role.MEMBER
+};
+
+const carr: Prisma.UserCreateInput = {
+  firstName: 'Coach',
+  lastName: 'Carr',
+  googleAuthId: 'coach carr',
+  email: 'coachcarr@gmail.com',
+  role: Role.MEMBER
+};
+
+const june: Prisma.UserCreateInput = {
+  firstName: 'June',
+  lastName: 'George',
+  googleAuthId: 'june',
+  email: 'plasticsurgery@hotmail.com',
+  role: Role.MEMBER
+};
+
+const norbury: Prisma.UserCreateInput = {
+  firstName: 'Ms',
+  lastName: 'Norbury',
+  googleAuthId: 'norbury',
+  email: 'norbury@netscape.net',
+  role: Role.MEMBER
+};
+
+const kevin: Prisma.UserCreateInput = {
+  firstName: 'Kevin',
+  lastName: 'Gnapoor',
+  googleAuthId: 'kevin',
+  email: 'mathclub@gmail.com',
+  role: Role.MEMBER
+};
+
+const trang: Prisma.UserCreateInput = {
+  firstName: 'Trang',
+  lastName: 'Pak',
+  googleAuthId: 'trang',
+  email: 'trangPAK@hotmail.com',
+  role: Role.MEMBER
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -962,5 +1080,19 @@ export const dbSeedAllUsers = {
   villager,
   francis,
   victorPerkins,
-  kingJulian
+  kingJulian,
+  regina,
+  gretchen,
+  karen,
+  janis,
+  aaron,
+  cady,
+  damian,
+  glen,
+  shane,
+  june,
+  kevin,
+  norbury,
+  carr,
+  trang
 };

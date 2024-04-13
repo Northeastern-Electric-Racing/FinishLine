@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Link, useTheme } from '@mui/material';
-import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
-import { useState } from 'react';
+import { Box, Link, useTheme } from '@mui/material';
+import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Project, WbsElementStatus } from 'shared';
 import { useAllProjects } from '../../hooks/projects.hooks';
@@ -13,6 +13,7 @@ import { fullNamePipe, wbsPipe, weeksPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { GridColDefStyle } from '../../utils/tables';
 import { getProjectTeamsName } from '../../utils/gantt.utils';
+import TableCustomToolbar from '../../components/TableCustomToolbar';
 
 /**
  * Table of all projects.
@@ -21,6 +22,7 @@ const ProjectsTable: React.FC = () => {
   const { isLoading, data, error } = useAllProjects();
   if (!localStorage.getItem('projectsTableRowCount')) localStorage.setItem('projectsTableRowCount', '30');
   const [pageSize, setPageSize] = useState(localStorage.getItem('projectsTableRowCount'));
+  const [windowSize, setWindowSize] = useState(window.innerWidth);
 
   const baseColDef: GridColDefStyle = {
     flex: 1,
@@ -36,32 +38,65 @@ const ProjectsTable: React.FC = () => {
     return formatter.format(amount);
   };
 
+  const wbsNumColumn: GridColDef = {
+    ...baseColDef,
+    field: 'wbsNum',
+    headerName: 'WBS #',
+    valueFormatter: (params) => wbsPipe(params.value),
+    maxWidth: 100,
+    filterable: false,
+    sortComparator: (v1, v2, param1, param2) => {
+      if (param1.value.carNumber !== param2.value.carNumber) {
+        return param1.value.carNumber - param2.value.carNumber;
+      } else if (param1.value.projectNumber !== param2.value.projectNumber) {
+        return param1.value.projectNumber - param2.value.projectNumber;
+      } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
+        return param1.value.workPackageNumber - param2.value.workPackageNumber;
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const projectNameColumn: GridColDef = {
+    ...baseColDef,
+    field: 'name',
+    headerName: 'Project Name'
+  };
+
+  const durationColumn: GridColDef = {
+    ...baseColDef,
+    field: 'duration',
+    headerName: 'Duration',
+    type: 'number',
+    valueFormatter: (params) => weeksPipe(params.value),
+    maxWidth: 100
+  };
+
+  const budgetColumn: GridColDef = {
+    ...baseColDef,
+    field: 'budget',
+    headerName: 'Budget',
+    type: 'number',
+    valueFormatter: (params) => dollars(params.value),
+    maxWidth: 100
+  };
+
+  const statusColumn: GridColDef = {
+    ...baseColDef,
+    field: 'status',
+    headerName: 'Status',
+    type: 'singleSelect',
+    valueOptions: Object.values(WbsElementStatus),
+    maxWidth: 100
+  };
+
+  const smallColumns: GridColDef[] = [wbsNumColumn, projectNameColumn, durationColumn, budgetColumn, statusColumn];
+
   const columns: GridColDef[] = [
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
-    {
-      ...baseColDef,
-      field: 'wbsNum',
-      headerName: 'WBS #',
-      valueFormatter: (params) => wbsPipe(params.value),
-      maxWidth: 100,
-      filterable: false,
-      sortComparator: (v1, v2, param1, param2) => {
-        if (param1.value.carNumber !== param2.value.carNumber) {
-          return param1.value.carNumber - param2.value.carNumber;
-        } else if (param1.value.projectNumber !== param2.value.projectNumber) {
-          return param1.value.projectNumber - param2.value.projectNumber;
-        } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
-          return param1.value.workPackageNumber - param2.value.workPackageNumber;
-        } else {
-          return 0;
-        }
-      }
-    },
-    {
-      ...baseColDef,
-      field: 'name',
-      headerName: 'Project Name'
-    },
+    wbsNumColumn,
+    projectNameColumn,
     {
       ...baseColDef,
       field: 'projectLead',
@@ -80,22 +115,8 @@ const ProjectsTable: React.FC = () => {
       headerName: 'Team',
       maxWidth: 200
     },
-    {
-      ...baseColDef,
-      field: 'duration',
-      headerName: 'Duration',
-      type: 'number',
-      valueFormatter: (params) => weeksPipe(params.value),
-      maxWidth: 100
-    },
-    {
-      ...baseColDef,
-      field: 'budget',
-      headerName: 'Budget',
-      type: 'number',
-      valueFormatter: (params) => dollars(params.value),
-      maxWidth: 100
-    },
+    durationColumn,
+    budgetColumn,
     {
       ...baseColDef,
       field: 'workPackages',
@@ -104,24 +125,41 @@ const ProjectsTable: React.FC = () => {
       maxWidth: 150,
       valueFormatter: (params) => params.value.length
     },
-    {
-      ...baseColDef,
-      field: 'status',
-      headerName: 'Status',
-      type: 'singleSelect',
-      valueOptions: Object.values(WbsElementStatus),
-      maxWidth: 100
-    }
+    statusColumn
   ];
 
+  const localFilter = localStorage.getItem('projectsTableFilter');
   const filterValues = JSON.parse(
     // sets filter to a default value if no filter is stored in local storage
-    localStorage.getItem('projectsTableFilter') ?? '{"columnField": "carNumber", "operatorValue": "=", "value": ""}'
+    localFilter ? localFilter : '{"columnField": "carNumber", "operatorValue": "=", "value": ""}'
   );
 
   const theme = useTheme();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize(window.innerWidth);
+    };
+
+    // Attach the event listener to the window object
+    window.addEventListener('resize', handleResize);
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   return (
-    <Grid container xs={12}>
+    <Box
+      sx={{
+        '& .Mui-even': {
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+        },
+        '& .Mui-odd': { border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}` }
+      }}
+    >
       <DataGrid
         autoHeight
         disableSelectionOnClick
@@ -144,10 +182,26 @@ const ProjectsTable: React.FC = () => {
             team: getProjectTeamsName(v)
           })) || []
         }
-        columns={columns}
-        sx={{ background: theme.palette.background.paper }}
+        columns={windowSize < 900 ? smallColumns : columns}
+        sx={{
+          border: 0,
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: 'rgba(239, 67, 69, 0.6)'
+          },
+          '& .MuiDataGrid-columnHeader': {
+            borderRight: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`,
+            borderLeft: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+          },
+          '& .MuiDataGrid-columnHeaders': {
+            border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+          },
+          '.MuiDataGrid-columnSeparator': {
+            display: 'none'
+          }
+        }}
+        getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'Mui-even' : 'Mui-odd')}
         components={{
-          Toolbar: GridToolbar,
+          Toolbar: TableCustomToolbar,
           Row: (props: GridRowProps & { row: Project }) => {
             const wbsNum = props.row.wbsNum;
             return (
@@ -168,7 +222,8 @@ const ProjectsTable: React.FC = () => {
           }
         }}
         onFilterModelChange={(filterModel: GridFilterModel) => {
-          localStorage.setItem('projectsTableFilter', JSON.stringify(filterModel.items[0]));
+          const filterItems = filterModel.items[0];
+          if (filterItems) localStorage.setItem('projectsTableFilter', JSON.stringify(filterItems));
         }}
         initialState={{
           filter: {
@@ -193,7 +248,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
       />
-    </Grid>
+    </Box>
   );
 };
 
