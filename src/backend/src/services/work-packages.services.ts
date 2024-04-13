@@ -726,14 +726,14 @@ export default class WorkPackagesService {
 
     const blockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
 
-    if (blockedByIds.length > 0) {
-      await prisma.blocked_By_Info.deleteMany({
-        where: {
-          blockedByInfoId: {
-            in: blockedByIds
+    for (const blockedByItemId of blockedByIds) {
+      if (!blockedByIds.includes(blockedByItemId)) {
+        await prisma.blocked_By_Info.delete({
+          where: {
+            blockedByInfoId: blockedByItemId
           }
-        }
-      });
+        });
+      }
     }
 
     const isNewBlockedBy = (blockedByItem: BlockedByInfo) => {
