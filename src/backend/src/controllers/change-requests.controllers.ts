@@ -75,8 +75,20 @@ export default class ChangeRequestsController {
 
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, what, why, proposedSolutions } = req.body;
+      const {
+        wbsNum,
+        type,
+        what,
+        why,
+        proposedSolutions,
+        wbsProposedChanges,
+        projectProposedChanges,
+        workPackageProposedChanges
+      } = req.body;
       const submitter = await getCurrentUser(res);
+      if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
+        workPackageProposedChanges.stage = null;
+      }
       const createdCR = await ChangeRequestsService.createStandardChangeRequest(
         submitter,
         wbsNum.carNumber,
@@ -85,7 +97,10 @@ export default class ChangeRequestsController {
         type,
         what,
         why,
-        proposedSolutions
+        proposedSolutions,
+        wbsProposedChanges,
+        projectProposedChanges,
+        workPackageProposedChanges
       );
       return res.status(200).json(createdCR);
     } catch (error: unknown) {
