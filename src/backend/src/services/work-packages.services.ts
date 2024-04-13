@@ -724,10 +724,13 @@ export default class WorkPackagesService {
     // error handling
     if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package Template', workPackageTemplateId);
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
-    if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
+    if (!isAdmin(user.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
 
-    // retrieving list of blocked By ids for work package template
+    // retrieving list of blocked By ids in work package template
     const blockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
+
+    // retrieving list of blocked By ids in work package template
+    const newBlockedByIds = blockedBy.map((item) => item.blockedByInfoId);
 
     // checking differences in both blocked by lists
     for (const blockedByItemId of blockedByIds) {
@@ -738,7 +741,7 @@ export default class WorkPackagesService {
       });
 
       // deleting a blocked by if the new list does not contain it
-      if (!blockedByIds.includes(blockedByItemId)) {
+      if (!newBlockedByIds.includes(blockedByItemId)) {
         await prisma.blocked_By_Info.delete({
           where: {
             blockedByInfoId: blockedByItemId
