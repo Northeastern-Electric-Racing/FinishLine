@@ -34,6 +34,7 @@ import {
   WbsElementStatusTextPipe,
   WorkPackageStageTextPipe
 } from '../../utils/enum-pipes';
+import { SearchBar } from '../../components/SearchBar';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -480,7 +481,7 @@ const GanttPageWrapper: FC = () => {
   );
 
   return (
-    <PageLayout title="Gantt Chart" headerRight={headerRight}>
+    <PageLayout title="Gantt Chart" chips={<SearchBar placeholder="Search Project by Name" />} headerRight={headerRight}>
       <Box
         sx={{
           width: '100%',
