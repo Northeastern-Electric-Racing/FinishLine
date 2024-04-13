@@ -198,7 +198,25 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         budgetImpact: 0
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
+    },
+    {
+      budget: 0,
+      summary: 'Add more work packages',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
+    },
+    null
   );
 
   // approve the change request
@@ -530,7 +548,25 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         scopeImpact: 'no scope impact'
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
+    },
+    {
+      budget: 0,
+      summary: 'Add more work packages',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
+    },
+    null
   );
 
   const changeRequestWP1Id = changeRequestWP1.crId;
@@ -570,7 +606,25 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         scopeImpact: 'no scope impact'
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
+    },
+    {
+      budget: 0,
+      summary: 'Add more work packages',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
+    },
+    null
   );
 
   const changeRequestWP5Id = changeRequestWP5.crId;
@@ -728,7 +782,25 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 1,
         budgetImpact: 40
       }
-    ]
+    ],
+    {
+      name: 'Change the bodywork through pink paint purchase',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId
+    },
+    {
+      budget: 50,
+      summary: 'Buy hot pink paint',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.3'],
+      teamIds: []
+    },
+    null
   );
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
 
@@ -1085,6 +1157,8 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   const teamType1 = await TeamsService.createTeamType(batman, 'team 1', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'team 2', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'team 3', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();

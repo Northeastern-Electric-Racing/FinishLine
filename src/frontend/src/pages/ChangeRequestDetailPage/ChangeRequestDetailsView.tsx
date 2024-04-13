@@ -76,6 +76,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 
+  console.log((changeRequest as StandardChangeRequest).projectProposedChanges);
+
   return (
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
