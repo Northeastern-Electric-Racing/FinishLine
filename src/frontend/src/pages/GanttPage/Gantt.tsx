@@ -1,13 +1,17 @@
 import { addDays, differenceInDays, eachDayOfInterval, isMonday } from 'date-fns';
 import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
-import { EventChange, applyChangesToEvents } from '../other/event';
-import { dateToString } from './date.utils';
-import { Task } from '../../types/public-types';
-import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../../../../utils/gantt.utils';
+import {
+  GANTT_CHART_GAP_SIZE,
+  GANTT_CHART_CELL_SIZE,
+  applyChangesToEvents,
+  EventChange,
+  Task
+} from '../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
 import { Box, Typography, useTheme } from '@mui/material';
 import { purple } from '@mui/material/colors';
+import { dateToString } from '../../utils/datetime.utils';
 
 interface GanttProps {
   start: Date;

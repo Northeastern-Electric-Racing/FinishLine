@@ -20,14 +20,14 @@ import {
   sortTeamNames,
   GanttTask,
   transformProjectToGanttTask,
-  getProjectTeamsName
+  getProjectTeamsName,
+  EventChange
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box, Popover, Typography, IconButton, useTheme, Chip, Tooltip, Card } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { GanttChartCalendar } from './GanttPackage/components/calendar/GanttChartCalendar';
+import { GanttChartCalendar } from './GanttChartCalendar';
 import { NERButton } from '../../components/NERButton';
-import { EventChange } from './GanttPackage/components/other/event';
 import {
   GanttWorkPackageStageColorPipe,
   GanttWorkPackageTextColorPipe,

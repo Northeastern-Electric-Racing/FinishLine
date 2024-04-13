@@ -1,6 +1,6 @@
 import { Box, Typography, Card } from '@mui/material';
 import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
-import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../../../../utils/gantt.utils';
+import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../utils/gantt.utils';
 
 interface GanttChartCalendarProps {
   start: Date;

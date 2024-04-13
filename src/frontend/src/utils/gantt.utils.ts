@@ -4,14 +4,73 @@
  */
 
 import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
-import { Task } from '../pages/GanttPage/GanttPackage/types/public-types';
 import { GanttWorkPackageStageColorPipe, GanttWorkPackageTextColorPipe } from './enum-pipes';
 import { projectWbsPipe } from './pipes';
+import dayjs from 'dayjs';
 
 export const NO_TEAM = 'No Team';
 
 export const GANTT_CHART_GAP_SIZE = '0.75rem';
 export const GANTT_CHART_CELL_SIZE = '2.25rem';
+
+export type TaskType = 'task' | 'milestone' | 'project';
+export interface Task {
+  id: string;
+  type: TaskType;
+  name: string;
+  start: Date;
+  end: Date;
+  /**
+   * From 0 to 100
+   */
+  progress: number;
+  children: Task[];
+  styles?: {
+    color?: string;
+    backgroundColor?: string;
+    backgroundSelectedColor?: string;
+    progressColor?: string;
+    progressSelectedColor?: string;
+  };
+  isDisabled?: boolean;
+  project?: string;
+  dependencies?: string[];
+  hideChildren?: boolean;
+  displayOrder?: number;
+  onClick?: () => void;
+}
+
+export type Date_Event = { id: string; start: Date; end: Date; title: string };
+
+export type EventChange = { id: string; eventId: string } & (
+  | { type: 'change-end-date'; originalEnd: Date; newEnd: Date }
+  | { type: 'shift-by-days'; days: number }
+);
+
+export function applyChangeToEvent(event: Task, eventChanges: EventChange[]): Task {
+  const changedEvent = { ...event };
+  for (const eventChange of eventChanges) {
+    switch (eventChange.type) {
+      case 'change-end-date': {
+        changedEvent.end = eventChange.newEnd;
+        break;
+      }
+      case 'shift-by-days': {
+        changedEvent.start = dayjs(changedEvent.start).add(eventChange.days, 'days').toDate();
+        changedEvent.end = dayjs(changedEvent.end).add(eventChange.days, 'days').toDate();
+        break;
+      }
+    }
+  }
+  return changedEvent;
+}
+
+export function applyChangesToEvents(events: Task[], eventChanges: EventChange[]): Task[] {
+  return events.map((event) => {
+    const changes = eventChanges.filter((ec) => ec.eventId === event.id);
+    return applyChangeToEvent(event, changes);
+  });
+}
 
 export interface GanttFilters {
   showCar1: boolean;

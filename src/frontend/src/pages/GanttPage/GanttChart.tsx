@@ -4,9 +4,8 @@
  */
 
 import { Typography } from '@mui/material';
-import { Task } from './GanttPackage/types/public-types';
-import { Gantt } from './GanttPackage/components/gantt/GanttChart';
-import { EventChange } from './GanttPackage/components/other/event';
+import { Gantt } from './Gantt';
+import { EventChange, Task } from '../../utils/gantt.utils';
 
 interface GanttPageProps {
   ganttTasks: Task[];
