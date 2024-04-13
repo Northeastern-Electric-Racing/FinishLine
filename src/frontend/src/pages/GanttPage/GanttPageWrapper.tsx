@@ -485,8 +485,8 @@ const GanttPageWrapper: FC = () => {
       <Box
         sx={{
           width: '100%',
-          height: '100%',
-          overflowX: 'scroll',
+          height: { xs: 'calc(100vh - 9.5rem )', md: 'calc(100vh - 6.25rem)' },
+          overflow: 'scroll',
           '&::-webkit-scrollbar': {
             display: 'none'
           },
