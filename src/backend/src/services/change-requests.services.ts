@@ -613,12 +613,6 @@ export default class ChangeRequestsService {
       }
     });
 
-    let name: string = '';
-    let status: WbsElementStatus = WbsElementStatus.Active;
-    let projectLeadId: number = 0;
-    let projectManagerId: number = 0;
-    let links: { url: string; linkTypeName: string }[] = [];
-
     if (projectProposedChanges && workPackageProposedChanges) {
       throw new HttpException(400, "Change Request can't be on both a project and a work package");
     } else if (!projectProposedChanges && !workPackageProposedChanges) {
@@ -627,42 +621,25 @@ export default class ChangeRequestsService {
         'Change Request with proposed changes must have either project or work package proposed changes'
       );
     } else if (projectProposedChanges) {
-      ({ name, status, projectLeadId, projectManagerId, links } = projectProposedChanges);
-    } else if (workPackageProposedChanges) {
-      ({ name, status, projectLeadId, projectManagerId, links } = workPackageProposedChanges);
-    }
+      const { name, status, projectLeadId, projectManagerId, links } = projectProposedChanges;
+      const { budget, summary, newProject, rules, teamIds, goals, features, otherConstraints } = projectProposedChanges;
 
-    if (projectLeadId) {
-      const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
-      if (!projectLead) throw new NotFoundException('User', projectLeadId);
-    }
-
-    if (projectManagerId) {
-      const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
-      if (!projectManager) throw new NotFoundException('User', projectManagerId);
-    }
-
-    if (links.length > 0) {
-      for (const link of links) {
-        const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
-        if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+      if (projectLeadId) {
+        const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+        if (!projectLead) throw new NotFoundException('User', projectLeadId);
       }
-    }
 
-    const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
-      data: {
-        changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
-        name,
-        status,
-        projectLeadId,
-        projectManagerId,
-        links: {
-          create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
+      if (projectManagerId) {
+        const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+        if (!projectManager) throw new NotFoundException('User', projectManagerId);
+      }
+
+      if (links.length > 0) {
+        for (const link of links) {
+          const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
+          if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
         }
       }
-    });
-    if (projectProposedChanges) {
-      const { budget, summary, newProject, rules, teamIds, goals, features, otherConstraints } = projectProposedChanges;
 
       if (teamIds.length > 0) {
         for (const teamId of teamIds) {
@@ -670,6 +647,19 @@ export default class ChangeRequestsService {
           if (!team) throw new NotFoundException('Team', teamId);
         }
       }
+
+      const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
+        data: {
+          changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
+          name,
+          status,
+          projectLeadId,
+          projectManagerId,
+          links: {
+            create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
+          }
+        }
+      });
 
       await prisma.project_Proposed_Changes.create({
         data: {
@@ -685,7 +675,38 @@ export default class ChangeRequestsService {
         }
       });
     } else if (workPackageProposedChanges) {
+      const { name, status, projectLeadId, projectManagerId, links } = workPackageProposedChanges;
       const { duration, startDate, stage, expectedActivities, deliverables, blockedBy } = workPackageProposedChanges;
+
+      if (projectLeadId) {
+        const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+        if (!projectLead) throw new NotFoundException('User', projectLeadId);
+      }
+
+      if (projectManagerId) {
+        const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+        if (!projectManager) throw new NotFoundException('User', projectManagerId);
+      }
+
+      if (links.length > 0) {
+        for (const link of links) {
+          const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
+          if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+        }
+      }
+
+      const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
+        data: {
+          changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
+          name,
+          status,
+          projectLeadId,
+          projectManagerId,
+          links: {
+            create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
+          }
+        }
+      });
 
       await validateBlockedBys(blockedBy);
 
