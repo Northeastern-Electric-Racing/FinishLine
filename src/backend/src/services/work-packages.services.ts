@@ -727,10 +727,25 @@ export default class WorkPackagesService {
     const blockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
 
     for (const blockedByItemId of blockedByIds) {
+      const blockedBy = await prisma.blocked_By_Info.findUnique({
+        where: {
+          blockedByInfoId: blockedByItemId
+        }
+      });
       if (!blockedByIds.includes(blockedByItemId)) {
         await prisma.blocked_By_Info.delete({
           where: {
             blockedByInfoId: blockedByItemId
+          }
+        });
+      } else {
+        await prisma.blocked_By_Info.update({
+          where: {
+            blockedByInfoId: blockedByItemId
+          },
+          data: {
+            name: blockedBy?.name,
+            stage: blockedBy?.stage
           }
         });
       }
