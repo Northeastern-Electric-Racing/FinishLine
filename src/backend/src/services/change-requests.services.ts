@@ -4,13 +4,15 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
+  ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
   StandardChangeRequest,
-  wbsPipe
+  wbsPipe,
+  WBSProposedChangesCreateArgs,
+  WorkPackageProposedChangesCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
-import changeRequestQueryArgs from '../prisma-query-args/change-requests.query-args';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -34,6 +36,8 @@ import {
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification
 } from '../utils/slack.utils';
+import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import { validateBlockedBys } from '../utils/projects.utils';
 
 export default class ChangeRequestsService {
   /**
@@ -539,6 +543,10 @@ export default class ChangeRequestsService {
    * @param what  the description of the change
    * @param why  the reason for the change
    * @param budgetImpact  the impact on the budget
+   * @param proposedSolutions the proposed solutions of the scope cr
+   * @param wbsProposedChanges the proposed changes of the wbs element
+   * @param projectProposedChanges the project proposed changes
+   * @param workPackageProposedChanges the work package proposed changes
    * @returns  the id of the created cr
    * @throws if user is not allowed to create crs, if wbs element does not exist, or if the cr type is not standard
    */
@@ -550,7 +558,10 @@ export default class ChangeRequestsService {
     type: CR_Type,
     what: string,
     why: { type: Scope_CR_Why_Type; explain: string }[],
-    proposedSolutions: ProposedSolutionCreateArgs[]
+    proposedSolutions: ProposedSolutionCreateArgs[],
+    wbsProposedChanges: WBSProposedChangesCreateArgs | null,
+    projectProposedChanges: ProjectProposedChangesCreateArgs | null,
+    workPackageProposedChanges: WorkPackageProposedChangesCreateArgs | null
   ): Promise<StandardChangeRequest> {
     // verify user is allowed to create standard change requests
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
@@ -598,9 +609,93 @@ export default class ChangeRequestsService {
               }
             }
           }
-        }
+        },
+        scopeChangeRequest: true
       }
     });
+
+    if (wbsProposedChanges) {
+      if (projectProposedChanges && workPackageProposedChanges) {
+        throw new HttpException(400, "Change Request can't be on both a project and a work package");
+      } else if (!projectProposedChanges && !workPackageProposedChanges) {
+        throw new HttpException(
+          400,
+          'Change Request with proposed changes must have either project or work package proposed changes'
+        );
+      } else {
+        const { name, status, projectLeadId, projectManagerId, links } = wbsProposedChanges;
+
+        if (projectLeadId) {
+          const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+          if (!projectLead) throw new NotFoundException('User', projectLeadId);
+        }
+
+        if (projectManagerId) {
+          const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+          if (!projectManager) throw new NotFoundException('User', projectManagerId);
+        }
+
+        if (links.length > 0) {
+          for (const link of links) {
+            const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
+            if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+          }
+        }
+
+        const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
+          data: {
+            changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
+            name,
+            status,
+            projectLeadId,
+            projectManagerId,
+            links: {
+              create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
+            }
+          }
+        });
+        if (projectProposedChanges) {
+          const { budget, summary, newProject, rules, teamIds, goals, features, otherConstraints } = projectProposedChanges;
+
+          if (teamIds.length > 0) {
+            for (const teamId of teamIds) {
+              const team = await prisma.team.findUnique({ where: { teamId } });
+              if (!team) throw new NotFoundException('Team', teamId);
+            }
+          }
+
+          await prisma.project_Proposed_Changes.create({
+            data: {
+              budget,
+              summary,
+              newProject,
+              goals: { create: goals.map((value: string) => ({ detail: value })) },
+              features: { create: features.map((value: string) => ({ detail: value })) },
+              otherConstraints: { create: otherConstraints.map((value: string) => ({ detail: value })) },
+              rules,
+              teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+              wbsProposedChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
+            }
+          });
+        } else if (workPackageProposedChanges) {
+          const { duration, startDate, stage, expectedActivities, deliverables, blockedBy } = workPackageProposedChanges;
+
+          await validateBlockedBys(blockedBy);
+
+          await prisma.work_Package_Proposed_Changes.create({
+            data: {
+              duration,
+              startDate,
+              stage,
+              blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
+              expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },
+              deliverables: { create: deliverables.map((value: string) => ({ detail: value })) },
+              wbsProposedChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
+            }
+          });
+        }
+      }
+    }
 
     const proposedSolutionPromises = proposedSolutions.map(async (proposedSolution) => {
       return await this.addProposedSolution(

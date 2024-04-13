@@ -136,7 +136,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     });
   });
 
-  wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp1.id, wp2.id));
+  wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp2.id, wp1.id));
 
   return (
     <NERFormModal
