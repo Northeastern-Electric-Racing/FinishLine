@@ -53,7 +53,7 @@ teamsRouter.post(
 );
 
 teamsRouter.post(
-  'teams/:teamId/set-team-type',
+  '/:teamId/set-team-type',
   nonEmptyString(body('teamTypeId')),
   validateInputs,
   TeamsController.setTeamType
