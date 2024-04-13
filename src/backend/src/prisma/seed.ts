@@ -693,7 +693,10 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         scopeImpact: 'no scope impact'
       }
-    ]
+    ],
+    null,
+    null,
+    null
   );
 
   const changeRequestProject6Id = changeRequestProject6.crId;
