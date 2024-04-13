@@ -9,7 +9,7 @@ import ErrorPage from '../ErrorPage';
 import { WbsElementStatus, WorkPackageStage } from 'shared';
 import GanttChart from './GanttChart';
 import GanttPageFilter from './GanttPageFilter';
-import { Edit } from '@mui/icons-material/';
+import { Edit, Tune } from '@mui/icons-material/';
 import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
@@ -27,7 +27,6 @@ import { routes } from '../../utils/routes';
 import { Box, Popover, Typography, IconButton, useTheme, Chip, Tooltip, Card } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartCalendar } from './GanttChartCalendar';
-import { NERButton } from '../../components/NERButton';
 import {
   GanttWorkPackageStageColorPipe,
   GanttWorkPackageTextColorPipe,
@@ -114,27 +113,23 @@ const GanttPageWrapper: FC = () => {
   ];
 
   const electricalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showElectricalTeamCategory: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const mechanicalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showMechanicalTeamCategory: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const softwareTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showSoftwareTeamCategory: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const businessTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showBusinessTeamCategory: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
@@ -145,29 +140,24 @@ const GanttPageWrapper: FC = () => {
   ];
 
   const ergonomicsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showErgonomicsTeam: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const lowVoltageTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showLowVoltageTeam: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const tractiveTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showTractiveTeam: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const dataAndControlsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showDataAndControlsTeam: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
   const softwareTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showSoftwareTeam: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
@@ -179,9 +169,8 @@ const GanttPageWrapper: FC = () => {
   ];
 
   const overdueHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    //TODO:
-    //const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    //history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showOnlyOverdue: event.target.checked };
+    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
   const expandedHandler = (value: boolean) => {
@@ -444,9 +433,9 @@ const GanttPageWrapper: FC = () => {
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center', position: 'relative' }}>
       {colorLegend}
-      <NERButton variant="contained" onClick={handleFilterClick}>
-        Filters
-      </NERButton>
+      <IconButton onClick={handleFilterClick}>
+        <Tune />
+      </IconButton>
       <Popover
         open={open}
         anchorEl={anchorFilterEl}

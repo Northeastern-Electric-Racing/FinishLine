@@ -10,7 +10,7 @@ import {
 } from '../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
 import { Box, Typography, useTheme } from '@mui/material';
-import { purple } from '@mui/material/colors';
+import { grey } from '@mui/material/colors';
 import { dateToString } from '../../utils/datetime.utils';
 
 interface GanttProps {
@@ -59,6 +59,8 @@ function Event({
   ...props
 }: { days: Date[]; event: Task; createChange: (change: EventChange) => void; isEditMode: boolean } & ComponentProps<'div'>) {
   const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
+
+  // if we can't find the end date in the timeframe, have it span to the end
   const endCol =
     days.findIndex((day) => dateToString(day) === dateToString(event.end)) === -1
       ? days.length + 1
@@ -178,7 +180,7 @@ function Event({
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            backgroundColor: event.styles ? event.styles.backgroundColor : purple[300]
+            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700]
           }}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
