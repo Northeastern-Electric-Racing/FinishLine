@@ -382,20 +382,19 @@ export default class TeamsService {
       where: { teamTypeId }
     });
 
-    if (teamType) {
-      throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
+    if (!teamType) {
+      throw new HttpException(400, 'Team type with the given ID does not exist');
     }
 
-    const updatedTeam = await prisma.team.update({
-      where: {
-        teamId
-      },
+    const updateTeam = await prisma.team.update({
+      where: { teamId },
       data: {
-        teamType,
-        teamTypeId
+        teamType: {
+          connect: { teamTypeId }
+        }
       },
       ...teamQueryArgs
-    })
-    return teamTransformer(updatedTeam);
+    });
+    return teamTransformer(updateTeam);
   }
 }
