@@ -149,7 +149,7 @@ const TeamsTools = () => {
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
-                  <Box sx={{ display: 'flex-col' }}>
+                  <Box>
                     <Box
                       sx={{
                         marginTop: '6px',
