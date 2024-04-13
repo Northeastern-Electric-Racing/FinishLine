@@ -5,7 +5,15 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest, isProject } from 'shared';
+import {
+  ActivationChangeRequest,
+  ChangeRequest,
+  ChangeRequestType,
+  DescriptionBullet,
+  StageGateChangeRequest,
+  StandardChangeRequest,
+  isProject
+} from 'shared';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
@@ -77,6 +85,24 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 
   console.log((changeRequest as StandardChangeRequest).projectProposedChanges);
+
+  interface BulletListProps {
+    bullets?: DescriptionBullet[]; // Make bullets optional
+  }
+
+  const BulletList: React.FC<BulletListProps> = ({ bullets }) => {
+    if (!bullets) return null; // Return null if bullets is undefined
+
+    return (
+      <ul style={{ paddingLeft: '25px', marginBottom: '0.5em' }}>
+        {bullets
+          .filter((bullet) => !bullet.dateDeleted)
+          .map((bullet, idx) => (
+            <li key={idx}>{bullet.detail}</li>
+          ))}
+      </ul>
+    );
+  };
 
   return (
     <PageLayout
@@ -170,20 +196,70 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         </Grid>
       ) : (
         <Grid container columnSpacing={4}>
+          {/*show previous fields*/}
           <Grid item xs={6}>
-            <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4 }}>
+            <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
               <Typography>Name: {changeRequest.wbsName}</Typography>
               <Typography>Status: {changeRequest.status}</Typography>
-              <Typography>Project Lead: {changeRequest.wbsName}</Typography>
+              <Typography>Project Lead: {changeRequest.status}</Typography>
               <Typography>Project Manager: {changeRequest.wbsName}</Typography>
             </Box>
           </Grid>
+          {/*show fields of proposed changes*/}
           <Grid item xs={6}>
-            <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4 }}>
+            <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
               <Typography>Name: {changeRequest.wbsName}</Typography>
-              <Typography>Status: {changeRequest.status}</Typography>
-              <Typography>Project Lead: {changeRequest.wbsName}</Typography>
-              <Typography>Project Manager: {changeRequest.wbsName}</Typography>
+              <Typography>Status: {(changeRequest as StandardChangeRequest).projectProposedChanges?.status}</Typography>
+              <Typography>
+                Project Lead: {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.firstName}{' '}
+                {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.lastName}
+              </Typography>
+              <Typography>
+                Project Manager: {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager?.firstName}{' '}
+                {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager?.lastName}
+              </Typography>
+              <Typography>Budget: ${(changeRequest as StandardChangeRequest).projectProposedChanges?.budget}</Typography>
+              <Typography>Summary: {(changeRequest as StandardChangeRequest).projectProposedChanges?.summary}</Typography>
+              <Typography>
+                Goals: <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.goals} />
+              </Typography>
+              <Typography>
+                Features:
+                <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.features} />
+              </Typography>
+
+              <Typography>
+                Teams:{' '}
+                {(changeRequest as StandardChangeRequest).projectProposedChanges?.teams.map((team, index, array) => (
+                  <>
+                    {team.teamName}
+                    {index !== array.length - 1 && ', '}
+                  </>
+                ))}
+              </Typography>
+
+              <Typography>
+                Constraints:
+                <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.otherConstrains} />
+              </Typography>
+
+              {/* */}
+              <Typography>
+                Start Date: {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.startDate.toDateString}
+              </Typography>
+              <Typography>
+                Duration: {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.duration} weeks
+              </Typography>
+              <Typography>
+                Blocked By:{' '}
+                {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.blockedBy.map((wbs, index, array) => (
+                  <>
+                    {wbs.workPackageNumber}
+                    {index !== array.length - 1 && ', '}
+                  </>
+                ))}
+              </Typography>
+              <Typography>Stage: {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.stage}</Typography>
             </Box>
           </Grid>
         </Grid>
