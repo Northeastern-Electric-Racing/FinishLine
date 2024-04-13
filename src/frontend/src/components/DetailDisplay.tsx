@@ -5,15 +5,16 @@
 
 import Typography from '@mui/material/Typography';
 import { Box } from '@mui/system';
+import CopyToClipboardButton from './CopyToClipboardButton';
 
 interface DetailDisplayProps {
   label: string;
   content: string;
   paddingRight?: number;
-  copyButton?: React.ReactElement;
+  copyButton?: boolean;
 }
 
-const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRight = 0, copyButton }) => {
+const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRight = 0, copyButton = false }) => {
   return (
     <Box display="flex" alignItems="center">
       <div>
@@ -23,7 +24,7 @@ const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRi
         </Typography>
         <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{content}</Typography>
       </div>
-      {copyButton}
+      {copyButton && <CopyToClipboardButton msg={content} />}
     </Box>
   );
 };
