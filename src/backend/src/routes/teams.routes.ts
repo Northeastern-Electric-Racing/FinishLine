@@ -52,10 +52,5 @@ teamsRouter.post(
   TeamsController.createTeamType
 );
 
-teamsRouter.post(
-  '/:teamId/set-team-type',
-  nonEmptyString(body('teamTypeId')),
-  validateInputs,
-  TeamsController.setTeamType
-);
+teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
 export default teamsRouter;
