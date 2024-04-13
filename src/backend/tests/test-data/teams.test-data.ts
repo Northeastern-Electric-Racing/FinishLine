@@ -21,7 +21,8 @@ export const prismaTeam1: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   leads: [wonderwoman, alfred],
   dateArchived: new Date('12/15/1985'),
   userArchived: wonderwoman,
-  userArchivedId: 3
+  userArchivedId: 3,
+  teamTypeId: null
 };
 
 export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
@@ -36,7 +37,8 @@ export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   leads: [],
   dateArchived: new Date('12/02/2002'),
   userArchived: null,
-  userArchivedId: null
+  userArchivedId: null,
+  teamTypeId: null
 };
 
 export const sharedTeam1: SharedTeam = {
@@ -62,5 +64,6 @@ export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   leads: [wonderwoman],
   dateArchived: null,
   userArchived: null,
-  userArchivedId: null
+  userArchivedId: null,
+  teamTypeId: null
 };
