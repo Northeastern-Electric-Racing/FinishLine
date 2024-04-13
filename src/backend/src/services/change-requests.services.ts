@@ -8,7 +8,6 @@ import {
   ProposedSolution,
   ProposedSolutionCreateArgs,
   StandardChangeRequest,
-  WbsElementStatus,
   wbsPipe,
   WorkPackageProposedChangesCreateArgs
 } from 'shared';
