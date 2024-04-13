@@ -287,8 +287,8 @@ const GanttPageWrapper: FC = () => {
           mt: 2,
           py: 1,
           background: isEditMode ? theme.palette.divider : 'transparent',
-          width: 'fit-content',
-          pl: 2
+          borderRadius: '0.25rem',
+          width: 'fit-content'
         }}
       >
         <Box
@@ -297,13 +297,16 @@ const GanttPageWrapper: FC = () => {
             alignItems: 'center',
             gap: 2,
             mb: 1,
+            pl: 2,
             position: 'sticky',
             left: 0,
             width: 'fit-content',
             height: '30px'
           }}
         >
-          <Typography variant="h5">{teamName}</Typography>
+          <Typography variant="h5" fontWeight={400}>
+            {teamName}
+          </Typography>
 
           {isEditMode ? (
             <Chip label="Save" onClick={handleEdit} />
@@ -313,7 +316,7 @@ const GanttPageWrapper: FC = () => {
             </IconButton>
           )}
         </Box>
-        <Box key={teamName} sx={{ my: 3, width: 'fit-content' }}>
+        <Box key={teamName} sx={{ my: 3, width: 'fit-content', pl: 2 }}>
           <GanttChart
             ganttTasks={tasks}
             start={ganttStartDate}
@@ -386,7 +389,12 @@ const GanttPageWrapper: FC = () => {
         display: 'flex',
         width: '100%',
         gap: 1,
-        overflowX: 'scroll'
+        overflowX: 'scroll',
+        '&::-webkit-scrollbar': {
+          display: 'none'
+        },
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none' // IE and Edge
       }}
     >
       {
@@ -408,7 +416,8 @@ const GanttPageWrapper: FC = () => {
                 width: '8.25rem',
                 borderRadius: 1,
                 justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'center',
+                px: 1
               }}
             >
               <Tooltip
@@ -472,7 +481,18 @@ const GanttPageWrapper: FC = () => {
 
   return (
     <PageLayout title="Gantt Chart" headerRight={headerRight}>
-      <Box sx={{ width: '100%', height: '100%', overflowX: 'scroll' }}>
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          overflowX: 'scroll',
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          },
+          scrollbarWidth: 'none', // Firefox
+          msOverflowStyle: 'none' // IE and Edge
+        }}
+      >
         <GanttChartCalendar start={ganttStartDate} end={ganttEndDate} />
         {ganttCharts}
       </Box>
