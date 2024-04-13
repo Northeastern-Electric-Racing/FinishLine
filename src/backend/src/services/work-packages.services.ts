@@ -715,30 +715,39 @@ export default class WorkPackagesService {
     deliverables: string[],
     workPackageName: string | undefined
   ): Promise<Work_Package_Template> {
+    // retrieving original work package template
     const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
       where: { workPackageTemplateId },
       include: { blockedBy: true }
     });
 
+    // error handling
     if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package Template', workPackageTemplateId);
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
     if (!isAdmin(user.role)) throw new AccessDeniedGuestException('edit work package templates');
 
+    // retrieving list of blocked By ids for work package template
     const blockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
 
+    // checking differences in both blocked by lists
     for (const blockedByItemId of blockedByIds) {
       const blockedBy = await prisma.blocked_By_Info.findUnique({
         where: {
           blockedByInfoId: blockedByItemId
         }
       });
+
+      // deleting a blocked by if the new list does not contain it
       if (!blockedByIds.includes(blockedByItemId)) {
         await prisma.blocked_By_Info.delete({
           where: {
             blockedByInfoId: blockedByItemId
           }
         });
-      } else {
+      }
+
+      // updating otherwise
+      else {
         await prisma.blocked_By_Info.update({
           where: {
             blockedByInfoId: blockedByItemId
@@ -751,14 +760,17 @@ export default class WorkPackagesService {
       }
     }
 
+    // checking for new blocked by in the new list
     const isNewBlockedBy = (blockedByItem: BlockedByInfo) => {
       return !originalWorkPackageTemplate.blockedBy.some(
         (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
       );
     };
 
+    // filtering blocked by list to those that are new
     const blockedByToCreate = blockedBy.filter(isNewBlockedBy);
 
+    // creating the new blocked by
     for (const blockedByItem of blockedByToCreate) {
       await prisma.blocked_By_Info.create({
         data: {
@@ -768,6 +780,7 @@ export default class WorkPackagesService {
       });
     }
 
+    // updating work package template
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
       where: {
         workPackageTemplateId
