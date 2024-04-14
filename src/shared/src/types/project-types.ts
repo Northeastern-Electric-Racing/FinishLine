@@ -97,9 +97,3 @@ export interface LinkCreateArgs {
   linkTypeName: string;
   url: string;
 }
-
-export interface WorkPackageTemplate {
-  workPackageTemplateId: String;
-  templateName: String;
-  templateNotes: String;
-}
