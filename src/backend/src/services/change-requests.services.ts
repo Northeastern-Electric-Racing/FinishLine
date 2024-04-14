@@ -647,7 +647,7 @@ export default class ChangeRequestsService {
         }
       }
 
-      const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
+      await prisma.wbs_Proposed_Changes.create({
         data: {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
@@ -656,21 +656,19 @@ export default class ChangeRequestsService {
           projectManagerId,
           links: {
             create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
+          },
+          projectProposedChanges: {
+            create: {
+              budget,
+              summary,
+              newProject,
+              goals: { create: goals.map((value: string) => ({ detail: value })) },
+              features: { create: features.map((value: string) => ({ detail: value })) },
+              otherConstraints: { create: otherConstraints.map((value: string) => ({ detail: value })) },
+              rules,
+              teams: { connect: teamIds.map((teamId) => ({ teamId })) }
+            }
           }
-        }
-      });
-
-      await prisma.project_Proposed_Changes.create({
-        data: {
-          budget,
-          summary,
-          newProject,
-          goals: { create: goals.map((value: string) => ({ detail: value })) },
-          features: { create: features.map((value: string) => ({ detail: value })) },
-          otherConstraints: { create: otherConstraints.map((value: string) => ({ detail: value })) },
-          rules,
-          teams: { connect: teamIds.map((teamId) => ({ teamId })) },
-          wbsProposedChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
         }
       });
     } else if (workPackageProposedChanges) {
@@ -694,7 +692,9 @@ export default class ChangeRequestsService {
         }
       }
 
-      const createdProposedChanges = await prisma.wbs_Proposed_Changes.create({
+      await validateBlockedBys(blockedBy);
+
+      await prisma.wbs_Proposed_Changes.create({
         data: {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
@@ -703,21 +703,17 @@ export default class ChangeRequestsService {
           projectManagerId,
           links: {
             create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
+          },
+          workPackageProposedChanges: {
+            create: {
+              duration,
+              startDate,
+              stage,
+              blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
+              expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },
+              deliverables: { create: deliverables.map((value: string) => ({ detail: value })) }
+            }
           }
-        }
-      });
-
-      await validateBlockedBys(blockedBy);
-
-      await prisma.work_Package_Proposed_Changes.create({
-        data: {
-          duration,
-          startDate,
-          stage,
-          blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
-          expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },
-          deliverables: { create: deliverables.map((value: string) => ({ detail: value })) },
-          wbsProposedChanges: { connect: { wbsProposedChangesId: createdProposedChanges.wbsProposedChangesId } }
         }
       });
     }

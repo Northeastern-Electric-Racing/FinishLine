@@ -1,6 +1,8 @@
 import { Design_Review_Status } from '@prisma/client';
 import { body, ValidationChain } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
+import { ExceptionObjectNames, NotFoundException } from './errors.utils';
+import prisma from '../prisma/prisma';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();
@@ -70,13 +72,13 @@ const projectProposedChangesExists = (validationObject: ValidationChain): Valida
 
 export const projectProposedChangesValidators = [
   body('projectProposedChanges').optional(),
-  nonEmptyString(wbsProposedChangesExists(body('projectProposedChangesExists.name'))),
-  isStatus(wbsProposedChangesExists(body('projectProposedChangesExists.status'))),
-  wbsProposedChangesExists(body('projectProposedChangesExists.links')).isArray(),
-  nonEmptyString(body('projectProposedChangesExists.links.*.url')),
-  nonEmptyString(body('projectProposedChangesExists.links.*.linkTypeName')),
-  intMinZero(body('projectProposedChangesExists.projectLeadId').optional()),
-  intMinZero(body('projectProposedChangesExists.projectManagerId').optional()),
+  nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.name'))),
+  isStatus(projectProposedChangesExists(body('projectProposedChanges.status'))),
+  projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
+  nonEmptyString(body('projectProposedChanges.links.*.url')),
+  nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
+  intMinZero(body('projectProposedChanges.projectLeadId').optional()),
+  intMinZero(body('projectProposedChanges.projectManagerId').optional()),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
   intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
   projectProposedChangesExists(body('projectProposedChanges.rules')).isArray(),
@@ -98,13 +100,13 @@ const workPackageProposedChangesExists = (validationObject: ValidationChain): Va
 
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
-  nonEmptyString(wbsProposedChangesExists(body('workPackageProposedChangesExists.name'))),
-  isStatus(wbsProposedChangesExists(body('workPackageProposedChangesExists.status'))),
-  wbsProposedChangesExists(body('workPackageProposedChangesExists.links')).isArray(),
-  nonEmptyString(body('workPackageProposedChangesExists.links.*.url')),
-  nonEmptyString(body('workPackageProposedChangesExists.links.*.linkTypeName')),
-  intMinZero(body('workPackageProposedChangesExists.projectLeadId').optional()),
-  intMinZero(body('workPackageProposedChangesExists.projectManagerId').optional()),
+  nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
+  isStatus(workPackageProposedChangesExists(body('workPackageProposedChanges.status'))),
+  workPackageProposedChangesExists(body('workPackageProposedChanges.links')).isArray(),
+  nonEmptyString(body('workPackageProposedChanges.links.*.url')),
+  nonEmptyString(body('workPackageProposedChanges.links.*.linkTypeName')),
+  intMinZero(body('workPackageProposedChanges.projectLeadId').optional()),
+  intMinZero(body('workPackageProposedChanges.projectManagerId').optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage'))),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
@@ -117,6 +119,16 @@ export const workPackageProposedChangesValidators = [
   workPackageProposedChangesExists(body('workPackageProposedChanges.deliverables')).isArray(),
   nonEmptyString(body('workPackageProposedChanges.deliverables.*'))
 ];
+
+export const validateProposedChangesFields = async (
+  model: any,
+  fieldName: string,
+  resource: string | number,
+  exceptionObject: ExceptionObjectNames
+) => {
+  const result = await prisma[model].findUnique({ where: { fieldName: resource } });
+  if (!result) throw new NotFoundException(exceptionObject, resource);
+};
 
 export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]);

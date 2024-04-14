@@ -109,12 +109,14 @@ export interface ProposedSolutionCreateArgs {
   timelineImpact: number;
 }
 
-export interface ProjectProposedChangesCreateArgs {
+export interface WBSProposedChangesCreateArgs {
   name: string;
   status: WbsElementStatus;
   projectLeadId: number;
   projectManagerId: number;
   links: { url: string; linkTypeName: string }[];
+}
+export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   budget: number;
   summary: string;
   newProject: boolean;
@@ -125,12 +127,7 @@ export interface ProjectProposedChangesCreateArgs {
   teamIds: string[];
 }
 
-export interface WorkPackageProposedChangesCreateArgs {
-  name: string;
-  status: WbsElementStatus;
-  projectLeadId: number;
-  projectManagerId: number;
-  links: { url: string; linkTypeName: string }[];
+export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   duration: number;
   startDate: string;
   stage: WorkPackageStage | null;
