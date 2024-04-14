@@ -1,8 +1,6 @@
 import { Design_Review_Status } from '@prisma/client';
 import { body, ValidationChain } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
-import { ExceptionObjectNames, NotFoundException } from './errors.utils';
-import prisma from '../prisma/prisma';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isInt({ min: 0 }).not().isString();

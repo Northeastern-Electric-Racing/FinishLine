@@ -37,7 +37,6 @@ import {
 } from '../utils/slack.utils';
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { validateBlockedBys } from '../utils/projects.utils';
-import { link } from 'fs';
 
 export default class ChangeRequestsService {
   /**
