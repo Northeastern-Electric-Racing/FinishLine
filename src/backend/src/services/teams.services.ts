@@ -382,6 +382,10 @@ export default class TeamsService {
       where: { teamTypeId }
     });
 
+    if (!teamType) {
+      throw new NotFoundException('Team Type', teamTypeId);
+    }
+
     const team = await prisma.team.findUnique({
       where: { teamId },
       ...teamQueryArgs
@@ -389,10 +393,6 @@ export default class TeamsService {
 
     if (!team) {
       throw new NotFoundException('Team', teamId);
-    }
-
-    if (!teamType) {
-      throw new HttpException(400, 'Team type with the given ID does not exist');
     }
 
     const updateTeam = await prisma.team.update({

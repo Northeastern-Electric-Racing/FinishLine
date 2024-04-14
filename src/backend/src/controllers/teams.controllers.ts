@@ -131,9 +131,10 @@ export default class TeamsController {
   static async setTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamTypeId } = req.body;
+      const { teamId } = req.params;
       const submitter = await getCurrentUser(res);
 
-      const updateTeamType = await TeamsService.setTeamType(submitter, req.params.teamId, teamTypeId);
+      const updateTeamType = await TeamsService.setTeamType(submitter, teamId, teamTypeId);
 
       return res.status(200).json(updateTeamType);
     } catch (error: unknown) {
