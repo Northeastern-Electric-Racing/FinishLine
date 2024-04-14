@@ -62,10 +62,6 @@ export const validateReimbursementProducts = () => {
   ];
 };
 
-const wbsProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.if((value: any, { req }: any) => req.body.wbsProposedChanges);
-};
-
 const projectProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.if((value: any, { req }: any) => req.body.projectProposedChanges);
 };
