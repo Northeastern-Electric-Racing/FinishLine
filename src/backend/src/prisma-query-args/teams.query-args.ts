@@ -6,6 +6,7 @@ const teamQueryArgs = Prisma.validator<Prisma.TeamArgs>()({
     head: true,
     leads: true,
     userArchived: true,
+    teamType: true,
     projects: {
       where: {
         wbsElement: {
