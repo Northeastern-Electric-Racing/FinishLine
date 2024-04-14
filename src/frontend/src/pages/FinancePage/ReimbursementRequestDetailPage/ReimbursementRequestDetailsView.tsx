@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
-import { Box, fontSize } from '@mui/system';
+import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { ReimbursementRequest } from 'shared';
