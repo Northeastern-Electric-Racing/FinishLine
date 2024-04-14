@@ -13,7 +13,6 @@ import {
   WorkPackage,
   WorkPackageStage,
   WorkPackageTemplate,
-  BlockedByInfo,
   BlcockedByCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
