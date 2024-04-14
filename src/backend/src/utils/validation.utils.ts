@@ -116,16 +116,6 @@ export const workPackageProposedChangesValidators = [
   nonEmptyString(body('workPackageProposedChanges.deliverables.*'))
 ];
 
-export const validateProposedChangesFields = async (
-  model: any,
-  fieldName: string,
-  resource: string | number,
-  exceptionObject: ExceptionObjectNames
-) => {
-  const result = await prisma[model].findUnique({ where: { fieldName: resource } });
-  if (!result) throw new NotFoundException(exceptionObject, resource);
-};
-
 export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.isString().isIn([TaskPriority.High, TaskPriority.Medium, TaskPriority.Low]);
 };

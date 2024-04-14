@@ -22,7 +22,7 @@ import {
   DeletedException
 } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
-import { updateBlocking, allChangeRequestsReviewed } from '../utils/change-requests.utils';
+import { updateBlocking, allChangeRequestsReviewed, validateProposedChangesFields } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
@@ -37,6 +37,7 @@ import {
 } from '../utils/slack.utils';
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { validateBlockedBys } from '../utils/projects.utils';
+import { link } from 'fs';
 
 export default class ChangeRequestsService {
   /**
@@ -623,22 +624,7 @@ export default class ChangeRequestsService {
       const { name, status, projectLeadId, projectManagerId, links } = projectProposedChanges;
       const { budget, summary, newProject, rules, teamIds, goals, features, otherConstraints } = projectProposedChanges;
 
-      if (projectLeadId) {
-        const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
-        if (!projectLead) throw new NotFoundException('User', projectLeadId);
-      }
-
-      if (projectManagerId) {
-        const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
-        if (!projectManager) throw new NotFoundException('User', projectManagerId);
-      }
-
-      if (links.length > 0) {
-        for (const link of links) {
-          const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
-          if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
-        }
-      }
+      await validateProposedChangesFields(projectLeadId, projectManagerId, links);
 
       if (teamIds.length > 0) {
         for (const teamId of teamIds) {
@@ -675,22 +661,7 @@ export default class ChangeRequestsService {
       const { name, status, projectLeadId, projectManagerId, links } = workPackageProposedChanges;
       const { duration, startDate, stage, expectedActivities, deliverables, blockedBy } = workPackageProposedChanges;
 
-      if (projectLeadId) {
-        const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
-        if (!projectLead) throw new NotFoundException('User', projectLeadId);
-      }
-
-      if (projectManagerId) {
-        const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
-        if (!projectManager) throw new NotFoundException('User', projectManagerId);
-      }
-
-      if (links.length > 0) {
-        for (const link of links) {
-          const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
-          if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
-        }
-      }
+      await validateProposedChangesFields(projectLeadId, projectManagerId, links);
 
       await validateBlockedBys(blockedBy);
 
