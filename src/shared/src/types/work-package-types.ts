@@ -43,3 +43,9 @@ export interface WorkPackageTemplate {
   userDeleted?: User;
   userDeletedId?: Number;
 }
+
+export interface BlcockedByCreateArgs {
+  blockedByInfoId?: string;
+  stage?: WorkPackageStage;
+  name: string;
+}

@@ -13,7 +13,8 @@ import {
   WorkPackage,
   WorkPackageStage,
   WorkPackageTemplate,
-  BlockedByInfo
+  BlockedByInfo,
+  BlcockedByCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -704,13 +705,13 @@ export default class WorkPackagesService {
   }
 
   static async editWorkPackageTemplate(
-    user: User,
+    submitter: User,
     workPackageTemplateId: string,
     templateName: string,
     templateNotes: string,
     duration: number | undefined,
     stage: WorkPackageStage | undefined,
-    blockedBy: BlockedByInfo[],
+    blockedBy: BlcockedByCreateArgs[],
     expectedActivities: string[],
     deliverables: string[],
     workPackageName: string | undefined
@@ -724,7 +725,7 @@ export default class WorkPackagesService {
     // error handling
     if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package Template', workPackageTemplateId);
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
-    if (!isAdmin(user.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
+    if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
 
     // retrieving list of blocked By ids in work package template
     const blockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
@@ -764,7 +765,7 @@ export default class WorkPackagesService {
     }
 
     // checking for new blocked by in the new list
-    const isNewBlockedBy = (blockedByItem: BlockedByInfo) => {
+    const isNewBlockedBy = (blockedByItem: BlcockedByCreateArgs) => {
       return !originalWorkPackageTemplate.blockedBy.some(
         (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
       );
