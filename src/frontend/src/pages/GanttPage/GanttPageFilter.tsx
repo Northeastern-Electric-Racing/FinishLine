@@ -15,11 +15,9 @@ interface GanttPageFilterProps {
   teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
-  status: string;
-  selectedTeam: string;
+
   teamList: string[];
-  currentStart: Date | null;
-  currentEnd: Date | null;
+
   expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
 }
@@ -59,9 +57,7 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   teamCategoriesHandlers,
   teamsHandlers,
   overdueHandler,
-  status,
   expandedHandler,
-  teamList,
   resetHandler
 }) => {
   const FilterRow = ({

@@ -43,7 +43,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
               <Typography flexGrow={1} variant="h4" fontSize={30}>
                 {title}
               </Typography>
-              <Box mt={1} flexGrow={4}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }} flexGrow={4}>
                 {chips}
               </Box>
             </Grid>

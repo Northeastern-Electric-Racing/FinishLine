@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import React, { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
@@ -52,25 +52,41 @@ const GanttPageWrapper: FC = () => {
       editing: boolean;
     }>
   >([]);
-  const showCar1 = query.get('showCar1') === 'false' || query.get('showCar1') === null;
-  const showCar2 = query.get('showCar2') === 'false' || query.get('showCar2') === null;
-  const status = query.get('status') || WbsElementStatus.Active.toString();
-  const selectedTeam = query.get('selectedTeam') || 'All Teams';
-  const queryStart = query.get('start');
-  const queryEnd = query.get('end');
-  const start = useMemo(() => {
-    if (queryStart === 'null' || queryStart === null || queryStart === undefined) return null;
-    return new Date(Date.parse(queryStart));
-  }, [queryStart]);
-  const end = useMemo(() => {
-    if (queryEnd === 'null' || queryEnd === null || queryEnd === undefined) return null;
-    return new Date(Date.parse(queryEnd));
-  }, [queryEnd]);
+
+  const car = query.getAll('car');
+  const showCar1 = car.includes('Car 1');
+  const showCar2 = car.includes('Car 2');
+
+  const teamCategory = query.getAll('teamCategory');
+  const showElectricalTeamCategory = teamCategory.includes('Electrical');
+  const showMechanicalTeamCategory = teamCategory.includes('Mechanical');
+  const showSoftwareTeamCategory = teamCategory.includes('Software');
+  const showBusinessTeamCategory = teamCategory.includes('Business');
+
+  const team = query.getAll('team');
+  const showErgonomicsTeam = team.includes('Ergonomics');
+  const showLowVoltageTeam = team.includes('Low Voltage');
+  const showTractiveTeam = team.includes('Tractive');
+  const showDataAndControlsTeam = team.includes('Data and Controls');
+  const showSoftwareTeam = team.includes('Software');
+
+  const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : false;
+
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
   const defaultGanttFilters: GanttFilters = {
     showCar1,
     showCar2,
+    showElectricalTeamCategory,
+    showMechanicalTeamCategory,
+    showSoftwareTeamCategory,
+    showBusinessTeamCategory,
+    showErgonomicsTeam,
+    showLowVoltageTeam,
+    showTractiveTeam,
+    showDataAndControlsTeam,
+    showSoftwareTeam,
+    showOnlyOverdue,
     expanded
   };
 
@@ -82,6 +98,16 @@ const GanttPageWrapper: FC = () => {
     const ganttFilters: GanttFilters = {
       showCar1,
       showCar2,
+      showElectricalTeamCategory,
+      showMechanicalTeamCategory,
+      showSoftwareTeamCategory,
+      showBusinessTeamCategory,
+      showErgonomicsTeam,
+      showLowVoltageTeam,
+      showTractiveTeam,
+      showDataAndControlsTeam,
+      showSoftwareTeam,
+      showOnlyOverdue,
       expanded
     };
 
@@ -92,7 +118,22 @@ const GanttPageWrapper: FC = () => {
     const tasks: GanttTask[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
     setGanttTasks(tasks);
-  }, [end, expanded, projects, showCar1, showCar2, start, status, selectedTeam]);
+  }, [
+    expanded,
+    projects,
+    showBusinessTeamCategory,
+    showCar1,
+    showCar2,
+    showDataAndControlsTeam,
+    showElectricalTeamCategory,
+    showErgonomicsTeam,
+    showLowVoltageTeam,
+    showMechanicalTeamCategory,
+    showOnlyOverdue,
+    showSoftwareTeam,
+    showSoftwareTeamCategory,
+    showTractiveTeam
+  ]);
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -140,6 +181,7 @@ const GanttPageWrapper: FC = () => {
   ];
 
   const ergonomicsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    console.log(event.target.checked);
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, showErgonomicsTeam: event.target.checked };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
@@ -457,12 +499,8 @@ const GanttPageWrapper: FC = () => {
           teamCategoriesHandlers={teamCategoriesHandlers}
           teamsHandlers={teamsHandlers}
           overdueHandler={overdueHandler}
-          status={status}
           expandedHandler={expandedHandler}
           teamList={teamList}
-          selectedTeam={selectedTeam}
-          currentStart={start}
-          currentEnd={end}
           resetHandler={resetHandler}
         />
       </Popover>

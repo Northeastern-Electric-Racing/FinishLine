@@ -75,16 +75,16 @@ export function applyChangesToEvents(events: Task[], eventChanges: EventChange[]
 export interface GanttFilters {
   showCar1: boolean;
   showCar2: boolean;
-  showElectricalTeamCategory?: boolean;
-  showMechanicalTeamCategory?: boolean;
-  showSoftwareTeamCategory?: boolean;
-  showBusinessTeamCategory?: boolean;
-  showErgonomicsTeam?: boolean;
-  showLowVoltageTeam?: boolean;
-  showTractiveTeam?: boolean;
-  showDataAndControlsTeam?: boolean;
-  showSoftwareTeam?: boolean;
-  showOnlyOverdue?: boolean;
+  showElectricalTeamCategory: boolean;
+  showMechanicalTeamCategory: boolean;
+  showSoftwareTeamCategory: boolean;
+  showBusinessTeamCategory: boolean;
+  showErgonomicsTeam: boolean;
+  showLowVoltageTeam: boolean;
+  showTractiveTeam: boolean;
+  showDataAndControlsTeam: boolean;
+  showSoftwareTeam: boolean;
+  showOnlyOverdue: boolean;
   expanded: boolean;
 }
 
@@ -100,15 +100,63 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.wbsNum.carNumber !== 2;
   };
 
+  const ergonomicsTeamCheck = (project: Project) => {
+    return project.name.includes('Ergonomics');
+  };
+
+  const lowVoltageTeamCheck = (project: Project) => {
+    return project.name.includes('Low Voltage');
+  };
+
+  const tractiveTeamCheck = (project: Project) => {
+    return project.name.includes('Tractive');
+  };
+
+  const dataAndControlsTeamCheck = (project: Project) => {
+    return project.name.includes('Data & Controls');
+  };
+
+  const softwareTeamCheck = (project: Project) => {
+    return project.name.includes('Software');
+  };
+
   const activeCheck = (project: Project) => {
     return project.status === WbsElementStatus.Active;
   };
 
-  if (!ganttFilters.showCar1) {
-    projects = projects.filter(car1Check);
+  if (!(!ganttFilters.showCar1 && !ganttFilters.showCar2)) {
+    if (!ganttFilters.showCar1) {
+      projects = projects.filter(car1Check);
+    }
+    if (!ganttFilters.showCar2) {
+      projects = projects.filter(car2Check);
+    }
   }
-  if (!ganttFilters.showCar2) {
-    projects = projects.filter(car2Check);
+
+  if (
+    !(
+      !ganttFilters.showErgonomicsTeam &&
+      !ganttFilters.showLowVoltageTeam &&
+      !ganttFilters.showTractiveTeam &&
+      !ganttFilters.showDataAndControlsTeam &&
+      !ganttFilters.showSoftwareTeam
+    )
+  ) {
+    if (!ganttFilters.showErgonomicsTeam) {
+      projects = projects.filter(ergonomicsTeamCheck);
+    }
+    if (!ganttFilters.showLowVoltageTeam) {
+      projects = projects.filter(lowVoltageTeamCheck);
+    }
+    if (!ganttFilters.showTractiveTeam) {
+      projects = projects.filter(tractiveTeamCheck);
+    }
+    if (!ganttFilters.showDataAndControlsTeam) {
+      projects = projects.filter(dataAndControlsTeamCheck);
+    }
+    if (!ganttFilters.showSoftwareTeam) {
+      projects = projects.filter(softwareTeamCheck);
+    }
   }
 
   projects = projects.filter(activeCheck);
@@ -117,10 +165,32 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
 };
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
+  const carFormat = (name: string) => {
+    return `&car=${name}`;
+  };
+
+  const teamCategoryFormat = (name: string) => {
+    return `&teamCategory=${name}`;
+  };
+
+  const teamFormat = (name: string) => {
+    return `&team=${name}`;
+  };
+
   return (
-    `?status=ACTIVE` +
-    `&showCar1=${ganttFilters.showCar1}` +
-    `&showCar2=${ganttFilters.showCar2}` +
+    '?' +
+    (ganttFilters.showCar1 ? carFormat('Car 1') : '') +
+    (ganttFilters.showCar2 ? carFormat('Car 2') : '') +
+    (ganttFilters.showElectricalTeamCategory ? teamCategoryFormat('Electrical') : '') +
+    (ganttFilters.showMechanicalTeamCategory ? teamCategoryFormat('Mechanical') : '') +
+    (ganttFilters.showSoftwareTeamCategory ? teamCategoryFormat('Software') : '') +
+    (ganttFilters.showBusinessTeamCategory ? teamCategoryFormat('Business') : '') +
+    (ganttFilters.showErgonomicsTeam ? teamFormat('Ergonomics') : '') +
+    (ganttFilters.showLowVoltageTeam ? teamFormat('Low Voltage') : '') +
+    (ganttFilters.showTractiveTeam ? teamFormat('Tractive') : '') +
+    (ganttFilters.showDataAndControlsTeam ? teamFormat('Data and Controls') : '') +
+    (ganttFilters.showSoftwareTeam ? teamFormat('Software') : '') +
+    `&overdue=${ganttFilters.showOnlyOverdue}` +
     `&expanded=${ganttFilters.expanded}`
   );
 };

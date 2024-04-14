@@ -11,13 +11,15 @@ const Search = styled('div')(({ theme }) => ({
     backgroundColor: alpha(theme.palette.common.white, 0.25)
   },
   marginLeft: 0,
-  height: '56px',
+  height: '2.5rem',
   width: '100%',
   [theme.breakpoints.up('md')]: {
     marginLeft: theme.spacing(0.5),
     marginRight: theme.spacing(1),
     width: '90%'
-  }
+  },
+  display: 'flex',
+  alignItems: 'center'
 }));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
