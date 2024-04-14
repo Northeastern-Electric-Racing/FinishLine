@@ -66,65 +66,59 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     >
       <Grid container spacing={1}>
         <Grid item xs={4}>
-          <Box display="flex" alignItems="left">
-            <DetailDisplay label={'First Name'} content={recipient.firstName} copyButton={true} />
-          </Box>
+          <DetailDisplay label={'First Name'} content={recipient.firstName} copyButton />
         </Grid>
         <Grid item xs={4}>
-          <DetailDisplay label={'Phone #'} content={userInfo.phoneNumber} copyButton={true} />
+          <DetailDisplay label={'Phone #'} content={userInfo.phoneNumber} copyButton />
         </Grid>
         <Grid item xs={4}>
-          <DetailDisplay label={'NUID'} content={userInfo.nuid} copyButton={true} />
+          <DetailDisplay label={'NUID'} content={userInfo.nuid} copyButton />
         </Grid>
         <Grid item xs={4}>
-          <DetailDisplay label={'Last Name'} content={recipient.lastName} copyButton={true} />
+          <DetailDisplay label={'Last Name'} content={recipient.lastName} copyButton />
         </Grid>
         <Grid item xs={8}>
-          <DetailDisplay label={'Email'} content={recipient.email} copyButton={true} />
+          <DetailDisplay label={'Email'} content={recipient.email} copyButton />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={5}>
-          <DetailDisplay label={'Street Address'} content={userInfo.street} copyButton={true} />
+          <DetailDisplay label={'Street Address'} content={userInfo.street} copyButton />
         </Grid>
         <Grid item xs={3}>
-          <DetailDisplay label={'City'} content={userInfo.city} copyButton={true} />
+          <DetailDisplay label={'City'} content={userInfo.city} copyButton />
         </Grid>
         <Grid item xs={3}>
-          <DetailDisplay label={'State'} content={userInfo.state} copyButton={true} />
+          <DetailDisplay label={'State'} content={userInfo.state} copyButton />
         </Grid>
         <Grid item xs={12}>
-          <DetailDisplay label={'Zip Code'} content={userInfo.zipcode} copyButton={true} />
+          <DetailDisplay label={'Zip Code'} content={userInfo.zipcode} copyButton />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={6}>
-          <DetailDisplay label={'Date Of Expense'} content={datePipe(dateOfExpense)} copyButton={true} />
+          <DetailDisplay label={'Date Of Expense'} content={datePipe(dateOfExpense)} copyButton />
         </Grid>
         <Grid item xs={7}>
-          <DetailDisplay label={'Total Expense'} content={`$${centsToDollar(totalCost)}`} copyButton={true} />
+          <DetailDisplay label={'Total Expense'} content={`$${centsToDollar(totalCost)}`} copyButton />
         </Grid>
         <Grid item xs={12}>
-          <DetailDisplay
-            label={'Expense Decription'}
-            content={`${vendor.name}[${centsToDollar(totalCost)}]`}
-            copyButton={true}
-          />
+          <DetailDisplay label={'Expense Decription'} content={`${vendor.name}[${centsToDollar(totalCost)}]`} copyButton />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
         <Grid item xs={12}>
-          <DetailDisplay label={'Business Purpose'} content={filteredProductsNames} copyButton={true} />
+          <DetailDisplay label={'Business Purpose'} content={filteredProductsNames} copyButton />
         </Grid>
         <Grid item xs={7}>
           <DetailDisplay
             label={'SABO Form Index'}
             content={codeAndRefundSourceName(reimbursementRequest.account)}
-            copyButton={true}
+            copyButton
           />
         </Grid>
         <Grid item xs={6}>
-          <DetailDisplay label={'Expense Type'} content={`${expenseType.code} - ${expenseType.name}`} copyButton={true} />
+          <DetailDisplay label={'Expense Type'} content={`${expenseType.code} - ${expenseType.name}`} copyButton />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
