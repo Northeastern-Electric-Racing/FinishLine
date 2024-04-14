@@ -16,15 +16,7 @@ const CreateLinkTypeModal = ({ open, handleClose, linkTypes }: CreateLinkTypeMod
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return (
-    <LinkTypeFormModal
-      open={open}
-      handleClose={handleClose}
-      onSubmit={mutateAsync}
-      linkTypes={linkTypes}
-      creatingNew={true}
-    />
-  );
+  return <LinkTypeFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} linkTypes={linkTypes} />;
 };
 
 export default CreateLinkTypeModal;

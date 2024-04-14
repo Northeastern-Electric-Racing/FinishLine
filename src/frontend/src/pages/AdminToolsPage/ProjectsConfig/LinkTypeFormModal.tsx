@@ -17,18 +17,11 @@ interface LinkTypeFormModalProps {
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
-  creatingNew: boolean;
 }
 
-const LinkTypeFormModal = ({
-  open,
-  handleClose,
-  defaultValues,
-  onSubmit,
-  linkTypes,
-  creatingNew
-}: LinkTypeFormModalProps) => {
+const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
   const toast = useToast();
+  const creatingNew = defaultValues === undefined;
 
   const uniqueLinkTypeTest = (name?: string) =>
     !creatingNew || (!!name && linkTypes && !linkTypes.map((v) => v.name).includes(name));
@@ -91,11 +84,7 @@ const LinkTypeFormModal = ({
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>LinkType Name</FormLabel>
-            {creatingNew ? (
-              <ReactHookTextField name="name" control={control} />
-            ) : (
-              <ReactHookTextField name="name" control={control} readOnly />
-            )}
+            <ReactHookTextField name="name" control={control} disabled={!creatingNew} />
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>
