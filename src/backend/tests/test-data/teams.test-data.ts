@@ -22,6 +22,7 @@ export const prismaTeam1: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   dateArchived: new Date('12/15/1985'),
   userArchived: wonderwoman,
   userArchivedId: 3,
+  teamType: null,
   teamTypeId: null
 };
 
@@ -38,6 +39,7 @@ export const primsaTeam2: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   dateArchived: new Date('12/02/2002'),
   userArchived: null,
   userArchivedId: null,
+  teamType: null,
   teamTypeId: null
 };
 
@@ -65,5 +67,6 @@ export const justiceLeague: Prisma.TeamGetPayload<typeof teamQueryArgs> = {
   dateArchived: null,
   userArchived: null,
   userArchivedId: null,
+  teamType: null,
   teamTypeId: null
 };
