@@ -878,6 +878,10 @@ export default class ReimbursementRequestService {
       data: { name }
     });
 
+    if (!vendor) throw new NotFoundException('Vendor', vendorId);
+
+    if (vendor.dateDeleted) throw new DeletedException('Vendor', vendorId);
+
     return vendorTransformer(vendor);
   }
 
