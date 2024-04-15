@@ -3,7 +3,7 @@ import WorkPackageForm from './WorkPackageForm';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useQuery } from '../../hooks/utils.hooks';
-import { CreateWorkPackageApiInputs, WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WPFormType, startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
