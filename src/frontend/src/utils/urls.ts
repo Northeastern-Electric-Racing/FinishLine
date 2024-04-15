@@ -53,19 +53,10 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
     .join('&')}`;
 };
 
-const workPackageTemplates = (queryParams?: { [field: string]: string }) => {
-  const url = `${API_URL}/template`;
-  if (!queryParams) return url;
-  return `${url}?${Object.keys(queryParams)
-    .map((param) => `${param}=${queryParams[param]}`)
-    .join('&')}`;
-};
-
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
-const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
-  `${workPackages}/${workPackageTemplates()}/${workPackageTemplateId}/edit`;
+const workPackageTemplatesEdit = (workPackageTemplateId: string) => `${workPackages}/template/${workPackageTemplateId}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
