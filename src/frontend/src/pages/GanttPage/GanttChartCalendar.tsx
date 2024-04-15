@@ -22,8 +22,9 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
         }}
       >
         {days.map((day, index) => {
-          // Show the year on the first date and on the first day of a new year
-          const yearDisplay = index === 0 || (day.getMonth() === 0 && getDate(day) <= 7) ? format(day, 'y') : '';
+          // displays the month and year for the first monday of a month;
+          // displays the month and year for the first date on the calendar if it's the first or second monday
+          const monthDisplay = (index === 0 && getDate(day) <= 14) || getDate(day) <= 7 ? format(day, 'MMM y') : '';
           return (
             <Box
               key={day.toISOString()}
@@ -37,7 +38,7 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
               }}
             >
               <Typography fontWeight="bold" variant="h6">
-                {yearDisplay}
+                {monthDisplay}
               </Typography>
             </Box>
           );
@@ -57,16 +58,17 @@ export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
             <Card
               key={day.toISOString()}
               sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 borderRadius: '0.25rem',
-                lineHeight: '1rem',
                 textAlign: 'center',
-                height: '3.25rem',
+                height: '1.75rem',
                 minWidth: GANTT_CHART_CELL_SIZE,
                 maxWidth: GANTT_CHART_CELL_SIZE
               }}
             >
-              <Typography fontWeight="bold">{format(day, 'MMM')}</Typography>
-              <Typography fontWeight="bold">{format(day, 'd')}</Typography>
+              <Typography>{format(day, 'd')}</Typography>
             </Card>
           );
         })}
