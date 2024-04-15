@@ -620,8 +620,21 @@ export default class ChangeRequestsService {
         'Change Request with proposed changes must have either project or work package proposed changes'
       );
     } else if (projectProposedChanges) {
-      const { name, status, projectLeadId, projectManagerId, links } = projectProposedChanges;
-      const { budget, summary, newProject, rules, teamIds, goals, features, otherConstraints } = projectProposedChanges;
+      const {
+        name,
+        status,
+        projectLeadId,
+        projectManagerId,
+        links,
+        budget,
+        summary,
+        newProject,
+        rules,
+        teamIds,
+        goals,
+        features,
+        otherConstraints
+      } = projectProposedChanges;
 
       await validateProposedChangesFields(projectLeadId, projectManagerId, links);
 
@@ -657,8 +670,19 @@ export default class ChangeRequestsService {
         }
       });
     } else if (workPackageProposedChanges) {
-      const { name, status, projectLeadId, projectManagerId, links } = workPackageProposedChanges;
-      const { duration, startDate, stage, expectedActivities, deliverables, blockedBy } = workPackageProposedChanges;
+      const {
+        name,
+        status,
+        projectLeadId,
+        projectManagerId,
+        links,
+        duration,
+        startDate,
+        stage,
+        expectedActivities,
+        deliverables,
+        blockedBy
+      } = workPackageProposedChanges;
 
       await validateProposedChangesFields(projectLeadId, projectManagerId, links);
 
