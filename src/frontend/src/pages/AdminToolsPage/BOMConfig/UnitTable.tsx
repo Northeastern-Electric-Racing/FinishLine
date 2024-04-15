@@ -59,7 +59,7 @@ const UnitTypeTable: React.FC = () => {
   return (
     <Box>
       <CreateUnitFormModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable columns={[{ name: 'Unit' }]} rows={unitTypesTableRows} />
+      <AdminToolTable columns={[{ name: 'Unit' }, { name: '' }]} rows={unitTypesTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"
