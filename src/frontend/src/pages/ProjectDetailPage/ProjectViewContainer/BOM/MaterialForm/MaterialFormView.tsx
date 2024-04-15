@@ -99,7 +99,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     MaterialStatus.ReadyToOrder
                   ].map((status) => (
                     <MenuItem key={status} value={status}>
-                      {displayEnum(status)}
+                      {status ? displayEnum(status) : ''}
                     </MenuItem>
                   ))}
                 </TextField>
