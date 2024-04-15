@@ -20,19 +20,19 @@ import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
-import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: (data: WorkPackageApiInputs) => void;
+  mutateAsync: (data: CreateWorkPackageApiInputs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
   formType: WPFormType;
-  schema: any
+  schema: any;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -118,6 +118,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       const payload = {
         projectLeadId: leadId ? parseInt(leadId) : undefined,
         projectManagerId: managerId ? parseInt(managerId) : undefined,
+        projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
@@ -131,7 +132,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         deliverables: isCreateWP(formType) ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
         stage: stage as WorkPackageStage
       };
-      await mutateAsync(payload);
+      mutateAsync(payload);
       exitActiveMode();
     } catch (e) {
       if (e instanceof Error) {

@@ -88,6 +88,7 @@ export const isCreateWP = (formType: WPFormType): boolean => {
  */
 export const isEdit = (formType: WPFormType): boolean => {
   return formType === WPFormType.EDIT;
+};
 
 /**
  * Creates a UUID

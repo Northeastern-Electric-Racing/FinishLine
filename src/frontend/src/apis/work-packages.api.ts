@@ -24,8 +24,8 @@ export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
     projectNumber: number;
     workPackageNumber: number;
   };
-  deliverables: string[];
-  expectedActivities: string[];
+  deliverables: string[] | { id: number; detail: string }[];
+  expectedActivities: string[] | { id: number; detail: string }[];
 }
 
 /**

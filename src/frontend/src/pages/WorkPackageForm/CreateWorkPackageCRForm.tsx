@@ -1,9 +1,9 @@
-import { ChangeRequestType, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
 import WorkPackageForm from './WorkPackageForm';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useQuery } from '../../hooks/utils.hooks';
-import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { CreateWorkPackageApiInputs, WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WPFormType, startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
@@ -19,17 +19,20 @@ const CreateWorkPackageCRForm: React.FC = () => {
   const { mutateAsync } = useCreateStandardChangeRequest();
 
   const currentUser = useCurrentUser();
-  const onSubmit = (payload: WorkPackageApiInputs) => {
+  const onSubmit = async (payload: CreateWorkPackageApiInputs) => {
     const crPayload = {
       submitter: currentUser,
-      carNumber: wbsNum.substring(0, 1),
-      projectNumber: wbsNum.substring(2, 3),
-      workPackageNumber: wbsNum.substring(4, 5),
+      wbsNum: validateWBS(wbsNum),
       type: ChangeRequestType.Issue,
       what: payload.name,
-      why: { type: 'DESIGN', explain: 'explination' },
+      why: [{ explain: 'explination', type: ChangeRequestReason.Competition }],
       proposedSolutions: [],
-      ...payload
+      duration: payload.duration,
+      startDate: payload.startDate,
+      stage: payload.stage,
+      blockedBy: payload.blockedBy,
+      expectedActivities: payload.expectedActivities,
+      deliverables: payload.deliverables
     };
 
     await mutateAsync(crPayload);

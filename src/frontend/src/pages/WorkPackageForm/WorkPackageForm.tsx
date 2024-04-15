@@ -7,14 +7,14 @@ import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
-import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WPFormType } from '../../utils/form';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
-  mutateAsync: (data: WorkPackageApiInputs) => void;
+  mutateAsync: (data: CreateWorkPackageApiInputs) => void;
   formType: WPFormType;
   schema: any
 }
