@@ -15,6 +15,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 
 interface ProjectEditContainerProps {
   project: Project;
@@ -34,6 +35,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const rules = rulesToObject(project.rules);
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
+  const { mutateAsync: createScopeCRMutateAsync } = useCreateStandardChangeRequest();
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
@@ -117,6 +119,39 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     }
   };
 
+  const onSubmitCreateChangeRequest = async (data: ProjectFormInput) => {
+    const { name, budget, summary, links } = data;
+    const rules = data.rules.map((rule) => rule.detail);
+    const crId = data.crId;
+
+    const goals = mapBulletsToPayload(data.goals);
+    const features = mapBulletsToPayload(data.features);
+    const otherConstraints = mapBulletsToPayload(data.constraints);
+
+    try {
+      const payload: EditSingleProjectPayload = {
+        name,
+        budget,
+        summary,
+        links,
+        projectId: project.id,
+        crId: Number(crId),
+        rules,
+        goals,
+        features,
+        otherConstraints,
+        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+      };
+      await createScopeCRMutateAsync(payload);
+      exitEditMode();
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+  };
+
   return (
     <ProjectFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
@@ -128,6 +163,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       defaultValues={defaultValues}
       projectLeadId={projectLeadId}
       projectManagerId={projectManagerId}
+      onSubmitSecondary={onSubmitCreateChangeRequest}
     />
   );
 };

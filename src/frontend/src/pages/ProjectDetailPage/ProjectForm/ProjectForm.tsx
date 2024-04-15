@@ -8,7 +8,7 @@ import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
@@ -55,6 +55,7 @@ interface ProjectFormContainerProps {
   setProjectLeadId: (id?: string) => void;
   projectLeadId?: string;
   projectManagerId?: string;
+  onSubmitSecondary?: (data: ProjectFormInput) => void;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -66,7 +67,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   setProjectManagerId,
   setProjectLeadId,
   projectLeadId,
-  projectManagerId
+  projectManagerId,
+  onSubmitSecondary
 }) => {
   const allUsers = useAllUsers();
   const schema = !project
@@ -158,11 +160,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     <form
       noValidate
       id="project-edit-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(onSubmit)(e);
-      }}
       onKeyPress={(e) => {
         e.key === 'Enter' && e.preventDefault();
       }}
@@ -173,10 +170,31 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
           <Box textAlign="right">
+            <Button
+              variant="outlined"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (onSubmitSecondary) handleSubmit(onSubmitSecondary)(e);
+              }}
+              disabled={!onSubmitSecondary}
+              sx={{ mx: 1 }}
+            >
+              Create Change Request
+            </Button>
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
+            <NERSuccessButton
+              variant="contained"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSubmit(onSubmit)(e);
+              }}
+              type="submit"
+              sx={{ mx: 1 }}
+            >
               Submit
             </NERSuccessButton>
           </Box>
