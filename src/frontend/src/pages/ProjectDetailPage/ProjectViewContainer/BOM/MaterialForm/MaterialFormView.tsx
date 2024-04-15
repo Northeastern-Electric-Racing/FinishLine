@@ -11,7 +11,8 @@ import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
-import { formatEnumValue } from '../../../../../utils/enum-pipes';
+import { displayEnum } from '../../../../../utils/pipes';
+import { MaterialStatus } from 'shared';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -90,9 +91,9 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               defaultValue={control._defaultValues.status}
               render={({ field }) => (
                 <TextField {...field} select variant="outlined" error={!!errors.status} helperText={errors.status?.message}>
-                  {['ORDERED', 'NOT_READY_TO_ORDER', 'SHIPPED', 'RECEIVED', 'READY_TO_ORDER'].map((status) => (
+                  {[MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Shipped, MaterialStatus.NotReadyToOrder, MaterialStatus.ReadyToOrder].map((status) => (
                     <MenuItem key={status} value={status}>
-                      {formatEnumValue(status)}
+                      {displayEnum(status)}
                     </MenuItem>
                   ))}
                 </TextField>
