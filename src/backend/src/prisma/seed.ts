@@ -204,9 +204,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
@@ -554,9 +552,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
@@ -612,9 +608,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
@@ -788,9 +782,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 50,
       summary: 'Buy hot pink paint',
       newProject: false,
