@@ -35,7 +35,7 @@ const bomStatusChipStyle = (status: MaterialStatus) => ({
   alignItems: 'center',
   padding: '4px',
   borderRadius: '6px',
-  minWidth: '85px',
+  minWidth: '90px',
   height: '36px',
   textAlign: 'center'
 });
