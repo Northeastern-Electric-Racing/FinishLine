@@ -27,6 +27,7 @@ import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
+import { useState } from 'react';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -35,6 +36,8 @@ interface AppAuthenticatedProps {
 
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -49,8 +52,8 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
       <Box display={'flex'}>
-        <Sidebar />
-        <Container maxWidth={false}>
+        <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
+        <Container maxWidth={'xl'} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 90px)' }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />

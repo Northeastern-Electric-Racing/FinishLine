@@ -8,7 +8,7 @@ import {
   prismaDesignReview5,
   sharedDesignReview1,
   teamType1
-} from './test-data/design-reviews.test-data';
+} from '../test-data/design-reviews.test-data';
 import {
   aquaman,
   batman,
@@ -17,8 +17,8 @@ import {
   superman,
   theVisitor,
   wonderwoman
-} from './test-data/users.test-data';
-import prisma from '../src/prisma/prisma';
+} from '../test-data/users.test-data';
+import prisma from '../../src/prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
@@ -26,9 +26,9 @@ import {
   DeletedException,
   HttpException,
   NotFoundException
-} from '../src/utils/errors.utils';
-import { prismaWbsElement1 } from './test-data/wbs-element.test-data';
-import DesignReviewsService from '../src/services/design-reviews.services';
+} from '../../src/utils/errors.utils';
+import { prismaWbsElement1 } from '../test-data/wbs-element.test-data';
+import DesignReviewsService from '../../src/services/design-reviews.services';
 import { Design_Review_Status as PrismaDesignReviewStatus } from '@prisma/client';
 
 describe('Design Reviews', () => {
@@ -422,7 +422,7 @@ describe('Design Reviews', () => {
 
       const res = await DesignReviewsService.createDesignReview(
         batman,
-        new Date(),
+        new Date().toDateString(),
         '1',
         [],
         [],
@@ -441,7 +441,7 @@ describe('Design Reviews', () => {
       await expect(
         DesignReviewsService.createDesignReview(
           theVisitor,
-          new Date('2024-03-25'),
+          '2024-03-25',
           '1',
           [],
           [],
@@ -460,7 +460,7 @@ describe('Design Reviews', () => {
       await expect(
         DesignReviewsService.createDesignReview(
           batman,
-          new Date('2024-03-25'),
+          '2024-03-25',
           '15',
           [],
           [],
@@ -481,7 +481,7 @@ describe('Design Reviews', () => {
       await expect(
         DesignReviewsService.createDesignReview(
           batman,
-          new Date('2024-03-25'),
+          '2024-03-25',
           '1',
           [],
           [],
