@@ -67,7 +67,7 @@ export default class DesignReviewsService {
    */
   static async createDesignReview(
     submitter: User,
-    dateScheduled: Date,
+    dateScheduled: string,
     teamTypeId: string,
     requiredMemberIds: number[],
     optionalMemberIds: number[],
@@ -115,13 +115,14 @@ export default class DesignReviewsService {
       }
     }
 
-    if (new Date(dateScheduled.toDateString()) < new Date(new Date().toDateString())) {
+    const date = new Date(dateScheduled);
+    if (new Date(date.toDateString()) < new Date(new Date().toDateString())) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
     }
 
     const designReview = await prisma.design_Review.create({
       data: {
-        dateScheduled,
+        dateScheduled: date,
         dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
         isOnline: false,
@@ -201,14 +202,14 @@ export default class DesignReviewsService {
    * @param teamTypeId the team that the design_review is for (software, electrical, etc.)
    * @param requiredMembersIds required members Ids for the design review
    * @param optionalMembersIds optional members Ids for the design review
-   * @param isOnline is the design review online (IF TRUE: zoom link should be requried))
+   * @param isOnline is the design review online (IF TRUE: zoom link should be requried)
    * @param isInPerson is the design review in person (IF TRUE: location should be required)
    * @param zoomLink the zoom link for the design review meeting
    * @param location the location for the design review meeting
    * @param docTemplateLink the document template link for the design review
    * @param status see Design_Review_Status enum
-   * @param attendees the attendees for the design review (should they have any relation to the other shit / can't edit this after STATUS: DONE)
-   * @param meetingTimes meeting time must be between 0-83 (Monday 12am - Sunday 12am, 1hr minute increments)
+   * @param attendees the attendees for the design review
+   * @param meetingTimes meeting time must be between 0-83 (representing 1hr increments from 10am 10pm, Monday-Sunday)
    */
 
   static async editDesignReview(
