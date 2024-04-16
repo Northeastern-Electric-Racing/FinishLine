@@ -23,6 +23,7 @@ const PROJECTS_OVERVIEW = PROJECTS + '/overview';
 const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
+const PROJECTS_NEW_CR = PROJECTS + `/newCR`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
 
 /**************** Teams Section ****************/
@@ -66,6 +67,7 @@ export const routes = {
   PROJECTS_ALL,
   PROJECTS_BY_WBS,
   PROJECTS_NEW,
+  PROJECTS_NEW_CR,
   WORK_PACKAGE_NEW,
 
   CHANGE_REQUESTS,

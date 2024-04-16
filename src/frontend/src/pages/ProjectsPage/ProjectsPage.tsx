@@ -9,6 +9,11 @@ import { routes } from '../../utils/routes';
 import ProjectsOverview from './ProjectsOverview';
 import PageLayout from '../../components/PageLayout';
 import NERTabs from '../../components/Tabs';
+import { NERButton } from '../../components/NERButton';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { isGuest } from 'shared';
+import { Add } from '@mui/icons-material';
+import { useHistory } from 'react-router-dom';
 
 /**
  * Cards of all projects that this user is in their team.
@@ -16,10 +21,22 @@ import NERTabs from '../../components/Tabs';
 
 const ProjectsPage: React.FC = () => {
   const [tabIndex, setTabIndex] = useState<number>(0);
+  const user = useCurrentUser();
+  const history = useHistory();
 
   return (
     <PageLayout
       title="Projects"
+      headerRight={
+        <NERButton
+          variant="contained"
+          disabled={isGuest(user.role)}
+          startIcon={<Add />}
+          onClick={() => history.push(routes.PROJECTS_NEW_CR)}
+        >
+          New Project
+        </NERButton>
+      }
       tabs={
         <NERTabs
           setTab={setTabIndex}

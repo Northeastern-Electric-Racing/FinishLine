@@ -20,6 +20,7 @@ interface ProjectEditDetailsProps {
   setProjectLeadId: (projectLead?: string) => void;
   setcrId?: (crId?: number) => void;
   setCarNumber?: (carNumber?: number) => void;
+  autoCRMode?: boolean;
 }
 
 const userToAutocompleteOption = (user?: User): { label: string; id: string } => {
@@ -35,7 +36,8 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   projectManager,
   projectLead,
   setProjectLeadId,
-  setProjectManagerId
+  setProjectManagerId,
+  autoCRMode
 }) => {
   return (
     <Box>
@@ -54,11 +56,13 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
-          <FormControl fullWidth>
-            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-          </FormControl>
-        </Grid>
+        {!autoCRMode ?? (
+          <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
+            <FormControl fullWidth>
+              <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+            </FormControl>
+          </Grid>
+        )}
         {!project && (
           <>
             <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>

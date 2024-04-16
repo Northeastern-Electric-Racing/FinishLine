@@ -55,6 +55,7 @@ interface ProjectFormContainerProps {
   setProjectLeadId: (id?: string) => void;
   projectLeadId?: string;
   projectManagerId?: string;
+  autoCRMode?: boolean;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -66,7 +67,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   setProjectManagerId,
   setProjectLeadId,
   projectLeadId,
-  projectManagerId
+  projectManagerId,
+  autoCRMode
 }) => {
   const allUsers = useAllUsers();
   const schema = !project
@@ -177,7 +179,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               Cancel
             </NERFailButton>
             <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
-              Submit
+              {autoCRMode ? 'Generate Change Request' : 'Submit'}
             </NERSuccessButton>
           </Box>
         }
