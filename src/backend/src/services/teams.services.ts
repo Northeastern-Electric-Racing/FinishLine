@@ -373,6 +373,13 @@ export default class TeamsService {
     return teamTypes;
   }
 
+  /**
+   * Sets the teamType for a team
+   * @param submitter the user who is setting the team type
+   * @param teamId id of the team
+   * @param teamTypeId id of the teamType
+   * @returns the updated team with teamType
+   */
   static async setTeamType(submitter: User, teamId: string, teamTypeId: string): Promise<Team> {
     if (!isAdmin(submitter.role)) {
       throw new AccessDeniedAdminOnlyException('set a team type');
@@ -395,7 +402,7 @@ export default class TeamsService {
       throw new NotFoundException('Team', teamId);
     }
 
-    const updateTeam = await prisma.team.update({
+    const updatedTeam = await prisma.team.update({
       where: { teamId },
       data: {
         teamType: {
@@ -404,6 +411,6 @@ export default class TeamsService {
       },
       ...teamQueryArgs
     });
-    return teamTransformer(updateTeam);
+    return teamTransformer(updatedTeam);
   }
 }
