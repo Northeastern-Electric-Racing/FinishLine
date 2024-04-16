@@ -13,7 +13,7 @@ import {
   WorkPackage,
   WorkPackageStage,
   WorkPackageTemplate,
-  BlcockedByCreateArgs
+  BlockedByCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -710,30 +710,31 @@ export default class WorkPackagesService {
     templateNotes: string,
     duration: number | undefined,
     stage: WorkPackageStage | undefined,
-    blockedBy: BlcockedByCreateArgs[],
+    blockedBy: BlockedByCreateArgs[],
     expectedActivities: string[],
     deliverables: string[],
     workPackageName: string | undefined
-  ): Promise<Work_Package_Template> {
-    // retrieving original work package template
+  ): Promise<WorkPackageTemplate> {
     const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
       where: { workPackageTemplateId },
       include: { blockedBy: true }
     });
 
-    // error handling
     if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package Template', workPackageTemplateId);
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
 
-    // retrieving list of blocked By ids in work package template
-    const blockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
+    const originalblockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
 
-    // retrieving list of blocked By ids in work package template
-    const newBlockedByIds = blockedBy.map((item) => item.blockedByInfoId);
+    const updatedBlockedByIds = blockedBy.map((item) => item.blockedByInfoId);
 
-    // checking differences in both blocked by lists
-    for (const blockedByItemId of blockedByIds) {
+    const newBlockedBy = blockedBy.filter((blockedByItem: BlockedByCreateArgs) => {
+      return !originalWorkPackageTemplate.blockedBy.some(
+        (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
+      );
+    });
+
+    for (const blockedByItemId of originalblockedByIds) {
       const blockedBy = await prisma.blocked_By_Info.findUnique({
         where: {
           blockedByInfoId: blockedByItemId
@@ -741,16 +742,13 @@ export default class WorkPackagesService {
       });
 
       // deleting a blocked by if the new list does not contain it
-      if (!newBlockedByIds.includes(blockedByItemId)) {
+      if (!updatedBlockedByIds.includes(blockedByItemId)) {
         await prisma.blocked_By_Info.delete({
           where: {
             blockedByInfoId: blockedByItemId
           }
         });
-      }
-
-      // updating otherwise
-      else {
+      } else {
         await prisma.blocked_By_Info.update({
           where: {
             blockedByInfoId: blockedByItemId
@@ -762,19 +760,10 @@ export default class WorkPackagesService {
         });
       }
     }
-
-    // checking for new blocked by in the new list
-    const isNewBlockedBy = (blockedByItem: BlcockedByCreateArgs) => {
-      return !originalWorkPackageTemplate.blockedBy.some(
-        (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
-      );
-    };
-
-    // filtering blocked by list to those that are new
-    const blockedByToCreate = blockedBy.filter(isNewBlockedBy);
+    
 
     // creating the new blocked by
-    for (const blockedByItem of blockedByToCreate) {
+    for (const blockedByItem of newBlockedBy) {
       await prisma.blocked_By_Info.create({
         data: {
           ...blockedByItem,
@@ -796,9 +785,10 @@ export default class WorkPackagesService {
         expectedActivities,
         deliverables,
         workPackageName
-      }
+      },
+      ...workPackageTemplateQueryArgs
     });
 
-    return updatedWorkPackageTemplate;
+    return workPackageTemplateTransformer(updatedWorkPackageTemplate);
   }
 }
