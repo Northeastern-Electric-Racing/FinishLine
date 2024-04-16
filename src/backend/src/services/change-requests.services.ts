@@ -219,6 +219,10 @@ export default class ChangeRequestsService {
         // if a crID associated with a project has work package proposed changes, then it is creating a new work package.
 
         const crAssociatedWithProject = foundCR.wbsElement.project;
+        const crHasWorkPackageProposedChanges = foundCR.wbsProposedChanges.workPackageProposedChanges;
+
+        // thus I create a work package using the createworkpackage service function passing in the needed parameters
+        // before I create a workpackage or project I need to update the CR to show it as accepted as validation in the services might not allow it to be created if the CR was not accepted
       }
     }
 
