@@ -81,7 +81,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
         marginBottom={'20px'}
       >
         <Grid item>
-          <Typography gutterBottom color={'red'} variant="h5">
+          <Typography gutterBottom color={'primary'} variant="h5">
             Schedule Settings
           </Typography>
         </Grid>

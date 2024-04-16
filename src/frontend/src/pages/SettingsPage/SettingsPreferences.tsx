@@ -106,10 +106,12 @@ const SettingsPreferences: React.FC = () => {
       <UserSecureSettings currentSettings={userSecureSettings} />
       <UserScheduleSettings user={user} />
       <Grid container mt={1.5}>
-        <Grid item xs={12}>
-          <Typography variant="h5" color={'red'} borderBottom={1} borderColor={'white'}>
-            Other Settings
-          </Typography>
+        <Grid container spacing={1} direction={'row'} borderColor={'white'} marginBottom={'20px'} borderBottom={1}>
+          <Grid item>
+            <Typography variant="h5" color={'primary'}>
+              Other Settings
+            </Typography>
+          </Grid>
         </Grid>
         <Grid item xs={12}>
           <FormGroup>

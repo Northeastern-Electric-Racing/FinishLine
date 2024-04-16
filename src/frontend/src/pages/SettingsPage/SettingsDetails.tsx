@@ -45,7 +45,7 @@ const SettingsDetails: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom color={'red'} borderBottom={1} borderColor={'white'}>
+      <Typography variant="h5" gutterBottom color={'primary'} borderBottom={1} borderColor={'white'}>
         User Details
       </Typography>
       <Grid container direction="column" spacing={0.5}>
