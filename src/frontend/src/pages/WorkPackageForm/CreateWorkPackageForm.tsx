@@ -33,7 +33,7 @@ const CreateWorkPackageForm: React.FC = () => {
       .integer('CR ID must be an integer')
       .min(1, 'CR ID must be greater than or equal to 1')
   });
-  
+
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
