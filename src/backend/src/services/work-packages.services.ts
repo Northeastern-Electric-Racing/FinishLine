@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
+import { Role, User, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -760,7 +760,6 @@ export default class WorkPackagesService {
         });
       }
     }
-    
 
     // creating the new blocked by
     for (const blockedByItem of newBlockedBy) {
