@@ -1,11 +1,5 @@
 import { Box } from '@mui/system';
-import {
-  GridCallbackDetails,
-  GridColumnVisibilityModel,
-  GridColumns,
-  GridRowParams,
-  GridValidRowModel
-} from '@mui/x-data-grid';
+import { GridColumnVisibilityModel, GridColumns, GridRowParams, GridValidRowModel } from '@mui/x-data-grid';
 import { Assembly, Material } from 'shared';
 import { BomRow, bomTableStyles, materialToRow, BomStyledDataGrid } from '../../../../utils/bom.utils';
 import { addMaterialCosts } from '../BOMTab';
@@ -110,16 +104,18 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setColumn, columns, mat
       }}
     >
       <BomStyledDataGrid
-        onColumnVisibilityModelChange={(model: GridColumnVisibilityModel, details: GridCallbackDetails) => {
+        onColumnVisibilityModelChange={(model: GridColumnVisibilityModel) => {
           //store a state inside a parent array (array in a parent class), and then every time the state changes, update the parent state, add another part that, on reload, we check the parent state and update the child state
           console.log(columns);
           const tempColumns: boolean[] = [];
           Object.keys(model).forEach((toDelete) => {
-            tempColumns.push(model[toDelete]);
+            tempColumns.push(!model[toDelete]);
           });
 
           // Only call setColumn if tempColumns is different from the current column visibility model
-          if (JSON.stringify(tempColumns) !== JSON.stringify(columns)) {
+          if (JSON.stringify(tempColumns) !== JSON.stringify(hideColumn)) {
+            console.log(JSON.stringify(tempColumns));
+            console.log(JSON.stringify(hideColumn));
             setColumn(tempColumns);
           }
         }}
