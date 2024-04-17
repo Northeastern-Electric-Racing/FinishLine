@@ -1148,9 +1148,9 @@ const performSeed: () => Promise<void> = async () => {
     assembly1.assemblyId
   );
 
-  const teamType1 = await TeamsService.createTeamType(batman, 'team 1', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'team 2', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'team 3', 'SettingsIcon');
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();
