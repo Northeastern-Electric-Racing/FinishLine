@@ -70,6 +70,7 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
         direction={'row'}
         spacing={edit ? 2 : 1}
         mt={1}
+        paddingBottom={'5px'}
         borderColor={'white'}
         marginBottom={'20px'}
         borderBottom={1}

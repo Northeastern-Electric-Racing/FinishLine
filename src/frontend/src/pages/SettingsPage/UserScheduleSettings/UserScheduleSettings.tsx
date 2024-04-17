@@ -79,6 +79,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
         borderBottom={1}
         borderColor={'white'}
         marginBottom={'20px'}
+        paddingBottom={'5px'}
       >
         <Grid item>
           <Typography gutterBottom color={'primary'} variant="h5">
