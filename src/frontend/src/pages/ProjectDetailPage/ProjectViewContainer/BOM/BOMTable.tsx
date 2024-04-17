@@ -14,12 +14,14 @@ import { useTheme } from '@mui/material';
 import { useState } from 'react';
 
 interface BOMTableProps {
+  hideColumn: boolean[];
+  setColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
   columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
 }
 
-const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) => {
+const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setColumn, columns, materials, assemblies }) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
 
   const arrowSymbol = (rowId: string) => {
@@ -109,18 +111,17 @@ const BOMTable: React.FC<BOMTableProps> = ({ columns, materials, assemblies }) =
     >
       <BomStyledDataGrid
         onColumnVisibilityModelChange={(model: GridColumnVisibilityModel, details: GridCallbackDetails) => {
-          console.log(model, details);
-          console.log(rows);
-          Object.keys(model).forEach((column) => {
-            if (!model[column]) {
-              console.log('removing column', column);
-              columns = columns.filter((col) => col.field !== column);
-              rows.forEach((row) => {
-                delete row[column];
-              });
-              console.log(rows);
-            }
+          //store a state inside a parent array (array in a parent class), and then every time the state changes, update the parent state, add another part that, on reload, we check the parent state and update the child state
+          console.log(columns);
+          const tempColumns: boolean[] = [];
+          Object.keys(model).forEach((toDelete) => {
+            tempColumns.push(model[toDelete]);
           });
+
+          // Only call setColumn if tempColumns is different from the current column visibility model
+          if (JSON.stringify(tempColumns) !== JSON.stringify(columns)) {
+            setColumn(tempColumns);
+          }
         }}
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.filter(isAssemblyOpen)}
