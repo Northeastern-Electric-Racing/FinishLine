@@ -13,15 +13,6 @@ export default class DesignReviewsController {
     }
   }
 
-  static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
-    try {
-      const teamTypes = await DesignReviewsService.getAllTeamTypes();
-      return res.status(200).json(teamTypes);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async deleteDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const drId: string = req.params.designReviewId;
@@ -69,7 +60,7 @@ export default class DesignReviewsController {
     try {
       const {
         dateScheduled,
-        teamType,
+        teamTypeId,
         requiredMembersIds,
         optionalMembersIds,
         isOnline,
@@ -91,7 +82,7 @@ export default class DesignReviewsController {
         user,
         designReviewId,
         dateScheduled,
-        teamType.teamTypeId,
+        teamTypeId,
         requiredMembersIds,
         optionalMembersIds,
         isOnline,
