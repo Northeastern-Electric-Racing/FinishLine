@@ -160,12 +160,10 @@ export default class WorkPackagesController {
       next(error);
     }
   }
-  static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
+  static async workPackageTemplates(req: Request, res: Response, next: NextFunction) {
     try {
       const submitter = await getCurrentUser(res);
-      const outputWorkPackageTemplates: WorkPackageTemplate[] = await WorkPackagesService.getAllWorkPackageTemplates(
-        submitter
-      );
+      const outputWorkPackageTemplates: WorkPackageTemplate[] = await WorkPackagesService.workPackageTemplates(submitter);
 
       res.status(200).json(outputWorkPackageTemplates);
     } catch (error: unknown) {

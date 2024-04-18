@@ -730,9 +730,9 @@ export default class WorkPackagesService {
     return workPackageTemplateTransformer(workPackage);
   }
 
-  static async getAllWorkPackageTemplates(submitter: User): Promise<WorkPackageTemplate[]> {
+  static async workPackageTemplates(submitter: User): Promise<WorkPackageTemplate[]> {
     if (isGuest(submitter.role)) {
-      throw new AccessDeniedGuestException('You must be at least a member to access this function.');
+      throw new AccessDeniedGuestException('get all work package templates.');
     }
     const workPackageTemplates = await prisma.work_Package_Template.findMany({
       where: { dateDeleted: null },

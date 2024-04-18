@@ -66,6 +66,6 @@ workPackagesRouter.post(
 );
 
 workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
-workPackagesRouter.get('/template', WorkPackagesController.getAllWorkPackageTemplates);
+workPackagesRouter.get('/all-templates/get', WorkPackagesController.workPackageTemplates);
 
 export default workPackagesRouter;
