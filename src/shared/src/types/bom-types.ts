@@ -4,8 +4,9 @@ import { Decimal } from 'decimal.js';
 export enum MaterialStatus {
   Ordered = 'ORDERED',
   Received = 'RECEIVED',
-  Unordered = 'UNORDERED',
-  Shipped = 'SHIPPED'
+  Shipped = 'SHIPPED',
+  NotReadyToOrder = 'NOT_READY_TO_ORDER',
+  ReadyToOrder = 'READY_TO_ORDER'
 }
 
 export interface Unit {

@@ -538,7 +538,8 @@ enum Material_Status {
   RECEIVED
   ORDERED
   SHIPPED
-  UNORDERED
+  NOT_READY_TO_ORDER
+  READY_TO_ORDER
 }
 
 model Unit {
