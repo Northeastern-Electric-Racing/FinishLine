@@ -1,32 +1,23 @@
 import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { bulletsToObject, isEdit } from '../../utils/form';
+import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
-import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
-import { WPFormType } from '../../utils/form';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
-  mutateAsync: (data: CreateWorkPackageApiInputs) => void;
-  formType: WPFormType;
-  schema: any;
+  mutateAsync: (data: WorkPackageApiInputs) => void;
+  createForm?: boolean;
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
-  wbsNum,
-  mutateAsync,
-  exitActiveMode,
-  crId,
-  formType,
-  schema
-}) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -50,7 +41,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   );
 
   const defaultValues: WorkPackageFormViewPayload | undefined =
-    isEdit(formType) && workPackage
+    !createForm && workPackage
       ? {
           ...workPackage,
           workPackageId: workPackage.id,
@@ -81,8 +72,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
       crId={crId}
-      formType={formType}
-      schema={schema}
+      createForm={createForm}
     />
   );
 };

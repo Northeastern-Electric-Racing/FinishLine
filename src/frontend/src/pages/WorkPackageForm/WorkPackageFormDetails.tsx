@@ -13,7 +13,6 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { WPFormType, isCreateCr, isEdit } from '../../utils/form';
 
 interface Props {
   lead?: string;
@@ -24,7 +23,7 @@ interface Props {
   usersForProjectManager: User[];
   control: Control<WorkPackageFormViewPayload>;
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
-  formType: WPFormType;
+  createForm?: boolean;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -36,7 +35,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   usersForProjectManager,
   control,
   errors,
-  formType
+  createForm
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -84,15 +83,13 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {!isCreateCr(formType) && (
-          <Grid item xs={12} md={3}>
-            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-          </Grid>
-        )}
+        <Grid item xs={12} md={3}>
+          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+        </Grid>
         <Grid item xs={12} md={3}>
           <StageSelect />
         </Grid>
-        <Grid item xs={12} md={isCreateCr(formType) ? 3 : 2}>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -133,7 +130,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {isEdit(formType) && (
+        {!createForm && (
           <>
             <Grid item xs={12} md={5}>
               <FormLabel> Project Lead</FormLabel>

@@ -144,16 +144,17 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     );
   };
 
-  const buildURLForCreateWorkPackageCR = () => {
-    return `${routes.WORK_PACKAGE_CR_NEW}?wbs=${projectWbsPipe(project.wbsNum)}`;
+  const buildURLForCreateWorkPackage = () => {
+    return `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`;
   };
+
   const CreateWorkPackageButton = () => {
     return (
-      <MenuItem onClick={() => history.push(buildURLForCreateWorkPackageCR())} disabled={isGuest(user.role)}>
+      <MenuItem onClick={() => history.push(buildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
         <ListItemIcon>
           <ContentPasteIcon fontSize="small" />
         </ListItemIcon>
-        Create New Work Package
+        Create Work Package
       </MenuItem>
     );
   };
