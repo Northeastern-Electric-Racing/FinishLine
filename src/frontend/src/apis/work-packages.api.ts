@@ -13,7 +13,7 @@ export interface WorkPackageApiInputs {
   name: string;
   startDate: String;
   duration: number;
-  crId: number;
+  crId: number | undefined;
   stage: WorkPackageStage | null;
   blockedBy: WbsNumber[];
 }
@@ -24,8 +24,8 @@ export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
     projectNumber: number;
     workPackageNumber: number;
   };
-  deliverables: string[];
-  expectedActivities: string[];
+  deliverables: string[] | { id: number; detail: string }[];
+  expectedActivities: string[] | { id: number; detail: string }[];
 }
 
 /**
