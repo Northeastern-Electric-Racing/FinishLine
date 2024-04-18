@@ -75,7 +75,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
       blockedByOptions={blockedByOptions}
       crId={crId}
       createForm={createForm}
-      createStandardCr={createStandardCr}
     />
   );
 };

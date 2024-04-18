@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequestReason, ChangeRequestType, User, validateWBS, WbsElement, wbsPipe } from 'shared';
+import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -23,7 +23,9 @@ import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
-import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
+import { NERButton } from '../../components/NERButton';
+import CreateStandardChangeRequestFromEditView from './CreateStandardChangeRequestFromEditView';
+import CreateStandardChangeRequest from './CreateChangeRequestFromEdit';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -49,7 +51,6 @@ interface WorkPackageFormViewProps {
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
   createForm?: boolean;
-  createStandardCr: (data: CreateStandardChangeRequestPayload) => void;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -78,8 +79,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  createForm,
-  createStandardCr
+  createForm
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -105,6 +105,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(wbsElement.projectLead?.userId.toString());
+  const [showCreateCr, setShowCreateCr] = useState<boolean>(false);
 
   // lists of stuff
   const {
@@ -124,16 +125,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
     const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
     return `${date.getFullYear().toString()}-${month}-${day}`;
-  };
-
-  const doSomething = async (data: CreateStandardChangeRequestPayload) => {
-    try {
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-        return;
-      }
-    }
   };
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
@@ -168,13 +159,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const crIdDisplay = crId ?? defaultValues?.crId;
 
-  const newChangeRequest = {
-    wbsNum: wbsElement.wbsNum,
-    type: ChangeRequestType.Other,
-    what: '',
-    why: [{explain: '', type: ChangeRequestReason.Other}],
-    proposedSolutions: []
-  };
+  const handleClick = () => {
+    setShowCreateCr(!showCreateCr);
+  }
 
   return (
     <form
@@ -218,9 +205,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
-            <NERSuccessButton variant="contained" onClick={() => doSomething(newChangeRequest)} sx={{ mx: 1 }}>
-              Create a scope CR
-            </NERSuccessButton>
+            <NERButton
+              variant="contained"
+              onClick={handleClick}
+            >
+              Create a standard CR
+            </NERButton>
           </Box>
         }
       >
@@ -276,6 +266,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           remove={removeDeliverable}
           bulletName="Deliverable"
         />
+        {showCreateCr && (
+          <CreateStandardChangeRequest wbsElement={wbsElement} modalShow={showCreateCr} handleClose={() => setShowCreateCr(false)}/>
+        )}
       </PageLayout>
     </form>
   );
