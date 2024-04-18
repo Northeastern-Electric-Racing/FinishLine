@@ -9,13 +9,13 @@ import { useState } from 'react';
 
 interface BOMTableProps {
   hideColumn: boolean[];
-  setColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
+  setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
   columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
 }
 
-const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setColumn, columns, materials, assemblies }) => {
+const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns, materials, assemblies }) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
 
   const arrowSymbol = (rowId: string) => {
@@ -112,12 +112,10 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setColumn, columns, mat
             tempColumns.push(!model[toDelete]);
           });
 
-          // Only call setColumn if tempColumns is different from the current column visibility model
-          if (JSON.stringify(tempColumns) !== JSON.stringify(hideColumn)) {
-            console.log(JSON.stringify(tempColumns));
-            console.log(JSON.stringify(hideColumn));
-            setColumn(tempColumns);
-          }
+          setHideColumn(tempColumns);
+
+          console.log(tempColumns);
+          console.log(hideColumn);
         }}
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.filter(isAssemblyOpen)}
