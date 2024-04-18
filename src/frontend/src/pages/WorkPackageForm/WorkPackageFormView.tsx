@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -23,6 +23,7 @@ import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
+import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -48,6 +49,7 @@ interface WorkPackageFormViewProps {
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
   createForm?: boolean;
+  createStandardCr: (data: CreateStandardChangeRequestPayload) => void;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -76,7 +78,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  createForm
+  createForm,
+  createStandardCr
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -123,9 +126,15 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
 
-  const doSomething = () => {
-    console.log("hello world");
-  }
+  const doSomething = async (data: CreateStandardChangeRequestPayload) => {
+    try {
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+        return;
+      }
+    }
+  };
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
@@ -158,6 +167,14 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   };
 
   const crIdDisplay = crId ?? defaultValues?.crId;
+
+  const newChangeRequest = {
+    wbsNum: wbsElement.wbsNum,
+    type: ChangeRequestType.Other,
+    what: '',
+    why: [{explain: '', type: ChangeRequestReason.Other}],
+    proposedSolutions: []
+  };
 
   return (
     <form
@@ -201,7 +218,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
-            <NERSuccessButton variant="contained" onClick={doSomething} sx={{ mx: 1 }}>
+            <NERSuccessButton variant="contained" onClick={() => doSomething(newChangeRequest)} sx={{ mx: 1 }}>
               Create a scope CR
             </NERSuccessButton>
           </Box>
