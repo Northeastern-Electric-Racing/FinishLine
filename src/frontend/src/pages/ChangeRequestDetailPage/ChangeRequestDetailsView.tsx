@@ -104,6 +104,55 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     );
   };
 
+  interface PotentialChange {
+    field: String;
+    content: String | DescriptionBullet;
+  }
+
+  const compareFields = (first: PotentialChange, second: PotentialChange, original: boolean) => {
+    if (first.field === second.field && first.content.toString() === second.content.toString()) {
+      return <Typography>{/*{first.field}: {first.content}*/}hf</Typography>;
+    } else if (!original) {
+      return (
+        <Box sx={{ backgroundColor: '#8a4e4e', borderRadius: '5px' }}>
+          <Box
+            sx={{ backgroundColor: '#ba5050', borderRadius: '5px', width: 'fit-content' }}
+            component="span"
+            display="inline"
+          >
+            <Typography fontWeight="bold" padding="3px" display="inline">
+              {first.field}:
+            </Typography>
+          </Box>
+          <Box component="span" display="inline">
+            <Typography padding="5px" display="inline">
+              {first.content}
+            </Typography>
+          </Box>
+        </Box>
+      );
+    } else {
+      return (
+        <Box sx={{ backgroundColor: '#51915c', borderRadius: '5px' }}>
+          <Box
+            sx={{ backgroundColor: '#43a854', borderRadius: '5px', width: 'fit-content' }}
+            component="span"
+            display="inline"
+          >
+            <Typography fontWeight="bold" padding="3px" display="inline">
+              {second.field}:
+            </Typography>
+          </Box>
+          <Box component="span" display="inline">
+            <Typography padding="5px" display="inline">
+              {second.content}
+            </Typography>
+          </Box>
+        </Box>
+      );
+    }
+  };
+
   return (
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
@@ -200,7 +249,19 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={6}>
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
               <Typography>Name: {changeRequest.wbsName}</Typography>
-              <Typography>Status: {changeRequest.status}</Typography>
+              <Typography>
+                {compareFields(
+                  {
+                    field: 'Status',
+                    content: `${changeRequest.status}`
+                  },
+                  {
+                    field: 'Status',
+                    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.status}`
+                  },
+                  false
+                )}
+              </Typography>
               <Typography>Project Lead: {changeRequest.status}</Typography>
               <Typography>Project Manager: {changeRequest.wbsName}</Typography>
             </Box>
@@ -209,7 +270,19 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={6}>
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
               <Typography>Name: {changeRequest.wbsName}</Typography>
-              <Typography>Status: {(changeRequest as StandardChangeRequest).projectProposedChanges?.status}</Typography>
+              <Typography>
+                {compareFields(
+                  {
+                    field: 'Status',
+                    content: `${changeRequest.status}`
+                  },
+                  {
+                    field: 'Status',
+                    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.status}`
+                  },
+                  true
+                )}
+              </Typography>
               <Typography>
                 Project Lead: {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.firstName}{' '}
                 {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.lastName}
