@@ -193,6 +193,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           projectLead={projectLeadId}
           projectManager={projectManagerId}
           project={project}
+          autoCRMode={autoCRMode}
         />
         <Stack spacing={4}>
           <Box>

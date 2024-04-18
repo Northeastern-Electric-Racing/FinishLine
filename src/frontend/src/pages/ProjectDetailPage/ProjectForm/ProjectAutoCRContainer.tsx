@@ -15,6 +15,7 @@ import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 
 const ProjectAutoCRContainer: React.FC = () => {
   const toast = useToast();
@@ -24,7 +25,7 @@ const ProjectAutoCRContainer: React.FC = () => {
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
 
-  const { mutateAsync, isLoading } = useCreateSingleProject();
+  const {mutateAsync, isLoading} = useCreateStandardChangeRequest();
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
