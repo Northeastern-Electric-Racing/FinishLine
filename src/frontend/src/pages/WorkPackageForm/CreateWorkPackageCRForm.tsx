@@ -27,12 +27,19 @@ const CreateWorkPackageCRForm: React.FC = () => {
       what: payload.name,
       why: [{ explain: 'explination', type: ChangeRequestReason.Competition }],
       proposedSolutions: [],
-      duration: payload.duration,
-      startDate: payload.startDate,
-      stage: payload.stage,
-      blockedBy: payload.blockedBy,
-      expectedActivities: payload.expectedActivities,
-      deliverables: payload.deliverables
+      workPackageProposedChanges: {
+        name: payload.name,
+        status: payload.status,
+        projectLeadId: payload.projectLeadId,
+        projectManagerId: payload.projectManagerId,
+        links: payload.links,
+        duration: payload.duration,
+        startDate: payload.startDate,
+        stage: payload.stage,
+        blockedBy: payload.blockedBy,
+        expectedActivities: payload.expectedActivities,
+        deliverables: payload.deliverables
+      }
     };
 
     await mutateAsync(crPayload);

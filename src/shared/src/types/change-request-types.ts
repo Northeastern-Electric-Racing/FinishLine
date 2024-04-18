@@ -132,6 +132,6 @@ export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChanges
   startDate: string;
   stage: WorkPackageStage | null;
   blockedBy: WbsNumber[];
-  expectedActivities: string[];
-  deliverables: string[];
+  deliverables: string[] | { id: number; detail: string }[];
+  expectedActivities: string[] | { id: number; detail: string }[];
 }
