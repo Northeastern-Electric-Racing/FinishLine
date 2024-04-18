@@ -7,7 +7,6 @@ import {
   intMinZero,
   nonEmptyString,
   projectProposedChangesValidators,
-  wbsProposedChangesValidators,
   workPackageProposedChangesValidators
 } from '../utils/validation.utils';
 
@@ -73,7 +72,6 @@ changeRequestsRouter.post(
   nonEmptyString(body('proposedSolutions.*.scopeImpact')),
   body('proposedSolutions.*.timelineImpact').isInt(),
   body('proposedSolutions.*.budgetImpact').isInt(),
-  ...wbsProposedChangesValidators,
   ...projectProposedChangesValidators,
   ...workPackageProposedChangesValidators,
   validateInputs,
