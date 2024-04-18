@@ -864,7 +864,7 @@ export default class ReimbursementRequestService {
    * @param submitter the user editing the vendor name
    * @returns the updated vendor
    */
-  static async editVendors(name: string, vendorId: string, submitter: User) {
+  static async editVendor(name: string, vendorId: string, submitter: User) {
     await isUserAdminOrOnFinance(submitter);
 
     const vendorUniqueName = await prisma.vendor.findUnique({
