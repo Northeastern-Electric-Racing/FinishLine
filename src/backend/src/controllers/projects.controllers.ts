@@ -246,8 +246,8 @@ export default class ProjectsController {
   static async deleteUnit(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);
-      const { unitName } = req.params;
-      const deletedUnit = await ProjectsService.deleteUnit(user, unitName);
+      const { unitId } = req.params;
+      const deletedUnit = await ProjectsService.deleteUnit(user, unitId);
       res.status(200).json(deletedUnit);
     } catch (error: unknown) {
       next(error);

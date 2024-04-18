@@ -3,9 +3,9 @@ import { Scope_CR_Why_Type, User, Prisma, Change_Request, Change } from '@prisma
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
-import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail } from './changes.utils';
+import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -122,7 +122,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 export const calculateChangeRequestStatus = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
 ): ChangeRequestStatus => {
   if (changeRequest.changes.length) {
     return ChangeRequestStatus.Implemented;
@@ -149,4 +149,36 @@ export const getDateImplemented = (changeRequest: Change_Request & { changes: Ch
  */
 export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
   return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
+};
+
+/**
+ * Determines if the project lead, project manager, and links all exist
+ * @param projectLeadId the project lead id to be verified
+ * @param projectManagerId the project manager id to be verified
+ * @param links the links to be verified
+ */
+export const validateProposedChangesFields = async (
+  projectLeadId: number,
+  projectManagerId: number,
+  links: {
+    url: string;
+    linkTypeName: string;
+  }[]
+) => {
+  if (projectLeadId) {
+    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+    if (!projectLead) throw new NotFoundException('User', projectLeadId);
+  }
+
+  if (projectManagerId) {
+    const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+    if (!projectManager) throw new NotFoundException('User', projectManagerId);
+  }
+
+  if (links.length > 0) {
+    for (const link of links) {
+      const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
+      if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+    }
+  }
 };

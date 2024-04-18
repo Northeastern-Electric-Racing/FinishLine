@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Role, User, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -11,7 +11,8 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackageStage,
+  WorkPackageTemplate
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -21,7 +22,7 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException
 } from '../utils/errors.utils';
-import { addDescriptionBullets, editDescriptionBullets } from '../utils/projects.utils';
+import { addDescriptionBullets, editDescriptionBullets, validateBlockedBys } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
 import { getUserFullName } from '../utils/users.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
@@ -35,6 +36,8 @@ import {
   descriptionBulletsToChangeListValues
 } from '../utils/description-bullets.utils';
 import { getBlockingWorkPackages } from '../utils/work-packages.utils';
+import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
+import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 
 /** Service layer containing logic for work package controller functions. */
 export default class WorkPackagesService {
@@ -184,12 +187,6 @@ export default class WorkPackagesService {
 
     const changeRequest = await validateChangeRequestAccepted(crId);
 
-    blockedBy.forEach((dep: WbsNumber) => {
-      if (dep.workPackageNumber === 0) {
-        throw new HttpException(400, 'A Project cannot be a Blocker');
-      }
-    });
-
     const wbsElem = await prisma.wBS_Element.findUnique({
       where: {
         wbsElementId: changeRequest.wbsElementId
@@ -204,6 +201,8 @@ export default class WorkPackagesService {
     });
 
     if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
+
+    const blockedByIds: number[] = await validateBlockedBys(blockedBy);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
@@ -239,37 +238,6 @@ export default class WorkPackagesService {
       project.workPackages
         .map((element) => element.wbsElement.workPackageNumber)
         .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
-
-    const blockedByWBSElems: (WBS_Element | null)[] = await Promise.all(
-      blockedBy.map(async (ele: WbsNumber) => {
-        return await prisma.wBS_Element.findUnique({
-          where: {
-            wbsNumber: {
-              carNumber: ele.carNumber,
-              projectNumber: ele.projectNumber,
-              workPackageNumber: ele.workPackageNumber
-            }
-          }
-        });
-      })
-    );
-
-    const blockedByIds: number[] = [];
-    // populate blockedByIds with the element ID's
-    // and return error 400 if any elems are null
-
-    let blockedByHasNulls = false;
-    blockedByWBSElems.forEach((elem) => {
-      if (!elem) {
-        blockedByHasNulls = true;
-        return;
-      }
-      blockedByIds.push(elem.wbsElementId);
-    });
-
-    if (blockedByHasNulls) {
-      throw new HttpException(400, 'One of the blockers was not found.');
-    }
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const date = new Date(startDate.split('T')[0]);
@@ -498,6 +466,12 @@ export default class WorkPackagesService {
     const date = new Date(startDate);
     date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
 
+    // set the status of the wbs element to active if an edit is made to a completed version
+    const status =
+      originalWorkPackage.wbsElement.status === WbsElementStatus.Complete
+        ? WbsElementStatus.Active
+        : originalWorkPackage.wbsElement.status;
+
     // update the work package with the input fields
     const updatedWorkPackage = await prisma.work_Package.update({
       where: { wbsElementId },
@@ -508,7 +482,8 @@ export default class WorkPackagesService {
           update: {
             name,
             projectLeadId,
-            projectManagerId
+            projectManagerId,
+            status // set the status to active if it was not already
           }
         },
         stage,
@@ -707,5 +682,23 @@ export default class WorkPackagesService {
     );
 
     return;
+  }
+
+  static async getSingleWorkPackageTemplate(submitter: User, workPackageTemplateId: string): Promise<WorkPackageTemplate> {
+    if (isGuest(submitter.role)) {
+      throw new AccessDeniedGuestException('get a work package template');
+    }
+
+    const workPackage = await prisma.work_Package_Template.findFirst({
+      where: {
+        dateDeleted: null,
+        workPackageTemplateId
+      },
+      ...workPackageTemplateQueryArgs
+    });
+
+    if (!workPackage) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
+
+    return workPackageTemplateTransformer(workPackage);
   }
 }

@@ -1,13 +1,13 @@
 import { ClubAccount, ReimbursementStatusType } from 'shared';
-import prisma from '../src/prisma/prisma';
-import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
+import prisma from '../../src/prisma/prisma';
+import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
-} from '../src/utils/errors.utils';
+} from '../../src/utils/errors.utils';
 import {
   GiveMeMoneyProduct,
   GiveMeMyMoney,
@@ -26,7 +26,7 @@ import {
   sharedGiveMeMyMoney,
   KFC,
   reimbursementMock
-} from './test-data/reimbursement-requests.test-data';
+} from '../test-data/reimbursement-requests.test-data';
 import {
   alfred,
   batman,
@@ -38,15 +38,15 @@ import {
   aquaman,
   greenlantern,
   batmanSettings
-} from './test-data/users.test-data';
-import reimbursementRequestQueryArgs from '../src/prisma-query-args/reimbursement-requests.query-args';
+} from '../test-data/users.test-data';
+import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementTransformer
-} from '../src/transformers/reimbursement-requests.transformer';
-import { justiceLeague, prismaTeam1, primsaTeam2 } from './test-data/teams.test-data';
+} from '../../src/transformers/reimbursement-requests.transformer';
+import { justiceLeague, prismaTeam1, primsaTeam2 } from '../test-data/teams.test-data';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -888,13 +888,13 @@ describe('Reimbursement Requests', () => {
   describe('Edit Vendor Tests', () => {
     test('Throws error if user isnt an admin or lead/head of the finance', async () => {
       await expect(
-        ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
+        ReimbursementRequestService.editVendor('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
       ).rejects.toThrow(new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors'));
     });
 
     test('Throws error if the vendor name already exists', async () => {
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      await expect(ReimbursementRequestService.editVendors('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
+      await expect(ReimbursementRequestService.editVendor('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
         new HttpException(400, 'vendor name already exists')
       );
     });
@@ -903,7 +903,7 @@ describe('Reimbursement Requests', () => {
       vi.spyOn(prisma.vendor, 'update').mockResolvedValue(KFC);
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
 
-      const vendor = await ReimbursementRequestService.editVendors('kfc', PopEyes.vendorId, batman);
+      const vendor = await ReimbursementRequestService.editVendor('kfc', PopEyes.vendorId, batman);
 
       expect(vendor.name).toBe('kfc');
       expect(prisma.vendor.update).toBeCalledTimes(1);

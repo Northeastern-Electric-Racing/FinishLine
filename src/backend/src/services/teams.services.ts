@@ -1,4 +1,4 @@
-import { isAdmin, isHead, Team } from 'shared';
+import { isAdmin, isHead, Team, TeamType } from 'shared';
 import { User, WBS_Element_Status } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
@@ -331,6 +331,86 @@ export default class TeamsService {
       data: updateData
     });
 
+    return teamTransformer(updatedTeam);
+  }
+
+  /**
+   * Creates a team type
+   * @param submitter the user who is creating the team type
+   * @param name the name of the team type
+   * @param iconName the name of the icon
+   * @returns the created team
+   */
+  static async createTeamType(submitter: User, name: string, iconName: string): Promise<TeamType> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedAdminOnlyException('create a team type');
+    }
+
+    const duplicateName = await prisma.teamType.findUnique({
+      where: { name }
+    });
+
+    if (duplicateName) {
+      throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
+    }
+
+    const teamType = await prisma.teamType.create({
+      data: {
+        name,
+        iconName
+      }
+    });
+
+    return teamType;
+  }
+
+  /**
+   * Gets all the team types in the database
+   * @returns all the team types
+   */
+  static async getAllTeamTypes(): Promise<TeamType[]> {
+    const teamTypes = await prisma.teamType.findMany();
+    return teamTypes;
+  }
+
+  /**
+   * Sets the teamType for a team
+   * @param submitter the user who is setting the team type
+   * @param teamId id of the team
+   * @param teamTypeId id of the teamType
+   * @returns the updated team with teamType
+   */
+  static async setTeamType(submitter: User, teamId: string, teamTypeId: string): Promise<Team> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedAdminOnlyException('set a team type');
+    }
+
+    const teamType = await prisma.teamType.findFirst({
+      where: { teamTypeId }
+    });
+
+    if (!teamType) {
+      throw new NotFoundException('Team Type', teamTypeId);
+    }
+
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    const updatedTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        teamType: {
+          connect: { teamTypeId }
+        }
+      },
+      ...teamQueryArgs
+    });
     return teamTransformer(updatedTeam);
   }
 }

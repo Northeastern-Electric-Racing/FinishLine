@@ -81,6 +81,7 @@ const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const teamTypes = () => `${teams()}/teamType/all`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -129,12 +130,13 @@ const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPi
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
 const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
 const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
-const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
+const bomCreateUnit = () => `${bomGetAllUnits()}/create`;
+const bomUnitById = (id: string) => `${bomGetAllUnits()}/${id}`;
+const bomDeleteUnit = (id: string) => `${bomUnitById(id)}/delete`;
 
 /************** Design Review Endpoints *******************************/
 const designReviews = () => `${API_URL}/design-reviews`;
 const designReviewsCreate = () => `${designReviews()}/create`;
-const teamTypes = () => `${designReviews()}/teamType/all`;
 const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
@@ -245,6 +247,8 @@ export const apiUrls = {
   bomCreateManufacturer,
   bomCreateMaterialType,
   bomCreateUnit,
+  bomUnitById,
+  bomDeleteUnit,
 
   designReviews,
   designReviewsCreate,

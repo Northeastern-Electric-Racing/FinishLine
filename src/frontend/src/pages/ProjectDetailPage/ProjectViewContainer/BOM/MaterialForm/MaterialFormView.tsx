@@ -6,10 +6,14 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
+import DynamicTooltip from '../../../../../components/DynamicTooltip';
+import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
 import { Dispatch, SetStateAction, useEffect } from 'react';
+import { displayEnum } from '../../../../../utils/pipes';
+import { MaterialStatus } from 'shared';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -102,9 +106,15 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               defaultValue={control._defaultValues.status}
               render={({ field }) => (
                 <TextField {...field} select variant="outlined" error={!!errors.status} helperText={errors.status?.message}>
-                  {['ORDERED', 'UNORDERED', 'SHIPPED', 'RECEIVED'].map((status) => (
+                  {[
+                    MaterialStatus.Ordered,
+                    MaterialStatus.Received,
+                    MaterialStatus.Shipped,
+                    MaterialStatus.NotReadyToOrder,
+                    MaterialStatus.ReadyToOrder
+                  ].map((status) => (
                     <MenuItem key={status} value={status}>
-                      {status}
+                      {status ? displayEnum(status) : ''}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -139,7 +149,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer</FormLabel>
+            <FormLabel>
+              Manufacturer
+              <DynamicTooltip title={`Make sure to enter the manufacturer and not the distributor!`}>
+                <InfoIcon sx={{ height: 11 }} />
+              </DynamicTooltip>
+            </FormLabel>
             <Controller
               name="manufacturerName"
               control={control}
@@ -267,7 +282,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         )}
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Price</FormLabel>
+            <FormLabel style={{ whiteSpace: 'normal' }}>Price per Unit</FormLabel>
             <Controller
               name={`price`}
               control={control}

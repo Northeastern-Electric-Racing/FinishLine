@@ -8,6 +8,7 @@ import {
   createMaterialType,
   createUnit,
   deleteSingleMaterial,
+  deleteUnit,
   editMaterial,
   getAllManufacturers,
   getAllMaterialTypes,
@@ -47,6 +48,26 @@ export const useGetAllUnits = () => {
     const data = await getAllUnits();
     return data;
   });
+};
+
+/**
+ * Custom react hook to delete a unit
+ */
+
+export const useDeleteUnit = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Unit, Error, string>(
+    ['units', 'delete'],
+    async (id: string) => {
+      const { data } = await deleteUnit(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'units']);
+      }
+    }
+  );
 };
 
 /**
