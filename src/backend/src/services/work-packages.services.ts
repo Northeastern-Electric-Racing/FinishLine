@@ -730,7 +730,7 @@ export default class WorkPackagesService {
     return workPackageTemplateTransformer(workPackage);
   }
 
-  static async workPackageTemplates(submitter: User): Promise<WorkPackageTemplate[]> {
+  static async getAllWorkPackageTemplates(submitter: User): Promise<WorkPackageTemplate[]> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedGuestException('get all work package templates.');
     }
