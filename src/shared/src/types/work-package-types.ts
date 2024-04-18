@@ -45,7 +45,8 @@ export interface WorkPackageTemplate {
 }
 
 export interface BlockedByCreateArgs {
-  blockedByInfoId?: string;
+  blockedByInfoId: string;
   stage?: WorkPackageStage;
   name: string;
+  workPackageTemplateId: string
 }

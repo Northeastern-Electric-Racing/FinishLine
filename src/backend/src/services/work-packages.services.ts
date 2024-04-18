@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element_Status } from '@prisma/client';
+import { Blocked_By_Info, Role, User, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -13,7 +13,8 @@ import {
   WorkPackage,
   WorkPackageStage,
   WorkPackageTemplate,
-  BlockedByCreateArgs
+  BlockedByCreateArgs,
+  BlockedByInfo
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -724,9 +725,18 @@ export default class WorkPackagesService {
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
 
-    const originalblockedByIds = originalWorkPackageTemplate.blockedBy.map((item) => item.blockedByInfoId);
-
     const updatedBlockedByIds = blockedBy.map((item) => item.blockedByInfoId);
+
+    // deleting a blocked by if the new list does not contain it
+    const deleteBlockedByIds = originalWorkPackageTemplate.blockedBy
+      .filter((blockedByItem: Blocked_By_Info) => {
+        return !updatedBlockedByIds.includes(blockedByItem.blockedByInfoId);
+      })
+      .map((item) => item.blockedByInfoId);
+
+    const updateBlockedBy = originalWorkPackageTemplate.blockedBy.filter((blockedByItem: Blocked_By_Info) => {
+      return updatedBlockedByIds.includes(blockedByItem.blockedByInfoId);
+    });
 
     const newBlockedBy = blockedBy.filter((blockedByItem: BlockedByCreateArgs) => {
       return !originalWorkPackageTemplate.blockedBy.some(
@@ -734,42 +744,28 @@ export default class WorkPackagesService {
       );
     });
 
-    for (const blockedByItemId of originalblockedByIds) {
-      const blockedBy = await prisma.blocked_By_Info.findUnique({
-        where: {
-          blockedByInfoId: blockedByItemId
+    await prisma.blocked_By_Info.deleteMany({
+      where: {
+        blockedByInfoId: {
+          in: deleteBlockedByIds
         }
-      });
-
-      // deleting a blocked by if the new list does not contain it
-      if (!updatedBlockedByIds.includes(blockedByItemId)) {
-        await prisma.blocked_By_Info.delete({
-          where: {
-            blockedByInfoId: blockedByItemId
-          }
-        });
-      } else {
-        await prisma.blocked_By_Info.update({
-          where: {
-            blockedByInfoId: blockedByItemId
-          },
-          data: {
-            name: blockedBy?.name,
-            stage: blockedBy?.stage
-          }
-        });
       }
-    }
+    });
 
-    // creating the new blocked by
-    for (const blockedByItem of newBlockedBy) {
-      await prisma.blocked_By_Info.create({
-        data: {
-          ...blockedByItem,
-          workPackageTemplateId
+    // creating the new blocked bys
+    await prisma.blocked_By_Info.createMany({
+      data: newBlockedBy
+    });
+
+    // updating work package template
+    await prisma.blocked_By_Info.updateMany({
+      where: {
+        blockedByInfoId: {
+          in: updateBlockedBy.map((item) => item.blockedByInfoId)
         }
-      });
-    }
+      },
+      data: [updateBlockedBy]
+    });
 
     // updating work package template
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
