@@ -18,8 +18,7 @@ import {
   prismaProject2,
   mockLinkType1,
   transformedMockLinkType1,
-  manufacturer1,
-  manufacturer2
+  manufacturer1
 } from '../test-data/projects.test-data';
 import { prismaChangeRequest1 } from '../test-data/change-requests.test-data';
 import { primsaTeam2, prismaTeam1 } from '../test-data/teams.test-data';
@@ -39,7 +38,6 @@ import { validateWBS, WbsNumber } from 'shared';
 import { Material, Material_Status, Prisma, User } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 import linkTypeQueryArgs from '../../src/prisma-query-args/link-types.query-args';
-import { GetResult } from '@prisma/client/runtime';
 
 vi.mock('../src/utils/projects.utils');
 
