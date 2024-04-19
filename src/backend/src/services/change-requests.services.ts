@@ -9,7 +9,8 @@ import {
   ProposedSolutionCreateArgs,
   StandardChangeRequest,
   wbsPipe,
-  WorkPackageProposedChangesCreateArgs
+  WorkPackageProposedChangesCreateArgs,
+  WorkPackageStage
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -21,7 +22,9 @@ import {
   NotFoundException,
   DeletedException
 } from '../utils/errors.utils';
-import changeRequestTransformer from '../transformers/change-requests.transformer';
+import changeRequestTransformer, {
+  workPackageProposedChangesTransformer
+} from '../transformers/change-requests.transformer';
 import { updateBlocking, allChangeRequestsReviewed, validateProposedChangesFields } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
@@ -37,6 +40,8 @@ import {
 } from '../utils/slack.utils';
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { validateBlockedBys } from '../utils/projects.utils';
+import scopeChangeRequestQueryArgs from '../prisma-query-args/scope-change-requests.query-args';
+import WorkPackagesService from './work-packages.services';
 
 export default class ChangeRequestsService {
   /**
@@ -91,7 +96,7 @@ export default class ChangeRequestsService {
       where: { crId },
       include: {
         activationChangeRequest: true,
-        scopeChangeRequest: true,
+        scopeChangeRequest: scopeChangeRequestQueryArgs,
         wbsElement: {
           include: { workPackage: workPackageQueryArgs, project: true }
         }
@@ -202,6 +207,50 @@ export default class ChangeRequestsService {
           approved: true
         }
       });
+
+      // if a scope change request has proposed changes
+      if (foundCR.scopeChangeRequest.wbsProposedChanges) {
+        const openCRs = await prisma.change_Request.findMany({
+          where: { wbsElementId: foundCR.wbsElementId, accepted: false }
+        });
+        if (openCRs.length > 0)
+          throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
+
+        // if a crID associated with a project has work package proposed changes, then it is creating a new work package
+
+        const associatedProjectCR = foundCR.wbsElement.project;
+        const { wbsProposedChanges } = foundCR.scopeChangeRequest;
+
+        if (associatedProjectCR && wbsProposedChanges.workPackageProposedChanges) {
+          const wpProposedChangesData = workPackageProposedChangesTransformer(wbsProposedChanges);
+          // creating a new workpackage
+          WorkPackagesService.createWorkPackage(
+            reviewer,
+            wpProposedChangesData.name,
+            crId,
+            wpProposedChangesData.stage as WorkPackageStage,
+            wpProposedChangesData.startDate, // need to convert this to a string
+            wpProposedChangesData.duration,
+            wpProposedChangesData.blockedBy,
+            // need to convert these below to a string[]
+            wpProposedChangesData.expectedActivities,
+            wpProposedChangesData.deliverables
+          );
+        }
+
+        // if you have project proposed changes
+        if (wbsProposedChanges.projectProposedChanges) {
+          const { newProject } = wbsProposedChanges.projectProposedChanges;
+
+          // if you're creating a new project
+          if (newProject) {
+          } else {
+            // if you're editing a previous project
+          }
+
+          // Edits on projects will have 'newProject' set to false, and creates will have it set to true
+        }
+      }
     }
 
     // stage gate cr

@@ -28,7 +28,7 @@ const linkInfoTransformer = (linkInfo: Prisma.LinkInfoGetPayload<typeof linkInfo
   };
 };
 
-const projectProposedChangesTransformer = (
+export const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
 ): ProjectProposedChanges => {
   const { projectProposedChanges } = wbsProposedChanges;
@@ -50,7 +50,7 @@ const projectProposedChangesTransformer = (
   };
 };
 
-const workPackageProposedChangesTransformer = (
+export const workPackageProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
 ): WorkPackageProposedChanges => {
   const { workPackageProposedChanges } = wbsProposedChanges;
@@ -70,7 +70,7 @@ const workPackageProposedChangesTransformer = (
   };
 };
 
-const changeRequestTransformer = (
+export const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
@@ -130,5 +130,3 @@ const changeRequestTransformer = (
     requestedReviewers: changeRequest.requestedReviewers ?? []
   };
 };
-
-export default changeRequestTransformer;
