@@ -23,6 +23,7 @@ import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
+import { transformDate } from '../../utils/task.utils';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
@@ -116,12 +117,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   } = useFieldArray({ control, name: 'deliverables' });
 
   const { userId } = user;
-
-  const transformDate = (date: Date) => {
-    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-    const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
-    return `${date.getFullYear().toString()}-${month}-${day}`;
-  };
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
