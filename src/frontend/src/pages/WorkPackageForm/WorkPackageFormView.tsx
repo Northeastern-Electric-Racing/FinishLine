@@ -126,13 +126,11 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities: isCreateWP(formType)
-          ? expectedActivities.map((activity) => activity.detail)
-          : expectedActivities,
-        deliverables: isCreateWP(formType) ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
+        expectedActivities: expectedActivities.map((activity) => activity.detail),
+        deliverables: deliverables.map((deliverable) => deliverable.detail),
         stage: stage as WorkPackageStage
       };
-      mutateAsync(payload);
+      await mutateAsync(payload);
       exitActiveMode();
     } catch (e) {
       if (e instanceof Error) {

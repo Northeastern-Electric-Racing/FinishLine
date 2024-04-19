@@ -1,13 +1,13 @@
-import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, WbsElementStatus, validateWBS } from 'shared';
 import WorkPackageForm from './WorkPackageForm';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useQuery } from '../../hooks/utils.hooks';
-import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WPFormType, startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { WorkPackageFormViewPayload } from './WorkPackageFormView';
 
 const CreateWorkPackageCRForm: React.FC = () => {
   const query = useQuery();
@@ -19,7 +19,7 @@ const CreateWorkPackageCRForm: React.FC = () => {
   const { mutateAsync } = useCreateStandardChangeRequest();
 
   const currentUser = useCurrentUser();
-  const onSubmit = async (payload: CreateWorkPackageApiInputs) => {
+  const onSubmit = async (payload: WorkPackageFormViewPayload) => {
     const crPayload = {
       submitter: currentUser,
       wbsNum: validateWBS(wbsNum),
@@ -29,10 +29,10 @@ const CreateWorkPackageCRForm: React.FC = () => {
       proposedSolutions: [],
       workPackageProposedChanges: {
         name: payload.name,
-        status: payload.status,
-        projectLeadId: payload.projectLeadId,
-        projectManagerId: payload.projectManagerId,
-        links: payload.links,
+        status: WbsElementStatus.Inactive,
+        projectLeadId: undefined,
+        projectManagerId: undefined,
+        links: [],
         duration: payload.duration,
         startDate: payload.startDate,
         stage: payload.stage,

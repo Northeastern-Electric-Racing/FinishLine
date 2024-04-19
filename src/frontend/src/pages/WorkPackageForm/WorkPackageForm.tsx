@@ -1,20 +1,19 @@
 import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
 import WorkPackageFormView, { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { bulletsToObject, isEdit } from '../../utils/form';
+import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
-import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WPFormType } from '../../utils/form';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
-  mutateAsync: (data: CreateWorkPackageApiInputs) => void;
+  mutateAsync: (data: WorkPackageFormViewPayload) => void;
   formType: WPFormType;
   schema: any;
 }
@@ -50,7 +49,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   );
 
   const defaultValues: WorkPackageFormViewPayload | undefined =
-    isEdit(formType) && workPackage
+    formType === WPFormType.EDIT && workPackage
       ? {
           ...workPackage,
           workPackageId: workPackage.id,

@@ -129,9 +129,9 @@ export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCrea
 
 export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   duration: number;
-  startDate: string;
-  stage: WorkPackageStage | null;
-  blockedBy: WbsNumber[];
-  deliverables: string[] | { id: number; detail: string }[];
-  expectedActivities: string[] | { id: number; detail: string }[];
+  startDate: Date;
+  stage: string;
+  blockedBy: string[];
+  expectedActivities: string[];
+  deliverables: string[];
 }

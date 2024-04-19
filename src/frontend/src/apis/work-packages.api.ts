@@ -19,10 +19,6 @@ export interface WorkPackageApiInputs {
 }
 
 export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
-  status: WbsElementStatus;
-  projectLeadId: number;
-  projectManagerId: number;
-  links: { url: string; linkTypeName: string }[];
   projectWbsNum: {
     carNumber: number;
     projectNumber: number;
