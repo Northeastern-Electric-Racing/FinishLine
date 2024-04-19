@@ -21,7 +21,8 @@ interface BOMTableWrapperProps {
 }
 
 const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
-  const [hideColumn, setHideColumn] = useState<boolean[]>([]);
+  const initialHideColumn = new Array(12).fill(false);
+  const [hideColumn, setHideColumn] = useState<boolean[]>(initialHideColumn);
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
