@@ -265,8 +265,8 @@ export default class ChangeRequestsService {
               projProposedChanges.goals.map(({ id, detail }) => ({ id, detail })),
               projProposedChanges.features.map(({ id, detail }) => ({ id, detail })),
               projProposedChanges.otherConstrains.map(({ id, detail }) => ({ id, detail })),
-              projProposedChanges.projectLead?.userId as number,
-              projProposedChanges.projectManager?.userId as number
+              projProposedChanges.projectLead?.userId ?? null,
+              projProposedChanges.projectManager?.userId ?? null
             );
           } else {
             // if you're editing a previous project
