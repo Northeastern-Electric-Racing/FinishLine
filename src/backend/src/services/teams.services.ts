@@ -41,6 +41,29 @@ export default class TeamsService {
     return teamTransformer(team);
   }
 
+  static async removeUserFromTeam(
+    submitter: User,
+    teamId: string,
+    userIds: number[],
+    currentPosition: string
+  ): Promise<Team> {
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+
+    if (currentPosition === 'member') {
+      const newTeamMembersIds: number[] = team.members
+        .map((member) => member.userId)
+        .filter((memberId) => !userIds.includes(memberId));
+      return this.setTeamMembers(submitter, teamId, newTeamMembersIds);
+    }
+    const newTeamLeadsIds: number[] = team.leads.map((lead) => lead.userId).filter((leadId) => !userIds.includes(leadId));
+    return this.setTeamLeads(submitter, teamId, newTeamLeadsIds);
+  }
+
   /**
    * Update the given teamId's team's members
    * @param submitter a user who's making this request
@@ -74,10 +97,8 @@ export default class TeamsService {
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
     // if the new members array includes a current lead on that team, that member will be deleted as a lead of that team
-    // this should work in theory, but there is a block on the front-end that prevents the user from adding a current lead as a member of a team (they won't show up in the new member dropdown)
     if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId))) {
-      const newLeadsArr = team.leads.filter((lead) => !userIds.includes(lead.userId)).map((lead) => lead.userId);
-      this.setTeamLeads(submitter, teamId, newLeadsArr);
+      this.removeUserFromTeam(submitter, teamId, userIds, 'lead');
     }
 
     // retrieve userId for every given users to update team's members in the database
@@ -156,19 +177,14 @@ export default class TeamsService {
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
 
-    // if the new head is a current member on the team, this will remove them as a member
+    // If the new head is a current member on the team, remove them as a member
     if (newHead && team.members.map((user) => user.userId).includes(userId)) {
-      const newTeamArr: number[] = team.members
-        .filter((member) => member.userId !== newHead.userId)
-        .map((member) => member.userId);
-      this.setTeamMembers(submitter, teamId, newTeamArr);
+      this.removeUserFromTeam(submitter, teamId, [userId], 'member');
     }
 
-    // if the new head is a current leader on the team, they will be removed as a leader
-    // this will work in theory, but there is a block on the front-end that prevents the user from adding a current lead as the head of a team (they won't show up in the new head dropdown)
+    // If the new head is a current lead on the team, remove them as a lead
     if (newHead && team.leads.map((lead) => lead.userId).includes(userId)) {
-      const newLeadsArr: number[] = team.leads.map((lead) => lead.userId).filter((leadId) => leadId !== userId);
-      this.setTeamLeads(submitter, teamId, newLeadsArr);
+      this.removeUserFromTeam(submitter, teamId, [userId], 'lead');
     }
 
     if (!newHead) throw new NotFoundException('User', userId);
@@ -290,10 +306,7 @@ export default class TeamsService {
 
     // removes the new leads as current members of the given team (if they are current members of that team)
     if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
-      const newMembersArr: number[] = team.members
-        .map((member) => member.userId)
-        .filter((memberId) => !userIds.includes(memberId));
-      this.setTeamMembers(submitter, teamId, newMembersArr);
+      this.removeUserFromTeam(submitter, teamId, userIds, 'member');
     }
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
