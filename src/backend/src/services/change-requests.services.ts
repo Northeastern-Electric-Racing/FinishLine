@@ -22,7 +22,8 @@ import {
   NotFoundException,
   DeletedException
 } from '../utils/errors.utils';
-import changeRequestTransformer, {
+import {
+  changeRequestTransformer,
   workPackageProposedChangesTransformer
 } from '../transformers/change-requests.transformer';
 import { updateBlocking, allChangeRequestsReviewed, validateProposedChangesFields } from '../utils/change-requests.utils';
@@ -42,6 +43,7 @@ import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.que
 import { validateBlockedBys } from '../utils/projects.utils';
 import scopeChangeRequestQueryArgs from '../prisma-query-args/scope-change-requests.query-args';
 import WorkPackagesService from './work-packages.services';
+import { transformDate } from '../utils/utils';
 
 export default class ChangeRequestsService {
   /**
@@ -229,12 +231,11 @@ export default class ChangeRequestsService {
             wpProposedChangesData.name,
             crId,
             wpProposedChangesData.stage as WorkPackageStage,
-            wpProposedChangesData.startDate, // need to convert this to a string
+            transformDate(wpProposedChangesData.startDate),
             wpProposedChangesData.duration,
             wpProposedChangesData.blockedBy,
-            // need to convert these below to a string[]
-            wpProposedChangesData.expectedActivities,
-            wpProposedChangesData.deliverables
+            wpProposedChangesData.expectedActivities.map((activity) => activity.detail),
+            wpProposedChangesData.deliverables.map((deliverable) => deliverable.detail)
           );
         }
 
