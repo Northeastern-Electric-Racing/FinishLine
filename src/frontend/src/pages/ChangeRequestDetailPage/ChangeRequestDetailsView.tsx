@@ -9,9 +9,8 @@ import {
   ActivationChangeRequest,
   ChangeRequest,
   ChangeRequestType,
-  DescriptionBullet,
-  StageGateChangeRequest,
   StandardChangeRequest,
+  WbsNumber,
   isProject
 } from 'shared';
 import { routes } from '../../utils/routes';
@@ -33,6 +32,9 @@ import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 import NERTabs from '../../components/Tabs';
+
+import CompareProjectFields from './CompareProjectFields';
+import WorkPackageComparisonBlock from './CompareWPFields';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -64,6 +66,13 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
   const [tabIndex, setTabIndex] = useState<number>(0);
+
+  const wbsNum: WbsNumber = {
+    carNumber: changeRequest.wbsNum.carNumber,
+    projectNumber: changeRequest.wbsNum.projectNumber,
+    workPackageNumber: changeRequest.wbsNum.workPackageNumber
+  };
+
   const {
     data: project,
     isLoading,
@@ -83,75 +92,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
-
-  console.log((changeRequest as StandardChangeRequest).projectProposedChanges);
-
-  interface BulletListProps {
-    bullets?: DescriptionBullet[]; // Make bullets optional
-  }
-
-  const BulletList: React.FC<BulletListProps> = ({ bullets }) => {
-    if (!bullets) return null; // Return null if bullets is undefined
-
-    return (
-      <ul style={{ paddingLeft: '25px', marginBottom: '0.5em' }}>
-        {bullets
-          .filter((bullet) => !bullet.dateDeleted)
-          .map((bullet, idx) => (
-            <li key={idx}>{bullet.detail}</li>
-          ))}
-      </ul>
-    );
-  };
-
-  interface PotentialChange {
-    field: String;
-    content: String | DescriptionBullet;
-  }
-
-  const compareFields = (first: PotentialChange, second: PotentialChange, original: boolean) => {
-    if (first.field === second.field && first.content.toString() === second.content.toString()) {
-      return <Typography>{/*{first.field}: {first.content}*/}hf</Typography>;
-    } else if (!original) {
-      return (
-        <Box sx={{ backgroundColor: '#8a4e4e', borderRadius: '5px' }}>
-          <Box
-            sx={{ backgroundColor: '#ba5050', borderRadius: '5px', width: 'fit-content' }}
-            component="span"
-            display="inline"
-          >
-            <Typography fontWeight="bold" padding="3px" display="inline">
-              {first.field}:
-            </Typography>
-          </Box>
-          <Box component="span" display="inline">
-            <Typography padding="5px" display="inline">
-              {first.content}
-            </Typography>
-          </Box>
-        </Box>
-      );
-    } else {
-      return (
-        <Box sx={{ backgroundColor: '#51915c', borderRadius: '5px' }}>
-          <Box
-            sx={{ backgroundColor: '#43a854', borderRadius: '5px', width: 'fit-content' }}
-            component="span"
-            display="inline"
-          >
-            <Typography fontWeight="bold" padding="3px" display="inline">
-              {second.field}:
-            </Typography>
-          </Box>
-          <Box component="span" display="inline">
-            <Typography padding="5px" display="inline">
-              {second.content}
-            </Typography>
-          </Box>
-        </Box>
-      );
-    }
-  };
 
   return (
     <PageLayout
@@ -248,91 +188,21 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           {/*show previous fields*/}
           <Grid item xs={6}>
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
-              <Typography>Name: {changeRequest.wbsName}</Typography>
-              <Typography>
-                {compareFields(
-                  {
-                    field: 'Status',
-                    content: `${changeRequest.status}`
-                  },
-                  {
-                    field: 'Status',
-                    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.status}`
-                  },
-                  false
-                )}
-              </Typography>
-              <Typography>Project Lead: {changeRequest.status}</Typography>
-              <Typography>Project Manager: {changeRequest.wbsName}</Typography>
+              {isProject(wbsNum) ? (
+                <CompareProjectFields changeRequest={changeRequest} isProposed={false} />
+              ) : (
+                <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={false} />
+              )}
             </Box>
           </Grid>
           {/*show fields of proposed changes*/}
           <Grid item xs={6}>
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
-              <Typography>Name: {changeRequest.wbsName}</Typography>
-              <Typography>
-                {compareFields(
-                  {
-                    field: 'Status',
-                    content: `${changeRequest.status}`
-                  },
-                  {
-                    field: 'Status',
-                    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.status}`
-                  },
-                  true
-                )}
-              </Typography>
-              <Typography>
-                Project Lead: {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.firstName}{' '}
-                {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.lastName}
-              </Typography>
-              <Typography>
-                Project Manager: {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager?.firstName}{' '}
-                {(changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager?.lastName}
-              </Typography>
-              <Typography>Budget: ${(changeRequest as StandardChangeRequest).projectProposedChanges?.budget}</Typography>
-              <Typography>Summary: {(changeRequest as StandardChangeRequest).projectProposedChanges?.summary}</Typography>
-              <Typography>
-                Goals: <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.goals} />
-              </Typography>
-              <Typography>
-                Features:
-                <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.features} />
-              </Typography>
-
-              <Typography>
-                Teams:{' '}
-                {(changeRequest as StandardChangeRequest).projectProposedChanges?.teams.map((team, index, array) => (
-                  <>
-                    {team.teamName}
-                    {index !== array.length - 1 && ', '}
-                  </>
-                ))}
-              </Typography>
-
-              <Typography>
-                Constraints:
-                <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.otherConstrains} />
-              </Typography>
-
-              {/* */}
-              <Typography>
-                Start Date: {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.startDate.toDateString}
-              </Typography>
-              <Typography>
-                Duration: {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.duration} weeks
-              </Typography>
-              <Typography>
-                Blocked By:{' '}
-                {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.blockedBy.map((wbs, index, array) => (
-                  <>
-                    {wbs.workPackageNumber}
-                    {index !== array.length - 1 && ', '}
-                  </>
-                ))}
-              </Typography>
-              <Typography>Stage: {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.stage}</Typography>
+              {isProject(wbsNum) ? (
+                <CompareProjectFields changeRequest={changeRequest} isProposed={true} />
+              ) : (
+                <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={true} />
+              )}
             </Box>
           </Grid>
         </Grid>
