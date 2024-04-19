@@ -750,10 +750,6 @@ export default class ProjectsService {
       throw new NotFoundException('Manufacturer', name);
     }
 
-    if (manufacturer.materials.length > 0) {
-      throw new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it');
-    }
-
     if (manufacturer.dateDeleted) {
       throw new DeletedException('Manufacturer', manufacturer.userCreatedId);
     }
