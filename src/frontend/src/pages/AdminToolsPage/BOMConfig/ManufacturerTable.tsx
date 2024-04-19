@@ -1,5 +1,5 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Grid, IconButton, TableCell, TableRow } from '@mui/material';
+import { Box, IconButton, TableCell, TableRow } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { NERButton } from '../../../components/NERButton';
 import { useDeleteManufacturer, useGetAllManufacturers } from '../../../hooks/bom.hooks';
@@ -56,28 +56,13 @@ const ManufacturerTable: React.FC = () => {
     return (
       <>
         <IconButton
-          onClick={() => setShowDeleteModal(true)}
+          type="button"
           sx={{
-            color: 'Red',
-            width: 'auto',
-            height: 'auto',
-            padding: 0.1,
-            borderRadius: '5px'
+            mx: 1
           }}
+          onClick={() => setShowDeleteModal(true)}
         >
-          <Box
-            sx={{
-              border: '2px solid red',
-              borderRadius: '5px',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-          >
-            <DeleteIcon sx={{ fontSize: 'small' }} />
-          </Box>
+          <DeleteIcon />
         </IconButton>
         {showDeleteModal && (
           <ManufacturerDeleteModal name={name} onDelete={handleDeleteSubmit} onHide={() => setShowDeleteModal(false)} />
@@ -86,18 +71,14 @@ const ManufacturerTable: React.FC = () => {
     );
   };
 
-  const manufacturersTableRows = manufacturers.map((manufacturers) => (
+  const manufacturersTableRows = manufacturers.map((manufacturer) => (
     <TableRow>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {datePipe(manufacturers.dateCreated)}
+        {datePipe(manufacturer.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>
-        <Grid container justifyContent="space-between">
-          <Grid sx={{ align: 'left' }}>{manufacturers.name}</Grid>
-          <Grid>
-            <ManufacturerDeleteButton name={manufacturers.name} onDelete={handleDeleteManufacturer} />
-          </Grid>
-        </Grid>
+      <TableCell sx={{ border: '2px solid black' }}>{manufacturer.name}</TableCell>
+      <TableCell align="center" sx={{ border: '2px solid black' }}>
+        <ManufacturerDeleteButton name={manufacturer.name} onDelete={handleDeleteManufacturer} />
       </TableCell>
     </TableRow>
   ));
@@ -105,7 +86,10 @@ const ManufacturerTable: React.FC = () => {
   return (
     <Box>
       <CreateManufacturerModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Manufacturer Name' }]} rows={manufacturersTableRows} />
+      <AdminToolTable
+        columns={[{ name: 'Date Registered' }, { name: 'Manufacturer Name' }, { name: '', width: '10%' }]}
+        rows={manufacturersTableRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"
