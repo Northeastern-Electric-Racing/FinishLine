@@ -564,8 +564,9 @@ export default class ChangeRequestsService {
     // verify user is allowed to create standard change requests
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
 
-    //verify proposed solutions length is greater than 0
-    if (proposedSolutions.length === 0) throw new HttpException(400, 'No proposed solutions provided');
+    //verify proposed solutions length is greater than 0 if no project proposed changes
+    if (proposedSolutions.length === 0 && !projectProposedChanges)
+      throw new HttpException(400, 'No proposed solutions provided');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -636,6 +637,9 @@ export default class ChangeRequestsService {
         otherConstraints
       } = projectProposedChanges;
 
+      if (!projectLeadId) throw new HttpException(400, 'Project Lead ID not found');
+      if (!projectManagerId) throw new HttpException(400, 'Project Manager ID not found');
+
       await validateProposedChangesFields(projectLeadId, projectManagerId, links);
 
       if (teamIds.length > 0) {
@@ -683,6 +687,9 @@ export default class ChangeRequestsService {
         deliverables,
         blockedBy
       } = workPackageProposedChanges;
+
+      if (!projectLeadId) throw new HttpException(400, 'Project Lead ID not found');
+      if (!projectManagerId) throw new HttpException(400, 'Project Manager ID not found');
 
       await validateProposedChangesFields(projectLeadId, projectManagerId, links);
 

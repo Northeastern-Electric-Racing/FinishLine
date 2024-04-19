@@ -26,7 +26,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const toast = useToast();
   const query = useQuery();
 
-  const { name, budget, summary } = project;
+  const { name, budget, summary, teams, status } = project;
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
   const goals = bulletsToObject(project.goals);
@@ -120,30 +120,33 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   const onSubmitCreateChangeRequest = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links } = data;
+    const { name, budget, summary, links, goals, features, constraints } = data;
     const rules = data.rules.map((rule) => rule.detail);
-    const crId = data.crId;
-
-    const goals = mapBulletsToPayload(data.goals);
-    const features = mapBulletsToPayload(data.features);
-    const otherConstraints = mapBulletsToPayload(data.constraints);
 
     try {
-      const payload: EditSingleProjectPayload = {
-        name,
-        budget,
-        summary,
-        links,
-        projectId: project.id,
-        crId: Number(crId),
-        rules,
-        goals,
-        features,
-        otherConstraints,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
-      };
-      await createScopeCRMutateAsync(payload);
+      // TODO: update type, what, and why with inputs from create CR modal
+      await createScopeCRMutateAsync({
+        wbsNum: project.wbsNum,
+        type: 'OTHER',
+        what: '',
+        why: [],
+        proposedSolutions: [],
+        projectProposedChanges: {
+          name,
+          status: status,
+          projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+          projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined,
+          links,
+          budget,
+          summary,
+          newProject: false,
+          goals: goals.map((g) => g.detail),
+          features: features.map((f) => f.detail),
+          otherConstraints: constraints.map((c) => c.detail),
+          rules,
+          teamIds: teams.map((t) => t.teamId)
+        }
+      });
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
