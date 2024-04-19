@@ -4,6 +4,7 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
+  LinkCreateArgs,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -24,6 +25,7 @@ import {
 } from '../utils/errors.utils';
 import {
   changeRequestTransformer,
+  projectProposedChangesTransformer,
   workPackageProposedChangesTransformer
 } from '../transformers/change-requests.transformer';
 import { updateBlocking, allChangeRequestsReviewed, validateProposedChangesFields } from '../utils/change-requests.utils';
@@ -44,6 +46,7 @@ import { validateBlockedBys } from '../utils/projects.utils';
 import scopeChangeRequestQueryArgs from '../prisma-query-args/scope-change-requests.query-args';
 import WorkPackagesService from './work-packages.services';
 import { transformDate } from '../utils/utils';
+import ProjectsService from './projects.services';
 
 export default class ChangeRequestsService {
   /**
@@ -224,27 +227,47 @@ export default class ChangeRequestsService {
         const { wbsProposedChanges } = foundCR.scopeChangeRequest;
 
         if (associatedProjectCR && wbsProposedChanges.workPackageProposedChanges) {
-          const wpProposedChangesData = workPackageProposedChangesTransformer(wbsProposedChanges);
+          const wpProposedChanges = workPackageProposedChangesTransformer(wbsProposedChanges);
           // creating a new workpackage
           WorkPackagesService.createWorkPackage(
             reviewer,
-            wpProposedChangesData.name,
+            wpProposedChanges.name,
             crId,
-            wpProposedChangesData.stage as WorkPackageStage,
-            transformDate(wpProposedChangesData.startDate),
-            wpProposedChangesData.duration,
-            wpProposedChangesData.blockedBy,
-            wpProposedChangesData.expectedActivities.map((activity) => activity.detail),
-            wpProposedChangesData.deliverables.map((deliverable) => deliverable.detail)
+            wpProposedChanges.stage as WorkPackageStage,
+            transformDate(wpProposedChanges.startDate),
+            wpProposedChanges.duration,
+            wpProposedChanges.blockedBy,
+            wpProposedChanges.expectedActivities.map((activity) => activity.detail),
+            wpProposedChanges.deliverables.map((deliverable) => deliverable.detail)
           );
         }
 
         // if you have project proposed changes
         if (wbsProposedChanges.projectProposedChanges) {
-          const { newProject } = wbsProposedChanges.projectProposedChanges;
+          const projProposedChanges = projectProposedChangesTransformer(wbsProposedChanges);
 
           // if you're creating a new project
-          if (newProject) {
+          if (projProposedChanges.newProject) {
+            ProjectsService.createProject(
+              reviewer,
+              crId,
+              foundCR.wbsElement.carNumber,
+              projProposedChanges.name,
+              projProposedChanges.summary,
+              projProposedChanges.teams.map((team) => team.teamId),
+              projProposedChanges.budget,
+              projProposedChanges.links.map(({ linkInfoId: linkId, linkType: { name: linkTypeName }, url }) => ({
+                linkId,
+                linkTypeName,
+                url
+              })),
+              projProposedChanges.rules,
+              projProposedChanges.goals.map(({ id, detail }) => ({ id, detail })),
+              projProposedChanges.features.map(({ id, detail }) => ({ id, detail })),
+              projProposedChanges.otherConstrains.map(({ id, detail }) => ({ id, detail })),
+              projProposedChanges.projectLead?.userId as number,
+              projProposedChanges.projectManager?.userId as number
+            );
           } else {
             // if you're editing a previous project
           }
