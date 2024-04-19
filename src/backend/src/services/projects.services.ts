@@ -911,8 +911,7 @@ export default class ProjectsService {
       throw new AccessDeniedException('Only an Admin or a head can delete an Assembly');
 
     const assembly = await prisma.assembly.findUnique({
-      where: { assemblyId },
-      include: { wbsElement: true }
+      where: { assemblyId }
     });
 
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);

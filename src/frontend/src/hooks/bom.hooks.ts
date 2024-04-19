@@ -115,8 +115,8 @@ export const useDeleteMaterial = () => {
 
 /**
  * Custom React hook to delete a assembly.
- * @param assemblyId The material to delete's id
- * @returns mutation function to delete a material
+ * @param assemblyId The assembly to delete's id
+ * @returns mutation function to delete a assembly
  */
 export const useDeleteAssembly = () => {
   const queryClient = useQueryClient();
