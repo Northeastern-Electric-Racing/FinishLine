@@ -128,6 +128,7 @@ const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPi
 const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomDeleteAssembly = (assemblyId: string) => `${assemblyEndpoints()}/${assemblyId}/delete`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
 const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
 const bomDeleteManufacturer = (manufacturerName: string) => `${bomEndpoints()}/manufacturer/${manufacturerName}/delete`;
@@ -246,6 +247,7 @@ export const apiUrls = {
   bomEditMaterial,
   bomDeleteMaterial,
   bomCreateAssembly,
+  bomDeleteAssembly,
   bomAssignAssembly,
   bomCreateManufacturer,
   bomDeleteManufacturer,

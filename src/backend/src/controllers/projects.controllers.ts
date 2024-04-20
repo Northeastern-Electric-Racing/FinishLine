@@ -297,7 +297,7 @@ export default class ProjectsController {
     }
   }
 
-  static async deleteAssemblyType(req: Request, res: Response, next: NextFunction) {
+  static async deleteAssembly(req: Request, res: Response, next: NextFunction) {
     try {
       const { assemblyId } = req.params;
       const user = await getCurrentUser(res);
