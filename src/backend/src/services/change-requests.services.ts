@@ -778,6 +778,6 @@ export default class ChangeRequestsService {
     });
 
     // send slack message to CR reviewers
-    await sendSlackRequestedReviewNotification(newReviewers, changeRequestTransformer(foundCR), foundCR.crId);
+    await sendSlackRequestedReviewNotification(newReviewers, changeRequestTransformer(foundCR));
   }
 }

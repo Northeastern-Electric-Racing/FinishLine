@@ -47,21 +47,19 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
  * Send CR requested review notification to reviewer in Slack
  * @param reviewers the user information of the reviewers
  * @param changeRequest the requested change request to be reviewed
- * @param crId the id of the requested change request to be reviewed
  */
 export const sendSlackRequestedReviewNotification = async (
   reviewers: UserWithSettings[],
-  changeRequest: ChangeRequest,
-  crId: number
+  changeRequest: ChangeRequest
 ): Promise<void> => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  //if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const btnText = `View CR#${changeRequest.crId}`;
   const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
-  const fullMsg =
-    usersToSlackPings(reviewers) + `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
+  const slackPingMessage = usersToSlackPings(reviewers);
+  const fullMsg = `${slackPingMessage} Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
 
-  const threads = await prisma.message_Info.findMany({ where: { changeRequestId: crId } });
+  const threads = await prisma.message_Info.findMany({ where: { changeRequestId: changeRequest.crId } });
 
   threads.forEach((thread) =>
     replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, changeRequestLink, btnText)
@@ -134,12 +132,12 @@ export const sendSlackChangeRequestNotification = async (
   crId: number,
   budgetImpact?: number
 ): Promise<{ channelId: string; ts: string }[]> => {
-  if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
+  //if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
   const fullMsg = `:tada: New Change Request! :tada: ${message}`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR #${crId}`;
-  const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
+  const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText); // replace team.slackId with slackbot_land id
   if (notification) msgs.push(notification);
 
   if (budgetImpact && budgetImpact > 100) {
