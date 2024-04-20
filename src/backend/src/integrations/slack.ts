@@ -53,6 +53,7 @@ export const replyToMessageInThread = async (
   const block = generateSlackTextBlock(message, link, linkButtonText);
 
   try {
+    // testing
     console.log({
       token: SLACK_BOT_TOKEN,
       channel: slackId,
