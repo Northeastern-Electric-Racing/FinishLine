@@ -81,6 +81,7 @@ const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const teamTypes = () => `${designReviews()}/teamType/all`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -134,7 +135,6 @@ const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
 /************** Design Review Endpoints *******************************/
 const designReviews = () => `${API_URL}/design-reviews`;
 const designReviewsCreate = () => `${designReviews()}/create`;
-const teamTypes = () => `${designReviews()}/teamType/all`;
 const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
