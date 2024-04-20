@@ -733,15 +733,17 @@ export default class WorkPackagesService {
       })
       .map((item) => item.blockedByInfoId);
 
-    const updateBlockedBy = originalWorkPackageTemplate.blockedBy.filter((blockedByItem: Blocked_By_Info) => {
+    // updating a blocked by if both lists contain it
+    const updateBlockedByIds = originalWorkPackageTemplate.blockedBy.filter((blockedByItem: Blocked_By_Info) => {
       return updatedBlockedByIds.includes(blockedByItem.blockedByInfoId);
     });
 
-    const newBlockedBy = blockedBy.filter((blockedByItem: BlockedByCreateArgs) => {
+    // creating a new blocked by if the old list does not contain it
+    const newBlockedByIds = blockedBy.filter((blockedByItem: BlockedByCreateArgs) => {
       return !originalWorkPackageTemplate.blockedBy.some(
         (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
       );
-    });
+    })
 
     await prisma.blocked_By_Info.deleteMany({
       where: {
@@ -753,20 +755,19 @@ export default class WorkPackagesService {
 
     // creating the new blocked bys
     await prisma.blocked_By_Info.createMany({
-      data: newBlockedBy
+      data: newBlockedByIds
     });
 
     // updating work package template
     await prisma.blocked_By_Info.updateMany({
       where: {
         blockedByInfoId: {
-          in: updateBlockedBy.map((item) => item.blockedByInfoId)
+          in: updateBlockedByIds.map((item) => item.blockedByInfoId)
         }
       },
-      data: [updateBlockedBy]
+      data: [updateBlockedByIds]
     });
 
-    // updating work package template
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
       where: {
         workPackageTemplateId
