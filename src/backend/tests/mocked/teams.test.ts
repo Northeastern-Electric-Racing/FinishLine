@@ -375,7 +375,8 @@ describe('Teams', () => {
         userArchivedId: 2,
         userArchived: superman,
         dateArchived,
-        projects: []
+        projects: [],
+        teamType: undefined
       };
 
       vi.spyOn(prisma.team, 'update').mockResolvedValue(justiceLeagueUpdates);
