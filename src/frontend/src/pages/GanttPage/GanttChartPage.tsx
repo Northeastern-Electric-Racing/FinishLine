@@ -7,8 +7,6 @@ import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
-import GanttPageFilters from './GanttChartComponents/GanttPageFilters';
-import { Edit, Tune } from '@mui/icons-material/';
 import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
@@ -23,24 +21,20 @@ import {
   EventChange
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
-import { Box, Popover, Typography, IconButton, useTheme, Chip } from '@mui/material';
+import { Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
 import { SearchBar } from '../../components/SearchBar';
-import GanttChartTeamSection from './GanttChartComponents/GanttChartTeamSection';
 import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend';
+import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersWrapper';
+import GanttChart from './GanttChartComponents/GanttChart';
 
-/**
- * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
- */
-const GanttPageWrapper: FC = () => {
+const GanttChartPage: FC = () => {
   const query = useQuery();
   const history = useHistory();
-  const theme = useTheme();
   const { isLoading, isError, data: projects, error } = useAllProjects();
   const [teamList, setTeamList] = useState<string[]>([]);
   const [ganttTasks, setGanttTasks] = useState<GanttTask[]>([]);
-  const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
   const [chartEditingState, setChartEditingState] = React.useState<
     Array<{
       teamName: string;
@@ -251,7 +245,7 @@ const GanttPageWrapper: FC = () => {
   });
 
   // find the earliest start date and subtract 2 weeks to use as the first date on calendar
-  const ganttStartDate =
+  const startDate =
     ganttTasks.length !== 0
       ? sub(
           ganttTasks
@@ -264,7 +258,7 @@ const GanttPageWrapper: FC = () => {
       : sub(Date.now(), { weeks: 15 });
 
   // find the latest end date and add 6 months to use as the last date on calendar
-  const ganttEndDate =
+  const endDate =
     ganttTasks.length !== 0
       ? add(
           ganttTasks
@@ -287,118 +281,17 @@ const GanttPageWrapper: FC = () => {
     }
   };
 
-  const ganttCharts: JSX.Element[] = sortedTeamList.map((teamName: string) => {
-    const tasks = teamNameToGanttTasksMap.get(teamName);
-
-    if (!chartEditingState.map((entry) => entry.teamName).includes(teamName)) {
-      setChartEditingState([...chartEditingState, { teamName, editing: false }]);
-    }
-
-    const isEditMode = chartEditingState.find((entry) => entry.teamName === teamName)?.editing || false;
-
-    const handleEdit = () => {
-      const index = chartEditingState.findIndex((entry) => entry.teamName === teamName);
-      if (index !== -1) {
-        chartEditingState[index] = { teamName, editing: !isEditMode };
-      }
-
-      setChartEditingState([...chartEditingState]);
-    };
-
-    if (!tasks) return <></>;
-
-    return (
-      <Box
-        sx={{
-          mt: 2,
-          py: 1,
-          background: isEditMode ? theme.palette.divider : 'transparent',
-          borderRadius: '0.25rem',
-          width: 'fit-content'
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            mb: 1,
-            pl: 2,
-            position: 'sticky',
-            left: 0,
-            width: 'fit-content',
-            height: '30px'
-          }}
-        >
-          <Typography variant="h5" fontWeight={400}>
-            {teamName}
-          </Typography>
-
-          {isEditMode ? (
-            <Chip label="Save" onClick={handleEdit} />
-          ) : (
-            <IconButton onClick={handleEdit}>
-              <Edit />
-            </IconButton>
-          )}
-        </Box>
-        <Box key={teamName} sx={{ my: 3, width: 'fit-content', pl: 2 }}>
-          <GanttChartTeamSection
-            tasks={tasks}
-            start={ganttStartDate}
-            end={ganttEndDate}
-            isEditMode={isEditMode}
-            onExpanderClick={(newTask) => {
-              const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-              setGanttTasks(newTasks);
-            }}
-            saveChanges={saveChanges}
-          />
-        </Box>
-      </Box>
-    );
-  });
-
-  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorFilterEl(event.currentTarget);
-  };
-
-  const handleFilterClose = () => {
-    setAnchorFilterEl(null);
-  };
-
-  const open = Boolean(anchorFilterEl);
-
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
-      <IconButton onClick={handleFilterClick}>
-        <Tune />
-      </IconButton>
-      <Popover
-        open={open}
-        anchorEl={anchorFilterEl}
-        onClose={handleFilterClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        sx={{ dispaly: 'flex', justifyContent: 'center', alignItems: 'center' }}
-      >
-        <GanttPageFilters
-          carHandlers={carHandlers}
-          teamCategoriesHandlers={teamCategoriesHandlers}
-          teamsHandlers={teamsHandlers}
-          overdueHandler={overdueHandler}
-          expandedHandler={expandedHandler}
-          teamList={teamList}
-          resetHandler={resetHandler}
-        />
-      </Popover>
+      <GanttChartFiltersButton
+        carHandlers={carHandlers}
+        teamCategoriesHandlers={teamCategoriesHandlers}
+        teamsHandlers={teamsHandlers}
+        overdueHandler={overdueHandler}
+        expandedHandler={expandedHandler}
+        resetHandler={resetHandler}
+      />
     </Box>
   );
 
@@ -416,11 +309,21 @@ const GanttPageWrapper: FC = () => {
           msOverflowStyle: 'none' // IE and Edge
         }}
       >
-        <GanttChartTimeline start={ganttStartDate} end={ganttEndDate} />
-        {ganttCharts}
+        <GanttChartTimeline start={startDate} end={endDate} />
+        <GanttChart
+          startDate={startDate}
+          endDate={endDate}
+          teamsList={sortedTeamList}
+          teamNameToGanttTasksMap={teamNameToGanttTasksMap}
+          chartEditingState={chartEditingState}
+          setChartEditingState={setChartEditingState}
+          saveChanges={saveChanges}
+          ganttTasks={ganttTasks}
+          setGanttTasks={setGanttTasks}
+        />
       </Box>
     </PageLayout>
   );
 };
 
-export default GanttPageWrapper;
+export default GanttChartPage;

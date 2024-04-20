@@ -7,16 +7,13 @@ import { Button, Checkbox, Chip, Grid, Typography, useTheme } from '@mui/materia
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { ChangeEvent, FC } from 'react';
+import { ChangeEvent } from 'react';
 
-interface GanttPageFiltersProps {
+interface GanttChartFiltersProps {
   carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
-
-  teamList: string[];
-
   expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
 }
@@ -46,14 +43,14 @@ const FilterChipButton = ({
   );
 };
 
-const GanttPageFilters: FC<GanttPageFiltersProps> = ({
+const GanttChartFilters = ({
   carHandlers,
   teamCategoriesHandlers,
   teamsHandlers,
   overdueHandler,
   expandedHandler,
   resetHandler
-}) => {
+}: GanttChartFiltersProps) => {
   const FilterRow = ({
     label,
     buttons
@@ -126,4 +123,4 @@ const GanttPageFilters: FC<GanttPageFiltersProps> = ({
   );
 };
 
-export default GanttPageFilters;
+export default GanttChartFilters;

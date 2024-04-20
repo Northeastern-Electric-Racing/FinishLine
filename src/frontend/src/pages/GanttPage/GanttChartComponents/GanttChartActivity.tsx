@@ -26,7 +26,7 @@ const GanttChartActivity = ({
 } & ComponentProps<'div'>) => {
   const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
 
-  // if we can't find the end date in the timeframe, have it span to the end
+  // if the end date doesn't exist within the timeframe, have it span to the end
   const endCol =
     days.findIndex((day) => dateToString(day) === dateToString(event.end)) === -1
       ? days.length + 1
@@ -119,7 +119,7 @@ const GanttChartActivity = ({
               onDrop={(e) => onDrop(day)}
               sx={{
                 borderRadius: '0.25rem',
-                height: '2.75rem',
+                height: '2rem',
                 minWidth: GANTT_CHART_CELL_SIZE,
                 maxWidth: GANTT_CHART_CELL_SIZE,
                 backgroundColor: `color-mix(in srgb, ${theme.palette.background.default}, transparent 75%);`
@@ -142,7 +142,7 @@ const GanttChartActivity = ({
           style={{
             gridColumnStart: startCol,
             gridColumnEnd: endCol,
-            height: '2.75rem',
+            height: '2rem',
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
