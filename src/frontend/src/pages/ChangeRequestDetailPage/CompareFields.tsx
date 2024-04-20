@@ -34,13 +34,13 @@ const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed
   const renderContent = (content: string | DescriptionBullet[]) => {
     if (typeof content === 'string') {
       return (
-        <Typography padding="5px" display="inline">
+        <Typography padding="3px" display="inline">
           {content}
         </Typography>
       );
     } else {
       return (
-        <ul style={{ paddingLeft: '25px', marginBottom: '0.5em' }}>
+        <ul style={{ paddingLeft: '23px', marginBottom: '3px' }}>
           {content
             .filter((bullet) => !bullet.dateDeleted)
             .map((bullet) => (
@@ -54,7 +54,18 @@ const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed
   const compareArrays = (arr1: DescriptionBullet[], arr2: DescriptionBullet[]): boolean => {
     if (arr1.length !== arr2.length) return false;
     for (let i = 0; i < arr1.length; i++) {
-      if (arr1[i].detail !== arr2[i].detail) return false;
+      const bullet1 = arr1[i];
+      const bullet2 = arr2[i];
+      if (
+        bullet1.id !== bullet2.id ||
+        bullet1.detail !== bullet2.detail ||
+        bullet1.dateAdded !== bullet2.dateAdded ||
+        bullet1.dateDeleted !== bullet2.dateDeleted ||
+        bullet1.dateChecked !== bullet2.dateChecked ||
+        bullet1.userChecked !== bullet2.userChecked
+      ) {
+        return false;
+      }
     }
     return true;
   };
@@ -65,7 +76,7 @@ const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed
       compareArrays(first.content as DescriptionBullet[], second.content as DescriptionBullet[]))
   ) {
     return (
-      <Typography padding="3px" display="inline">
+      <Typography>
         {first.field}: {first.content}
       </Typography>
     );
