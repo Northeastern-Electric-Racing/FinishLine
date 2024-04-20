@@ -70,7 +70,7 @@ export const workPackageProposedChangesTransformer = (
   };
 };
 
-export const changeRequestTransformer = (
+const changeRequestTransformer = (
   changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
@@ -130,3 +130,5 @@ export const changeRequestTransformer = (
     requestedReviewers: changeRequest.requestedReviewers ?? []
   };
 };
+
+export default changeRequestTransformer;

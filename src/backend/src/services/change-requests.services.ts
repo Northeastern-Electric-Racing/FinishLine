@@ -4,7 +4,6 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
-  LinkCreateArgs,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -23,8 +22,7 @@ import {
   NotFoundException,
   DeletedException
 } from '../utils/errors.utils';
-import {
-  changeRequestTransformer,
+import changeRequestTransformer, {
   projectProposedChangesTransformer,
   workPackageProposedChangesTransformer
 } from '../transformers/change-requests.transformer';
