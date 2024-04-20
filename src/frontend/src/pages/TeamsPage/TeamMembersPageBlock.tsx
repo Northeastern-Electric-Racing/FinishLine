@@ -4,7 +4,7 @@
  */
 
 import { Autocomplete, Box, Grid, IconButton, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useSetTeamHead, useSetTeamLeads, useSetTeamMembers } from '../../hooks/teams.hooks';
 import { isAdmin, isHead, isLeadership, Team } from 'shared';
@@ -35,6 +35,12 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const { isLoading: setTeamMembersIsLoading, mutateAsync: setTeamMembersMutateAsync } = useSetTeamMembers(team.teamId);
   const { isLoading: setTeamHeadIsLoading, mutateAsync: setTeamHeadMutateAsync } = useSetTeamHead(team.teamId);
   const { isLoading: setTeamLeadsIsLoading, mutateAsync: setTeamLeadsMutateAsync } = useSetTeamLeads(team.teamId);
+
+  useEffect(() => {
+    setMembers(team.members.map(userToAutocompleteOption));
+    setLeads(team.leads.map(userToAutocompleteOption));
+    setHead(userToAutocompleteOption(team.head));
+  }, [team.members, team.leads, team.head]);
 
   const toast = useToast();
 
