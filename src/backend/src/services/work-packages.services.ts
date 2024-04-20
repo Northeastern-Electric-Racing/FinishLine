@@ -743,7 +743,7 @@ export default class WorkPackagesService {
       return !originalWorkPackageTemplate.blockedBy.some(
         (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
       );
-    })
+    });
 
     await prisma.blocked_By_Info.deleteMany({
       where: {
