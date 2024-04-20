@@ -43,17 +43,29 @@ const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed
         <ul style={{ paddingLeft: '25px', marginBottom: '0.5em' }}>
           {content
             .filter((bullet) => !bullet.dateDeleted)
-            .map((bullet, idx) => (
-              <li key={idx}>{bullet.detail}</li>
+            .map((bullet) => (
+              <li key={bullet.id}>{bullet.detail}</li>
             ))}
         </ul>
       );
     }
   };
 
-  if (first.field === second.field && first.content === second.content) {
+  const compareArrays = (arr1: DescriptionBullet[], arr2: DescriptionBullet[]): boolean => {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i].detail !== arr2[i].detail) return false;
+    }
+    return true;
+  };
+
+  if (
+    first.field === second.field &&
+    (first.content === second.content ||
+      compareArrays(first.content as DescriptionBullet[], second.content as DescriptionBullet[]))
+  ) {
     return (
-      <Typography>
+      <Typography padding="3px" display="inline">
         {first.field}: {first.content}
       </Typography>
     );

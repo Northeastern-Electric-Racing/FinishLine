@@ -4,6 +4,7 @@ import CompareFields, { PotentialChange } from './CompareFields';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { datePipe } from '../../utils/pipes';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
@@ -50,12 +51,12 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   const initialStartDate: PotentialChange = {
     field: 'Start Date',
-    content: `${workPackage.startDate}`
+    content: `${datePipe(workPackage.startDate)}`
   };
 
   const proposedStartDate: PotentialChange = {
     field: 'Start Date',
-    content: `${(changeRequest as StandardChangeRequest).workPackageProposedChanges?.startDate}`
+    content: datePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.startDate)
   };
 
   return (

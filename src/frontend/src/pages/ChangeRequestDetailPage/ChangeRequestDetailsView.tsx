@@ -35,6 +35,7 @@ import NERTabs from '../../components/Tabs';
 
 import CompareProjectFields from './CompareProjectFields';
 import WorkPackageComparisonBlock from './CompareWPFields';
+import ProjectComparisonBlock from './CompareProjectFields';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -189,7 +190,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={6}>
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
               {isProject(wbsNum) ? (
-                <CompareProjectFields changeRequest={changeRequest} isProposed={false} />
+                <ProjectComparisonBlock changeRequest={changeRequest} isProposed={false} />
               ) : (
                 <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={false} />
               )}
@@ -199,7 +200,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={6}>
             <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
               {isProject(wbsNum) ? (
-                <CompareProjectFields changeRequest={changeRequest} isProposed={true} />
+                <ProjectComparisonBlock changeRequest={changeRequest} isProposed={true} />
               ) : (
                 <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={true} />
               )}

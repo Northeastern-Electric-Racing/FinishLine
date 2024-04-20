@@ -4,6 +4,7 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { Typography } from '@mui/material';
+import { datePipe } from '../../utils/pipes';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
@@ -84,12 +85,58 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   const initialGoals: PotentialChange = {
     field: 'Goals',
-    content: `${project.goals}`
+    content: project.goals
   };
 
   const proposedGoals: PotentialChange = {
     field: 'Goals',
-    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.goals}}`
+    content: (changeRequest as StandardChangeRequest)?.projectProposedChanges?.goals || []
+  };
+
+  const initialFeatures: PotentialChange = {
+    field: 'Features',
+    content: project.features
+  };
+
+  const proposedFeatures: PotentialChange = {
+    field: 'Features',
+    content: (changeRequest as StandardChangeRequest)?.projectProposedChanges?.features || []
+  };
+
+  const initialConstraints: PotentialChange = {
+    field: 'Constraints',
+    content: project.otherConstraints
+  };
+
+  const proposedConstraints: PotentialChange = {
+    field: 'Constraints',
+    content: (changeRequest as StandardChangeRequest)?.projectProposedChanges?.otherConstrains || []
+  };
+
+  const initialTeams: PotentialChange = {
+    field: 'Teams',
+    content: (project?.teams || [])
+      .map((team, index, array) => team.teamName + (index !== array.length - 1 ? ', ' : ''))
+      .join('')
+  };
+
+  const proposedTeams: PotentialChange = {
+    field: 'Teams',
+    content: ((changeRequest as StandardChangeRequest)?.projectProposedChanges?.teams || [])
+      .map((team, index, array) => team.teamName + (index !== array.length - 1 ? ', ' : ''))
+      .join('')
+  };
+
+  const initialRules: PotentialChange = {
+    field: 'Rules',
+    content: (project?.rules || []).map((rule, index, array) => rule + (index !== array.length - 1 ? ', ' : '')).join('')
+  };
+
+  const proposedRules: PotentialChange = {
+    field: 'Rules',
+    content: ((changeRequest as StandardChangeRequest)?.projectProposedChanges?.rules || [])
+      .map((rule, index, array) => rule + (index !== array.length - 1 ? ', ' : ''))
+      .join('')
   };
 
   return (
@@ -100,46 +147,10 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
       <CompareFields first={initialBudget} second={proposedBudget} isProposed={isProposed} />
       <CompareFields first={initialSummary} second={proposedSummary} isProposed={isProposed} />
       <CompareFields first={initialGoals} second={proposedGoals} isProposed={isProposed} />
-
-      <Typography>
-        Goals: <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.goals} />
-      </Typography>
-
-      <Typography>
-        Rules:{' '}
-        {(changeRequest as StandardChangeRequest).projectProposedChanges?.rules.map((rule, index, array) => (
-          <>
-            {rule}
-            {index !== array.length - 1 && ', '}
-          </>
-        ))}
-      </Typography>
-      <Typography>
-        Features:
-        <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.features} />
-      </Typography>
-
-      <Typography>
-        Teams:{' '}
-        {(changeRequest as StandardChangeRequest).projectProposedChanges?.teams.map((team, index, array) => (
-          <>
-            {team.teamName}
-            {index !== array.length - 1 && ', '}
-          </>
-        ))}
-      </Typography>
-
-      <Typography>
-        Constraints:
-        <BulletList bullets={(changeRequest as StandardChangeRequest).projectProposedChanges?.otherConstrains} />
-      </Typography>
-
-      <Typography>
-        Start Date:{' '}
-        {(changeRequest as StandardChangeRequest).workPackageProposedChanges?.startDate !== undefined || null
-          ? (changeRequest as StandardChangeRequest).workPackageProposedChanges?.startDate.toString()
-          : 'N/A'}
-      </Typography>
+      <CompareFields first={initialFeatures} second={proposedFeatures} isProposed={isProposed} />
+      <CompareFields first={initialConstraints} second={proposedConstraints} isProposed={isProposed} />
+      <CompareFields first={initialTeams} second={proposedTeams} isProposed={isProposed} />
+      <CompareFields first={initialRules} second={proposedRules} isProposed={isProposed} />
     </>
   );
 };
