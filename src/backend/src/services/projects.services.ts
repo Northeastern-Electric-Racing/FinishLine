@@ -911,11 +911,29 @@ export default class ProjectsService {
       throw new AccessDeniedException('Only an Admin or a head can delete an Assembly');
 
     const assembly = await prisma.assembly.findUnique({
-      where: { assemblyId }
+      where: { assemblyId },
+      include: {
+        materials: true
+      }
     });
 
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);
     if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
+
+    const materialPromises = assembly.materials.map(async (material) => {
+      return await prisma.material.update({
+        where: {
+          materialId: material.materialId
+        },
+        data: {
+          assembly: {
+            disconnect: true
+          }
+        }
+      });
+    });
+
+    await Promise.all(materialPromises);
 
     const deletedAssembly = await prisma.assembly.update({
       where: {

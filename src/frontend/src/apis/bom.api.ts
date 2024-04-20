@@ -110,7 +110,7 @@ export const createAssembly = async (wbsNum: WbsNumber, assembly: AssemblyFormIn
  * @returns
  */
 export const deleteSingleAssembly = async (assemblyId: string) => {
-  return axios.delete<Assembly>(apiUrls.bomDeleteAssembly(assemblyId), {});
+  return axios.delete<Assembly>(apiUrls.bomDeleteAssembly(assemblyId));
 };
 
 /**

@@ -115,7 +115,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
         />
       );
       assemblies.forEach((assembly) => {
-        if (!(material && assembly.assemblyId === material.assemblyId && !assembly.dateDeleted)) {
+        if (!(material && assembly.assemblyId === material.assemblyId)) {
           actions.push(
             <GridActionsCellItem
               icon={<MoveToInboxIcon fontSize="small" />}
