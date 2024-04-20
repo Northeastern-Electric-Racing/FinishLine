@@ -129,7 +129,13 @@ export const isAccount = (validationObject: ValidationChain): ValidationChain =>
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
-    .isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered, MaterialStatus.Shipped]);
+    .isIn([
+      MaterialStatus.Ordered,
+      MaterialStatus.Received,
+      MaterialStatus.NotReadyToOrder,
+      MaterialStatus.ReadyToOrder,
+      MaterialStatus.Shipped
+    ]);
 };
 
 export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {
