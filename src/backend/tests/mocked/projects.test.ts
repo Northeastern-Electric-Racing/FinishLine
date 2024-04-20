@@ -903,7 +903,8 @@ describe('Projects', () => {
     });
 
     test('Deleting assembly works', async () => {
-      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue({ ...prismaAssembly1, materials: [] });
+      const assembly = { ...prismaAssembly1, materials: [] };
+      vi.spyOn(prisma.assembly, 'findUnique').mockResolvedValue(assembly);
       vi.spyOn(prisma.assembly, 'update').mockResolvedValue({ ...prismaAssembly1, dateDeleted: new Date() });
       const deletedAssembly = await ProjectsService.deleteAssembly('New Assembly', batman);
       expect(deletedAssembly.name).toBe('New Assembly');
