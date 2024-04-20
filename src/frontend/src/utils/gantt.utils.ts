@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage } from 'shared';
-import { GanttWorkPackageStageColorPipe, GanttWorkPackageTextColorPipe } from './enum-pipes';
+import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage, WorkPackageStage } from 'shared';
 import { projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
+import { deepOrange, green, grey, indigo, orange, pink, yellow } from '@mui/material/colors';
 
 export const NO_TEAM = 'No Team';
 
@@ -47,7 +47,7 @@ export type EventChange = { id: string; eventId: string } & (
   | { type: 'shift-by-days'; days: number }
 );
 
-export function applyChangeToEvent(event: Task, eventChanges: EventChange[]): Task {
+export const applyChangeToEvent = (event: Task, eventChanges: EventChange[]) => {
   const changedEvent = { ...event };
   for (const eventChange of eventChanges) {
     switch (eventChange.type) {
@@ -63,14 +63,14 @@ export function applyChangeToEvent(event: Task, eventChanges: EventChange[]): Ta
     }
   }
   return changedEvent;
-}
+};
 
-export function applyChangesToEvents(events: Task[], eventChanges: EventChange[]): Task[] {
+export const applyChangesToEvents = (events: Task[], eventChanges: EventChange[]) => {
   return events.map((event) => {
     const changes = eventChanges.filter((ec) => ec.eventId === event.id);
     return applyChangeToEvent(event, changes);
   });
-}
+};
 
 export interface GanttFilters {
   showCar1: boolean;
@@ -98,6 +98,22 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   };
   const car2Check = (project: Project) => {
     return project.wbsNum.carNumber !== 2;
+  };
+
+  const electricalTeamCategoryCheck = (project: Project) => {
+    return true;
+  };
+
+  const mechanicalTeamCategoryCheck = (project: Project) => {
+    return true;
+  };
+
+  const softwareTeamCategoryCheck = (project: Project) => {
+    return true;
+  };
+
+  const businessTeamCategoryCheck = (project: Project) => {
+    return true;
   };
 
   const ergonomicsTeamCheck = (project: Project) => {
@@ -299,4 +315,72 @@ export const sortTeamNames = (a: string, b: string): number => {
   if (b.includes('Data & Controls')) return Number.MIN_SAFE_INTEGER + 8;
 
   return a.localeCompare(b);
+};
+
+// maps stage and status to the desired color for Gantt Chart
+export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefined, status: WbsElementStatus) => string = (
+  stage,
+  status
+) => {
+  if (status === WbsElementStatus.Active) {
+    switch (stage) {
+      case WorkPackageStage.Research:
+        return orange[800];
+      case WorkPackageStage.Design:
+        return green[800];
+      case WorkPackageStage.Manufacturing:
+        return indigo[600];
+      case WorkPackageStage.Install:
+        return pink[500];
+      case WorkPackageStage.Testing:
+        return yellow[600];
+      default:
+        return grey[500];
+    }
+  } else if (status === WbsElementStatus.Inactive) {
+    switch (stage) {
+      case WorkPackageStage.Research:
+        return orange[500];
+      case WorkPackageStage.Design:
+        return green[600];
+      case WorkPackageStage.Manufacturing:
+        return indigo[400];
+      case WorkPackageStage.Install:
+        return pink[300];
+      case WorkPackageStage.Testing:
+        return yellow[300];
+      default:
+        return grey[500];
+    }
+  } else {
+    switch (stage) {
+      case WorkPackageStage.Research:
+        return deepOrange[800];
+      case WorkPackageStage.Design:
+        return green[900];
+      case WorkPackageStage.Manufacturing:
+        return indigo[900];
+      case WorkPackageStage.Install:
+        return pink[800];
+      case WorkPackageStage.Testing:
+        return yellow[800];
+      default:
+        return grey[500];
+    }
+  }
+};
+
+// maps stage to the desired color
+export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
+  switch (stage) {
+    case WorkPackageStage.Research:
+    case WorkPackageStage.Design:
+    case WorkPackageStage.Manufacturing:
+    case WorkPackageStage.Install:
+      return '#ffffff';
+    case WorkPackageStage.Testing:
+      return '#000000';
+    default:
+      return '#ffffff';
+  }
 };

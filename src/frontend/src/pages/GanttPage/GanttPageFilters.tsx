@@ -8,9 +8,7 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent, FC } from 'react';
 
-interface GanttPageFilterProps {
-  car1Handler: (event: ChangeEvent<HTMLInputElement>) => void;
-  car2Handler: (event: ChangeEvent<HTMLInputElement>) => void;
+interface GanttPageFiltersProps {
   carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
@@ -39,20 +37,15 @@ const FilterChipButton = ({
           backgroundColor: 'transparent'
         }
       }}
-      icon={<Chip label={buttonText} sx={{ minWidth: '150px', borderRadius: '20px' }} />}
+      icon={<Chip label={buttonText} sx={{ borderRadius: '20px', paddingX: 1 }} />}
       checkedIcon={
-        <Chip
-          label={buttonText}
-          sx={{ minWidth: '150px', borderRadius: '20px', backgroundColor: theme.palette.primary.main }}
-        />
+        <Chip label={buttonText} sx={{ borderRadius: '20px', paddingX: 1, backgroundColor: theme.palette.primary.main }} />
       }
     />
   );
 };
 
-const GanttPageFilter: FC<GanttPageFilterProps> = ({
-  car1Handler,
-  car2Handler,
+const GanttPageFilters: FC<GanttPageFiltersProps> = ({
   carHandlers,
   teamCategoriesHandlers,
   teamsHandlers,
@@ -68,16 +61,13 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
     buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   }) => (
     <Grid item container xs={12}>
-      <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Typography variant="h6" component="label" textAlign="right">
-          {label}
-        </Typography>
-      </Grid>
-      <Grid container item xs={9} sx={{ display: 'flex', alignItems: 'center' }}>
+      <Typography variant="h6" component="label" textAlign="right">
+        {label}
+      </Typography>
+
+      <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'center' }}>
         {buttons.map((button) => (
-          <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} />
-          </Grid>
+          <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} />
         ))}
       </Grid>
     </Grid>
@@ -117,7 +107,14 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
     <Grid
       container
       rowSpacing={2}
-      sx={{ justifyContent: 'start', alignItems: 'start', paddingY: 3, paddingX: 5, minWidth: '550px', maxWidth: '550px' }}
+      sx={{
+        justifyContent: 'start',
+        alignItems: 'start',
+        padding: 2,
+        paddingX: 4,
+        minWidth: { xs: '100%', md: '30rem' },
+        maxWidth: { xs: '100%', md: '30rem' }
+      }}
     >
       <FilterRow label="Cars" buttons={carHandlers} />
       <FilterRow label="Team Category" buttons={teamCategoriesHandlers} />
@@ -128,4 +125,4 @@ const GanttPageFilter: FC<GanttPageFilterProps> = ({
   );
 };
 
-export default GanttPageFilter;
+export default GanttPageFilters;

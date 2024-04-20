@@ -2,17 +2,27 @@ import { Box, Typography, Card, useTheme } from '@mui/material';
 import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
 import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../utils/gantt.utils';
 
-interface GanttChartCalendarProps {
+interface GanttChartTimelineProps {
   start: Date;
   end: Date;
 }
 
-export function GanttChartCalendar({ start, end }: GanttChartCalendarProps) {
+export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
   const theme = useTheme();
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
 
   return (
-    <Box sx={{ pl: 2, position: 'sticky', top: 0, backgroundColor: theme.palette.background.default, zIndex: 1 }}>
+    <Box
+      sx={{
+        pl: 2,
+        pb: 1,
+        position: 'sticky',
+        top: 0,
+        backgroundColor: theme.palette.background.default,
+        zIndex: 1,
+        width: 'fit-content'
+      }}
+    >
       <Box
         sx={{
           display: 'grid',

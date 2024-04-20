@@ -8,7 +8,7 @@ import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import { WbsElementStatus, WorkPackageStage } from 'shared';
 import GanttChart from './GanttChart';
-import GanttPageFilter from './GanttPageFilter';
+import GanttPageFilters from './GanttPageFilters';
 import { Edit, Tune } from '@mui/icons-material/';
 import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
@@ -21,18 +21,15 @@ import {
   GanttTask,
   transformProjectToGanttTask,
   getProjectTeamsName,
-  EventChange
+  EventChange,
+  GanttWorkPackageStageColorPipe,
+  GanttWorkPackageTextColorPipe
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box, Popover, Typography, IconButton, useTheme, Chip, Tooltip, Card } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { GanttChartCalendar } from './GanttChartCalendar';
-import {
-  GanttWorkPackageStageColorPipe,
-  GanttWorkPackageTextColorPipe,
-  WbsElementStatusTextPipe,
-  WorkPackageStageTextPipe
-} from '../../utils/enum-pipes';
+import { GanttChartTimeline } from './GanttChartTimeline';
+import { WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../utils/enum-pipes';
 import { SearchBar } from '../../components/SearchBar';
 
 /**
@@ -181,7 +178,6 @@ const GanttPageWrapper: FC = () => {
   ];
 
   const ergonomicsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.checked);
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, showErgonomicsTeam: event.target.checked };
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
@@ -492,9 +488,7 @@ const GanttPageWrapper: FC = () => {
         }}
         sx={{ dispaly: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
-        <GanttPageFilter
-          car1Handler={car1Handler}
-          car2Handler={car2Handler}
+        <GanttPageFilters
           carHandlers={carHandlers}
           teamCategoriesHandlers={teamCategoriesHandlers}
           teamsHandlers={teamsHandlers}
@@ -521,7 +515,7 @@ const GanttPageWrapper: FC = () => {
           msOverflowStyle: 'none' // IE and Edge
         }}
       >
-        <GanttChartCalendar start={ganttStartDate} end={ganttEndDate} />
+        <GanttChartTimeline start={ganttStartDate} end={ganttEndDate} />
         {ganttCharts}
       </Box>
     </PageLayout>

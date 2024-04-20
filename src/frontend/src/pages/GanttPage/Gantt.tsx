@@ -208,10 +208,7 @@ function Event({
                 userSelect: 'none'
               }}
             >
-              <Typography
-                variant="body1"
-                sx={{ color: event.styles ? event.styles.color : theme.palette.text.primary, px: 1 }}
-              >
+              <Typography variant="body1" sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}>
                 {event.name}
               </Typography>
             </Box>
