@@ -15,6 +15,7 @@ import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
+import * as yup from 'yup';
 
 const ProjectCreateContainer: React.FC = () => {
   const toast = useToast();
@@ -53,6 +54,29 @@ const ProjectCreateContainer: React.FC = () => {
     projectLeadId,
     projectManagerId
   };
+
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required!'),
+    crId: yup.number().min(1).typeError('Change Request ID cannot be empty!').required('crId must be a non-zero number!'),
+    carNumber: yup.number().min(0).required('A car number is required!'),
+    teamId: yup.string().required('A Team Id is required'),
+    budget: yup.number().optional(),
+    summary: yup.string().required('Summary is required!'),
+    projectLeadId: yup.number().optional(),
+    projectManagerId: yup.number().optional(),
+    links: yup
+      .array()
+      .optional()
+      .of(
+        yup
+          .object()
+          .optional()
+          .shape({
+            linkTypeName: yup.string().optional(),
+            url: yup.string().optional().url('Invalid URL')
+          })
+      )
+  });
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links, crId, teamId, carNumber } = data;
@@ -95,6 +119,7 @@ const ProjectCreateContainer: React.FC = () => {
       defaultValues={defaultValues}
       setProjectLeadId={setProjectLeadId}
       setProjectManagerId={setProjectManagerId}
+      schema={schema}
       projectLeadId={projectLeadId}
       projectManagerId={projectManagerId}
     />

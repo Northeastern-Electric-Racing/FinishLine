@@ -8,7 +8,7 @@ import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
@@ -18,6 +18,8 @@ import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { ObjectShape } from 'yup/lib/object';
+import InfoIcon from '@mui/icons-material/Info';
 
 export interface ProjectFormInput {
   name: string;
@@ -53,6 +55,7 @@ interface ProjectFormContainerProps {
   defaultValues: ProjectFormInput;
   setProjectManagerId: (id?: string) => void;
   setProjectLeadId: (id?: string) => void;
+  schema: yup.ObjectSchema<ObjectShape>;
   projectLeadId?: string;
   projectManagerId?: string;
   autoCRMode?: boolean;
@@ -66,56 +69,12 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   defaultValues,
   setProjectManagerId,
   setProjectLeadId,
+  schema,
   projectLeadId,
   projectManagerId,
   autoCRMode
 }) => {
   const allUsers = useAllUsers();
-  const schema = !project
-    ? yup.object().shape({
-        name: yup.string().required('Name is required!'),
-        crId: yup
-          .number()
-          .min(1)
-          .typeError('Change Request ID cannot be empty!')
-          .required('crId must be a non-zero number!'),
-        carNumber: yup.number().min(0).required('A car number is required!'),
-        teamId: yup.string().required('A Team Id is required'),
-        budget: yup.number().optional(),
-        summary: yup.string().required('Summary is required!'),
-        projectLeadId: yup.number().optional(),
-        projectManagerId: yup.number().optional(),
-        links: yup
-          .array()
-          .optional()
-          .of(
-            yup
-              .object()
-              .optional()
-              .shape({
-                linkTypeName: yup.string().optional(),
-                url: yup.string().optional().url('Invalid URL')
-              })
-          )
-      })
-    : yup.object().shape({
-        name: yup.string().required('Name is required!'),
-        crId: yup
-          .number()
-          .min(1)
-          .typeError('Change Request ID cannot be empty!')
-          .required('crId must be a non-zero number!'),
-        budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-        summary: yup.string().required('Summary is required!'),
-        links: yup.array().of(
-          yup.object().shape({
-            linkTypeName: yup.string().required('Link Type is required!'),
-            url: yup.string().required('URL is required!').url('Invalid URL')
-          })
-        ),
-        teamId: yup.string().optional(),
-        carNumber: yup.number().optional()
-      });
   const {
     register,
     handleSubmit,
@@ -174,14 +133,18 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Box textAlign="right">
+          <Stack textAlign="right" direction="row" justifyContent={'flex-end'}>
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
             <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
               {autoCRMode ? 'Generate Change Request' : 'Submit'}
             </NERSuccessButton>
-          </Box>
+            <Tooltip
+              children={<InfoIcon fontSize="large" />}
+              title={'This form creates a change request with the data for the new project'}
+            ></Tooltip>
+          </Stack>
         }
       >
         <ProjectFormDetails
