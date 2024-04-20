@@ -6,8 +6,6 @@ import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
-import { WbsElementStatus, WorkPackageStage } from 'shared';
-import GanttChart from './GanttChart';
 import GanttPageFilters from './GanttPageFilters';
 import { Edit, Tune } from '@mui/icons-material/';
 import { add, sub } from 'date-fns';
@@ -31,6 +29,8 @@ import PageLayout from '../../components/PageLayout';
 import { GanttChartTimeline } from './GanttChartTimeline';
 import { WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../utils/enum-pipes';
 import { SearchBar } from '../../components/SearchBar';
+import GanttChartTeamSection from './GanttChartTeamSection';
+import { WbsElementStatus, WorkPackageStage } from 'shared';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -345,8 +345,8 @@ const GanttPageWrapper: FC = () => {
           )}
         </Box>
         <Box key={teamName} sx={{ my: 3, width: 'fit-content', pl: 2 }}>
-          <GanttChart
-            ganttTasks={tasks}
+          <GanttChartTeamSection
+            tasks={tasks}
             start={ganttStartDate}
             end={ganttEndDate}
             isEditMode={isEditMode}
