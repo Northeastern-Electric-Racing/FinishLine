@@ -118,5 +118,4 @@ export const getAllWorkPackageTemplates = () => {
  */
 export const editLinkType = async (name: string, linkTypeData: LinkTypeCreatePayload) => {
   return axios.post(apiUrls.projectsEditLinkTypes(name), linkTypeData);
-  });
 };
