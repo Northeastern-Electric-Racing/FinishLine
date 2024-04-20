@@ -50,6 +50,14 @@ export const getPrismaQueryUserIds = (users: User[]) => {
   return userIds;
 };
 
+export const getPrismaQueryFromIds = (userIds: number[]) => {
+  return userIds.map((userId) => {
+    return {
+      userId
+    };
+  });
+};
+
 /**
  * Gets the users for the given Ids with their user settings
  * @param userIds the userIds to get as users

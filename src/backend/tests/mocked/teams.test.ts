@@ -94,6 +94,9 @@ describe('Teams', () => {
       expect(prisma.team.update).toHaveBeenCalledWith({
         where: { teamId },
         data: {
+          leads: {
+            set: [{ userId: wonderwoman.userId }]
+          },
           members: {
             set: userIds
           }
@@ -212,6 +215,12 @@ describe('Teams', () => {
             connect: {
               userId: 2
             }
+          },
+          leads: {
+            set: [{ userId: wonderwoman.userId }]
+          },
+          members: {
+            set: [{ userId: aquaman.userId }, { userId: theVisitor.userId }]
           }
         },
         ...teamQueryArgs
@@ -258,12 +267,12 @@ describe('Teams', () => {
 
   describe('setTeamLeads', () => {
     test('setTeamLeads submitter is not the head or admin', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([theVisitor]);
       vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1, primsaTeam2, justiceLeague]);
 
       const callSetTeamLeads = async () =>
-        await TeamsService.setTeamLeads(wonderwoman, prismaTeam1.teamId, [theVisitor.userId]);
+        await TeamsService.setTeamLeads(wonderwoman, justiceLeague.teamId, [theVisitor.userId]);
 
       const expectedException = new HttpException(
         400,
@@ -321,6 +330,9 @@ describe('Teams', () => {
         data: {
           leads: {
             set: userIds
+          },
+          members: {
+            set: [{ userId: aquaman.userId }]
           }
         },
         ...teamQueryArgs

@@ -72,3 +72,8 @@ export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
     return teams;
   });
 };
+
+export const removeUsersFromTeam = (currentUsers: User[], usersToRemove: User[]): number[] => {
+  const userIdsToRemove = usersToRemove.map((user) => user.userId);
+  return currentUsers.map((user) => user.userId).filter((userId) => !userIdsToRemove.includes(userId));
+};
