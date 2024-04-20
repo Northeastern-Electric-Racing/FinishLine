@@ -205,6 +205,7 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  teamTypes,
 
   descriptionBulletsCheck,
 
@@ -254,7 +255,6 @@ export const apiUrls = {
   designReviewById,
   designReviewsEdit,
   designReviewMarkUserConfirmed,
-  teamTypes,
   designReviewDelete,
 
   workPackageTemplates,
