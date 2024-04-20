@@ -1,6 +1,11 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { Box, Typography, Card, useTheme } from '@mui/material';
 import { eachDayOfInterval, isMonday, format, getDate } from 'date-fns';
-import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../utils/gantt.utils';
+import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE } from '../../../utils/gantt.utils';
 
 interface GanttChartTimelineProps {
   start: Date;

@@ -1,11 +1,16 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { addDays, differenceInDays } from 'date-fns';
 import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
-import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE, EventChange, Task } from '../../utils/gantt.utils';
+import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE, EventChange, Task } from '../../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
 import { Box, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import { dateToString } from '../../utils/datetime.utils';
+import { dateToString } from '../../../utils/datetime.utils';
 
 const GanttChartActivity = ({
   days,
@@ -186,4 +191,4 @@ const GanttChartActivity = ({
   );
 };
 
-export default GanttChartActivity   
+export default GanttChartActivity;

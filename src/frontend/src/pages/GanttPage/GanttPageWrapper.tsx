@@ -2,11 +2,12 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
+
 import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
-import GanttPageFilters from './GanttPageFilters';
+import GanttPageFilters from './GanttChartComponents/GanttPageFilters';
 import { Edit, Tune } from '@mui/icons-material/';
 import { add, sub } from 'date-fns';
 import { useQuery } from '../../hooks/utils.hooks';
@@ -19,18 +20,15 @@ import {
   GanttTask,
   transformProjectToGanttTask,
   getProjectTeamsName,
-  EventChange,
-  GanttWorkPackageStageColorPipe,
-  GanttWorkPackageTextColorPipe
+  EventChange
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
-import { Box, Popover, Typography, IconButton, useTheme, Chip, Tooltip, Card } from '@mui/material';
+import { Box, Popover, Typography, IconButton, useTheme, Chip } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { GanttChartTimeline } from './GanttChartTimeline';
-import { WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../utils/enum-pipes';
+import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
 import { SearchBar } from '../../components/SearchBar';
-import GanttChartTeamSection from './GanttChartTeamSection';
-import { WbsElementStatus, WorkPackageStage } from 'shared';
+import GanttChartTeamSection from './GanttChartComponents/GanttChartTeamSection';
+import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend';
 
 /**
  * Documentation for the Gantt package: https://github.com/MaTeMaTuK/gantt-task-react
@@ -371,106 +369,9 @@ const GanttPageWrapper: FC = () => {
 
   const open = Boolean(anchorFilterEl);
 
-  const popupsMap = new Map<WorkPackageStage, JSX.Element>();
-
-  Object.values(WorkPackageStage).map((stage) =>
-    popupsMap.set(
-      stage,
-      <Card
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
-          px: 2,
-          py: 1
-        }}
-      >
-        {
-          // map through all the Wbs Element Statuses
-          Object.values(WbsElementStatus).map((status) => {
-            return (
-              <Box
-                sx={{
-                  backgroundColor: GanttWorkPackageStageColorPipe(stage, status),
-                  height: '2rem',
-                  width: '8rem',
-                  borderRadius: 1,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
-                  {WbsElementStatusTextPipe(status)}
-                </Typography>
-              </Box>
-            );
-          })
-        }
-      </Card>
-    )
-  );
-
-  const colorLegend = (
-    <Box
-      sx={{
-        display: 'flex',
-        width: '100%',
-        gap: 1,
-        overflowX: 'scroll',
-        '&::-webkit-scrollbar': {
-          display: 'none'
-        },
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none' // IE and Edge
-      }}
-    >
-      {
-        // map through all the WP Stages
-        Object.values(WorkPackageStage).map((stage) => {
-          return (
-            <Box
-              sx={{
-                background: `linear-gradient(90deg, ${GanttWorkPackageStageColorPipe(
-                  stage,
-                  WbsElementStatus.Inactive
-                )} 0%, ${GanttWorkPackageStageColorPipe(
-                  stage,
-                  WbsElementStatus.Active
-                )} 50%, ${GanttWorkPackageStageColorPipe(stage, WbsElementStatus.Complete)} 100%)`,
-                display: 'flex',
-                flexDirection: 'column',
-                height: '2rem',
-                width: '8.25rem',
-                borderRadius: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-                px: 1
-              }}
-            >
-              <Tooltip
-                title={popupsMap.get(stage)}
-                slotProps={{
-                  tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{ color: GanttWorkPackageTextColorPipe(stage), overflow: 'hidden', textWrap: 'nowrap' }}
-                >
-                  {WorkPackageStageTextPipe(stage)}
-                </Typography>
-              </Tooltip>
-            </Box>
-          );
-        })
-      }
-    </Box>
-  );
-
   const headerRight = (
-    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center', position: 'relative' }}>
-      {colorLegend}
+    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+      <GanttChartColorLegend />
       <IconButton onClick={handleFilterClick}>
         <Tune />
       </IconButton>

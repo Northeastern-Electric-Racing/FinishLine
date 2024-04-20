@@ -101,18 +101,22 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
   };
 
   const electricalTeamCategoryCheck = (project: Project) => {
+    // TODO
     return true;
   };
 
   const mechanicalTeamCategoryCheck = (project: Project) => {
+    // TODO
     return true;
   };
 
   const softwareTeamCategoryCheck = (project: Project) => {
+    // TODO
     return true;
   };
 
   const businessTeamCategoryCheck = (project: Project) => {
+    // TODO
     return true;
   };
 
@@ -175,6 +179,27 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     }
   }
 
+  if (
+    !(
+      !ganttFilters.showElectricalTeamCategory &&
+      !ganttFilters.showMechanicalTeamCategory &&
+      !ganttFilters.showSoftwareTeamCategory &&
+      !ganttFilters.showBusinessTeamCategory
+    )
+  ) {
+    if (!ganttFilters.showElectricalTeamCategory) {
+      projects = projects.filter(electricalTeamCategoryCheck);
+    }
+    if (!ganttFilters.showMechanicalTeamCategory) {
+      projects = projects.filter(mechanicalTeamCategoryCheck);
+    }
+    if (!ganttFilters.showSoftwareTeamCategory) {
+      projects = projects.filter(softwareTeamCategoryCheck);
+    }
+    if (!ganttFilters.showBusinessTeamCategory) {
+      projects = projects.filter(businessTeamCategoryCheck);
+    }
+  }
   projects = projects.filter(activeCheck);
 
   return projects;
@@ -370,7 +395,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
   }
 };
 
-// maps stage to the desired color
+// maps stage to the desired text color
 export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
   switch (stage) {
     case WorkPackageStage.Research:

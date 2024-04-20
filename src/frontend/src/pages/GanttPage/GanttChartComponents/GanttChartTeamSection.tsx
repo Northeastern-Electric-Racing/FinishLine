@@ -1,6 +1,11 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { eachDayOfInterval, isMonday } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { applyChangesToEvents, EventChange, Task } from '../../utils/gantt.utils';
+import { applyChangesToEvents, EventChange, Task } from '../../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
 import GanttChartActivity from './GanttChartActivity';
 
