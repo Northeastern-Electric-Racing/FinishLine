@@ -50,7 +50,7 @@ export const getPrismaQueryUserIds = (users: User[]) => {
   return userIds;
 };
 
-export const getPrismaQueryFromIds = (userIds: number[]) => {
+export const getPrismaQueryFromUserIds = (userIds: number[]) => {
   return userIds.map((userId) => {
     return {
       userId
