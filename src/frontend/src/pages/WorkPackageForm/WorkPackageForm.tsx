@@ -15,9 +15,10 @@ interface WorkPackageFormProps {
   crId?: string;
   mutateAsync: (data: WorkPackageApiInputs) => void;
   createForm?: boolean;
+  createCrSubmit?: (data: WorkPackageApiInputs) => void;
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm }) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm, createCrSubmit }) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -73,6 +74,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
       blockedByOptions={blockedByOptions}
       crId={crId}
       createForm={createForm}
+      createCr={createCrSubmit}
     />
   );
 };

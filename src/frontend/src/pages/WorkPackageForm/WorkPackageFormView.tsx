@@ -7,7 +7,7 @@ import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography, Button } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
@@ -48,6 +48,7 @@ interface WorkPackageFormViewProps {
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
   createForm?: boolean;
+  createCr?: (data: WorkPackageApiInputs) => void;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -76,7 +77,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  createForm
+  createForm,
+  createCr
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -194,9 +196,30 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+            <NERSuccessButton
+              variant="contained"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSubmit(onSubmit)(e);
+              }}
+              type="submit"
+              sx={{ mx: 1 }}
+            >
               Submit
             </NERSuccessButton>
+            <Button
+              variant="outlined"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                //if (createCr) handleSubmit(createCr)(e);
+              }}
+              disabled={!createCr}
+              sx={{ mx: 1 }}
+            >
+              Create Change Request
+            </Button>
           </Box>
         }
       >
