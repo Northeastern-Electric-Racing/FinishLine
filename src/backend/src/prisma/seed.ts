@@ -204,9 +204,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
@@ -584,9 +582,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
@@ -642,9 +638,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 0,
       summary: 'Add more work packages',
       newProject: false,
@@ -984,9 +978,7 @@ const performSeed: () => Promise<void> = async () => {
       status: WbsElementStatus.Active,
       links: [],
       projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId
-    },
-    {
+      projectManagerId: cyborg.userId,
       budget: 50,
       summary: 'Buy hot pink paint',
       newProject: false,
@@ -1352,9 +1344,9 @@ const performSeed: () => Promise<void> = async () => {
     assembly1.assemblyId
   );
 
-  const teamType1 = await TeamsService.createTeamType(batman, 'team 1', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'team 2', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'team 3', 'SettingsIcon');
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();
