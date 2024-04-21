@@ -80,7 +80,7 @@ export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
  * @param usersToRemove the list of users to remove from currentUsers
  * @returns the userIds of all users in currentUsers that aren't in usersToRemove
  */
-export const removeUsersFromList = (currentUsers: User[], usersToRemove: User[]): number[] => {
+export const removeUsersFromList = (currentUsers: User[], usersToRemove: User[]): User[] => {
   const userIdsToRemove = usersToRemove.map((user) => user.userId);
-  return currentUsers.map((user) => user.userId).filter((userId) => !userIdsToRemove.includes(userId));
+  return currentUsers.filter((user) => !userIdsToRemove.includes(user.userId));
 };

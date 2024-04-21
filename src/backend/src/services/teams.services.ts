@@ -9,7 +9,7 @@ import {
   HttpException,
   AccessDeniedAdminOnlyException
 } from '../utils/errors.utils';
-import { getPrismaQueryFromUserIds, getPrismaQueryUserIds, getUsers } from '../utils/users.utils';
+import { getPrismaQueryUserIds, getUsers } from '../utils/users.utils';
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 
@@ -75,7 +75,7 @@ export default class TeamsService {
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
     // if the new members array includes a current lead on that team, that member will be deleted as a lead of that team
-    const newTeamLeadIds = removeUsersFromList(team.leads, users);
+    const newTeamLeads = removeUsersFromList(team.leads, users);
 
     const updateTeam = await prisma.team.update({
       where: {
@@ -86,7 +86,7 @@ export default class TeamsService {
           set: getPrismaQueryUserIds(users)
         },
         leads: {
-          set: getPrismaQueryFromUserIds(newTeamLeadIds)
+          set: getPrismaQueryUserIds(newTeamLeads)
         }
       },
       ...teamQueryArgs
@@ -153,10 +153,10 @@ export default class TeamsService {
     if (!newHead) throw new NotFoundException('User', userId);
 
     // If the new head is a current member on the team, remove them as a member
-    const newTeamMemberIds = removeUsersFromList(team.members, [newHead]);
+    const newTeamMembers = removeUsersFromList(team.members, [newHead]);
 
     // If the new head is a current lead on the team, remove them as a lead
-    const newTeamLeadIds = removeUsersFromList(team.leads, [newHead]);
+    const newTeamLeads = removeUsersFromList(team.leads, [newHead]);
 
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
@@ -175,10 +175,10 @@ export default class TeamsService {
           connect: { userId }
         },
         members: {
-          set: getPrismaQueryFromUserIds(newTeamMemberIds)
+          set: getPrismaQueryUserIds(newTeamMembers)
         },
         leads: {
-          set: getPrismaQueryFromUserIds(newTeamLeadIds)
+          set: getPrismaQueryUserIds(newTeamLeads)
         }
       },
       ...teamQueryArgs
@@ -284,7 +284,7 @@ export default class TeamsService {
     }
 
     // removes the new leads as current members of the given team (if they are current members of that team)
-    const newTeamMemberIds = removeUsersFromList(team.members, newLeads);
+    const newTeamMembers = removeUsersFromList(team.members, newLeads);
 
     const updateTeam = await prisma.team.update({
       where: { teamId },
@@ -293,7 +293,7 @@ export default class TeamsService {
           set: getPrismaQueryUserIds(newLeads)
         },
         members: {
-          set: getPrismaQueryFromUserIds(newTeamMemberIds)
+          set: getPrismaQueryUserIds(newTeamMembers)
         }
       },
       ...teamQueryArgs
