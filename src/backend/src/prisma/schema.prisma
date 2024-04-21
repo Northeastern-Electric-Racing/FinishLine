@@ -714,7 +714,6 @@ model Blocked_By_Info {
   name                  String
   workPackageTemplate   Work_Package_Template @relation(fields: [workPackageTemplateId], references: [workPackageTemplateId])
   workPackageTemplateId String
-  dateDeleted           DateTime?
 }
 
 model Work_Package_Template {

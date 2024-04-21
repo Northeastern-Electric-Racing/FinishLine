@@ -2,7 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
-import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isDate, isWorkPackageStage, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
@@ -74,7 +74,8 @@ workPackagesRouter.post(
   intMinZero(body('duration').optional()),
   isWorkPackageStageOrNone(body('stage')),
   body('blockedBy').isArray(),
-  isWorkPackageStageOrNone(body('blockedBy.*.stage').optional()),
+  nonEmptyString(body('blockedBy.*.blockedByInfoId').optional()),
+  isWorkPackageStage(body('blockedBy.*.stage').optional()),
   nonEmptyString(body('blockedBy.*.name')),
   body('expectedActivities').isArray(),
   body('deliverables').isArray(),

@@ -48,5 +48,4 @@ export interface BlockedByCreateArgs {
   blockedByInfoId?: string;
   stage?: WorkPackageStage;
   name: string;
-  workPackageTemplateId: string;
 }

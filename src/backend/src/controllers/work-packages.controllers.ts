@@ -165,10 +165,17 @@ export default class WorkPackagesController {
     try {
       const { workpackageTemplateId } = req.params;
 
-      const { templateName, templateNotes, duration, stage, blockedBy, expectedActivities, deliverables, workPackageName } =
+      const { templateName, templateNotes, duration, blockedBy, expectedActivities, deliverables, workPackageName } =
         req.body;
 
       const user = await getCurrentUser(res);
+
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
+      //TODO: stage NONE to NULL method
 
       const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
         user,

@@ -710,7 +710,7 @@ export default class WorkPackagesService {
     templateNotes: string,
     duration: number | undefined,
     stage: WorkPackageStage | undefined,
-    blockedBy: BlockedByCreateArgs[],
+    blockedByInfo: BlockedByCreateArgs[],
     expectedActivities: string[],
     deliverables: string[],
     workPackageName: string | undefined
@@ -724,7 +724,8 @@ export default class WorkPackagesService {
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
 
-    const updatedBlockedByIds = blockedBy.map((item) => item.blockedByInfoId);
+    const updatedBlockedByIds = blockedByInfo.map((blockedBy) => blockedBy.blockedByInfoId);
+    const originalBlockedByIds = originalWorkPackageTemplate.blockedBy.map((blockedBy) => blockedBy.blockedByInfoId);
 
     // deleting a blocked by if the new list does not contain it
     const deleteBlockedByIds = originalWorkPackageTemplate.blockedBy
@@ -734,12 +735,16 @@ export default class WorkPackagesService {
       .map((item) => item.blockedByInfoId);
 
     // updating a blocked by if both lists contain it
-    const updateBlockedBy = originalWorkPackageTemplate.blockedBy.filter((blockedByItem: Blocked_By_Info) => {
+    const updatedBlockedBy = blockedByInfo.filter((blockedByItem) => {
+      return blockedByItem.blockedByInfoId && originalBlockedByIds.includes(blockedByItem.blockedByInfoId);
+    });
+
+    originalWorkPackageTemplate.blockedBy.filter((blockedByItem: Blocked_By_Info) => {
       return updatedBlockedByIds.includes(blockedByItem.blockedByInfoId);
     });
 
     // creating a new blocked by if the old list does not contain it
-    const newBlockedBy = blockedBy.filter((blockedByItem: BlockedByCreateArgs) => {
+    const newBlockedBy = blockedByInfo.filter((blockedByItem: BlockedByCreateArgs) => {
       return !originalWorkPackageTemplate.blockedBy.some(
         (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
       );
@@ -754,19 +759,32 @@ export default class WorkPackagesService {
     });
 
     // creating the new blocked bys
-    await prisma.blocked_By_Info.createMany({
-      data: newBlockedBy
-    });
+    const createdBlockedByPromises = newBlockedBy.map((blockedBy) =>
+      prisma.blocked_By_Info.create({
+        data: {
+          workPackageTemplateId,
+          stage: blockedBy.stage,
+          name: blockedBy.name
+        }
+      })
+    );
+
+    await Promise.all(createdBlockedByPromises);
 
     // updating work package template
-    await prisma.blocked_By_Info.updateMany({
-      where: {
-        blockedByInfoId: {
-          in: updateBlockedBy.map((item) => item.blockedByInfoId)
+    const updatedBlockedByPromises = updatedBlockedBy.map((blockedBy) => {
+      return prisma.blocked_By_Info.update({
+        where: {
+          blockedByInfoId: blockedBy.blockedByInfoId
+        },
+        data: {
+          stage: blockedBy.stage ? blockedBy.stage : null,
+          name: blockedBy.name
         }
-      },
-      data: [updateBlockedBy]
+      });
     });
+
+    await Promise.all(updatedBlockedByPromises);
 
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
       where: {
