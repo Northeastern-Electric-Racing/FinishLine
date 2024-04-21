@@ -158,8 +158,8 @@ export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
  * @param links the links to be verified
  */
 export const validateProposedChangesFields = async (
-  projectLeadId: number,
-  projectManagerId: number,
+  projectLeadId: number | undefined,
+  projectManagerId: number | undefined,
   links: {
     url: string;
     linkTypeName: string;

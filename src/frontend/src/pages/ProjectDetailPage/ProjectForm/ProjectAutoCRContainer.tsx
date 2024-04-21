@@ -14,10 +14,10 @@ import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
-import { ChangeRequestReason, ProjectProposedChangesCreateArgs, WbsElementStatus } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, ProjectProposedChangesCreateArgs, WbsElementStatus } from 'shared';
 import * as yup from 'yup';
 
-const ProjectAutoCRContainer: React.FC = () => {
+const CreateProjectCRContainer: React.FC = () => {
   const toast = useToast();
   const history = useHistory();
 
@@ -97,8 +97,8 @@ const ProjectAutoCRContainer: React.FC = () => {
         features,
         otherConstraints,
         links,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : 0,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : 0
+        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
       };
       const payload: CreateStandardChangeRequestPayload = {
         wbsNum: {
@@ -106,17 +106,10 @@ const ProjectAutoCRContainer: React.FC = () => {
           projectNumber: 0,
           workPackageNumber: 0
         },
-        type: 'OTHER',
-        what: 'Create a new project',
-        why: [{ explain: '', type: ChangeRequestReason.Initialization }],
-        proposedSolutions: [
-          {
-            description: summary,
-            scopeImpact: '',
-            budgetImpact: budget,
-            timelineImpact: 0
-          }
-        ],
+        type: ChangeRequestType.Issue,
+        what: name,
+        why: [{ explain: 'explanation', type: ChangeRequestReason.Competition }],
+        proposedSolutions: [],
         projectProposedChanges: projectPayload
       };
       await mutateAsync(payload);
@@ -144,4 +137,4 @@ const ProjectAutoCRContainer: React.FC = () => {
   );
 };
 
-export default ProjectAutoCRContainer;
+export default CreateProjectCRContainer;
