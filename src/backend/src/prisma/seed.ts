@@ -136,6 +136,20 @@ const performSeed: () => Promise<void> = async () => {
   const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
   const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
   const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
+  const regina = await prisma.user.create({ data: dbSeedAllUsers.regina });
+  const gretchen = await prisma.user.create({ data: dbSeedAllUsers.gretchen });
+  const karen = await prisma.user.create({ data: dbSeedAllUsers.karen });
+  const janis = await prisma.user.create({ data: dbSeedAllUsers.janis });
+  const aaron = await prisma.user.create({ data: dbSeedAllUsers.aaron });
+  const cady = await prisma.user.create({ data: dbSeedAllUsers.cady });
+  const damian = await prisma.user.create({ data: dbSeedAllUsers.damian });
+  const glen = await prisma.user.create({ data: dbSeedAllUsers.glen });
+  const shane = await prisma.user.create({ data: dbSeedAllUsers.shane });
+  const june = await prisma.user.create({ data: dbSeedAllUsers.june });
+  const kevin = await prisma.user.create({ data: dbSeedAllUsers.kevin });
+  const norbury = await prisma.user.create({ data: dbSeedAllUsers.norbury });
+  const carr = await prisma.user.create({ data: dbSeedAllUsers.carr });
+  const trang = await prisma.user.create({ data: dbSeedAllUsers.trang });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -184,7 +198,23 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         budgetImpact: 0
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId,
+      budget: 0,
+      summary: 'Add more work packages',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
+    },
+    null
   );
 
   // approve the change request
@@ -207,6 +237,7 @@ const performSeed: () => Promise<void> = async () => {
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
+  const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
@@ -324,6 +355,17 @@ const performSeed: () => Promise<void> = async () => {
       johnTerry,
       dennisBergkamp
     ].map((user) => user.userId)
+  );
+
+  await TeamsService.setTeamMembers(
+    regina,
+    meanGirls.teamId,
+    [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    regina,
+    meanGirls.teamId,
+    [janis, cady, damian].map((user) => user.userId)
   );
 
   /**
@@ -504,7 +546,23 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         scopeImpact: 'no scope impact'
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId,
+      budget: 0,
+      summary: 'Add more work packages',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
+    },
+    null
   );
 
   const changeRequestWP1Id = changeRequestWP1.crId;
@@ -544,7 +602,23 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 0,
         scopeImpact: 'no scope impact'
       }
-    ]
+    ],
+    {
+      name: 'Initial CR change',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId,
+      budget: 0,
+      summary: 'Add more work packages',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.1'],
+      teamIds: []
+    },
+    null
   );
 
   const changeRequestWP5Id = changeRequestWP5.crId;
@@ -702,7 +776,23 @@ const performSeed: () => Promise<void> = async () => {
         timelineImpact: 1,
         budgetImpact: 40
       }
-    ]
+    ],
+    {
+      name: 'Change the bodywork through pink paint purchase',
+      status: WbsElementStatus.Active,
+      links: [],
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId,
+      budget: 50,
+      summary: 'Buy hot pink paint',
+      newProject: false,
+      goals: [],
+      features: [],
+      otherConstraints: [],
+      rules: ['EV3.5.3'],
+      teamIds: []
+    },
+    null
   );
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
 
@@ -1058,7 +1148,9 @@ const performSeed: () => Promise<void> = async () => {
     assembly1.assemblyId
   );
 
-  const teamType1 = await TeamsService.createTeamType(batman, 'team 1', 'YouTubeIcon');
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();
@@ -1066,7 +1158,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const designReview1 = await DesignReviewsService.createDesignReview(
     batman,
-    nextDay,
+    nextDay.toDateString(),
     teamType1.teamTypeId,
     [1, 2],
     [3, 4],

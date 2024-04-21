@@ -40,7 +40,8 @@ export const prismaScopeChangeRequest1: PrismaScopeCR = {
   what: 'redesign whip',
   scopeImpact: 'huge',
   timelineImpact: 10,
-  budgetImpact: 1000
+  budgetImpact: 1000,
+  wbsProposedChangesId: null
 };
 
 export const whipExpectedActivites: PrismaDescriptionBullet = {
@@ -54,7 +55,12 @@ export const whipExpectedActivites: PrismaDescriptionBullet = {
   projectIdOtherConstraints: null,
   workPackageIdDeliverables: null,
   detail: 'redesign whip',
-  workPackageIdExpectedActivities: 1
+  workPackageIdExpectedActivities: 1,
+  projectProposedChangesGoalsId: null,
+  projectProposedChangesFeaturesId: null,
+  projectProposedChangesOtherConstraintsId: null,
+  wpProposedChangesExpectedActivitiesId: null,
+  wpProposedChangesDeliverablesId: null
 };
 
 export const whipDeliverables: PrismaDescriptionBullet = {
@@ -68,7 +74,12 @@ export const whipDeliverables: PrismaDescriptionBullet = {
   projectIdFeatures: null,
   projectIdOtherConstraints: null,
   workPackageIdExpectedActivities: null,
-  dateDeleted: null
+  dateDeleted: null,
+  projectProposedChangesGoalsId: null,
+  projectProposedChangesFeaturesId: null,
+  projectProposedChangesOtherConstraintsId: null,
+  wpProposedChangesExpectedActivitiesId: null,
+  wpProposedChangesDeliverablesId: null
 };
 
 export const sharedChangeRequest: SharedChangeRequest = {

@@ -21,7 +21,8 @@ const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Tea
     })),
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,
-    dateArchived: team.dateArchived ?? undefined
+    dateArchived: team.dateArchived ?? undefined,
+    teamType: team.teamType ?? undefined
   };
 };
 
