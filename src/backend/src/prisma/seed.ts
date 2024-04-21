@@ -689,7 +689,6 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     null,
-    null,
     null
   );
 
