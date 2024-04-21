@@ -153,6 +153,7 @@ const TeamsTools = () => {
                     <Box
                       sx={{
                         marginTop: '6px',
+                        marginBottom: '6px',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'end'
