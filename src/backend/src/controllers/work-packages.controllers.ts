@@ -175,8 +175,6 @@ export default class WorkPackagesController {
         stage = null;
       }
 
-      //TODO: stage NONE to NULL method
-
       const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
         user,
         workpackageTemplateId,
