@@ -41,6 +41,18 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
     ]);
 };
 
+export const isWorkPackageStage = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      WorkPackageStage.Research,
+      WorkPackageStage.Design,
+      WorkPackageStage.Manufacturing,
+      WorkPackageStage.Install,
+      WorkPackageStage.Testing
+    ]);
+};
+
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.custom((value) => !isNaN(Date.parse(value)));
 };
