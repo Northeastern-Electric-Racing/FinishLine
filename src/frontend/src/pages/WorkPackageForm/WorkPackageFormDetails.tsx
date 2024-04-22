@@ -133,7 +133,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {formType == WPFormType.EDIT && (
+        {formType === WPFormType.EDIT && (
           <>
             <Grid item xs={12} md={5}>
               <FormLabel> Project Lead</FormLabel>
