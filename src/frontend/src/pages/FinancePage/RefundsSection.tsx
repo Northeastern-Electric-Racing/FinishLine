@@ -13,6 +13,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Typography,
   useTheme
 } from '@mui/material';
@@ -24,7 +25,6 @@ import { Reimbursement, ReimbursementRequest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
-import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { getRefundRowData } from '../../utils/reimbursement-request.utils';
 
@@ -78,6 +78,15 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
     }
   >('date');
 
+  function handleSort(orderByIn: OrderBy) {
+    if (orderByIn !== orderBy) {
+      setOrderBy(orderByIn);
+      setOrder('asc');
+      return;
+    }
+    setOrder(order === 'asc' ? 'desc' : 'asc');
+  }
+
   const {
     data: userReimbursements,
     isLoading: userReimbursementsIsLoading,
@@ -121,6 +130,17 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const tabs = [{ label: 'My Refunds', value: 0 }];
   if (user.isFinance) tabs.push({ label: 'All Club Refunds', value: 1 });
 
+  const columnHeaders = [
+    {
+      id: 'date',
+      label: 'Date Recevied'
+    },
+    {
+      id: 'amount',
+      label: 'Amount'
+    }
+  ];
+
   return (
     <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
       <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
@@ -141,9 +161,40 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
           <Table aria-label="simple table">
             <TableHead>
               <TableRow>
-                <ColumnHeader title="Date Received" />
-                <ColumnHeader title="Amount ($)" />
-                {tabValue === 1 && <ColumnHeader title="Recipient" />}
+                {columnHeaders.map((columnHeader) => (
+                  <TableCell
+                    key={columnHeader.id}
+                    align="center"
+                    sortDirection={orderBy === columnHeader.id ? order : false}
+                  >
+                    <TableSortLabel
+                      active={orderBy === columnHeader.id}
+                      direction={orderBy === columnHeader.id ? order : 'asc'}
+                      onClick={() => {
+                        handleSort(columnHeader.id as OrderBy);
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {columnHeader.label}
+                      </Typography>
+                    </TableSortLabel>
+                  </TableCell>
+                ))}
+                {tabValue === 1 && (
+                  <TableCell key="Recipient">
+                    <Typography
+                      sx={{
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Recipient
+                    </Typography>
+                  </TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -160,43 +211,6 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
             </TableBody>
           </Table>
         </TableContainer>
-        {rows.length > 1 && (
-          <Grid
-            container
-            rowSpacing={1}
-            columnSpacing={1}
-            sx={{ justifyContent: 'start', alignItems: 'start', marginTop: '10px' }}
-          >
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <FormLabel>Column</FormLabel>
-                <Select
-                  value={orderBy}
-                  onChange={(e) => {
-                    setOrderBy(e.target.value as OrderBy);
-                  }}
-                >
-                  <MenuItem value="date">Date Received</MenuItem>
-                  <MenuItem value="amount">Amount</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <FormLabel>Direction</FormLabel>
-                <Select
-                  value={order}
-                  onChange={(e) => {
-                    setOrder(e.target.value as Order);
-                  }}
-                >
-                  <MenuItem value="asc">Ascending</MenuItem>
-                  <MenuItem value="desc">Descending</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
-        )}
       </Box>
     </Box>
   );
