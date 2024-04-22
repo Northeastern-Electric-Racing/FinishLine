@@ -8,12 +8,13 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { WPFormType } from '../../utils/form';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
-  mutateAsync: (data: WorkPackageFormViewPayload) => void;
+  mutateAsync: (data: WorkPackageApiInputs) => void;
   formType: WPFormType;
   schema: any;
 }

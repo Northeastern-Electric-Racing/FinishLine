@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { WbsElementStatus, WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
+import { WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
@@ -14,18 +14,10 @@ export interface WorkPackageApiInputs {
   startDate: string;
   duration: number;
   crId: number | undefined;
-  stage: WorkPackageStage | null;
+  stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-}
-
-export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
-  projectWbsNum: {
-    carNumber: number;
-    projectNumber: number;
-    workPackageNumber: number;
-  };
-  deliverables: string[] | { id: number; detail: string }[];
-  expectedActivities: string[] | { id: number; detail: string }[];
+  deliverables: string[];
+  expectedActivities: string[];
 }
 
 /**

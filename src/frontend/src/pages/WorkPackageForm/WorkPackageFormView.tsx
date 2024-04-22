@@ -15,17 +15,17 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { mapBulletsToPayload, WPFormType, isCreateWP } from '../../utils/form';
+import { mapBulletsToPayload, WPFormType } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
-import { CreateWorkPackageApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: (data: CreateWorkPackageApiInputs) => void;
+  mutateAsync: (data: WorkPackageApiInputs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
@@ -156,12 +156,14 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     >
       <Box mb={-1}>
         <PageBreadcrumbs
-          currentPageTitle={`${isCreateWP(formType) ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+          currentPageTitle={`${formType !== WPFormType.EDIT ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${
+            wbsElement.name
+          }`}
           previousPages={[
-            isCreateWP(formType)
+            formType !== WPFormType.EDIT
               ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
               : { name: 'Projects', route: routes.PROJECTS },
-            isCreateWP(formType) && crIdDisplay
+            formType !== WPFormType.EDIT && crIdDisplay
               ? {
                   name: `Change Request #${crIdDisplay}`,
                   route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
@@ -175,7 +177,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       </Box>
       <PageLayout
         stickyHeader
-        title={`${isCreateWP(formType) ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        title={`${formType !== WPFormType.EDIT ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>

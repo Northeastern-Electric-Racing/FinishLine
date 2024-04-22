@@ -7,7 +7,7 @@ import { WPFormType, startDateTester } from '../../utils/form';
 import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { WorkPackageFormViewPayload } from './WorkPackageFormView';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 
 const CreateWorkPackageCRForm: React.FC = () => {
   const query = useQuery();
@@ -19,13 +19,13 @@ const CreateWorkPackageCRForm: React.FC = () => {
   const { mutateAsync } = useCreateStandardChangeRequest();
 
   const currentUser = useCurrentUser();
-  const onSubmit = async (payload: WorkPackageFormViewPayload) => {
+  const onSubmit = async (payload: WorkPackageApiInputs) => {
     const crPayload = {
       submitter: currentUser,
       wbsNum: validateWBS(wbsNum),
       type: ChangeRequestType.Issue,
-      what: payload.name,
-      why: [{ explain: 'explination', type: ChangeRequestReason.Competition }],
+      what: `New Work Package for ${payload.name}`,
+      why: [{ explain: 'New Work Package', type: ChangeRequestReason.Initialization }],
       proposedSolutions: [],
       workPackageProposedChanges: {
         name: payload.name,

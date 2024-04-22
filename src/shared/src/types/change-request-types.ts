@@ -112,8 +112,8 @@ export interface ProposedSolutionCreateArgs {
 export interface WBSProposedChangesCreateArgs {
   name: string;
   status: WbsElementStatus;
-  projectLeadId: number;
-  projectManagerId: number;
+  projectLeadId?: number;
+  projectManagerId?: number;
   links: { url: string; linkTypeName: string }[];
 }
 export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
@@ -127,11 +127,14 @@ export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCrea
   teamIds: string[];
 }
 
-export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
+export interface WorkPackageProposedChangesCreateArgs {
+  name: string;
   duration: number;
-  startDate: Date;
-  stage: string;
-  blockedBy: string[];
+  startDate: string;
+  stage?: WorkPackageStage;
+  blockedBy: WbsNumber[];
   expectedActivities: string[];
   deliverables: string[];
+  projectLeadId?: number;
+  projectManagerId?: number;
 }

@@ -157,14 +157,7 @@ export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
  * @param projectManagerId the project manager id to be verified
  * @param links the links to be verified
  */
-export const validateProposedChangesFields = async (
-  projectLeadId: number,
-  projectManagerId: number,
-  links: {
-    url: string;
-    linkTypeName: string;
-  }[]
-) => {
+export const validateProposedChangesFields = async (projectLeadId?: number, projectManagerId?: number) => {
   if (projectLeadId) {
     const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
     if (!projectLead) throw new NotFoundException('User', projectLeadId);
@@ -173,12 +166,5 @@ export const validateProposedChangesFields = async (
   if (projectManagerId) {
     const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
     if (!projectManager) throw new NotFoundException('User', projectManagerId);
-  }
-
-  if (links.length > 0) {
-    for (const link of links) {
-      const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
-      if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
-    }
   }
 };

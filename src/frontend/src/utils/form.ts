@@ -64,33 +64,6 @@ export enum WPFormType {
 }
 
 /**
- * Checks if the form type is a Create CR form type
- * @param formType the given form type
- * @returns if the form type is a Create CR Form type
- */
-export const isCreateCr = (formType: WPFormType): boolean => {
-  return formType === WPFormType.CREATEWITHCR;
-};
-
-/**
- * Checks if the form type is a Create form type
- * @param formType the given form type
- * @returns if the form type is a Create Form type
- */
-export const isCreateWP = (formType: WPFormType): boolean => {
-  return formType === WPFormType.CREATE || formType === WPFormType.CREATEWITHCR;
-};
-
-/**
- * Checks if the form type is an edit form type
- * @param formType the given form type
- * @returns if the form type is an edit Form type
- */
-export const isEdit = (formType: WPFormType): boolean => {
-  return formType === WPFormType.EDIT;
-};
-
-/**
  * Creates a UUID
  */
 export const generateUUID = () => {
