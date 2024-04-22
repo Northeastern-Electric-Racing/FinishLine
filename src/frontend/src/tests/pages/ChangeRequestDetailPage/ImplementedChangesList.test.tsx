@@ -22,15 +22,12 @@ const renderComponent = (changes: ImplementedChange[] = [], overallDate?: Date) 
 
 describe('Rendering Implemented Changes List Component', () => {
   it('renders everything', () => {
-    renderComponent(exampleStandardImplementedChangeRequest.implementedChanges, new Date('2020-01-02 12:00:00'));
+    renderComponent(exampleStandardImplementedChangeRequest.implementedChanges);
 
-    expect(screen.getByText(`Implemented Changes`)).toBeInTheDocument();
-
+    expect(screen.getByText('Implemented Changes')).toBeInTheDocument();
     expect(screen.getByText('1.23.3')).toBeInTheDocument();
     expect(screen.getByText(/Increase budget to 200/i)).toBeInTheDocument();
     expect(screen.getByText('1.23.4')).toBeInTheDocument();
     expect(screen.getByText(/Adjust description/i)).toBeInTheDocument();
-
-    expect(screen.getByText('01/02/2020')).toBeInTheDocument();
   });
 });

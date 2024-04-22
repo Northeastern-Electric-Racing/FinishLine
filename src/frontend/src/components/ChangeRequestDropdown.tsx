@@ -1,10 +1,11 @@
-import { Box, FormControl, FormHelperText, FormLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, FormControl, FormLabel } from '@mui/material';
 import { isWithinInterval, subDays } from 'date-fns';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { AuthenticatedUser, ChangeRequest, wbsPipe } from 'shared';
 import { useAllChangeRequests } from '../hooks/change-requests.hooks';
 import { useCurrentUser } from '../hooks/users.hooks';
 import LoadingIndicator from './LoadingIndicator';
+import NERAutocomplete from './NERAutocomplete';
 
 // Filter and sort change requests to display in the dropdown
 const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: AuthenticatedUser): ChangeRequest[] => {
@@ -12,7 +13,8 @@ const getFilteredChangeRequests = (changeRequests: ChangeRequest[], user: Authen
   const fiveDaysAgo = subDays(today, 5);
 
   const filteredRequests = changeRequests.filter(
-    (cr) => cr.dateImplemented && cr.accepted && isWithinInterval(cr.dateImplemented, { start: fiveDaysAgo, end: today })
+    (cr) =>
+      cr.accepted && (cr.dateImplemented ? isWithinInterval(cr.dateImplemented, { start: fiveDaysAgo, end: today }) : true)
   );
 
   // The current user's CRs should be at the top
@@ -45,47 +47,28 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
 
   const approvedChangeRequestOptions = filteredRequests.map((cr) => ({
     label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
-    value: cr.crId
+    id: cr.crId.toString()
   }));
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-      <FormControl>
+    <Box>
+      <FormControl fullWidth>
         <FormLabel sx={{ alignSelf: 'start' }}>Change Request ID</FormLabel>
         <Controller
           control={control}
           name={name}
           render={({ field: { onChange, value } }) => (
-            <Select
-              id="cr-autocomplete"
-              displayEmpty
-              renderValue={(value) => value}
-              value={value}
-              onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
-              size={'small'}
-              placeholder={'Change Request Id'}
-              sx={{ width: 200, textAlign: 'left' }}
-              error={!!errors.crId}
-              MenuProps={{
-                anchorOrigin: {
-                  vertical: 'bottom',
-                  horizontal: 'right'
-                },
-                transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'right'
-                }
-              }}
-            >
-              {approvedChangeRequestOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
+            <NERAutocomplete
+              sx={{ width: '100%' }}
+              id="change-request-id-autocomplete"
+              onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
+              options={approvedChangeRequestOptions}
+              size="small"
+              placeholder="Change Request ID"
+              value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
+            />
           )}
         />
-        <FormHelperText error>{errors.crId?.message}</FormHelperText>
       </FormControl>
     </Box>
   );

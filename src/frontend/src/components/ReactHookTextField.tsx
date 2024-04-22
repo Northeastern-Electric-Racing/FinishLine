@@ -22,6 +22,8 @@ interface ReactHookTextFieldProps {
   endAdornment?: React.ReactElement;
   errorMessage?: FieldError;
   maxLength?: number;
+  required?: boolean;
+  disabled?: boolean;
 }
 
 const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
@@ -39,7 +41,9 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
   rows,
   endAdornment,
   errorMessage,
-  maxLength
+  maxLength,
+  required = true,
+  disabled = false
 }) => {
   const defaultRules = { required: true };
 
@@ -61,7 +65,7 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
       rules={rules || defaultRules}
       render={({ field: { onChange, value } }) => (
         <TextField
-          required
+          required={required}
           id={`${name}-input`}
           autoComplete="off"
           onChange={onChange}
@@ -78,6 +82,7 @@ const ReactHookTextField: React.FC<ReactHookTextFieldProps> = ({
           rows={rows}
           error={!!errorMessage}
           helperText={errorMessage ? errorMessage.message : maxLength ? `${countWords(value)}/300 words` : undefined}
+          disabled={disabled}
         />
       )}
     />

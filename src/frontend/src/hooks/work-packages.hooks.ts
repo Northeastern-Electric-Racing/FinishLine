@@ -12,7 +12,9 @@ import {
   getAllBlockingWorkPackages,
   getAllWorkPackages,
   getSingleWorkPackage,
-  slackUpcomingDeadlines
+  slackUpcomingDeadlines,
+  getManyWorkPackages,
+  WorkPackageApiInputs
 } from '../apis/work-packages.api';
 
 /**
@@ -43,10 +45,13 @@ export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
  * @param wpPayload Payload containing all information needed to create a work package.
  */
 export const useCreateSingleWorkPackage = () => {
-  return useMutation<{ message: string }, Error, any>(['work packages', 'create'], async (wpPayload: any) => {
-    const { data } = await createSingleWorkPackage(wpPayload);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
+    ['work packages', 'create'],
+    async (wpPayload: WorkPackageApiInputs) => {
+      const { data } = await createSingleWorkPackage(wpPayload);
+      return data;
+    }
+  );
 };
 
 /**
@@ -56,15 +61,15 @@ export const useCreateSingleWorkPackage = () => {
  */
 export const useEditWorkPackage = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
     ['work packages', 'edit'],
-    async (wpPayload: any) => {
+    async (wpPayload: WorkPackageApiInputs) => {
       const { data } = await editWorkPackage(wpPayload);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['work packages', wbsNum]);
+        queryClient.invalidateQueries(['work packages']);
       }
     }
   );
@@ -75,7 +80,7 @@ export const useEditWorkPackage = (wbsNum: WbsNumber) => {
  */
 export const useDeleteWorkPackage = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, WbsNumber>(
     ['work packages', 'delete'],
     async (wbsNum: WbsNumber) => {
       const { data } = await deleteWorkPackage(wbsNum);
@@ -100,10 +105,20 @@ export const useGetBlockingWorkPackages = (wbsNum: WbsNumber) => {
 };
 
 /**
+ * Custom React Hook to get many work packages
+ */
+export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
+  return useQuery<WorkPackage[], Error>(['work packages', 'blocking', wbsNums], async () => {
+    const { data } = await getManyWorkPackages(wbsNums);
+    return data;
+  });
+};
+
+/**
  * Custom React Hook to slack upcoming deadlines.
  */
 export const useSlackUpcomingDeadlines = () => {
-  return useMutation<{ message: string }, Error, any>(['slack upcoming deadlines'], async (deadline: Date) => {
+  return useMutation<{ message: string }, Error, Date>(['slack upcoming deadlines'], async (deadline: Date) => {
     const { data } = await slackUpcomingDeadlines(deadline);
     return data;
   });

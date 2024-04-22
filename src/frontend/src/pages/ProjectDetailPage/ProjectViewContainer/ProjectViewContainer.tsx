@@ -3,9 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Link } from 'react-router-dom';
-import { Project, isGuest, isAdmin } from 'shared';
-import { wbsPipe } from '../../../utils/pipes';
+import { Link, useHistory } from 'react-router-dom';
+import { Project, isGuest, isAdmin, isLeadership } from 'shared';
+import { projectWbsPipe, wbsPipe } from '../../../utils/pipes';
 import ProjectDetails from './ProjectDetails';
 import { routes } from '../../../utils/routes';
 import { NERButton } from '../../../components/NERButton';
@@ -19,6 +19,7 @@ import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
@@ -30,6 +31,9 @@ import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
 import NERTabs from '../../../components/Tabs';
 import ChangesList from '../../../components/ChangesList';
+import BOMTab, { addMaterialCosts } from './BOMTab';
+import SavingsIcon from '@mui/icons-material/Savings';
+import ChangeRequestTab from './ChangeRequestTab';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -39,6 +43,7 @@ interface ProjectViewContainerProps {
 const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, enterEditMode }) => {
   const user = useCurrentUser();
   const toast = useToast();
+  const history = useHistory();
   const { mutateAsync: mutateAsyncSetProjectTeam } = useSetProjectTeam(project.wbsNum);
   const { data: favoriteProjects, isLoading, isError, error } = useUsersFavoriteProjects(user.userId);
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
@@ -105,6 +110,25 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
+  const SuggestBudgetIncreaseButton = () => {
+    const budgetIncrease = project.materials.reduce(addMaterialCosts, 0) - project.budget;
+    return (
+      <MenuItem
+        onClick={() =>
+          history.push(
+            `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&budgetChange=${budgetIncrease}`
+          )
+        }
+        disabled={!isLeadership(user.role) || budgetIncrease <= 0}
+      >
+        <ListItemIcon>
+          <SavingsIcon fontSize="small" />
+        </ListItemIcon>
+        Suggest Budget Increase
+      </MenuItem>
+    );
+  };
+
   const AssignToMyTeamButton = () => {
     const assignToTeamText = project.teams.map((team) => team.teamId).includes(teamAsHeadId!)
       ? 'Unassign from My Team'
@@ -116,6 +140,21 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
           <GroupIcon fontSize="small" />
         </ListItemIcon>
         {assignToTeamText}
+      </MenuItem>
+    );
+  };
+
+  const buildURLForCreateWorkPackage = () => {
+    return `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`;
+  };
+
+  const CreateWorkPackageButton = () => {
+    return (
+      <MenuItem onClick={() => history.push(buildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
+        <ListItemIcon>
+          <ContentPasteIcon fontSize="small" />
+        </ListItemIcon>
+        Create Work Package
       </MenuItem>
     );
   };
@@ -136,6 +175,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
+        disabled={isGuest(user.role)}
       >
         Actions
       </NERButton>
@@ -154,7 +194,9 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       >
         <EditButton />
         <CreateChangeRequestButton />
+        <SuggestBudgetIncreaseButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
+        <CreateWorkPackageButton />
         <DeleteButton />
       </Menu>
     </Box>
@@ -181,9 +223,11 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
             { tabUrlValue: 'tasks', tabName: 'Tasks' },
+            { tabUrlValue: 'bom', tabName: 'BOM' },
             { tabUrlValue: 'scope', tabName: 'Scope' },
+            { tabUrlValue: 'changes', tabName: 'Changes' },
             { tabUrlValue: 'gantt', tabName: 'Gantt' },
-            { tabUrlValue: 'changes', tabName: 'Changes' }
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -197,11 +241,15 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       ) : tab === 1 ? (
         <TaskList project={project} />
       ) : tab === 2 ? (
-        <ScopeTab project={project} />
+        <BOMTab project={project} />
       ) : tab === 3 ? (
+        <ScopeTab project={project} />
+      ) : tab === 4 ? (
+        <ChangesList changes={project.changes} />
+      ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
       ) : (
-        <ChangesList changes={project.changes} />
+        <ChangeRequestTab project={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

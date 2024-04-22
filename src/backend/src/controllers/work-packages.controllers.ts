@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage } from 'shared';
+import { validateWBS, WbsNumber, WorkPackage, WorkPackageTemplate } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
 
@@ -29,10 +29,20 @@ export default class WorkPackagesController {
     }
   }
 
+  static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { wbsNums } = req.body;
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums);
+      res.status(200).json(workPackages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // Create a work package with the given details
   static async createWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { projectWbsNum, name, crId, startDate, duration, blockedBy, expectedActivities, deliverables } = req.body;
+      const { name, crId, startDate, duration, blockedBy, expectedActivities, deliverables } = req.body;
 
       let { stage } = req.body;
       if (stage === 'NONE') {
@@ -43,7 +53,6 @@ export default class WorkPackagesController {
 
       const wbsString: string = await WorkPackagesService.createWorkPackage(
         user,
-        projectWbsNum,
         name,
         crId,
         stage,
@@ -133,6 +142,53 @@ export default class WorkPackagesController {
       const { deadline } = req.body;
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline));
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+  static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { workPackageTemplateId } = req.params;
+      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
+        user,
+        workPackageTemplateId
+      );
+
+      res.status(200).json(workPackageTemplate);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { workpackageTemplateId } = req.params;
+
+      const { templateName, templateNotes, duration, blockedBy, expectedActivities, deliverables, workPackageName } =
+        req.body;
+
+      const user = await getCurrentUser(res);
+
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
+      const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
+        user,
+        workpackageTemplateId,
+        templateName,
+        templateNotes,
+        duration,
+        stage,
+        blockedBy,
+        expectedActivities,
+        deliverables,
+        workPackageName
+      );
+
+      return res.status(200).json(updatedWorkPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }

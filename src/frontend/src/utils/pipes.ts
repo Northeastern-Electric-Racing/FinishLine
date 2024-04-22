@@ -3,7 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WbsNumber, User, wbsPipe, WbsElement, ClubAccount, ExpenseType } from 'shared';
+import {
+  WbsNumber,
+  User,
+  wbsPipe,
+  WbsElement,
+  isProject,
+  WorkPackage,
+  ClubAccount,
+  ExpenseType,
+  DesignReview
+} from 'shared';
 
 /**
  * Pipes:
@@ -117,6 +127,16 @@ export const wbsNamePipe = (wbsElement: WbsElement) => {
   return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
 };
 
+export const designReviewNamePipe = (designReview: DesignReview) => {
+  return `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
+};
+
+export const dateRangePipe = (startDate: Date, endDate: Date) => {
+  return `${(startDate.getMonth() + 1).toString()}/${startDate.getDate().toString()} - ${(
+    endDate.getMonth() + 1
+  ).toString()}/${endDate.getDate().toString()}`;
+};
+
 export const undefinedPipe = (element: any) => {
   return element != null ? element : '-----';
 };
@@ -129,6 +149,13 @@ export const centsToDollar = (cents: number) => {
   return (cents / 100.0).toFixed(2);
 };
 
+export const projectNamePipe = (wbsElement: WbsElement) => {
+  return isProject(wbsElement.wbsNum) ? wbsElement.name : (wbsElement as WorkPackage).projectName;
+};
+
+export const projectWbsNamePipe = (wbsElement: WbsElement) => {
+  return `${projectWbsPipe(wbsElement.wbsNum)} - ${projectNamePipe(wbsElement)}`;
+};
 /** Displays a refund source as a string "Code - Name" */
 export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
   const CASH_ACCOUNT_CODE = 830667;
@@ -140,4 +167,36 @@ export const codeAndRefundSourceName = (refundSource: ClubAccount) => {
     case ClubAccount.BUDGET:
       return `${BUDGET_ACCOUNT_CODE} - ${refundSource}`;
   }
+};
+
+// Takes in an enum string to capitalize first letter of each word and gets rid of underscore
+export const displayEnum = (enumString: string) => {
+  enumString = enumString.toLowerCase();
+  while (enumString.indexOf('_') !== -1) {
+    enumString =
+      enumString.substring(0, enumString.indexOf('_')) +
+      ' ' +
+      enumString.charAt(enumString.indexOf('_') + 1).toUpperCase() +
+      enumString.slice(enumString.indexOf('_') + 2);
+  }
+  enumString = enumString.charAt(0).toUpperCase() + enumString.slice(1);
+  return enumString;
+};
+
+export const meetingStartTimePipe = (times: number[]) => {
+  const time = (times[0] % 12) + 10;
+
+  return time <= 12 ? time + 'am' : time - 12 + 'pm';
+};
+
+// takes in a Date and returns it as a string in the form mm/dd/yy
+export const meetingDatePipe = (date?: Date) => {
+  if (!date) return '';
+  date = new Date(date.toDateString());
+  return date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    timeZone: 'UTC'
+  });
 };

@@ -2,21 +2,28 @@ import express from 'express';
 import { body } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
-import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isDate, isWorkPackageStage, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
+workPackagesRouter.post(
+  '/get-many',
+  body('wbsNums').isArray(),
+  intMinZero(body('wbsNums.*.carNumber')),
+  intMinZero(body('wbsNums.*.projectNumber')),
+  intMinZero(body('wbsNums.*.workPackageNumber')),
+  validateInputs,
+  WorkPackagesController.getManyWorkPackages
+);
 workPackagesRouter.get('/:wbsNum', WorkPackagesController.getSingleWorkPackage);
 workPackagesRouter.post(
   '/create',
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  intMinZero(body('projectWbsNum.carNumber')),
-  intMinZero(body('projectWbsNum.projectNumber')),
-  intMinZero(body('projectWbsNum.workPackageNumber')),
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
+  body('blockedBy').isArray(),
   intMinZero(body('blockedBy.*.carNumber')),
   intMinZero(body('blockedBy.*.projectNumber')),
   intMinZero(body('blockedBy.*.workPackageNumber')),
@@ -56,6 +63,25 @@ workPackagesRouter.post(
   isDate(body('deadline')),
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
+);
+
+workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
+
+workPackagesRouter.post(
+  '/template/:workpackageTemplateId/edit',
+  nonEmptyString(body('templateName')),
+  nonEmptyString(body('templateNotes')),
+  intMinZero(body('duration').optional()),
+  isWorkPackageStageOrNone(body('stage')),
+  body('blockedBy').isArray(),
+  nonEmptyString(body('blockedBy.*.blockedByInfoId').optional()),
+  isWorkPackageStage(body('blockedBy.*.stage').optional()),
+  nonEmptyString(body('blockedBy.*.name')),
+  body('expectedActivities').isArray(),
+  body('deliverables').isArray(),
+  nonEmptyString(body('workPackageName').optional()),
+  validateInputs,
+  WorkPackagesController.editWorkPackageTemplate
 );
 
 export default workPackagesRouter;

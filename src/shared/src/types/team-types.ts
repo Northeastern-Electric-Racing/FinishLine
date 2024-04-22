@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { TeamType } from './design-review-types';
 import { ProjectPreview } from './project-types';
 import { User } from './user-types';
 
@@ -15,6 +16,9 @@ export interface Team {
   members: User[];
   projects: ProjectPreview[];
   leads: User[];
+  userArchived?: User;
+  dateArchived?: Date;
+  teamType?: TeamType;
 }
 
 export type TeamPreview = Pick<Team, 'teamId' | 'teamName' | 'members' | 'head' | 'leads'>;

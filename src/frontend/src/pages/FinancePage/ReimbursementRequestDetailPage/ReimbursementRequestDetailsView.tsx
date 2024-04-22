@@ -4,12 +4,14 @@
  */
 
 import { expenseTypePipe } from '../../../utils/pipes';
-import { Edit } from '@mui/icons-material';
+import { Assignment, Edit } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { Grid, Typography, useTheme } from '@mui/material';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -18,7 +20,12 @@ import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
 import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
-import { useDeleteReimbursementRequest, useMarkReimbursementRequestAsDelivered } from '../../../hooks/finance.hooks';
+import {
+  useDeleteReimbursementRequest,
+  useDenyReimbursementRequest,
+  useMarkReimbursementRequestAsDelivered,
+  useMarkReimbursementRequestAsReimbursed
+} from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import {
@@ -30,14 +37,19 @@ import {
   undefinedPipe
 } from '../../../utils/pipes';
 import {
-  imagePreviewUrl,
+  imageDownloadUrl,
+  imageFileUrl,
   isReimbursementRequestAdvisorApproved,
-  isReimbursementRequestSaboSubmitted
+  isReimbursementRequestReimbursed,
+  isReimbursementRequestSaboSubmitted,
+  isReimbursementRequestDenied
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
 import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
+import DownloadIcon from '@mui/icons-material/Download';
+import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -51,12 +63,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const [addSaboNumberModalShow, setAddSaboNumberModalShow] = useState<boolean>(false);
   const toast = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDenyModal, setShowDenyModal] = useState(false);
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
+  const [showMarkReimbursed, setShowMarkReimbursed] = useState(false);
   const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
+  const { mutateAsync: denyReimbursementRequest } = useDenyReimbursementRequest(reimbursementRequest.reimbursementRequestId);
   const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
+  const { mutateAsync: markReimbursed } = useMarkReimbursementRequestAsReimbursed(
+    reimbursementRequest.reimbursementRequestId
+  );
+  const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
 
   const handleDelete = () => {
     try {
@@ -69,10 +88,32 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
+  const handleDeny = () => {
+    try {
+      denyReimbursementRequest();
+      setShowDenyModal(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
   const handleMarkDelivered = () => {
     try {
       markDelivered();
       setShowMarkDelivered(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleMarkReimbursed = () => {
+    try {
+      markReimbursed();
+      setShowMarkReimbursed(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -95,6 +136,21 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     );
   };
 
+  const DenyModal = () => {
+    return (
+      <NERModal
+        open={showDenyModal}
+        onHide={() => setShowDenyModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleDeny}
+      >
+        <Typography>Are you sure you want to deny this reimbursement request?</Typography>
+      </NERModal>
+    );
+  };
+
   const MarkDeliveredModal = () => (
     <NERModal
       open={showMarkDelivered}
@@ -105,6 +161,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       onSubmit={handleMarkDelivered}
     >
       <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
+    </NERModal>
+  );
+
+  const MarkReimbursedModal = () => (
+    <NERModal
+      open={showMarkReimbursed}
+      onHide={() => setShowMarkReimbursed(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleMarkReimbursed}
+    >
+      <Typography>Are you sure you want to mark this reimbursement request as reimbursed?</Typography>
     </NERModal>
   );
 
@@ -120,7 +189,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Sabo Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
+            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
@@ -145,7 +214,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <Grid item xs={6} textAlign={'center'} mt={-2}>
               <Typography fontSize={50}>Total Cost</Typography>
             </Grid>
-            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Grid xs={6} mt={-2} sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography fontSize={50}>{`$${centsToDollar(reimbursementRequest.totalCost)}`}</Typography>
             </Grid>
           </Grid>
@@ -172,14 +241,19 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const ReceiptsView = () => {
     return (
       <Box sx={{ maxHeight: `250px`, overflow: reimbursementRequest.receiptPictures.length > 0 ? 'auto' : 'none' }}>
-        <Typography variant="h5">Receipts</Typography>
+        <Box sx={{ position: 'sticky', top: 0, background: theme.palette.background.default, pb: 1, zIndex: 1 }}>
+          <Typography variant="h5">Receipts</Typography>
+        </Box>
         {reimbursementRequest.receiptPictures.map((receipt) => {
           return (
-            <iframe
-              style={{ height: `200px`, width: '50%' }}
-              src={imagePreviewUrl(receipt.googleFileId)}
-              title={receipt.name}
-            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Link href={imageFileUrl(receipt.googleFileId)} target="_blank" underline="hover" sx={{ mr: 1, fontSize: 30 }}>
+                {receipt.name}
+              </Link>
+              <IconButton href={imageDownloadUrl(receipt.googleFileId)}>
+                <DownloadIcon sx={{ fontSize: 30 }} />
+              </IconButton>
+            </Box>
           );
         })}
       </Box>
@@ -194,7 +268,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Edit',
       onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
       icon: <Edit />,
-      disabled: !allowEdit
+      disabled: !allowEdit && !user.isFinance
     },
     {
       title: 'Delete',
@@ -209,22 +283,48 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled: !!reimbursementRequest.dateDelivered
     },
     {
-      title: 'Add Sabo #',
+      title: 'Add SABO #',
       onClick: () => setAddSaboNumberModalShow(true),
       icon: <ConfirmationNumberIcon />,
       disabled: !user.isFinance
     },
     {
-      title: 'Approve',
+      title: 'Mark Reimbursed',
+      onClick: () => setShowMarkReimbursed(true),
+      icon: <AttachMoneyIcon />,
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestReimbursed(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
+    },
+    {
+      title: isSaboSubmitted ? 'SABO Info' : 'Submit to SABO',
       onClick: () => setShowSubmitToSaboModal(true),
-      icon: <CheckIcon />,
-      disabled: !user.isFinance || isReimbursementRequestSaboSubmitted(reimbursementRequest)
+      icon: isSaboSubmitted ? <Assignment /> : <CheckIcon />,
+      disabled: !user.isFinance
+    },
+    {
+      title: 'Deny',
+      onClick: () => setShowDenyModal(true),
+      icon: <CloseIcon />,
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestReimbursed(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
     }
   ];
 
+  const sortedStatus = reimbursementRequest.reimbursementStatuses.sort((a) => a.dateCreated.getDate());
+  const statusTypes = sortedStatus.map((status) => status.type);
+  const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
+      title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
+      chips={
+        <Box id="status" display="flex">
+          {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}
+        </Box>
+      }
       previousPages={[
         {
           name: 'Finance',
@@ -234,7 +334,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       headerRight={<ActionsMenu buttons={buttons} />}
     >
       <DeleteModal />
+      <DenyModal />
       <MarkDeliveredModal />
+      <MarkReimbursedModal />
       <SubmitToSaboModal
         open={showSubmitToSaboModal}
         setOpen={setShowSubmitToSaboModal}

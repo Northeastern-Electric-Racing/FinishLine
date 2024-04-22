@@ -2,9 +2,8 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { yellow, green, blue, purple, grey } from '@mui/material/colors';
-import { ChangeRequestType, WorkPackageStage } from 'shared';
+import { yellow, green, blue, purple, grey, orange } from '@mui/material/colors';
+import { ChangeRequestStatus, ChangeRequestType, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
@@ -17,6 +16,8 @@ export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) =>
       return blue[600];
     case WorkPackageStage.Install:
       return purple[400];
+    case WorkPackageStage.Testing:
+      return orange[400];
     default:
       return grey[500];
   }
@@ -33,6 +34,8 @@ export const WorkPackageStageTextPipe: (stage: WorkPackageStage | undefined) => 
       return 'Manufacturing';
     case WorkPackageStage.Install:
       return 'Install';
+    case WorkPackageStage.Testing:
+      return 'Testing';
     default:
       return 'No Stage';
   }
@@ -50,5 +53,18 @@ export const ChangeRequestTypeTextPipe: (type: ChangeRequestType) => string = (t
       return 'Issue';
     case ChangeRequestType.Other:
       return 'Other';
+  }
+};
+
+export const ChangeRequestStatusTextPipe: (status: ChangeRequestStatus) => string = (status) => {
+  switch (status) {
+    case ChangeRequestStatus.Implemented:
+      return 'Implemented';
+    case ChangeRequestStatus.Accepted:
+      return 'Accepted';
+    case ChangeRequestStatus.Denied:
+      return 'Denied';
+    case ChangeRequestStatus.Open:
+      return 'Open';
   }
 };

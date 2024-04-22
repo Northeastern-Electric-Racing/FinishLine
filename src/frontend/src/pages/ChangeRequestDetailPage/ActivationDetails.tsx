@@ -4,10 +4,13 @@
  */
 
 import { ActivationChangeRequest } from 'shared';
-import { booleanPipe, datePipe, fullNamePipe } from '../../utils/pipes';
-import PageBlock from '../../layouts/PageBlock';
+import { datePipe, fullNamePipe } from '../../utils/pipes';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import InfoBlock from '../../components/InfoBlock';
+import HandymanIcon from '@mui/icons-material/Handyman';
+import WorkIcon from '@mui/icons-material/Work';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 interface ActivationDetailsProps {
   cr: ActivationChangeRequest;
@@ -15,34 +18,23 @@ interface ActivationDetailsProps {
 
 const ActivationDetails: React.FC<ActivationDetailsProps> = ({ cr }) => {
   return (
-    <PageBlock title={'Activation Change Request Details'}>
-      <Grid container>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Lead </Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
+    <Grid container rowSpacing={'10px'} mb="40px">
+      <Grid item xs={6} md={6}>
+        <InfoBlock title={'Project Lead'} icon={<HandymanIcon />}>
           <Typography>{fullNamePipe(cr.projectLead)}</Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Start Date </Typography>
-        </Grid>
-        <Grid item xs={6} md={6}>
-          <Typography>{datePipe(cr.startDate)}</Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Project Manager </Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
-        </Grid>
-        <Grid item xs={6} md={2}>
-          <Typography sx={{ fontWeight: 'bold' }}>Confirm WP Details </Typography>
-        </Grid>
-        <Grid item xs={6} md={6}>
-          <Typography>{booleanPipe(cr.confirmDetails)}</Typography>
-        </Grid>
+        </InfoBlock>
       </Grid>
-    </PageBlock>
+      <Grid item xs={6} md={6}>
+        <InfoBlock title={'Project Manager'} icon={<WorkIcon />}>
+          <Typography>{fullNamePipe(cr.projectManager)}</Typography>
+        </InfoBlock>
+      </Grid>
+      <Grid item xs={6} md={6}>
+        <InfoBlock title={'Start Date'} icon={<CalendarTodayIcon />}>
+          <Typography>{datePipe(cr.startDate)}</Typography>
+        </InfoBlock>
+      </Grid>
+    </Grid>
   );
 };
 

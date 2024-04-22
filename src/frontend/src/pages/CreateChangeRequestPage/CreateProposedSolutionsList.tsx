@@ -5,12 +5,11 @@
 
 import { isGuest, ProposedSolution } from 'shared';
 import ProposedSolutionForm from '../ChangeRequestDetailPage/ProposedSolutionForm';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProposedSolutionView from '../ChangeRequestDetailPage/ProposedSolutionView';
-import styles from '../../stylesheets/pages/change-request-detail-page/proposed-solutions-list.module.css';
-import { useAuth } from '../../hooks/auth.hooks';
-import { Button } from '@mui/material';
-import LoadingIndicator from '../../components/LoadingIndicator';
+import { Button, Typography } from '@mui/material';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { Box } from '@mui/system';
 
 interface CreateProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
@@ -21,14 +20,25 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
   proposedSolutions,
   setProposedSolutions
 }) => {
-  const auth = useAuth();
-  const [showEditableForm, setShowEditableForm] = useState<boolean>(false);
+  const user = useCurrentUser();
+  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
+  const [showEditForm, setShowEditForm] = useState<boolean>(false);
+  const [editingProposedSolution, setEditingProposedSolution] = useState<ProposedSolution>();
 
-  if (!auth.user) return <LoadingIndicator />;
+  useEffect(() => {
+    setShowEditForm(!!editingProposedSolution);
+  }, [editingProposedSolution]);
 
-  const addProposedSolution = async (data: ProposedSolution) => {
+  const addProposedSolution = (data: ProposedSolution) => {
     setProposedSolutions([...proposedSolutions, data]);
-    setShowEditableForm(false);
+    setShowCreateForm(false);
+  };
+
+  const editProposedSolution = (data: ProposedSolution) => {
+    setProposedSolutions(
+      proposedSolutions.map((proposedSolution) => (proposedSolution.id === data.id ? data : proposedSolution))
+    );
+    setShowEditForm(false);
   };
 
   const removeProposedSolution = (data: ProposedSolution) => {
@@ -37,24 +47,44 @@ const CreateProposedSolutionsList: React.FC<CreateProposedSolutionsListProps> = 
 
   return (
     <>
-      <div className={styles.proposedSolutionsList}>
+      {!isGuest(user.role) && (
+        <Box display="flex" justifyContent="space-between">
+          <Typography variant="h5" sx={{ mt: 2 }}>
+            Proposed Solutions
+          </Typography>
+          <Button onClick={() => setShowCreateForm(true)} variant="contained" color="success" sx={{ mt: 2 }}>
+            + Add Solution
+          </Button>
+        </Box>
+      )}
+      <div style={{ marginTop: '30px' }}>
         {proposedSolutions.map((proposedSolution, i) => (
           <ProposedSolutionView
             key={i}
             proposedSolution={proposedSolution}
             onDelete={removeProposedSolution}
             showDeleteButton
+            onEdit={(proposedSolution) => {
+              setEditingProposedSolution(proposedSolution);
+            }}
           />
         ))}
       </div>
-      {!isGuest(auth.user.role) ? (
-        <Button onClick={() => setShowEditableForm(true)} variant="contained" color="success" sx={{ marginTop: 2 }}>
-          + Add Proposed Solution
-        </Button>
-      ) : (
-        ''
+      {showCreateForm && (
+        <ProposedSolutionForm
+          onSubmit={addProposedSolution}
+          open={showCreateForm}
+          onClose={() => setShowCreateForm(false)}
+        />
       )}
-      <ProposedSolutionForm onAdd={addProposedSolution} open={showEditableForm} onClose={() => setShowEditableForm(false)} />
+      {showEditForm && (
+        <ProposedSolutionForm
+          onSubmit={editProposedSolution}
+          open={showEditForm}
+          onClose={() => setEditingProposedSolution(undefined)}
+          defaultValues={editingProposedSolution}
+        />
+      )}
     </>
   );
 };

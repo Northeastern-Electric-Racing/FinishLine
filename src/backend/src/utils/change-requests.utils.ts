@@ -1,12 +1,11 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, Team, User, Prisma, Change_Request, Change } from '@prisma/client';
+import { Scope_CR_Why_Type, User, Prisma, Change_Request, Change } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason } from 'shared';
-import { sendMessage } from '../integrations/slack';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
-import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail } from './changes.utils';
+import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -21,38 +20,6 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
     OTHER_PROJECT: ChangeRequestReason.OtherProject,
     OTHER: ChangeRequestReason.Other
   }[whyType]);
-
-export const sendSlackChangeRequestNotification = async (
-  team: Team,
-  message: string,
-  crId: number,
-  budgetImpact?: number
-) => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msgs = [];
-  const fullMsg = `:tada: New Change Request! :tada: ${message}`;
-  const fullLink = `https://finishlinebyner.com/cr/${crId}`;
-  const btnText = `View CR #${crId}`;
-  msgs.push(sendMessage(team.slackId, fullMsg, fullLink, btnText));
-
-  if (budgetImpact && budgetImpact > 100) {
-    msgs.push(
-      sendMessage(process.env.SLACK_EBOARD_CHANNEL!, `${fullMsg} with $${budgetImpact} requested`, fullLink, btnText)
-    );
-  }
-  return Promise.all(msgs);
-};
-
-export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msgs = [];
-  const fullMsg = `:tada: Your Change Request was just reviewed! Clink the link to view! :tada:`;
-  const fullLink = `https://finishlinebyner.com/cr/${crId}`;
-  const btnText = `View CR#${crId}`;
-  msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
-
-  return Promise.all(msgs);
-};
 
 /**
  * This function updates the start date of all the blockings (and nested blockings) of the initial given work package.
@@ -155,7 +122,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 export const calculateChangeRequestStatus = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
 ): ChangeRequestStatus => {
   if (changeRequest.changes.length) {
     return ChangeRequestStatus.Implemented;
@@ -182,4 +149,36 @@ export const getDateImplemented = (changeRequest: Change_Request & { changes: Ch
  */
 export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
   return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
+};
+
+/**
+ * Determines if the project lead, project manager, and links all exist
+ * @param projectLeadId the project lead id to be verified
+ * @param projectManagerId the project manager id to be verified
+ * @param links the links to be verified
+ */
+export const validateProposedChangesFields = async (
+  projectLeadId: number,
+  projectManagerId: number,
+  links: {
+    url: string;
+    linkTypeName: string;
+  }[]
+) => {
+  if (projectLeadId) {
+    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+    if (!projectLead) throw new NotFoundException('User', projectLeadId);
+  }
+
+  if (projectManagerId) {
+    const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+    if (!projectManager) throw new NotFoundException('User', projectManagerId);
+  }
+
+  if (links.length > 0) {
+    for (const link of links) {
+      const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
+      if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+    }
+  }
 };

@@ -1,6 +1,13 @@
-import { Role as PrismaRole, Theme, User as PrismaUser, User_Settings, User_Secure_Settings, Team } from '@prisma/client';
-import { User as SharedUser } from 'shared';
-import { prismaTeam1 } from './teams.test-data';
+import {
+  Role as PrismaRole,
+  Theme,
+  User as PrismaUser,
+  User_Settings,
+  User_Secure_Settings,
+  Team,
+  Schedule_Settings
+} from '@prisma/client';
+import { User as SharedUser, UserScheduleSettings } from 'shared';
 
 export const batman: PrismaUser = {
   userId: 1,
@@ -114,7 +121,9 @@ export const alfred: PrismaUser & { teamsAsMember: Team[]; teamsAsLead: Team[] }
   emailId: 'butler',
   role: PrismaRole.APP_ADMIN,
   googleAuthId: 'u',
-  teamsAsMember: [prismaTeam1],
+  // Do NOT put a team here! This will create a circular dependency that breaks tests.
+  // Do this instead: { ...alfred, teamsAsMember: [<your team>]}
+  teamsAsMember: [],
   teamsAsLead: []
 };
 
@@ -129,5 +138,57 @@ export const supermanWithUserSettings: PrismaUser & { userSettings: User_Setting
   ...superman,
   userSettings: {
     ...supermanSettings
+  }
+};
+
+export const batmanScheduleSettings: Schedule_Settings = {
+  drScheduleSettingsId: 'bmschedule',
+  personalGmail: 'brucewayne@gmail.com',
+  personalZoomLink: 'https://zoom.us/j/gotham',
+  availability: [],
+  userId: 69
+};
+
+export const batmanWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
+  ...batman,
+  scheduleSettings: {
+    ...batmanScheduleSettings
+  }
+};
+
+export const batmanUserScheduleSettings: UserScheduleSettings = {
+  drScheduleSettingsId: 'bmschedule',
+  personalGmail: 'brucewayne@gmail.com',
+  personalZoomLink: 'https://zoom.us/j/gotham',
+  availability: []
+};
+
+export const wonderwomanScheduleSettings: Schedule_Settings = {
+  drScheduleSettingsId: 'wwschedule',
+  personalGmail: 'diana@gmail.com',
+  personalZoomLink: 'https://zoom.us/jk/athens',
+  availability: [3],
+  userId: 72
+};
+
+export const wonderwomanMarkedScheduleSettings: Schedule_Settings = {
+  drScheduleSettingsId: 'wwschedule',
+  personalGmail: 'diana@gmail.com',
+  personalZoomLink: 'https://zoom.us/jk/athens',
+  availability: [1, 2],
+  userId: 72
+};
+
+export const wonderwomanWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
+  ...wonderwoman,
+  scheduleSettings: {
+    ...wonderwomanScheduleSettings
+  }
+};
+
+export const wonderwomanMarkedWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
+  ...wonderwoman,
+  scheduleSettings: {
+    ...wonderwomanMarkedScheduleSettings
   }
 };

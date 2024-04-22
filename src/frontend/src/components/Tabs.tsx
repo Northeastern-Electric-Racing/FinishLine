@@ -13,9 +13,10 @@ interface TabProps {
   baseUrl: string; //the URL that all the tab URLs extend
   defaultTab: string; //tab that the tabs component defaults to
   id: string;
+  noUnderline?: boolean;
 }
 
-const NERTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id }: TabProps) => {
+const NERTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id, noUnderline = false }: TabProps) => {
   const tabUrlValues = tabsLabels.map((tab) => tab.tabUrlValue);
   const match = useRouteMatch<{ tabValueString: string }>(`${baseUrl}/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
@@ -36,14 +37,10 @@ const NERTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id }: TabProps) => {
   };
 
   return (
-    <Tabs
-      sx={{ borderBottom: 1, borderColor: 'divider' }}
-      value={tabValue}
-      onChange={handleTabChange}
-      aria-label={`${id}-tabs`}
-    >
+    <Tabs value={tabValue} onChange={handleTabChange} aria-label={`${id}-tabs`}>
       {tabsLabels.map((tab, idx) => (
         <Tab
+          sx={noUnderline ? {} : { borderBottom: 1, borderColor: 'divider' }}
           label={tab.tabName}
           aria-label={tab.tabUrlValue}
           value={idx}

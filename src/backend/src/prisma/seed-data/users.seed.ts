@@ -69,6 +69,70 @@ const wonderwoman: Prisma.UserCreateInput = {
   googleAuthId: 'wonderwoman'
 };
 
+const lexLuther: Prisma.UserCreateInput = {
+  firstName: 'Alexander',
+  lastName: 'Luther',
+  email: 'lexluther@justiceleague.com',
+  googleAuthId: 'hjkklo',
+  role: Role.MEMBER
+};
+
+const hawkgirl: Prisma.UserCreateInput = {
+  firstName: 'Shiera',
+  lastName: 'Hall',
+  email: 'hawkgirl@justiceleague.com',
+  googleAuthId: 'bhuujki',
+  role: Role.MEMBER
+};
+
+const elongatedMan: Prisma.UserCreateInput = {
+  firstName: 'Randolph',
+  lastName: 'Dibney',
+  email: 'elongatedmangit @justiceleague.com',
+  googleAuthId: 'joigiug',
+  role: Role.MEMBER
+};
+
+const zatanna: Prisma.UserCreateInput = {
+  firstName: 'Zatanna',
+  lastName: 'Zatara',
+  email: 'zatanna@justiceleague.com',
+  googleAuthId: 'cawwww',
+  role: Role.MEMBER
+};
+
+const phantomStranger: Prisma.UserCreateInput = {
+  firstName: 'Judas',
+  lastName: 'Iscariot',
+  email: 'phantomstranger@justiceleague.com',
+  googleAuthId: 'bnhjiuy',
+  role: Role.MEMBER
+};
+
+const redTornado: Prisma.UserCreateInput = {
+  firstName: 'Red',
+  lastName: 'Tornado',
+  email: 'redtornado@justiceleague.com',
+  googleAuthId: 'vbnhught',
+  role: Role.MEMBER
+};
+
+const firestorm: Prisma.UserCreateInput = {
+  firstName: 'Ronnie',
+  lastName: 'Raymond',
+  email: 'firestorm@justiceleague.com',
+  googleAuthId: 'fghttyu',
+  role: Role.MEMBER
+};
+
+const hankHeywood: Prisma.UserCreateInput = {
+  firstName: 'Hank',
+  lastName: 'Heywood III',
+  email: 'hankheywood@justiceleague.com',
+  googleAuthId: 'hudhsgf',
+  role: Role.MEMBER
+};
+
 const flash: Prisma.UserCreateInput = {
   firstName: 'Barry',
   lastName: 'Allen',
@@ -572,6 +636,270 @@ const babyDollJacobson: Prisma.UserCreateInput = {
   role: Role.LEADERSHIP
 };
 
+const frostBite: Prisma.UserCreateInput = {
+  firstName: 'Frost',
+  lastName: 'Bite',
+  googleAuthId: 'husky1',
+  email: 'frostbite@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const winter: Prisma.UserCreateInput = {
+  firstName: 'Winter',
+  lastName: 'Warrior',
+  googleAuthId: 'husky2',
+  email: 'winterwarrior@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const paws: Prisma.UserCreateInput = {
+  firstName: 'Paws',
+  lastName: 'The-Dog',
+  googleAuthId: 'husky3',
+  email: 'paws@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const snowPaws: Prisma.UserCreateInput = {
+  firstName: 'Snow',
+  lastName: 'Paws',
+  googleAuthId: 'husky4',
+  email: 'snowpaws@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const whiteTail: Prisma.UserCreateInput = {
+  firstName: 'White',
+  lastName: 'Tail',
+  googleAuthId: 'husky5',
+  email: 'whitetail@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const husky: Prisma.UserCreateInput = {
+  firstName: 'Husky',
+  lastName: 'Dog',
+  googleAuthId: 'husky6',
+  email: 'huskydog@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const howler: Prisma.UserCreateInput = {
+  firstName: 'Howler',
+  lastName: 'Husky',
+  googleAuthId: 'husky7',
+  email: 'howler@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const snowBite: Prisma.UserCreateInput = {
+  firstName: 'Snow',
+  lastName: 'Bite',
+  googleAuthId: 'husky8',
+  email: 'SnowBite@northeastern.edu',
+  role: Role.MEMBER
+};
+
+const monopolyMan: Prisma.UserCreateInput = {
+  firstName: 'Milburn',
+  lastName: 'Pennybags',
+  email: 'donotpassgo@northeastern.edu',
+  role: Role.ADMIN,
+  googleAuthId: 'monopoly',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'monopolyman'
+    }
+  }
+};
+
+const mrKrabs: Prisma.UserCreateInput = {
+  firstName: 'Eugene',
+  lastName: 'Krabs',
+  email: 'mrkrabs@krustykrabs.com',
+  role: Role.ADMIN,
+  googleAuthId: 'krabs',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'mrkrabs'
+    }
+  }
+};
+
+const richieRich: Prisma.UserCreateInput = {
+  firstName: 'Richie',
+  lastName: 'Rich',
+  email: 'richerich@harveycomics.com',
+  role: Role.LEADERSHIP,
+  googleAuthId: 'rich',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.LIGHT,
+      slackId: 'richietherich'
+    }
+  }
+};
+
+const johnBoddy: Prisma.UserCreateInput = {
+  firstName: 'John',
+  lastName: 'Boddy',
+  googleAuthId: 'deadmillionaire',
+  email: 'johnboddy@clue.com',
+  role: Role.MEMBER
+};
+
+const villager: Prisma.UserCreateInput = {
+  firstName: 'Minecraft',
+  lastName: 'Villager',
+  googleAuthId: 'villager',
+  email: 'hrmmm@minecraft.com',
+  role: Role.MEMBER
+};
+
+const francis: Prisma.UserCreateInput = {
+  firstName: 'Francis',
+  lastName: 'Francis',
+  googleAuthId: 'francis',
+  email: 'ffrancis@puppyco.com',
+  role: Role.MEMBER
+};
+
+const victorPerkins: Prisma.UserCreateInput = {
+  firstName: 'Victor',
+  lastName: 'Perkins',
+  googleAuthId: 'victorperkins',
+  email: 'mysonstolethemoon@evilbank.com',
+  role: Role.MEMBER
+};
+
+const kingJulian: Prisma.UserCreateInput = {
+  firstName: 'King',
+  lastName: 'Julian',
+  googleAuthId: 'kingjulian',
+  email: 'iliketomoveit@jungle.net',
+  role: Role.MEMBER
+};
+
+const regina: Prisma.UserCreateInput = {
+  firstName: 'Regina',
+  lastName: 'George',
+  email: 'regina.g@hotmail.com',
+  role: Role.ADMIN,
+  googleAuthId: 'queenBee',
+  userSettings: {
+    create: {
+      defaultTheme: Theme.DARK,
+      slackId: 'Queen Regina'
+    }
+  }
+};
+
+const cady: Prisma.UserCreateInput = {
+  firstName: 'Cady',
+  lastName: 'Heron',
+  email: 'cadyheron@gmail.com',
+  googleAuthId: 'cady',
+  role: Role.LEADERSHIP
+};
+
+const janis: Prisma.UserCreateInput = {
+  firstName: 'Janis',
+  lastName: 'Ian',
+  email: 'ian.ja@gmail.com',
+  googleAuthId: 'janis',
+  role: Role.LEADERSHIP
+};
+
+const damian: Prisma.UserCreateInput = {
+  firstName: 'Damian',
+  lastName: '',
+  email: 'hotty@hotmail.com',
+  googleAuthId: 'damian',
+  role: Role.LEADERSHIP
+};
+
+const gretchen: Prisma.UserCreateInput = {
+  firstName: 'Gretchen',
+  lastName: 'Wieners',
+  googleAuthId: 'gretch',
+  email: 'gretchen.weiners@hotmail.com',
+  role: Role.MEMBER
+};
+
+const karen: Prisma.UserCreateInput = {
+  firstName: 'Karen',
+  lastName: 'Smith',
+  googleAuthId: 'karen',
+  email: 'smithkaren@hotmail.com',
+  role: Role.MEMBER
+};
+
+const aaron: Prisma.UserCreateInput = {
+  firstName: 'Aaron',
+  lastName: 'Samuels',
+  googleAuthId: 'aaron',
+  email: 'samuels.a@gmail.com',
+  role: Role.MEMBER
+};
+
+const glen: Prisma.UserCreateInput = {
+  firstName: 'Glen',
+  lastName: 'Coco',
+  googleAuthId: 'glen',
+  email: 'glen@gmail.com',
+  role: Role.MEMBER
+};
+
+const shane: Prisma.UserCreateInput = {
+  firstName: 'Shane',
+  lastName: 'Oman',
+  googleAuthId: 'shane',
+  email: 'shane-oman@hotmail.com',
+  role: Role.MEMBER
+};
+
+const carr: Prisma.UserCreateInput = {
+  firstName: 'Coach',
+  lastName: 'Carr',
+  googleAuthId: 'coach carr',
+  email: 'coachcarr@gmail.com',
+  role: Role.MEMBER
+};
+
+const june: Prisma.UserCreateInput = {
+  firstName: 'June',
+  lastName: 'George',
+  googleAuthId: 'june',
+  email: 'plasticsurgery@hotmail.com',
+  role: Role.MEMBER
+};
+
+const norbury: Prisma.UserCreateInput = {
+  firstName: 'Ms',
+  lastName: 'Norbury',
+  googleAuthId: 'norbury',
+  email: 'norbury@netscape.net',
+  role: Role.MEMBER
+};
+
+const kevin: Prisma.UserCreateInput = {
+  firstName: 'Kevin',
+  lastName: 'Gnapoor',
+  googleAuthId: 'kevin',
+  email: 'mathclub@gmail.com',
+  role: Role.MEMBER
+};
+
+const trang: Prisma.UserCreateInput = {
+  firstName: 'Trang',
+  lastName: 'Pak',
+  googleAuthId: 'trang',
+  email: 'trangPAK@hotmail.com',
+  role: Role.MEMBER
+};
+
 export const dbSeedAllUsers = {
   thomasEmrax,
   joeShmoe,
@@ -579,6 +907,14 @@ export const dbSeedAllUsers = {
   wonderwoman,
   flash,
   aquaman,
+  lexLuther,
+  hawkgirl,
+  elongatedMan,
+  zatanna,
+  phantomStranger,
+  redTornado,
+  firestorm,
+  hankHeywood,
   robin,
   batman,
   superman,
@@ -637,5 +973,35 @@ export const dbSeedAllUsers = {
   kenWilliams,
   boogPowell,
   mannyMachado,
-  babyDollJacobson
+  babyDollJacobson,
+  frostBite,
+  winter,
+  snowPaws,
+  paws,
+  whiteTail,
+  husky,
+  howler,
+  snowBite,
+  monopolyMan,
+  mrKrabs,
+  richieRich,
+  johnBoddy,
+  villager,
+  francis,
+  victorPerkins,
+  kingJulian,
+  regina,
+  gretchen,
+  karen,
+  janis,
+  aaron,
+  cady,
+  damian,
+  glen,
+  shane,
+  june,
+  kevin,
+  norbury,
+  carr,
+  trang
 };

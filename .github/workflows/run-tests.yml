@@ -20,12 +20,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set env variables
+        run: touch .env && echo "FINANCE_TEAM_ID=0" >> .env
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.17.1
           cache: 'yarn'
+      - name: Add Env Variables
+        run: cd src/backend && echo "DATABASE_URL=\"postgresql://postgres:docker@localhost:5432/nerpm?schema=public\"" >> .env
+      - name: Pull Docker Image
+        run: docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres
+      - name: Wait for Postgres to start
+        run: sleep 10s
+      - name: Create Database
+        run: docker exec finishline psql -U postgres -c "CREATE DATABASE nerpm;"
       - name: Install modules
-        run: yarn install && yarn prisma:generate
+        run: yarn install && yarn prisma:generate && yarn prisma:migrate:prod
       - name: Run tests
         run: yarn test:backend; yarn test:frontend

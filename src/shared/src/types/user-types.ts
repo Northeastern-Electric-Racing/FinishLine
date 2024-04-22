@@ -42,6 +42,7 @@ export interface AuthenticatedUser {
   favoritedProjectsId: number[];
   changeRequestsToReviewId: number[];
   isHeadOfFinance?: boolean;
+  isAtLeastFinanceLead?: boolean;
 }
 
 export interface UserSettings {
@@ -63,4 +64,21 @@ export interface UserSecureSettings {
 export interface UpdateUserRolePayload {
   userId: number;
   role: string;
+}
+
+export interface UserScheduleSettings {
+  drScheduleSettingsId: string;
+  personalGmail: string;
+  personalZoomLink: string;
+  availability: number[];
+}
+
+export interface UserWithScheduleSettings {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  emailId: string | null;
+  role: Role;
+  scheduleSettings?: UserScheduleSettings;
 }

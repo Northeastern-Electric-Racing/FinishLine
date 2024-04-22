@@ -3,7 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useFieldArray, useForm } from 'react-hook-form';
-import { ClubAccount, ReimbursementProductCreateArgs, ReimbursementReceiptUploadArgs } from 'shared';
+import {
+  ClubAccount,
+  OtherProductReason,
+  OtherReimbursementProductCreateArgs,
+  ReimbursementProductFormArgs,
+  ReimbursementReceiptUploadArgs,
+  WbsNumber,
+  WbsReimbursementProductCreateArgs
+} from 'shared';
 import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -16,16 +24,20 @@ import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
-export interface ReimbursementRequestFormInput {
+export interface ReimbursementRequestInformation {
   vendorId: string;
   dateOfExpense: Date;
   expenseTypeId: string;
-  reimbursementProducts: ReimbursementProductCreateArgs[];
   receiptFiles: ReimbursementReceiptUploadArgs[];
   account: ClubAccount | undefined;
 }
+export interface ReimbursementRequestFormInput extends ReimbursementRequestInformation {
+  reimbursementProducts: ReimbursementProductFormArgs[];
+}
 
-export interface ReimbursementRequestDataSubmission extends ReimbursementRequestFormInput {
+export interface ReimbursementRequestDataSubmission extends ReimbursementRequestInformation {
+  otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
+  wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
 }
 
@@ -36,6 +48,8 @@ interface ReimbursementRequestFormProps {
   previousPage: string;
 }
 
+const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabled';
+
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
@@ -45,7 +59,6 @@ const schema = yup.object().shape({
     .array()
     .of(
       yup.object().shape({
-        wbsNum: yup.object().required('WBS Number is required'),
         name: yup.string().required('Description is required'),
         cost: yup
           .number()
@@ -56,11 +69,17 @@ const schema = yup.object().shape({
     )
     .required('reimbursement products required')
     .min(1, 'At least one Reimbursement Product is required'),
-  receiptFiles: yup
-    .array()
-    .required('receipt files required')
-    .min(1, 'At least one Receipt is required')
-    .max(7, 'At most 7 Receipts are allowed')
+  receiptFiles:
+    // The requirements for receipt uploads is disabled by default on development to make testing easier;
+    // if testing proper receipt uploads is needed, create an environment variable called VITE_RR_RECEIPT_REQUIREMENT
+    // in src/frontend/.env and set it to 'enabled'.
+    import.meta.env.MODE === 'development' && RECEIPTS_REQUIRED !== 'enabled'
+      ? yup.array()
+      : yup
+          .array()
+          .required('receipt files required')
+          .min(1, 'At least one Receipt is required')
+          .max(7, 'At most 7 Receipts are allowed')
 });
 
 const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
@@ -82,14 +101,14 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       account: defaultValues?.account,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
       expenseTypeId: defaultValues?.expenseTypeId ?? '',
-      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductCreateArgs[]),
+      reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
   });
 
   const {
     fields: receiptFiles,
-    append: receiptAppend,
+    prepend: receiptPrepend,
     remove: receiptRemove
   } = useFieldArray({
     control,
@@ -152,12 +171,33 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     try {
       //total cost is tracked in cents
       const totalCost = Math.round(data.reimbursementProducts.reduce((acc, curr) => acc + curr.cost, 0) * 100);
-      const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductCreateArgs) => {
+      const reimbursementProducts = data.reimbursementProducts.map((product: ReimbursementProductFormArgs) => {
         return { ...product, cost: Math.round(product.cost * 100) };
       });
+
+      const otherReimbursementProducts: OtherReimbursementProductCreateArgs[] = [];
+      const wbsReimbursementProducts: WbsReimbursementProductCreateArgs[] = [];
+
+      reimbursementProducts.forEach((product) => {
+        if (product.reason instanceof Object) {
+          wbsReimbursementProducts.push({
+            reason: product.reason as WbsNumber,
+            cost: product.cost,
+            name: product.name
+          });
+        } else {
+          otherReimbursementProducts.push({
+            reason: product.reason as OtherProductReason,
+            cost: product.cost,
+            name: product.name
+          });
+        }
+      });
+
       const reimbursementRequestId = await submitData({
         ...data,
-        reimbursementProducts,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
         totalCost
       });
       history.push(routes.FINANCE + '/' + reimbursementRequestId);
@@ -184,7 +224,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       receiptFiles={receiptFiles}
       control={control}
       reimbursementProducts={reimbursementProducts}
-      receiptAppend={receiptAppend}
+      receiptPrepend={receiptPrepend}
       receiptRemove={receiptRemove}
       reimbursementProductAppend={reimbursementProductAppend}
       reimbursementProductRemove={reimbursementProductRemove}

@@ -37,7 +37,7 @@ const renderComponent = (proposedSolution = exampleProposedSolution) => {
   const RouterWrapper = routerWrapperBuilder({});
   return render(
     <RouterWrapper>
-      <ProposedSolutionView proposedSolution={proposedSolution} />
+      <ProposedSolutionView onEdit={() => {}} proposedSolution={proposedSolution} />
     </RouterWrapper>
   );
 };
@@ -48,11 +48,9 @@ describe('Proposed Solutions View Test Suite', () => {
     expect(screen.getByText('Approved')).toBeInTheDocument();
     expect(screen.getByText('Description:')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact:')).toBeInTheDocument();
-    expect(screen.getByText('Budget Impact:')).toBeInTheDocument();
-    expect(screen.getByText('Timeline Impact:')).toBeInTheDocument();
     expect(screen.getByText('Desc 1')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact 1')).toBeInTheDocument();
-    expect(screen.getByText('$11')).toBeInTheDocument();
+    expect(screen.getByText('11')).toBeInTheDocument();
     expect(screen.getByText('111 weeks')).toBeInTheDocument();
   });
 
@@ -61,11 +59,9 @@ describe('Proposed Solutions View Test Suite', () => {
     expect(screen.queryByText('Approved')).not.toBeInTheDocument();
     expect(screen.getByText('Description:')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact:')).toBeInTheDocument();
-    expect(screen.getByText('Budget Impact:')).toBeInTheDocument();
-    expect(screen.getByText('Timeline Impact:')).toBeInTheDocument();
     expect(screen.getByText('Desc 2')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact 2')).toBeInTheDocument();
-    expect(screen.getByText('$22')).toBeInTheDocument();
+    expect(screen.getByText('22')).toBeInTheDocument();
     expect(screen.getByText('222 weeks')).toBeInTheDocument();
   });
 });

@@ -4,7 +4,8 @@
  */
 
 import { User } from './user-types';
-import { WbsNumber } from './project-types';
+import { ProjectProposedChanges, WbsElementStatus, WbsNumber, WorkPackageProposedChanges } from './project-types';
+import { WorkPackageStage } from './work-package-types';
 
 export interface ChangeRequest {
   crId: number;
@@ -40,6 +41,8 @@ export interface StandardChangeRequest extends ChangeRequest {
   budgetImpact: number;
   timelineImpact: number;
   proposedSolutions: ProposedSolution[];
+  projectProposedChanges?: ProjectProposedChanges;
+  workPackageProposedChanges?: WorkPackageProposedChanges;
 }
 
 export interface ProposedSolution {
@@ -97,4 +100,38 @@ export interface ImplementedChange {
   implementer: User;
   detail: string;
   dateImplemented: Date;
+}
+
+export interface ProposedSolutionCreateArgs {
+  description: string;
+  scopeImpact: string;
+  budgetImpact: number;
+  timelineImpact: number;
+}
+
+export interface WBSProposedChangesCreateArgs {
+  name: string;
+  status: WbsElementStatus;
+  projectLeadId: number;
+  projectManagerId: number;
+  links: { url: string; linkTypeName: string }[];
+}
+export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
+  budget: number;
+  summary: string;
+  newProject: boolean;
+  goals: string[];
+  features: string[];
+  otherConstraints: string[];
+  rules: string[];
+  teamIds: string[];
+}
+
+export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
+  duration: number;
+  startDate: string;
+  stage: WorkPackageStage | null;
+  blockedBy: WbsNumber[];
+  expectedActivities: string[];
+  deliverables: string[];
 }

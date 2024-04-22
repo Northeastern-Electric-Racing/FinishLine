@@ -7,7 +7,7 @@ import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { TimelineStatus, WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
-import { Task } from 'shared';
+import { Assembly, Material, Task } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
@@ -25,12 +25,34 @@ export interface WbsElement {
   projectManager?: User;
   links: Link[];
   changes: ImplementedChange[];
+  materials: Material[];
+  assemblies: Assembly[];
+}
+
+export interface WbsProposedChanges {
+  id: string;
+  name: string;
+  status: WbsElementStatus;
+  links: LinkInfo[];
+  projectLead?: User;
+  projectManager?: User;
 }
 
 export enum WbsElementStatus {
   Inactive = 'INACTIVE',
   Active = 'ACTIVE',
   Complete = 'COMPLETE'
+}
+
+export interface ProjectProposedChanges extends WbsProposedChanges {
+  summary: string;
+  budget: number;
+  rules: string[];
+  goals: DescriptionBullet[];
+  features: DescriptionBullet[];
+  otherConstrains: DescriptionBullet[];
+  teams: TeamPreview[];
+  newProject: boolean;
 }
 
 export interface Project extends WbsElement {
@@ -49,6 +71,15 @@ export interface Project extends WbsElement {
 }
 
 export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
+
+export interface WorkPackageProposedChanges extends WbsProposedChanges {
+  startDate: Date;
+  duration: number;
+  blockedBy: WbsNumber[];
+  expectedActivities: DescriptionBullet[];
+  deliverables: DescriptionBullet[];
+  stage?: WorkPackageStage;
+}
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
@@ -80,6 +111,12 @@ export interface LinkType {
   creator: UserPreview;
   required: boolean;
   iconName: string;
+}
+
+export interface LinkInfo {
+  linkInfoId: string;
+  url: string;
+  linkType: LinkType;
 }
 
 export interface Link {

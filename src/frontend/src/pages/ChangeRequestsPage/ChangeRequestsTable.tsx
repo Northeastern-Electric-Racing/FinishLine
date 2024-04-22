@@ -3,20 +3,22 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps, GridToolbar } from '@mui/x-data-grid';
-import { routes } from '../../utils/routes';
-import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
-import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
-import { useTheme } from '@mui/system';
-import { useState } from 'react';
-import { ChangeRequest, ChangeRequestType, validateWBS, WbsNumber } from 'shared';
-import { GridColDefStyle } from '../../utils/tables';
 import { Link } from '@mui/material';
+import { Box, useTheme } from '@mui/system';
+import { DataGrid, GridColDef, GridFilterModel, GridRow, GridRowProps } from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { ChangeRequest, ChangeRequestType, WbsNumber, validateWBS } from 'shared';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
+import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
+import { routes } from '../../utils/routes';
+import { GridColDefStyle } from '../../utils/tables';
+import ErrorPage from '../ErrorPage';
+import TableCustomToolbar from '../../components/TableCustomToolbar';
 
 const ChangeRequestsTable: React.FC = () => {
+  const [windowSize, setWindowSize] = useState(window.innerWidth);
   const { isLoading, isError, data, error } = useAllChangeRequests();
   if (localStorage.getItem('cr-table-row-count') === null) {
     localStorage.setItem('cr-table-row-count', '50');
@@ -32,18 +34,76 @@ const ChangeRequestsTable: React.FC = () => {
 
   const theme = useTheme();
 
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize(window.innerWidth);
+    };
+
+    // Attach the event listener to the window object
+    window.addEventListener('resize', handleResize);
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   if (isLoading || !data) return <LoadingIndicator />;
 
   if (isError) return <ErrorPage message={error?.message} />;
 
+  const idColumn: GridColDef = {
+    ...baseColDef,
+    field: 'crId',
+    type: 'number',
+    headerName: 'ID',
+    maxWidth: 75
+  };
+
+  const dateReviewedColumn: GridColDef = {
+    ...baseColDef,
+    field: 'dateReviewed',
+    headerName: 'Date Reviewed',
+    type: 'date',
+    valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
+    maxWidth: 200
+  };
+
+  const wbsColumn: GridColDef = {
+    ...baseColDef,
+    field: 'wbs',
+    headerName: 'WBS',
+    filterable: true,
+    sortable: true,
+    maxWidth: 300,
+    valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
+    sortComparator: (_v1, _v2, param1, param2) => {
+      const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
+      const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
+
+      if (wbs1.carNumber !== wbs2.carNumber) {
+        return wbs1.carNumber - wbs2.carNumber;
+      } else if (wbs1.projectNumber !== wbs2.projectNumber) {
+        return wbs1.projectNumber - wbs2.projectNumber;
+      } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
+        return wbs1.workPackageNumber - wbs2.workPackageNumber;
+      } else {
+        return 0;
+      }
+    }
+  };
+
+  const submitterColumn: GridColDef = {
+    ...baseColDef,
+    field: 'submitter',
+    headerName: 'Submitter',
+    maxWidth: 200
+  };
+
+  const smallColumns: GridColDef[] = [idColumn, dateReviewedColumn, wbsColumn, submitterColumn];
+
   const columns: GridColDef[] = [
-    {
-      ...baseColDef,
-      field: 'crId',
-      type: 'number',
-      headerName: 'ID',
-      maxWidth: 75
-    },
+    idColumn,
     {
       ...baseColDef,
       field: 'type',
@@ -53,29 +113,7 @@ const ChangeRequestsTable: React.FC = () => {
       maxWidth: 150
     },
     { ...baseColDef, field: 'carNumber', headerName: 'Car #', type: 'number', maxWidth: 50 },
-    {
-      ...baseColDef,
-      field: 'wbs',
-      headerName: 'WBS',
-      filterable: true,
-      sortable: true,
-      maxWidth: 300,
-      valueGetter: (params) => `${wbsPipe(params.value.wbsNum)} - ${params.value.name}`,
-      sortComparator: (_v1, _v2, param1, param2) => {
-        const wbs1: WbsNumber = validateWBS((param1.value as string).split(' ')[0]);
-        const wbs2: WbsNumber = validateWBS((param2.value as string).split(' ')[0]);
-
-        if (wbs1.carNumber !== wbs2.carNumber) {
-          return wbs1.carNumber - wbs2.carNumber;
-        } else if (wbs1.projectNumber !== wbs2.projectNumber) {
-          return wbs1.projectNumber - wbs2.projectNumber;
-        } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
-          return wbs1.workPackageNumber - wbs2.workPackageNumber;
-        } else {
-          return 0;
-        }
-      }
-    },
+    wbsColumn,
     {
       ...baseColDef,
       field: 'dateSubmitted',
@@ -84,20 +122,8 @@ const ChangeRequestsTable: React.FC = () => {
       valueFormatter: (params) => datePipe(params.value),
       maxWidth: 200
     },
-    {
-      ...baseColDef,
-      field: 'submitter',
-      headerName: 'Submitter',
-      maxWidth: 200
-    },
-    {
-      ...baseColDef,
-      field: 'dateReviewed',
-      headerName: 'Date Reviewed',
-      type: 'date',
-      valueFormatter: (params) => (params.value ? datePipe(params.value) : ''),
-      maxWidth: 200
-    },
+    submitterColumn,
+    dateReviewedColumn,
     {
       ...baseColDef,
       field: 'reviewer',
@@ -141,7 +167,15 @@ const ChangeRequestsTable: React.FC = () => {
   );
 
   return (
-    <div>
+    <Box
+      sx={{
+        '& .Mui-even': {
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+        },
+        '& .Mui-odd': { border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}` }
+      }}
+    >
       <DataGrid
         autoHeight
         disableSelectionOnClick
@@ -164,11 +198,27 @@ const ChangeRequestsTable: React.FC = () => {
             reviewer: fullNamePipe(v.reviewer)
           })) || []
         }
-        columns={columns}
+        columns={windowSize < 900 ? smallColumns : columns}
         getRowId={(row) => row.crId}
-        sx={{ background: theme.palette.background.paper }}
+        sx={{
+          border: 0,
+          '& .MuiDataGrid-row:hover': {
+            backgroundColor: 'rgba(239, 67, 69, 0.6)'
+          },
+          '& .MuiDataGrid-columnHeader': {
+            borderRight: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`,
+            borderLeft: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+          },
+          '& .MuiDataGrid-columnHeaders': {
+            border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+          },
+          '.MuiDataGrid-columnSeparator': {
+            display: 'none'
+          }
+        }}
+        getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'Mui-even' : 'Mui-odd')}
         components={{
-          Toolbar: GridToolbar,
+          Toolbar: TableCustomToolbar,
           Row: (props: GridRowProps & { row: ChangeRequest }) => {
             return (
               <Link
@@ -213,7 +263,7 @@ const ChangeRequestsTable: React.FC = () => {
           }
         }}
       />
-    </div>
+    </Box>
   );
 };
 

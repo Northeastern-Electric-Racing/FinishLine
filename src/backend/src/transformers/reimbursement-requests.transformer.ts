@@ -7,21 +7,26 @@ import { Prisma } from '@prisma/client';
 import {
   ClubAccount,
   ExpenseType,
+  OtherProductReason,
   Receipt,
   Reimbursement,
   ReimbursementProduct,
+  ReimbursementProductReason,
   ReimbursementRequest,
   ReimbursementStatus,
   ReimbursementStatusType,
   Vendor
 } from 'shared';
 import reimbursementRequestQueryArgs from '../prisma-query-args/reimbursement-requests.query-args';
-import userTransformer from './user.transformer';
 import reimbursementStatusQueryArgs from '../prisma-query-args/reimbursement-statuses.query-args';
-import reimbursementProductQueryArgs from '../prisma-query-args/reimbursement-products.query-args';
+import {
+  reimbursementProductReasonQueryArgs,
+  reimbursementProductQueryArgs
+} from '../prisma-query-args/reimbursement-products.query-args';
 import { wbsNumOf } from '../utils/utils';
 import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
+import { userTransformer } from './user.transformer';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
   return {
@@ -38,6 +43,7 @@ export const reimbursementRequestTransformer = (
 ): ReimbursementRequest => {
   return {
     reimbursementRequestId: reimbursementRequest.reimbursementRequestId,
+    identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
     dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
@@ -73,9 +79,16 @@ export const reimbursementProductTransformer = (
     name: reimbursementProduct.name,
     dateDeleted: reimbursementProduct.dateDeleted ?? undefined,
     cost: reimbursementProduct.cost,
-    wbsNum: wbsNumOf(reimbursementProduct.wbsElement),
-    wbsName: reimbursementProduct.wbsElement.name
+    reimbursementProductReason: reimbursementProductReasonTransformer(reimbursementProduct.reimbursementProductReason)
   };
+};
+
+const reimbursementProductReasonTransformer = (
+  reason: Prisma.Reimbursement_Product_ReasonGetPayload<typeof reimbursementProductReasonQueryArgs>
+): ReimbursementProductReason => {
+  return reason.wbsElement
+    ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
+    : (reason.otherReason! as OtherProductReason);
 };
 
 export const expenseTypeTransformer = (expenseType: Prisma.Expense_TypeGetPayload<null>): ExpenseType => {
@@ -84,7 +97,8 @@ export const expenseTypeTransformer = (expenseType: Prisma.Expense_TypeGetPayloa
     name: expenseType.name,
     code: expenseType.code,
     allowed: expenseType.allowed,
-    allowedRefundSources: expenseType.allowedRefundSources as ClubAccount[]
+    allowedRefundSources: expenseType.allowedRefundSources as ClubAccount[],
+    dateDeleted: expenseType.dateDeleted ?? undefined
   };
 };
 
@@ -92,6 +106,7 @@ export const vendorTransformer = (vendor: Prisma.VendorGetPayload<null>): Vendor
   return {
     vendorId: vendor.vendorId,
     dateCreated: vendor.dateCreated,
+    dateDeleted: vendor.dateDeleted ?? undefined,
     name: vendor.name
   };
 };

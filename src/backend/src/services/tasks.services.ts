@@ -7,7 +7,7 @@ import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
 import { hasPermissionToEditTask, sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
-import { areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
+import { allUsersOnTeam, areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 
@@ -37,7 +37,11 @@ export default class TasksService {
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: { wbsNumber: wbsNum },
-      include: { project: { include: { teams: { ...teamQueryArgs }, wbsElement: true } } }
+      include: {
+        project: {
+          include: { teams: { ...teamQueryArgs }, wbsElement: true, workPackages: { include: { wbsElement: true } } }
+        }
+      }
     });
     if (!requestedWbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
     if (requestedWbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(wbsNum));
@@ -51,9 +55,23 @@ export default class TasksService {
     const isProjectLeadOrManager =
       createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
 
-    if (!isLeadership(createdBy.role) && !isProjectLeadOrManager && !teams.some((team) => isUserOnTeam(team, createdBy))) {
+    const curWorkPackages = project.workPackages;
+
+    const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
+      return (
+        workPackage.wbsElement.projectLeadId === createdBy.userId ||
+        workPackage.wbsElement.projectManagerId === createdBy.userId
+      );
+    });
+
+    if (
+      !isLeadership(createdBy.role) &&
+      !isProjectLeadOrManager &&
+      !isWorkPackageLeadOrManager &&
+      !teams.some((team) => isUserOnTeam(team, createdBy))
+    ) {
       throw new AccessDeniedException(
-        'Only admins, app-admins, project leads, project managers, or current team users can create tasks'
+        'Only admins, app-admins, project leads, project managers, work package leads, work package managers, or current team users can create tasks'
       );
     }
 
@@ -61,6 +79,9 @@ export default class TasksService {
 
     if (!areUsersPartOfTeams(teams, users))
       throw new HttpException(400, `All assignees must be part of one of the project's team!`);
+
+    if (!teams.some((team) => allUsersOnTeam(team, users)))
+      throw new HttpException(400, 'All assignees must be part of the same team!');
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
@@ -183,6 +204,9 @@ export default class TasksService {
     if (!areUsersPartOfTeams(teams, assigneeUsers)) {
       throw new HttpException(400, "All assignees must be part of one of the project's teams");
     }
+
+    if (!teams.some((team) => allUsersOnTeam(team, assigneeUsers)))
+      throw new HttpException(400, 'All assignees must be part of the same team!');
 
     // retrieve userId for every assignee to update task's assignees in the database
     const transformedAssigneeUsers = assigneeUsers.map((user) => {

@@ -52,14 +52,23 @@ export default class ReimbursementRequestsController {
 
   static async createReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dateOfExpense, vendorId, account, reimbursementProducts, expenseTypeId, totalCost } = req.body;
+      const {
+        dateOfExpense,
+        vendorId,
+        account,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
+        expenseTypeId,
+        totalCost
+      } = req.body;
       const user = await getCurrentUserWithUserSettings(res);
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
         dateOfExpense,
         vendorId,
         account,
-        reimbursementProducts,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
         expenseTypeId,
         totalCost
       );
@@ -84,8 +93,16 @@ export default class ReimbursementRequestsController {
   static async editReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
-      const { dateOfExpense, vendorId, account, expenseTypeId, totalCost, reimbursementProducts, receiptPictures } =
-        req.body;
+      const {
+        dateOfExpense,
+        vendorId,
+        account,
+        expenseTypeId,
+        totalCost,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
+        receiptPictures
+      } = req.body;
       const user = await getCurrentUser(res);
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
@@ -94,11 +111,29 @@ export default class ReimbursementRequestsController {
         account,
         expenseTypeId,
         totalCost,
-        reimbursementProducts,
+        otherReimbursementProducts,
+        wbsReimbursementProducts,
         receiptPictures,
         user
       );
       res.status(200).json(updatedReimbursementRequestId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editReimbursement(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { reimbursementId } = req.params;
+      const { amount, dateReceived } = req.body;
+      const editor = await getCurrentUser(res);
+      const updatedReimbursement = await ReimbursementRequestService.editReimbursement(
+        reimbursementId,
+        editor,
+        amount,
+        dateReceived
+      );
+      res.status(200).json(updatedReimbursement);
     } catch (error: unknown) {
       next(error);
     }
@@ -230,6 +265,28 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async denyReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(requestId, user);
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsReimbursed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsReimbursed(requestId, user);
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
@@ -286,6 +343,29 @@ export default class ReimbursementRequestsController {
         allowedRefundSources
       );
       res.status(200).json(expenseTypeUpdated);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editVendor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { vendorId } = req.params;
+      const { name } = req.body;
+      const submitter = await getCurrentUser(res);
+      const editedVendor = await ReimbursementRequestService.editVendor(name, vendorId, submitter);
+      res.status(200).json(editedVendor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteVendor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { vendorId } = req.params;
+      const submitter = await getCurrentUser(res);
+      const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, submitter);
+      res.status(200).json(deletedVendor);
     } catch (error: unknown) {
       next(error);
     }

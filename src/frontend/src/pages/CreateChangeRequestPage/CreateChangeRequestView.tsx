@@ -8,7 +8,6 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ChangeRequestReason, ChangeRequestType, Project, ProposedSolution, wbsPipe, WorkPackage } from 'shared';
 import { routes } from '../../utils/routes';
-import PageBlock from '../../layouts/PageBlock';
 import TextField from '@mui/material/TextField';
 import FormHelperText from '@mui/material/FormHelperText';
 import Box from '@mui/material/Box';
@@ -24,6 +23,7 @@ import {
   FormLabel,
   IconButton,
   MenuItem,
+  RadioGroup,
   Select
 } from '@mui/material';
 import { FormInput } from './CreateChangeRequest';
@@ -37,6 +37,9 @@ import NERSuccessButton from '../../components/NERSuccessButton';
 import { wbsNamePipe } from '../../utils/pipes';
 import PageLayout from '../../components/PageLayout';
 import { wbsNumComparator } from 'shared/src/validate-wbs';
+import { ChangeEvent } from 'react';
+import { NERButton } from '../../components/NERButton';
+import { useQuery } from '../../hooks/utils.hooks';
 
 interface CreateChangeRequestViewProps {
   wbsNum: string;
@@ -78,6 +81,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   setProposedSolutions,
   handleCancel
 }) => {
+  const query = useQuery();
   const {
     handleSubmit,
     control,
@@ -86,11 +90,29 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
     watch
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      what: crDesc,
-      why: [{ type: ChangeRequestReason.Other, explain: '' }],
-      type: ChangeRequestType.Issue
-    }
+    defaultValues: query.get('budgetChange')
+      ? {
+          what: 'Increase the budget to account for the cost of materials',
+          why: [{ type: ChangeRequestReason.Other, explain: 'The cost of materials ended up exceeding the initial budget' }],
+          type: ChangeRequestType.Issue
+        }
+      : query.get('timelineDelay')
+      ? {
+          what: 'Timeline delay',
+          why: [{ type: ChangeRequestReason.Other, explain: 'Decided to extend timeline after design review' }],
+          type: ChangeRequestType.Redefinition
+        }
+      : query.get('createWP')
+      ? {
+          what: crDesc,
+          why: [{ type: ChangeRequestReason.Initialization, explain: 'Creating a Work Package on this Project' }],
+          type: ChangeRequestType.Redefinition
+        }
+      : {
+          what: crDesc,
+          why: [{ type: ChangeRequestReason.Other, explain: '' }],
+          type: ChangeRequestType.Issue
+        }
   });
   const { fields: whys, append: appendWhy, remove: removeWhy } = useFieldArray({ control, name: 'why' });
 
@@ -161,9 +183,10 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
       <ReactHookTextField
         required
         multiline
+        rows={4}
         control={control}
         label="Explain"
-        sx={{ flexGrow: 1, mx: 1, borderRadius: 2 }}
+        sx={{ flexGrow: 1, borderRadius: 2, width: '100%' }}
         {...register(`why.${index}.explain`)}
         errorMessage={errors.why?.[index]?.explain}
       />
@@ -171,21 +194,35 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   };
 
   return (
-    <PageLayout title="New Change Request" previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}>
-      <form
-        id={'create-standard-change-request-form'}
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSubmit(onSubmit)(e);
-        }}
-        onKeyPress={(e) => {
-          e.key === 'Enter' && e.preventDefault();
-        }}
+    <form
+      id={'create-standard-change-request-form'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
+      onKeyPress={(e) => {
+        e.key === 'Enter' && e.preventDefault();
+      }}
+    >
+      <PageLayout
+        stickyHeader
+        title="New Change Request"
+        previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
+        headerRight={
+          <Box textAlign="right" sx={{ mb: 2 }}>
+            <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1, width: 90 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1, width: 90, mt: { xs: 1, md: 0 } }}>
+              Submit
+            </NERSuccessButton>
+          </Box>
+        }
       >
-        <PageBlock title="Details">
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
+        <Grid container spacing={2} display="flex" justifyContent="space-between">
+          <Grid container item spacing={2} xs={12} md={6} height="fit-content">
+            <Grid item xs={12}>
               <FormLabel>WBS</FormLabel>
               <NERAutocomplete
                 id="wbs-autocomplete"
@@ -196,7 +233,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                 value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={10}>
               <FormControl fullWidth>
                 <FormLabel>Type</FormLabel>
                 <Controller
@@ -204,53 +241,67 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
                   control={control}
                   rules={{ required: true }}
                   render={({ field: { onChange, value } }) => (
-                    <TextField select onChange={onChange} value={value}>
-                      {permittedTypes.map((t) => (
-                        <MenuItem key={t} value={t}>
-                          {t}
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                    <RadioGroup onChange={onChange} value={value}>
+                      <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} sx={{ gap: 2 }}>
+                        {permittedTypes.map((t) => (
+                          <NERButton
+                            sx={{
+                              fontSize: { xs: '0.8rem', md: '1rem' },
+                              width: { xs: '83%', md: 'auto' }
+                            }}
+                            key={t}
+                            variant={value === t ? 'contained' : 'outlined'}
+                            onClick={() => onChange(t as 'ISSUE' | ChangeEvent<Element>)}
+                          >
+                            {t}
+                          </NERButton>
+                        ))}
+                      </Box>
+                    </RadioGroup>
                   )}
                 />
               </FormControl>
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <FormLabel>What</FormLabel>
+                <FormLabel>What needs to be changed?</FormLabel>
                 <ReactHookTextField
                   name="what"
                   control={control}
                   multiline
                   rows={4}
                   errorMessage={errors.what}
-                  placeholder="What is the situation?"
+                  placeholder="Explain *"
                 />
               </FormControl>
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <FormLabel>Why</FormLabel>
+                <FormLabel>Why does this need to be changed?</FormLabel>
                 <Box>
                   {whys.map((element, index) => (
-                    <Box display="flex" flexDirection="row" sx={{ mb: 1 }}>
-                      <Select
-                        {...register(`why.${index}.type`)}
-                        sx={{ width: 200 }}
-                        defaultValue={element.type}
-                        key={element.id}
-                      >
-                        {Object.values(ChangeRequestReason).map((type) => (
-                          <MenuItem key={type} value={type}>
-                            {type}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {renderReasonInput(index)}
-                      <IconButton type="button" onClick={() => removeWhy(index)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
+                    <Grid container xs={12} display="flex" flexDirection="row" sx={{ mb: 1 }}>
+                      <Grid item xs={12}>
+                        <Select
+                          {...register(`why.${index}.type`)}
+                          sx={{ width: { sx: 'auto', md: 200 }, mr: 2 }}
+                          defaultValue={element.type}
+                          key={element.id}
+                        >
+                          {Object.values(ChangeRequestReason).map((type) => (
+                            <MenuItem key={type} value={type}>
+                              {type}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <IconButton color="error" type="button" onClick={() => removeWhy(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                      <Grid item xs={12} sx={{ mt: 1, mb: 1 }}>
+                        {renderReasonInput(index)}
+                      </Grid>
+                    </Grid>
                   ))}
                 </Box>
                 <FormHelperText>{errors.why?.message}</FormHelperText>
@@ -268,20 +319,12 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Button>
             </Grid>
           </Grid>
-        </PageBlock>
-        <PageBlock title="Proposed Solutions">
-          <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
-        </PageBlock>
-        <Box textAlign="right">
-          <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1 }}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-            Submit
-          </NERSuccessButton>
-        </Box>
-      </form>
-    </PageLayout>
+          <Grid item xs={12} md={5} sx={{ mt: -2 }}>
+            <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
+          </Grid>
+        </Grid>
+      </PageLayout>
+    </form>
   );
 };
 

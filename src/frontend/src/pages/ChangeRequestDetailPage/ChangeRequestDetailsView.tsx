@@ -5,59 +5,36 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  ChangeRequestType,
-  StageGateChangeRequest,
-  StandardChangeRequest,
-  isProject
-} from 'shared';
+import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest, isProject } from 'shared';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
-import StageGateDetails from './StageGateDetails';
 import ImplementedChangesList from './ImplementedChangesList';
 import StandardDetails from './StandardDetails';
 import ReviewChangeRequest from './ReviewChangeRequest';
-import PageBlock from '../../layouts/PageBlock';
 import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
-import { Grid, Typography, Link } from '@mui/material';
+import { Grid, Typography, Link, Box } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
+import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
+import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
+import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
     case ChangeRequestType.Activation:
       return <ActivationDetails cr={cr as ActivationChangeRequest} />;
     case ChangeRequestType.StageGate:
-      return <StageGateDetails cr={cr as StageGateChangeRequest} />;
+      return <></>;
     default:
       return <StandardDetails cr={cr as StandardChangeRequest} />;
   }
 };
-
-const buildProposedSolutions = (cr: ChangeRequest): ReactElement => {
-  if (cr.type !== ChangeRequestType.Activation && cr.type !== ChangeRequestType.StageGate) {
-    return (
-      <PageBlock title={'Proposed Solutions'}>
-        <ProposedSolutionsList
-          proposedSolutions={(cr as StandardChangeRequest).proposedSolutions}
-          crReviewed={cr.accepted}
-          crId={cr.crId}
-        />
-      </PageBlock>
-    );
-  } else {
-    return <></>;
-  }
-};
-
 interface ChangeRequestDetailsProps {
   isUserAllowedToReview: boolean;
   isUserAllowedToImplement: boolean;
@@ -92,9 +69,22 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const { name: projectName } = project;
 
+  const isStandard =
+    changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
+
+  const isActivation = changeRequest.type === ChangeRequestType.Activation;
+
+  console.log((changeRequest as StandardChangeRequest).projectProposedChanges);
+
   return (
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
+      chips={
+        <Box display="flex" gap="20px">
+          <ChangeRequestTypePill type={changeRequest.type} />
+          <ChangeRequestStatusPill status={changeRequest.status} />
+        </Box>
+      }
       previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
       headerRight={
         <ChangeRequestActionMenu
@@ -107,51 +97,70 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         />
       }
     >
-      <PageBlock title={'Change Request Details'} headerRight={<b>{changeRequest.status}</b>}>
-        <Grid container spacing={1}>
-          <Grid item xs={2}>
-            <Typography sx={{ maxWidth: '140px', fontWeight: 'bold' }}>Type: </Typography>
+      <Grid container rowGap={3}>
+        <Grid container columnSpacing={3}>
+          <Grid item xs={'auto'}>
+            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+              <b>WBS: </b>
+              <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
+                {wbsPipe(changeRequest.wbsNum)} - {projectName}
+                {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
+              </Link>
+            </Typography>
           </Grid>
-          <Grid item xs={10}>
-            {changeRequest.type}
-          </Grid>
-          <Grid item xs={2}>
-            <Typography sx={{ fontWeight: 'bold' }}>WBS #: </Typography>
-          </Grid>
-          <Grid item xs={10}>
-            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-              {wbsPipe(changeRequest.wbsNum)} - {projectName}
-              {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
-            </Link>
-          </Grid>
-          <Grid item xs={3} md={2}>
-            <Typography sx={{ fontWeight: 'bold' }}>Submitted By: </Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Typography>{fullNamePipe(changeRequest.submitter)}</Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Typography>{datePipe(changeRequest.dateSubmitted)}</Typography>
+          <Grid item xs={'auto'}>
+            <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
+              <b>Submitter: </b>
+              {fullNamePipe(changeRequest.submitter)} on {datePipe(changeRequest.dateSubmitted)}
+            </Typography>
           </Grid>
         </Grid>
-      </PageBlock>
-      {buildDetails(changeRequest)}
-      {buildProposedSolutions(changeRequest)}
-      <ReviewNotes
-        reviewer={changeRequest.reviewer}
-        reviewNotes={changeRequest.reviewNotes}
-        dateReviewed={changeRequest.dateReviewed}
-      />
-      <ImplementedChangesList
-        changes={changeRequest.implementedChanges || []}
-        overallDateImplemented={changeRequest.dateImplemented}
-      />
+        <Grid container rowSpacing={2}>
+          <Grid container item xs={12} md={isStandard ? 7 : isActivation ? 6 : 12} height={'fit-content'}>
+            {buildDetails(changeRequest)}
+            <Grid item xs={12} md={isStandard ? 12 : isActivation ? 12 : 5} height={'fit-content'}>
+              <ReviewNotes
+                reviewer={changeRequest.reviewer}
+                reviewNotes={changeRequest.reviewNotes}
+                dateReviewed={changeRequest.dateReviewed}
+              />
+            </Grid>
+            <Grid item md={isStandard ? 12 : isActivation ? 0 : 6} sx={{ mt: { xs: 2, md: isStandard ? 2 : 0 } }}>
+              {!isActivation && (
+                <ImplementedChangesList
+                  changes={changeRequest.implementedChanges || []}
+                  overallDateImplemented={changeRequest.dateImplemented}
+                />
+              )}
+            </Grid>
+          </Grid>
+          <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 5 : 0}>
+            {isStandard && (
+              <ProposedSolutionsList
+                proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
+                crReviewed={changeRequest.accepted}
+                crId={changeRequest.crId}
+              />
+            )}
+          </Grid>
+          <Grid item xs={isActivation ? 12 : 0} md={isActivation ? 6 : 0}>
+            {isActivation && (
+              <ImplementedChangesList
+                changes={changeRequest.implementedChanges || []}
+                overallDateImplemented={changeRequest.dateImplemented}
+              />
+            )}
+          </Grid>
+        </Grid>
+      </Grid>
+
       {reviewModalShow && (
         <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
       )}
       {deleteModalShow && (
         <DeleteChangeRequest modalShow={deleteModalShow} handleClose={handleDeleteClose} cr={changeRequest} />
       )}
+      <OtherChangeRequestsPopupTabs changeRequest={changeRequest} />
     </PageLayout>
   );
 };

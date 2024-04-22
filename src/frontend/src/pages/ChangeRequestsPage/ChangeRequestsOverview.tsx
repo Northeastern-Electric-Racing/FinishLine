@@ -3,20 +3,17 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Grid, useTheme } from '@mui/material';
 import { useAllChangeRequests } from '../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { isLeadership, isHead, ChangeRequest, Project, WorkPackage, equalsWbsNumber } from 'shared';
-import PageBlock from '../../layouts/PageBlock';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import ChangeRequestDetailCard from '../../components/ChangeRequestDetailCard';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { makeTeamList } from '../../utils/teams.utils';
+import ChangeRequestRow from '../../components/ChangeRequestRow';
 
 const ChangeRequestsOverview: React.FC = () => {
-  const theme = useTheme();
   const user = useCurrentUser();
 
   const { data: changeRequests, isError: crIsError, isLoading: crIsLoading, error: crError } = useAllChangeRequests();
@@ -80,48 +77,26 @@ const ChangeRequestsOverview: React.FC = () => {
     )
     .sort((a, b) => (a.dateReviewed && b.dateReviewed ? b.dateReviewed.getTime() - a.dateReviewed.getTime() : 0));
 
-  const displayCRCards = (crList: ChangeRequest[]) => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        overflow: 'auto',
-        justifyContent: 'flex-start',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.divider,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        }
-      }}
-    >
-      {crList.map((cr: ChangeRequest) => (
-        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
-      ))}
-    </Box>
-  );
-
   return (
-    <Box>
+    <>
       {showToReview && (
-        <PageBlock title={'To Review'} headerRight={`${crToReview.length} Left`}>
-          <Grid container>{displayCRCards(crToReview)}</Grid>
-        </PageBlock>
+        <ChangeRequestRow
+          title="Change Requests To Review"
+          changeRequests={crToReview}
+          noChangeRequestsMessage="No change requests to review"
+        />
       )}
-      <PageBlock title={'My Un-reviewed Change Requests'} headerRight={`${crUnreviewed.length} Left`}>
-        <Grid container>{displayCRCards(crUnreviewed)}</Grid>
-      </PageBlock>
-      <PageBlock title={'My Recently Approved Change Requests'} headerRight={`${crApproved.length} Left`} defaultClosed>
-        <Grid container>{displayCRCards(crApproved)}</Grid>
-      </PageBlock>
-    </Box>
+      <ChangeRequestRow
+        title="My Un-reviewed Change Requests"
+        changeRequests={crUnreviewed}
+        noChangeRequestsMessage="No un-reviewed change requests"
+      />
+      <ChangeRequestRow
+        title="My Approved Change Requests"
+        changeRequests={crApproved}
+        noChangeRequestsMessage="No approved change requests"
+      />
+    </>
   );
 };
 
