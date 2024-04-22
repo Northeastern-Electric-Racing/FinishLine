@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
+import { Work_Package_Template } from '@prisma/client';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -61,6 +62,37 @@ export default class WorkPackagesController {
         blockedBy,
         expectedActivities,
         deliverables
+      );
+
+      res.status(200).json(wbsString);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  // Create a work package template with the given details
+  static async createWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { templateName, templateNotes, workPackageName, duration, expectedActivities, deliverables, blockedBy } =
+        req.body;
+
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
+      const user = await getCurrentUser(res);
+
+      const wbsString: Work_Package_Template = await WorkPackagesService.createWorkPackageTemplate(
+        user,
+        templateName,
+        templateNotes,
+        workPackageName,
+        stage,
+        duration,
+        expectedActivities,
+        deliverables,
+        blockedBy
       );
 
       res.status(200).json(wbsString);

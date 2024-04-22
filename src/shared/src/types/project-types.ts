@@ -97,3 +97,17 @@ export interface LinkCreateArgs {
   linkTypeName: string;
   url: string;
 }
+
+export interface BlockedByInfo {
+  name: string;
+  stage?: WorkPackageStage;
+}
+
+export interface WorkPackageTemplate extends WbsElement {
+  duration: number;
+  blockedBy: BlockedByInfo[];
+  expectedActivities: DescriptionBullet[];
+  deliverables: DescriptionBullet[];
+  projectName: string;
+  stage?: WorkPackageStage;
+}

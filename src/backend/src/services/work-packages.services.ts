@@ -1,4 +1,4 @@
-import { Role, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Role, User, WBS_Element, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -11,7 +11,9 @@ import {
   WbsNumber,
   wbsPipe,
   WorkPackage,
-  WorkPackageStage
+  WorkPackageStage,
+  BlockedByInfo,
+  WorkPackageTemplate
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -308,6 +310,72 @@ export default class WorkPackagesService {
     });
 
     return `${created.wbsElement.carNumber}.${created.wbsElement.projectNumber}.${created.wbsElement.workPackageNumber}`;
+  }
+
+  /**
+   * Creates a Work_Package_Template in the database
+   *
+   * @param user the user creating the work package template
+   * @param templateName the template name
+   * @param templateNotes the template notes
+   * @param workPackageName the name of the work packge
+   * @param stage the stage
+   * @param duration the duration of the work package template in weeks
+   * @param expectedActivities the expected activities descriptions for this WPT
+   * @param deliverables the expected deliverables descriptions for this WPT
+   * @param blockedBy the WBS elements that need to be completed before this WPT
+   * @returns the WBS number of the successfully created work package template
+   * @throws if the work package template could not be created
+   */
+  static async createWorkPackageTemplate(
+    user: User,
+    templateName: string,
+    templateNotes: string,
+    workPackageName: string | null,
+    stage: WorkPackageStage | null,
+    duration: number,
+    expectedActivities: string[],
+    deliverables: string[],
+    blockedBy: BlockedByInfo[]
+  ): Promise<Work_Package_Template> {
+    if (!isAdmin(user.role)) throw new AccessDeniedAdminOnlyException('create work package templates');
+
+    // get the corresponding IDs of all work package templates in BlockedBy,
+    // and throw an errror if the template doesn't exist
+    const blockedByIds: string[] = await Promise.all(
+      blockedBy.map(async (elem) => {
+        const template = await prisma.work_Package_Template.findFirst({
+          where: {
+            templateName: elem.name,
+            stage: elem.stage
+          }
+        });
+
+        if (template) {
+          return template.workPackageTemplateId;
+        } else {
+          throw new NotFoundException('Work Package', templateName);
+        }
+      })
+    );
+
+    // add to the db
+    const created = await prisma.work_Package_Template.create({
+      data: {
+        templateName,
+        templateNotes,
+        workPackageName,
+        stage,
+        duration,
+        expectedActivities,
+        deliverables,
+        blockedBy: { connect: blockedByIds.map((ele) => ({ blockedByInfoId: ele })) },
+        dateCreated: new Date(),
+        userCreatedId: user.userId
+      }
+    });
+
+    return created;
   }
 
   /**
