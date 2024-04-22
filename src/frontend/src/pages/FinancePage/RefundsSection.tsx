@@ -169,7 +169,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
           >
             <Grid item xs={6}>
               <FormControl fullWidth>
-                <FormLabel>Key</FormLabel>
+                <FormLabel>Column</FormLabel>
                 <Select
                   value={orderBy}
                   onChange={(e) => {
@@ -183,7 +183,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
             </Grid>
             <Grid item xs={6}>
               <FormControl fullWidth>
-                <FormLabel>Method</FormLabel>
+                <FormLabel>Direction</FormLabel>
                 <Select
                   value={order}
                   onChange={(e) => {
