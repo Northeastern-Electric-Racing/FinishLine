@@ -1,7 +1,7 @@
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
-import { EventChange, GanttTask } from '../../../utils/gantt.utils';
+import { EventChange, GanttTask } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
-import GanttChartTeamSection from './GanttChartTeamSection';
+import GanttChartSection from './GanttChartSection';
 
 interface GanttChartProps {
   startDate: Date;
@@ -86,7 +86,7 @@ const GanttChart = ({
               )}
             </Box>
             <Box key={teamName} sx={{ my: 3, width: 'fit-content', pl: 2 }}>
-              <GanttChartTeamSection
+              <GanttChartSection
                 tasks={tasks}
                 start={startDate}
                 end={endDate}

@@ -12,7 +12,7 @@ import { Box, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { dateToString } from '../../../utils/datetime.utils';
 
-const GanttChartActivity = ({
+const GanttChartItem = ({
   days,
   event,
   createChange,
@@ -191,4 +191,4 @@ const GanttChartActivity = ({
   );
 };
 
-export default GanttChartActivity;
+export default GanttChartItem;

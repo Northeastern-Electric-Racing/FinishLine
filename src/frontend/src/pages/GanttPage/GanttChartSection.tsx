@@ -5,11 +5,11 @@
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { applyChangesToEvents, EventChange, Task } from '../../../utils/gantt.utils';
+import { applyChangesToEvents, EventChange, Task } from '../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
-import GanttChartActivity from './GanttChartActivity';
+import GanttChartItem from './GanttChartComponents/GanttChartItem';
 
-interface GanttChartTeamSectionProps {
+interface GanttChartSectionProps {
   start: Date;
   end: Date;
   tasks: Task[];
@@ -18,14 +18,7 @@ interface GanttChartTeamSectionProps {
   onExpanderClick: (ganttTasks: Task) => void;
 }
 
-const GanttChartTeamSection = ({
-  start,
-  end,
-  tasks,
-  isEditMode,
-  saveChanges,
-  onExpanderClick
-}: GanttChartTeamSectionProps) => {
+const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpanderClick }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
   const createChange = (change: EventChange) => {
@@ -49,13 +42,7 @@ const GanttChartTeamSection = ({
       <Box sx={{ mt: '1rem', width: 'fit-content' }} key={eventChanges.length}>
         {displayEvents.map((event) => {
           return (
-            <GanttChartActivity
-              key={event.id}
-              days={days}
-              event={event}
-              isEditMode={isEditMode}
-              createChange={createChange}
-            />
+            <GanttChartItem key={event.id} days={days} event={event} isEditMode={isEditMode} createChange={createChange} />
           );
         })}
       </Box>
@@ -65,4 +52,4 @@ const GanttChartTeamSection = ({
   );
 };
 
-export default GanttChartTeamSection;
+export default GanttChartSection;

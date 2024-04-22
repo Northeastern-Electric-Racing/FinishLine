@@ -27,7 +27,7 @@ import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
 import { SearchBar } from '../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersWrapper';
-import GanttChart from './GanttChartComponents/GanttChart';
+import GanttChart from './GanttChart';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
