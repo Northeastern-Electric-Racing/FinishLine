@@ -1,11 +1,6 @@
 import {
   Box,
-  FormControl,
-  FormLabel,
-  Grid,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Table,
   TableBody,
