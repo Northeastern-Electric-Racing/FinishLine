@@ -1,6 +1,11 @@
 import {
   Box,
+  FormControl,
+  FormLabel,
+  Grid,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   Table,
   TableBody,
@@ -23,6 +28,9 @@ import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { getRefundRowData } from '../../utils/reimbursement-request.utils';
 
+type Order = 'asc' | 'desc'; // ascending or descending
+type OrderBy = keyof { date: Date; amount: number };
+
 const RefundHeader = ({ header, data }: { header: string; data: string }) => {
   return (
     <Stack sx={{ alignItems: 'center' }}>
@@ -39,9 +47,36 @@ interface RefundTableProps {
   allReimbursementRequests?: ReimbursementRequest[];
 }
 
+// determines order of array
+// @param orderby - what key to order by of T
+function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+}
+
+// get comparator based on order
+function getComparator<Key extends keyof any>(
+  order: Order,
+  orderBy: Key
+): (a: { [key in Key]: number | Date }, b: { [key in Key]: number | Date }) => number {
+  return order === 'desc' ? (a, b) => descendingComparator(a, b, orderBy) : (a, b) => -descendingComparator(a, b, orderBy);
+}
+
 const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: RefundTableProps) => {
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
+  const [order, setOrder] = useState<Order>('desc');
+  const [orderBy, setOrderBy] = useState<
+    keyof {
+      date: Date;
+      amount: number;
+    }
+  >('date');
 
   const {
     data: userReimbursements,
@@ -70,7 +105,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const displayedReimbursementRequests =
     allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests;
 
-  const rows = displayedReimbursements.map(getRefundRowData);
+  const rows = displayedReimbursements.map(getRefundRowData).sort(getComparator(order, orderBy));
 
   const totalReceived = displayedReimbursements.reduce(
     (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
@@ -125,6 +160,43 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
             </TableBody>
           </Table>
         </TableContainer>
+        {rows.length > 1 && (
+          <Grid
+            container
+            rowSpacing={1}
+            columnSpacing={1}
+            sx={{ justifyContent: 'start', alignItems: 'start', marginTop: '10px' }}
+          >
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <FormLabel>Key</FormLabel>
+                <Select
+                  value={orderBy}
+                  onChange={(e) => {
+                    setOrderBy(e.target.value as OrderBy);
+                  }}
+                >
+                  <MenuItem value="date">Date Received</MenuItem>
+                  <MenuItem value="amount">Amount</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <FormLabel>Method</FormLabel>
+                <Select
+                  value={order}
+                  onChange={(e) => {
+                    setOrder(e.target.value as Order);
+                  }}
+                >
+                  <MenuItem value="asc">Ascending</MenuItem>
+                  <MenuItem value="desc">Descending</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        )}
       </Box>
     </Box>
   );
