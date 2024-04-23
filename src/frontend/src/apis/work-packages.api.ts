@@ -16,8 +16,8 @@ export interface WorkPackageApiInputs {
   crId: number | undefined;
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-  deliverables: string[];
-  expectedActivities: string[];
+  deliverables: string[] | { id: number; detail: string }[];
+  expectedActivities: string[] | { id: number; detail: string }[];
 }
 
 /**

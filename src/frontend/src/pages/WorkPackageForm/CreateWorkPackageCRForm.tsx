@@ -37,8 +37,8 @@ const CreateWorkPackageCRForm: React.FC = () => {
         startDate: payload.startDate,
         stage: payload.stage,
         blockedBy: payload.blockedBy,
-        expectedActivities: payload.expectedActivities,
-        deliverables: payload.deliverables
+        expectedActivities: payload.expectedActivities as string[],
+        deliverables: payload.deliverables as string[]
       }
     };
 

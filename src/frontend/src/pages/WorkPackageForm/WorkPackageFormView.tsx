@@ -6,7 +6,7 @@
 import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
@@ -22,6 +22,7 @@ import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
+import HelpIcon from '@mui/icons-material/Help';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -126,8 +127,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities: expectedActivities.map((activity) => activity.detail),
-        deliverables: deliverables.map((deliverable) => deliverable.detail),
+        expectedActivities:
+          formType !== WPFormType.EDIT ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
+        deliverables: formType !== WPFormType.EDIT ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
         stage: stage as WorkPackageStage
       };
       await mutateAsync(payload);
@@ -177,16 +179,32 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       </Box>
       <PageLayout
         stickyHeader
-        title={`${formType !== WPFormType.EDIT ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        title={`${
+          formType === WPFormType.CREATEWITHCR
+            ? 'Create Change Request - New Work Package'
+            : formType === WPFormType.CREATE
+            ? 'New Work Package'
+            : wbsPipe(wbsElement.wbsNum)
+        } - ${wbsElement.name}`}
+        // {formType === WPFormType.CREATEWITHCR && (
+        //   <Tooltip
+        //     title={
+        //       'This form will create a change request that when accepted will automatically create a new Work Package'
+        //     }
+        //     placement="left"
+        //     style={{ marginRight: '2px' }}
+        //   >
+        //     <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+        //   </Tooltip>
         headerRight={
-          <Box textAlign="right">
-            <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
-              Cancel
-            </NERFailButton>
-            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-              Submit
-            </NERSuccessButton>
-          </Box>
+            <Box textAlign="right">
+              <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+                Cancel
+              </NERFailButton>
+              <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+                {formType === WPFormType.CREATEWITHCR ? 'Create Change Request' : 'Submit'}
+              </NERSuccessButton>
+            </Box>
         }
       >
         <WorkPackageFormDetails
