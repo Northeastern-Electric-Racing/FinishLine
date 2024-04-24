@@ -4,6 +4,7 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
+  ProjectProposedChanges,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -22,12 +23,16 @@ import {
   NotFoundException,
   DeletedException
 } from '../utils/errors.utils';
-import changeRequestTransformer, {
-  projectProposedChangesTransformer,
-  workPackageProposedChangesTransformer
-} from '../transformers/change-requests.transformer';
+import changeRequestTransformer, { projectProposedChangesTransformer } from '../transformers/change-requests.transformer';
 import { updateBlocking, allChangeRequestsReviewed, validateProposedChangesFields } from '../utils/change-requests.utils';
-import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
+import {
+  CR_Type,
+  WBS_Element_Status,
+  User,
+  Scope_CR_Why_Type,
+  Wbs_Proposed_Changes,
+  Project_Proposed_Changes
+} from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
@@ -223,54 +228,84 @@ export default class ChangeRequestsService {
 
         const associatedProjectCR = foundCR.wbsElement.project;
         const { wbsProposedChanges } = foundCR.scopeChangeRequest;
+        const { workPackageProposedChanges } = wbsProposedChanges;
+        const { projectProposedChanges } = wbsProposedChanges;
 
-        if (associatedProjectCR && wbsProposedChanges.workPackageProposedChanges) {
-          const wpProposedChanges = workPackageProposedChangesTransformer(wbsProposedChanges);
+        if (associatedProjectCR && workPackageProposedChanges) {
           // creating a new workpackage
           WorkPackagesService.createWorkPackage(
             reviewer,
-            wpProposedChanges.name,
+            wbsProposedChanges.name,
             crId,
-            wpProposedChanges.stage as WorkPackageStage,
-            transformDate(wpProposedChanges.startDate),
-            wpProposedChanges.duration,
-            wpProposedChanges.blockedBy,
-            wpProposedChanges.expectedActivities.map((activity) => activity.detail),
-            wpProposedChanges.deliverables.map((deliverable) => deliverable.detail)
+            workPackageProposedChanges.stage as WorkPackageStage,
+            transformDate(workPackageProposedChanges.startDate),
+            workPackageProposedChanges.duration,
+            workPackageProposedChanges.blockedBy,
+            workPackageProposedChanges.expectedActivities.map((activity) => activity.detail),
+            workPackageProposedChanges.deliverables.map((deliverable) => deliverable.detail)
           );
         }
+        const transformProjectData = (projProposedChanges: ProjectProposedChanges) => {
+          return {
+            name: projProposedChanges.name,
+            summary: projProposedChanges.summary,
+            teamsId: projProposedChanges.teams.map((team) => team.teamId),
+            budget: projProposedChanges.budget,
+            links: projProposedChanges.links.map(({ linkInfoId: linkId, linkType: { name: linkTypeName }, url }) => ({
+              linkId,
+              linkTypeName,
+              url
+            })),
+            rules: projProposedChanges.rules,
+            goals: projProposedChanges.goals.map(({ id, detail }) => ({ id, detail })),
+            features: projProposedChanges.features.map(({ id, detail }) => ({ id, detail })),
+            otherConstrains: projProposedChanges.otherConstrains.map(({ id, detail }) => ({ id, detail })),
+            projectLeadId: projProposedChanges.projectLead?.userId ?? null,
+            projectManagerId: projProposedChanges.projectManager?.userId ?? null
+          };
+        };
 
         // if you have project proposed changes
-        if (wbsProposedChanges.projectProposedChanges) {
-          const projProposedChanges = projectProposedChangesTransformer(wbsProposedChanges);
+        if (projectProposedChanges) {
+          const projProposedChanges = transformProjectData(projectProposedChangesTransformer(wbsProposedChanges));
 
+          // Edits on projects will have 'newProject' set to false, and creates will have it set to true
           // if you're creating a new project
-          if (projProposedChanges.newProject) {
+          if (projectProposedChanges.newProject) {
             ProjectsService.createProject(
               reviewer,
               crId,
               foundCR.wbsElement.carNumber,
               projProposedChanges.name,
               projProposedChanges.summary,
-              projProposedChanges.teams.map((team) => team.teamId),
+              projProposedChanges.teamsId,
               projProposedChanges.budget,
-              projProposedChanges.links.map(({ linkInfoId: linkId, linkType: { name: linkTypeName }, url }) => ({
-                linkId,
-                linkTypeName,
-                url
-              })),
+              projProposedChanges.links,
               projProposedChanges.rules,
-              projProposedChanges.goals.map(({ id, detail }) => ({ id, detail })),
-              projProposedChanges.features.map(({ id, detail }) => ({ id, detail })),
-              projProposedChanges.otherConstrains.map(({ id, detail }) => ({ id, detail })),
-              projProposedChanges.projectLead?.userId ?? null,
-              projProposedChanges.projectManager?.userId ?? null
+              projProposedChanges.goals,
+              projProposedChanges.features,
+              projProposedChanges.otherConstrains,
+              projProposedChanges.projectLeadId,
+              projProposedChanges.projectManagerId
             );
           } else {
             // if you're editing a previous project
+            ProjectsService.editProject(
+              reviewer,
+              associatedProjectCR!.projectId,
+              crId,
+              projProposedChanges.name,
+              projProposedChanges.budget,
+              projProposedChanges.summary,
+              projProposedChanges.rules,
+              projProposedChanges.goals,
+              projProposedChanges.features,
+              projProposedChanges.otherConstrains,
+              projProposedChanges.links,
+              projProposedChanges.projectLeadId,
+              projProposedChanges.projectManagerId
+            );
           }
-
-          // Edits on projects will have 'newProject' set to false, and creates will have it set to true
         }
       }
     }
