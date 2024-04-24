@@ -565,7 +565,8 @@ export default class ChangeRequestsService {
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
 
     //verify proposed solutions length is greater than 0
-    if (proposedSolutions.length === 0) throw new HttpException(400, 'No proposed solutions provided');
+    if (!projectProposedChanges && proposedSolutions.length === 0)
+      throw new HttpException(400, 'No proposed solutions provided');
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
