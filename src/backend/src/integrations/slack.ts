@@ -35,14 +35,14 @@ export const sendMessage = async (slackId: string, message: string, link?: strin
 /**
  * Sends a slack message as a reply in a thread
  * @param slackId - the channel id of the channel of the message to reply to
- * @param parentTs - the timestamp of the message to reply to in a thread
+ * @param parentTimestamp - the timestamp of the message to reply to in a thread
  * @param message - the text content of the message being sent
  * @param link - the link for the button on the message
  * @param linkButtonText - the text for the button on the message
  */
 export const replyToMessageInThread = async (
   slackId: string,
-  parentTs: string,
+  parentTimestamp: string,
   message: string,
   link?: string,
   linkButtonText?: string
@@ -57,14 +57,14 @@ export const replyToMessageInThread = async (
     console.log({
       token: SLACK_BOT_TOKEN,
       channel: slackId,
-      thread_ts: parentTs,
+      thread_ts: parentTimestamp,
       text: message,
       blocks: [block]
     });
     await slack.chat.postMessage({
       token: SLACK_BOT_TOKEN,
       channel: slackId,
-      thread_ts: parentTs,
+      thread_ts: parentTimestamp,
       text: message,
       blocks: [block]
     });
@@ -76,10 +76,10 @@ export const replyToMessageInThread = async (
 /**
  * Reacts to a slack message
  * @param slackId - the channel id of the channel of the message to reply to
- * @param parentTs - the timestamp of the message to reply to in a thread
+ * @param parentTimestamp - the timestamp of the message to reply to in a thread
  * @param emoji - the emoji to react with
  */
-export const reactToMessage = async (slackId: string, parentTs: string, emoji: string) => {
+export const reactToMessage = async (slackId: string, parentTimestamp: string, emoji: string) => {
   const { SLACK_BOT_TOKEN } = process.env;
   if (!SLACK_BOT_TOKEN) return;
 
@@ -87,7 +87,7 @@ export const reactToMessage = async (slackId: string, parentTs: string, emoji: s
     await slack.reactions.add({
       token: SLACK_BOT_TOKEN,
       channel: slackId,
-      timestamp: parentTs,
+      timestamp: parentTimestamp,
       name: emoji
     });
   } catch (error) {
