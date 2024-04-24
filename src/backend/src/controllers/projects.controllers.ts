@@ -297,7 +297,7 @@ export default class ProjectsController {
     }
   }
 
-  static async deleteAssemblyType(req: Request, res: Response, next: NextFunction) {
+  static async deleteAssembly(req: Request, res: Response, next: NextFunction) {
     try {
       const { assemblyId } = req.params;
       const user = await getCurrentUser(res);
@@ -395,10 +395,10 @@ export default class ProjectsController {
 
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { linkTypeId } = req.params;
+      const { linkTypeName } = req.params;
       const { iconName, required } = req.body;
       const submitter = await getCurrentUser(res);
-      const linkTypeUpdated = await ProjectsService.editLinkType(linkTypeId, iconName, required, submitter);
+      const linkTypeUpdated = await ProjectsService.editLinkType(linkTypeName, iconName, required, submitter);
       res.status(200).json(linkTypeUpdated);
     } catch (error: unknown) {
       next(error);

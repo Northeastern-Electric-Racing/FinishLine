@@ -8,6 +8,7 @@ import {
   createMaterial,
   createMaterialType,
   createUnit,
+  deleteSingleAssembly,
   deleteSingleMaterial,
   deleteUnit,
   editMaterial,
@@ -124,6 +125,27 @@ export const useDeleteMaterial = () => {
     ['materials', 'delete'],
     async (payload: { materialId: string }) => {
       const data = await deleteSingleMaterial(payload.materialId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to delete a assembly.
+ * @param assemblyId The assembly to delete's id
+ * @returns mutation function to delete a assembly
+ */
+export const useDeleteAssembly = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { assemblyId: string }>(
+    ['assembly', 'delete'],
+    async (payload: { assemblyId: string }) => {
+      const data = await deleteSingleAssembly(payload.assemblyId);
       return data;
     },
     {

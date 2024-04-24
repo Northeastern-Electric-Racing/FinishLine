@@ -9,8 +9,9 @@ import {
   HttpException,
   AccessDeniedAdminOnlyException
 } from '../utils/errors.utils';
-import { getUsers } from '../utils/users.utils';
+import { getPrismaQueryUserIds, getUsers } from '../utils/users.utils';
 import { isUnderWordCount } from 'shared';
+import { removeUsersFromList } from '../utils/teams.utils';
 
 export default class TeamsService {
   /**
@@ -73,15 +74,8 @@ export default class TeamsService {
 
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
-    if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId)))
-      throw new HttpException(400, 'team leads cannot be members!');
-
-    // retrieve userId for every given users to update team's members in the database
-    const transformedUsers = users.map((user) => {
-      return {
-        userId: user.userId
-      };
-    });
+    // if the new members array includes a current lead on that team, that member will be deleted as a lead of that team
+    const newTeamLeads = removeUsersFromList(team.leads, users);
 
     const updateTeam = await prisma.team.update({
       where: {
@@ -89,7 +83,10 @@ export default class TeamsService {
       },
       data: {
         members: {
-          set: transformedUsers
+          set: getPrismaQueryUserIds(users)
+        },
+        leads: {
+          set: getPrismaQueryUserIds(newTeamLeads)
         }
       },
       ...teamQueryArgs
@@ -143,6 +140,9 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
+
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
+
     if (!isAdmin(submitter.role) && submitter.userId !== team.headId)
       throw new AccessDeniedException('You must be an admin or the head to update the head!');
 
@@ -150,10 +150,13 @@ export default class TeamsService {
       where: { userId }
     });
 
-    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
+    if (!newHead) throw new NotFoundException('User', userId);
 
-    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId))
-      throw new HttpException(400, 'Error: Team head cannot be a member');
+    // If the new head is a current member on the team, remove them as a member
+    const newTeamMembers = removeUsersFromList(team.members, [newHead]);
+
+    // If the new head is a current lead on the team, remove them as a lead
+    const newTeamLeads = removeUsersFromList(team.leads, [newHead]);
 
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
@@ -170,6 +173,12 @@ export default class TeamsService {
       data: {
         head: {
           connect: { userId }
+        },
+        members: {
+          set: getPrismaQueryUserIds(newTeamMembers)
+        },
+        leads: {
+          set: getPrismaQueryUserIds(newTeamLeads)
         }
       },
       ...teamQueryArgs
@@ -264,6 +273,8 @@ export default class TeamsService {
 
     if (!team) throw new NotFoundException('Team', teamId);
 
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
+
     if (!isAdmin(submitter.role) && submitter.userId !== team.headId) {
       throw new AccessDeniedException('You must be an admin or the head to update the lead!');
     }
@@ -272,23 +283,17 @@ export default class TeamsService {
       throw new HttpException(400, 'A lead cannot be the head of the team!');
     }
 
-    if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
-      throw new HttpException(400, 'A lead cannot be a member of the team!');
-    }
-
-    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
-
-    const transformedLeads = newLeads.map((lead) => {
-      return {
-        userId: lead.userId
-      };
-    });
+    // removes the new leads as current members of the given team (if they are current members of that team)
+    const newTeamMembers = removeUsersFromList(team.members, newLeads);
 
     const updateTeam = await prisma.team.update({
       where: { teamId },
       data: {
         leads: {
-          set: transformedLeads
+          set: getPrismaQueryUserIds(newLeads)
+        },
+        members: {
+          set: getPrismaQueryUserIds(newTeamMembers)
         }
       },
       ...teamQueryArgs
