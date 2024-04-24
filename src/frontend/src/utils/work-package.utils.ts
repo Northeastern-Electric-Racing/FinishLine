@@ -1,10 +1,7 @@
-import { WbsElement, wbsPipe } from "shared";
-import { WPFormType } from "./form";
+import { WbsElement, wbsPipe } from 'shared';
+import { WPFormType } from './form';
 
-export const getTitleFromFormType = (
-  formType: WPFormType,
-  wbsElement: WbsElement
-): string => {
+export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {
   switch (formType) {
     case WPFormType.CREATEWITHCR:
       return `Create Change Request - New Work Package - ${wbsElement.name}`;
