@@ -370,6 +370,24 @@ export default class TeamsService {
   }
 
   /**
+   * Gets a team with the given id
+   * @param teamTypeId - id of teamType to retrieve
+   * @returns a teamType
+   * @throws if the team is not found in the db
+   */
+  static async getSingleTeamType(teamTypeId: string): Promise<TeamType> {
+    const teamType = await prisma.teamType.findUnique({
+      where: { teamTypeId }
+    });
+
+    if (!teamType) {
+      throw new NotFoundException('Team Type', teamTypeId);
+    }
+
+    return teamType;
+  }
+
+  /**
    * Gets all the team types in the database
    * @returns all the team types
    */
