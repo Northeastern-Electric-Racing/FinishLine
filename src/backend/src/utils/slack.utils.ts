@@ -7,8 +7,6 @@ import { Change_Request, Team, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils';
 import { usersToSlackPings } from './notifications.utils';
 
-const { SLACK_BOT_LAND_ID } = process.env;
-
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
   if (daysUntilDeadline < 0) return `was due *${daysUntilDeadline * -1} days ago!*`;
@@ -54,7 +52,7 @@ export const sendSlackRequestedReviewNotification = async (
   reviewers: UserWithSettings[],
   changeRequest: ChangeRequest
 ): Promise<void> => {
-  //if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const btnText = `View CR`;
   const changeRequestLink = `https://finishlinebyner.com/change-requests/${changeRequest.crId}`;
@@ -64,7 +62,7 @@ export const sendSlackRequestedReviewNotification = async (
   const threads = await prisma.message_Info.findMany({ where: { changeRequestId: changeRequest.crId } });
 
   threads.forEach((thread) =>
-    replyToMessageInThread(SLACK_BOT_LAND_ID!, thread.timestamp, fullMsg, changeRequestLink, btnText)
+    replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, changeRequestLink, btnText)
   );
 };
 
@@ -134,12 +132,12 @@ export const sendSlackChangeRequestNotification = async (
   crId: number,
   budgetImpact?: number
 ): Promise<{ channelId: string; ts: string }[]> => {
-  //if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
   const fullMsg = `:tada: New Change Request! :tada: ${message}`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR #${crId}`;
-  const notification = await sendMessage(SLACK_BOT_LAND_ID!, fullMsg, fullLink, btnText); // replace team.slackId with slackbot_land id
+  const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
   if (notification) msgs.push(notification);
 
   if (budgetImpact && budgetImpact > 100) {
