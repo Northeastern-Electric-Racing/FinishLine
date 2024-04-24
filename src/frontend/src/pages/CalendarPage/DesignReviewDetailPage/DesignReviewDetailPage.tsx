@@ -149,7 +149,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           </Box>
         </Grid>
         <Grid item xs={2}>
-          <DatePicker value={date} onChange={handleDateChange} renderInput={(params) => <TextField {...params} />} />
+          <DatePicker value={date} onChange={handleDateChange} />
         </Grid>
         <Grid item xs={3} display="flex" gap={3}>
           <Select

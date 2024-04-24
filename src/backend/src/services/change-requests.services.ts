@@ -714,11 +714,6 @@ export default class ChangeRequestsService {
 
     if (projectProposedChanges && workPackageProposedChanges) {
       throw new HttpException(400, "Change Request can't be on both a project and a work package");
-    } else if (!projectProposedChanges && !workPackageProposedChanges) {
-      throw new HttpException(
-        400,
-        'Change Request with proposed changes must have either project or work package proposed changes'
-      );
     } else if (projectProposedChanges) {
       const {
         name,
