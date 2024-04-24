@@ -6,8 +6,6 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
-import DynamicTooltip from '../../../../../components/DynamicTooltip';
-import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
