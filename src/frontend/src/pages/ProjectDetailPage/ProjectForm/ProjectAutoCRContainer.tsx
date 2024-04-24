@@ -98,7 +98,8 @@ const CreateProjectCRContainer: React.FC = () => {
         otherConstraints,
         links,
         projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined,
+        carNumber: carNumber
       };
       const payload: CreateStandardChangeRequestPayload = {
         wbsNum: {

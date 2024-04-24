@@ -579,8 +579,9 @@ export default class ChangeRequestsService {
       }
     });
 
-    if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-    if (wbsElement.dateDeleted)
+    if (!projectProposedChanges && !wbsElement)
+      throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
+    if (wbsElement && wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
 
     const createdCR = await prisma.change_Request.create({
@@ -629,7 +630,8 @@ export default class ChangeRequestsService {
         teamIds,
         goals,
         features,
-        otherConstraints
+        otherConstraints,
+        carNumber
       } = projectProposedChanges;
 
       await validateProposedChangesFields(projectLeadId, projectManagerId, links);
@@ -660,7 +662,8 @@ export default class ChangeRequestsService {
               features: { create: features.map((value: string) => ({ detail: value })) },
               otherConstraints: { create: otherConstraints.map((value: string) => ({ detail: value })) },
               rules,
-              teams: { connect: teamIds.map((teamId) => ({ teamId })) }
+              teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+              carNumber
             }
           }
         }

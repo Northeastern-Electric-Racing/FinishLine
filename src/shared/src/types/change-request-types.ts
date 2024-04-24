@@ -126,6 +126,7 @@ export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCrea
   otherConstraints: string[];
   rules: string[];
   teamIds: string[];
+  carNumber?: number;
 }
 
 export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {

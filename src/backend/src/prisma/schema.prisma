@@ -699,6 +699,7 @@ model Project_Proposed_Changes {
   wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique
   newProject               Boolean
+  carNumber                Int?
 }
 
 model Work_Package_Proposed_Changes {
