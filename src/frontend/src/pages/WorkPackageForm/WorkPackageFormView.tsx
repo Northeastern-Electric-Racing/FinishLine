@@ -23,6 +23,7 @@ import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
+import { getTitleFromFormType } from '../../utils/work-package.utils';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -158,9 +159,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     >
       <Box mb={-1}>
         <PageBreadcrumbs
-          currentPageTitle={`${formType !== WPFormType.EDIT ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${
-            wbsElement.name
-          }`}
+          currentPageTitle={getTitleFromFormType(formType, wbsElement)}
           previousPages={[
             formType !== WPFormType.EDIT
               ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
@@ -179,32 +178,30 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       </Box>
       <PageLayout
         stickyHeader
-        title={`${
-          formType === WPFormType.CREATEWITHCR
-            ? 'Create Change Request - New Work Package'
-            : formType === WPFormType.CREATE
-            ? 'New Work Package'
-            : wbsPipe(wbsElement.wbsNum)
-        } - ${wbsElement.name}`}
-        // {formType === WPFormType.CREATEWITHCR && (
-        //   <Tooltip
-        //     title={
-        //       'This form will create a change request that when accepted will automatically create a new Work Package'
-        //     }
-        //     placement="left"
-        //     style={{ marginRight: '2px' }}
-        //   >
-        //     <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
-        //   </Tooltip>
+        title={
+          <>
+            {getTitleFromFormType(formType, wbsElement)}
+            {formType === WPFormType.CREATEWITHCR && (
+              <Tooltip
+                title={
+                  'This form will create a change request that when accepted will automatically create a new Work Package'
+                }
+                placement="right"
+              >
+                <HelpIcon style={{ fontSize: '0.8em', marginLeft: '10px', color: 'lightgray' }} />
+              </Tooltip>
+            )}
+          </>
+        }
         headerRight={
-            <Box textAlign="right">
-              <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
-                Cancel
-              </NERFailButton>
-              <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-                {formType === WPFormType.CREATEWITHCR ? 'Create Change Request' : 'Submit'}
-              </NERSuccessButton>
-            </Box>
+          <Box textAlign="right">
+            <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+              {formType === WPFormType.CREATEWITHCR ? 'Create Change Request' : 'Submit'}
+            </NERSuccessButton>
+          </Box>
         }
       >
         <WorkPackageFormDetails
