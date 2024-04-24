@@ -110,8 +110,10 @@ export default class ChangeRequestsService {
     if (foundCR.wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(foundCR.wbsElement));
 
     // verify that the user is not reviewing their own change request
-    if (reviewer.userId === foundCR.submitterId) throw new AccessDeniedException();
-
+    if (reviewer.userId === foundCR.submitterId)
+      throw new AccessDeniedException(
+        `User ${reviewer.userId} is not allowed to review their own change request submitted by User ${foundCR.submitterId}`
+      );
     // If approving a scope CR
     if (foundCR.scopeChangeRequest && accepted) {
       // ensure a proposed solution is being approved and exists
@@ -218,6 +220,14 @@ export default class ChangeRequestsService {
           throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
 
         // if a crID associated with a project has work package proposed changes, then it is creating a new work package
+
+        await prisma.change_Request.update({
+          where: { crId },
+          data: {
+            accepted: true,
+            dateReviewed: new Date()
+          }
+        });
 
         const associatedProjectCR = foundCR.wbsElement.project;
         const { wbsProposedChanges } = foundCR.scopeChangeRequest;
