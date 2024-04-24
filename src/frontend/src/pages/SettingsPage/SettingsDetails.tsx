@@ -1,8 +1,7 @@
 import { useAuth } from '../../hooks/auth.hooks';
-import { Grid } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import DetailDisplay from '../../components/DetailDisplay';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import PageLayout from '../../components/PageLayout';
 import { useCurrentUser, useCurrentUserSecureSettings, useSingleUserSettings } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
 import { useAllTeams } from '../../hooks/teams.hooks';
@@ -45,7 +44,10 @@ const SettingsDetails: React.FC = () => {
   );
 
   return (
-    <PageLayout>
+    <Box>
+      <Typography variant="h5" gutterBottom color={'primary'} borderBottom={1} borderColor={'white'}>
+        User Details
+      </Typography>
       <Grid container direction="column" spacing={0.5}>
         <Grid item xs={12} sm={6} md={4} lg={2}>
           <DetailDisplay label="First Name" content={user.firstName} />
@@ -66,7 +68,7 @@ const SettingsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
-    </PageLayout>
+    </Box>
   );
 };
 
