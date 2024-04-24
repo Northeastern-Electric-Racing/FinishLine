@@ -120,7 +120,11 @@ describe('Change Requests', () => {
       vi.spyOn(prisma.change_Request, 'findUnique').mockResolvedValue(changeRequest);
       await expect(() =>
         ChangeRequestsService.reviewChangeRequest(batman, crId, reviewNotes, accepted, '1')
-      ).rejects.toThrow(new AccessDeniedException(`User ${batman.userId} is not allowed to review their own change request submitted by User ${changeRequest.submitterId}`);
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          `User ${batman.userId} is not allowed to review their own change request submitted by User ${changeRequest.submitterId}`
+        )
+      );
       expect(prisma.change_Request.findUnique).toHaveBeenCalledTimes(1);
     });
 
