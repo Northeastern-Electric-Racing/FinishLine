@@ -279,11 +279,11 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
                     rules={{ required: true }}
                     render={({ field: { onChange, value } }) => (
                       <DatePicker
-                        inputFormat="yyyy-MM-dd"
+                        format="yyyy-MM-dd"
                         onChange={(event) => onChange(event ?? new Date())}
                         className={'padding: 10'}
                         value={value}
-                        renderInput={(params) => <TextField autoComplete="off" {...params} error={!!errors.deadline} />}
+                        slotProps={{ textField: { autoComplete: 'off', error: !!errors.deadline } }}
                       />
                     )}
                   />
