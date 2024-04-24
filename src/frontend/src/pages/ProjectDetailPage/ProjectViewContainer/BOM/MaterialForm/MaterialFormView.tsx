@@ -129,9 +129,13 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           <FormControl fullWidth>
             <FormLabel>
               Manufacturer
-              <DynamicTooltip title={`Make sure to enter the manufacturer and not the distributor!`}>
-                <InfoIcon sx={{ height: 11 }} />
-              </DynamicTooltip>
+              <Tooltip
+                title={'Make sure not to enter the distributor (e.g. Amazon)'}
+                placement="left"
+                style={{ marginRight: '2px' }}
+              >
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
             </FormLabel>
             <Controller
               name="manufacturerName"
