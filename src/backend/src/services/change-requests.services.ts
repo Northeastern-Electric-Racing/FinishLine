@@ -25,14 +25,7 @@ import {
 } from '../utils/errors.utils';
 import changeRequestTransformer, { projectProposedChangesTransformer } from '../transformers/change-requests.transformer';
 import { updateBlocking, allChangeRequestsReviewed, validateProposedChangesFields } from '../utils/change-requests.utils';
-import {
-  CR_Type,
-  WBS_Element_Status,
-  User,
-  Scope_CR_Why_Type,
-  Wbs_Proposed_Changes,
-  Project_Proposed_Changes
-} from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
@@ -245,6 +238,7 @@ export default class ChangeRequestsService {
             workPackageProposedChanges.deliverables.map((deliverable) => deliverable.detail)
           );
         }
+        // TODO: Can move this elswhere but I didn't want to transform the data twice as I had done previously idk :/
         const transformProjectData = (projProposedChanges: ProjectProposedChanges) => {
           return {
             name: projProposedChanges.name,
