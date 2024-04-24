@@ -26,7 +26,7 @@ import PageLayout from '../../components/PageLayout';
 import { GanttChartTimeline } from './GanttChartComponents/GanttChartTimeline';
 import { SearchBar } from '../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend';
-import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersWrapper';
+import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersButton';
 import GanttChart from './GanttChart';
 
 const GanttChartPage: FC = () => {
@@ -42,6 +42,7 @@ const GanttChartPage: FC = () => {
     }>
   >([]);
 
+  /******************** Filters ***************************/
   const car = query.getAll('car');
   const showCar1 = car.includes('Car 1');
   const showCar2 = car.includes('Car 2');
@@ -235,6 +236,8 @@ const GanttChartPage: FC = () => {
       history.push(routes.GANTT);
     }
   };
+
+  /***************************************************** */
 
   const teamNameToGanttTasksMap = new Map<string, GanttTask[]>();
 

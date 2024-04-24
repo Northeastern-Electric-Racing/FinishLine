@@ -6,13 +6,13 @@
 import { addDays, differenceInDays } from 'date-fns';
 import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
-import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE, EventChange, Task } from '../../../utils/gantt.utils';
+import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE, EventChange, GanttTaskData } from '../../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
 import { Box, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { dateToString } from '../../../utils/datetime.utils';
 
-const GanttChartItem = ({
+const GanttTaskBar = ({
   days,
   event,
   createChange,
@@ -20,10 +20,19 @@ const GanttChartItem = ({
   ...props
 }: {
   days: Date[];
-  event: Task;
+  event: GanttTaskData;
   createChange: (change: EventChange) => void;
   isEditMode: boolean;
 } & ComponentProps<'div'>) => {
+  const theme = useTheme();
+  const [isResizing, setIsResizing] = useState(false);
+  const [startX, setStartX] = useState<number | null>(null);
+  const [showDropPoints, setShowDropPoints] = useState(false);
+  const [initialWidth, setInitialWidth] = useState(0); // original width of the component, should not change on resize
+  const [width, setWidth] = useState(0); // current width of component, will change on resize
+  const [measureRef, bounds] = useMeasure();
+  const id = useId() || 'id'; // id for creating event changes
+
   const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
 
   // if the end date doesn't exist within the timeframe, have it span to the end
@@ -32,12 +41,7 @@ const GanttChartItem = ({
       ? days.length + 1
       : days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
 
-  const id = useId() || 'id'; // id for creating event changes
-  const [measureRef, bounds] = useMeasure();
-  const [initialWidth, setInitialWidth] = useState(0); // original width of the component, should not change on resize
-  const [width, setWidth] = useState(0); // current width of component, will change on resize
-
-  const theme = useTheme();
+  const lengthInDays = differenceInDays(event.end, event.start);
 
   // used to make sure that any changes to the start and end dates are made in multiples of 7
   const roundToMultipleOf7 = (num: number) => {
@@ -50,10 +54,6 @@ const GanttChartItem = ({
       setWidth(bounds.width);
     }
   }, [bounds, width]);
-
-  const [isResizing, setIsResizing] = useState(false);
-  const [startX, setStartX] = useState<number | null>(null);
-  const lengthInDays = differenceInDays(event.end, event.start);
 
   const handleMouseDown = (e: MouseEvent<HTMLElement>) => {
     setIsResizing(true);
@@ -78,8 +78,6 @@ const GanttChartItem = ({
       createChange({ id, eventId: event.id, type: 'change-end-date', originalEnd: event.end, newEnd: newEndDate });
     }
   };
-
-  const [showDropPoints, setShowDropPoints] = useState(false);
 
   const onDragStart = (e: DragEvent<HTMLDivElement>) => {
     setShowDropPoints(true);
@@ -191,4 +189,4 @@ const GanttChartItem = ({
   );
 };
 
-export default GanttChartItem;
+export default GanttTaskBar;

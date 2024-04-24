@@ -14,7 +14,7 @@ export const GANTT_CHART_GAP_SIZE = '0.75rem';
 export const GANTT_CHART_CELL_SIZE = '2.25rem';
 
 export type TaskType = 'task' | 'milestone' | 'project';
-export interface Task {
+export interface GanttTaskData {
   id: string;
   type: TaskType;
   name: string;
@@ -24,7 +24,7 @@ export interface Task {
    * From 0 to 100
    */
   progress: number;
-  children: Task[];
+  children: GanttTaskData[];
   styles?: {
     color?: string;
     backgroundColor?: string;
@@ -47,7 +47,7 @@ export type EventChange = { id: string; eventId: string } & (
   | { type: 'shift-by-days'; days: number }
 );
 
-export const applyChangeToEvent = (event: Task, eventChanges: EventChange[]) => {
+export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]) => {
   const changedEvent = { ...event };
   for (const eventChange of eventChanges) {
     switch (eventChange.type) {
@@ -65,7 +65,7 @@ export const applyChangeToEvent = (event: Task, eventChanges: EventChange[]) => 
   return changedEvent;
 };
 
-export const applyChangesToEvents = (events: Task[], eventChanges: EventChange[]) => {
+export const applyChangesToEvents = (events: GanttTaskData[], eventChanges: EventChange[]) => {
   return events.map((event) => {
     const changes = eventChanges.filter((ec) => ec.eventId === event.id);
     return applyChangeToEvent(event, changes);
@@ -88,7 +88,7 @@ export interface GanttFilters {
   expanded: boolean;
 }
 
-export interface GanttTask extends Task {
+export interface GanttTask extends GanttTaskData {
   teamName: string;
 }
 

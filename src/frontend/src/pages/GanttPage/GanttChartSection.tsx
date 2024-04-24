@@ -5,17 +5,17 @@
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { applyChangesToEvents, EventChange, Task } from '../../utils/gantt.utils';
+import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
-import GanttChartItem from './GanttChartComponents/GanttChartItem';
+import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
 
 interface GanttChartSectionProps {
   start: Date;
   end: Date;
-  tasks: Task[];
+  tasks: GanttTaskData[];
   isEditMode: boolean;
   saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (ganttTasks: Task) => void;
+  onExpanderClick: (ganttTasks: GanttTaskData) => void;
 }
 
 const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpanderClick }: GanttChartSectionProps) => {
@@ -42,7 +42,7 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
       <Box sx={{ mt: '1rem', width: 'fit-content' }} key={eventChanges.length}>
         {displayEvents.map((event) => {
           return (
-            <GanttChartItem key={event.id} days={days} event={event} isEditMode={isEditMode} createChange={createChange} />
+            <GanttTaskBar key={event.id} days={days} event={event} isEditMode={isEditMode} createChange={createChange} />
           );
         })}
       </Box>

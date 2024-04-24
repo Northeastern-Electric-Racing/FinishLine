@@ -9,15 +9,6 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent } from 'react';
 
-interface GanttChartFiltersProps {
-  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
-  expandedHandler: (expanded: boolean) => void;
-  resetHandler: () => void;
-}
-
 const FilterChipButton = ({
   buttonText,
   onChange
@@ -43,6 +34,35 @@ const FilterChipButton = ({
   );
 };
 
+const FilterRow = ({
+  label,
+  buttons
+}: {
+  label: string;
+  buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+}) => (
+  <Grid item container xs={12}>
+    <Typography variant="h6" component="label" textAlign="right">
+      {label}
+    </Typography>
+
+    <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'center' }}>
+      {buttons.map((button) => (
+        <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} />
+      ))}
+    </Grid>
+  </Grid>
+);
+
+interface GanttChartFiltersProps {
+  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
+  expandedHandler: (expanded: boolean) => void;
+  resetHandler: () => void;
+}
+
 const GanttChartFilters = ({
   carHandlers,
   teamCategoriesHandlers,
@@ -51,55 +71,37 @@ const GanttChartFilters = ({
   expandedHandler,
   resetHandler
 }: GanttChartFiltersProps) => {
-  const FilterRow = ({
-    label,
-    buttons
-  }: {
-    label: string;
-    buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  }) => (
-    <Grid item container xs={12}>
-      <Typography variant="h6" component="label" textAlign="right">
-        {label}
-      </Typography>
-
-      <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'center' }}>
-        {buttons.map((button) => (
-          <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} />
-        ))}
+  const FilterButtons = () => {
+    return (
+      <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+        <Grid item>
+          <Button
+            onClick={() => {
+              expandedHandler(true);
+            }}
+            startIcon={<UnfoldMoreIcon />}
+          >
+            Expand
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            onClick={() => {
+              expandedHandler(false);
+            }}
+            startIcon={<UnfoldLessIcon />}
+          >
+            Collapse
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button onClick={resetHandler} startIcon={<RestartAltIcon />}>
+            Reset
+          </Button>
+        </Grid>
       </Grid>
-    </Grid>
-  );
-
-  const buttons = (
-    <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'center', mt: 2 }}>
-      <Grid item>
-        <Button
-          onClick={() => {
-            expandedHandler(true);
-          }}
-          startIcon={<UnfoldMoreIcon />}
-        >
-          Expand
-        </Button>
-      </Grid>
-      <Grid item>
-        <Button
-          onClick={() => {
-            expandedHandler(false);
-          }}
-          startIcon={<UnfoldLessIcon />}
-        >
-          Collapse
-        </Button>
-      </Grid>
-      <Grid item>
-        <Button onClick={resetHandler} startIcon={<RestartAltIcon />}>
-          Reset
-        </Button>
-      </Grid>
-    </Grid>
-  );
+    );
+  };
 
   return (
     <Grid
@@ -118,7 +120,7 @@ const GanttChartFilters = ({
       <FilterRow label="Team Category" buttons={teamCategoriesHandlers} />
       <FilterRow label="Team" buttons={teamsHandlers} />
       <FilterRow label="Overdue" buttons={[{ filterLabel: 'Overdue', handler: overdueHandler }]} />
-      {buttons}
+      <FilterButtons />
     </Grid>
   );
 };

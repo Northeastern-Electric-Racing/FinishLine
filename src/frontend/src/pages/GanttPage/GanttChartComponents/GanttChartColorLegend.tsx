@@ -8,47 +8,47 @@ import { WbsElementStatus, WorkPackageStage } from 'shared';
 import { GanttWorkPackageStageColorPipe, GanttWorkPackageTextColorPipe } from '../../../utils/gantt.utils';
 import { WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
 
+const LEGEND_POPUPS_MAP = new Map<WorkPackageStage, JSX.Element>();
+
+Object.values(WorkPackageStage).map((stage) =>
+  LEGEND_POPUPS_MAP.set(
+    stage,
+    <Card
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        px: 2,
+        py: 1
+      }}
+    >
+      {
+        // map through all the Wbs Element Statuses
+        Object.values(WbsElementStatus).map((status) => {
+          return (
+            <Box
+              sx={{
+                backgroundColor: GanttWorkPackageStageColorPipe(stage, status),
+                height: '2rem',
+                width: '8rem',
+                borderRadius: 1,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
+                {WbsElementStatusTextPipe(status)}
+              </Typography>
+            </Box>
+          );
+        })
+      }
+    </Card>
+  )
+);
+
 const GanttChartColorLegend = () => {
-  const popupsMap = new Map<WorkPackageStage, JSX.Element>();
-
-  Object.values(WorkPackageStage).map((stage) =>
-    popupsMap.set(
-      stage,
-      <Card
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
-          px: 2,
-          py: 1
-        }}
-      >
-        {
-          // map through all the Wbs Element Statuses
-          Object.values(WbsElementStatus).map((status) => {
-            return (
-              <Box
-                sx={{
-                  backgroundColor: GanttWorkPackageStageColorPipe(stage, status),
-                  height: '2rem',
-                  width: '8rem',
-                  borderRadius: 1,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
-                  {WbsElementStatusTextPipe(status)}
-                </Typography>
-              </Box>
-            );
-          })
-        }
-      </Card>
-    )
-  );
-
   return (
     <Box
       sx={{
@@ -87,7 +87,7 @@ const GanttChartColorLegend = () => {
               }}
             >
               <Tooltip
-                title={popupsMap.get(stage)}
+                title={LEGEND_POPUPS_MAP.get(stage)}
                 slotProps={{
                   tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
                 }}
