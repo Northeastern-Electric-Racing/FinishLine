@@ -137,8 +137,8 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               Manufacturer
               <Tooltip
                 title={'Make sure not to enter the distributor (e.g. Amazon)'}
-                placement="left"
                 style={{ marginRight: '2px' }}
+                placement="right"
               >
                 <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
               </Tooltip>
@@ -191,7 +191,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           <FormControl fullWidth>
             <FormLabel>
               Manufacturer Part Number
-              <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="left" style={{ marginRight: '2px' }}>
+              <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right" style={{ marginRight: '2px' }}>
                 <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
               </Tooltip>
             </FormLabel>
