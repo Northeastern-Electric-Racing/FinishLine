@@ -698,7 +698,6 @@ model Project_Proposed_Changes {
   teams                    Team[]               @relation(name: "proposedProjectTeams")
   wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique
-  newProject               Boolean
   carNumber                Int?
 }
 

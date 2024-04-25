@@ -92,7 +92,6 @@ const CreateProjectCRContainer: React.FC = () => {
         teamIds: [teamId],
         budget,
         rules,
-        newProject: true,
         goals,
         features,
         otherConstraints,
@@ -109,7 +108,7 @@ const CreateProjectCRContainer: React.FC = () => {
         },
         type: ChangeRequestType.Issue,
         what: name,
-        why: [{ explain: 'explanation', type: ChangeRequestReason.Competition }],
+        why: [{ explain: 'New Project for ' + name, type: ChangeRequestReason.Competition }],
         proposedSolutions: [],
         projectProposedChanges: projectPayload
       };

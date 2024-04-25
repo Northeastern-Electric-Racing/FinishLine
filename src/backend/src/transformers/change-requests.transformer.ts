@@ -45,8 +45,7 @@ const projectProposedChangesTransformer = (
     goals: projectProposedChanges!.goals.map(descBulletConverter),
     features: projectProposedChanges!.features.map(descBulletConverter),
     otherConstrains: projectProposedChanges!.otherConstraints.map(descBulletConverter),
-    teams: projectProposedChanges!.teams,
-    newProject: projectProposedChanges!.newProject
+    teams: projectProposedChanges!.teams
   };
 };
 

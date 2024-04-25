@@ -120,7 +120,6 @@ export interface WBSProposedChangesCreateArgs {
 export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   budget: number;
   summary: string;
-  newProject: boolean;
   goals: string[];
   features: string[];
   otherConstraints: string[];

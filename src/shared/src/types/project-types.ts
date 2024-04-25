@@ -52,7 +52,6 @@ export interface ProjectProposedChanges extends WbsProposedChanges {
   features: DescriptionBullet[];
   otherConstrains: DescriptionBullet[];
   teams: TeamPreview[];
-  newProject: boolean;
 }
 
 export interface Project extends WbsElement {
