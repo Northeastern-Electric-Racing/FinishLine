@@ -53,6 +53,9 @@ describe('Team Type Tests', () => {
     it('Get a single team type fails', async () => {
       const nonExistingTeamTypeId = 'nonExistingId';
       await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId)).rejects.toThrow(NotFoundException);
+      await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId)).rejects.toThrow(
+        new NotFoundException('Team Type', nonExistingTeamTypeId)
+      );
     });
   });
 });
