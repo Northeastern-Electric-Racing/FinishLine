@@ -1,10 +1,8 @@
-import { ChangeRequest, DescriptionBullet, StandardChangeRequest } from 'shared';
-import CompareFields, { BulletList, PotentialChange } from './CompareFields';
+import { ChangeRequest, StandardChangeRequest } from 'shared';
+import CompareFields, { PotentialChange } from './CompareFields';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { Typography } from '@mui/material';
-import { datePipe } from '../../utils/pipes';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;

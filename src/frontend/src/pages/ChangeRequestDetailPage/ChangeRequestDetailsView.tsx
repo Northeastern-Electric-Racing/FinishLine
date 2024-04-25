@@ -32,8 +32,6 @@ import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 import NERTabs from '../../components/Tabs';
-
-import CompareProjectFields from './CompareProjectFields';
 import WorkPackageComparisonBlock from './CompareWPFields';
 import ProjectComparisonBlock from './CompareProjectFields';
 
