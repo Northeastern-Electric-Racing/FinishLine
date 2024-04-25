@@ -13,12 +13,12 @@ const CreateWorkPackageCRForm: React.FC = () => {
   const query = useQuery();
   const wbsNum = query.get('wbs');
   const history = useHistory();
+  const currentUser = useCurrentUser();
 
   if (!wbsNum) throw new Error('WBS number not included in request.');
 
   const { mutateAsync } = useCreateStandardChangeRequest();
 
-  const currentUser = useCurrentUser();
   const onSubmit = async (payload: WorkPackageApiInputs) => {
     const crPayload = {
       submitter: currentUser,

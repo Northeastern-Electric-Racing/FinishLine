@@ -7,7 +7,7 @@ import { Typography, Box, Grid, useTheme } from '@mui/material';
 import { ReactElement, ReactNode } from 'react';
 
 interface PageTitleProps {
-  title: ReactNode;
+  title: string;
   chips?: ReactNode;
   headerRight?: ReactNode;
   tabs?: ReactElement;

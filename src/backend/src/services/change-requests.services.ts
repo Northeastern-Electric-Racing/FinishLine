@@ -637,7 +637,7 @@ export default class ChangeRequestsService {
         otherConstraints
       } = projectProposedChanges;
 
-      await validateProposedChangesFields(projectLeadId, projectManagerId);
+      await validateProposedChangesFields(links, projectLeadId, projectManagerId);
 
       if (teamIds.length > 0) {
         for (const teamId of teamIds) {
@@ -683,7 +683,7 @@ export default class ChangeRequestsService {
         blockedBy
       } = workPackageProposedChanges;
 
-      await validateProposedChangesFields(projectLeadId, projectManagerId);
+      await validateProposedChangesFields([], projectLeadId, projectManagerId);
 
       await validateBlockedBys(blockedBy);
 

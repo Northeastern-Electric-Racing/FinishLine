@@ -24,6 +24,7 @@ import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
 import { getTitleFromFormType } from '../../utils/work-package.utils';
+import { ObjectSchema } from 'yup';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -34,7 +35,7 @@ interface WorkPackageFormViewProps {
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
   formType: WPFormType;
-  schema: any;
+  schema: ObjectSchema<any>;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -178,20 +179,18 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       </Box>
       <PageLayout
         stickyHeader
-        title={
-          <>
-            {getTitleFromFormType(formType, wbsElement)}
-            {formType === WPFormType.CREATEWITHCR && (
-              <Tooltip
-                title={
-                  'This form will create a change request that when accepted will automatically create a new Work Package'
-                }
-                placement="right"
-              >
-                <HelpIcon style={{ fontSize: '0.8em', marginLeft: '10px', color: 'lightgray' }} />
-              </Tooltip>
-            )}
-          </>
+        title={getTitleFromFormType(formType, wbsElement)}
+        chips={
+          formType === WPFormType.CREATEWITHCR && (
+            <Tooltip
+              title={
+                'This form will create a change request that when accepted will automatically create a new Work Package'
+              }
+              placement="right"
+            >
+              <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+            </Tooltip>
+          )
         }
         headerRight={
           <Box textAlign="right">
