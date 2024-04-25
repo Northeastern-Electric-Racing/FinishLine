@@ -35,6 +35,7 @@ const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
 const projectsLinkTypes = () => `${projects()}/link-types`;
 const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
+const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -127,8 +128,10 @@ const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPi
 const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomDeleteAssembly = (assemblyId: string) => `${assemblyEndpoints()}/${assemblyId}/delete`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
 const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
+const bomDeleteManufacturer = (manufacturerName: string) => `${bomEndpoints()}/manufacturer/${manufacturerName}/delete`;
 const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
 const bomCreateUnit = () => `${bomGetAllUnits()}/create`;
 const bomUnitById = (id: string) => `${bomGetAllUnits()}/${id}`;
@@ -168,6 +171,7 @@ export const apiUrls = {
   projectsToggleFavorite,
   projectsLinkTypes,
   projectsCreateLinkTypes,
+  projectsEditLinkTypes,
 
   tasksCreate,
   tasks,
@@ -243,8 +247,10 @@ export const apiUrls = {
   bomEditMaterial,
   bomDeleteMaterial,
   bomCreateAssembly,
+  bomDeleteAssembly,
   bomAssignAssembly,
   bomCreateManufacturer,
+  bomDeleteManufacturer,
   bomCreateMaterialType,
   bomCreateUnit,
   bomUnitById,

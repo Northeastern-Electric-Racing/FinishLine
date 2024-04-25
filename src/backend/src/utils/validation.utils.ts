@@ -41,6 +41,18 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
     ]);
 };
 
+export const isWorkPackageStage = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      WorkPackageStage.Research,
+      WorkPackageStage.Design,
+      WorkPackageStage.Manufacturing,
+      WorkPackageStage.Install,
+      WorkPackageStage.Testing
+    ]);
+};
+
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.custom((value) => !isNaN(Date.parse(value)));
 };
@@ -125,7 +137,13 @@ export const isAccount = (validationObject: ValidationChain): ValidationChain =>
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
-    .isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered, MaterialStatus.Shipped]);
+    .isIn([
+      MaterialStatus.Ordered,
+      MaterialStatus.Received,
+      MaterialStatus.NotReadyToOrder,
+      MaterialStatus.ReadyToOrder,
+      MaterialStatus.Shipped
+    ]);
 };
 
 export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {

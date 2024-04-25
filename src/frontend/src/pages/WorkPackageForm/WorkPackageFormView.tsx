@@ -18,13 +18,13 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { mapBulletsToPayload, WPFormType } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
 import { getTitleFromFormType } from '../../utils/work-package.utils';
 import { ObjectSchema } from 'yup';
+import { getMonday } from '../../utils/datetime.utils';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;

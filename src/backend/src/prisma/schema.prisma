@@ -292,7 +292,7 @@ model WBS_Element {
   materials                   Material[]
   reimbursementProductReasons Reimbursement_Product_Reason[]
   designReviews               Design_Review[]
-  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "blockedBy")
+  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "proposedBlockedBy")
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -538,7 +538,8 @@ enum Material_Status {
   RECEIVED
   ORDERED
   SHIPPED
-  UNORDERED
+  NOT_READY_TO_ORDER
+  READY_TO_ORDER
 }
 
 model Unit {
@@ -602,6 +603,7 @@ model Material_Type {
 model Manufacturer {
   name          String     @id
   dateCreated   DateTime
+  dateDeleted   DateTime?
   userCreatedId Int
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
   materials     Material[]
@@ -703,7 +705,7 @@ model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String               @id @default(uuid())
   startDate                    DateTime             @db.Date
   duration                     Int
-  blockedBy                    WBS_Element[]        @relation(name: "blockedBy")
+  blockedBy                    WBS_Element[]        @relation(name: "proposedBlockedBy")
   expectedActivities           Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables                 Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage                        Work_Package_Stage?
