@@ -4,7 +4,7 @@ import NERModal, { NERModalProps } from './NERModal';
 
 interface NERFormModalProps<T extends FieldValues> extends NERModalProps {
   reset: UseFormReset<T>;
-  handleUseFormSubmit: UseFormHandleSubmit<T, undefined>;
+  handleUseFormSubmit: UseFormHandleSubmit<T, any>;
   onFormSubmit: (data: T) => void;
   children?: ReactNode;
 }
