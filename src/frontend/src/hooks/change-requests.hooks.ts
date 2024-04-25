@@ -4,7 +4,15 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ChangeRequest, ChangeRequestReason, ChangeRequestType, ProposedSolutionCreateArgs, WbsNumber } from 'shared';
+import {
+  ChangeRequest,
+  ChangeRequestReason,
+  ChangeRequestType,
+  ProjectProposedChangesCreateArgs,
+  ProposedSolutionCreateArgs,
+  WbsNumber,
+  WorkPackageProposedChangesCreateArgs
+} from 'shared';
 import {
   createActivationChangeRequest,
   createStandardChangeRequest,
@@ -39,14 +47,22 @@ export const useSingleChangeRequest = (id: number) => {
   });
 };
 
+export interface ReviewPayload {
+  reviewerId: number;
+  crId: number;
+  accepted: boolean;
+  reviewNotes: string;
+  psId: string;
+}
+
 /**
  * Custom React Hook to review a change request.
  */
 export const useReviewChangeRequest = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, ReviewPayload>(
     ['change requests', 'review'],
-    async (reviewPayload: any) => {
+    async (reviewPayload: ReviewPayload) => {
       const { data } = await reviewChangeRequest(
         reviewPayload.reviewerId,
         reviewPayload.crId,
@@ -69,7 +85,7 @@ export const useReviewChangeRequest = () => {
  */
 export const useDeleteChangeRequest = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, number>(
     ['change requests', 'delete'],
     async (id: number) => {
       const { data } = await deleteChangeRequest(id);
@@ -86,8 +102,11 @@ export const useDeleteChangeRequest = () => {
 export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
+  what: string;
   why: { explain: string; type: ChangeRequestReason }[];
   proposedSolutions: ProposedSolutionCreateArgs[];
+  projectProposedChanges?: ProjectProposedChangesCreateArgs;
+  workPackageProposedChanges?: WorkPackageProposedChangesCreateArgs;
 };
 
 /**
@@ -103,31 +122,63 @@ export const useCreateStandardChangeRequest = () => {
   );
 };
 
+export interface CreateActivationChangeRequestPayload {
+  submitterId: number;
+  wbsNum: WbsNumber;
+  projectLeadId: number;
+  projectManagerId: number;
+  startDate: string;
+  confirmDetails: boolean;
+  type: string;
+}
+
+export interface CreateStageGateChangeRequestPayload {
+  submitterId: number;
+  wbsNum: WbsNumber;
+  confirmDone: boolean;
+  type: string;
+}
+
+export interface CreateProposeSolutionPayload {
+  submitterId: number;
+  crId: number;
+  description: string;
+  scopeImpact: string;
+  timelineImpact: number;
+  budgetImpact: number;
+}
+
 /**
  * Custom React Hook to create an activation change request.
  */
 export const useCreateActivationChangeRequest = () => {
-  return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'activation'], async (payload: any) => {
-    const { data } = await createActivationChangeRequest(
-      payload.submitterId,
-      payload.wbsNum,
-      payload.projectLeadId,
-      payload.projectManagerId,
-      payload.startDate,
-      payload.confirmDetails
-    );
-    return data;
-  });
+  return useMutation<{ message: string }, Error, CreateActivationChangeRequestPayload>(
+    ['change requests', 'create', 'activation'],
+    async (payload: CreateActivationChangeRequestPayload) => {
+      const { data } = await createActivationChangeRequest(
+        payload.submitterId,
+        payload.wbsNum,
+        payload.projectLeadId,
+        payload.projectManagerId,
+        payload.startDate,
+        payload.confirmDetails
+      );
+      return data;
+    }
+  );
 };
 
 /**
  * Custom React Hook to create a stage gate change request.
  */
 export const useCreateStageGateChangeRequest = () => {
-  return useMutation<{ message: string }, Error, any>(['change requests', 'create', 'stage gate'], async (payload: any) => {
-    const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
-    return data;
-  });
+  return useMutation<{ message: string }, Error, CreateStageGateChangeRequestPayload>(
+    ['change requests', 'create', 'stage gate'],
+    async (payload: CreateStageGateChangeRequestPayload) => {
+      const { data } = await createStageGateChangeRequest(payload.submitterId, payload.wbsNum, payload.confirmDone);
+      return data;
+    }
+  );
 };
 
 /**
@@ -135,9 +186,9 @@ export const useCreateStageGateChangeRequest = () => {
  */
 export const useCreateProposeSolution = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, CreateProposeSolutionPayload>(
     ['change requests', 'create', 'propose solution'],
-    async (payload: any) => {
+    async (payload: CreateProposeSolutionPayload) => {
       const { data } = await addProposedSolution(
         payload.submitterId,
         payload.crId,
@@ -156,14 +207,18 @@ export const useCreateProposeSolution = () => {
   );
 };
 
+export interface CRReviewPayload {
+  userIds: number[];
+}
+
 /**
  * Custom React hook to request cr reviewers
  */
 export const useRequestCRReview = (crId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
+  return useMutation<{ message: string }, Error, CRReviewPayload>(
     ['change requests', 'review'],
-    async (crReviewPayload: { userIds: number[] }) => {
+    async (crReviewPayload: CRReviewPayload) => {
       const { data } = await requestCRReview(crId, crReviewPayload);
       return data;
     },

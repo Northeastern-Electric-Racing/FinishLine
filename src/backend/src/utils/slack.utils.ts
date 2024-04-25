@@ -102,11 +102,15 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   }
 };
 
-export const sendSlackDesignReviewNotification = async (slackId: string, designReviewId: string) => {
+export const sendSlackDesignReviewNotification = async (
+  slackId: string,
+  designReviewId: string,
+  designReviewName: string
+) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
-  const msg = `You have been invited to a Design Review!`;
-  const fullLink = `https://finishlinebyner.com/design-reviews/${designReviewId}`;
-  const linkButtonText = 'RSVP for the Design Review';
+  const msg = `You have been invited to the ${designReviewName} Design Review!`;
+  const fullLink = `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`;
+  const linkButtonText = 'Confirm Availability';
 
   try {
     await sendMessage(slackId, msg, fullLink, linkButtonText);

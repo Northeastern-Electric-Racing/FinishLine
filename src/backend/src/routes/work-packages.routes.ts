@@ -2,7 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
-import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, isDate, isWorkPackageStage, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
@@ -63,6 +63,25 @@ workPackagesRouter.post(
   isDate(body('deadline')),
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
+);
+
+workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
+
+workPackagesRouter.post(
+  '/template/:workpackageTemplateId/edit',
+  nonEmptyString(body('templateName')),
+  nonEmptyString(body('templateNotes')),
+  intMinZero(body('duration').optional()),
+  isWorkPackageStageOrNone(body('stage')),
+  body('blockedBy').isArray(),
+  nonEmptyString(body('blockedBy.*.blockedByInfoId').optional()),
+  isWorkPackageStage(body('blockedBy.*.stage').optional()),
+  nonEmptyString(body('blockedBy.*.name')),
+  body('expectedActivities').isArray(),
+  body('deliverables').isArray(),
+  nonEmptyString(body('workPackageName').optional()),
+  validateInputs,
+  WorkPackagesController.editWorkPackageTemplate
 );
 
 export default workPackagesRouter;

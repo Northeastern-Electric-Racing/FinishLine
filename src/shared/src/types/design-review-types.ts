@@ -1,5 +1,5 @@
 import { WbsNumber } from './project-types';
-import { User } from './user-types';
+import { User, UserWithScheduleSettings } from './user-types';
 
 export interface DesignReview {
   designReviewId: string;
@@ -11,7 +11,7 @@ export interface DesignReview {
   teamType: TeamType;
   requiredMembers: User[];
   optionalMembers: User[];
-  confirmedMembers: User[];
+  confirmedMembers: UserWithScheduleSettings[];
   deniedMembers: User[];
   location?: string;
   isOnline: boolean;
