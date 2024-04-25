@@ -94,6 +94,9 @@ describe('Teams', () => {
       expect(prisma.team.update).toHaveBeenCalledWith({
         where: { teamId },
         data: {
+          leads: {
+            set: [{ userId: wonderwoman.userId }]
+          },
           members: {
             set: userIds
           }
@@ -212,6 +215,12 @@ describe('Teams', () => {
             connect: {
               userId: 2
             }
+          },
+          leads: {
+            set: [{ userId: wonderwoman.userId }]
+          },
+          members: {
+            set: [{ userId: aquaman.userId }, { userId: theVisitor.userId }]
           }
         },
         ...teamQueryArgs
@@ -222,26 +231,48 @@ describe('Teams', () => {
 
   describe('deleteTeam', () => {
     test('deleteTeam team not found', async () => {
-      //FILL THIS OUT
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(null);
+
+      const callDeleteTeam = async () => await TeamsService.deleteTeam(flash, 'fakeId');
+
+      const expectedException = new HttpException(404, 'Team with id: fakeId not found!');
+
+      await expect(callDeleteTeam).rejects.toThrow(expectedException);
     });
 
     test('deleteTeam submitter is not admin', async () => {
-      //FILL THIS OUT
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+
+      const callDeleteTeam = async () => await TeamsService.deleteTeam(greenlantern, prismaTeam1.teamId);
+
+      const expectedException = new HttpException(
+        403,
+        'Access Denied: admin and app-admin only have the ability to delete teams'
+      );
+
+      await expect(callDeleteTeam).rejects.toThrow(expectedException);
     });
 
     test('deleteTeam works', async () => {
-      //FILL THIS OUT
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'delete').mockResolvedValue(prismaTeam1);
+
+      await TeamsService.deleteTeam(batman, prismaTeam1.teamId);
+
+      expect(prisma.team.findUnique).toHaveBeenCalledTimes(1);
+      expect(prisma.team.delete).toHaveBeenCalledTimes(1);
+      expect(prisma.team.delete).toHaveBeenCalledWith({ where: { teamId: prismaTeam1.teamId }, ...teamQueryArgs });
     });
   });
 
   describe('setTeamLeads', () => {
     test('setTeamLeads submitter is not the head or admin', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([theVisitor]);
       vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1, primsaTeam2, justiceLeague]);
 
       const callSetTeamLeads = async () =>
-        await TeamsService.setTeamLeads(wonderwoman, prismaTeam1.teamId, [theVisitor.userId]);
+        await TeamsService.setTeamLeads(wonderwoman, justiceLeague.teamId, [theVisitor.userId]);
 
       const expectedException = new HttpException(
         400,
@@ -252,15 +283,12 @@ describe('Teams', () => {
     });
 
     test('setTeamLeads lead is a member', async () => {
-      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(prismaTeam1);
-      vi.spyOn(prisma.user, 'findMany').mockResolvedValue([aquaman]);
-      vi.spyOn(prisma.team, 'findMany').mockResolvedValue([prismaTeam1, primsaTeam2, justiceLeague]);
+      vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(aquaman);
+      vi.spyOn(prisma.team, 'findUnique').mockResolvedValue(justiceLeague);
 
-      const callSetTeamLeads = async () => await TeamsService.setTeamLeads(flash, sharedTeam1.teamId, [aquaman.userId]);
+      const res = await TeamsService.setTeamLeads(flash, justiceLeague.teamId, [aquaman.userId]);
 
-      const expectedException = new HttpException(400, 'A lead cannot be a member of the team!');
-
-      await expect(callSetTeamLeads).rejects.toThrow(expectedException);
+      expect(res.members.map((user) => user.userId)).not.toContain(aquaman.userId);
     });
 
     test('setTeamLeads lead is a head', async () => {
@@ -302,6 +330,9 @@ describe('Teams', () => {
         data: {
           leads: {
             set: userIds
+          },
+          members: {
+            set: [{ userId: aquaman.userId }]
           }
         },
         ...teamQueryArgs
