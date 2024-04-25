@@ -216,7 +216,7 @@ export default class ChangeRequestsService {
         const openCRs = await prisma.change_Request.findMany({
           where: { wbsElementId: foundCR.wbsElementId, accepted: false }
         });
-        if (openCRs.length > 0)
+        if (openCRs.length > 1)
           throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
 
         // if a crID associated with a project has work package proposed changes, then it is creating a new work package
@@ -806,7 +806,7 @@ export default class ChangeRequestsService {
           workPackageProposedChanges: {
             create: {
               duration,
-              startDate,
+              startDate: new Date(startDate),
               stage,
               blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
               expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },

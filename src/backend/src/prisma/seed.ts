@@ -40,6 +40,7 @@ import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
 import DesignReviewsService from '../services/design-reviews.services';
+import { transformDate } from '../utils/utils';
 
 const prisma = new PrismaClient();
 
@@ -1380,6 +1381,33 @@ const performSeed: () => Promise<void> = async () => {
     DesignReviewStatus.CONFIRMED,
     [1, 2],
     [1, 2, 3, 4, 5, 6, 7]
+  );
+
+  const newWorkPackageChangeRequest = ChangeRequestsService.createStandardChangeRequest(
+    batman,
+    project2WbsNumber.carNumber,
+    project2WbsNumber.projectNumber,
+    project2WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'This is a wpchange test',
+    [{ type: Scope_CR_Why_Type.OTHER, explain: 'Random explain' }],
+    [
+      { description: 'Making a new workpackage from prop changes', scopeImpact: 'n/a', timelineImpact: 2, budgetImpact: 120 }
+    ],
+    null,
+    {
+      name: 'new workpackage test',
+      status: WbsElementStatus.Inactive,
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId,
+      links: [],
+      duration: 5,
+      startDate: transformDate(new Date()),
+      stage: WorkPackageStage.Design,
+      blockedBy: [],
+      expectedActivities: [],
+      deliverables: []
+    }
   );
 };
 
