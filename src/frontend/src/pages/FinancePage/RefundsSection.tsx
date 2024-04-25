@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { Reimbursement, ReimbursementRequest } from 'shared';
+import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
@@ -44,7 +44,7 @@ interface RefundTableProps {
 
 // determines order of array
 // @param orderby - what key to order by of T
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+const descendingComparator = <T extends Record<string, any>>(a: T, b: T, orderBy: keyof T) => {
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
@@ -52,15 +52,26 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     return 1;
   }
   return 0;
-}
+};
 
 // get comparator based on order
-function getComparator<Key extends keyof any>(
+const getComparator = <Key extends keyof any>(
   order: Order,
   orderBy: Key
-): (a: { [key in Key]: number | Date }, b: { [key in Key]: number | Date }) => number {
+): ((a: { [key in Key]: number | Date }, b: { [key in Key]: number | Date }) => number) => {
   return order === 'desc' ? (a, b) => descendingComparator(a, b, orderBy) : (a, b) => -descendingComparator(a, b, orderBy);
-}
+};
+
+const columnHeaders = [
+  {
+    id: 'date',
+    label: 'Date Recevied'
+  },
+  {
+    id: 'amount',
+    label: 'Amount'
+  }
+];
 
 const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: RefundTableProps) => {
   const [tabValue, setTabValue] = useState(0);
@@ -73,14 +84,14 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
     }
   >('date');
 
-  function handleSort(orderByIn: OrderBy) {
+  const handleSort = (orderByIn: OrderBy) => {
     if (orderByIn !== orderBy) {
       setOrderBy(orderByIn);
       setOrder('asc');
       return;
     }
     setOrder(order === 'asc' ? 'desc' : 'asc');
-  }
+  };
 
   const {
     data: userReimbursements,
@@ -96,9 +107,13 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   } = useAllReimbursements();
   const theme = useTheme();
 
+  const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
+  if (canViewAllReimbursementRequests && allReimbursementsIsError)
+    return <ErrorPage message={allReimbursementsError?.message} />;
   if (user.isFinance && allReimbursementsIsError) return <ErrorPage message={allReimbursementsError?.message} />;
   if (userReimbursementsIsError) return <ErrorPage message={userReimbursementError?.message} />;
   if (
+    (canViewAllReimbursementRequests && (allReimbursementsIsLoading || !allReimbursements)) ||
     (user.isFinance && (allReimbursementsIsLoading || !allReimbursements)) ||
     userReimbursementsIsLoading ||
     !userReimbursements
@@ -120,21 +135,11 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
       (accumulator: number, currentVal: ReimbursementRequest) => accumulator + currentVal.totalCost,
       0
     ) - totalReceived;
-  const percentRefunded = (totalReceived / currentlyOwed) * 100;
+  const percentRefunded = (totalReceived / (currentlyOwed + totalReceived)) * 100;
 
   const tabs = [{ label: 'My Refunds', value: 0 }];
+  if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Refunds', value: 1 });
   if (user.isFinance) tabs.push({ label: 'All Club Refunds', value: 1 });
-
-  const columnHeaders = [
-    {
-      id: 'date',
-      label: 'Date Recevied'
-    },
-    {
-      id: 'amount',
-      label: 'Amount'
-    }
-  ];
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
