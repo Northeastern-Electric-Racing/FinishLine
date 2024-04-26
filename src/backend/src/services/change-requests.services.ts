@@ -4,7 +4,6 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
-  ProjectProposedChanges,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -23,11 +22,11 @@ import {
   NotFoundException,
   DeletedException
 } from '../utils/errors.utils';
-import changeRequestTransformer, { projectProposedChangesTransformer } from '../transformers/change-requests.transformer';
+import changeRequestTransformer from '../transformers/change-requests.transformer';
 import { updateBlocking, allChangeRequestsReviewed, validateProposedChangesFields } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
-import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
+import { descBulletConverter, throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail, createChange } from '../utils/changes.utils';
 import {
@@ -97,7 +96,7 @@ export default class ChangeRequestsService {
       where: { crId },
       include: {
         activationChangeRequest: true,
-        scopeChangeRequest: scopeChangeRequestQueryArgs,
+        scopeChangeRequest: { ...scopeChangeRequestQueryArgs },
         wbsElement: {
           include: { workPackage: workPackageQueryArgs, project: true }
         }
@@ -230,13 +229,14 @@ export default class ChangeRequestsService {
         });
 
         const associatedProjectCR = foundCR.wbsElement.project;
+        const associatedWorkPackageCR = foundCR.wbsElement.workPackage;
         const { wbsProposedChanges } = foundCR.scopeChangeRequest;
         const { workPackageProposedChanges } = wbsProposedChanges;
         const { projectProposedChanges } = wbsProposedChanges;
 
         if (associatedProjectCR && workPackageProposedChanges) {
           // creating a new workpackage
-          WorkPackagesService.createWorkPackage(
+          await WorkPackagesService.createWorkPackage(
             reviewer,
             wbsProposedChanges.name,
             crId,
@@ -247,67 +247,76 @@ export default class ChangeRequestsService {
             workPackageProposedChanges.expectedActivities.map((activity) => activity.detail),
             workPackageProposedChanges.deliverables.map((deliverable) => deliverable.detail)
           );
+        } else if (associatedWorkPackageCR && workPackageProposedChanges) {
+          await WorkPackagesService.editWorkPackage(
+            reviewer,
+            associatedWorkPackageCR.workPackageId,
+            wbsProposedChanges.name,
+            crId,
+            workPackageProposedChanges.stage as WorkPackageStage,
+            transformDate(workPackageProposedChanges.startDate),
+            workPackageProposedChanges.duration,
+            workPackageProposedChanges.blockedBy,
+            workPackageProposedChanges.expectedActivities.map(descBulletConverter),
+            workPackageProposedChanges.deliverables.map(descBulletConverter),
+            wbsProposedChanges.projectLeadId!,
+            wbsProposedChanges.projectManagerId!
+          );
         }
-        // TODO: Can move this elswhere but I didn't want to transform the data twice as I had done previously idk :/
-        const transformProjectData = (projProposedChanges: ProjectProposedChanges) => {
-          return {
-            name: projProposedChanges.name,
-            summary: projProposedChanges.summary,
-            teamsId: projProposedChanges.teams.map((team) => team.teamId),
-            budget: projProposedChanges.budget,
-            links: projProposedChanges.links.map(({ linkInfoId: linkId, linkType: { name: linkTypeName }, url }) => ({
-              linkId,
-              linkTypeName,
-              url
-            })),
-            rules: projProposedChanges.rules,
-            goals: projProposedChanges.goals.map(({ id, detail }) => ({ id, detail })),
-            features: projProposedChanges.features.map(({ id, detail }) => ({ id, detail })),
-            otherConstrains: projProposedChanges.otherConstrains.map(({ id, detail }) => ({ id, detail })),
-            projectLeadId: projProposedChanges.projectLead?.userId ?? null,
-            projectManagerId: projProposedChanges.projectManager?.userId ?? null
-          };
-        };
 
         // if you have project proposed changes
         if (projectProposedChanges) {
-          const projProposedChanges = transformProjectData(projectProposedChangesTransformer(wbsProposedChanges));
-
-          // Edits on projects will have 'newProject' set to false, and creates will have it set to true
-          // if you're creating a new project
+          const links = wbsProposedChanges.links.map((link) => ({
+            linkId: link.linkInfoId,
+            linkTypeName: link.linkTypeName,
+            url: link.url
+          }));
+          const goals = projectProposedChanges.goals.map((goal) => ({
+            id: goal.descriptionId,
+            detail: goal.detail
+          }));
+          const features = projectProposedChanges.features.map((feature) => ({
+            id: feature.descriptionId,
+            detail: feature.detail
+          }));
+          const otherConstraints = projectProposedChanges.otherConstraints.map((contraint) => ({
+            id: contraint.descriptionId,
+            detail: contraint.detail
+          }));
           if (projectProposedChanges.newProject) {
-            ProjectsService.createProject(
+            // creating a new project
+            await ProjectsService.createProject(
               reviewer,
               crId,
               foundCR.wbsElement.carNumber,
-              projProposedChanges.name,
-              projProposedChanges.summary,
-              projProposedChanges.teamsId,
-              projProposedChanges.budget,
-              projProposedChanges.links,
-              projProposedChanges.rules,
-              projProposedChanges.goals,
-              projProposedChanges.features,
-              projProposedChanges.otherConstrains,
-              projProposedChanges.projectLeadId,
-              projProposedChanges.projectManagerId
+              wbsProposedChanges.name,
+              projectProposedChanges.summary,
+              projectProposedChanges.teams.map((team) => team.teamId),
+              projectProposedChanges.budget,
+              links,
+              projectProposedChanges.rules,
+              goals,
+              features,
+              otherConstraints,
+              wbsProposedChanges.projectLeadId,
+              wbsProposedChanges.projectManagerId
             );
           } else {
-            // if you're editing a previous project
-            ProjectsService.editProject(
+            // editing a previous project
+            await ProjectsService.editProject(
               reviewer,
               associatedProjectCR!.projectId,
               crId,
-              projProposedChanges.name,
-              projProposedChanges.budget,
-              projProposedChanges.summary,
-              projProposedChanges.rules,
-              projProposedChanges.goals,
-              projProposedChanges.features,
-              projProposedChanges.otherConstrains,
-              projProposedChanges.links,
-              projProposedChanges.projectLeadId,
-              projProposedChanges.projectManagerId
+              wbsProposedChanges.name,
+              projectProposedChanges.budget,
+              projectProposedChanges.summary,
+              projectProposedChanges.rules,
+              goals,
+              features,
+              otherConstraints,
+              links,
+              wbsProposedChanges.projectLeadId,
+              wbsProposedChanges.projectManagerId
             );
           }
         }
