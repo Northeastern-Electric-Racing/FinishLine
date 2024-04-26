@@ -6,13 +6,17 @@ export interface PotentialChange {
   content: string | DescriptionBullet[];
 }
 
-interface CompareFieldsProps {
+interface CompareProposedChangesProps {
   first: PotentialChange;
   second: PotentialChange;
   isProposed: boolean;
 }
 
-const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed }: CompareFieldsProps) => {
+const CompareProposedChanges: React.FC<CompareProposedChangesProps> = ({
+  first,
+  second,
+  isProposed
+}: CompareProposedChangesProps) => {
   const renderContent = (content: string | DescriptionBullet[]) => {
     if (typeof content === 'string') {
       return (
@@ -33,13 +37,12 @@ const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed
     }
   };
 
-  const compareArrays = (arr1: DescriptionBullet[], arr2: DescriptionBullet[]): boolean => {
-    if (arr1.length !== arr2.length) return false;
-
-    for (let i = 0; i < arr1.length; i++) {
-      const bullet1 = arr1[i];
-      const bullet2 = arr2[i];
-      if (bullet1.detail !== bullet2.detail) {
+  const compareArrays = (firstArray: DescriptionBullet[], secondArray: DescriptionBullet[]): boolean => {
+    if (firstArray.length !== secondArray.length) return false;
+    for (let i = 0; i < firstArray.length; i++) {
+      const firstBullet = firstArray[i];
+      const secondBullet = secondArray[i];
+      if (firstBullet.detail !== secondBullet.detail) {
         return false;
       }
     }
@@ -56,41 +59,24 @@ const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed
         {first.field}: {renderContent(first.content)}
       </Typography>
     );
-  } else if (!isProposed) {
-    return (
-      <Box sx={{ backgroundColor: '#8a4e4e', borderRadius: '5px', mb: '3px' }}>
-        <Box
-          sx={{ backgroundColor: '#ba5050', borderRadius: '5px', width: 'fit-content' }}
-          component="span"
-          display="inline"
-        >
-          <Typography fontWeight="bold" padding="3px" display="inline">
-            {first.field}:
-          </Typography>
-        </Box>
-        <Box component="span" display="inline">
-          {renderContent(first.content)}
-        </Box>
-      </Box>
-    );
   } else {
     return (
-      <Box sx={{ backgroundColor: '#51915c', borderRadius: '5px', mb: '3px' }}>
+      <Box sx={{ backgroundColor: isProposed ? '#51915c' : '#8a4e4e', borderRadius: '5px', mb: '3px' }}>
         <Box
-          sx={{ backgroundColor: '#43a854', borderRadius: '5px', width: 'fit-content' }}
+          sx={{ backgroundColor: isProposed ? '#43a854' : '#ba5050', borderRadius: '5px', width: 'fit-content' }}
           component="span"
           display="inline"
         >
           <Typography fontWeight="bold" padding="3px" display="inline">
-            {second.field}:
+            {isProposed ? second.field : first.field}:
           </Typography>
         </Box>
         <Box component="span" display="inline">
-          {renderContent(second.content)}
+          {renderContent(isProposed ? second.content : first.content)}
         </Box>
       </Box>
     );
   }
 };
 
-export default CompareFields;
+export default CompareProposedChanges;

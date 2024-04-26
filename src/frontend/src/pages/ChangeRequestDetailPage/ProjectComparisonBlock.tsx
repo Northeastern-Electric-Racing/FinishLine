@@ -1,8 +1,9 @@
 import { ChangeRequest, StandardChangeRequest } from 'shared';
-import CompareFields, { PotentialChange } from './CompareFields';
+import { PotentialChange } from './CompareProposedChanges';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import CompareProposedChanges from './CompareProposedChanges';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
@@ -26,6 +27,16 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (!project || isLoading) return <LoadingIndicator />;
+
+  const initialName: PotentialChange = {
+    field: 'Name',
+    content: `${project.name}`
+  };
+
+  const proposedName: PotentialChange = {
+    field: 'Name',
+    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.name}`
+  };
 
   const initialProjectStatus: PotentialChange = {
     field: 'Status',
@@ -139,16 +150,17 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   return (
     <>
-      <CompareFields first={initialProjectStatus} second={proposedProjectStatus} isProposed={isProposed} />
-      <CompareFields first={initialProjectLead} second={proposedProjectLead} isProposed={isProposed} />
-      <CompareFields first={initialProjectManager} second={proposedProjectManager} isProposed={isProposed} />
-      <CompareFields first={initialBudget} second={proposedBudget} isProposed={isProposed} />
-      <CompareFields first={initialSummary} second={proposedSummary} isProposed={isProposed} />
-      <CompareFields first={initialGoals} second={proposedGoals} isProposed={isProposed} />
-      <CompareFields first={initialFeatures} second={proposedFeatures} isProposed={isProposed} />
-      <CompareFields first={initialConstraints} second={proposedConstraints} isProposed={isProposed} />
-      <CompareFields first={initialTeams} second={proposedTeams} isProposed={isProposed} />
-      <CompareFields first={initialRules} second={proposedRules} isProposed={isProposed} />
+      <CompareProposedChanges first={initialName} second={proposedName} isProposed={isProposed} />
+      <CompareProposedChanges first={initialProjectStatus} second={proposedProjectStatus} isProposed={isProposed} />
+      <CompareProposedChanges first={initialProjectLead} second={proposedProjectLead} isProposed={isProposed} />
+      <CompareProposedChanges first={initialProjectManager} second={proposedProjectManager} isProposed={isProposed} />
+      <CompareProposedChanges first={initialBudget} second={proposedBudget} isProposed={isProposed} />
+      <CompareProposedChanges first={initialSummary} second={proposedSummary} isProposed={isProposed} />
+      <CompareProposedChanges first={initialGoals} second={proposedGoals} isProposed={isProposed} />
+      <CompareProposedChanges first={initialFeatures} second={proposedFeatures} isProposed={isProposed} />
+      <CompareProposedChanges first={initialConstraints} second={proposedConstraints} isProposed={isProposed} />
+      <CompareProposedChanges first={initialTeams} second={proposedTeams} isProposed={isProposed} />
+      <CompareProposedChanges first={initialRules} second={proposedRules} isProposed={isProposed} />
     </>
   );
 };
