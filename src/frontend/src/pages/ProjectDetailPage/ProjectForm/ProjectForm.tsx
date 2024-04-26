@@ -18,6 +18,9 @@ import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { useState } from 'react';
+import ProjectCreateChangeRequestForm from './ProjectCreateChangeRequestForm';
+import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 
 export interface ProjectFormInput {
   name: string;
@@ -55,7 +58,7 @@ interface ProjectFormContainerProps {
   setProjectLeadId: (id?: string) => void;
   projectLeadId?: string;
   projectManagerId?: string;
-  onSubmitSecondary?: (data: ProjectFormInput) => void;
+  onSubmitSecondary?: (data: ProjectCreateChangeRequestFormInput) => void;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -70,6 +73,9 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   projectManagerId,
   onSubmitSecondary
 }) => {
+  const [showCreateChangeRequest, setShowCreateChangeRequest] = useState<boolean>(false);
+  const [projectEdits, setProjectEdits] = useState<ProjectFormInput>();
+
   const allUsers = useAllUsers();
   const schema = !project
     ? yup.object().shape({
@@ -156,6 +162,11 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
+  const handleCreateChangeRequest = (data: ProjectFormInput) => {
+    setProjectEdits(data);
+    setShowCreateChangeRequest(true);
+  };
+
   return (
     <form
       noValidate
@@ -175,7 +186,9 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (onSubmitSecondary) handleSubmit(onSubmitSecondary)(e);
+                if (onSubmitSecondary) {
+                  handleSubmit(handleCreateChangeRequest)(e);
+                }
               }}
               disabled={!onSubmitSecondary}
               sx={{ mx: 1 }}
@@ -200,6 +213,16 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         }
       >
+        {showCreateChangeRequest ? (
+          onSubmitSecondary ? (
+            <ProjectCreateChangeRequestForm
+              open={showCreateChangeRequest}
+              onClose={() => setShowCreateChangeRequest(false)}
+              onSubmit={onSubmitSecondary}
+              projectEdits={projectEdits}
+            />
+          ) : null
+        ) : null}
         <ProjectFormDetails
           users={users}
           control={control}

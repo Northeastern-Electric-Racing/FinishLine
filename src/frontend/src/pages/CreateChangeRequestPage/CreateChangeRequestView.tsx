@@ -26,7 +26,7 @@ import {
   RadioGroup,
   Select
 } from '@mui/material';
-import { FormInput } from './CreateChangeRequest';
+import { CreateChangeRequestFormInput } from './CreateChangeRequest';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
@@ -45,7 +45,7 @@ interface CreateChangeRequestViewProps {
   wbsNum: string;
   setWbsNum: (val: string) => void;
   crDesc: string;
-  onSubmit: (data: FormInput) => Promise<void>;
+  onSubmit: (data: CreateChangeRequestFormInput) => Promise<void>;
   proposedSolutions: ProposedSolution[];
   setProposedSolutions: (ps: ProposedSolution[]) => void;
   handleCancel: () => void;

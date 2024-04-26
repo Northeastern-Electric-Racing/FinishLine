@@ -16,11 +16,14 @@ import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import { CreateChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 
 interface ProjectEditContainerProps {
   project: Project;
   exitEditMode: () => void;
 }
+
+export type ProjectCreateChangeRequestFormInput = ProjectFormInput & CreateChangeRequestFormInput;
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const toast = useToast();
@@ -119,17 +122,16 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     }
   };
 
-  const onSubmitCreateChangeRequest = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, goals, features, constraints } = data;
+  const onSubmitCreateChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
+    const { name, budget, summary, links, goals, features, constraints, type, what, why } = data;
     const rules = data.rules.map((rule) => rule.detail);
 
     try {
-      // TODO: update type, what, and why with inputs from create CR modal
       await createScopeCRMutateAsync({
         wbsNum: project.wbsNum,
-        type: 'OTHER',
-        what: '',
-        why: [],
+        type,
+        what,
+        why,
         proposedSolutions: [],
         projectProposedChanges: {
           name,
