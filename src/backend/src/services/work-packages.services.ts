@@ -351,11 +351,10 @@ export default class WorkPackagesService {
           }
         });
 
-        if (template) {
-          return template.workPackageTemplateId;
-        } else {
+        if (!template) {
           throw new NotFoundException('Work Package', templateName);
         }
+        return template.workPackageTemplateId;
       })
     );
 
