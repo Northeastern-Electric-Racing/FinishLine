@@ -11,6 +11,8 @@ import useId from '@mui/material/utils/useId';
 import { Box, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { dateToString } from '../../../utils/datetime.utils';
+import { routes } from '../../../utils/routes';
+import { useHistory } from 'react-router-dom';
 
 const GanttTaskBar = ({
   days,
@@ -25,13 +27,14 @@ const GanttTaskBar = ({
   isEditMode: boolean;
 } & ComponentProps<'div'>) => {
   const theme = useTheme();
+  const id = useId() || 'id'; // id for creating event changes
+  const history = useHistory();
   const [isResizing, setIsResizing] = useState(false);
   const [startX, setStartX] = useState<number | null>(null);
   const [showDropPoints, setShowDropPoints] = useState(false);
   const [initialWidth, setInitialWidth] = useState(0); // original width of the component, should not change on resize
   const [width, setWidth] = useState(0); // current width of component, will change on resize
   const [measureRef, bounds] = useMeasure();
-  const id = useId() || 'id'; // id for creating event changes
 
   const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
 
@@ -148,6 +151,11 @@ const GanttTaskBar = ({
           }}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
+          onClick={() =>
+            history.push(
+              `${event.type === 'project' ? `${routes.PROJECTS}/${event.id}` : `${routes.CHANGE_REQUESTS}/${event.id}`}`
+            )
+          }
         >
           <Box
             sx={{
