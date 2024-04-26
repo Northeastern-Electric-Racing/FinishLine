@@ -213,16 +213,14 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         }
       >
-        {showCreateChangeRequest ? (
-          onSubmitSecondary ? (
-            <ProjectCreateChangeRequestForm
-              open={showCreateChangeRequest}
-              onClose={() => setShowCreateChangeRequest(false)}
-              onSubmit={onSubmitSecondary}
-              projectEdits={projectEdits}
-            />
-          ) : null
-        ) : null}
+        {onSubmitSecondary && showCreateChangeRequest && (
+          <ProjectCreateChangeRequestForm
+            open={showCreateChangeRequest}
+            onClose={() => setShowCreateChangeRequest(false)}
+            onSubmit={onSubmitSecondary}
+            projectEdits={projectEdits}
+          />
+        )}
         <ProjectFormDetails
           users={users}
           control={control}
