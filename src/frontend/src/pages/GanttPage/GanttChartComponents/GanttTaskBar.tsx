@@ -13,6 +13,7 @@ import { grey } from '@mui/material/colors';
 import { dateToString } from '../../../utils/datetime.utils';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
+import GanttToolTip from './GanttToolTip';
 
 const GanttTaskBar = ({
   days,
@@ -35,7 +36,9 @@ const GanttTaskBar = ({
   const [initialWidth, setInitialWidth] = useState(0); // original width of the component, should not change on resize
   const [width, setWidth] = useState(0); // current width of component, will change on resize
   const [measureRef, bounds] = useMeasure();
-
+  const [showPopup, setShowPopup] = useState(false);
+  const [cursorX, setCursorX] = useState(0);
+  const [cursorY, setCursorY] = useState(0);
   const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
 
   // if the end date doesn't exist within the timeframe, have it span to the end
@@ -97,6 +100,18 @@ const GanttTaskBar = ({
     createChange({ id, eventId: event.id, type: 'shift-by-days', days });
   };
 
+  const handleOnMouseOver = (e: React.MouseEvent) => {
+    if (!isEditMode) {
+      setCursorX(e.clientX);
+      setCursorY(e.clientY);
+      setShowPopup(true);
+    }
+  };
+
+  const handleOnMouseLeave = () => {
+    setShowPopup(false);
+  };
+
   return (
     <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
       <Box
@@ -147,15 +162,14 @@ const GanttTaskBar = ({
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700]
+            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700],
+            cursor: isEditMode ? 'move' : 'pointer'
           }}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
-          onClick={() =>
-            history.push(
-              `${event.type === 'project' ? `${routes.PROJECTS}/${event.id}` : `${routes.CHANGE_REQUESTS}/${event.id}`}`
-            )
-          }
+          onMouseOver={handleOnMouseOver}
+          onMouseLeave={handleOnMouseLeave}
+          onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
         >
           <Box
             sx={{
@@ -188,6 +202,16 @@ const GanttTaskBar = ({
               <Box
                 sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
                 onMouseDown={handleMouseDown}
+              />
+            )}
+            {showPopup && (
+              <GanttToolTip
+                xCoordinate={cursorX}
+                yCoordinate={cursorY}
+                title={event.name}
+                startDate={event.start}
+                endDate={event.end}
+                color={event.styles?.backgroundColor}
               />
             )}
           </Box>
