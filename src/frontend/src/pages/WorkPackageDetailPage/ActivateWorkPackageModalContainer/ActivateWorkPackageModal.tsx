@@ -10,17 +10,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { User, WbsNumber } from 'shared';
 import { FormInput } from './ActivateWorkPackageModalContainer';
 import { fullNamePipe, wbsPipe } from '../../../utils/pipes';
-import {
-  Box,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Grid,
-  FormLabel,
-  FormControl
-} from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Grid, FormLabel, FormControl } from '@mui/material';
 import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
@@ -142,12 +132,12 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                   render={({ field: { onChange, value } }) => (
                     <>
                       <DatePicker
-                        inputFormat="yyyy-MM-dd"
+                        format="yyyy-MM-dd"
                         onChange={(date) => onChange(date ?? new Date())}
                         className={'padding: 10'}
                         value={value}
                         shouldDisableDate={isStartDateDisabled}
-                        renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                        slotProps={{ textField: { autoComplete: 'off' } }}
                       />
                     </>
                   )}

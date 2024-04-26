@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { FormControl, FormLabel, TextField } from '@mui/material';
+import { FormControl, FormLabel } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -96,11 +96,11 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <DatePicker
-                inputFormat="yyyy-MM-dd"
+                format="yyyy-MM-dd"
                 onChange={(e) => onChange(e ?? new Date())}
                 className={'padding: 10'}
                 value={value}
-                renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                slotProps={{ textField: { autoComplete: 'off' } }}
               />
             )}
           />

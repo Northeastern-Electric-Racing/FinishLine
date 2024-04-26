@@ -99,12 +99,14 @@ const WorkPackageFormDetails: React.FC<Props> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <DatePicker
-                    inputFormat="yyyy-MM-dd"
+                    format="yyyy-MM-dd"
                     onChange={(date) => onChange(date ?? new Date())}
                     className={'padding: 10'}
                     value={value}
                     shouldDisableDate={disableStartDate}
-                    renderInput={(params) => <TextField autoComplete="off" {...params} />}
+                    slotProps={{
+                      textField: { autoComplete: 'off', error: !!errors.startDate, helperText: errors.startDate?.message }
+                    }}
                   />
                 </>
               )}

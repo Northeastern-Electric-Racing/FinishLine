@@ -5,6 +5,7 @@
 
 import AdminToolsUserManagement from './AdminToolsUserManagement';
 import AdminToolsSlackUpcomingDeadlines from './AdminToolsSlackUpcomingDeadlines';
+import AdminToolsAttendeeDesignReviewInfo from './AdminToolsAttendeeDesignReviewInfo';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin, isHead } from 'shared';
 import PageLayout from '../../components/PageLayout';
@@ -12,18 +13,88 @@ import AdminToolsFinanceConfig from './AdminToolsFinanceConfig';
 import TeamsTools from './TeamsTools';
 import AdminToolsBOMConfig from './AdminToolsBOMConfig';
 import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
+import { useState } from 'react';
+import NERTabs from '../../components/Tabs';
+import { routes } from '../../utils/routes';
+import { Box } from '@mui/system';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
+  const [tabIndex, setTabIndex] = useState<number>(0);
+
+  const isUserHead = isHead(currentUser.role);
+  const isUserAdmin = isAdmin(currentUser.role);
+  const isUserFinanceLead = currentUser.isAtLeastFinanceLead;
+
+  const defaultTab = isUserAdmin || isUserHead ? 'user-management' : 'finance-configuration';
+
+  const tabs = [];
+
+  if (isUserHead || isUserAdmin) {
+    tabs.push({ tabUrlValue: 'user-management', tabName: 'User Management' });
+    tabs.push({ tabUrlValue: 'project-configuration', tabName: 'Project Configuration' });
+  }
+  if (isUserAdmin || isUserFinanceLead) {
+    tabs.push({ tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration' });
+  }
+  if (isUserAdmin) {
+    tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
+  }
+
+  const UserManagementTab = () => {
+    return isUserAdmin ? (
+      <Box>
+        <Box mb={2}>
+          <AdminToolsUserManagement />
+        </Box>
+        <TeamsTools />
+      </Box>
+    ) : (
+      <AdminToolsUserManagement />
+    );
+  };
+
+  const ProjectConfigurationTab = () => {
+    return isUserAdmin ? (
+      <>
+        <AdminToolsProjectsConfig />
+        <AdminToolsBOMConfig />
+      </>
+    ) : (
+      <AdminToolsProjectsConfig />
+    );
+  };
 
   return (
-    <PageLayout title="Admin Tools">
-      {isHead(currentUser.role) && <AdminToolsUserManagement />}
-      {isAdmin(currentUser.role) && <AdminToolsSlackUpcomingDeadlines />}
-      {(isAdmin(currentUser.role) || currentUser.isAtLeastFinanceLead) && <AdminToolsFinanceConfig />}
-      {isAdmin(currentUser.role) && <TeamsTools />}
-      {isAdmin(currentUser.role) && <AdminToolsBOMConfig />}
-      {isHead(currentUser.role) && <AdminToolsProjectsConfig />}
+    <PageLayout
+      title="Admin Tools"
+      tabs={
+        <Box borderBottom={1} borderColor={'divider'} width={'100%'}>
+          <NERTabs
+            noUnderline
+            setTab={setTabIndex}
+            tabsLabels={tabs}
+            baseUrl={routes.ADMIN_TOOLS}
+            defaultTab={defaultTab}
+            id="admin-tools-tabs"
+          />
+        </Box>
+      }
+    >
+      {tabIndex === 0 ? (
+        <UserManagementTab />
+      ) : tabIndex === 1 ? (
+        <ProjectConfigurationTab />
+      ) : tabIndex === 2 ? (
+        <AdminToolsFinanceConfig />
+      ) : (
+        <Box>
+          <Box pb={2}>
+            <AdminToolsSlackUpcomingDeadlines />
+          </Box>
+          <AdminToolsAttendeeDesignReviewInfo />
+        </Box>
+      )}
     </PageLayout>
   );
 };

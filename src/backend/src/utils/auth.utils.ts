@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import prisma from '../prisma/prisma';
-import { NotFoundException } from './errors.utils';
+import { HttpException, NotFoundException } from './errors.utils';
 import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
@@ -32,6 +32,10 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
     req.method === 'OPTIONS' // this is a pre-flight request and those don't send cookies
   ) {
     next();
+  } else if (
+    req.path.startsWith('/notifications') // task deadline notification endpoint
+  ) {
+    notificationEndpointAuth(req, res, next);
   } else {
     const { token } = req.cookies;
 
@@ -59,6 +63,10 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
     req.path === '/users' // dev login needs the list of users to log in
   ) {
     next();
+  } else if (
+    req.path.startsWith('/notifications') // task deadline notification endpoint
+  ) {
+    notificationEndpointAuth(req, res, next);
   } else {
     const devUserId = req.headers.authorization;
 
@@ -68,6 +76,20 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
 
     next();
   }
+};
+
+const notificationEndpointAuth = (req: Request, res: Response, next: NextFunction) => {
+  const { authorization } = req.headers;
+  const { NOTIFICATION_ENDPOINT_SECRET } = process.env;
+
+  if (!NOTIFICATION_ENDPOINT_SECRET) throw new HttpException(500, 'Notification endpoint secret not found!');
+
+  if (!authorization) return res.status(401).json({ message: 'Authentication Failed: Secret not found!' });
+
+  if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
+    return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
+
+  next();
 };
 
 /**
@@ -85,6 +107,9 @@ export const getCurrentUser = async (res: Response): Promise<User> => {
 
 export type UserWithSettings = User & {
   userSettings: User_Settings | null;
+};
+
+export type UserWithSecureSettings = UserWithSettings & {
   userSecureSettings: User_Secure_Settings | null;
 };
 
@@ -94,7 +119,7 @@ export type UserWithSettings = User & {
  * @returns the user with their user settings
  * @throws if no user with the userId exists
  */
-export const getCurrentUserWithUserSettings = async (res: Response): Promise<UserWithSettings> => {
+export const getCurrentUserWithUserSettings = async (res: Response): Promise<UserWithSecureSettings> => {
   const { userId } = res.locals;
   const user = await prisma.user.findUnique({
     where: { userId },

@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Typography, Box } from '@mui/material';
+import { TableRow, TableCell, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useGetAllVendors } from '../../../hooks/finance.hooks';
 import { datePipe } from '../../../utils/pipes';
@@ -52,7 +52,6 @@ const VendorsTable = () => {
           vendors={vendors}
         />
       )}
-      <Typography variant="subtitle1">Registered Vendors</Typography>
       <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Vendor Name' }]} rows={vendorTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton

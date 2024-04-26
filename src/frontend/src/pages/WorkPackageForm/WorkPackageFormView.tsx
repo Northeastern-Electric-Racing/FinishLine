@@ -9,7 +9,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import { useState } from 'react';
-import { UseMutateAsyncFunction } from 'react-query';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
@@ -20,15 +19,17 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { startDateTester, mapBulletsToPayload } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
+import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageStage } from 'shared';
+import { getMonday } from '../../utils/datetime.utils';
 
 const schema = yup.object().shape({
   name: yup.string().required('Name is required!'),
   startDate: yup
     .date()
     .required('Start Date is required!')
-    .test('start-date-valid', 'start date is not valid', startDateTester),
+    .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
   duration: yup.number().required(),
   crId: yup
     .number()
@@ -40,7 +41,7 @@ const schema = yup.object().shape({
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: UseMutateAsyncFunction<unknown, unknown, unknown>;
+  mutateAsync: (data: WorkPackageApiInputs) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
@@ -121,6 +122,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
     return `${date.getFullYear().toString()}-${month}-${day}`;
   };
+
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
@@ -139,7 +141,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         blockedBy: blockedByWbsNums,
         expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
         deliverables: createForm ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
-        stage
+        stage: stage as WorkPackageStage
       };
       await mutateAsync(payload);
       exitActiveMode();
