@@ -45,8 +45,7 @@ const GanttChartPage: FC = () => {
 
   /******************** Filters ***************************/
   const car = query.getAll('car');
-  const showCar1 = car.includes('Car 1');
-  const showCar2 = car.includes('Car 2');
+  const showCars = car.map((car) => parseInt(car));
 
   const teamCategory = query.getAll('teamCategory');
   const showElectricalTeamCategory = teamCategory.includes('Electrical');
@@ -66,8 +65,7 @@ const GanttChartPage: FC = () => {
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
   const defaultGanttFilters: GanttFilters = {
-    showCar1,
-    showCar2,
+    showCars,
     showElectricalTeamCategory,
     showMechanicalTeamCategory,
     showSoftwareTeamCategory,
@@ -87,8 +85,7 @@ const GanttChartPage: FC = () => {
     setTeamList(Array.from(new Set(projects.map(getProjectTeamsName))));
 
     const ganttFilters: GanttFilters = {
-      showCar1,
-      showCar2,
+      showCars,
       showElectricalTeamCategory,
       showMechanicalTeamCategory,
       showSoftwareTeamCategory,
@@ -113,8 +110,7 @@ const GanttChartPage: FC = () => {
     expanded,
     projects,
     showBusinessTeamCategory,
-    showCar1,
-    showCar2,
+    showCars,
     showDataAndControlsTeam,
     showElectricalTeamCategory,
     showErgonomicsTeam,
@@ -130,19 +126,19 @@ const GanttChartPage: FC = () => {
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const car1Handler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar1: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
-  const car2Handler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showCar2: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+  const carHandlerFn = (car: number) => {
+    return (event: ChangeEvent<HTMLInputElement>) => {
+      const ganttFilters: GanttFilters = event.target.checked
+        ? { ...defaultGanttFilters, showCars: [...defaultGanttFilters.showCars, car] }
+        : defaultGanttFilters;
+      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    };
   };
 
   const carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
-    { filterLabel: 'Car 1', handler: car1Handler },
-    { filterLabel: 'Car 2', handler: car2Handler }
+    { filterLabel: 'None', handler: carHandlerFn(0) },
+    { filterLabel: 'Car 1', handler: carHandlerFn(1) },
+    { filterLabel: 'Car 2', handler: carHandlerFn(2) }
   ];
 
   const electricalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {

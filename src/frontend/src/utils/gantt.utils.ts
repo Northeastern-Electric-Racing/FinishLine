@@ -73,8 +73,7 @@ export const applyChangesToEvents = (events: GanttTaskData[], eventChanges: Even
 };
 
 export interface GanttFilters {
-  showCar1: boolean;
-  showCar2: boolean;
+  showCars: number[];
   showElectricalTeamCategory: boolean;
   showMechanicalTeamCategory: boolean;
   showSoftwareTeamCategory: boolean;
@@ -93,13 +92,6 @@ export interface GanttTask extends GanttTaskData {
 }
 
 export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters, searchText: string): Project[] => {
-  const car1Check = (project: Project) => {
-    return project.wbsNum.carNumber !== 1;
-  };
-  const car2Check = (project: Project) => {
-    return project.wbsNum.carNumber !== 2;
-  };
-
   const electricalTeamCategoryCheck = (project: Project) => {
     // TODO
     return true;
@@ -144,14 +136,9 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     return project.status === WbsElementStatus.Active;
   };
 
-  if (!(!ganttFilters.showCar1 && !ganttFilters.showCar2)) {
-    if (!ganttFilters.showCar1) {
-      projects = projects.filter(car1Check);
-    }
-    if (!ganttFilters.showCar2) {
-      projects = projects.filter(car2Check);
-    }
-  }
+  ganttFilters.showCars.forEach((car) => {
+    projects = projects.filter((project) => project.wbsNum.carNumber === car);
+  });
 
   if (
     !(
@@ -222,8 +209,7 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
 
   return (
     '?' +
-    (ganttFilters.showCar1 ? carFormat('Car 1') : '') +
-    (ganttFilters.showCar2 ? carFormat('Car 2') : '') +
+    ganttFilters.showCars.map((car) => carFormat(car.toString())).join('') +
     (ganttFilters.showElectricalTeamCategory ? teamCategoryFormat('Electrical') : '') +
     (ganttFilters.showMechanicalTeamCategory ? teamCategoryFormat('Mechanical') : '') +
     (ganttFilters.showSoftwareTeamCategory ? teamCategoryFormat('Software') : '') +
