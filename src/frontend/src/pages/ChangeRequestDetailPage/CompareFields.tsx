@@ -38,12 +38,7 @@ const CompareFields: React.FC<CompareFieldsProps> = ({ first, second, isProposed
     for (let i = 0; i < arr1.length; i++) {
       const bullet1 = arr1[i];
       const bullet2 = arr2[i];
-      if (
-        bullet1.id !== bullet2.id ||
-        bullet1.detail !== bullet2.detail ||
-        bullet1.dateAdded !== bullet2.dateAdded ||
-        bullet1.dateDeleted !== bullet2.dateDeleted
-      ) {
+      if (bullet1.id !== bullet2.id) {
         return false;
       }
     }

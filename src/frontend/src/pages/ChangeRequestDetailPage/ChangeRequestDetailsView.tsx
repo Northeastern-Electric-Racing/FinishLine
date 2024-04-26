@@ -32,8 +32,8 @@ import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 import NERTabs from '../../components/Tabs';
-import WorkPackageComparisonBlock from './CompareWPFields';
-import ProjectComparisonBlock from './CompareProjectFields';
+import WorkPackageComparisonBlock from './WorkPackageComparisonBlock';
+import ProjectComparisonBlock from './ProjectComparisonBlock';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -182,7 +182,8 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Grid>
           </Grid>
         </Grid>
-      ) : (
+      ) : (changeRequest as StandardChangeRequest)?.projectProposedChanges ||
+        (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
         <Grid container columnSpacing={4}>
           {/*show previous fields*/}
           <Grid item xs={6}>
@@ -205,6 +206,10 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Box>
           </Grid>
         </Grid>
+      ) : (
+        <Box display="flex" justifyContent="center" alignItems="center" marginTop={17}>
+          <Typography>There are no proposed changes</Typography>
+        </Box>
       )}
       {reviewModalShow && (
         <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
