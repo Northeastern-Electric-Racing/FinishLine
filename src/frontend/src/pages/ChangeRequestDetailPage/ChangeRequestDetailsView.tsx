@@ -102,16 +102,21 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
         </Box>
       }
       tabs={
-        <NERTabs
-          setTab={setTabIndex}
-          tabsLabels={[
-            { tabUrlValue: 'details', tabName: 'Details' },
-            { tabUrlValue: 'proposedChanges', tabName: 'Proposed Changes' }
-          ]}
-          baseUrl={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`}
-          defaultTab="details"
-          id="change-review-tabs"
-        />
+        (changeRequest as StandardChangeRequest)?.projectProposedChanges ||
+        (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
+          <NERTabs
+            setTab={setTabIndex}
+            tabsLabels={[
+              { tabUrlValue: 'details', tabName: 'Details' },
+              { tabUrlValue: 'proposedChanges', tabName: 'Proposed Changes' }
+            ]}
+            baseUrl={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`}
+            defaultTab="details"
+            id="change-review-tabs"
+          />
+        ) : (
+          <></>
+        )
       }
       previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
       headerRight={
@@ -182,8 +187,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Grid>
           </Grid>
         </Grid>
-      ) : (changeRequest as StandardChangeRequest)?.projectProposedChanges ||
-        (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
+      ) : (
         <Grid container columnSpacing={4}>
           {/*show previous fields*/}
           <Grid item xs={6}>
@@ -206,10 +210,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Box>
           </Grid>
         </Grid>
-      ) : (
-        <Box display="flex" justifyContent="center" alignItems="center" marginTop={17}>
-          <Typography>There are no proposed changes</Typography>
-        </Box>
       )}
       {reviewModalShow && (
         <ReviewChangeRequest modalShow={reviewModalShow} handleClose={handleReviewClose} cr={changeRequest} />
