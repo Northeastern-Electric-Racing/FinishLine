@@ -41,6 +41,7 @@ const GanttChartPage: FC = () => {
       editing: boolean;
     }>
   >([]);
+  const [searchText, setSearchText] = useState<string>('');
 
   /******************** Filters ***************************/
   const car = query.getAll('car');
@@ -101,7 +102,7 @@ const GanttChartPage: FC = () => {
       expanded
     };
 
-    const filteredProjects = filterGanttProjects(projects, ganttFilters);
+    const filteredProjects = filterGanttProjects(projects, ganttFilters, searchText);
     const sortedProjects = filteredProjects.sort(
       (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
     );
@@ -122,7 +123,8 @@ const GanttChartPage: FC = () => {
     showOnlyOverdue,
     showSoftwareTeam,
     showSoftwareTeamCategory,
-    showTractiveTeam
+    showTractiveTeam,
+    searchText
   ]);
 
   if (isLoading) return <LoadingIndicator />;
@@ -299,7 +301,11 @@ const GanttChartPage: FC = () => {
   );
 
   return (
-    <PageLayout title="Gantt Chart" chips={<SearchBar placeholder="Search Project by Name" />} headerRight={headerRight}>
+    <PageLayout
+      title="Gantt Chart"
+      chips={<SearchBar placeholder="Search Project by Name" searchText={searchText} setSearchText={setSearchText} />}
+      headerRight={headerRight}
+    >
       <Box
         sx={{
           width: '100%',

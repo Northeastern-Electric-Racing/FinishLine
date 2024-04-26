@@ -92,7 +92,7 @@ export interface GanttTask extends GanttTaskData {
   teamName: string;
 }
 
-export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters): Project[] => {
+export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters, searchText: string): Project[] => {
   const car1Check = (project: Project) => {
     return project.wbsNum.carNumber !== 1;
   };
@@ -201,6 +201,8 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
     }
   }
   projects = projects.filter(activeCheck);
+
+  projects = projects.filter((project) => project.name.toLowerCase().includes(searchText.toLowerCase()));
 
   return projects;
 };
