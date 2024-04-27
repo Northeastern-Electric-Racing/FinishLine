@@ -36,7 +36,7 @@ const CalendarPage = () => {
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const confirmedDesignReviews = allDesignReviews.filter(isConfirmed);
+  const confirmedDesignReviews = allDesignReviews;
 
   const eventDict = new Map<string, DesignReview[]>();
   confirmedDesignReviews.sort((designReview1, designReview2) => {

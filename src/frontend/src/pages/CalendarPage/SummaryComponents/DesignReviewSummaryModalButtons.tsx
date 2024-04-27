@@ -56,7 +56,7 @@ const DesignReviewSummaryModalButtons: React.FC<DesignReviewSummaryModalButtonsP
         onClick={handleDelayClick}
         disabled={!checked}
       >
-        Request Delay to WP
+        Request Delay
       </NERFailButton>
     </Box>
   );

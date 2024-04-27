@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { DesignReview } from 'shared';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -13,38 +13,33 @@ interface DesignReviewSummaryModalDetailsProps {
 
 const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsProps> = ({ designReview }) => {
   return (
-    <Grid container direction="row" alignItems="center" justifyContent="center" columnSpacing={5} paddingBottom={2}>
-      <Grid item xs={3}>
+    <Box display="flex" flexDirection={'column'} paddingBottom={2} rowGap={2} marginTop="20px">
+      <Box display="flex" justifyContent="space-between">
         <DesignReviewPill
           icon={<AccessTimeIcon />}
           isLink={false}
           displayText={meetingStartTimePipe(designReview.meetingTimes)}
         />
-      </Grid>
-      <Grid item xs={3}>
         <DesignReviewPill
           icon={<LocationOnIcon />}
           isLink={false}
           displayText={designReview.location ? designReview.location : 'Online'}
         />
-      </Grid>
-      <Grid item xs={3}>
-        <DesignReviewPill
-          isLink
-          icon={<DescriptionIcon />}
-          linkURL={designReview.docTemplateLink ?? ''}
-          displayText={designReview.docTemplateLink ? 'Question Doc' : 'No Doc'}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <DesignReviewPill
-          isLink
-          icon={<VideocamIcon />}
-          linkURL={designReview.zoomLink ?? ''}
-          displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
-        />
-      </Grid>
-    </Grid>
+      </Box>
+      <DesignReviewPill
+        isLink
+        icon={<DescriptionIcon />}
+        linkURL={designReview.docTemplateLink ?? ''}
+        displayText={designReview.docTemplateLink ? 'Question Doc' : 'No Doc'}
+      />
+
+      <DesignReviewPill
+        isLink
+        icon={<VideocamIcon />}
+        linkURL={designReview.zoomLink ?? ''}
+        displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
+      />
+    </Box>
   );
 };
 

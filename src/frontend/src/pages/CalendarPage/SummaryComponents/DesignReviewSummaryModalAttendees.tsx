@@ -72,13 +72,18 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
           <Typography>Required: </Typography>
         </Grid>
         <Grid item xs={10} container>
+          <MemberPill user={designReview.userCreated} />
           {requiredMembers.map((member, index) => (
             <Grid item key={index}>
               <MemberPill
                 user={member}
-                handleClick={() => {
-                  handleRemoveRequiredMember(member);
-                }}
+                handleClick={
+                  currentUser.userId === designReview.userCreated.userId
+                    ? () => {
+                        handleRemoveRequiredMember(member);
+                      }
+                    : undefined
+                }
               />
             </Grid>
           ))}
@@ -92,9 +97,13 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
               <Grid item key={index}>
                 <MemberPill
                   user={member}
-                  handleClick={() => {
-                    handleRemoveOptionalMember(member);
-                  }}
+                  handleClick={
+                    currentUser.userId === designReview.userCreated.userId
+                      ? () => {
+                          handleRemoveOptionalMember(member);
+                        }
+                      : undefined
+                  }
                 />
               </Grid>
             ))}

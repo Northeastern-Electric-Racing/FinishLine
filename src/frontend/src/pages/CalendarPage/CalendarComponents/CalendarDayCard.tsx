@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { DesignReview, TeamType } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -48,21 +48,45 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   const EventCard = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const name = event.wbsName;
+    const cardColor = () => {
+      switch (event.status) {
+        case DesignReviewStatus.SCHEDULED: {
+          return '#ef4345';
+        }
+        case DesignReviewStatus.CONFIRMED: {
+          return 'grey';
+        }
+        case DesignReviewStatus.DONE: {
+          return 'green';
+        }
+        default: {
+          return 'rgba(128,128,128, 0.1)';
+        }
+      }
+    };
+
     return (
       <>
         <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
         <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)} sx={{ cursor: 'pointer' }}>
-          <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
-            <Stack direction="row">
-              {getTeamTypeIcon(event.teamType.name)}
-              <DynamicTooltip
-                title={name + (event.meetingTimes.length > 0 ? ' - ' + meetingStartTimePipe(event.meetingTimes) : '')}
-              >
-                <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14} noWrap>
-                  {name + (event.meetingTimes.length > 0 ? ' ' + meetingStartTimePipe(event.meetingTimes) : '')}
-                </Typography>
-              </DynamicTooltip>
-            </Stack>
+          <Card
+            sx={{
+              backgroundColor: cardColor(),
+              borderRadius: 1,
+              minWidth: 140,
+              maxWidth: 140,
+              minHeight: 20,
+              maxHeight: 20,
+              border: event.status === DesignReviewStatus.UNCONFIRMED ? '1px solid rgba(239,67,69, .2)' : 0
+            }}
+          >
+            <DynamicTooltip
+              title={name + (event.meetingTimes.length > 0 ? ' - ' + meetingStartTimePipe(event.meetingTimes) : '')}
+            >
+              <Typography marginX={0.5} marginY={0.2} lineHeight={'120%'} fontSize={14} fontWeight="bold" noWrap>
+                {name}
+              </Typography>
+            </DynamicTooltip>
           </Card>
         </Box>
       </>
