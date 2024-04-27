@@ -12,7 +12,6 @@ interface GanttToolTipProps {
   projectLead?: User;
   projectManager?: User;
 }
-const background = '#ef4345';
 
 const GanttToolTip: React.FC<GanttToolTipProps> = ({
   xCoordinate,
@@ -29,17 +28,21 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
       left: `${xCoordinate}px`,
       top: `${yCoordinate + 20}px`,
       padding: '10px',
-      backgroundColor: background,
+      backgroundColor: '#ef4345',
       borderRadius: '5px',
       zIndex: 1
     }}
   >
     <Box color={'black'}>
       <Typography>{title}</Typography>
-      <Typography>Start: {startDate.toLocaleDateString()}</Typography>
-      <Typography>End: {endDate.toLocaleDateString()}</Typography>
-      <Typography>Project Lead: {fullNamePipe(projectLead)}</Typography>
-      <Typography>Project Manager: {fullNamePipe(projectManager)}</Typography>
+      <Box display={'flex'} flexDirection={'row'}>
+        <Typography marginRight={'10px'}>Start: {startDate.toLocaleDateString()}</Typography>
+        <Typography>Project Lead: {fullNamePipe(projectLead)}</Typography>
+      </Box>
+      <Box display={'flex'} flexDirection={'row'}>
+        <Typography marginRight={'10px'}>End: {endDate.toLocaleDateString()}</Typography>
+        <Typography>Project Manager: {fullNamePipe(projectManager)}</Typography>
+      </Box>
     </Box>
   </Box>
 );
