@@ -1,4 +1,4 @@
-import { Blocked_By_Info, Role, User, WBS_Element_Status, Work_Package_Template } from '@prisma/client';
+import { Blocked_By_Info, Role, User, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -305,7 +305,7 @@ export default class WorkPackagesService {
     expectedActivities: string[],
     deliverables: string[],
     blockedBy: BlockedByInfo[]
-  ): Promise<Work_Package_Template> {
+  ): Promise<WorkPackageTemplate> {
     if (!isAdmin(user.role)) throw new AccessDeniedAdminOnlyException('create work package templates');
 
     // get the corresponding IDs of all work package templates in BlockedBy,
@@ -336,13 +336,13 @@ export default class WorkPackagesService {
         duration,
         expectedActivities,
         deliverables,
-        blockedBy: { connect: blockedByIds.map((ele) => ({ blockedByInfoId: ele })) },
         dateCreated: new Date(),
         userCreatedId: user.userId
-      }
+      },
+      ...workPackageTemplateQueryArgs
     });
 
-    return created;
+    return workPackageTemplateTransformer(created);
   }
 
   /**

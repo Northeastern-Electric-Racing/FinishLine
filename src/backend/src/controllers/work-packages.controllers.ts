@@ -83,7 +83,7 @@ export default class WorkPackagesController {
 
       const user = await getCurrentUser(res);
 
-      const wbsString: Work_Package_Template = await WorkPackagesService.createWorkPackageTemplate(
+      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.createWorkPackageTemplate(
         user,
         templateName,
         templateNotes,
@@ -95,7 +95,7 @@ export default class WorkPackagesController {
         blockedBy
       );
 
-      res.status(200).json(wbsString);
+      res.status(200).json(workPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }
