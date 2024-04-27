@@ -14,7 +14,15 @@ interface GanttToolTipProps {
 }
 const background = '#ef4345';
 
-const GanttToolTip: React.FC<GanttToolTipProps> = ({ xCoordinate, yCoordinate, title, startDate, endDate, projectLead, projectManager }) => (
+const GanttToolTip: React.FC<GanttToolTipProps> = ({
+  xCoordinate,
+  yCoordinate,
+  title,
+  startDate,
+  endDate,
+  projectLead,
+  projectManager
+}) => (
   <Box
     style={{
       position: 'fixed',
