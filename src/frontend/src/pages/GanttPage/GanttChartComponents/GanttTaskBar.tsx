@@ -39,13 +39,20 @@ const GanttTaskBar = ({
   const [showPopup, setShowPopup] = useState(false);
   const [cursorX, setCursorX] = useState(0);
   const [cursorY, setCursorY] = useState(0);
-  const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
+
+  const getStartCol = (event: GanttTaskData) => {
+    const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
+    return startCol;
+  };
 
   // if the end date doesn't exist within the timeframe, have it span to the end
-  const endCol =
-    days.findIndex((day) => dateToString(day) === dateToString(event.end)) === -1
-      ? days.length + 1
-      : days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
+  const getEndCol = (event: GanttTaskData) => {
+    const endCol =
+      days.findIndex((day) => dateToString(day) === dateToString(event.end)) === -1
+        ? days.length + 1
+        : days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
+    return endCol;
+  };
 
   const lengthInDays = differenceInDays(event.end, event.start);
 
@@ -156,8 +163,8 @@ const GanttTaskBar = ({
           ref={measureRef}
           {...props}
           style={{
-            gridColumnStart: startCol,
-            gridColumnEnd: endCol,
+            gridColumnStart: getStartCol(event),
+            gridColumnEnd: getEndCol(event),
             height: '2rem',
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
@@ -218,6 +225,28 @@ const GanttTaskBar = ({
             )}
           </Box>
         </div>
+        {event.children.map((child) => {
+          return (
+            <div
+              {...props}
+              style={{
+                gridColumnStart: getStartCol(child),
+                gridColumnEnd: getEndCol(child),
+                // position: 'absolute',
+                height: '2rem',
+                border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
+                borderRadius: '0.25rem',
+                backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
+                cursor: isEditMode ? 'move' : 'pointer'
+              }}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              onMouseOver={handleOnMouseOver}
+              onMouseLeave={handleOnMouseLeave}
+              onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
+            />
+          );
+        })}
       </Box>
     </Box>
   );
