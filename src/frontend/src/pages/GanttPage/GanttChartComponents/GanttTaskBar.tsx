@@ -212,6 +212,8 @@ const GanttTaskBar = ({
                 startDate={event.start}
                 endDate={event.end}
                 color={event.styles?.backgroundColor}
+                projectLead={event.projectLead}
+                projectManager={event.projectManager}
               />
             )}
           </Box>

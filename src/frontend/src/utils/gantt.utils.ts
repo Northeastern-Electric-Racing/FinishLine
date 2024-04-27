@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Project, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage, WorkPackageStage } from 'shared';
+import { Project, User, WbsElementStatus, WbsNumber, wbsPipe, WorkPackage, WorkPackageStage } from 'shared';
 import { projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
 import { deepOrange, green, grey, indigo, orange, pink, yellow } from '@mui/material/colors';
@@ -38,6 +38,8 @@ export interface GanttTaskData {
   hideChildren?: boolean;
   displayOrder?: number;
   onClick?: () => void;
+  projectLead?: User;
+  projectManager?: User;
 }
 
 export type Date_Event = { id: string; start: Date; end: Date; title: string };
@@ -253,7 +255,9 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     },
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
-    }
+    },
+    projectLead: workPackage.projectLead,
+    projectManager: workPackage.projectManager
   };
 };
 
