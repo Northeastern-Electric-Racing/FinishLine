@@ -112,8 +112,8 @@ export interface ProposedSolutionCreateArgs {
 export interface WBSProposedChangesCreateArgs {
   name: string;
   status: WbsElementStatus;
-  projectLeadId: number;
-  projectManagerId: number;
+  projectLeadId?: number;
+  projectManagerId?: number;
   links: { url: string; linkTypeName: string }[];
 }
 export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
