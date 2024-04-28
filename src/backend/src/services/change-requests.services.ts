@@ -568,6 +568,10 @@ export default class ChangeRequestsService {
     if (proposedSolutions.length === 0 && !projectProposedChanges && !workPackageProposedChanges)
       throw new HttpException(400, 'No proposed solutions/changes provided');
 
+    if (proposedSolutions.length > 0 && (projectProposedChanges || workPackageProposedChanges)) {
+      throw new HttpException(400, `Can't have proposed solutions and proposed changes`);
+    }
+
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
