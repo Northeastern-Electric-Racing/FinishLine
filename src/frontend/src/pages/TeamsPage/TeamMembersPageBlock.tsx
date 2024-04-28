@@ -4,7 +4,7 @@
  */
 
 import { Autocomplete, Box, Grid, IconButton, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAllUsers, useCurrentUser } from '../../hooks/users.hooks';
 import { useSetTeamHead, useSetTeamLeads, useSetTeamMembers } from '../../hooks/teams.hooks';
 import { isAdmin, isHead, isLeadership, Team } from 'shared';
@@ -36,6 +36,12 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const { isLoading: setTeamHeadIsLoading, mutateAsync: setTeamHeadMutateAsync } = useSetTeamHead(team.teamId);
   const { isLoading: setTeamLeadsIsLoading, mutateAsync: setTeamLeadsMutateAsync } = useSetTeamLeads(team.teamId);
 
+  useEffect(() => {
+    setMembers(team.members.map(userToAutocompleteOption));
+    setLeads(team.leads.map(userToAutocompleteOption));
+    setHead(userToAutocompleteOption(team.head));
+  }, [team.members, team.leads, team.head]);
+
   const toast = useToast();
 
   if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
@@ -46,7 +52,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
   const editMembersPerms = hasPerms || team.leads.map((lead) => lead.userId).includes(user.userId);
 
   const memberOptions = users
-    .filter((user) => user.userId !== team.head.userId && !team.leads.map((lead) => lead.userId).includes(user.userId))
+    .filter((user) => user.userId !== team.head.userId)
     .sort(userComparator)
     .map(userToAutocompleteOption);
 

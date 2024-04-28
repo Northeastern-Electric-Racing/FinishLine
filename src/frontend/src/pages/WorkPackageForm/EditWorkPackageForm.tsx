@@ -3,6 +3,8 @@ import WorkPackageForm from './WorkPackageForm';
 import { useEditWorkPackage, useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import LoadingIndicator from '../../components/LoadingIndicator';
+import { WPFormType, startDateTester } from '../../utils/form';
+import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -21,6 +23,21 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
   const { data: wp, isLoading: isLoadingWp } = useSingleWorkPackage(wbsNum);
 
   if (isLoading || isLoadingWp || !wp) return <LoadingIndicator />;
+
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required!'),
+    startDate: yup
+      .date()
+      .required('Start Date is required!')
+      .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
+    duration: yup.number().required(),
+    crId: yup
+      .number()
+      .required('CR ID is required')
+      .typeError('CR ID must be a number')
+      .integer('CR ID must be an integer')
+      .min(1, 'CR ID must be greater than or equal to 1')
+  });
 
   const { expectedActivities, deliverables, status, links } = wp;
 
@@ -62,6 +79,8 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
         setPageMode(false);
         history.push(`${history.location.pathname}`);
       }}
+      formType={WPFormType.EDIT}
+      schema={schema}
       createCrSubmit={onSubmitCreateCr}
     />
   );

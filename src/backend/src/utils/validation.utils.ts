@@ -41,6 +41,18 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
     ]);
 };
 
+export const isWorkPackageStage = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      WorkPackageStage.Research,
+      WorkPackageStage.Design,
+      WorkPackageStage.Manufacturing,
+      WorkPackageStage.Install,
+      WorkPackageStage.Testing
+    ]);
+};
+
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.custom((value) => !isNaN(Date.parse(value)));
 };
@@ -95,13 +107,9 @@ const workPackageProposedChangesExists = (validationObject: ValidationChain): Va
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
   nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
-  isStatus(workPackageProposedChangesExists(body('workPackageProposedChanges.status'))),
-  workPackageProposedChangesExists(body('workPackageProposedChanges.links')).isArray(),
-  nonEmptyString(body('workPackageProposedChanges.links.*.url')),
-  nonEmptyString(body('workPackageProposedChanges.links.*.linkTypeName')),
   intMinZero(body('workPackageProposedChanges.projectLeadId').optional()),
   intMinZero(body('workPackageProposedChanges.projectManagerId').optional()),
-  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage'))),
+  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage').optional())),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
   workPackageProposedChangesExists(body('workPackageProposedChanges.blockedBy')).isArray(),

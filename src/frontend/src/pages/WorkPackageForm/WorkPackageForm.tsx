@@ -7,18 +7,29 @@ import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
+import { WPFormType } from '../../utils/form';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { ObjectSchema } from 'yup';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
   mutateAsync: (data: WorkPackageApiInputs) => void;
-  createForm?: boolean;
+  formType: WPFormType;
+  schema: ObjectSchema<any>;
   createCrSubmit?: (data: WorkPackageApiInputs) => void;
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm, createCrSubmit }) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
+  wbsNum,
+  mutateAsync,
+  exitActiveMode,
+  crId,
+  formType,
+  schema,
+  createCrSubmit
+}) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -42,7 +53,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
   );
 
   const defaultValues: WorkPackageFormViewPayload | undefined =
-    !createForm && workPackage
+    formType === WPFormType.EDIT && workPackage
       ? {
           ...workPackage,
           workPackageId: workPackage.id,
@@ -73,7 +84,8 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
       crId={crId}
-      createForm={createForm}
+      formType={formType}
+      schema={schema}
       createCr={createCrSubmit}
     />
   );
