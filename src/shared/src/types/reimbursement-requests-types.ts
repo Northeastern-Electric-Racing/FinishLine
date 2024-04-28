@@ -1,4 +1,5 @@
 import { WbsNumber } from './project-types';
+import { Team } from './team-types';
 import { User } from './user-types';
 
 export enum ClubAccount {
@@ -55,7 +56,7 @@ export enum OtherProductReason {
   SubscriptionsAndMemberships = 'SUBSCRIPTIONS_AND_MEMBERSHIPS'
 }
 
-export type WBSElementData = { wbsNum: WbsNumber; wbsName: string };
+export type WBSElementData = { wbsNum: WbsNumber; wbsName: string; team?: Team };
 
 export type ReimbursementProductReason = WBSElementData | OtherProductReason;
 export interface ReimbursementProduct {

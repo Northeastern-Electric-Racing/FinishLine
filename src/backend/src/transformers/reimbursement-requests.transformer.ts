@@ -27,6 +27,7 @@ import {
 import { wbsNumOf } from '../utils/utils';
 import receiptQueryArgs from '../prisma-query-args/receipt-query.args';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
+import teamTransformer from './teams.transformer';
 
 export const receiptTransformer = (receipt: Prisma.ReceiptGetPayload<typeof receiptQueryArgs>): Receipt => {
   return {
@@ -87,7 +88,14 @@ const reimbursementProductReasonTransformer = (
   reason: Prisma.Reimbursement_Product_ReasonGetPayload<typeof reimbursementProductReasonQueryArgs>
 ): ReimbursementProductReason => {
   return reason.wbsElement
-    ? { wbsName: reason.wbsElement?.name, wbsNum: wbsNumOf(reason.wbsElement) }
+    ? {
+        wbsName: reason.wbsElement?.name,
+        wbsNum: wbsNumOf(reason.wbsElement),
+        team:
+          reason.wbsElement.project && reason.wbsElement.project?.teams[0]
+            ? teamTransformer(reason.wbsElement.project?.teams[0])
+            : undefined
+      }
     : (reason.otherReason! as OtherProductReason);
 };
 

@@ -66,7 +66,8 @@ const FinancePage = () => {
   if (userReimbursementRequestIsError) return <ErrorPage message={userReimbursementRequestError?.message} />;
   if (isFinance && allPendingAdvisorListIsError) return <ErrorPage message={allPendingAdvisorListError?.message} />;
   if (
-    (isFinance && (allReimbursementRequestsIsLoading || !allReimbursementRequests)) ||
+    allReimbursementRequestsIsLoading ||
+    !allReimbursementRequests ||
     userReimbursementRequestIsLoading ||
     !userReimbursementRequests ||
     (isFinance && !allPendingAdvisorList)
@@ -130,7 +131,7 @@ const FinancePage = () => {
           </ListItemIcon>
           Generate All Receipts
         </MenuItem>
-        <MenuItem onClick={() => setShowTotalAmountSpent(true)} disabled={!isFinance}>
+        <MenuItem onClick={() => setShowTotalAmountSpent(true)}>
           <ListItemIcon>
             <WorkIcon fontSize="small" />
           </ListItemIcon>
@@ -149,13 +150,13 @@ const FinancePage = () => {
           onHide={() => setShowPendingAdvisorListModal(false)}
         />
       )}
-      {isFinance && (
+      {
         <TotalAmountSpentModal
           open={showTotalAmountSpent}
           allReimbursementRequests={allReimbursementRequests!}
           onHide={() => setShowTotalAmountSpent(false)}
         />
-      )}
+      }
       <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}
