@@ -5,8 +5,8 @@ import { Tune } from '@mui/icons-material';
 
 interface GanttChartFiltersButtonProps {
   carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamTypeHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
   expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
@@ -14,8 +14,8 @@ interface GanttChartFiltersButtonProps {
 
 const GanttChartFiltersButton = ({
   carHandlers,
-  teamCategoriesHandlers,
-  teamsHandlers,
+  teamTypeHandlers,
+  teamHandlers,
   overdueHandler,
   expandedHandler,
   resetHandler
@@ -51,8 +51,8 @@ const GanttChartFiltersButton = ({
       >
         <GanttChartFilters
           carHandlers={carHandlers}
-          teamCategoriesHandlers={teamCategoriesHandlers}
-          teamsHandlers={teamsHandlers}
+          teamTypeHandlers={teamTypeHandlers}
+          teamHandlers={teamHandlers}
           overdueHandler={overdueHandler}
           expandedHandler={expandedHandler}
           resetHandler={resetHandler}

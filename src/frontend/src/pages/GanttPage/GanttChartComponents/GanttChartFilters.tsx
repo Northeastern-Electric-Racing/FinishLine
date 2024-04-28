@@ -56,8 +56,8 @@ const FilterRow = ({
 
 interface GanttChartFiltersProps {
   carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamTypeHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
   expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
@@ -65,8 +65,8 @@ interface GanttChartFiltersProps {
 
 const GanttChartFilters = ({
   carHandlers,
-  teamCategoriesHandlers,
-  teamsHandlers,
+  teamTypeHandlers,
+  teamHandlers,
   overdueHandler,
   expandedHandler,
   resetHandler
@@ -116,9 +116,9 @@ const GanttChartFilters = ({
         maxWidth: { xs: '100%', md: '30rem' }
       }}
     >
-      <FilterRow label="Cars" buttons={carHandlers} />
-      <FilterRow label="Team Category" buttons={teamCategoriesHandlers} />
-      <FilterRow label="Team" buttons={teamsHandlers} />
+      <FilterRow label="Car" buttons={carHandlers} />
+      <FilterRow label="Team Type" buttons={teamTypeHandlers} />
+      <FilterRow label="Team" buttons={teamHandlers} />
       <FilterRow label="Overdue" buttons={[{ filterLabel: 'Overdue', handler: overdueHandler }]} />
       <FilterButtons />
     </Grid>

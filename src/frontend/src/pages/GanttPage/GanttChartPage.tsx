@@ -28,12 +28,21 @@ import { SearchBar } from '../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersButton';
 import GanttChart from './GanttChart';
+import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
+import { Team, TeamType } from 'shared';
+import { useAllTeams } from '../../hooks/teams.hooks';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
   const history = useHistory();
-  const { isLoading, isError, data: projects, error } = useAllProjects();
-  const [teamList, setTeamList] = useState<string[]>([]);
+  const { isLoading: projectsIsLoading, isError: projectsIsError, data: projects, error: projectsError } = useAllProjects();
+  const {
+    isLoading: teamTypesIsLoading,
+    isError: teamTypesIsError,
+    data: teamTypes,
+    error: teamTypesError
+  } = useAllTeamTypes();
+  const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [ganttTasks, setGanttTasks] = useState<GanttTask[]>([]);
   const [chartEditingState, setChartEditingState] = React.useState<
     Array<{
@@ -44,57 +53,23 @@ const GanttChartPage: FC = () => {
   const [searchText, setSearchText] = useState<string>('');
 
   /******************** Filters ***************************/
-  const car = query.getAll('car');
-  const showCars = car.map((car) => parseInt(car));
+  const showCars = query.getAll('car').map((car) => parseInt(car));
 
-  const teamCategory = query.getAll('teamCategory');
-  const showElectricalTeamCategory = teamCategory.includes('Electrical');
-  const showMechanicalTeamCategory = teamCategory.includes('Mechanical');
-  const showSoftwareTeamCategory = teamCategory.includes('Software');
-  const showBusinessTeamCategory = teamCategory.includes('Business');
+  const showTeamTypes = query.getAll('teamType');
 
-  const team = query.getAll('team');
-  const showErgonomicsTeam = team.includes('Ergonomics');
-  const showLowVoltageTeam = team.includes('Low Voltage');
-  const showTractiveTeam = team.includes('Tractive');
-  const showDataAndControlsTeam = team.includes('Data and Controls');
-  const showSoftwareTeam = team.includes('Software');
+  const showTeams = query.getAll('team');
 
   const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : false;
 
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
-  const defaultGanttFilters: GanttFilters = {
-    showCars,
-    showElectricalTeamCategory,
-    showMechanicalTeamCategory,
-    showSoftwareTeamCategory,
-    showBusinessTeamCategory,
-    showErgonomicsTeam,
-    showLowVoltageTeam,
-    showTractiveTeam,
-    showDataAndControlsTeam,
-    showSoftwareTeam,
-    showOnlyOverdue,
-    expanded
-  };
-
   useEffect(() => {
-    if (!projects) return;
-
-    setTeamList(Array.from(new Set(projects.map(getProjectTeamsName))));
+    if (!projects || projectsIsLoading || projectsIsError) return;
 
     const ganttFilters: GanttFilters = {
       showCars,
-      showElectricalTeamCategory,
-      showMechanicalTeamCategory,
-      showSoftwareTeamCategory,
-      showBusinessTeamCategory,
-      showErgonomicsTeam,
-      showLowVoltageTeam,
-      showTractiveTeam,
-      showDataAndControlsTeam,
-      showSoftwareTeam,
+      showTeamTypes,
+      showTeams,
       showOnlyOverdue,
       expanded
     };
@@ -109,28 +84,58 @@ const GanttChartPage: FC = () => {
   }, [
     expanded,
     projects,
-    showBusinessTeamCategory,
     showCars,
-    showDataAndControlsTeam,
-    showElectricalTeamCategory,
-    showErgonomicsTeam,
-    showLowVoltageTeam,
-    showMechanicalTeamCategory,
     showOnlyOverdue,
-    showSoftwareTeam,
-    showSoftwareTeamCategory,
-    showTractiveTeam,
-    searchText
+    searchText,
+    teamTypes,
+    projectsIsLoading,
+    teamTypesIsLoading,
+    projectsIsError,
+    teamTypesIsError,
+    showTeamTypes,
+    showTeams
   ]);
 
-  if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
+    return <LoadingIndicator />;
+  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
+  if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
+  if (teamsIsError) return <ErrorPage message={teamsError.message} />;
+
+  const defaultGanttFilters: GanttFilters = {
+    showCars,
+    showTeamTypes,
+    showTeams,
+    showOnlyOverdue,
+    expanded
+  };
 
   const carHandlerFn = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
       const ganttFilters: GanttFilters = event.target.checked
-        ? { ...defaultGanttFilters, showCars: [...defaultGanttFilters.showCars, car] }
-        : defaultGanttFilters;
+        ? { ...defaultGanttFilters, showCars: Array.from(new Set([...defaultGanttFilters.showCars, car])) }
+        : { ...defaultGanttFilters, showCars: defaultGanttFilters.showCars.filter((c) => c !== car) };
+      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    };
+  };
+
+  const teamTypeHandlerFn = (teamType: TeamType) => {
+    return (event: ChangeEvent<HTMLInputElement>) => {
+      const ganttFilters: GanttFilters = event.target.checked
+        ? {
+            ...defaultGanttFilters,
+            showTeamTypes: Array.from(new Set([...defaultGanttFilters.showTeamTypes, teamType.name]))
+          }
+        : { ...defaultGanttFilters, showTeamTypes: defaultGanttFilters.showTeamTypes.filter((t) => t !== teamType.name) };
+      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+    };
+  };
+
+  const teamHandlerFn = (team: Team) => {
+    return (event: ChangeEvent<HTMLInputElement>) => {
+      const ganttFilters: GanttFilters = event.target.checked
+        ? { ...defaultGanttFilters, showTeams: Array.from(new Set([...defaultGanttFilters.showTeams, team.teamName])) }
+        : { ...defaultGanttFilters, showTeams: defaultGanttFilters.showTeams.filter((t) => t !== team.teamName) };
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
   };
@@ -141,61 +146,17 @@ const GanttChartPage: FC = () => {
     { filterLabel: 'Car 2', handler: carHandlerFn(2) }
   ];
 
-  const electricalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showElectricalTeamCategory: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
+  const teamTypeHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = teamTypes.map(
+    (teamType) => {
+      return { filterLabel: teamType.name, handler: teamTypeHandlerFn(teamType) };
+    }
+  );
 
-  const mechanicalTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showMechanicalTeamCategory: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
-  const softwareTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showSoftwareTeamCategory: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
-  const businessTeamCategoryHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showBusinessTeamCategory: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
-  const teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
-    { filterLabel: 'Electrical', handler: electricalTeamCategoryHandler },
-    { filterLabel: 'Mechanical', handler: mechanicalTeamCategoryHandler },
-    { filterLabel: 'Software', handler: softwareTeamCategoryHandler },
-    { filterLabel: 'Business', handler: businessTeamCategoryHandler }
-  ];
-
-  const ergonomicsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showErgonomicsTeam: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-  const lowVoltageTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showLowVoltageTeam: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-  const tractiveTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showTractiveTeam: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-  const dataAndControlsTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showDataAndControlsTeam: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-  const softwareTeamHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showSoftwareTeam: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
-
-  const teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
-    { filterLabel: 'Ergonomics', handler: ergonomicsTeamHandler },
-    { filterLabel: 'Low Voltage', handler: lowVoltageTeamHandler },
-    { filterLabel: 'Tractive', handler: tractiveTeamHandler },
-    { filterLabel: 'Data and Controls', handler: dataAndControlsTeamHandler },
-    { filterLabel: 'Software', handler: softwareTeamHandler }
-  ];
+  const teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = teams.map(
+    (team) => {
+      return { filterLabel: team.teamName, handler: teamHandlerFn(team) };
+    }
+  );
 
   const overdueHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, showOnlyOverdue: event.target.checked };
@@ -271,6 +232,7 @@ const GanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
+  const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   // do something here with the data
@@ -287,8 +249,8 @@ const GanttChartPage: FC = () => {
       <GanttChartColorLegend />
       <GanttChartFiltersButton
         carHandlers={carHandlers}
-        teamCategoriesHandlers={teamCategoriesHandlers}
-        teamsHandlers={teamsHandlers}
+        teamTypeHandlers={teamTypeHandlers}
+        teamHandlers={teamHandlers}
         overdueHandler={overdueHandler}
         expandedHandler={expandedHandler}
         resetHandler={resetHandler}
