@@ -8,6 +8,7 @@ import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { useToast } from '../../hooks/toasts.hooks';
+import { WpCreateChangeRequestFormInput } from './CreateWpChangeRequestForm';
 
 interface EditWorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -41,7 +42,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
 
   const { expectedActivities, deliverables } = wp;
 
-  const onSubmitCreateCr = async (data: WorkPackageApiInputs) => {
+  const onSubmitCreateCr = async (data: WpCreateChangeRequestFormInput) => {
     const { name, startDate, duration, stage, blockedBy } = data;
 
     try {
@@ -51,15 +52,15 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
         what: '',
         why: [],
         proposedSolutions: [],
-        workPackageProposedChanges: {
-          duration: duration,
-          startDate: startDate.toString(),
-          stage: stage,
-          blockedBy: blockedBy,
-          name: name,
-          expectedActivities: expectedActivities.map((e) => e.detail),
-          deliverables: deliverables.map((d) => d.detail)
-        }
+        // workPackageProposedChanges: {
+        //   duration: duration,
+        //   startDate: startDate.toString(),
+        //   stage: stage,
+        //   blockedBy: blockedBy,
+        //   name: name,
+        //   expectedActivities: expectedActivities.map((e) => e.detail),
+        //   deliverables: deliverables.map((d) => d.detail)
+        // }
       });
       setPageMode(false);
     } catch (e) {

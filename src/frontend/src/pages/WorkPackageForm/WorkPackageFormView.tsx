@@ -25,6 +25,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { getTitleFromFormType } from '../../utils/work-package.utils';
 import { ObjectSchema } from 'yup';
 import { getMonday } from '../../utils/datetime.utils';
+import WpCreateChangeRequestForm, { WpCreateChangeRequestFormInput } from './CreateWpChangeRequestForm';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -36,7 +37,7 @@ interface WorkPackageFormViewProps {
   crId?: string;
   formType: WPFormType;
   schema: ObjectSchema<any>;
-  createCr?: (data: WorkPackageApiInputs) => void;
+  createCr?: (data: WpCreateChangeRequestFormInput) => void;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -93,6 +94,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(wbsElement.projectLead?.userId.toString());
+
+  const [showCreateChangeRequest, setShowChangeRequest] = useState<boolean>(false);
 
   // lists of stuff
   const {
@@ -216,6 +219,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                setShowChangeRequest(true);
                 //if (createCr) handleSubmit(createCr)(e);
               }}
               disabled={!createCr}
@@ -226,6 +230,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           </Box>
         }
       >
+        {createCr && showCreateChangeRequest && (
+          <WpCreateChangeRequestForm
+            open={showCreateChangeRequest}
+            onClose={() => setShowChangeRequest(false)}
+            onSubmit={createCr}
+          />
+        )}
         <WorkPackageFormDetails
           control={control}
           errors={errors}

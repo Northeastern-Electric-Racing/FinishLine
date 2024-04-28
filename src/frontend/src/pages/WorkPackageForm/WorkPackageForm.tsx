@@ -10,6 +10,7 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { WPFormType } from '../../utils/form';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
+import { WpCreateChangeRequestFormInput } from './CreateWpChangeRequestForm';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
@@ -18,7 +19,7 @@ interface WorkPackageFormProps {
   mutateAsync: (data: WorkPackageApiInputs) => void;
   formType: WPFormType;
   schema: ObjectSchema<any>;
-  createCrSubmit?: (data: WorkPackageApiInputs) => void;
+  createCrSubmit?: (data: WpCreateChangeRequestFormInput) => void;
 }
 
 const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
