@@ -58,7 +58,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
           blockedBy: blockedBy,
           name: name,
           expectedActivities: expectedActivities.map((e) => e.detail),
-          deliverables: deliverables.map((d) => d.detail),
+          deliverables: deliverables.map((d) => d.detail)
         }
       });
       setPageMode(false);
