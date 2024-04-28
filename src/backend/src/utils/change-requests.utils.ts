@@ -158,12 +158,12 @@ export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
  * @param links the links to be verified
  */
 export const validateProposedChangesFields = async (
-  projectLeadId: number,
-  projectManagerId: number,
   links: {
     url: string;
     linkTypeName: string;
-  }[]
+  }[],
+  projectLeadId?: number,
+  projectManagerId?: number
 ) => {
   if (projectLeadId) {
     const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });

@@ -57,6 +57,12 @@ export const startDateTester = (startDate: Date | undefined) => {
   return true;
 };
 
+export enum WPFormType {
+  CREATE = 'CREATE',
+  EDIT = 'EDIT',
+  CREATEWITHCR = 'CREATEWITHCR'
+}
+
 /**
  * Creates a UUID
  */

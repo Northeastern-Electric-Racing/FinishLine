@@ -565,7 +565,12 @@ export default class ChangeRequestsService {
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
 
     //verify proposed solutions length is greater than 0
-    if (proposedSolutions.length === 0) throw new HttpException(400, 'No proposed solutions provided');
+    if (proposedSolutions.length === 0 && !projectProposedChanges && !workPackageProposedChanges)
+      throw new HttpException(400, 'No proposed solutions/changes provided');
+
+    if (proposedSolutions.length > 0 && (projectProposedChanges || workPackageProposedChanges)) {
+      throw new HttpException(400, `Can't have proposed solutions and proposed changes`);
+    }
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -631,7 +636,7 @@ export default class ChangeRequestsService {
         otherConstraints
       } = projectProposedChanges;
 
-      await validateProposedChangesFields(projectLeadId, projectManagerId, links);
+      await validateProposedChangesFields(links, projectLeadId, projectManagerId);
 
       if (teamIds.length > 0) {
         for (const teamId of teamIds) {
@@ -667,10 +672,8 @@ export default class ChangeRequestsService {
     } else if (workPackageProposedChanges) {
       const {
         name,
-        status,
         projectLeadId,
         projectManagerId,
-        links,
         duration,
         startDate,
         stage,
@@ -679,7 +682,7 @@ export default class ChangeRequestsService {
         blockedBy
       } = workPackageProposedChanges;
 
-      await validateProposedChangesFields(projectLeadId, projectManagerId, links);
+      await validateProposedChangesFields([], projectLeadId, projectManagerId);
 
       await validateBlockedBys(blockedBy);
 
@@ -687,16 +690,13 @@ export default class ChangeRequestsService {
         data: {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
-          status,
+          status: WBS_Element_Status.INACTIVE,
           projectLeadId,
           projectManagerId,
-          links: {
-            create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
-          },
           workPackageProposedChanges: {
             create: {
               duration,
-              startDate,
+              startDate: new Date(startDate),
               stage,
               blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
               expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },
