@@ -39,7 +39,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
       .min(1, 'CR ID must be greater than or equal to 1')
   });
 
-  const { expectedActivities, deliverables, status, links } = wp;
+  const { expectedActivities, deliverables } = wp;
 
   const onSubmitCreateCr = async (data: WorkPackageApiInputs) => {
     const { name, startDate, duration, stage, blockedBy } = data;
@@ -59,8 +59,6 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
           name: name,
           expectedActivities: expectedActivities.map((e) => e.detail),
           deliverables: deliverables.map((d) => d.detail),
-          status: status,
-          links: links.map(l => ({ url: l.url, linkTypeName: l.linkType.name }))
         }
       });
       setPageMode(false);
