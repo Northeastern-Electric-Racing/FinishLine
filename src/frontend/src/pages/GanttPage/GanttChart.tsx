@@ -50,6 +50,12 @@ const GanttChart = ({
 
         if (!tasks) return <></>;
 
+        // Sorting the work packages of each project based on their start date
+        tasks.map((task) => {
+          task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
+          return task;
+        });
+
         return (
           <Box
             sx={{

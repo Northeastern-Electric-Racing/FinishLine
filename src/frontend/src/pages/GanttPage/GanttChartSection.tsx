@@ -6,8 +6,10 @@
 import { eachDayOfInterval, isMonday } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, IconButton, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 
 interface GanttChartSectionProps {
   start: Date;
@@ -21,6 +23,7 @@ interface GanttChartSectionProps {
 const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpanderClick }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
+  const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [key: string]: boolean }>({});
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
   };
@@ -35,14 +38,50 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
   }, [isEditMode]);
 
   const displayEvents = applyChangesToEvents(tasks, eventChanges);
+  const projects = displayEvents.filter((event) => !event.project);
+
+  const toggleWorkPackages = (projectId: string) => {
+    setShowWorkPackagesList((prevState) => ({
+      ...prevState,
+      [projectId]: !prevState[projectId]
+    }));
+  };
 
   return tasks.length > 0 ? (
     <Box sx={{ width: 'fit-content' }}>
       {/* Data display: reset list of events every time eventChanges list changes using key */}
       <Box sx={{ mt: '1rem', width: 'fit-content' }} key={eventChanges.length}>
-        {displayEvents.map((event) => {
+        {projects.map((project, index) => {
           return (
-            <GanttTaskBar key={event.id} days={days} event={event} isEditMode={isEditMode} createChange={createChange} />
+            <>
+              <Box display="flex" alignItems="flex-start">
+                <Box position="fixed" zIndex="2">
+                  <IconButton onClick={() => toggleWorkPackages(project.id)}>
+                    {showWorkPackagesList[project.id] ? <ExpandMore fontSize="large" /> : <ChevronRight fontSize="large" />}
+                  </IconButton>
+                </Box>
+                <GanttTaskBar
+                  key={project.id}
+                  days={days}
+                  event={project}
+                  isEditMode={isEditMode}
+                  createChange={createChange}
+                />
+              </Box>
+              <Collapse in={showWorkPackagesList[project.id]}>
+                {project.children.map((workPackage) => {
+                  return (
+                    <GanttTaskBar
+                      key={workPackage.id}
+                      days={days}
+                      event={workPackage}
+                      isEditMode={isEditMode}
+                      createChange={createChange}
+                    />
+                  );
+                })}
+              </Collapse>
+            </>
           );
         })}
       </Box>
