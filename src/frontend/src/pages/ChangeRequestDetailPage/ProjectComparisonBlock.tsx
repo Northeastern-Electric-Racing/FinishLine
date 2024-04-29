@@ -10,9 +10,6 @@ interface CompareProjectFieldsProps {
   isProposed: boolean;
 }
 
-/*Change Objects for every field to be compared*/
-// PROJECT CHANGES
-
 const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeRequest, isProposed }) => {
   const {
     data: project,
