@@ -95,7 +95,6 @@ export const projectProposedChangesValidators = [
   nonEmptyString(body('projectProposedChanges.features.*')),
   projectProposedChangesExists(body('projectProposedChanges.otherConstraints')).isArray(),
   nonEmptyString(body('projectProposedChanges.otherConstraints.*')),
-  projectProposedChangesExists(body('projectProposedChanges.newProject')).isBoolean(),
   projectProposedChangesExists(body('projectProposedChanges.teamIds')).isArray(),
   nonEmptyString(body('projectProposedChanges.teamIds.*'))
 ];
