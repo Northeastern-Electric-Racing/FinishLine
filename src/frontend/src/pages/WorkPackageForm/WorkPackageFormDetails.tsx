@@ -13,6 +13,7 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageFormViewPayload } from './WorkPackageFormView';
+import { WPFormType } from '../../utils/form';
 
 interface Props {
   lead?: string;
@@ -23,7 +24,7 @@ interface Props {
   usersForProjectManager: User[];
   control: Control<WorkPackageFormViewPayload>;
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
-  createForm?: boolean;
+  formType: WPFormType;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -35,7 +36,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   usersForProjectManager,
   control,
   errors,
-  createForm
+  formType
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -83,13 +84,15 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={3}>
-          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-        </Grid>
+        {formType !== WPFormType.CREATEWITHCR && (
+          <Grid item xs={12} md={3}>
+            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+          </Grid>
+        )}
         <Grid item xs={12} md={3}>
           <StageSelect />
         </Grid>
-        <Grid item xs={12} md={2}>
+        <Grid item xs={12} md={formType === WPFormType.CREATEWITHCR ? 3 : 2}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -125,7 +128,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {!createForm && (
+        {formType === WPFormType.EDIT && (
           <>
             <Grid item xs={12} md={5}>
               <FormLabel> Project Lead</FormLabel>

@@ -199,20 +199,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 0
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -576,20 +563,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -631,20 +605,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -969,20 +930,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 40
       }
     ],
-    {
-      name: 'Change the bodywork through pink paint purchase',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 50,
-      summary: 'Buy hot pink paint',
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.3'],
-      teamIds: []
-    },
+    null,
     null
   );
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
