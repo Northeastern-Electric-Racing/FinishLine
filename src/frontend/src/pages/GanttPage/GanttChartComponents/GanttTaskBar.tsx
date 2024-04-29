@@ -225,14 +225,13 @@ const GanttTaskBar = ({
             )}
           </Box>
         </div>
-        {event.children.map((child) => {
+        {/* {event.children.map((child) => {
           return (
             <div
               {...props}
               style={{
                 gridColumnStart: getStartCol(child),
                 gridColumnEnd: getEndCol(child),
-                // position: 'absolute',
                 height: '2rem',
                 border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
                 borderRadius: '0.25rem',
@@ -246,7 +245,7 @@ const GanttTaskBar = ({
               onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
             />
           );
-        })}
+        })} */}
       </Box>
     </Box>
   );
