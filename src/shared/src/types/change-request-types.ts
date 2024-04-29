@@ -117,12 +117,12 @@ export interface ProjectProposedChangesCreateArgs {
   links: { url: string; linkTypeName: string }[];
   budget: number;
   summary: string;
-  newProject: boolean;
   goals: string[];
   features: string[];
   otherConstraints: string[];
   rules: string[];
   teamIds: string[];
+  carNumber?: number;
 }
 
 export interface WorkPackageProposedChangesCreateArgs {
