@@ -108,7 +108,7 @@ const CreateProjectCRContainer: React.FC = () => {
         },
         type: ChangeRequestType.Issue,
         what: name,
-        why: [{ explain: 'New Project for ' + name, type: ChangeRequestReason.Competition }],
+        why: [{ explain: 'New Project for ' + name, type: ChangeRequestReason.Initialization }],
         proposedSolutions: [],
         projectProposedChanges: projectPayload
       };
