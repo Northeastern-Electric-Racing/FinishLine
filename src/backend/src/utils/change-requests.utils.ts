@@ -182,3 +182,17 @@ export const validateProposedChangesFields = async (
     }
   }
 };
+
+/**
+ * Determines if there are other open unreviewed change requests for this wbs element
+ * @param wbsElemId the wbs element id to find CRs with
+ * @throws if the WBS element has open unreviewed change requests
+ *
+ */
+export const validateUnreviewedOpenCRs = async (wbsElemId: number) => {
+  const openCRs = await prisma.change_Request.findMany({
+    where: { wbsElementId: wbsElemId, accepted: false }
+  });
+  if (openCRs.length > 1)
+    throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
+};

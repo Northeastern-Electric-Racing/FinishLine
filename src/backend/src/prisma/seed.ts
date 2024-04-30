@@ -21,7 +21,6 @@ import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
-import WorkPackagesService from '../services/work-packages.services';
 import {
   ClubAccount,
   DesignReviewStatus,
@@ -666,7 +665,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const proposedSolution3Id = proposedSolution3.id;
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject5Id, 'LGTM', true, proposedSolution3Id);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject5Id, 'LGTM', true, null);
 
   const changeRequestProject6 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -1383,14 +1382,14 @@ const performSeed: () => Promise<void> = async () => {
     [1, 2, 3, 4, 5, 6, 7]
   );
 
-  const newWorkPackageChangeRequest = ChangeRequestsService.createStandardChangeRequest(
+  const newWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     batman,
     project2WbsNumber.carNumber,
     project2WbsNumber.projectNumber,
     project2WbsNumber.workPackageNumber,
     CR_Type.OTHER,
     'This is a wpchange test',
-    [{ type: Scope_CR_Why_Type.OTHER, explain: 'Random explain' }],
+    [{ type: Scope_CR_Why_Type.OTHER, explain: 'Creating work package' }],
     [
       { description: 'Making a new workpackage from prop changes', scopeImpact: 'n/a', timelineImpact: 2, budgetImpact: 120 }
     ],
@@ -1408,6 +1407,37 @@ const performSeed: () => Promise<void> = async () => {
       expectedActivities: [],
       deliverables: []
     }
+  );
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, newWorkPackageChangeRequest.crId, 'create wp', true, null);
+
+  const { workPackageWbsNumber: workPackage9WbsNumber, workPackage: workPackage9 } = await seedWorkPackage(
+    thomasEmrax,
+    'Slim and Light Car',
+    newWorkPackageChangeRequest.crId,
+    WorkPackageStage.Design,
+    '01/22/2024',
+    5,
+    [],
+    [
+      'Create a very vroom vroom car that goes very fast',
+      'Design a nose that is very pointy so the car goes faster',
+      'Remove the wheels to reduce weight and make the car go... welp'
+    ],
+    ['Speed and weight data from the data engineering team'],
+    thomasEmrax,
+    WbsElementStatus.Inactive,
+    joeShmoe.userId,
+    thomasEmrax.userId
+  );
+
+  const editingWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
+    joeShmoe,
+    workPackage9WbsNumber.carNumber,
+    workPackage9WbsNumber.projectNumber,
+    workPackage9WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'This is editing a wp through CR',
+    [{ type: Scope_CR_Why_Type.OTHER, explain: 'editing a workpackage' }]
   );
 };
 
