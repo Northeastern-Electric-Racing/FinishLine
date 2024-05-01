@@ -1437,7 +1437,22 @@ const performSeed: () => Promise<void> = async () => {
     workPackage9WbsNumber.workPackageNumber,
     CR_Type.OTHER,
     'This is editing a wp through CR',
-    [{ type: Scope_CR_Why_Type.OTHER, explain: 'editing a workpackage' }]
+    [{ type: Scope_CR_Why_Type.OTHER, explain: 'editing a workpackage' }],
+    [],
+    null,
+    {
+      name: 'editing a work package test',
+      status: WbsElementStatus.Inactive,
+      projectLeadId: batman.userId,
+      projectManagerId: cyborg.userId,
+      links: [],
+      duration: 5,
+      startDate: transformDate(new Date()),
+      stage: WorkPackageStage.Design,
+      blockedBy: [],
+      expectedActivities: [],
+      deliverables: []
+    }
   );
 };
 
