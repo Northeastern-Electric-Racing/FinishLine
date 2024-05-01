@@ -44,7 +44,7 @@ const UserSecureSettingsEdit: React.FC<UserSecureSettingsEditProps> = ({ current
   });
 
   return (
-    <form id={'update-user-settings'} onSubmit={handleSubmit(onSubmit)}>
+    <form id={'update-user-secure-settings'} onSubmit={handleSubmit(onSubmit)}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8}>
           <FormControl fullWidth>

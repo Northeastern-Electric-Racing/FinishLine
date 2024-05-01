@@ -11,21 +11,22 @@ import { workPackageTransformer } from './transformers/work-packages.transformer
 
 export interface WorkPackageApiInputs {
   name: string;
-  startDate: String;
+  startDate: string;
   duration: number;
-  crId: number;
-  stage: WorkPackageStage | null;
+  crId: number | undefined;
+  stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
 }
 
 export interface WorkPackageTemplateApiInputs {
-  name: string;
-  notes: string;
-  workPackageName: string;
+  templateName: string;
+  templateNotes: string;
   duration: number;
-  workPackageTemplateId: string;
   stage: WorkPackageStage | null;
   blockedBy: BlockedByInfo[];
+  expectedActivities: string[];
+  deliverables: string[]; // Assuming this is an array of strings
+  workPackageName?: string; // Optional property
 }
 
 export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
@@ -87,8 +88,8 @@ export const editWorkPackage = (payload: WorkPackageApiInputs) => {
  * @param payload Object containing required key-value pairs for backend function to edit work package
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
-export const editWorkPackageTemplate = (payload: WorkPackageTemplateApiInputs) => {
-  return axios.post<{ message: string }>(apiUrls.workPackageTemplatesEdit(payload.workPackageTemplateId), {
+export const editWorkPackageTemplate = (workPackageTempateId: string, payload: WorkPackageTemplateApiInputs) => {
+  return axios.post<{ message: string }>(apiUrls.workPackageTemplatesEdit(workPackageTempateId), {
     ...payload
   });
 };

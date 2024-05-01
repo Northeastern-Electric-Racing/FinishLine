@@ -136,7 +136,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     });
   });
 
-  wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp1.id, wp2.id));
+  wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp2.id, wp1.id));
 
   return (
     <NERFormModal
@@ -164,18 +164,14 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                 onChange={(newValue) => {
                   onChange(newValue ?? defaultDate);
                 }}
-                PopperProps={{
-                  placement: 'right'
+                slotProps={{
+                  textField: {
+                    error: !!errors.date,
+                    helperText: errors.date?.message,
+                    onClick: (e) => setDatePickerOpen(true),
+                    inputProps: { readOnly: true }
+                  }
                 }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    inputProps={{ ...params.inputProps, readOnly: true }}
-                    error={!!errors.date}
-                    helperText={errors.date?.message}
-                    onClick={(e) => setDatePickerOpen(true)}
-                  />
-                )}
               />
             )}
           />

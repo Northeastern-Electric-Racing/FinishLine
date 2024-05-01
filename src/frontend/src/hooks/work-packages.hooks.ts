@@ -87,7 +87,7 @@ export const useEditWorkPackageTemplate = (workPackageTemplateId: string) => {
   return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
     ['work package templates', 'edit'],
     async (wptPayload: WorkPackageTemplateApiInputs) => {
-      const { data } = await editWorkPackageTemplate(wptPayload);
+      const { data } = await editWorkPackageTemplate(workPackageTemplateId, wptPayload);
       return data;
     },
     {

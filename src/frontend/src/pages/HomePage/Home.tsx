@@ -1,35 +1,37 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
-
+import React from 'react';
 import { Typography } from '@mui/material';
-import OverdueWorkPackageAlerts from './OverdueWorkPackageAlerts';
-import UsefulLinks from './UsefulLinks';
-import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
-import UpcomingDeadlines from './UpcomingDeadlines';
-import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
-import PageLayout from '../../components/PageLayout';
+import { useEditWorkPackageTemplate } from '../../hooks/work-packages.hooks';
+import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 
 const Home = () => {
-  const user = useCurrentUser();
-  const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
+  const { mutateAsync } = useEditWorkPackageTemplate("32"); 
 
-  if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
+  const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
+    try {
+      const payload: WorkPackageTemplateApiInputs = {
+        templateName: 'Example Template Name',
+        templateNotes: 'Example Template Notes',
+        duration: 7,
+        stage: null,
+        blockedBy: [],
+        expectedActivities: [],
+        deliverables: [],
+        workPackageName: 'Example Work Package Name',
+      };
+
+      await mutateAsync(payload); 
+    } catch (error) {
+      console.error('Error editing work package template:', error);
+    }
+  };
 
   return (
-    <PageLayout title="Home" hidePageTitle>
+    <div>
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
-        Welcome, {user.firstName}!
+        Welcome!
       </Typography>
-      <OverdueWorkPackageAlerts />
-      <UsefulLinks />
-      <UpcomingDeadlines />
-      <WorkPackagesByTimelineStatus />
-    </PageLayout>
+      <button onClick={handleClick}>Edit Work Package Template</button>
+    </div>
   );
 };
 
