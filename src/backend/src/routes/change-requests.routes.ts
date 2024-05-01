@@ -67,7 +67,7 @@ changeRequestsRouter.post(
   body('why').isArray(),
   nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
-  body('proposedSolutions').isArray({ min: 0 }),
+  body('proposedSolutions').isArray(),
   nonEmptyString(body('proposedSolutions.*.description')),
   nonEmptyString(body('proposedSolutions.*.scopeImpact')),
   body('proposedSolutions.*.timelineImpact').isInt(),
