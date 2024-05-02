@@ -76,7 +76,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             >
               Available
             </Typography>
-            <Box sx={{ maxHeight: '350px', overflowY: 'scroll' }}>
+            <Box sx={{ maxHeight: '350px', overflowY: 'auto' }}>
               {currentAvailableUsers.map((user) => (
                 <Typography style={{ textAlign: 'center', fontSize: '16px' }}>{fullNamePipe(user)}</Typography>
               ))}
@@ -94,7 +94,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             >
               Unavailable
             </Typography>
-            <Box sx={{ maxHeight: '350px', overflowY: 'scroll' }}>
+            <Box sx={{ maxHeight: '350px', overflowY: 'auto' }}>
               {currentUnavailableUsers.map((user) => (
                 <Typography style={{ textAlign: 'center', fontSize: '1em' }}>{fullNamePipe(user)}</Typography>
               ))}
@@ -107,7 +107,7 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             display: 'flex',
             justifyContent: 'flex-end',
             gap: '10px',
-            overflow: 'scroll'
+            overflow: 'auto'
           }}
         >
           <NERFailButton>Cancel</NERFailButton>
