@@ -209,7 +209,11 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             form="review-notes-form"
             sx={{ mx: 1 }}
             onClick={() => {
-              selected > -1 ? handleAcceptDeny(true) : toast.error('Please select a proposed solution!', 4500);
+              selected > -1 ||
+              (cr as StandardChangeRequest).workPackageProposedChanges ||
+              (cr as StandardChangeRequest).projectProposedChanges
+                ? handleAcceptDeny(true)
+                : toast.error('Please select a proposed solution!', 4500);
             }}
           >
             Accept
