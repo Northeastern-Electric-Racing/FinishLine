@@ -623,7 +623,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const proposedSolution3Id = proposedSolution3.id;
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject5Id, 'LGTM', true, null);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject5Id, 'LGTM', true, proposedSolution3Id);
 
   const changeRequestProject6 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -1334,16 +1334,12 @@ const performSeed: () => Promise<void> = async () => {
     CR_Type.OTHER,
     'This is a wpchange test',
     [{ type: Scope_CR_Why_Type.OTHER, explain: 'Creating work package' }],
-    [
-      { description: 'Making a new workpackage from prop changes', scopeImpact: 'n/a', timelineImpact: 2, budgetImpact: 120 }
-    ],
+    [],
     null,
     {
       name: 'new workpackage test',
-      status: WbsElementStatus.Inactive,
       projectLeadId: batman.userId,
       projectManagerId: cyborg.userId,
-      links: [],
       duration: 5,
       startDate: transformDate(new Date()),
       stage: WorkPackageStage.Design,
@@ -1386,10 +1382,8 @@ const performSeed: () => Promise<void> = async () => {
     null,
     {
       name: 'editing a work package test',
-      status: WbsElementStatus.Inactive,
       projectLeadId: batman.userId,
       projectManagerId: cyborg.userId,
-      links: [],
       duration: 5,
       startDate: transformDate(new Date()),
       stage: WorkPackageStage.Design,

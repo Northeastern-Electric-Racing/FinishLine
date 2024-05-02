@@ -101,7 +101,7 @@ export default class ChangeRequestsService {
       where: { crId },
       include: {
         activationChangeRequest: true,
-        scopeChangeRequest: { ...scopeChangeRequestQueryArgs },
+        scopeChangeRequest: scopeChangeRequestQueryArgs,
         wbsElement: {
           include: { workPackage: workPackageQueryArgs, project: true }
         }
