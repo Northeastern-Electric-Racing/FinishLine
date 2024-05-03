@@ -6,7 +6,7 @@
 import { eachDayOfInterval, isMonday } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
-import { Box, Typography, IconButton, Collapse } from '@mui/material';
+import { Box, Typography, IconButton, Collapse, useTheme } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ChevronRight from '@mui/icons-material/ChevronRight';
@@ -24,6 +24,8 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
   const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [key: string]: boolean }>({});
+  const theme = useTheme();
+
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
   };
@@ -51,11 +53,11 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
     <Box sx={{ width: 'fit-content' }}>
       {/* Data display: reset list of events every time eventChanges list changes using key */}
       <Box sx={{ mt: '1rem', width: 'fit-content' }} key={eventChanges.length}>
-        {projects.map((project, index) => {
+        {projects.map((project) => {
           return (
             <>
               <Box display="flex" alignItems="flex-start">
-                <Box position="fixed" zIndex="2">
+                <Box position="fixed" zIndex="2" style={{ backgroundColor: theme.palette.background.default }}>
                   <IconButton onClick={() => toggleWorkPackages(project.id)}>
                     {showWorkPackagesList[project.id] ? <ExpandMore fontSize="large" /> : <ChevronRight fontSize="large" />}
                   </IconButton>

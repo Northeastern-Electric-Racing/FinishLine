@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import { User } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
+import { grey } from '@mui/material/colors';
 
 interface GanttToolTipProps {
   xCoordinate: number;
@@ -28,12 +29,12 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
       left: `${xCoordinate}px`,
       top: `${yCoordinate + 20}px`,
       padding: '10px',
-      backgroundColor: '#ef4345',
+      backgroundColor: grey[700],
       borderRadius: '5px',
       zIndex: 1
     }}
   >
-    <Box color={'black'}>
+    <Box color={'white'}>
       <Typography>{title}</Typography>
       <Box display={'flex'} flexDirection={'row'}>
         <Typography marginRight={'10px'}>Start: {startDate.toLocaleDateString()}</Typography>
