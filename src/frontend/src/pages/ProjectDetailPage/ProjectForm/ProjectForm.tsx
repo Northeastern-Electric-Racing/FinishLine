@@ -44,7 +44,7 @@ export interface ProjectFormInput {
     bulletId: number;
     detail: string;
   }[];
-  teamId: string;
+  teamIds: number[];
 }
 
 interface ProjectFormContainerProps {
@@ -63,7 +63,6 @@ interface ProjectFormContainerProps {
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   exitEditMode,
-  requiredLinkTypeNames,
   project,
   onSubmit,
   defaultValues,
@@ -94,7 +93,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       goals: defaultValues?.goals,
       features: defaultValues?.features,
       constraints: defaultValues?.constraints,
-      teamId: defaultValues?.teamId
+      teamIds: defaultValues?.teamIds
     }
   });
 

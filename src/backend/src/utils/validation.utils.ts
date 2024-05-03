@@ -96,7 +96,8 @@ export const projectProposedChangesValidators = [
   projectProposedChangesExists(body('projectProposedChanges.otherConstraints')).isArray(),
   nonEmptyString(body('projectProposedChanges.otherConstraints.*')),
   projectProposedChangesExists(body('projectProposedChanges.teamIds')).isArray(),
-  nonEmptyString(body('projectProposedChanges.teamIds.*'))
+  nonEmptyString(body('projectProposedChanges.teamIds.*')),
+  projectProposedChangesExists(body('projectProposedChanges.carNumber')).optional().isInt()
 ];
 
 const workPackageProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {

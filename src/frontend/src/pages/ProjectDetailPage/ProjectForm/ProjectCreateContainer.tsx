@@ -40,10 +40,10 @@ const ProjectCreateContainer: React.FC = () => {
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
 
   const defaultValues = {
-    name: String(),
+    name: '',
     budget: 0,
-    summary: String(),
-    teamId: String(),
+    summary: '',
+    teamIds: [],
     carNumber: 0,
     links: [],
     crId: query.get('crId') || '',
@@ -68,18 +68,15 @@ const ProjectCreateContainer: React.FC = () => {
       .array()
       .optional()
       .of(
-        yup
-          .object()
-          .optional()
-          .shape({
-            linkTypeName: yup.string().optional(),
-            url: yup.string().optional().url('Invalid URL')
-          })
+        yup.object().shape({
+          linkTypeName: yup.string(),
+          url: yup.string().url('Invalid URL')
+        })
       )
   });
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, crId, teamId, carNumber } = data;
+    const { name, budget, summary, links, crId, teamIds, carNumber } = data;
 
     const rules = data.rules.map((rule) => rule.detail);
     const goals = mapBulletsToPayload(data.goals);
@@ -92,7 +89,7 @@ const ProjectCreateContainer: React.FC = () => {
         name,
         carNumber,
         summary,
-        teamIds: [teamId],
+        teamIds: teamIds.map((number) => '' + number),
         budget,
         rules,
         goals,

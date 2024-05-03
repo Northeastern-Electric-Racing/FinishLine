@@ -6,24 +6,30 @@ import { useAllTeams } from '../hooks/teams.hooks';
 interface TeamDropdownProps {
   control: Control<any, any>;
   name: string;
+  multiple?: boolean;
 }
 
-const TeamDropdown = ({ control, name }: TeamDropdownProps) => {
+const TeamDropdown = ({ control, name, multiple = false }: TeamDropdownProps) => {
   const { isLoading, data: teams } = useAllTeams();
   if (isLoading || !teams) return <LoadingIndicator />;
 
   return (
     <Box>
       <FormControl fullWidth>
-        <FormLabel sx={{ alignSelf: 'start' }}>Team</FormLabel>
+        <FormLabel sx={{ alignSelf: 'start' }}>{multiple ? 'Teams' : 'Team'}</FormLabel>
         <Controller
           control={control}
           name={name}
           render={({ field: { onChange, value } }) => (
             <Select
+              multiple={multiple}
               id="team-autocomplete"
               displayEmpty
-              renderValue={(value) => teams.find((team) => team.teamId === `${value}`)?.teamName}
+              renderValue={(values: any) =>
+                multiple
+                  ? values.map((value: any) => teams.find((team) => team.teamId === `${value}`)?.teamName).join(', ')
+                  : teams.find((team) => team.teamId === `${values}`)?.teamName
+              }
               value={value}
               onChange={(event: SelectChangeEvent<number>) => onChange(event.target.value)}
               size={'small'}

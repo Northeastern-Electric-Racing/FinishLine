@@ -39,10 +39,10 @@ const CreateProjectCRContainer: React.FC = () => {
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
 
   const defaultValues = {
-    name: String(),
+    name: '',
     budget: 0,
-    summary: String(),
-    teamId: String(),
+    summary: '',
+    teamIds: [],
     carNumber: 0,
     links: [],
     crId: '',
@@ -62,22 +62,16 @@ const CreateProjectCRContainer: React.FC = () => {
     summary: yup.string().required('Summary is required!'),
     projectLeadId: yup.number().optional(),
     projectManagerId: yup.number().optional(),
-    links: yup
-      .array()
-      .optional()
-      .of(
-        yup
-          .object()
-          .optional()
-          .shape({
-            linkTypeName: yup.string().optional(),
-            url: yup.string().optional().url('Invalid URL')
-          })
-      )
+    links: yup.array().of(
+      yup.object().shape({
+        linkTypeName: yup.string(),
+        url: yup.string().url('Invalid URL')
+      })
+    )
   });
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, teamId, carNumber } = data;
+    const { name, budget, summary, links, teamIds, carNumber } = data;
 
     const rules = data.rules.map((rule) => rule.detail);
     const goals = mapBulletsToStrings(data.goals);
@@ -89,7 +83,7 @@ const CreateProjectCRContainer: React.FC = () => {
         name,
         summary,
         status: WbsElementStatus.Active,
-        teamIds: [teamId],
+        teamIds: teamIds.map((number) => '' + number),
         budget,
         rules,
         goals,
@@ -100,7 +94,7 @@ const CreateProjectCRContainer: React.FC = () => {
         projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined,
         carNumber: carNumber
       };
-      const payload: CreateStandardChangeRequestPayload = {
+      const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
           carNumber: carNumber,
           projectNumber: 0,
@@ -112,7 +106,7 @@ const CreateProjectCRContainer: React.FC = () => {
         proposedSolutions: [],
         projectProposedChanges: projectPayload
       };
-      await mutateAsync(payload);
+      await mutateAsync(changeRequestPayload);
       history.push(routes.CHANGE_REQUESTS_OVERVIEW);
     } catch (e) {
       if (e instanceof Error) {

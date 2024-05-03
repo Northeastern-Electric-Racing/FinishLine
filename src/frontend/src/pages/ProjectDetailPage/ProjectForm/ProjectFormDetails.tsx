@@ -78,7 +78,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             </Grid>
             <Grid item lg={2.4} md={6} xs={12}>
               <FormControl fullWidth>
-                <TeamDropdown control={control} name="teamId" />
+                <TeamDropdown control={control} name="teamIds" multiple />
               </FormControl>
             </Grid>
           </>

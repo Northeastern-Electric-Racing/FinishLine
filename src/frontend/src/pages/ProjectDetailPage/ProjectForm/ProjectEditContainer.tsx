@@ -73,7 +73,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     budget,
     summary,
     // teamId and carNumber aren't used for projectEdit
-    teamId: '',
+    teamIds: [],
     carNumber: 0,
     links,
     crId: query.get('crId') || project.changes[0].changeRequestId.toString(),
