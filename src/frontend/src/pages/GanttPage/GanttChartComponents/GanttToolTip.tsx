@@ -1,7 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { User } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
-import { grey } from '@mui/material/colors';
 
 interface GanttToolTipProps {
   xCoordinate: number;
