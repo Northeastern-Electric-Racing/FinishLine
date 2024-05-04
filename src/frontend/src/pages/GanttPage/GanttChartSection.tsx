@@ -57,7 +57,15 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
           return (
             <>
               <Box display="flex" alignItems="flex-start">
-                <Box position="fixed" zIndex="2" style={{ backgroundColor: theme.palette.background.default }}>
+                <Box
+                  sx={{
+                    position: 'sticky',
+                    left: '0em',
+                    zIndex: '1',
+                    backgroundColor: theme.palette.background.default,
+                    marginRight: '-50px'
+                  }}
+                >
                   <IconButton onClick={() => toggleWorkPackages(project.id)}>
                     {showWorkPackagesList[project.id] ? <ExpandMore fontSize="large" /> : <ChevronRight fontSize="large" />}
                   </IconButton>

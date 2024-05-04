@@ -29,7 +29,7 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
       left: `${xCoordinate}px`,
       top: `${yCoordinate + 20}px`,
       padding: '10px',
-      backgroundColor: grey[700],
+      backgroundColor: '#ef4345 ',
       borderRadius: '5px',
       zIndex: 1
     }}
