@@ -21,7 +21,7 @@ const CreateWorkPackageForm: React.FC = () => {
   if (!wbsNum) throw new Error('WBS number not included in request.');
   if (!crId) throw new Error('CR ID not included in request.');
 
-  const { mutateAsync } = useCreateSingleWorkPackage();
+  const { mutateAsync: createWorkPackage } = useCreateSingleWorkPackage();
   const { mutateAsync: createWorkPackageScopeCR } = useCreateStandardChangeRequest();
   const { data: wbsElement, isLoading, isError, error } = useSingleProject(validateWBS(wbsNum));
 
@@ -61,7 +61,7 @@ const CreateWorkPackageForm: React.FC = () => {
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
-      mutateAsync={mutateAsync}
+      implementChanges={createWorkPackage}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       crId={crId}

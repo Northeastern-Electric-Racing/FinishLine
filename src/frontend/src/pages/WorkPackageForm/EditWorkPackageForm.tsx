@@ -16,7 +16,7 @@ interface EditWorkPackageFormProps {
 const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPageMode }) => {
   const history = useHistory();
 
-  const { mutateAsync, isLoading } = useEditWorkPackage(wbsNum);
+  const { mutateAsync: editWorkPackage, isLoading } = useEditWorkPackage(wbsNum);
   const { mutateAsync: createWorkPackageScopeCR, isLoading: createStandardChangeRequestIsLoading } =
     useCreateStandardChangeRequest();
 
@@ -45,7 +45,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
   return (
     <WorkPackageForm
       wbsNum={wbsNum}
-      mutateAsync={mutateAsync}
+      implementChanges={editWorkPackage}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       exitActiveMode={() => {
         setPageMode(false);

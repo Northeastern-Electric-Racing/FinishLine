@@ -15,7 +15,7 @@ interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
-  mutateAsync: (data: WorkPackageApiInputs) => void;
+  implementChanges: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   schema: ObjectSchema<any>;
   breadcrumbs: { name: string; route: string }[];
@@ -23,7 +23,7 @@ interface WorkPackageFormProps {
 
 const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   wbsNum,
-  mutateAsync,
+  implementChanges,
   createWorkPackageScopeCR,
   exitActiveMode,
   crId,
@@ -77,7 +77,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   return (
     <WorkPackageFormView
       exitActiveMode={exitActiveMode}
-      mutateAsync={mutateAsync}
+      implementChanges={implementChanges}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       defaultValues={defaultValues}
       wbsElement={wbsElement}

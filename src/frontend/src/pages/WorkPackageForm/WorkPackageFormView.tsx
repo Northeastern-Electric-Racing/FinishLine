@@ -6,7 +6,7 @@
 import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
@@ -26,10 +26,11 @@ import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeReq
 import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequest';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
+import HelpIcon from '@mui/icons-material/Help';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: (data: WorkPackageApiInputs) => void;
+  implementChanges: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
@@ -60,7 +61,7 @@ export interface WorkPackageFormViewPayload {
 
 const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
-  mutateAsync,
+  implementChanges,
   createWorkPackageScopeCR,
   defaultValues,
   wbsElement,
@@ -154,7 +155,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           toast.error('Create a change request or select an existing one before submitting');
           return;
         }
-        mutateAsync(payload);
+        implementChanges(payload);
         exitActiveMode();
       }
     } catch (e) {
@@ -199,14 +200,24 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            {(crWatch === 'null' || crWatch === '') && (
-              <NERSuccessButton variant="contained" onClick={showChangeRequestModal} sx={{ mx: 1 }}>
-                Create Change Request
-              </NERSuccessButton>
-            )}
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
+            {(crWatch === 'null' || crWatch === '') && (
+              <Box display="inline-flex" alignItems="center">
+                <NERSuccessButton variant="contained" onClick={showChangeRequestModal} sx={{ mx: 1 }}>
+                  Create Change Request
+                </NERSuccessButton>
+                <Tooltip
+                  title={
+                    'This form will create a change request that when accepted will automatically create a new Work Package'
+                  }
+                  placement="right"
+                >
+                  <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+                </Tooltip>
+              </Box>
+            )}
           </Box>
         }
       >
