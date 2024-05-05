@@ -89,8 +89,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     }
   });
 
-  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
-  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.projectLead?.userId.toString());
+  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.manager?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
 
   // lists of stuff
   const {
