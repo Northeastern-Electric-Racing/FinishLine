@@ -9,7 +9,6 @@ import {
   IconButton,
   MenuItem,
   Select,
-  TextField,
   Tooltip,
   Typography,
   Snackbar,
@@ -245,15 +244,14 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                     onChange={(newValue) => {
                       onChange(newValue ?? new Date());
                     }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        inputProps={{ ...params.inputProps, readOnly: true }}
-                        error={!!errors.dateOfExpense}
-                        helperText={errors.dateOfExpense?.message}
-                        onClick={(e) => setDatePickerOpen(true)}
-                      />
-                    )}
+                    slotProps={{
+                      textField: {
+                        error: !!errors.dateOfExpense,
+                        helperText: errors.dateOfExpense?.message,
+                        onClick: (e) => setDatePickerOpen(true),
+                        inputProps: { readOnly: true }
+                      }
+                    }}
                   />
                 )}
               />

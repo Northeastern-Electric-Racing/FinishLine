@@ -44,7 +44,16 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
       >
         {title}
       </NERButton>
-      <Menu open={dropdownOpen} anchorEl={anchorEl} onClose={handleDropdownClose}>
+      <Menu
+        open={dropdownOpen}
+        anchorEl={anchorEl}
+        onClose={handleDropdownClose}
+        sx={{
+          '& .MuiPaper-root': {
+            minWidth: anchorEl ? anchorEl.clientWidth : undefined
+          }
+        }}
+      >
         {buttons.flatMap((button, index) => {
           return [
             button.dividerTop && <Divider key={`${index}-divider`} />,
@@ -56,7 +65,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({ buttons, title = 'Actions' })
               }}
               disabled={button.disabled}
             >
-              <ListItemIcon>{button.icon}</ListItemIcon>
+              {button.icon && <ListItemIcon>{button.icon}</ListItemIcon>}
               {button.title}
             </MenuItem>
           ];

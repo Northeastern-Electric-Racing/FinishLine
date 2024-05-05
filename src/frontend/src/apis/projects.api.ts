@@ -98,3 +98,13 @@ export const getAllLinkTypes = () => {
 export const createLinkType = async (linkTypeData: LinkTypeCreatePayload) => {
   return axios.post(apiUrls.projectsCreateLinkTypes(), linkTypeData);
 };
+
+/**
+ * Edits a linkType in the database
+ * @param name the (unique) name of the linkType to edit
+ * @param linkTypeData the edited data of the linkType
+ * @returns the updated linkType
+ */
+export const editLinkType = async (name: string, linkTypeData: LinkTypeCreatePayload) => {
+  return axios.post(apiUrls.projectsEditLinkTypes(name), linkTypeData);
+};

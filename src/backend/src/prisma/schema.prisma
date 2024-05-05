@@ -146,6 +146,8 @@ model Team {
   userArchived           User?                      @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
   meetings               Meeting[]
   proposedProjectChanges Project_Proposed_Changes[] @relation(name: "proposedProjectTeams")
+  teamType               TeamType?                  @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId             String?
 }
 
 model Session {
@@ -165,19 +167,19 @@ model User_Settings {
 }
 
 model Change_Request {
-  crId                     Int                   @id @default(autoincrement())
+  crId                     Int            @id @default(autoincrement())
   submitterId              Int
-  submitter                User                  @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
-  dateSubmitted            DateTime              @default(now())
+  submitter                User           @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
+  dateSubmitted            DateTime       @default(now())
   dateDeleted              DateTime?
   wbsElementId             Int
-  wbsElement               WBS_Element           @relation(fields: [wbsElementId], references: [wbsElementId])
+  wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
   type                     CR_Type
   reviewerId               Int?
-  reviewer                 User?                 @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
-  requestedReviewers       User[]                @relation(name: "requestedChangeRequestReviewers")
+  reviewer                 User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
+  requestedReviewers       User[]         @relation(name: "requestedChangeRequestReviewers")
   deletedByUserId          Int?
-  deletedBy                User?                 @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
+  deletedBy                User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
   dateReviewed             DateTime?
   accepted                 Boolean?
   reviewNotes              String?
@@ -186,8 +188,6 @@ model Change_Request {
   stageGateChangeRequest   Stage_Gate_CR?
   activationChangeRequest  Activation_CR?
   notificationSlackThreads Message_Info[]
-  wbsProposedChangesId     String?
-  wbsProposedChanges       Wbs_Proposed_Changes?
 }
 
 model Message_Info {
@@ -199,15 +199,17 @@ model Message_Info {
 }
 
 model Scope_CR {
-  scopeCrId         Int                 @id @default(autoincrement())
-  changeRequestId   Int                 @unique
-  changeRequest     Change_Request      @relation(fields: [changeRequestId], references: [crId])
-  what              String
-  why               Scope_CR_Why[]
-  scopeImpact       String
-  timelineImpact    Int
-  budgetImpact      Int
-  proposedSolutions Proposed_Solution[]
+  scopeCrId            Int                   @id @default(autoincrement())
+  changeRequestId      Int                   @unique
+  changeRequest        Change_Request        @relation(fields: [changeRequestId], references: [crId])
+  what                 String
+  why                  Scope_CR_Why[]
+  scopeImpact          String
+  timelineImpact       Int
+  budgetImpact         Int
+  proposedSolutions    Proposed_Solution[]
+  wbsProposedChangesId String?
+  wbsProposedChanges   Wbs_Proposed_Changes?
 }
 
 model Proposed_Solution {
@@ -290,7 +292,7 @@ model WBS_Element {
   materials                   Material[]
   reimbursementProductReasons Reimbursement_Product_Reason[]
   designReviews               Design_Review[]
-  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "blockedBy")
+  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "proposedBlockedBy")
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -377,12 +379,12 @@ model Description_Bullet {
   workPackageExpectedActivities            Work_Package?                  @relation(name: "workPackageExpectedActivities", fields: [workPackageIdExpectedActivities], references: [workPackageId])
   workPackageIdDeliverables                Int?
   workPackageDeliverables                  Work_Package?                  @relation(name: "workPackageDeliverables", fields: [workPackageIdDeliverables], references: [workPackageId])
-  proposedProjectChangesGoalsId            String?
-  proposedProjectChangesGoals              Project_Proposed_Changes?      @relation(name: "proposedProjectGoals", fields: [proposedProjectChangesGoalsId], references: [projectProposedChangesId])
-  proposedProjectChangesFeaturesId         String?
-  proposedProjectChangesFeatures           Project_Proposed_Changes?      @relation(name: "proposedProjectFeatures", fields: [proposedProjectChangesFeaturesId], references: [projectProposedChangesId])
-  proposedProjectChangesOtherConstraintsId String?
-  proposedProjectChangesOtherConstraints   Project_Proposed_Changes?      @relation(name: "proposedProjectOtherConstraints", fields: [proposedProjectChangesOtherConstraintsId], references: [projectProposedChangesId])
+  projectProposedChangesGoalsId            String?
+  projectProposedChangesGoals              Project_Proposed_Changes?      @relation(name: "proposedProjectGoals", fields: [projectProposedChangesGoalsId], references: [projectProposedChangesId])
+  projectProposedChangesFeaturesId         String?
+  projectProposedChangesFeatures           Project_Proposed_Changes?      @relation(name: "proposedProjectFeatures", fields: [projectProposedChangesFeaturesId], references: [projectProposedChangesId])
+  projectProposedChangesOtherConstraintsId String?
+  projectProposedChangesOtherConstraints   Project_Proposed_Changes?      @relation(name: "proposedProjectOtherConstraints", fields: [projectProposedChangesOtherConstraintsId], references: [projectProposedChangesId])
   wpProposedChangesExpectedActivitiesId    String?
   wpProposedChangesExpectedActivities      Work_Package_Proposed_Changes? @relation(name: "workPackageExpectedActivities", fields: [wpProposedChangesExpectedActivitiesId], references: [workPackageProposedChangesId])
   wpProposedChangesDeliverablesId          String?
@@ -536,7 +538,8 @@ enum Material_Status {
   RECEIVED
   ORDERED
   SHIPPED
-  UNORDERED
+  NOT_READY_TO_ORDER
+  READY_TO_ORDER
 }
 
 model Unit {
@@ -600,6 +603,7 @@ model Material_Type {
 model Manufacturer {
   name          String     @id
   dateCreated   DateTime
+  dateDeleted   DateTime?
   userCreatedId Int
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
   materials     Material[]
@@ -617,12 +621,13 @@ model TeamType {
   name           String          @unique
   iconName       String
   Design_Reviews Design_Review[]
+  Team           Team[]
 }
 
 model Design_Review {
   designReviewId   String               @id @default(uuid())
   dateScheduled    DateTime             @db.Date
-  // Meeting times are an integer between 0 and 83 representing time after 9am in 15 minute increments, eg. 0 = 9:00am, 5 = 10:15 am
+  // Meeting times are an integer between 0 and 83 from 10am - 10pm (Monday - Sunday), eg. 0 = 10:00am Monday, 12 = 10:00am Tuesday
   meetingTimes     Int[]
   dateCreated      DateTime             @default(now()) @db.Timestamp(3)
   userCreated      User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
@@ -651,7 +656,7 @@ model Schedule_Settings {
   drScheduleSettingsId String @id @default(uuid())
   personalGmail        String
   personalZoomLink     String
-  // Availibilies are integers between 0 and 48 representing time after 9am in 15 minute increments, see meetingTime field in Design_Review
+  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
   availability         Int[]
   User                 User   @relation(fields: [userId], references: [userId])
   userId               Int    @unique
@@ -660,7 +665,7 @@ model Schedule_Settings {
 model Meeting {
   meetingId    String @id @default(uuid())
   title        String
-  // meetingTimes are integers between 0 and 48 representing time after 9am in 15 minute increments, see meetingTime field in Design_Review
+  // meetingTimes are integers between 0 and 83 representing time after from 10am - 10pm (from Monday - Sunday) see meetingTime field in Design_Review
   meetingTimes Int[]
   team         Team?  @relation(fields: [teamId], references: [teamId])
   teamId       String
@@ -675,9 +680,9 @@ model Wbs_Proposed_Changes {
   projectManagerId           Int?
   projectManager             User?                          @relation(name: "wbsProjectManager", fields: [projectManagerId], references: [userId])
   links                      LinkInfo[]                     @relation(name: "proposedChangeLinkInfos")
-  changRequestId             Int                            @unique
-  changeRequest              Change_Request                 @relation(fields: [changRequestId], references: [crId])
-  proposedProjectChanges     Project_Proposed_Changes?      @relation(name: "proposedProjectChanges")
+  changeRequest              Scope_CR                       @relation(fields: [changeRequestId], references: [scopeCrId])
+  changeRequestId            Int                            @unique
+  projectProposedChanges     Project_Proposed_Changes?      @relation(name: "projectProposedChanges")
   workPackageProposedChanges Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
   dateDeleted                DateTime?
 }
@@ -691,7 +696,7 @@ model Project_Proposed_Changes {
   features                 Description_Bullet[] @relation(name: "proposedProjectFeatures")
   otherConstraints         Description_Bullet[] @relation(name: "proposedProjectOtherConstraints")
   teams                    Team[]               @relation(name: "proposedProjectTeams")
-  proposedWbsChanges       Wbs_Proposed_Changes @relation(name: "proposedProjectChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique
   newProject               Boolean
 }
@@ -700,11 +705,11 @@ model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String               @id @default(uuid())
   startDate                    DateTime             @db.Date
   duration                     Int
-  blockedBy                    WBS_Element[]        @relation(name: "blockedBy")
+  blockedBy                    WBS_Element[]        @relation(name: "proposedBlockedBy")
   expectedActivities           Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables                 Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage                        Work_Package_Stage?
-  proposedWbsChanges           Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChanges           Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId         String               @unique
 }
 

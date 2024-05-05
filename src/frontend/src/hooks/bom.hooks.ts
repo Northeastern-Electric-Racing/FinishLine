@@ -4,10 +4,13 @@ import {
   assignMaterialToAssembly,
   createAssembly,
   createManufacturer,
+  deleteManufacturer,
   createMaterial,
   createMaterialType,
   createUnit,
+  deleteSingleAssembly,
   deleteSingleMaterial,
+  deleteUnit,
   editMaterial,
   getAllManufacturers,
   getAllMaterialTypes,
@@ -47,6 +50,26 @@ export const useGetAllUnits = () => {
     const data = await getAllUnits();
     return data;
   });
+};
+
+/**
+ * Custom react hook to delete a unit
+ */
+
+export const useDeleteUnit = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Unit, Error, string>(
+    ['units', 'delete'],
+    async (id: string) => {
+      const { data } = await deleteUnit(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'units']);
+      }
+    }
+  );
 };
 
 /**
@@ -113,6 +136,27 @@ export const useDeleteMaterial = () => {
 };
 
 /**
+ * Custom React hook to delete a assembly.
+ * @param assemblyId The assembly to delete's id
+ * @returns mutation function to delete a assembly
+ */
+export const useDeleteAssembly = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { assemblyId: string }>(
+    ['assembly', 'delete'],
+    async (payload: { assemblyId: string }) => {
+      const data = await deleteSingleAssembly(payload.assemblyId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['projects']);
+      }
+    }
+  );
+};
+
+/**
  * Custom React hook to create an assembly.
  * @param wbsNum The wbs num to create the assembly in
  * @returns the mutation function to create an assembly
@@ -165,6 +209,27 @@ export const useCreateManufacturer = () => {
     ['manufacturer', 'create'],
     async (payload: { name: string }) => {
       const data = await createManufacturer(payload.name);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials', 'manufacturers']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React hook to delete a material.
+ * @param materialId The material to delete's id
+ * @returns mutation function to delete a material
+ */
+export const useDeleteManufacturer = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, { manufacturerName: string }>(
+    ['manufacturer', 'delete'],
+    async (payload: { manufacturerName: string }) => {
+      const data = await deleteManufacturer(payload.manufacturerName);
       return data;
     },
     {

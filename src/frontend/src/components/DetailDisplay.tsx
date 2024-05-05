@@ -4,22 +4,28 @@
  */
 
 import Typography from '@mui/material/Typography';
+import { Box } from '@mui/system';
+import CopyToClipboardButton from './CopyToClipboardButton';
 
 interface DetailDisplayProps {
   label: string;
   content: string;
   paddingRight?: number;
+  copyButton?: boolean;
 }
 
-const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRight = 0 }) => {
+const DetailDisplay: React.FC<DetailDisplayProps> = ({ label, content, paddingRight = 0, copyButton = false }) => {
   return (
-    <div>
-      <Typography sx={{ fontWeight: 'bold', paddingRight: paddingRight }} display="inline">
-        {label}
-        {': '}
-      </Typography>
-      <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{content}</Typography>
-    </div>
+    <Box display="flex" alignItems="center">
+      <div>
+        <Typography sx={{ fontWeight: 'bold', paddingRight: paddingRight }} display="inline">
+          {label}
+          {': '}
+        </Typography>
+        <Typography sx={{ fontWeight: 'normal', display: 'inline' }}>{content}</Typography>
+      </div>
+      {copyButton && <CopyToClipboardButton msg={content} />}
+    </Box>
   );
 };
 

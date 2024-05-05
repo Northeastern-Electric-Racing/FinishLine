@@ -48,7 +48,7 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<typeof m
     unitName: material.unitName ?? undefined,
     quantityUnit: material.quantityUnit ?? undefined,
     materialType: { ...material.materialType, dateDeleted: material.materialType.dateDeleted ?? undefined },
-    manufacturer: material.manufacturer,
+    manufacturer: { ...material.manufacturer, dateDeleted: material.manufacturer.dateDeleted ?? undefined },
     notes: material.notes ?? undefined
   };
 };
