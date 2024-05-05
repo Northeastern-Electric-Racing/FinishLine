@@ -12,7 +12,6 @@ interface GanttChartProps {
   setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
   ganttTasks: GanttTask[];
-  setGanttTasks: (value: React.SetStateAction<GanttTask[]>) => void;
 }
 
 const GanttChart = ({
@@ -23,8 +22,7 @@ const GanttChart = ({
   chartEditingState,
   setChartEditingState,
   saveChanges,
-  ganttTasks,
-  setGanttTasks
+  ganttTasks
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -92,8 +90,7 @@ const GanttChart = ({
                 end={endDate}
                 isEditMode={isEditMode}
                 onExpanderClick={(newTask) => {
-                  const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-                  setGanttTasks(newTasks);
+                  ganttTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
                 }}
                 saveChanges={saveChanges}
               />

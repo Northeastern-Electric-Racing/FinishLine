@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import React, { ChangeEvent, FC, useEffect, useState } from 'react';
+import React, { ChangeEvent, FC, useState } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllProjects } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
@@ -43,7 +43,6 @@ const GanttChartPage: FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
-  const [ganttTasks, setGanttTasks] = useState<GanttTask[]>([]);
   const [chartEditingState, setChartEditingState] = React.useState<
     Array<{
       teamName: string;
@@ -63,45 +62,6 @@ const GanttChartPage: FC = () => {
 
   const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
 
-  useEffect(() => {
-    if (!projects || projectsIsLoading || projectsIsError) return;
-
-    const ganttFilters: GanttFilters = {
-      showCars,
-      showTeamTypes,
-      showTeams,
-      showOnlyOverdue,
-      expanded
-    };
-
-    const filteredProjects = filterGanttProjects(projects, ganttFilters, searchText);
-    const sortedProjects = filteredProjects.sort(
-      (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
-    );
-    const tasks: GanttTask[] = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
-
-    setGanttTasks(tasks);
-  }, [
-    expanded,
-    projects,
-    showCars,
-    showOnlyOverdue,
-    searchText,
-    teamTypes,
-    projectsIsLoading,
-    teamTypesIsLoading,
-    projectsIsError,
-    teamTypesIsError,
-    showTeamTypes,
-    showTeams
-  ]);
-
-  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
-    return <LoadingIndicator />;
-  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
-  if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
-  if (teamsIsError) return <ErrorPage message={teamsError.message} />;
-
   const defaultGanttFilters: GanttFilters = {
     showCars,
     showTeamTypes,
@@ -109,6 +69,18 @@ const GanttChartPage: FC = () => {
     showOnlyOverdue,
     expanded
   };
+
+  const filteredProjects = filterGanttProjects(projects ?? [], defaultGanttFilters, searchText);
+  const sortedProjects = filteredProjects.sort(
+    (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
+  );
+  let ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
+
+  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
+    return <LoadingIndicator />;
+  if (projectsIsError) return <ErrorPage message={projectsError.message} />;
+  if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
+  if (teamsIsError) return <ErrorPage message={teamsError.message} />;
 
   const carHandlerFn = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -166,14 +138,13 @@ const GanttChartPage: FC = () => {
   const expandedHandler = (value: boolean) => {
     // No more forced reloads
     if (value === expanded) {
-      const newGanttTasks = ganttTasks.map((task) => {
+      ganttTasks = ganttTasks.map((task) => {
         if (task.type === 'project') {
           return { ...task, hideChildren: !value };
         } else {
           return task;
         }
       });
-      setGanttTasks(newGanttTasks);
     } else {
       const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
@@ -183,14 +154,13 @@ const GanttChartPage: FC = () => {
   const resetHandler = () => {
     // No more forced reloads
     if (query.get('expanded') === null) {
-      const newGanttDisplayObjects = ganttTasks.map((object) => {
+      ganttTasks = ganttTasks.map((object) => {
         if (object.type === 'project') {
           return { ...object, hideChildren: true };
         } else {
           return object;
         }
       });
-      setGanttTasks(newGanttDisplayObjects);
     } else {
       history.push(routes.GANTT);
     }
@@ -286,7 +256,6 @@ const GanttChartPage: FC = () => {
           setChartEditingState={setChartEditingState}
           saveChanges={saveChanges}
           ganttTasks={ganttTasks}
-          setGanttTasks={setGanttTasks}
         />
       </Box>
     </PageLayout>
