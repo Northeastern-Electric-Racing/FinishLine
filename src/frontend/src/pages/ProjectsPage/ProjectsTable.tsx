@@ -177,8 +177,8 @@ const ProjectsTable: React.FC = () => {
           data?.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
-            projectLead: fullNamePipe(v.projectLead),
-            projectManager: fullNamePipe(v.projectManager),
+            projectLead: fullNamePipe(v.lead),
+            projectManager: fullNamePipe(v.manager),
             team: getProjectTeamsName(v)
           })) || []
         }

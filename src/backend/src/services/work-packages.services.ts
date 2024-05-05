@@ -435,7 +435,7 @@ export default class WorkPackagesService {
 
     const projectManagerChangeJson = createChange(
       'project manager',
-      await getUserFullName(originalWorkPackage.wbsElement.projectManagerId),
+      await getUserFullName(originalWorkPackage.wbsElement.managerId),
       await getUserFullName(projectManagerId),
       crId,
       userId,
@@ -447,7 +447,7 @@ export default class WorkPackagesService {
 
     const projectLeadChangeJson = createChange(
       'project lead',
-      await getUserFullName(originalWorkPackage.wbsElement.projectLeadId),
+      await getUserFullName(originalWorkPackage.wbsElement.leadId),
       await getUserFullName(projectLeadId),
       crId,
       userId,
@@ -482,9 +482,9 @@ export default class WorkPackagesService {
         wbsElement: {
           update: {
             name,
-            projectLeadId,
-            projectManagerId,
-            status // set the status to active if it was not already
+            leadId: projectLeadId,
+            managerId: projectManagerId,
+            status
           }
         },
         stage,

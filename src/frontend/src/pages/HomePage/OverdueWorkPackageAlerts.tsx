@@ -17,7 +17,7 @@ const OverdueWorkPackageAlerts: React.FC = () => {
 
   // Filter for work packages that are overdue and the user is the project lead
   const userOverdueWorkPackages = workPackages.data
-    ?.filter((wp) => wp.projectLead?.userId === user.userId)
+    ?.filter((wp) => wp.lead?.userId === user.userId)
     ?.filter((wp) => new Date(wp.endDate) < currentDate);
 
   // If there are no overdue work packages, don't display anything
