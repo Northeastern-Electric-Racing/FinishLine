@@ -1,6 +1,8 @@
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
+import { Close } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -61,6 +63,9 @@ export const SearchBar = ({ placeholder = 'Search...', searchText, setSearchText
         value={searchText}
         onChange={(event) => setSearchText(event.target.value)}
       />
+      <IconButton onClick={() => setSearchText('')}>
+        <Close />
+      </IconButton>
     </Search>
   );
 };
