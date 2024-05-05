@@ -31,6 +31,8 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editVendor
 );
 
+reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementRequestController.deleteVendor);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),

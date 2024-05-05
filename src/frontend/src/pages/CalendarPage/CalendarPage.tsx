@@ -82,6 +82,16 @@ const CalendarPage = () => {
     });
   };
 
+  const NoUnconfirmedDRSButton = () => {
+    return [
+      {
+        title: 'No Unconfirmed DRS',
+        disabled: true,
+        onClick: () => {}
+      }
+    ];
+  };
+
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
     .map(
       (day) =>
@@ -97,7 +107,12 @@ const CalendarPage = () => {
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
   const unconfirmedDRSDropdown = (
-    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(unconfirmedDesignReviews)}>
+    <ActionsMenu
+      title="My Unconfirmed DRS"
+      buttons={
+        unconfirmedDesignReviews.length === 0 ? NoUnconfirmedDRSButton() : designReviewButtons(unconfirmedDesignReviews)
+      }
+    >
       My Unconfirmed DRs
     </ActionsMenu>
   );

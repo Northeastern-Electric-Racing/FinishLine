@@ -174,4 +174,37 @@ export default class WorkPackagesController {
       next(error);
     }
   }
+
+  static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { workpackageTemplateId } = req.params;
+
+      const { templateName, templateNotes, duration, blockedBy, expectedActivities, deliverables, workPackageName } =
+        req.body;
+
+      const user = await getCurrentUser(res);
+
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
+      const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
+        user,
+        workpackageTemplateId,
+        templateName,
+        templateNotes,
+        duration,
+        stage,
+        blockedBy,
+        expectedActivities,
+        deliverables,
+        workPackageName
+      );
+
+      return res.status(200).json(updatedWorkPackageTemplate);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
