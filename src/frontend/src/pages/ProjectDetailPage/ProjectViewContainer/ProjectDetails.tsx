@@ -45,7 +45,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           </Grid>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <Construction sx={{ mr: 2 }} />
-            <DetailDisplay label="Project Lead" content={fullNamePipe(project.projectLead)} paddingRight={1} />
+            <DetailDisplay label="Project Lead" content={fullNamePipe(project.lead)} paddingRight={1} />
           </Grid>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <ScheduleIcon sx={{ mr: 2 }} />
@@ -53,7 +53,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
           </Grid>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <Work sx={{ mr: 2 }} />
-            <DetailDisplay label="Project Manager" content={fullNamePipe(project.projectManager)} paddingRight={1} />
+            <DetailDisplay label="Project Manager" content={fullNamePipe(project.manager)} paddingRight={1} />
           </Grid>
           <Grid item display="flex" alignItems="center" xs={12} sm={6}>
             <ScheduleIcon sx={{ mr: 2 }} />

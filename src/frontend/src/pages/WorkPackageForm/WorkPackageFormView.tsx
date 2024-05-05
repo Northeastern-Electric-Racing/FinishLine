@@ -95,8 +95,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const history = useHistory();
 
-  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
-  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.projectLead?.userId.toString());
+  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
 
