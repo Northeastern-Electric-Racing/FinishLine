@@ -685,6 +685,12 @@ export default class WorkPackagesService {
     return;
   }
 
+  /**
+   * Gets a single requested work package template
+   * @param submitter - the user making the request to get the given work package template
+   * @param workPackageTemplateId - the id of the work package template to be returned
+   * @returns a single work package template
+   */
   static async getSingleWorkPackageTemplate(submitter: User, workPackageTemplateId: string): Promise<WorkPackageTemplate> {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedGuestException('get a work package template');
@@ -701,6 +707,22 @@ export default class WorkPackagesService {
     if (!workPackage) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
 
     return workPackageTemplateTransformer(workPackage);
+  }
+
+  /**
+   * Gets all work package templates
+   * @param submitter  - the user making the request to get all work package templates
+   * @returns an array of all work package templates
+   */
+  static async getAllWorkPackageTemplates(submitter: User): Promise<WorkPackageTemplate[]> {
+    if (isGuest(submitter.role)) {
+      throw new AccessDeniedGuestException('get all work package templates.');
+    }
+    const workPackageTemplates = await prisma.work_Package_Template.findMany({
+      where: { dateDeleted: null },
+      ...workPackageTemplateQueryArgs
+    });
+    return workPackageTemplates.map(workPackageTemplateTransformer);
   }
 
   /**
