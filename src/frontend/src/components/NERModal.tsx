@@ -1,4 +1,4 @@
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Icon, IconButton, Typography } from '@mui/material';
 import NERFailButton from './NERFailButton';
 import NERSuccessButton from './NERSuccessButton';
 import { ReactNode } from 'react';
@@ -18,6 +18,7 @@ export interface NERModalProps {
   disabled?: boolean;
   showCloseButton?: boolean;
   hideFormButtons?: boolean;
+  icon?: JSX.Element | null;
 }
 
 const NERModal = ({
@@ -31,11 +32,35 @@ const NERModal = ({
   submitText,
   disabled = false,
   showCloseButton = false,
-  hideFormButtons = false
+  hideFormButtons = false,
+  icon
 }: NERModalProps) => {
   return (
-    <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px' } }}>
-      <DialogTitle sx={{ backgroundColor: background }}>{title}</DialogTitle>
+    <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px', maxWidth: '700px' } }}>
+      <DialogTitle sx={{ backgroundColor: background }}>
+        {icon ? (
+          <Box display="flex" justifyContent="left" alignItems="center">
+            <Icon
+              sx={{
+                position: 'absolute',
+                left: 10,
+                top: 17,
+                color: (theme) => theme.palette.text.primary,
+                width: 'max-content',
+                height: 'max-content'
+              }}
+            >
+              {icon}
+            </Icon>
+            <Typography fontFamily="inherit" fontSize={25} marginLeft="26px">
+              {title}
+            </Typography>
+          </Box>
+        ) : (
+          title
+        )}
+      </DialogTitle>
+
       {showCloseButton && (
         <IconButton
           aria-label="close"

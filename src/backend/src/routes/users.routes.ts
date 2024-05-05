@@ -3,7 +3,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import UsersController from '../controllers/users.controllers';
 import { validateInputs } from '../utils/utils';
-import { isRole, nonEmptyString } from '../utils/validation.utils';
+import { isRole, nonEmptyString, intMinZero } from '../utils/validation.utils';
 
 const userRouter = express.Router();
 
@@ -32,6 +32,18 @@ userRouter.post(
   nonEmptyString(body('phoneNumber')),
   UsersController.setUserSecureSettings
 );
+
+userRouter.post(
+  '/schedule-settings/set',
+  nonEmptyString(body('personalGmail')).isEmail(),
+  nonEmptyString(body('personalZoomLink')).isURL(),
+  body('availability').isArray(),
+  intMinZero(body('availibility.*')),
+  validateInputs,
+  UsersController.setUserScheduleSettings
+);
+
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
+userRouter.get('/:userId/schedule-settings', UsersController.getUserScheduleSettings);
 
 export default userRouter;

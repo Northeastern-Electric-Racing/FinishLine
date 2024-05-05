@@ -39,17 +39,15 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
       >
         <Grid container>
           <Grid container item md={12} display="flex" alignItems={'center'}>
-            <Grid item md={chips ? 3 : 6} xs={8}>
-              <Typography variant="h4" fontSize={30}>
+            <Grid md={7} xs={12} display="flex">
+              <Typography flexGrow={1} variant="h4" fontSize={30}>
                 {title}
               </Typography>
-            </Grid>
-            {chips && (
-              <Grid item md={3} xs={4}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }} flexGrow={4}>
                 {chips}
-              </Grid>
-            )}
-            <Grid item md={6} xs={12}>
+              </Box>
+            </Grid>
+            <Grid item md={5} xs={12}>
               <Box textAlign={['left', 'right']}>{headerRight}</Box>
             </Grid>
           </Grid>

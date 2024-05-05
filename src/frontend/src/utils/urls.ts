@@ -22,6 +22,8 @@ const userSecureSettingsSet = () => `${users()}/secure-settings/set`;
 const userRoleByUserId = (id: string) => `${usersById(id)}/change-role`;
 const userFavoriteProjects = (id: string) => `${usersById(id)}/favorite-projects`;
 const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
+const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
+const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -32,6 +34,8 @@ const projectsSetTeam = (wbsNum: string) => `${projects()}/${wbsNum}/set-team`;
 const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
 const projectsLinkTypes = () => `${projects()}/link-types`;
+const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
+const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -78,6 +82,7 @@ const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const teamTypes = () => `${teams()}/teamType/all`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -100,6 +105,7 @@ const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
 const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
+const financeMarkAsReimbursed = (id: string) => `${financeEndpoints()}/${id}/reimbursed`;
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
@@ -107,6 +113,7 @@ const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advis
 const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
 const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
+const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -121,10 +128,22 @@ const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPi
 const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomDeleteAssembly = (assemblyId: string) => `${assemblyEndpoints()}/${assemblyId}/delete`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
 const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
+const bomDeleteManufacturer = (manufacturerName: string) => `${bomEndpoints()}/manufacturer/${manufacturerName}/delete`;
 const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
-const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
+const bomCreateUnit = () => `${bomGetAllUnits()}/create`;
+const bomUnitById = (id: string) => `${bomGetAllUnits()}/${id}`;
+const bomDeleteUnit = (id: string) => `${bomUnitById(id)}/delete`;
+
+/************** Design Review Endpoints *******************************/
+const designReviews = () => `${API_URL}/design-reviews`;
+const designReviewsCreate = () => `${designReviews()}/create`;
+const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
+const designReviewById = (id: string) => `${designReviews()}/${id}`;
+const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
+const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -140,6 +159,8 @@ export const apiUrls = {
   userRoleByUserId,
   userFavoriteProjects,
   userSecureSettings,
+  userScheduleSettings,
+  userScheduleSettingsSet,
 
   projects,
   projectsByWbsNum,
@@ -149,6 +170,8 @@ export const apiUrls = {
   projectsDelete,
   projectsToggleFavorite,
   projectsLinkTypes,
+  projectsCreateLinkTypes,
+  projectsEditLinkTypes,
 
   tasksCreate,
   tasks,
@@ -204,6 +227,7 @@ export const apiUrls = {
   financeImageById,
   financeDeleteReimbursement,
   financeMarkAsDelivered,
+  financeMarkAsReimbursed,
   financeApproveReimbursementRequest,
   financeDenyReimbursementRequest,
   financeGetPendingAdvisorList,
@@ -211,6 +235,7 @@ export const apiUrls = {
   financeEditExpenseType,
   financeCreateExpenseType,
   financeCreateVendor,
+  financeEditVendor,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
@@ -222,10 +247,22 @@ export const apiUrls = {
   bomEditMaterial,
   bomDeleteMaterial,
   bomCreateAssembly,
+  bomDeleteAssembly,
   bomAssignAssembly,
   bomCreateManufacturer,
+  bomDeleteManufacturer,
   bomCreateMaterialType,
   bomCreateUnit,
+  bomUnitById,
+  bomDeleteUnit,
+
+  designReviews,
+  designReviewsCreate,
+  designReviewById,
+  designReviewsEdit,
+  designReviewMarkUserConfirmed,
+  teamTypes,
+  designReviewDelete,
 
   version
 };

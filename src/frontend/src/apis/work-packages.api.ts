@@ -9,23 +9,15 @@ import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
 
-interface WorkPackageApiInputs {
+export interface WorkPackageApiInputs {
   name: string;
-  startDate: Date;
+  startDate: string;
   duration: number;
-  crId: number;
-  stage: WorkPackageStage | null;
+  crId: number | undefined;
+  stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-}
-
-export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
-  projectWbsNum: {
-    carNumber: number;
-    projectNumber: number;
-    workPackageNumber: number;
-  };
-  deliverables: string[];
-  expectedActivities: string[];
+  deliverables: string[] | { id: number; detail: string }[];
+  expectedActivities: string[] | { id: number; detail: string }[];
 }
 
 /**
@@ -53,7 +45,7 @@ export const getSingleWorkPackage = (wbsNum: WbsNumber) => {
  *
  * @param payload Payload containing all the necessary data to create a work package.
  */
-export const createSingleWorkPackage = (payload: CreateWorkPackageApiInputs) => {
+export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesCreate(), {
     ...payload
   });

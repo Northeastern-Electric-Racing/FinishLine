@@ -7,11 +7,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import { useUpdateUserSecureSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import PageBlock from '../../../layouts/PageBlock';
 import ErrorPage from '../../ErrorPage';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { Grid, IconButton, Box } from '@mui/material';
+import { Grid, IconButton, Box, Typography } from '@mui/material';
 import { useToast } from '../../../hooks/toasts.hooks';
 import UserSecureSettingsView from './UserSecureSettingsView';
 import UserSecureSettingsEdit from './UserSecureSettingsEdit';
@@ -32,12 +31,14 @@ export interface SecureSettingsFormInput {
 
 const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) => {
   const [edit, setEdit] = useState(false);
+
   const {
     mutateAsync: updateSecureUserSettings,
     isLoading: updateUserSettingsIsLoading,
     isError: updateUserSettingsIsError,
     error: updateUserSettingsError
   } = useUpdateUserSecureSettings();
+
   const toast = useToast();
 
   if (updateUserSettingsIsLoading) return <LoadingIndicator />;
@@ -63,28 +64,41 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
   };
 
   return (
-    <PageBlock
-      title="User Secure Settings"
-      headerRight={
-        !edit ? (
-          <IconButton onClick={() => setEdit(true)}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        ) : (
-          <Box
-            className="d-flex flex-row"
-            sx={{
-              display: { xs: 'none', sm: 'flex' }
-            }}
-          >
-            <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-            <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-settings">
-              Save
-            </NERSuccessButton>
-          </Box>
-        )
-      }
-    >
+    <>
+      <Grid
+        container
+        direction={'row'}
+        spacing={edit ? 2 : 1}
+        mt={1}
+        paddingBottom={'5px'}
+        borderColor={'white'}
+        marginBottom={'20px'}
+        borderBottom={1}
+      >
+        <Grid item>
+          <Typography color={'primary'} variant="h5">
+            Secure Settings
+          </Typography>
+        </Grid>
+        <Grid item>
+          {!edit ? (
+            <IconButton onClick={() => setEdit(true)}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          ) : (
+            <Box
+              sx={{
+                display: { xs: 'none', sm: 'flex' }
+              }}
+            >
+              <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
+              <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-secure-settings">
+                Save
+              </NERSuccessButton>
+            </Box>
+          )}
+        </Grid>
+      </Grid>
       <Grid container>
         {!edit ? (
           <UserSecureSettingsView settings={currentSettings} />
@@ -105,7 +119,7 @@ const UserSecureSettings: React.FC<SecureSettingsProps> = ({ currentSettings }) 
           </NERSuccessButton>
         </Box>
       )}
-    </PageBlock>
+    </>
   );
 };
 

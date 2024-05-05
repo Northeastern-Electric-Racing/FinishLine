@@ -1,5 +1,5 @@
-import { isAdmin, isHead, Team } from 'shared';
-import { User } from '@prisma/client';
+import { isAdmin, isHead, Team, TeamType } from 'shared';
+import { User, WBS_Element_Status } from '@prisma/client';
 import teamQueryArgs from '../prisma-query-args/teams.query-args';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
@@ -9,8 +9,9 @@ import {
   HttpException,
   AccessDeniedAdminOnlyException
 } from '../utils/errors.utils';
-import { getUsers } from '../utils/users.utils';
+import { getPrismaQueryUserIds, getUsers } from '../utils/users.utils';
 import { isUnderWordCount } from 'shared';
+import { removeUsersFromList } from '../utils/teams.utils';
 
 export default class TeamsService {
   /**
@@ -18,7 +19,7 @@ export default class TeamsService {
    * @returns a list of teams
    */
   static async getAllTeams(): Promise<Team[]> {
-    const teams = await prisma.team.findMany(teamQueryArgs);
+    const teams = await prisma.team.findMany({ where: { dateArchived: null }, ...teamQueryArgs });
     return teams.map(teamTransformer);
   }
 
@@ -47,7 +48,7 @@ export default class TeamsService {
    * @param teamId a id of team to be updated
    * @param userIds a array of user Ids that replaces team's old members
    * @returns a updated team
-   * @throws if the team is not found, the submitter has no privilege, or any user from the given userIds does not exist
+   * @throws if the team is not found, the submitter has no priviledge, the team is archived, or any user from the given userIds does not exist
    */
   static async setTeamMembers(submitter: User, teamId: string, userIds: number[]): Promise<Team> {
     // find and verify the given teamId exist
@@ -71,15 +72,10 @@ export default class TeamsService {
     if (users.map((user) => user.userId).includes(team.headId))
       throw new HttpException(400, 'team head cannot be a member!');
 
-    if (team.leads.map((lead) => lead.userId).some((leadId) => userIds.includes(leadId)))
-      throw new HttpException(400, 'team leads cannot be members!');
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
 
-    // retrieve userId for every given users to update team's members in the database
-    const transformedUsers = users.map((user) => {
-      return {
-        userId: user.userId
-      };
-    });
+    // if the new members array includes a current lead on that team, that member will be deleted as a lead of that team
+    const newTeamLeads = removeUsersFromList(team.leads, users);
 
     const updateTeam = await prisma.team.update({
       where: {
@@ -87,7 +83,10 @@ export default class TeamsService {
       },
       data: {
         members: {
-          set: transformedUsers
+          set: getPrismaQueryUserIds(users)
+        },
+        leads: {
+          set: getPrismaQueryUserIds(newTeamLeads)
         }
       },
       ...teamQueryArgs
@@ -132,6 +131,7 @@ export default class TeamsService {
    * @param teamId The id for the team that is being edited
    * @param userId The user to be the new team's head
    * @returns The team with the new head
+   * @throws if the team is not found, the submitter has no privilege, the team is archived, or any user from the given userIds does not exist
    */
   static async setTeamHead(submitter: User, teamId: string, userId: number): Promise<Team> {
     const team = await prisma.team.findUnique({
@@ -140,6 +140,9 @@ export default class TeamsService {
     });
 
     if (!team) throw new NotFoundException('Team', teamId);
+
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
+
     if (!isAdmin(submitter.role) && submitter.userId !== team.headId)
       throw new AccessDeniedException('You must be an admin or the head to update the head!');
 
@@ -147,8 +150,13 @@ export default class TeamsService {
       where: { userId }
     });
 
-    if (newHead && team.members.map((user) => user.userId).includes(newHead?.userId))
-      throw new HttpException(400, 'Error: Team head cannot be a member');
+    if (!newHead) throw new NotFoundException('User', userId);
+
+    // If the new head is a current member on the team, remove them as a member
+    const newTeamMembers = removeUsersFromList(team.members, [newHead]);
+
+    // If the new head is a current lead on the team, remove them as a lead
+    const newTeamLeads = removeUsersFromList(team.leads, [newHead]);
 
     if (!newHead) throw new NotFoundException('User', userId);
     if (!isHead(newHead.role)) throw new AccessDeniedException('The team head must be at least a head');
@@ -165,6 +173,12 @@ export default class TeamsService {
       data: {
         head: {
           connect: { userId }
+        },
+        members: {
+          set: getPrismaQueryUserIds(newTeamMembers)
+        },
+        leads: {
+          set: getPrismaQueryUserIds(newTeamLeads)
         }
       },
       ...teamQueryArgs
@@ -241,13 +255,13 @@ export default class TeamsService {
     return teamTransformer(createdTeam);
   }
 
-  /*
+  /**
    * Update the given teamId's team's leads
    * @param submitter a user who's making this request
    * @param teamId a id of team to be updated
    * @param userIds a array of user Ids that replaces team's old leads
    * @returns an updated team
-   * @throws if the team is not found, the submitter has no privilege, or any user from the given userIds does not exist
+   * @throws if the team is not found, the submitter has no privilege, the team is archived, or any user from the given userIds does not exist
    */
   static async setTeamLeads(submitter: User, teamId: string, userIds: number[]): Promise<Team> {
     const team = await prisma.team.findUnique({
@@ -259,6 +273,8 @@ export default class TeamsService {
 
     if (!team) throw new NotFoundException('Team', teamId);
 
+    if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
+
     if (!isAdmin(submitter.role) && submitter.userId !== team.headId) {
       throw new AccessDeniedException('You must be an admin or the head to update the lead!');
     }
@@ -267,26 +283,139 @@ export default class TeamsService {
       throw new HttpException(400, 'A lead cannot be the head of the team!');
     }
 
-    if (team.members.map((member) => member.userId).some((memberId) => userIds.includes(memberId))) {
-      throw new HttpException(400, 'A lead cannot be a member of the team!');
-    }
-
-    const transformedLeads = newLeads.map((lead) => {
-      return {
-        userId: lead.userId
-      };
-    });
+    // removes the new leads as current members of the given team (if they are current members of that team)
+    const newTeamMembers = removeUsersFromList(team.members, newLeads);
 
     const updateTeam = await prisma.team.update({
       where: { teamId },
       data: {
         leads: {
-          set: transformedLeads
+          set: getPrismaQueryUserIds(newLeads)
+        },
+        members: {
+          set: getPrismaQueryUserIds(newTeamMembers)
         }
       },
       ...teamQueryArgs
     });
 
     return teamTransformer(updateTeam);
+  }
+
+  /**
+   * Archives/unarchives a given team
+   * @param submitter a user who's archiving the team
+   * @param teamId a id of team to be updated
+   * @returns the archived team
+   * @throws if the team is not found, the submitter has no privilege, the team has any projects that are not complete
+   */
+  static async archiveTeam(subimtter: User, teamId: string): Promise<Team> {
+    const team = await prisma.team.findFirst({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) throw new NotFoundException('Team', teamId);
+
+    if (!isAdmin(subimtter.role)) {
+      throw new AccessDeniedException('You must be an admin or above to archive a team');
+    }
+
+    if (team.projects.some((project) => project.wbsElement.status !== WBS_Element_Status.COMPLETE)) {
+      throw new HttpException(400, 'A team is not archivable if it has any active projects, or incomplete projects');
+    }
+
+    const updateData = {
+      dateArchived: team.dateArchived === null ? new Date() : null,
+      userArchived: team.userArchivedId === null ? { connect: { userId: subimtter.userId } } : { disconnect: true }
+    };
+
+    const updatedTeam = await prisma.team.update({
+      where: { teamId },
+      ...teamQueryArgs,
+      data: updateData
+    });
+
+    return teamTransformer(updatedTeam);
+  }
+
+  /**
+   * Creates a team type
+   * @param submitter the user who is creating the team type
+   * @param name the name of the team type
+   * @param iconName the name of the icon
+   * @returns the created team
+   */
+  static async createTeamType(submitter: User, name: string, iconName: string): Promise<TeamType> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedAdminOnlyException('create a team type');
+    }
+
+    const duplicateName = await prisma.teamType.findUnique({
+      where: { name }
+    });
+
+    if (duplicateName) {
+      throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
+    }
+
+    const teamType = await prisma.teamType.create({
+      data: {
+        name,
+        iconName
+      }
+    });
+
+    return teamType;
+  }
+
+  /**
+   * Gets all the team types in the database
+   * @returns all the team types
+   */
+  static async getAllTeamTypes(): Promise<TeamType[]> {
+    const teamTypes = await prisma.teamType.findMany();
+    return teamTypes;
+  }
+
+  /**
+   * Sets the teamType for a team
+   * @param submitter the user who is setting the team type
+   * @param teamId id of the team
+   * @param teamTypeId id of the teamType
+   * @returns the updated team with teamType
+   */
+  static async setTeamType(submitter: User, teamId: string, teamTypeId: string): Promise<Team> {
+    if (!isAdmin(submitter.role)) {
+      throw new AccessDeniedAdminOnlyException('set a team type');
+    }
+
+    const teamType = await prisma.teamType.findFirst({
+      where: { teamTypeId }
+    });
+
+    if (!teamType) {
+      throw new NotFoundException('Team Type', teamTypeId);
+    }
+
+    const team = await prisma.team.findUnique({
+      where: { teamId },
+      ...teamQueryArgs
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team', teamId);
+    }
+
+    const updatedTeam = await prisma.team.update({
+      where: { teamId },
+      data: {
+        teamType: {
+          connect: { teamTypeId }
+        }
+      },
+      ...teamQueryArgs
+    });
+    return teamTransformer(updatedTeam);
   }
 }

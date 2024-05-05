@@ -8,7 +8,7 @@ import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import BOMTable from './BOMTable';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { useAssignMaterialToAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
+import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
 import { Link, Typography } from '@mui/material';
@@ -25,6 +25,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
   const { mutateAsync: deleteMaterialMutateAsync, isLoading } = useDeleteMaterial();
+  const { mutateAsync: deleteAssemblyMutateAsync } = useDeleteAssembly();
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
 
   const user = useCurrentUser();
@@ -47,6 +48,16 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const deleteMaterial = (id: string) => async () => {
     try {
       await deleteMaterialMutateAsync({ materialId: id }).finally(() => toast.success('Material Successfully Deleted!'));
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 6000);
+      }
+    }
+  };
+
+  const deleteAssembly = (id: string) => async () => {
+    try {
+      await deleteAssemblyMutateAsync({ assemblyId: id }).finally(() => toast.success('Assembly Successfully Deleted!'));
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 6000);
@@ -127,6 +138,17 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
         }
       });
     }
+    if (rowId.includes('assembly')) {
+      actions.push(
+        <GridActionsCellItem
+          icon={<DeleteIcon fontSize="small" />}
+          label="Delete"
+          disabled={!isLeadership(user.role)}
+          showInMenu
+          onClick={deleteAssembly(params.row.assemblyId)}
+        />
+      );
+    }
     return actions;
   };
 
@@ -202,7 +224,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     {
       ...bomBaseColDef,
       field: 'price',
-      headerName: 'Price',
+      headerName: 'Price per Unit',
       type: 'number',
       sortable: false,
       filterable: false

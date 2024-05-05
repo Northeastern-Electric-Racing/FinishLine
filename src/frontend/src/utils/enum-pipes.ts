@@ -2,9 +2,8 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { yellow, green, blue, purple, grey } from '@mui/material/colors';
-import { ChangeRequestStatus, ChangeRequestType, WorkPackageStage } from 'shared';
+import { yellow, green, blue, purple, grey, orange } from '@mui/material/colors';
+import { ChangeRequestStatus, ChangeRequestType, WbsElementStatus, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
@@ -17,6 +16,8 @@ export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) =>
       return blue[600];
     case WorkPackageStage.Install:
       return purple[400];
+    case WorkPackageStage.Testing:
+      return orange[400];
     default:
       return grey[500];
   }
@@ -33,6 +34,8 @@ export const WorkPackageStageTextPipe: (stage: WorkPackageStage | undefined) => 
       return 'Manufacturing';
     case WorkPackageStage.Install:
       return 'Install';
+    case WorkPackageStage.Testing:
+      return 'Testing';
     default:
       return 'No Stage';
   }
@@ -63,5 +66,16 @@ export const ChangeRequestStatusTextPipe: (status: ChangeRequestStatus) => strin
       return 'Denied';
     case ChangeRequestStatus.Open:
       return 'Open';
+  }
+};
+
+export const WbsElementStatusTextPipe: (status: WbsElementStatus) => string = (status) => {
+  switch (status) {
+    case WbsElementStatus.Inactive:
+      return 'Inactive';
+    case WbsElementStatus.Active:
+      return 'Active';
+    case WbsElementStatus.Complete:
+      return 'Complete';
   }
 };

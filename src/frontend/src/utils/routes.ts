@@ -6,7 +6,6 @@
 /**************** General Section ****************/
 const HOME = `/`;
 const LOGIN = `/login`;
-const SETTINGS = `/settings`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
@@ -25,6 +24,7 @@ const PROJECTS_ALL = PROJECTS + '/all';
 const PROJECTS_BY_WBS = PROJECTS + `/:wbsNum`;
 const PROJECTS_NEW = PROJECTS + `/new`;
 const WORK_PACKAGE_NEW = PROJECTS + `/work-package/new`;
+const WORK_PACKAGE_CR_NEW = PROJECTS + `/work-package/new-cr`;
 
 /**************** Teams Section ****************/
 const TEAMS = `/teams`;
@@ -39,13 +39,21 @@ const CHANGE_REQUESTS_NEW = CHANGE_REQUESTS + `/new`;
 const CHANGE_REQUESTS_NEW_WITH_WBS = CHANGE_REQUESTS_NEW + `?wbsNum=`;
 const CHANGE_REQUESTS_OVERVIEW = CHANGE_REQUESTS + `/overview`;
 
+/****************** Settings Section  *********************/
+const SETTINGS = `/settings`;
+const SETTINGS_DETAILS = '/details';
+const SETTINGS_PREFERENCES = '/preferences';
+
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
+
+/**************** Design Review Calendar ****************/
+const CALENDAR = `/design-review-calendar`;
+const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 
 export const routes = {
   HOME,
   LOGIN,
-  SETTINGS,
   INFO,
   CREDITS,
 
@@ -60,6 +68,7 @@ export const routes = {
   PROJECTS_BY_WBS,
   PROJECTS_NEW,
   WORK_PACKAGE_NEW,
+  WORK_PACKAGE_CR_NEW,
 
   CHANGE_REQUESTS,
   ALL_CHANGE_REQUESTS,
@@ -75,5 +84,12 @@ export const routes = {
   REIMBURSEMENT_REQUEST_BY_ID,
   REIMBURSEMENT_REQUEST_EDIT,
 
-  ADMIN_TOOLS
+  SETTINGS,
+  SETTINGS_DETAILS,
+  SETTINGS_PREFERENCES,
+
+  ADMIN_TOOLS,
+
+  CALENDAR,
+  DESIGN_REVIEW_BY_ID
 };

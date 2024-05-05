@@ -31,6 +31,8 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editVendor
 );
 
+reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementRequestController.deleteVendor);
+
 reimbursementRequestsRouter.post(
   '/create',
   isDate(body('dateOfExpense')),
@@ -115,6 +117,14 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post(
+  '/reimburse/:reimbursementId/edit',
+  intMinZero(body('amount')),
+  isDate(body('dateReceived')),
+  validateInputs,
+  ReimbursementRequestController.editReimbursement
+);
+
+reimbursementRequestsRouter.post(
   '/:requestId/upload-receipt',
   upload.single('image'),
   ReimbursementRequestController.uploadReceipt
@@ -127,6 +137,11 @@ reimbursementRequestsRouter.post('/:requestId/deny', ReimbursementRequestControl
 reimbursementRequestsRouter.post(
   '/:requestId/delivered',
   ReimbursementRequestController.markReimbursementRequestAsDelivered
+);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/reimbursed',
+  ReimbursementRequestController.markReimbursementRequestAsReimbursed
 );
 
 reimbursementRequestsRouter.get('/receipt-image/:fileId', ReimbursementRequestController.downloadReceiptImage);
