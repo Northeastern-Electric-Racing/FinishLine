@@ -3,10 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, validateWBS, WbsElement } from 'shared';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
@@ -15,27 +15,29 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { mapBulletsToPayload, WPFormType } from '../../utils/form';
-import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
-import { routes } from '../../utils/routes';
+import { mapBulletsToPayload } from '../../utils/form';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
-import HelpIcon from '@mui/icons-material/Help';
-import { getTitleFromFormType } from '../../utils/work-package.utils';
 import { ObjectSchema } from 'yup';
 import { getMonday } from '../../utils/datetime.utils';
+import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
+import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
+import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequest';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
   mutateAsync: (data: WorkPackageApiInputs) => void;
+  createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
-  formType: WPFormType;
   schema: ObjectSchema<any>;
+  breadcrumbs: { name: string; route: string }[];
 }
 
 export interface WorkPackageFormViewPayload {
@@ -59,13 +61,14 @@ export interface WorkPackageFormViewPayload {
 const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
   mutateAsync,
+  createWorkPackageScopeCR,
   defaultValues,
   wbsElement,
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  formType,
-  schema
+  schema,
+  breadcrumbs
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -89,8 +92,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     }
   });
 
+  const history = useHistory();
+
   const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
   const [leadId, setLeadId] = useState<string | undefined>(wbsElement.projectLead?.userId.toString());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  let changeRequestFormInput: FormInput | undefined = undefined;
 
   // lists of stuff
   const {
@@ -129,13 +136,27 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities:
-          formType !== WPFormType.EDIT ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
-        deliverables: formType !== WPFormType.EDIT ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
+        expectedActivities: expectedActivities.map((activity) => activity.detail),
+        deliverables: deliverables.map((deliverable) => deliverable.detail),
         stage: stage as WorkPackageStage
       };
-      await mutateAsync(payload);
-      exitActiveMode();
+      if (changeRequestFormInput) {
+        createWorkPackageScopeCR({
+          ...changeRequestFormInput,
+          wbsNum: wbsElement.wbsNum,
+          workPackageProposedChanges: payload,
+          proposedSolutions: []
+        });
+
+        history.push(routes.CHANGE_REQUESTS);
+      } else {
+        if (crId === 'null' || crId === '') {
+          toast.error('Create a change request or select an existing one before submitting');
+          return;
+        }
+        mutateAsync(payload);
+        exitActiveMode();
+      }
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -144,7 +165,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     }
   };
 
-  const crIdDisplay = crId ?? defaultValues?.crId;
+  const showChangeRequestModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const crWatch = useWatch({ control, name: 'crId' });
+
+  console.log(crWatch);
 
   return (
     <form
@@ -160,45 +187,37 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     >
       <Box mb={-1}>
         <PageBreadcrumbs
-          currentPageTitle={getTitleFromFormType(formType, wbsElement)}
-          previousPages={[
-            formType !== WPFormType.EDIT
-              ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
-              : { name: 'Projects', route: routes.PROJECTS },
-            formType !== WPFormType.EDIT && crIdDisplay
-              ? {
-                  name: `Change Request #${crIdDisplay}`,
-                  route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
-                }
-              : {
-                  name: `${projectWbsNamePipe(wbsElement)}`,
-                  route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
-                }
-          ]}
+          currentPageTitle={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+          previousPages={breadcrumbs}
         />
       </Box>
       <PageLayout
         stickyHeader
-        title={getTitleFromFormType(formType, wbsElement)}
-        chips={
-          formType === WPFormType.CREATEWITHCR && (
-            <Tooltip
-              title={
-                'This form will create a change request that when accepted will automatically create a new Work Package'
-              }
-              placement="right"
-            >
-              <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
-            </Tooltip>
-          )
-        }
+        title={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        // chips={
+        //   // formType === WPFormType.CREATEWITHCR && (
+        //   //   <Tooltip
+        //   //     title={
+        //   //       'This form will create a change request that when accepted will automatically create a new Work Package'
+        //   //     }
+        //   //     placement="right"
+        //   //   >
+        //   //     <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+        //   //   </Tooltip>
+        //   // )
+        // }
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
+            {(crWatch === 'null' || crWatch === '') && (
+              <NERSuccessButton variant="contained" onClick={showChangeRequestModal} sx={{ mx: 1 }}>
+                Create Change Request
+              </NERSuccessButton>
+            )}
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-              {formType === WPFormType.CREATEWITHCR ? 'Create Change Request' : 'Submit'}
+              Submit
             </NERSuccessButton>
           </Box>
         }
@@ -212,7 +231,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           manager={managerId}
           setLead={setLeadId}
           setManager={setManagerId}
-          formType={formType}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>
@@ -256,6 +274,19 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           bulletName="Deliverable"
         />
       </PageLayout>
+      {isModalOpen && (
+        <CreateChangeRequestModal
+          handleConfirm={async (formInput: FormInput) => {
+            changeRequestFormInput = formInput;
+            await handleSubmit(onSubmit)();
+            setIsModalOpen(false);
+          }}
+          handleCancel={() => setIsModalOpen(false)}
+          wbsNum={wbsPipe(wbsElement.wbsNum)}
+          setIsModalOpen={setIsModalOpen}
+          isModalOpen
+        />
+      )}
     </form>
   );
 };

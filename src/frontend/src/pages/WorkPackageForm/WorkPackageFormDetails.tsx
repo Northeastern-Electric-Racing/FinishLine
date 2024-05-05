@@ -13,7 +13,6 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { WPFormType } from '../../utils/form';
 
 interface Props {
   lead?: string;
@@ -24,7 +23,6 @@ interface Props {
   usersForProjectManager: User[];
   control: Control<WorkPackageFormViewPayload>;
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
-  formType: WPFormType;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -35,8 +33,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   usersForProjectLead,
   usersForProjectManager,
   control,
-  errors,
-  formType
+  errors
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -84,15 +81,13 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {formType !== WPFormType.CREATEWITHCR && (
-          <Grid item xs={12} md={3}>
-            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-          </Grid>
-        )}
+        <Grid item xs={12} md={3}>
+          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+        </Grid>
         <Grid item xs={12} md={3}>
           <StageSelect />
         </Grid>
-        <Grid item xs={12} md={formType === WPFormType.CREATEWITHCR ? 3 : 2}>
+        <Grid item xs={12} md={2}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -128,34 +123,30 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {formType === WPFormType.EDIT && (
-          <>
-            <Grid item xs={12} md={5}>
-              <FormLabel> Project Lead</FormLabel>
-              <NERAutocomplete
-                sx={{ width: '100%' }}
-                id="project-lead-autocomplete"
-                onChange={(_event, value) => setLead(value?.id)}
-                options={usersForProjectLead.map(userToOption)}
-                size="small"
-                placeholder="Select a Project Lead"
-                value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
-              />
-            </Grid>
-            <Grid item xs={12} md={5}>
-              <FormLabel>Project Manager</FormLabel>
-              <NERAutocomplete
-                sx={{ width: '100%' }}
-                id="project-manager-autocomplete"
-                onChange={(_event, value) => setManager(value?.id)}
-                options={usersForProjectManager.map(userToOption)}
-                size="small"
-                placeholder="Select a Project Manager"
-                value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
-              />
-            </Grid>
-          </>
-        )}
+        <Grid item xs={12} md={5}>
+          <FormLabel> Project Lead</FormLabel>
+          <NERAutocomplete
+            sx={{ width: '100%' }}
+            id="project-lead-autocomplete"
+            onChange={(_event, value) => setLead(value?.id)}
+            options={usersForProjectLead.map(userToOption)}
+            size="small"
+            placeholder="Select a Project Lead"
+            value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
+          />
+        </Grid>
+        <Grid item xs={12} md={5}>
+          <FormLabel>Project Manager</FormLabel>
+          <NERAutocomplete
+            sx={{ width: '100%' }}
+            id="project-manager-autocomplete"
+            onChange={(_event, value) => setManager(value?.id)}
+            options={usersForProjectManager.map(userToOption)}
+            size="small"
+            placeholder="Select a Project Manager"
+            value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
+          />
+        </Grid>
       </Grid>
     </Box>
   );
