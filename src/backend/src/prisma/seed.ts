@@ -761,8 +761,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage3WbsNumber.projectNumber,
     workPackage3WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage3.project.wbsElement.projectLeadId!,
-    workPackage3.project.wbsElement.projectManagerId!,
+    workPackage3.project.wbsElement.leadId!,
+    workPackage3.project.wbsElement.managerId!,
     new Date('2023-08-21T04:00:00.000Z'),
     true
   );
@@ -792,8 +792,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage4WbsNumber.projectNumber,
     workPackage4WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage4.project.wbsElement.projectLeadId!,
-    workPackage4.project.wbsElement.projectManagerId!,
+    workPackage4.project.wbsElement.leadId!,
+    workPackage4.project.wbsElement.managerId!,
     new Date('2023-10-02T04:00:00.000Z'),
     true
   );
@@ -823,8 +823,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage5WbsNumber.projectNumber,
     workPackage5WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage5.project.wbsElement.projectLeadId!,
-    workPackage5.project.wbsElement.projectManagerId!,
+    workPackage5.project.wbsElement.leadId!,
+    workPackage5.project.wbsElement.managerId!,
     new Date('2023-05-08T04:00:00.000Z'),
     true
   );
@@ -854,8 +854,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage6WbsNumber.projectNumber,
     workPackage6WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage6.project.wbsElement.projectLeadId!,
-    workPackage6.project.wbsElement.projectManagerId!,
+    workPackage6.project.wbsElement.leadId!,
+    workPackage6.project.wbsElement.managerId!,
     new Date('2023-07-31T04:00:00.000Z'),
     true
   );
@@ -885,8 +885,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage7WbsNumber.projectNumber,
     workPackage7WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage7.project.wbsElement.projectLeadId!,
-    workPackage7.project.wbsElement.projectManagerId!,
+    workPackage7.project.wbsElement.leadId!,
+    workPackage7.project.wbsElement.managerId!,
     new Date('2023-10-09T04:00:00.000Z'),
     true
   );

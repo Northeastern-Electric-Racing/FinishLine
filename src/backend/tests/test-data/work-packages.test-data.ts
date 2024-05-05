@@ -39,8 +39,8 @@ export const sharedWorkPackage: WorkPackage = {
   deliverables: [],
   blockedBy: [],
   links: [],
-  projectManager: undefined,
-  projectLead: undefined,
+  manager: undefined,
+  lead: undefined,
   status: WbsElementStatus.Active,
   wbsNum: {
     carNumber: 1,

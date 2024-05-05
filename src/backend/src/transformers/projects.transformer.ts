@@ -32,8 +32,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     dateCreated: wbsElement.dateCreated,
     name: wbsElement.name,
     status: calculateProjectStatus(project),
-    projectLead: lead ? userTransformer(lead) : undefined,
-    projectManager: manager ? userTransformer(manager) : undefined,
+    lead: lead ? userTransformer(lead) : undefined,
+    manager: manager ? userTransformer(manager) : undefined,
     changes: wbsElement.changes.map((change) => ({
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
