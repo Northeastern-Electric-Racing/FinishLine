@@ -194,18 +194,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       <PageLayout
         stickyHeader
         title={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
-        // chips={
-        //   // formType === WPFormType.CREATEWITHCR && (
-        //   //   <Tooltip
-        //   //     title={
-        //   //       'This form will create a change request that when accepted will automatically create a new Work Package'
-        //   //     }
-        //   //     placement="right"
-        //   //   >
-        //   //     <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
-        //   //   </Tooltip>
-        //   // )
-        // }
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
