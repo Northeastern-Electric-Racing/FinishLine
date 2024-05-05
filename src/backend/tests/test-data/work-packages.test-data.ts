@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import workPackageQueryArgs from '../../src/prisma-query-args/work-packages.query-args';
 import { batman } from './users.test-data';
-import { WorkPackage, WbsElementStatus, TimelineStatus } from 'shared';
+import { WorkPackage, WbsElementStatus, TimelineStatus, WorkPackageTemplate } from 'shared';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import { prismaProject1 } from './projects.test-data';
 
@@ -54,4 +54,22 @@ export const sharedWorkPackage: WorkPackage = {
   endDate: new Date('10/20/2022'),
   materials: [],
   assemblies: []
+};
+
+export const WorkPackageTemplate1: WorkPackageTemplate = {
+  workPackageTemplateId: 'id1',
+  workPackageName: 'Work Package 1',
+  templateName: 'Template 1',
+  templateNotes: 'This is a new work package template',
+  blockedBy: [],
+  expectedActivities: [],
+  deliverables: [],
+  stage: undefined,
+  duration: undefined,
+  dateCreated: new Date('03/25/2024'),
+  userCreated: batman,
+  userCreatedId: batman.userId,
+  dateDeleted: undefined,
+  userDeleted: undefined,
+  userDeletedId: undefined
 };

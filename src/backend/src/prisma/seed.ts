@@ -22,7 +22,15 @@ import ChangeRequestsService from '../services/change-requests.services';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import WorkPackagesService from '../services/work-packages.services';
-import { ClubAccount, MaterialStatus, StandardChangeRequest, validateWBS, WbsElementStatus, WorkPackageStage } from 'shared';
+import {
+  ClubAccount,
+  DesignReviewStatus,
+  MaterialStatus,
+  StandardChangeRequest,
+  validateWBS,
+  WbsElementStatus,
+  WorkPackageStage
+} from 'shared';
 import TasksService from '../services/tasks.services';
 import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
@@ -31,6 +39,7 @@ import ReimbursementRequestService from '../services/reimbursement-requests.serv
 import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
+import DesignReviewsService from '../services/design-reviews.services';
 
 const prisma = new PrismaClient();
 
@@ -127,6 +136,20 @@ const performSeed: () => Promise<void> = async () => {
   const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
   const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
   const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
+  const regina = await prisma.user.create({ data: dbSeedAllUsers.regina });
+  const gretchen = await prisma.user.create({ data: dbSeedAllUsers.gretchen });
+  const karen = await prisma.user.create({ data: dbSeedAllUsers.karen });
+  const janis = await prisma.user.create({ data: dbSeedAllUsers.janis });
+  const aaron = await prisma.user.create({ data: dbSeedAllUsers.aaron });
+  const cady = await prisma.user.create({ data: dbSeedAllUsers.cady });
+  const damian = await prisma.user.create({ data: dbSeedAllUsers.damian });
+  const glen = await prisma.user.create({ data: dbSeedAllUsers.glen });
+  const shane = await prisma.user.create({ data: dbSeedAllUsers.shane });
+  const june = await prisma.user.create({ data: dbSeedAllUsers.june });
+  const kevin = await prisma.user.create({ data: dbSeedAllUsers.kevin });
+  const norbury = await prisma.user.create({ data: dbSeedAllUsers.norbury });
+  const carr = await prisma.user.create({ data: dbSeedAllUsers.carr });
+  const trang = await prisma.user.create({ data: dbSeedAllUsers.trang });
 
   /**
    * Make initial project so that we can start to create other stuff
@@ -198,6 +221,7 @@ const performSeed: () => Promise<void> = async () => {
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
+  const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
@@ -315,6 +339,17 @@ const performSeed: () => Promise<void> = async () => {
       johnTerry,
       dennisBergkamp
     ].map((user) => user.userId)
+  );
+
+  await TeamsService.setTeamMembers(
+    regina,
+    meanGirls.teamId,
+    [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId)
+  );
+  await TeamsService.setTeamLeads(
+    regina,
+    meanGirls.teamId,
+    [janis, cady, damian].map((user) => user.userId)
   );
 
   /**
@@ -1047,6 +1082,43 @@ const performSeed: () => Promise<void> = async () => {
     },
     'Here are some more notes',
     assembly1.assemblyId
+  );
+
+  const teamType1 = await TeamsService.createTeamType(batman, 'team 1', 'YouTubeIcon');
+
+  // Need to do this because the design review cannot be scheduled for a past day
+  const nextDay = new Date();
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  const designReview1 = await DesignReviewsService.createDesignReview(
+    batman,
+    nextDay.toDateString(),
+    teamType1.teamTypeId,
+    [1, 2],
+    [3, 4],
+    {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    [3, 4, 5, 6, 7]
+  );
+
+  await DesignReviewsService.editDesignReview(
+    batman,
+    designReview1.designReviewId,
+    nextDay,
+    teamType1.teamTypeId,
+    [1, 2, 3, 4],
+    [5, 6, 7],
+    false,
+    true,
+    null,
+    'The Bay',
+    null,
+    DesignReviewStatus.CONFIRMED,
+    [1, 2],
+    [1, 2, 3, 4, 5, 6, 7]
   );
 };
 

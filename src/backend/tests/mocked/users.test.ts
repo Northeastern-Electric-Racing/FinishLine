@@ -1,4 +1,4 @@
-import prisma from '../src/prisma/prisma';
+import prisma from '../../src/prisma/prisma';
 import {
   batman,
   batmanSettings,
@@ -10,11 +10,11 @@ import {
   batmanWithScheduleSettings,
   batmanScheduleSettings,
   batmanUserScheduleSettings
-} from './test-data/users.test-data';
+} from '../test-data/users.test-data';
 import { Role } from '@prisma/client';
-import UsersService from '../src/services/users.services';
-import { AccessDeniedException, HttpException, NotFoundException } from '../src/utils/errors.utils';
-import userTransformer from '../src/transformers/user.transformer';
+import { userTransformer } from '../../src/transformers/user.transformer';
+import UsersService from '../../src/services/users.services';
+import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 
 describe('Users', () => {
   afterEach(() => {
@@ -45,16 +45,17 @@ describe('Users', () => {
   });
 
   test('getSingleUser', async () => {
+    vi.spyOn(prisma.user, 'findUnique').mockResolvedValue(batman);
     const res = await UsersService.getSingleUser(0);
 
     // we don't return the google auth id for security reasons
     expect(res).toStrictEqual({
-      userId: 0,
-      firstName: 'Admin',
-      email: 'admin@gmail.com',
-      lastName: 'User',
-      role: Role.GUEST,
-      emailId: null
+      userId: 1,
+      firstName: 'Bruce',
+      lastName: 'Wayne',
+      email: 'notbatman@gmail.com',
+      emailId: 'notbatman',
+      role: Role.APP_ADMIN
     });
   });
 

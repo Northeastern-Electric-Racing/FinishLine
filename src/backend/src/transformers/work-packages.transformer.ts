@@ -4,7 +4,7 @@ import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args'
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
-import userTransformer from './user.transformer';
+import { userTransformer } from './user.transformer';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>): WorkPackage => {
   const expectedProgress = calculatePercentExpectedProgress(wpInput.startDate, wpInput.duration, wpInput.wbsElement.status);
