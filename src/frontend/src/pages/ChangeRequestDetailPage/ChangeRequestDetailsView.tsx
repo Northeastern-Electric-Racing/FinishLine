@@ -5,14 +5,7 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  ActivationChangeRequest,
-  ChangeRequest,
-  ChangeRequestType,
-  StandardChangeRequest,
-  WbsNumber,
-  isProject
-} from 'shared';
+import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest, isProject } from 'shared';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
@@ -65,11 +58,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
 
-  const wbsNum: WbsNumber = {
-    carNumber: changeRequest.wbsNum.carNumber,
-    projectNumber: changeRequest.wbsNum.projectNumber,
-    workPackageNumber: changeRequest.wbsNum.workPackageNumber
-  };
+  const wbsNum = changeRequest.wbsNum;
 
   const {
     data: project,

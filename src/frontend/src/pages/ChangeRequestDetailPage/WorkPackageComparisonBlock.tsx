@@ -4,7 +4,7 @@ import { PotentialChange } from './CompareProposedChanges';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
-import { datePipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe } from '../../utils/pipes';
 import CompareProposedChanges from './CompareProposedChanges';
 
 interface CompareProjectFieldsProps {
@@ -49,26 +49,22 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   const initialProjectLead: PotentialChange = {
     field: 'Project Lead',
-    content: `${workPackage.projectLead?.firstName} ${workPackage.projectLead?.lastName}`
+    content: `${fullNamePipe(workPackage.projectLead)}`
   };
 
   const proposedProjectLead: PotentialChange = {
     field: 'Project Lead',
-    content: `${(changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectLead?.firstName} ${
-      (changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectLead?.lastName
-    }`
+    content: `${fullNamePipe((changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectLead)}`
   };
 
   const initialProjectManager: PotentialChange = {
     field: 'Project Manager',
-    content: `${workPackage.projectManager?.firstName} ${workPackage.projectManager?.lastName}`
+    content: `${fullNamePipe(workPackage.projectManager)}`
   };
 
   const proposedProjectManager: PotentialChange = {
     field: 'Project Manager',
-    content: `${(changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectManager?.firstName} ${
-      (changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectManager?.lastName
-    }`
+    content: `${fullNamePipe((changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectManager)}`
   };
 
   const initialDuration: PotentialChange = {

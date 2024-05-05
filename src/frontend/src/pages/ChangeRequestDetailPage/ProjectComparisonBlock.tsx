@@ -4,6 +4,7 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CompareProposedChanges from './CompareProposedChanges';
+import { fullNamePipe } from '../../utils/pipes';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
@@ -47,26 +48,22 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   const initialProjectLead: PotentialChange = {
     field: 'Project Lead',
-    content: `${project.projectLead?.firstName} ${project.projectLead?.lastName}`
+    content: `${fullNamePipe(project.projectLead)}`
   };
 
   const proposedProjectLead: PotentialChange = {
     field: 'Project Lead',
-    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.firstName} ${
-      (changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead?.lastName
-    }`
+    content: `${fullNamePipe((changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead)}`
   };
 
   const initialProjectManager: PotentialChange = {
     field: 'Project Manager',
-    content: `${project.projectManager?.firstName} ${project.projectManager?.lastName}`
+    content: `${fullNamePipe(project.projectManager)}`
   };
 
   const proposedProjectManager: PotentialChange = {
     field: 'Project Manager',
-    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager?.firstName} ${
-      (changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager?.lastName
-    }`
+    content: `${fullNamePipe((changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager)}`
   };
 
   const initialBudget: PotentialChange = {
