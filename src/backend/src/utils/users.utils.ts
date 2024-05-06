@@ -1,10 +1,7 @@
-import { User, User_Settings } from '@prisma/client';
+import { User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
-
-type UserWithSettings = {
-  userSettings: User_Settings | null;
-} & User;
+import { UserWithSettings } from './auth.utils';
 
 export const getUserFullName = async (userId: number | null) => {
   if (!userId) return 'no one';
