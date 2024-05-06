@@ -76,7 +76,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   } = useForm<MaterialFormInput>({
     defaultValues: {
       name: defaultValues?.name ?? '',
-      status: defaultValues?.status ?? ('UNORDERED' as MaterialStatus),
+      status: defaultValues?.status ?? MaterialStatus.NotReadyToOrder,
       materialTypeName: defaultValues?.materialTypeName ?? '',
       manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
       quantity: defaultValues?.quantity ?? 0,

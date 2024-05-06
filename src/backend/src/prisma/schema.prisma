@@ -145,7 +145,9 @@ model Team {
   userArchivedId         Int?
   userArchived           User?                      @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
   meetings               Meeting[]
-  projectProposedChanges Project_Proposed_Changes[] @relation(name: "proposedProjectTeams")
+  proposedProjectChanges Project_Proposed_Changes[] @relation(name: "proposedProjectTeams")
+  teamType               TeamType?                  @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId             String?
 }
 
 model Session {
@@ -290,7 +292,7 @@ model WBS_Element {
   materials                   Material[]
   reimbursementProductReasons Reimbursement_Product_Reason[]
   designReviews               Design_Review[]
-  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "blockedBy")
+  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "proposedBlockedBy")
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -536,7 +538,8 @@ enum Material_Status {
   RECEIVED
   ORDERED
   SHIPPED
-  UNORDERED
+  NOT_READY_TO_ORDER
+  READY_TO_ORDER
 }
 
 model Unit {
@@ -600,6 +603,7 @@ model Material_Type {
 model Manufacturer {
   name          String     @id
   dateCreated   DateTime
+  dateDeleted   DateTime?
   userCreatedId Int
   userCreated   User       @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
   materials     Material[]
@@ -617,12 +621,13 @@ model TeamType {
   name           String          @unique
   iconName       String
   Design_Reviews Design_Review[]
+  Team           Team[]
 }
 
 model Design_Review {
   designReviewId   String               @id @default(uuid())
   dateScheduled    DateTime             @db.Date
-  // Meeting times are an integer between 0 and 83 representing time after 9am in 15 minute increments, eg. 0 = 9:00am, 5 = 10:15 am
+  // Meeting times are an integer between 0 and 83 from 10am - 10pm (Monday - Sunday), eg. 0 = 10:00am Monday, 12 = 10:00am Tuesday
   meetingTimes     Int[]
   dateCreated      DateTime             @default(now()) @db.Timestamp(3)
   userCreated      User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
@@ -651,7 +656,7 @@ model Schedule_Settings {
   drScheduleSettingsId String @id @default(uuid())
   personalGmail        String
   personalZoomLink     String
-  // Availibilies are integers between 0 and 48 representing time after 9am in 15 minute increments, see meetingTime field in Design_Review
+  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
   availability         Int[]
   User                 User   @relation(fields: [userId], references: [userId])
   userId               Int    @unique
@@ -660,7 +665,7 @@ model Schedule_Settings {
 model Meeting {
   meetingId    String @id @default(uuid())
   title        String
-  // meetingTimes are integers between 0 and 48 representing time after 9am in 15 minute increments, see meetingTime field in Design_Review
+  // meetingTimes are integers between 0 and 83 representing time after from 10am - 10pm (from Monday - Sunday) see meetingTime field in Design_Review
   meetingTimes Int[]
   team         Team?  @relation(fields: [teamId], references: [teamId])
   teamId       String
@@ -700,7 +705,7 @@ model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String               @id @default(uuid())
   startDate                    DateTime             @db.Date
   duration                     Int
-  blockedBy                    WBS_Element[]        @relation(name: "blockedBy")
+  blockedBy                    WBS_Element[]        @relation(name: "proposedBlockedBy")
   expectedActivities           Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables                 Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage                        Work_Package_Stage?

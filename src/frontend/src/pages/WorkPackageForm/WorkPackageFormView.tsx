@@ -3,11 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
+import { User, validateWBS, WbsElement } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
@@ -16,28 +15,16 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { startDateTester, mapBulletsToPayload } from '../../utils/form';
+import { mapBulletsToPayload, WPFormType } from '../../utils/form';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
-import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
-
-const schema = yup.object().shape({
-  name: yup.string().required('Name is required!'),
-  startDate: yup
-    .date()
-    .required('Start Date is required!')
-    .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
-  duration: yup.number().required(),
-  crId: yup
-    .number()
-    .required('CR ID is required')
-    .typeError('CR ID must be a number')
-    .integer('CR ID must be an integer')
-    .min(1, 'CR ID must be greater than or equal to 1')
-});
+import HelpIcon from '@mui/icons-material/Help';
+import { getTitleFromFormType } from '../../utils/work-package.utils';
+import { ObjectSchema } from 'yup';
+import { getMonday } from '../../utils/datetime.utils';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -47,7 +34,8 @@ interface WorkPackageFormViewProps {
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
-  createForm?: boolean;
+  formType: WPFormType;
+  schema: ObjectSchema<any>;
 }
 
 export interface WorkPackageFormViewPayload {
@@ -76,7 +64,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  createForm
+  formType,
+  schema
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -132,6 +121,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       const payload = {
         projectLeadId: leadId ? parseInt(leadId) : undefined,
         projectManagerId: managerId ? parseInt(managerId) : undefined,
+        projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
@@ -139,8 +129,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
-        deliverables: createForm ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
+        expectedActivities:
+          formType !== WPFormType.EDIT ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
+        deliverables: formType !== WPFormType.EDIT ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
         stage: stage as WorkPackageStage
       };
       await mutateAsync(payload);
@@ -169,12 +160,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     >
       <Box mb={-1}>
         <PageBreadcrumbs
-          currentPageTitle={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+          currentPageTitle={getTitleFromFormType(formType, wbsElement)}
           previousPages={[
-            createForm
+            formType !== WPFormType.EDIT
               ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
               : { name: 'Projects', route: routes.PROJECTS },
-            createForm && crIdDisplay
+            formType !== WPFormType.EDIT && crIdDisplay
               ? {
                   name: `Change Request #${crIdDisplay}`,
                   route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
@@ -188,14 +179,26 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       </Box>
       <PageLayout
         stickyHeader
-        title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        title={getTitleFromFormType(formType, wbsElement)}
+        chips={
+          formType === WPFormType.CREATEWITHCR && (
+            <Tooltip
+              title={
+                'This form will create a change request that when accepted will automatically create a new Work Package'
+              }
+              placement="right"
+            >
+              <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+            </Tooltip>
+          )
+        }
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-              Submit
+              {formType === WPFormType.CREATEWITHCR ? 'Create Change Request' : 'Submit'}
             </NERSuccessButton>
           </Box>
         }
@@ -209,7 +212,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           manager={managerId}
           setLead={setLeadId}
           setManager={setManagerId}
-          createForm={createForm}
+          formType={formType}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>

@@ -41,6 +41,18 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
     ]);
 };
 
+export const isWorkPackageStage = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      WorkPackageStage.Research,
+      WorkPackageStage.Design,
+      WorkPackageStage.Manufacturing,
+      WorkPackageStage.Install,
+      WorkPackageStage.Testing
+    ]);
+};
+
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.custom((value) => !isNaN(Date.parse(value)));
 };
@@ -60,27 +72,19 @@ export const validateReimbursementProducts = () => {
   ];
 };
 
-const wbsProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.if((value: any, { req }: any) => req.body.wbsProposedChanges);
-};
-
-export const wbsProposedChangesValidators = [
-  body('wbsProposedChanges').optional(),
-  nonEmptyString(wbsProposedChangesExists(body('wbsProposedChanges.name'))),
-  isStatus(wbsProposedChangesExists(body('wbsProposedChanges.status'))),
-  wbsProposedChangesExists(body('wbsProposedChanges.links')).isArray(),
-  nonEmptyString(body('wbsProposedChanges.links.*.url')),
-  nonEmptyString(body('wbsProposedChanges.links.*.linkTypeName')),
-  intMinZero(body('wbsProposedChanges.projectLeadId').optional()),
-  intMinZero(body('wbsProposedChanges.projectManagerId').optional())
-];
-
 const projectProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.if((value: any, { req }: any) => req.body.projectProposedChanges);
 };
 
 export const projectProposedChangesValidators = [
   body('projectProposedChanges').optional(),
+  nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.name'))),
+  isStatus(projectProposedChangesExists(body('projectProposedChanges.status'))),
+  projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
+  nonEmptyString(body('projectProposedChanges.links.*.url')),
+  nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
+  intMinZero(body('projectProposedChanges.projectLeadId').optional()),
+  intMinZero(body('projectProposedChanges.projectManagerId').optional()),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
   intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
   projectProposedChangesExists(body('projectProposedChanges.rules')).isArray(),
@@ -102,7 +106,10 @@ const workPackageProposedChangesExists = (validationObject: ValidationChain): Va
 
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
-  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage'))),
+  nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
+  intMinZero(body('workPackageProposedChanges.projectLeadId').optional()),
+  intMinZero(body('workPackageProposedChanges.projectManagerId').optional()),
+  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage').optional())),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
   workPackageProposedChangesExists(body('workPackageProposedChanges.blockedBy')).isArray(),
@@ -130,7 +137,13 @@ export const isAccount = (validationObject: ValidationChain): ValidationChain =>
 export const isMaterialStatus = (validationObject: ValidationChain): ValidationChain => {
   return validationObject
     .isString()
-    .isIn([MaterialStatus.Ordered, MaterialStatus.Received, MaterialStatus.Unordered, MaterialStatus.Shipped]);
+    .isIn([
+      MaterialStatus.Ordered,
+      MaterialStatus.Received,
+      MaterialStatus.NotReadyToOrder,
+      MaterialStatus.ReadyToOrder,
+      MaterialStatus.Shipped
+    ]);
 };
 
 export const isDesignReviewStatus = (validationObject: ValidationChain): ValidationChain => {

@@ -150,3 +150,35 @@ export const getDateImplemented = (changeRequest: Change_Request & { changes: Ch
 export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
   return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
 };
+
+/**
+ * Determines if the project lead, project manager, and links all exist
+ * @param projectLeadId the project lead id to be verified
+ * @param projectManagerId the project manager id to be verified
+ * @param links the links to be verified
+ */
+export const validateProposedChangesFields = async (
+  links: {
+    url: string;
+    linkTypeName: string;
+  }[],
+  projectLeadId?: number,
+  projectManagerId?: number
+) => {
+  if (projectLeadId) {
+    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+    if (!projectLead) throw new NotFoundException('User', projectLeadId);
+  }
+
+  if (projectManagerId) {
+    const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+    if (!projectManager) throw new NotFoundException('User', projectManagerId);
+  }
+
+  if (links.length > 0) {
+    for (const link of links) {
+      const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
+      if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+    }
+  }
+};

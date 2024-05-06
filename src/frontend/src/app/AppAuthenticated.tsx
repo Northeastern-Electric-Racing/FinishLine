@@ -11,7 +11,7 @@ import { PageNotFound } from '../pages/PageNotFound';
 import Home from '../pages/HomePage/Home';
 import Settings from '../pages/SettingsPage/SettingsPage';
 import InfoPage from '../pages/InfoPage';
-import GanttPageWrapper from '../pages/GanttPage/GanttPageWrapper';
+import GanttChartPage from '../pages/GanttPage/GanttChartPage';
 import Teams from '../pages/TeamsPage/Teams';
 import AdminTools from '../pages/AdminToolsPage/AdminTools';
 import Credits from '../pages/CreditsPage/Credits';
@@ -53,12 +53,12 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
     <AppContextUser>
       <Box display={'flex'}>
         <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={'xl'} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 90px)' }}>
+        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 90px)' }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-            <Route path={routes.GANTT} component={GanttPageWrapper} />
+            <Route path={routes.GANTT} component={GanttChartPage} />
             <Route path={routes.TEAMS} component={Teams} />
             <Route path={routes.SETTINGS} component={Settings} />
             <Route path={routes.ADMIN_TOOLS} component={AdminTools} />
