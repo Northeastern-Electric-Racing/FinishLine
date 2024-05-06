@@ -167,7 +167,7 @@ export default class ReimbursementRequestService {
       }
     });
 
-    await sendReimbursementRequestCreatedNotification(createdReimbursementRequest.reimbursementRequestId);
+    await sendReimbursementRequestCreatedNotification(createdReimbursementRequest.reimbursementRequestId, recipient.userId);
 
     await createReimbursementProducts(
       validatedReimbursementProducts.validatedOtherReimbursementProducts,

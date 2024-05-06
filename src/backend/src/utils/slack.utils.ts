@@ -1,6 +1,6 @@
 import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
 import { reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
-import { getUserSlackId } from './users.utils';
+import { getUserFullName, getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
@@ -83,13 +83,13 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
 
 /**
  * Send a notification to users that a reimbursement request is created on Slack
- * @param slackId the slack id of the finance channel
  * @param requestId the id if the reimbursement request
+ * @param userId the id of the user who created the reimbursement request
  */
-export const sendReimbursementRequestCreatedNotification = async (requestId: string): Promise<void> => {
+export const sendReimbursementRequestCreatedNotification = async (requestId: string, userId: number): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const msg = `A reimbursement request has been created.`;
+  const msg = `${getUserFullName(userId)} created a reimbursement request 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
