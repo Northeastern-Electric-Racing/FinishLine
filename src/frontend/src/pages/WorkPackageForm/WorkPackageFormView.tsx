@@ -24,8 +24,7 @@ import { WorkPackageStage } from 'shared';
 import HelpIcon from '@mui/icons-material/Help';
 import { getTitleFromFormType } from '../../utils/work-package.utils';
 import { ObjectSchema } from 'yup';
-import { transformDate } from '../../utils/task.utils';
-import { getMonday } from '../../utils/datetime.utils';
+import { getMonday, transformDate } from '../../utils/datetime.utils';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;

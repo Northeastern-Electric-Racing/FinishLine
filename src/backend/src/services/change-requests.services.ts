@@ -27,7 +27,7 @@ import {
   updateBlocking,
   allChangeRequestsReviewed,
   validateProposedChangesFields,
-  validateUnreviewedOpenCRs
+  validateNoUnreviewedOpenCRs
 } from '../utils/change-requests.utils';
 import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
@@ -45,7 +45,7 @@ import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.que
 import { validateBlockedBys } from '../utils/projects.utils';
 import scopeChangeRequestQueryArgs from '../prisma-query-args/scope-change-requests.query-args';
 import WorkPackagesService from './work-packages.services';
-import { transformDate } from '../utils/utils';
+import { transformDate } from '../utils/datetime.utils';
 import ProjectsService from './projects.services';
 
 export default class ChangeRequestsService {
@@ -218,7 +218,7 @@ export default class ChangeRequestsService {
           }
         });
       } else if (foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
-        await validateUnreviewedOpenCRs(foundCR.wbsElementId);
+        await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
 
         // must accept and review a change request before using the workpackage and project services
         await prisma.change_Request.update({
