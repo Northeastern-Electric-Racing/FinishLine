@@ -11,10 +11,12 @@ import { ChangeEvent } from 'react';
 
 const FilterChipButton = ({
   buttonText,
-  onChange
+  onChange,
+  defaultChecked
 }: {
   buttonText: string;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  defaultChecked: boolean;
 }) => {
   const theme = useTheme();
 
@@ -30,6 +32,7 @@ const FilterChipButton = ({
       checkedIcon={
         <Chip label={buttonText} sx={{ borderRadius: '20px', paddingX: 1, backgroundColor: theme.palette.primary.main }} />
       }
+      defaultChecked={defaultChecked}
     />
   );
 };
@@ -39,7 +42,7 @@ const FilterRow = ({
   buttons
 }: {
   label: string;
-  buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
 }) => (
   <Grid item container xs={12}>
     <Typography variant="h6" component="label" textAlign="right">
@@ -48,16 +51,20 @@ const FilterRow = ({
 
     <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'center' }}>
       {buttons.map((button) => (
-        <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} />
+        <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} defaultChecked={button.defaultChecked} />
       ))}
     </Grid>
   </Grid>
 );
 
 interface GanttChartFiltersProps {
-  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamTypeHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  teamTypeHandlers: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
+  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
   expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
@@ -117,9 +124,9 @@ const GanttChartFilters = ({
       }}
     >
       <FilterRow label="Car" buttons={carHandlers} />
-      <FilterRow label="Team Type" buttons={teamTypeHandlers} />
+      <FilterRow label="Subteam" buttons={teamTypeHandlers} />
       <FilterRow label="Team" buttons={teamHandlers} />
-      <FilterRow label="Overdue" buttons={[{ filterLabel: 'Overdue', handler: overdueHandler }]} />
+      <FilterRow label="Overdue" buttons={[{ filterLabel: 'Overdue', handler: overdueHandler, defaultChecked: false }]} />
       <FilterButtons />
     </Grid>
   );

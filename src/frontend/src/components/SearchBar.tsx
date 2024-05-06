@@ -3,12 +3,43 @@ import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { Close } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
+import { Project, WbsElement, WbsElementStatus } from 'shared';
 
 interface SearchBarProps {
   placeholder?: string;
   searchText: string;
   setSearchText: (searchText: string) => void;
 }
+
+const project: Project = {
+  id: 1,
+  name: 'Project 1',
+  startDate: new Date(),
+  endDate: new Date(),
+  tasks: [],
+  teams: [],
+  status: WbsElementStatus.Active,
+  summary: '',
+  budget: 0,
+  rules: [],
+  duration: 0,
+  goals: [],
+  features: [],
+  otherConstraints: [],
+  workPackages: [],
+  wbsNum: { carNumber: 0, projectNumber: 0, workPackageNumber: 0 },
+  dateCreated: new Date(),
+  links: [],
+  changes: [],
+  materials: [],
+  assemblies: []
+};
+
+const test = (wbs: WbsElement) => {
+  return wbs.name;
+};
+
+console.log(test(project));
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',

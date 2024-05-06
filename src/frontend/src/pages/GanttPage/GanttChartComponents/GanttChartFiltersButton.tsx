@@ -4,9 +4,13 @@ import GanttChartFilters from './GanttChartFilters';
 import { Tune } from '@mui/icons-material';
 
 interface GanttChartFiltersButtonProps {
-  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamTypeHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
+  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  teamTypeHandlers: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
+  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
   expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;

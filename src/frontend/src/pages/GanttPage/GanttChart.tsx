@@ -1,5 +1,5 @@
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
-import { EventChange, GanttTask } from '../../utils/gantt.utils';
+import { EventChange, GanttTask, GanttTaskData } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
 import GanttChartSection from './GanttChartSection';
 
@@ -11,7 +11,7 @@ interface GanttChartProps {
   chartEditingState: Array<{ teamName: string; editing: boolean }>;
   setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
-  ganttTasks: GanttTask[];
+  onExpanderClick: (newTask: GanttTaskData, teamName: string) => void;
 }
 
 const GanttChart = ({
@@ -22,7 +22,7 @@ const GanttChart = ({
   chartEditingState,
   setChartEditingState,
   saveChanges,
-  ganttTasks
+  onExpanderClick
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -89,10 +89,8 @@ const GanttChart = ({
                 start={startDate}
                 end={endDate}
                 isEditMode={isEditMode}
-                onExpanderClick={(newTask) => {
-                  ganttTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-                }}
                 saveChanges={saveChanges}
+                onExpanderClick={onExpanderClick}
               />
             </Box>
           </Box>

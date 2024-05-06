@@ -18,7 +18,8 @@ import {
   GanttTask,
   transformProjectToGanttTask,
   getProjectTeamsName,
-  EventChange
+  EventChange,
+  GanttTaskData
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -74,7 +75,7 @@ const GanttChartPage: FC = () => {
   const sortedProjects = filteredProjects.sort(
     (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
   );
-  let ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
+  const ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
 
   if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
@@ -112,23 +113,39 @@ const GanttChartPage: FC = () => {
     };
   };
 
-  const carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = [
-    { filterLabel: 'None', handler: carHandlerFn(0) },
-    { filterLabel: 'Car 1', handler: carHandlerFn(1) },
-    { filterLabel: 'Car 2', handler: carHandlerFn(2) }
+  const carHandlers: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[] = [
+    { filterLabel: 'None', handler: carHandlerFn(0), defaultChecked: defaultGanttFilters.showCars.includes(0) },
+    { filterLabel: 'Car 1', handler: carHandlerFn(1), defaultChecked: defaultGanttFilters.showCars.includes(1) },
+    { filterLabel: 'Car 2', handler: carHandlerFn(2), defaultChecked: defaultGanttFilters.showCars.includes(2) }
   ];
 
-  const teamTypeHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = teamTypes.map(
-    (teamType) => {
-      return { filterLabel: teamType.name, handler: teamTypeHandlerFn(teamType) };
-    }
-  );
+  const teamTypeHandlers: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[] = teamTypes.map((teamType) => {
+    return {
+      filterLabel: teamType.name,
+      handler: teamTypeHandlerFn(teamType),
+      defaultChecked: defaultGanttFilters.showTeamTypes.includes(teamType.name)
+    };
+  });
 
-  const teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[] = teams.map(
-    (team) => {
-      return { filterLabel: team.teamName, handler: teamHandlerFn(team) };
-    }
-  );
+  const teamHandlers: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[] = teams.map((team) => {
+    return {
+      filterLabel: team.teamName,
+      handler: teamHandlerFn(team),
+      defaultChecked: defaultGanttFilters.showTeams.includes(team.teamName)
+    };
+  });
 
   const overdueHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const ganttFilters: GanttFilters = { ...defaultGanttFilters, showOnlyOverdue: event.target.checked };
@@ -138,11 +155,9 @@ const GanttChartPage: FC = () => {
   const expandedHandler = (value: boolean) => {
     // No more forced reloads
     if (value === expanded) {
-      ganttTasks = ganttTasks.map((task) => {
+      ganttTasks.forEach((task) => {
         if (task.type === 'project') {
-          return { ...task, hideChildren: !value };
-        } else {
-          return task;
+          task.hideChildren = !value;
         }
       });
     } else {
@@ -154,11 +169,9 @@ const GanttChartPage: FC = () => {
   const resetHandler = () => {
     // No more forced reloads
     if (query.get('expanded') === null) {
-      ganttTasks = ganttTasks.map((object) => {
-        if (object.type === 'project') {
-          return { ...object, hideChildren: true };
-        } else {
-          return object;
+      ganttTasks.forEach((task) => {
+        if (task.type === 'project') {
+          task.hideChildren = true;
         }
       });
     } else {
@@ -255,7 +268,11 @@ const GanttChartPage: FC = () => {
           chartEditingState={chartEditingState}
           setChartEditingState={setChartEditingState}
           saveChanges={saveChanges}
-          ganttTasks={ganttTasks}
+          onExpanderClick={(newTask: GanttTaskData, teamName: string) => {
+            ganttTasks.forEach((task) => {
+              if (newTask.id === task.id) task = { ...newTask, teamName };
+            });
+          }}
         />
       </Box>
     </PageLayout>

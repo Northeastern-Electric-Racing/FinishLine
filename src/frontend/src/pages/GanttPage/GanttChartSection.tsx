@@ -15,7 +15,7 @@ interface GanttChartSectionProps {
   tasks: GanttTaskData[];
   isEditMode: boolean;
   saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (ganttTasks: GanttTaskData) => void;
+  onExpanderClick: (ganttTasks: GanttTaskData, teamName: string) => void;
 }
 
 const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpanderClick }: GanttChartSectionProps) => {
