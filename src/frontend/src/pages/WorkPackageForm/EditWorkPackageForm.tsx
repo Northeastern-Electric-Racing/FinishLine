@@ -1,4 +1,4 @@
-import { WbsNumber } from 'shared';
+import { WbsNumber, wbsPipe } from 'shared';
 import WorkPackageForm from './WorkPackageForm';
 import { useEditWorkPackage } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
@@ -10,10 +10,11 @@ import { routes } from '../../utils/routes';
 
 interface EditWorkPackageFormProps {
   wbsNum: WbsNumber;
+  workPackageName: string;
   setPageMode: (value: React.SetStateAction<boolean>) => void;
 }
 
-const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPageMode }) => {
+const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, workPackageName, setPageMode }) => {
   const history = useHistory();
 
   const { mutateAsync: editWorkPackage, isLoading } = useEditWorkPackage(wbsNum);
@@ -37,15 +38,15 @@ const EditWorkPackageForm: React.FC<EditWorkPackageFormProps> = ({ wbsNum, setPa
       route: `${routes.PROJECTS}`
     },
     {
-      name: `Work Package ${wbsNum.workPackageNumber}`,
-      route: `${routes.PROJECTS}/${wbsNum.projectNumber}/work-packages/${wbsNum.carNumber}/${wbsNum.projectNumber}/${wbsNum.workPackageNumber}`
+      name: `${wbsPipe(wbsNum)} - ${workPackageName}`,
+      route: `${routes.PROJECTS}/${wbsNum.carNumber}.${wbsNum.projectNumber}.${wbsNum.workPackageNumber}`
     }
   ];
 
   return (
     <WorkPackageForm
       wbsNum={wbsNum}
-      implementChanges={editWorkPackage}
+      workPackageMutateAsync={editWorkPackage}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       exitActiveMode={() => {
         setPageMode(false);
