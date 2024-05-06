@@ -1,5 +1,5 @@
 import { Box } from '@mui/system';
-import { GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid';
+import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,10 +11,12 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Link, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
-import { renderLinkBOM, renderStatusBOM } from './BOMTableCustomCells';
+import { renderStatusBOM } from './BOMTableCustomCells';
+import LinkIcon from '@mui/icons-material/Link';
+import NotesIcon from '@mui/icons-material/Notes';
 
 interface BOMTableWrapperProps {
   project: Project;
@@ -65,18 +67,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     }
   };
 
-  const renderNotes = (params: GridRenderCellParams) =>
-    params.value && (
-      <Link
-        onClick={() => {
-          setSelectedMaterialId(params.row.materialId);
-          setModalShow(true);
-        }}
-      >
-        See Notes
-      </Link>
-    );
-
   const editPerms =
     isLeadership(user.role) ||
     project.teams.some((team) => team.head.userId === user.userId) ||
@@ -111,6 +101,27 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
           onClick={() => {
             setSelectedMaterialId(params.row.materialId);
             setShowEditMaterial(true);
+          }}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          icon={<LinkIcon fontSize="small" />}
+          label="Link"
+          disabled={!editPerms}
+          onClick={() => {
+            window.open(params.row.link, '_blank');
+          }}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          icon={<NotesIcon fontSize="small" />}
+          label="Notes"
+          disabled={!editPerms}
+          onClick={() => {
+            setSelectedMaterialId(params.row.materialId);
+            setModalShow(true);
           }}
         />
       );
@@ -239,25 +250,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     },
     {
       ...bomBaseColDef,
-      field: 'link',
-      headerName: 'Link',
-      type: 'string',
-      renderCell: renderLinkBOM,
-      sortable: false,
-      filterable: false
-    },
-    {
-      ...bomBaseColDef,
-      field: 'notes',
-      headerName: 'Notes',
-      type: 'string',
-      renderCell: renderNotes,
-      sortable: false,
-      filterable: false
-    },
-    {
-      ...bomBaseColDef,
-      flex: 0.1,
+      flex: 1,
       field: 'actions',
       type: 'actions',
       getActions,
