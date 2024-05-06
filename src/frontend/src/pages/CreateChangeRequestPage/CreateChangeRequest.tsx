@@ -17,7 +17,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 
 interface CreateChangeRequestProps {}
 
-export interface CreateChangeRequestFormInput {
+export interface FormInput {
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
   what: string;
   why: { type: ChangeRequestReason; explain: string }[];
@@ -62,7 +62,7 @@ const CreateChangeRequest: React.FC<CreateChangeRequestProps> = () => {
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const handleConfirm = async (data: CreateChangeRequestFormInput) => {
+  const handleConfirm = async (data: FormInput) => {
     const requestHasASolution: boolean = proposedSolutions.length !== 0;
     try {
       if (!requestHasASolution) throw new Error('You must have at least one proposed solution added!');

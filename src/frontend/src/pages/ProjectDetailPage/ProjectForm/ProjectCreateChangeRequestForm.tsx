@@ -33,7 +33,7 @@ import { ChangeEvent } from 'react';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ProjectFormInput } from './ProjectForm';
-import { CreateChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { FormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 
 interface ProjectCreateChangeRequestFormProps {
   onSubmit: (data: ProjectCreateChangeRequestFormInput) => void;
@@ -125,7 +125,7 @@ const ProjectCreateChangeRequestForm: React.FC<ProjectCreateChangeRequestFormPro
     );
   };
 
-  const submitChangeRequest = (data: CreateChangeRequestFormInput) => {
+  const submitChangeRequest = (data: FormInput) => {
     if (projectEdits) {
       const changeRequestPayload: ProjectCreateChangeRequestFormInput = {
         ...data,
