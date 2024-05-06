@@ -1,11 +1,11 @@
 import { ChangeRequest, StandardChangeRequest } from 'shared';
 import { PotentialChange } from './CompareProposedChanges';
-
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
-import { datePipe, fullNamePipe } from '../../utils/pipes';
+import { datePipe } from '../../utils/pipes';
 import CompareProposedChanges from './CompareProposedChanges';
+import WbsComparisonBlock from './WbsComparisonBlock';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
@@ -26,46 +26,6 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (!workPackage || isLoading) return <LoadingIndicator />;
-
-  const initialName: PotentialChange = {
-    field: 'Name',
-    content: `${workPackage.name}`
-  };
-
-  const proposedName: PotentialChange = {
-    field: 'Name',
-    content: `${(changeRequest as StandardChangeRequest).workPackageProposedChanges?.name}`
-  };
-
-  const initialProjectStatus: PotentialChange = {
-    field: 'Status',
-    content: `${workPackage.status}`
-  };
-
-  const proposedProjectStatus: PotentialChange = {
-    field: 'Status',
-    content: `${(changeRequest as StandardChangeRequest).workPackageProposedChanges?.status}`
-  };
-
-  const initialProjectLead: PotentialChange = {
-    field: 'Project Lead',
-    content: `${fullNamePipe(workPackage.projectLead)}`
-  };
-
-  const proposedProjectLead: PotentialChange = {
-    field: 'Project Lead',
-    content: `${fullNamePipe((changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectLead)}`
-  };
-
-  const initialProjectManager: PotentialChange = {
-    field: 'Project Manager',
-    content: `${fullNamePipe(workPackage.projectManager)}`
-  };
-
-  const proposedProjectManager: PotentialChange = {
-    field: 'Project Manager',
-    content: `${fullNamePipe((changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectManager)}`
-  };
 
   const initialDuration: PotentialChange = {
     field: 'Duration',
@@ -99,10 +59,7 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   return (
     <>
-      <CompareProposedChanges first={initialName} second={proposedName} isProposed={isProposed} />
-      <CompareProposedChanges first={initialProjectStatus} second={proposedProjectStatus} isProposed={isProposed} />
-      <CompareProposedChanges first={initialProjectLead} second={proposedProjectLead} isProposed={isProposed} />
-      <CompareProposedChanges first={initialProjectManager} second={proposedProjectManager} isProposed={isProposed} />
+      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={isProposed} />
       <CompareProposedChanges first={initialDuration} second={proposedDuration} isProposed={isProposed} />
       <CompareProposedChanges first={initialStage} second={proposedStage} isProposed={isProposed} />
       <CompareProposedChanges first={initialStartDate} second={proposedStartDate} isProposed={isProposed} />

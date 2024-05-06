@@ -4,7 +4,7 @@ import { useSingleProject } from '../../hooks/projects.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CompareProposedChanges from './CompareProposedChanges';
-import { fullNamePipe } from '../../utils/pipes';
+import WbsComparisonBlock from './WbsComparisonBlock';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
@@ -25,46 +25,6 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (!project || isLoading) return <LoadingIndicator />;
-
-  const initialName: PotentialChange = {
-    field: 'Name',
-    content: `${project.name}`
-  };
-
-  const proposedName: PotentialChange = {
-    field: 'Name',
-    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.name}`
-  };
-
-  const initialProjectStatus: PotentialChange = {
-    field: 'Status',
-    content: `${project.status}`
-  };
-
-  const proposedProjectStatus: PotentialChange = {
-    field: 'Status',
-    content: `${(changeRequest as StandardChangeRequest).projectProposedChanges?.status}`
-  };
-
-  const initialProjectLead: PotentialChange = {
-    field: 'Project Lead',
-    content: `${fullNamePipe(project.projectLead)}`
-  };
-
-  const proposedProjectLead: PotentialChange = {
-    field: 'Project Lead',
-    content: `${fullNamePipe((changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead)}`
-  };
-
-  const initialProjectManager: PotentialChange = {
-    field: 'Project Manager',
-    content: `${fullNamePipe(project.projectManager)}`
-  };
-
-  const proposedProjectManager: PotentialChange = {
-    field: 'Project Manager',
-    content: `${fullNamePipe((changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager)}`
-  };
 
   const initialBudget: PotentialChange = {
     field: 'Budget',
@@ -144,10 +104,7 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   return (
     <>
-      <CompareProposedChanges first={initialName} second={proposedName} isProposed={isProposed} />
-      <CompareProposedChanges first={initialProjectStatus} second={proposedProjectStatus} isProposed={isProposed} />
-      <CompareProposedChanges first={initialProjectLead} second={proposedProjectLead} isProposed={isProposed} />
-      <CompareProposedChanges first={initialProjectManager} second={proposedProjectManager} isProposed={isProposed} />
+      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={isProposed} />
       <CompareProposedChanges first={initialBudget} second={proposedBudget} isProposed={isProposed} />
       <CompareProposedChanges first={initialSummary} second={proposedSummary} isProposed={isProposed} />
       <CompareProposedChanges first={initialGoals} second={proposedGoals} isProposed={isProposed} />
