@@ -8,7 +8,7 @@ import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
@@ -19,8 +19,11 @@ import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useState } from 'react';
-import ProjectCreateChangeRequestForm from './ProjectCreateChangeRequestForm';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
+import { NERButton } from '../../../components/NERButton';
+import HelpIcon from '@mui/icons-material/Help';
+import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
+import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 
 export interface ProjectFormInput {
   name: string;
@@ -73,8 +76,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   projectManagerId,
   onSubmitSecondary
 }) => {
-  const [showCreateChangeRequest, setShowCreateChangeRequest] = useState<boolean>(false);
-  const [projectEdits, setProjectEdits] = useState<ProjectFormInput>();
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
 
   const allUsers = useAllUsers();
   const schema = !project
@@ -122,6 +125,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         teamId: yup.string().optional(),
         carNumber: yup.number().optional()
       });
+
   const {
     register,
     handleSubmit,
@@ -162,15 +166,23 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
-  const handleCreateChangeRequest = (data: ProjectFormInput) => {
-    setProjectEdits(data);
-    setShowCreateChangeRequest(true);
+  const handleCreateChangeRequest = async (data: ProjectFormInput) => {
+    if (onSubmitSecondary && changeRequestFormInput)
+      onSubmitSecondary({
+        ...changeRequestFormInput,
+        ...data
+      });
   };
 
   return (
     <form
       noValidate
       id="project-edit-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSubmit(onSubmit)(e);
+      }}
       onKeyPress={(e) => {
         e.key === 'Enter' && e.preventDefault();
       }}
@@ -180,47 +192,34 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Box textAlign="right">
-            <Button
-              variant="outlined"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (onSubmitSecondary) {
-                  handleSubmit(handleCreateChangeRequest)(e);
-                }
-              }}
-              disabled={!onSubmitSecondary}
-              sx={{ mx: 1 }}
-            >
-              Create Change Request
-            </Button>
+          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
+            {onSubmitSecondary && (
+              <Box display="inline-flex" alignItems="center">
+                <Tooltip
+                  title={
+                    <Typography fontSize={'16px'}>
+                      If you create a change request from this form, the form value of Change Request ID will be safely
+                      ignored. When the change request is accepted, it will edit the current project.
+                    </Typography>
+                  }
+                  placement="left"
+                >
+                  <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+                </Tooltip>
+                <NERButton variant="contained" onClick={() => setIsModalOpen(true)} sx={{ mx: 1 }}>
+                  Create Change Request
+                </NERButton>
+              </Box>
+            )}
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton
-              variant="contained"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSubmit(onSubmit)(e);
-              }}
-              type="submit"
-              sx={{ mx: 1 }}
-            >
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
           </Box>
         }
       >
-        {onSubmitSecondary && showCreateChangeRequest && (
-          <ProjectCreateChangeRequestForm
-            open={showCreateChangeRequest}
-            onClose={() => setShowCreateChangeRequest(false)}
-            onSubmit={onSubmitSecondary}
-            projectEdits={projectEdits}
-          />
-        )}
         <ProjectFormDetails
           users={users}
           control={control}
@@ -284,6 +283,17 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         </Stack>
       </PageLayout>
+      {onSubmitSecondary && (
+        <CreateChangeRequestModal
+          onConfirm={async (crFormInput: ChangeRequestFormInput) => {
+            changeRequestFormInput = crFormInput;
+            await handleSubmit(handleCreateChangeRequest)();
+          }}
+          onHide={() => setIsModalOpen(false)}
+          wbsNum={wbsPipe(project!.wbsNum)}
+          open={isModalOpen}
+        />
+      )}
     </form>
   );
 };
