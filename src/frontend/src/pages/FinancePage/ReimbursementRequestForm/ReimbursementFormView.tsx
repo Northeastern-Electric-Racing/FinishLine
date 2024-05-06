@@ -323,7 +323,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   }}
                   type="file"
                   id="receipt-image"
-                  accept="image/png, image/jpeg, .pdf"
+                  accept="image/png, image/jpeg, application/pdf"
                   name="receiptFiles"
                   multiple
                   hidden

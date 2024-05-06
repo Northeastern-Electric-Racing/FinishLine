@@ -34,16 +34,15 @@ const ChangeRequestsOverview: React.FC = () => {
     const projectMemberIds = project.teams.flatMap((team) => makeTeamList(team)).map((user) => user.userId);
     return (
       projectMemberIds.includes(user.userId) ||
-      (project.projectLead && project.projectLead.userId === user.userId) ||
-      (project.projectManager && project.projectManager.userId === user.userId)
+      (project.lead && project.lead.userId === user.userId) ||
+      (project.manager && project.manager.userId === user.userId)
     );
   });
 
   // work packages whose change requests the user would have to review
   const myWorkPackages = workPackages.filter(
     (wp: WorkPackage) =>
-      (wp.projectLead ? wp.projectLead.userId === user.userId : false) ||
-      (wp.projectManager ? wp.projectManager.userId === user.userId : false)
+      (wp.lead ? wp.lead.userId === user.userId : false) || (wp.manager ? wp.manager.userId === user.userId : false)
   );
 
   // all of the wbs numbers (in x.x.x string format) corresponding to projects and work packages

@@ -111,7 +111,7 @@ export const updateProjectAndCreateChanges = async (
   const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);
   const projectManagerChangeJson = createChange(
     'project manager',
-    await getUserFullName(originalProject.wbsElement.projectManagerId),
+    await getUserFullName(originalProject.wbsElement.managerId),
     await getUserFullName(projectManagerId),
     crId,
     implementerId,
@@ -119,7 +119,7 @@ export const updateProjectAndCreateChanges = async (
   );
   const projectLeadChangeJson = createChange(
     'project lead',
-    await getUserFullName(originalProject.wbsElement.projectLeadId),
+    await getUserFullName(originalProject.wbsElement.leadId),
     await getUserFullName(projectLeadId),
     crId,
     implementerId,
@@ -210,8 +210,8 @@ export const updateProjectAndCreateChanges = async (
       wbsElement: {
         update: {
           name,
-          projectLeadId,
-          projectManagerId
+          leadId: projectLeadId,
+          managerId: projectManagerId
         }
       }
     },

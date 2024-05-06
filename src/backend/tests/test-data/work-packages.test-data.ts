@@ -14,8 +14,8 @@ export const prismaWorkPackage1: Prisma.Work_PackageGetPayload<typeof workPackag
   duration: 10,
   wbsElement: {
     ...prismaWbsElement1,
-    projectLead: batman,
-    projectManager: batman,
+    lead: batman,
+    manager: batman,
     changes: [],
     tasks: [],
     blocking: []
@@ -39,8 +39,8 @@ export const sharedWorkPackage: WorkPackage = {
   deliverables: [],
   blockedBy: [],
   links: [],
-  projectManager: undefined,
-  projectLead: undefined,
+  manager: undefined,
+  lead: undefined,
   status: WbsElementStatus.Active,
   wbsNum: {
     carNumber: 1,

@@ -11,8 +11,8 @@ const workPackageQueryArgs = Prisma.validator<Prisma.Work_PackageArgs>()({
     },
     wbsElement: {
       include: {
-        projectLead: true,
-        projectManager: true,
+        lead: true,
+        manager: true,
         changes: {
           where: { changeRequest: { dateDeleted: null } },
           include: { implementer: true },

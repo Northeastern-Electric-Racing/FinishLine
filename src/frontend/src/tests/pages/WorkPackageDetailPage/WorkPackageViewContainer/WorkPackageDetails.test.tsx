@@ -92,8 +92,8 @@ describe('Work Package Details Component', () => {
       render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })).toBeInTheDocument();
+      expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();
+      expect(screen.getByText(`${fullNamePipe(wp.manager)}`, { exact: false })).toBeInTheDocument();
 
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
@@ -109,8 +109,8 @@ describe('Work Package Details Component', () => {
       render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })).toBeInTheDocument();
+      expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();
+      expect(screen.getByText(`${fullNamePipe(wp.manager)}`, { exact: false })).toBeInTheDocument();
 
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
@@ -126,8 +126,8 @@ describe('Work Package Details Component', () => {
       render(<WorkPackageDetails workPackage={wp} dependencies={[]} />);
       expect(screen.getByText(`Work Package Details`)).toBeInTheDocument();
       expect(screen.getByText(`${wp.status}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${fullNamePipe(wp.projectLead)}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${fullNamePipe(wp.projectManager)}`, { exact: false })).toBeInTheDocument();
+      expect(screen.getByText(`${fullNamePipe(wp.lead)}`, { exact: false })).toBeInTheDocument();
+      expect(screen.getByText(`${fullNamePipe(wp.manager)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
