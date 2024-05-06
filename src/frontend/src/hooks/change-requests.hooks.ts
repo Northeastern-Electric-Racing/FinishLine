@@ -113,11 +113,17 @@ export type CreateStandardChangeRequestPayload = {
  * Custom React Hook to create a standard change request.
  */
 export const useCreateStandardChangeRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CreateStandardChangeRequestPayload>(
     ['change requests', 'create', 'standard'],
     async (payload: CreateStandardChangeRequestPayload) => {
       const { data } = await createStandardChangeRequest(payload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+      }
     }
   );
 };
