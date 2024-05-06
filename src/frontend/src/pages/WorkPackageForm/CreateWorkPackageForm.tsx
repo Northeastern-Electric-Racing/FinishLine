@@ -37,31 +37,32 @@ const CreateWorkPackageForm: React.FC = () => {
     duration: yup.number().required()
   });
 
-  const breadcrumbs = crId
-    ? [
-        {
-          name: 'Change Requests',
-          route: routes.CHANGE_REQUESTS
-        },
-        {
-          name: `Change Request #${crId}`,
-          route: `${routes.CHANGE_REQUESTS}/${crId}`
-        }
-      ]
-    : [
-        {
-          name: 'Projects',
-          route: routes.PROJECTS
-        },
-        {
-          name: `${projectWbsNamePipe(wbsElement)}`,
-          route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
-        }
-      ];
+  const breadcrumbs =
+    crId && crId !== 'null'
+      ? [
+          {
+            name: 'Change Requests',
+            route: routes.CHANGE_REQUESTS
+          },
+          {
+            name: `Change Request #${crId}`,
+            route: `${routes.CHANGE_REQUESTS}/${crId}`
+          }
+        ]
+      : [
+          {
+            name: 'Projects',
+            route: routes.PROJECTS
+          },
+          {
+            name: `${projectWbsNamePipe(wbsElement)}`,
+            route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
+          }
+        ];
   return (
     <WorkPackageForm
       wbsNum={validateWBS(wbsNum)}
-      implementChanges={createWorkPackage}
+      workPackageMutateAsync={createWorkPackage}
       createWorkPackageScopeCR={createWorkPackageScopeCR}
       exitActiveMode={() => history.push(`${routes.PROJECTS}/${projectWbsPipe(validateWBS(wbsNum))}`)}
       crId={crId}

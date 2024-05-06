@@ -4,7 +4,7 @@
  */
 
 import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
-import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
@@ -27,10 +27,12 @@ import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequest';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import HelpIcon from '@mui/icons-material/Help';
+import { NERButton } from '../../components/NERButton';
+import dayjs from 'dayjs';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  implementChanges: (data: WorkPackageApiInputs) => void;
+  workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
@@ -61,7 +63,7 @@ export interface WorkPackageFormViewPayload {
 
 const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
-  implementChanges,
+  workPackageMutateAsync,
   createWorkPackageScopeCR,
   defaultValues,
   wbsElement,
@@ -77,6 +79,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
@@ -99,6 +102,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const [leadId, setLeadId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
+  const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
 
   // lists of stuff
   const {
@@ -121,6 +125,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   };
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
+    console.log(data);
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);
@@ -137,25 +142,25 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities: expectedActivities.map((activity) => activity.detail),
-        deliverables: deliverables.map((deliverable) => deliverable.detail),
+        expectedActivities: !defaultValues ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
+        deliverables: !defaultValues ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
         stage: stage as WorkPackageStage
       };
       if (changeRequestFormInput) {
-        createWorkPackageScopeCR({
+        await createWorkPackageScopeCR({
           ...changeRequestFormInput,
           wbsNum: wbsElement.wbsNum,
-          workPackageProposedChanges: payload,
+          workPackageProposedChanges: {
+            ...payload,
+            expectedActivities: expectedActivities.map((activity) => activity.detail),
+            deliverables: deliverables.map((deliverable) => deliverable.detail)
+          },
           proposedSolutions: []
         });
 
         history.push(routes.CHANGE_REQUESTS);
-      } else {
-        if (crId === 'null' || crId === '') {
-          toast.error('Create a change request or select an existing one before submitting');
-          return;
-        }
-        implementChanges(payload);
+      } else if (crId !== 'null' && crId !== '') {
+        await workPackageMutateAsync(payload);
         exitActiveMode();
       }
     } catch (e) {
@@ -166,11 +171,14 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     }
   };
 
-  const showChangeRequestModal = () => {
-    setIsModalOpen(true);
-  };
+  const crWatch = watch('crId');
+  const changeRequestInputExists = crWatch !== 'null' && crWatch !== '';
+  const startDate = watch('startDate');
+  const duration = watch('duration');
 
-  const crWatch = useWatch({ control, name: 'crId' });
+  const calculatedEndDate = dayjs(startDate)
+    .add(7 * duration, 'day')
+    .toDate();
 
   return (
     <form
@@ -185,37 +193,39 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       }}
     >
       <Box mb={-1}>
-        <PageBreadcrumbs
-          currentPageTitle={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
-          previousPages={breadcrumbs}
-        />
+        <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={breadcrumbs} />
       </Box>
       <PageLayout
         stickyHeader
-        title={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        title={pageTitle}
         headerRight={
-          <Box textAlign="right">
-            <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
-              Cancel
-            </NERFailButton>
-            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
-              Submit
-            </NERSuccessButton>
-            {(crWatch === 'null' || crWatch === '') && (
+          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
+            {!changeRequestInputExists && (
               <Box display="inline-flex" alignItems="center">
-                <NERSuccessButton variant="contained" onClick={showChangeRequestModal} sx={{ mx: 1 }}>
-                  Create Change Request
-                </NERSuccessButton>
                 <Tooltip
                   title={
-                    'This form will create a change request that when accepted will automatically create a new Work Package'
+                    <Typography fontSize={'16px'}>
+                      If you don't enter a Change Request into this form, you can create one here that when accepted will
+                      create a new Work Package
+                    </Typography>
                   }
-                  placement="right"
+                  placement="left"
                 >
                   <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
                 </Tooltip>
+                <NERButton variant="contained" onClick={() => setIsModalOpen(true)} sx={{ mx: 1 }}>
+                  Create Change Request
+                </NERButton>
               </Box>
             )}
+            <Box>
+              <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+                Cancel
+              </NERFailButton>
+              <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} disabled={!changeRequestInputExists}>
+                Submit
+              </NERSuccessButton>
+            </Box>
           </Box>
         }
       >
@@ -228,6 +238,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           manager={managerId}
           setLead={setLeadId}
           setManager={setManagerId}
+          createForm={!defaultValues}
+          endDate={calculatedEndDate}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>
@@ -271,19 +283,16 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           bulletName="Deliverable"
         />
       </PageLayout>
-      {isModalOpen && (
-        <CreateChangeRequestModal
-          handleConfirm={async (formInput: FormInput) => {
-            changeRequestFormInput = formInput;
-            await handleSubmit(onSubmit)();
-            setIsModalOpen(false);
-          }}
-          handleCancel={() => setIsModalOpen(false)}
-          wbsNum={wbsPipe(wbsElement.wbsNum)}
-          setIsModalOpen={setIsModalOpen}
-          isModalOpen
-        />
-      )}
+      <CreateChangeRequestModal
+        onConfirm={async (crFormInput: FormInput) => {
+          changeRequestFormInput = crFormInput;
+          await handleSubmit(onSubmit)();
+          setIsModalOpen(false);
+        }}
+        onHide={() => setIsModalOpen(false)}
+        wbsNum={wbsPipe(wbsElement.wbsNum)}
+        open={isModalOpen}
+      />
     </form>
   );
 };

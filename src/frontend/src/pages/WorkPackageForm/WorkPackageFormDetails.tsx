@@ -23,6 +23,8 @@ interface Props {
   usersForProjectManager: User[];
   control: Control<WorkPackageFormViewPayload>;
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
+  createForm?: boolean;
+  endDate: Date;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -33,7 +35,9 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   usersForProjectLead,
   usersForProjectManager,
   control,
-  errors
+  errors,
+  createForm = false,
+  endDate
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -69,7 +73,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
       <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
         Details
       </Typography>
-      <Grid container spacing={1} xs={12}>
+      <Grid container rowSpacing={2} spacing={1} xs={12}>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
@@ -81,13 +85,13 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={3}>
-          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-        </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={4}>
           <StageSelect />
         </Grid>
-        <Grid item xs={12} md={2}>
+        <Grid item xs={12} md={4}>
+          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+        </Grid>
+        <Grid item xs={12} md={4}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -97,7 +101,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <DatePicker
-                    format="yyyy-MM-dd"
+                    format="MM/dd/yyyy"
                     onChange={(date) => onChange(date ?? new Date())}
                     className={'padding: 10'}
                     value={value}
@@ -111,7 +115,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2}>
+        <Grid item xs={12} md={4}>
           <FormControl fullWidth>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
@@ -123,30 +127,40 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={5}>
-          <FormLabel> Project Lead</FormLabel>
-          <NERAutocomplete
-            sx={{ width: '100%' }}
-            id="project-lead-autocomplete"
-            onChange={(_event, value) => setLead(value?.id)}
-            options={usersForProjectLead.map(userToOption)}
-            size="small"
-            placeholder="Select a Project Lead"
-            value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
-          />
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth sx={{ overflow: 'hidden' }}>
+            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Calculated End Date (YYYY-MM-DD)</FormLabel>
+            <TextField value={endDate.toLocaleDateString()} disabled />
+          </FormControl>
         </Grid>
-        <Grid item xs={12} md={5}>
-          <FormLabel>Project Manager</FormLabel>
-          <NERAutocomplete
-            sx={{ width: '100%' }}
-            id="project-manager-autocomplete"
-            onChange={(_event, value) => setManager(value?.id)}
-            options={usersForProjectManager.map(userToOption)}
-            size="small"
-            placeholder="Select a Project Manager"
-            value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
-          />
-        </Grid>
+        {!createForm && (
+          <>
+            <Grid item xs={12} md={6}>
+              <FormLabel> Project Lead</FormLabel>
+              <NERAutocomplete
+                sx={{ width: '100%' }}
+                id="project-lead-autocomplete"
+                onChange={(_event, value) => setLead(value?.id)}
+                options={usersForProjectLead.map(userToOption)}
+                size="small"
+                placeholder="Select a Project Lead"
+                value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormLabel>Project Manager</FormLabel>
+              <NERAutocomplete
+                sx={{ width: '100%' }}
+                id="project-manager-autocomplete"
+                onChange={(_event, value) => setManager(value?.id)}
+                options={usersForProjectManager.map(userToOption)}
+                size="small"
+                placeholder="Select a Project Manager"
+                value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
+              />
+            </Grid>
+          </>
+        )}
       </Grid>
     </Box>
   );

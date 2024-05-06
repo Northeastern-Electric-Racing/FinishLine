@@ -37,7 +37,7 @@ const NERModal = ({
 }: NERModalProps) => {
   return (
     <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px', maxWidth: '700px' } }}>
-      <DialogTitle sx={{ backgroundColor: background }}>
+      <DialogTitle sx={{ backgroundColor: background, minHeight: '64px' }}>
         {icon ? (
           <Box display="flex" justifyContent="left" alignItems="center">
             <Icon
