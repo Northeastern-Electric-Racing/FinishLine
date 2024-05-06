@@ -4,10 +4,9 @@
  */
 
 import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { Box, TextField, Autocomplete, FormControl, Typography } from '@mui/material';
+import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
@@ -16,38 +15,30 @@ import PageLayout from '../../components/PageLayout';
 import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { startDateTester, mapBulletsToPayload } from '../../utils/form';
-import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
-import { routes } from '../../utils/routes';
-import { getMonday } from '../GanttPage/GanttPackage/helpers/date-helper';
+import { mapBulletsToPayload } from '../../utils/form';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
-
-const schema = yup.object().shape({
-  name: yup.string().required('Name is required!'),
-  startDate: yup
-    .date()
-    .required('Start Date is required!')
-    .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
-  duration: yup.number().required(),
-  crId: yup
-    .number()
-    .required('CR ID is required')
-    .typeError('CR ID must be a number')
-    .integer('CR ID must be an integer')
-    .min(1, 'CR ID must be greater than or equal to 1')
-});
+import { ObjectSchema } from 'yup';
+import { getMonday } from '../../utils/datetime.utils';
+import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
+import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
+import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequest';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
+import HelpIcon from '@mui/icons-material/Help';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: (data: WorkPackageApiInputs) => void;
+  implementChanges: (data: WorkPackageApiInputs) => void;
+  createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   defaultValues?: WorkPackageFormViewPayload;
   wbsElement: WbsElement;
   leadOrManagerOptions: User[];
   blockedByOptions: { id: string; label: string }[];
   crId?: string;
-  createForm?: boolean;
+  schema: ObjectSchema<any>;
+  breadcrumbs: { name: string; route: string }[];
 }
 
 export interface WorkPackageFormViewPayload {
@@ -70,13 +61,15 @@ export interface WorkPackageFormViewPayload {
 
 const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   exitActiveMode,
-  mutateAsync,
+  implementChanges,
+  createWorkPackageScopeCR,
   defaultValues,
   wbsElement,
   leadOrManagerOptions,
   blockedByOptions,
   crId,
-  createForm
+  schema,
+  breadcrumbs
 }) => {
   const toast = useToast();
   const user = useCurrentUser();
@@ -100,8 +93,12 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     }
   });
 
-  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.projectManager?.userId.toString());
-  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.projectLead?.userId.toString());
+  const history = useHistory();
+
+  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  let changeRequestFormInput: FormInput | undefined = undefined;
 
   // lists of stuff
   const {
@@ -132,6 +129,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       const payload = {
         projectLeadId: leadId ? parseInt(leadId) : undefined,
         projectManagerId: managerId ? parseInt(managerId) : undefined,
+        projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
@@ -139,12 +137,27 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities: createForm ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
-        deliverables: createForm ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
+        expectedActivities: expectedActivities.map((activity) => activity.detail),
+        deliverables: deliverables.map((deliverable) => deliverable.detail),
         stage: stage as WorkPackageStage
       };
-      await mutateAsync(payload);
-      exitActiveMode();
+      if (changeRequestFormInput) {
+        createWorkPackageScopeCR({
+          ...changeRequestFormInput,
+          wbsNum: wbsElement.wbsNum,
+          workPackageProposedChanges: payload,
+          proposedSolutions: []
+        });
+
+        history.push(routes.CHANGE_REQUESTS);
+      } else {
+        if (crId === 'null' || crId === '') {
+          toast.error('Create a change request or select an existing one before submitting');
+          return;
+        }
+        implementChanges(payload);
+        exitActiveMode();
+      }
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
@@ -153,7 +166,11 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     }
   };
 
-  const crIdDisplay = crId ?? defaultValues?.crId;
+  const showChangeRequestModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const crWatch = useWatch({ control, name: 'crId' });
 
   return (
     <form
@@ -169,26 +186,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     >
       <Box mb={-1}>
         <PageBreadcrumbs
-          currentPageTitle={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
-          previousPages={[
-            createForm
-              ? { name: 'Change Requests', route: routes.CHANGE_REQUESTS }
-              : { name: 'Projects', route: routes.PROJECTS },
-            createForm && crIdDisplay
-              ? {
-                  name: `Change Request #${crIdDisplay}`,
-                  route: `${routes.CHANGE_REQUESTS}/${crIdDisplay}`
-                }
-              : {
-                  name: `${projectWbsNamePipe(wbsElement)}`,
-                  route: `${routes.PROJECTS}/${projectWbsPipe(wbsElement.wbsNum)}`
-                }
-          ]}
+          currentPageTitle={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+          previousPages={breadcrumbs}
         />
       </Box>
       <PageLayout
         stickyHeader
-        title={`${createForm ? 'New Work Package' : wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
+        title={`${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`}
         headerRight={
           <Box textAlign="right">
             <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
@@ -197,6 +201,21 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
+            {(crWatch === 'null' || crWatch === '') && (
+              <Box display="inline-flex" alignItems="center">
+                <NERSuccessButton variant="contained" onClick={showChangeRequestModal} sx={{ mx: 1 }}>
+                  Create Change Request
+                </NERSuccessButton>
+                <Tooltip
+                  title={
+                    'This form will create a change request that when accepted will automatically create a new Work Package'
+                  }
+                  placement="right"
+                >
+                  <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+                </Tooltip>
+              </Box>
+            )}
           </Box>
         }
       >
@@ -209,7 +228,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           manager={managerId}
           setLead={setLeadId}
           setManager={setManagerId}
-          createForm={createForm}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>
@@ -253,6 +271,19 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           bulletName="Deliverable"
         />
       </PageLayout>
+      {isModalOpen && (
+        <CreateChangeRequestModal
+          handleConfirm={async (formInput: FormInput) => {
+            changeRequestFormInput = formInput;
+            await handleSubmit(onSubmit)();
+            setIsModalOpen(false);
+          }}
+          handleCancel={() => setIsModalOpen(false)}
+          wbsNum={wbsPipe(wbsElement.wbsNum)}
+          setIsModalOpen={setIsModalOpen}
+          isModalOpen
+        />
+      )}
     </form>
   );
 };

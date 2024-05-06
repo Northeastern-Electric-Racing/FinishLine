@@ -49,6 +49,7 @@ interface CreateChangeRequestViewProps {
   proposedSolutions: ProposedSolution[];
   setProposedSolutions: (ps: ProposedSolution[]) => void;
   handleCancel: () => void;
+  hideProposedSolutions?: boolean;
 }
 
 const schema = yup.object().shape({
@@ -79,7 +80,8 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   onSubmit,
   proposedSolutions,
   setProposedSolutions,
-  handleCancel
+  handleCancel,
+  hideProposedSolutions
 }) => {
   const query = useQuery();
   const {
@@ -319,9 +321,14 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Button>
             </Grid>
           </Grid>
-          <Grid item xs={12} md={5} sx={{ mt: -2 }}>
-            <CreateProposedSolutionsList proposedSolutions={proposedSolutions} setProposedSolutions={setProposedSolutions} />
-          </Grid>
+          {!hideProposedSolutions && (
+            <Grid item xs={12} md={5} sx={{ mt: -2 }}>
+              <CreateProposedSolutionsList
+                proposedSolutions={proposedSolutions}
+                setProposedSolutions={setProposedSolutions}
+              />
+            </Grid>
+          )}
         </Grid>
       </PageLayout>
     </form>
