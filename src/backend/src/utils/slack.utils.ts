@@ -84,12 +84,12 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
 /**
  * Send a notification to users that a reimbursement request is created on Slack
  * @param requestId the id if the reimbursement request
- * @param userId the id of the user who created the reimbursement request
+ * @param submitterId the id of the user who created the reimbursement request
  */
-export const sendReimbursementRequestCreatedNotification = async (requestId: string, userId: number): Promise<void> => {
+export const sendReimbursementRequestCreatedNotification = async (requestId: string, submitterId: number): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const msg = `${getUserFullName(userId)} created a reimbursement request 💲`;
+  const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
@@ -105,6 +105,7 @@ export const sendReimbursementRequestCreatedNotification = async (requestId: str
 
   try {
     await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
+    console.log(msg);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
