@@ -172,8 +172,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const crWatch = useWatch({ control, name: 'crId' });
 
-  console.log(crWatch);
-
   return (
     <form
       id="work-package-edit-form"
