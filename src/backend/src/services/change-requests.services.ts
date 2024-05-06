@@ -119,10 +119,16 @@ export default class ChangeRequestsService {
         `User ${reviewer.userId} is not allowed to review their own change request submitted by User ${foundCR.submitterId}`
       );
     // If approving a scope CR
+
+    const isApprovingScopeChangeRequest = foundCR.scopeChangeRequest && accepted;
+
     if (foundCR.scopeChangeRequest && accepted) {
-      if (!foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
+      const hasWBSChangesOrProposedSolution = foundCR.scopeChangeRequest.wbsProposedChanges || psId;
+      const isOnlyProposedSolutionPresent = psId && !foundCR.scopeChangeRequest.wbsProposedChanges;
+      const isOnlyWBSChangesPresent = !psId && foundCR.scopeChangeRequest.wbsProposedChanges;
+      if (!hasWBSChangesOrProposedSolution) {
         throw new HttpException(400, 'No proposed solution or proposed changes for scope change request');
-      } else if (psId && !foundCR.scopeChangeRequest.wbsProposedChanges) {
+      } else if (isOnlyProposedSolutionPresent) {
         // ensure a proposed solution is being approved and exists
 
         const foundPs = await prisma.proposed_Solution.findUnique({
@@ -217,8 +223,9 @@ export default class ChangeRequestsService {
             approved: true
           }
         });
-      } else if (foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
+      } else if (isOnlyWBSChangesPresent) {
         await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
+        // we don't want to have merge conflict on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
 
         // must accept and review a change request before using the workpackage and project services
         await prisma.change_Request.update({
@@ -232,14 +239,14 @@ export default class ChangeRequestsService {
         const associatedProjectCR = foundCR.wbsElement.project;
         const associatedWorkPackageCR = foundCR.wbsElement.workPackage;
         const { wbsProposedChanges } = foundCR.scopeChangeRequest;
-        const { workPackageProposedChanges } = wbsProposedChanges;
-        const { projectProposedChanges } = wbsProposedChanges;
+        const { workPackageProposedChanges } = wbsProposedChanges!;
+        const { projectProposedChanges } = wbsProposedChanges!;
 
         if (workPackageProposedChanges) {
           if (associatedProjectCR) {
             await WorkPackagesService.createWorkPackage(
               reviewer,
-              wbsProposedChanges.name,
+              wbsProposedChanges!.name,
               crId,
               workPackageProposedChanges.stage as WorkPackageStage,
               transformDate(workPackageProposedChanges.startDate),
@@ -252,7 +259,7 @@ export default class ChangeRequestsService {
             await WorkPackagesService.editWorkPackage(
               reviewer,
               associatedWorkPackageCR.workPackageId,
-              wbsProposedChanges.name,
+              wbsProposedChanges!.name,
               crId,
               workPackageProposedChanges.stage as WorkPackageStage,
               transformDate(workPackageProposedChanges.startDate),
@@ -260,15 +267,15 @@ export default class ChangeRequestsService {
               workPackageProposedChanges.blockedBy,
               workPackageProposedChanges.expectedActivities.map(descBulletConverter),
               workPackageProposedChanges.deliverables.map(descBulletConverter),
-              wbsProposedChanges.projectLeadId!,
-              wbsProposedChanges.projectManagerId!
+              wbsProposedChanges!.projectLeadId!,
+              wbsProposedChanges!.projectManagerId!
             );
           }
         }
 
         // if you have project proposed changes
         if (projectProposedChanges) {
-          const links = wbsProposedChanges.links.map((link) => ({
+          const links = wbsProposedChanges!.links.map((link) => ({
             linkId: link.linkInfoId,
             linkTypeName: link.linkTypeName,
             url: link.url
@@ -290,7 +297,7 @@ export default class ChangeRequestsService {
               reviewer,
               crId,
               foundCR.wbsElement.carNumber,
-              wbsProposedChanges.name,
+              wbsProposedChanges!.name,
               projectProposedChanges.summary,
               projectProposedChanges.teams.map((team) => team.teamId),
               projectProposedChanges.budget,
@@ -299,15 +306,15 @@ export default class ChangeRequestsService {
               goals,
               features,
               otherConstraints,
-              wbsProposedChanges.projectLeadId,
-              wbsProposedChanges.projectManagerId
+              wbsProposedChanges!.projectLeadId,
+              wbsProposedChanges!.projectManagerId
             );
           } else {
             await ProjectsService.editProject(
               reviewer,
               associatedProjectCR!.projectId,
               crId,
-              wbsProposedChanges.name,
+              wbsProposedChanges!.name,
               projectProposedChanges.budget,
               projectProposedChanges.summary,
               projectProposedChanges.rules,
@@ -315,8 +322,8 @@ export default class ChangeRequestsService {
               features,
               otherConstraints,
               links,
-              wbsProposedChanges.projectLeadId,
-              wbsProposedChanges.projectManagerId
+              wbsProposedChanges!.projectLeadId,
+              wbsProposedChanges!.projectManagerId
             );
           }
         }
