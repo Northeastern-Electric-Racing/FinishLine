@@ -41,7 +41,7 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialLead: PotentialChange = {
     field: 'Lead',
-    content: `${fullNamePipe(wbsElement.projectLead)}`
+    content: `${fullNamePipe(wbsElement.lead)}`
   };
 
   const proposedLead: PotentialChange = {
@@ -55,7 +55,7 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialManager: PotentialChange = {
     field: 'Manager',
-    content: `${fullNamePipe(wbsElement.projectManager)}`
+    content: `${fullNamePipe(wbsElement.manager)}`
   };
 
   const proposedManager: PotentialChange = {
