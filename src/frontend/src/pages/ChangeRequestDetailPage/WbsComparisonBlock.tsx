@@ -2,27 +2,18 @@ import React from 'react';
 import { ChangeRequest, StandardChangeRequest, WbsElement } from 'shared';
 import CompareProposedChanges, { PotentialChange } from './CompareProposedChanges';
 import { fullNamePipe } from '../../utils/pipes';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
-import { useSingleProject } from '../../hooks/projects.hooks';
-import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
 
 interface WbsComparisonBlockProps {
   changeRequest: ChangeRequest;
   isProject: boolean;
   isProposed: boolean;
+  wbsElement: WbsElement;
 }
 
-const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, isProject, isProposed }) => {
-  const { data: wbsElement, isLoading, isError, error } = useSingleProject(changeRequest.wbsNum);
-  // if u change the hook to useSingleWorkPackage and click on a cr with projects, itll keep loading and then return error
-
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (!wbsElement || isLoading) return <LoadingIndicator />;
-
+const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, isProject, isProposed, wbsElement }) => {
   const initialName: PotentialChange = {
     field: 'Name',
-    content: `${(wbsElement as WbsElement).name}`
+    content: `${wbsElement.name}`
   };
 
   const proposedName: PotentialChange = {
@@ -36,7 +27,7 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialStatus: PotentialChange = {
     field: 'Status',
-    content: `${(wbsElement as WbsElement).status}`
+    content: `${wbsElement.status}`
   };
 
   const proposedStatus: PotentialChange = {
@@ -50,7 +41,7 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialLead: PotentialChange = {
     field: 'Lead',
-    content: `${fullNamePipe((wbsElement as WbsElement).projectLead)}`
+    content: `${fullNamePipe(wbsElement.projectLead)}`
   };
 
   const proposedLead: PotentialChange = {
@@ -64,7 +55,7 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialManager: PotentialChange = {
     field: 'Manager',
-    content: `${fullNamePipe((wbsElement as WbsElement).projectManager)}`
+    content: `${fullNamePipe(wbsElement.projectManager)}`
   };
 
   const proposedManager: PotentialChange = {

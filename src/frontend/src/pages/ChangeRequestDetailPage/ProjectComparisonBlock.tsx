@@ -104,7 +104,7 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   return (
     <>
-      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={isProposed} />
+      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={isProposed} wbsElement={project} />
       <CompareProposedChanges first={initialBudget} second={proposedBudget} isProposed={isProposed} />
       <CompareProposedChanges first={initialSummary} second={proposedSummary} isProposed={isProposed} />
       <CompareProposedChanges first={initialGoals} second={proposedGoals} isProposed={isProposed} />

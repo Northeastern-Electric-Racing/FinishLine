@@ -59,7 +59,7 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   return (
     <>
-      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={isProposed} />
+      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={isProposed} wbsElement={workPackage} />
       <CompareProposedChanges first={initialDuration} second={proposedDuration} isProposed={isProposed} />
       <CompareProposedChanges first={initialStage} second={proposedStage} isProposed={isProposed} />
       <CompareProposedChanges first={initialStartDate} second={proposedStartDate} isProposed={isProposed} />
