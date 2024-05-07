@@ -40,17 +40,12 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   const initialStartDate: PotentialChange = {
     field: 'Start Date',
-    content: (workPackage?.startDate).toLocaleDateString('en-US', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      timeZone: 'UTC'
-    })
+    content: datePipe(workPackage?.startDate)
   };
 
   const proposedStartDate: PotentialChange = {
     field: 'Start Date',
-    content: ''
+    content: `${datePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.startDate)}`
   };
 
   const initialDeliverables: PotentialChange = {

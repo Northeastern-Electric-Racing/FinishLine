@@ -5,6 +5,7 @@ import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import CompareProposedChanges from './CompareProposedChanges';
 import WbsComparisonBlock from './WbsComparisonBlock';
+import { datePipe, fullNamePipe } from '../../utils/pipes';
 
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
@@ -115,7 +116,7 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   const proposedStartDate: PotentialChange = {
     field: 'Start Date',
-    content: ''
+    content: `${datePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.startDate)}`
   };
 
   const proposedDeliverables: PotentialChange = {
@@ -143,15 +144,38 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
       .join('')
   };
 
+  const proposedName: PotentialChange = {
+    field: 'Name',
+    content: `${(changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.name}`
+  };
+
+  const proposedStatus: PotentialChange = {
+    field: 'Status',
+    content: `${(changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.status}`
+  };
+
+  const proposedLead: PotentialChange = {
+    field: 'Lead',
+    content: `${fullNamePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.projectLead)}`
+  };
+
+  const proposedManager: PotentialChange = {
+    field: 'Manager',
+    content: `${fullNamePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.projectManager)}`
+  };
+
   return (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
     <>
-      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={true} wbsElement={project} />
+      <CompareProposedChanges first={initialBudget} second={proposedName} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedStatus} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedLead} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedManager} isProposed={true} />
       <CompareProposedChanges first={initialBudget} second={proposedDuration} isProposed={true} />
-      <CompareProposedChanges first={initialSummary} second={proposedStage} isProposed={true} />
-      <CompareProposedChanges first={initialGoals} second={proposedStartDate} isProposed={true} />
-      <CompareProposedChanges first={initialFeatures} second={proposedDeliverables} isProposed={true} />
-      <CompareProposedChanges first={initialConstraints} second={proposedExpectedActivities} isProposed={true} />
-      <CompareProposedChanges first={initialTeams} second={proposedBlockedBy} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedStage} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedStartDate} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedDeliverables} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedExpectedActivities} isProposed={true} />
+      <CompareProposedChanges first={initialBudget} second={proposedBlockedBy} isProposed={true} />
     </>
   ) : (
     <>
