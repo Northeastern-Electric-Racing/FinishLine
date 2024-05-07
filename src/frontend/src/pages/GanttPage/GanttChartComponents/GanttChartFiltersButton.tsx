@@ -11,7 +11,11 @@ interface GanttChartFiltersButtonProps {
     defaultChecked: boolean;
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
-  overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
+  overdueHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
   resetHandler: () => void;
   collapseHandler: () => void;
 }

@@ -78,7 +78,11 @@ interface GanttChartFiltersProps {
     defaultChecked: boolean;
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
-  overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
+  overdueHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
   resetHandler: () => void;
   collapseHandler: () => void;
 }
@@ -93,7 +97,7 @@ const GanttChartFilters = ({
 }: GanttChartFiltersProps) => {
   const FilterButtons = () => {
     return (
-      <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+      <Grid item container xs={12} sx={{ justifyContent: 'right', alignItems: 'right' }}>
         {/* TODO: Expand & Collapse buttons
         <Grid item>
           <Button onClick={() => {}} startIcon={<UnfoldMoreIcon />}>
@@ -115,23 +119,27 @@ const GanttChartFilters = ({
   };
 
   return (
-    <Grid
-      container
-      rowSpacing={2}
-      sx={{
-        justifyContent: 'start',
-        alignItems: 'start',
-        padding: 2,
-        paddingX: 4,
-        minWidth: { xs: '100%', md: '30rem' },
-        maxWidth: { xs: '100%', md: '30rem' }
-      }}
-    >
-      <FilterRow label="Car" buttons={carHandlers} />
-      <FilterRow label="Subteam" buttons={teamTypeHandlers} />
-      <FilterRow label="Team" buttons={teamHandlers} />
-      <FilterRow label="Overdue" buttons={[{ filterLabel: 'Overdue', handler: overdueHandler, defaultChecked: false }]} />
-      <FilterButtons />
+    <Grid>
+      <Grid item px={2} pt={1}>
+        <FilterButtons />
+      </Grid>
+      <Grid
+        container
+        rowSpacing={2}
+        sx={{
+          justifyContent: 'start',
+          alignItems: 'start',
+          padding: 2,
+          paddingX: 4,
+          minWidth: { xs: '100%', md: '30rem' },
+          maxWidth: { xs: '100%', md: '30rem' }
+        }}
+      >
+        <FilterRow label="Car" buttons={carHandlers} />
+        <FilterRow label="Subteam" buttons={teamTypeHandlers} />
+        <FilterRow label="Team" buttons={teamHandlers} />
+        <FilterRow label="Overdue" buttons={overdueHandler} />
+      </Grid>
     </Grid>
   );
 };

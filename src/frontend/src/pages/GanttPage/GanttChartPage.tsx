@@ -148,10 +148,16 @@ const GanttChartPage: FC = () => {
     };
   });
 
-  const overdueHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const ganttFilters: GanttFilters = { ...defaultGanttFilters, showOnlyOverdue: event.target.checked };
-    history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-  };
+  const overdueHandler = [
+    {
+      filterLabel: 'Overdue',
+      handler: (event: ChangeEvent<HTMLInputElement>) => {
+        const ganttFilters: GanttFilters = { ...defaultGanttFilters, showOnlyOverdue: event.target.checked };
+        history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
+      },
+      defaultChecked: defaultGanttFilters.showOnlyOverdue
+    }
+  ];
 
   const resetHandler = () => {
     // No more forced reloads
