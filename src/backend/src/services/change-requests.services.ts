@@ -9,8 +9,7 @@ import {
   ProposedSolutionCreateArgs,
   StandardChangeRequest,
   wbsPipe,
-  WorkPackageProposedChangesCreateArgs,
-  WorkPackageStage
+  WorkPackageProposedChangesCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -24,32 +23,29 @@ import {
 } from '../utils/errors.utils';
 import changeRequestTransformer from '../transformers/change-requests.transformer';
 import {
-  updateBlocking,
   allChangeRequestsReviewed,
   validateProposedChangesFields,
   validateNoUnreviewedOpenCRs,
   reviewProposedSolution,
   applyProjectProposedChanges,
-  applyWorkPackageProposedChanges
+  applyWorkPackageProposedChanges,
+  sendCRSubmitterReviewedNotification,
+  ChangeRequestWithChanges
 } from '../utils/change-requests.utils';
-import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Change_Request } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Project, Work_Package } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings } from '../utils/users.utils';
-import { descBulletConverter, throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
+import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import { buildChangeDetail, createChange } from '../utils/changes.utils';
+import { buildChangeDetail } from '../utils/changes.utils';
 import {
   addSlackThreadsToChangeRequest,
   sendAndGetSlackCRNotifications,
-  sendSlackCRReviewedNotification,
   sendSlackCRStatusToThread,
   sendSlackRequestedReviewNotification
 } from '../utils/slack.utils';
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { validateBlockedBys } from '../utils/projects.utils';
 import scopeChangeRequestQueryArgs from '../prisma-query-args/scope-change-requests.query-args';
-import WorkPackagesService from './work-packages.services';
-import { transformDate } from '../utils/datetime.utils';
-import ProjectsService from './projects.services';
 
 export default class ChangeRequestsService {
   /**
@@ -79,40 +75,6 @@ export default class ChangeRequestsService {
     return changeRequests.map(changeRequestTransformer);
   }
 
-  static async reviewStageGateChangeRequest(foundCR: any, reviewer: User): Promise<void> {
-    if (!foundCR.wbsElement.workPackage) {
-      throw new HttpException(400, 'Stage gate can only be made on work packages!');
-    }
-
-    throwIfUncheckedDescriptionBullets(foundCR.wbsElement.workPackage);
-
-    // update the status of the associated wp to be complete if needed
-    const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
-    const changesList = [];
-    if (shouldChangeStatus) {
-      changesList.push({
-        changeRequestId: foundCR.crId,
-        implementerId: reviewer.userId,
-        detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.COMPLETE)
-      });
-    }
-
-    await prisma.work_Package.update({
-      where: { wbsElementId: foundCR.wbsElement.wbsElementId },
-      data: {
-        wbsElement: {
-          update: {
-            status: WBS_Element_Status.COMPLETE,
-            changes: {
-              createMany: {
-                data: changesList
-              }
-            }
-          }
-        }
-      }
-    });
-  }
   /**
    * reviews the change request for the given Id and automates any changes that are made
    * @param reviewer The user reviewing the change request
@@ -156,15 +118,15 @@ export default class ChangeRequestsService {
         `User ${reviewer.userId} is not allowed to review their own change request submitted by User ${foundCR.submitterId}`
       );
 
-    // If approving a scope CR
+    // ScopeChange Request That Has Been Accepted Being Reviewed
     if (foundCR.scopeChangeRequest && accepted) {
-      await this.reviewScopeChangeRequest(foundCR, reviewer, psId);
+      await this.reviewScopeChangeRequest(foundCR as ChangeRequestWithChanges, reviewer, psId);
+      // Stage Gate Change Request That Has Been Accepted Being Reviewed
     } else if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
-      // stage gate cr
-      await this.reviewStageGateChangeRequest(foundCR, reviewer);
+      await this.reviewStageGateChangeRequest(foundCR as ChangeRequestWithChanges, reviewer);
+      // Activation Change Requested That Has Been Accepted Being Reviewed
     } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
-      // if it's an activation cr and being accepted, we can do some stuff to the associated work package
-      await this.reviewActivationChangeRequest(foundCR, reviewer);
+      await this.reviewActivationChangeRequest(foundCR as ChangeRequestWithChanges, reviewer);
     }
 
     // finally we can update change request
@@ -180,16 +142,7 @@ export default class ChangeRequestsService {
     });
 
     // send the creator of the cr a slack notification that their cr was reviewed
-    const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
-    if (creatorUserSettings && creatorUserSettings.slackId) {
-      try {
-        await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
-        }
-      }
-    }
+    await sendCRSubmitterReviewedNotification(foundCR as ChangeRequestWithChanges);
 
     // send a reply to a CR's notifications of its updated status
     const relevantThreads = await prisma.message_Info.findMany({ where: { changeRequestId: foundCR.crId } });
@@ -198,7 +151,17 @@ export default class ChangeRequestsService {
     return updated.crId;
   }
 
-  static async reviewScopeChangeRequest(foundCR: any, reviewer: User, psId: string | null): Promise<void> {
+  /**
+   * Reviews the scope change request considering either proposed solutions or proposed changes and initiating the respective changes
+   * @param foundCR the change request to be reviewed
+   * @param reviewer the user reviewing the change request
+   * @param psId an optional psId to be passed in if the change request is a scope change request
+   */
+  static async reviewScopeChangeRequest(
+    foundCR: ChangeRequestWithChanges,
+    reviewer: User,
+    psId: string | null
+  ): Promise<void> {
     if (!foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
       // if there isn't wbs changes or proposed solutions
       throw new HttpException(400, 'No proposed solution or proposed changes for scope change request');
@@ -208,8 +171,8 @@ export default class ChangeRequestsService {
       // reviews a proposed solution applying certain changes based on the content of the proposed solution
       await reviewProposedSolution(psId, foundCR, reviewer);
     } else if (foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
+      // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
       await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
-      // we don't want to have merge conflict on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
 
       // must accept and review a change request before using the workpackage and project services
       await prisma.change_Request.update({
@@ -230,8 +193,8 @@ export default class ChangeRequestsService {
         await applyWorkPackageProposedChanges(
           wbsProposedChanges,
           workPackageProposedChanges,
-          associatedProject,
-          associatedWorkPackage,
+          associatedProject as Project,
+          associatedWorkPackage as Work_Package,
           reviewer,
           foundCR.crId
         );
@@ -239,7 +202,7 @@ export default class ChangeRequestsService {
         await applyProjectProposedChanges(
           wbsProposedChanges,
           projectProposedChanges,
-          associatedProject,
+          associatedProject as Project,
           reviewer,
           foundCR.crId,
           foundCR.wbsElement.carNumber
@@ -248,7 +211,52 @@ export default class ChangeRequestsService {
     }
   }
 
-  static async reviewActivationChangeRequest(foundCR: any, reviewer: User): Promise<void> {
+  /**
+   * Reviews the stage gate change request and automates any changes that are made
+   * @param foundCR the change request to be reviewed
+   * @param reviewer the user reviewing the change request
+   */
+  static async reviewStageGateChangeRequest(foundCR: ChangeRequestWithChanges, reviewer: User): Promise<void> {
+    if (!foundCR.wbsElement.workPackage) {
+      throw new HttpException(400, 'Stage gate can only be made on work packages!');
+    }
+
+    throwIfUncheckedDescriptionBullets(foundCR.wbsElement.workPackage);
+
+    // update the status of the associated wp to be complete if needed
+    const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
+    const changesList = [];
+    if (shouldChangeStatus) {
+      changesList.push({
+        changeRequestId: foundCR.crId,
+        implementerId: reviewer.userId,
+        detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.COMPLETE)
+      });
+    }
+
+    await prisma.work_Package.update({
+      where: { wbsElementId: foundCR.wbsElement.wbsElementId },
+      data: {
+        wbsElement: {
+          update: {
+            status: WBS_Element_Status.COMPLETE,
+            changes: {
+              createMany: {
+                data: changesList
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Reviews the activation change request and automates any changes that are made
+   * @param foundCR the change request to be reviewed
+   * @param reviewer the user reviewing the change request
+   */
+  static async reviewActivationChangeRequest(foundCR: ChangeRequestWithChanges, reviewer: User): Promise<void> {
     const { activationChangeRequest } = foundCR;
     const shouldUpdateProjLead = activationChangeRequest.projectLeadId !== foundCR.wbsElement.projectLeadId;
     const shouldUpdateProjManager = activationChangeRequest.projectManagerId !== foundCR.wbsElement.projectManagerId;

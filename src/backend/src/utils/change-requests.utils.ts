@@ -1,5 +1,21 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, User, Prisma, Change_Request, Change } from '@prisma/client';
+import {
+  Scope_CR_Why_Type,
+  User,
+  Prisma,
+  Change_Request,
+  Change,
+  Wbs_Proposed_Changes,
+  Project_Proposed_Changes,
+  Work_Package_Proposed_Changes,
+  Scope_CR,
+  WBS_Element,
+  Project,
+  Work_Package,
+  Description_Bullet,
+  LinkInfo,
+  Activation_CR
+} from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason, WorkPackageStage } from 'shared';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
@@ -10,6 +26,13 @@ import { transformDate } from './datetime.utils';
 import WorkPackagesService from '../services/work-packages.services';
 import { descBulletConverter } from './description-bullets.utils';
 import ProjectsService from '../services/projects.services';
+import { sendSlackCRReviewedNotification } from './slack.utils';
+import scopeChangeRequestQueryArgs, {
+  projectProposedChangesQueryArgs,
+  wbsProposedChangeQueryArgs,
+  workPackageProposedChangesQueryArgs
+} from '../prisma-query-args/scope-change-requests.query-args';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -201,35 +224,38 @@ export const validateNoUnreviewedOpenCRs = async (wbsElemId: number) => {
     throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
 };
 
-// will replace any type in service
-// export type ChangeRequestWithFK = Change_Request & {
-//   wbsElement:
-
-// }
-
+/**
+ * Applies the proposed changes by either creating a project if the newProject field is true or editing a project if the newProject field is false and there is an associated project
+ * @param wbsProposedChanges the wbs proposed changes of the change request
+ * @param projectProposedChanges  the project proposed changes of the change request
+ * @param associatedProject the optional associated project of the change request
+ * @param reviewer  the user reviewing the change request
+ * @param crId  the change request id
+ * @param carNumber the car number of the change request's WBS element
+ */
 export const applyProjectProposedChanges = async (
-  wbsProposedChanges: any,
-  projectProposedChanges: any,
-  associatedProject: any,
+  wbsProposedChanges: WbsProposedChangesArgs,
+  projectProposedChanges: ProjectProposedChangesArgs,
+  associatedProject: Project,
   reviewer: User,
   crId: number,
   carNumber: number
 ) => {
   if (projectProposedChanges) {
-    const links = wbsProposedChanges.links.map((link: any) => ({
+    const links = wbsProposedChanges.links.map((link) => ({
       linkId: link.linkInfoId,
       linkTypeName: link.linkTypeName,
       url: link.url
     }));
-    const goals = projectProposedChanges.goals.map((goal: any) => ({
+    const goals = projectProposedChanges.goals.map((goal) => ({
       id: goal.descriptionId,
       detail: goal.detail
     }));
-    const features = projectProposedChanges.features.map((feature: any) => ({
+    const features = projectProposedChanges.features.map((feature) => ({
       id: feature.descriptionId,
       detail: feature.detail
     }));
-    const otherConstraints = projectProposedChanges.otherConstraints.map((constraint: any) => ({
+    const otherConstraints = projectProposedChanges.otherConstraints.map((constraint) => ({
       id: constraint.descriptionId,
       detail: constraint.detail
     }));
@@ -240,7 +266,7 @@ export const applyProjectProposedChanges = async (
         carNumber,
         wbsProposedChanges.name,
         projectProposedChanges.summary,
-        projectProposedChanges.teams.map((team: any) => team.teamId),
+        projectProposedChanges.teams.map((team) => team.teamId),
         projectProposedChanges.budget,
         links,
         projectProposedChanges.rules,
@@ -250,7 +276,7 @@ export const applyProjectProposedChanges = async (
         wbsProposedChanges.projectLeadId,
         wbsProposedChanges.projectManagerId
       );
-    } else if (associatedProject) {
+    } else if (associatedProject && !projectProposedChanges.newProject) {
       await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
@@ -270,11 +296,20 @@ export const applyProjectProposedChanges = async (
   }
 };
 
+/**
+ * Applies the proposed changes by either creating a work package if the change request's WBS element is a project or editing a work package if the change request's WBS element is a work package
+ * @param wbsProposedChanges the wbs proposed changes of the change request
+ * @param workPackageProposedChanges the work package proposed changes of the change request
+ * @param associatedProject the optional associated project of the change request
+ * @param associatedWorkPackage  the optional associated work package of the change request
+ * @param reviewer  the user reviewing the change request
+ * @param crId  the change request id
+ */
 export const applyWorkPackageProposedChanges = async (
-  wbsProposedChanges: any,
-  workPackageProposedChanges: any,
-  associatedProject: any,
-  associatedWorkPackage: any,
+  wbsProposedChanges: WbsProposedChangesArgs,
+  workPackageProposedChanges: WorkPackageProposedChangesArgs,
+  associatedProject: Project | null,
+  associatedWorkPackage: Work_Package | null,
   reviewer: User,
   crId: number
 ) => {
@@ -287,8 +322,8 @@ export const applyWorkPackageProposedChanges = async (
       transformDate(workPackageProposedChanges.startDate),
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
-      workPackageProposedChanges.expectedActivities.map((activity: any) => activity.detail),
-      workPackageProposedChanges.deliverables.map((deliverable: any) => deliverable.detail)
+      workPackageProposedChanges.expectedActivities.map((activity) => activity.detail),
+      workPackageProposedChanges.deliverables.map((deliverable) => deliverable.detail)
     );
   } else if (associatedWorkPackage) {
     await WorkPackagesService.editWorkPackage(
@@ -309,13 +344,13 @@ export const applyWorkPackageProposedChanges = async (
 };
 
 /**
- * Reviews a proposed solution and automates the changes **DESC NEEDS TO BE CHANGED**
+ * Reviews a proposed solution and automates the changes
  * @param psId the proposed solution id
- * @param foundCR the change request
+ * @param foundCR the change request being reviewed
  * @param crId the change request id
  * @param reviewer  the user reviewing the change request
  */
-export const reviewProposedSolution = async (psId: string, foundCR: any, reviewer: User) => {
+export const reviewProposedSolution = async (psId: string, foundCR: ChangeRequestWithChanges, reviewer: User) => {
   const foundPs = await prisma.proposed_Solution.findUnique({
     where: { proposedSolutionId: psId }
   });
@@ -409,3 +444,68 @@ export const reviewProposedSolution = async (psId: string, foundCR: any, reviewe
     }
   });
 };
+
+/**
+ * Sends a slack notification to the submitter of the change request that their change request has been reviewed
+ * @param foundCR the change request that was reviewed
+ */
+export const sendCRSubmitterReviewedNotification = async (foundCR: ChangeRequestWithChanges) => {
+  const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
+  if (creatorUserSettings && creatorUserSettings.slackId) {
+    try {
+      await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+      }
+    }
+  }
+};
+
+// ---------------------------------------------- Types ----------------------------------------------
+
+// export type ChangeRequestWithChanges = Change_Request & {
+//   activationChangeRequest: Activation_CR;
+//   scopeChangeRequest: Scope_CR & {
+//     wbsProposedChanges: Wbs_Proposed_Changes & {
+//       links: LinkInfo[];
+//       projectProposedChanges?: ProjectProposedChangesArgs;
+//       workPackageProposedChanges?: WorkPackageProposedChangesArgs;
+//     };
+//   };
+//   wbsElement: WBS_Element & {
+//     workPackage?: Work_Package & {
+//       expectedActivities: Description_Bullet[];
+//       deliverables: Description_Bullet[];
+//     };
+//     project?: Project;
+//   };
+// };
+
+// export type WorkPackageProposedChangesArgs = Work_Package_Proposed_Changes & {
+//   expectedActivities: Description_Bullet[];
+//   deliverables: Description_Bullet[];
+// };
+
+// export type ProjectProposedChangesArgs = Project_Proposed_Changes & {
+//   goals: Description_Bullet[];
+//   features: Description_Bullet[];
+//   otherConstraints: Description_Bullet[];
+// };
+
+export type ChangeRequestWithChanges = Change_Request & {
+  activationChangeRequest: Activation_CR;
+  scopeChangeRequest: Prisma.Scope_CRGetPayload<typeof scopeChangeRequestQueryArgs>;
+  wbsElement: WBS_Element & {
+    workPackage?: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>;
+    project?: Prisma.ProjectGetPayload<typeof projectQueryArgs>;
+  };
+};
+
+export type WorkPackageProposedChangesArgs = Prisma.Work_Package_Proposed_ChangesGetPayload<
+  typeof workPackageProposedChangesQueryArgs
+>;
+
+export type ProjectProposedChangesArgs = Prisma.Project_Proposed_ChangesGetPayload<typeof projectProposedChangesQueryArgs>;
+
+export type WbsProposedChangesArgs = Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>;
