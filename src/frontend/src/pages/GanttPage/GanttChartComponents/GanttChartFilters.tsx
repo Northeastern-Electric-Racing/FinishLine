@@ -12,11 +12,13 @@ import { ChangeEvent } from 'react';
 const FilterChipButton = ({
   buttonText,
   onChange,
-  defaultChecked
+  defaultChecked,
+  checked
 }: {
   buttonText: string;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   defaultChecked: boolean;
+  checked: boolean;
 }) => {
   const theme = useTheme();
 
@@ -33,6 +35,7 @@ const FilterChipButton = ({
         <Chip label={buttonText} sx={{ borderRadius: '20px', paddingX: 1, backgroundColor: theme.palette.primary.main }} />
       }
       defaultChecked={defaultChecked}
+      checked={checked}
     />
   );
 };
@@ -43,19 +46,31 @@ const FilterRow = ({
 }: {
   label: string;
   buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
-}) => (
-  <Grid item container xs={12}>
-    <Typography variant="h6" component="label" textAlign="right">
-      {label}
-    </Typography>
+}) => {
+  const checkedMap: { [filterLabel: string]: boolean } = {};
 
-    <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'center' }}>
-      {buttons.map((button) => (
-        <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} defaultChecked={button.defaultChecked} />
-      ))}
+  buttons.forEach((button) => {
+    checkedMap[button.filterLabel] = button.defaultChecked;
+  });
+  return (
+    <Grid item container xs={12}>
+      <Typography variant="h6" component="label" textAlign="right">
+        {label}
+      </Typography>
+
+      <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'cenƒter' }}>
+        {buttons.map((button) => (
+          <FilterChipButton
+            buttonText={button.filterLabel}
+            onChange={button.handler}
+            defaultChecked={button.defaultChecked}
+            checked={checkedMap[button.filterLabel]}
+          />
+        ))}
+      </Grid>
     </Grid>
-  </Grid>
-);
+  );
+};
 
 interface GanttChartFiltersProps {
   carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
