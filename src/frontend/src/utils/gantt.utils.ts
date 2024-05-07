@@ -256,8 +256,8 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
     },
-    projectLead: workPackage.projectLead,
-    projectManager: workPackage.projectManager
+    projectLead: workPackage.lead,
+    projectManager: workPackage.manager
   };
 };
 
