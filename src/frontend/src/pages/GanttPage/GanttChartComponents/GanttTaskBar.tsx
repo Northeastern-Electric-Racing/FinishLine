@@ -248,6 +248,7 @@ const GanttTaskBar = ({
           }}
           onMouseOver={handleOnMouseOver}
           onMouseLeave={handleOnMouseLeave}
+          onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
         >
           <Box
             sx={{
@@ -297,6 +298,7 @@ const GanttTaskBar = ({
             variant="body1"
             sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}
             onClick={onWorkPackageToggle}
+            noWrap
           >
             {event.name}
           </Typography>
