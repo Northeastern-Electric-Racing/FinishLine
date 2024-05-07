@@ -315,7 +315,7 @@ export const applyWorkPackageProposedChanges = async (
  * @param crId the change request id
  * @param reviewer  the user reviewing the change request
  */
-export const reviewProposedSolution = async (psId: string, foundCR: any, crId: number, reviewer: User) => {
+export const reviewProposedSolution = async (psId: string, foundCR: any, reviewer: User) => {
   const foundPs = await prisma.proposed_Solution.findUnique({
     where: { proposedSolutionId: psId }
   });
@@ -331,7 +331,7 @@ export const reviewProposedSolution = async (psId: string, foundCR: any, crId: n
       'Budget',
       foundCR.wbsElement.project.budget,
       newBudget,
-      crId,
+      foundCR.crId,
       reviewer.userId,
       foundCR.wbsElementId
     );
@@ -358,12 +358,12 @@ export const reviewProposedSolution = async (psId: string, foundCR: any, crId: n
 
     // create changes that reflect the new budget and duration
     const changes = [
-      createChange('Budget', wpProj.budget, newBudget, crId, reviewer.userId, foundCR.wbsElementId),
+      createChange('Budget', wpProj.budget, newBudget, foundCR.crId, reviewer.userId, foundCR.wbsElementId),
       createChange(
         'Duration',
         foundCR.wbsElement.workPackage.duration,
         updatedDuration,
-        crId,
+        foundCR.crId,
         reviewer.userId,
         foundCR.wbsElementId
       )
@@ -371,7 +371,7 @@ export const reviewProposedSolution = async (psId: string, foundCR: any, crId: n
 
     // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
     if (foundPs.timelineImpact > 0) {
-      await updateBlocking(foundCR.wbsElement.workPackage, foundPs.timelineImpact, crId, reviewer);
+      await updateBlocking(foundCR.wbsElement.workPackage, foundPs.timelineImpact, foundCR.crId, reviewer);
     }
 
     // update the project and work package

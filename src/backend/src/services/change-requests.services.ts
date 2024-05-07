@@ -79,6 +79,40 @@ export default class ChangeRequestsService {
     return changeRequests.map(changeRequestTransformer);
   }
 
+  static async reviewStageGateChangeRequest(foundCR: any, reviewer: User): Promise<void> {
+    if (!foundCR.wbsElement.workPackage) {
+      throw new HttpException(400, 'Stage gate can only be made on work packages!');
+    }
+
+    throwIfUncheckedDescriptionBullets(foundCR.wbsElement.workPackage);
+
+    // update the status of the associated wp to be complete if needed
+    const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
+    const changesList = [];
+    if (shouldChangeStatus) {
+      changesList.push({
+        changeRequestId: foundCR.crId,
+        implementerId: reviewer.userId,
+        detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.COMPLETE)
+      });
+    }
+
+    await prisma.work_Package.update({
+      where: { wbsElementId: foundCR.wbsElement.wbsElementId },
+      data: {
+        wbsElement: {
+          update: {
+            status: WBS_Element_Status.COMPLETE,
+            changes: {
+              createMany: {
+                data: changesList
+              }
+            }
+          }
+        }
+      }
+    });
+  }
   /**
    * reviews the change request for the given Id and automates any changes that are made
    * @param reviewer The user reviewing the change request
@@ -131,7 +165,7 @@ export default class ChangeRequestsService {
         // if there is only a proposed solution and no wbs changes
 
         // reviews a proposed solution applying certain changes based on the content of the proposed solution
-        await reviewProposedSolution(psId, foundCR, crId, reviewer);
+        await reviewProposedSolution(psId, foundCR, reviewer);
       } else if (foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
         await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
         // we don't want to have merge conflict on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
@@ -173,100 +207,10 @@ export default class ChangeRequestsService {
       }
     } else if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
       // stage gate cr
-      if (!foundCR.wbsElement.workPackage) {
-        throw new HttpException(400, 'Stage gate can only be made on work packages!');
-      }
-
-      throwIfUncheckedDescriptionBullets(foundCR.wbsElement.workPackage);
-
-      // update the status of the associated wp to be complete if needed
-      const shouldChangeStatus = foundCR.wbsElement.status !== WBS_Element_Status.COMPLETE;
-      const changesList = [];
-      if (shouldChangeStatus) {
-        changesList.push({
-          changeRequestId: crId,
-          implementerId: reviewer.userId,
-          detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.COMPLETE)
-        });
-      }
-
-      await prisma.work_Package.update({
-        where: { wbsElementId: foundCR.wbsElement.wbsElementId },
-        data: {
-          wbsElement: {
-            update: {
-              status: WBS_Element_Status.COMPLETE,
-              changes: {
-                createMany: {
-                  data: changesList
-                }
-              }
-            }
-          }
-        }
-      });
+      await this.reviewStageGateChangeRequest(foundCR, reviewer);
     } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       // if it's an activation cr and being accepted, we can do some stuff to the associated work package
-      const { activationChangeRequest: actCr } = foundCR;
-      const shouldUpdateProjLead = actCr.projectLeadId !== foundCR.wbsElement.projectLeadId;
-      const shouldUpdateProjManager = actCr.projectManagerId !== foundCR.wbsElement.projectManagerId;
-      const shouldChangeStartDate =
-        actCr.startDate.setHours(0, 0, 0, 0) !== foundCR.wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
-      const changes = [];
-
-      if (shouldUpdateProjLead) {
-        const oldPL = await getUserFullName(foundCR.wbsElement.projectLeadId);
-        const newPL = await getUserFullName(actCr.projectLeadId);
-        changes.push({
-          changeRequestId: foundCR.crId,
-          implementerId: reviewer.userId,
-          wbsElementId: foundCR.wbsElementId,
-          detail: buildChangeDetail('Project Lead', oldPL, newPL)
-        });
-      }
-
-      if (shouldUpdateProjManager) {
-        const oldPM = await getUserFullName(foundCR.wbsElement.projectManagerId);
-        const newPM = await getUserFullName(actCr.projectManagerId);
-        changes.push({
-          changeRequestId: foundCR.crId,
-          implementerId: reviewer.userId,
-          wbsElementId: foundCR.wbsElementId,
-          detail: buildChangeDetail('Project Manager', oldPM, newPM)
-        });
-      }
-
-      if (shouldChangeStartDate) {
-        changes.push({
-          changeRequestId: foundCR.crId,
-          implementerId: reviewer.userId,
-          wbsElementId: foundCR.wbsElementId,
-          detail: buildChangeDetail(
-            'Start Date',
-            foundCR.wbsElement.workPackage?.startDate.toLocaleDateString() || 'null',
-            actCr.startDate.toLocaleDateString()
-          )
-        });
-      }
-
-      changes.push({
-        changeRequestId: foundCR.crId,
-        implementerId: reviewer.userId,
-        wbsElementId: foundCR.wbsElementId,
-        detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.ACTIVE)
-      });
-
-      await prisma.change.createMany({ data: changes });
-
-      await prisma.wBS_Element.update({
-        where: { wbsElementId: foundCR.wbsElementId },
-        data: {
-          projectLeadId: actCr.projectLeadId,
-          projectManagerId: actCr.projectManagerId,
-          workPackage: { update: { startDate: actCr.startDate } },
-          status: WBS_Element_Status.ACTIVE
-        }
-      });
+      await this.reviewActivationChangeRequest(foundCR, reviewer);
     }
 
     // finally we can update change request
@@ -298,6 +242,70 @@ export default class ChangeRequestsService {
     await sendSlackCRStatusToThread(relevantThreads, foundCR.crId, accepted);
 
     return updated.crId;
+  }
+
+  static async reviewActivationChangeRequest(foundCR: any, reviewer: User): Promise<void> {
+    const { activationChangeRequest } = foundCR;
+    const shouldUpdateProjLead = activationChangeRequest.projectLeadId !== foundCR.wbsElement.projectLeadId;
+    const shouldUpdateProjManager = activationChangeRequest.projectManagerId !== foundCR.wbsElement.projectManagerId;
+    const shouldChangeStartDate =
+      activationChangeRequest.startDate.setHours(0, 0, 0, 0) !==
+      foundCR.wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
+    const changes = [];
+
+    if (shouldUpdateProjLead) {
+      const oldPL = await getUserFullName(foundCR.wbsElement.projectLeadId);
+      const newPL = await getUserFullName(activationChangeRequest.projectLeadId);
+      changes.push({
+        changeRequestId: foundCR.crId,
+        implementerId: reviewer.userId,
+        wbsElementId: foundCR.wbsElementId,
+        detail: buildChangeDetail('Project Lead', oldPL, newPL)
+      });
+    }
+
+    if (shouldUpdateProjManager) {
+      const oldPM = await getUserFullName(foundCR.wbsElement.projectManagerId);
+      const newPM = await getUserFullName(activationChangeRequest.projectManagerId);
+      changes.push({
+        changeRequestId: foundCR.crId,
+        implementerId: reviewer.userId,
+        wbsElementId: foundCR.wbsElementId,
+        detail: buildChangeDetail('Project Manager', oldPM, newPM)
+      });
+    }
+
+    if (shouldChangeStartDate) {
+      changes.push({
+        changeRequestId: foundCR.crId,
+        implementerId: reviewer.userId,
+        wbsElementId: foundCR.wbsElementId,
+        detail: buildChangeDetail(
+          'Start Date',
+          foundCR.wbsElement.workPackage?.startDate.toLocaleDateString() || 'null',
+          activationChangeRequest.startDate.toLocaleDateString()
+        )
+      });
+    }
+
+    changes.push({
+      changeRequestId: foundCR.crId,
+      implementerId: reviewer.userId,
+      wbsElementId: foundCR.wbsElementId,
+      detail: buildChangeDetail('status', foundCR.wbsElement.status, WBS_Element_Status.ACTIVE)
+    });
+
+    await prisma.change.createMany({ data: changes });
+
+    await prisma.wBS_Element.update({
+      where: { wbsElementId: foundCR.wbsElementId },
+      data: {
+        projectLeadId: activationChangeRequest.projectLeadId,
+        projectManagerId: activationChangeRequest.projectManagerId,
+        workPackage: { update: { startDate: activationChangeRequest.startDate } },
+        status: WBS_Element_Status.ACTIVE
+      }
+    });
   }
 
   /**
