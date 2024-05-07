@@ -156,15 +156,33 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
                   <InfoBlock title={'Proposed Changes'} />
                   <Grid container columnSpacing={4}>
-                    <Grid item xs={6}>
-                      <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
-                        {isProject(wbsNum) ? (
-                          <ProjectComparisonBlock changeRequest={changeRequest} isProposed={false} />
+                    {!(isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.workPackageProposedChanges) && (
+                      <Grid item xs={6}>
+                        {isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.projectProposedChanges ? (
+                          <Box
+                            sx={{
+                              backgroundColor: '#2C2C2C',
+                              borderRadius: '10px',
+                              padding: 1.4,
+                              mb: 3
+                            }}
+                          >
+                            <ProjectComparisonBlock changeRequest={changeRequest} isProposed={false} />
+                          </Box>
                         ) : (
-                          <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={false} />
+                          <Box
+                            sx={{
+                              backgroundColor: '#2C2C2C',
+                              borderRadius: '10px',
+                              padding: 1.4,
+                              mb: 3
+                            }}
+                          >
+                            <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={false} />
+                          </Box>
                         )}
-                      </Box>
-                    </Grid>
+                      </Grid>
+                    )}
 
                     <Grid item xs={6}>
                       <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>

@@ -20,8 +20,8 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
     field: 'Name',
     content: `${
       isProject
-        ? (changeRequest as StandardChangeRequest).projectProposedChanges?.name
-        : (changeRequest as StandardChangeRequest).workPackageProposedChanges?.name
+        ? (changeRequest as StandardChangeRequest)?.projectProposedChanges?.name
+        : (changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.name
     }`
   };
 
@@ -34,8 +34,8 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
     field: 'Status',
     content: `${
       isProject
-        ? (changeRequest as StandardChangeRequest).projectProposedChanges?.status
-        : (changeRequest as StandardChangeRequest).workPackageProposedChanges?.status
+        ? (changeRequest as StandardChangeRequest)?.projectProposedChanges?.status
+        : (changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.status
     }`
   };
 
@@ -48,8 +48,8 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
     field: 'Lead',
     content: `${
       isProject
-        ? fullNamePipe((changeRequest as StandardChangeRequest).projectProposedChanges?.projectLead)
-        : fullNamePipe((changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectLead)
+        ? fullNamePipe((changeRequest as StandardChangeRequest)?.projectProposedChanges?.projectLead)
+        : fullNamePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.projectLead)
     }`
   };
 
@@ -62,8 +62,8 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
     field: 'Manager',
     content: `${
       isProject
-        ? fullNamePipe((changeRequest as StandardChangeRequest).projectProposedChanges?.projectManager)
-        : fullNamePipe((changeRequest as StandardChangeRequest).workPackageProposedChanges?.projectManager)
+        ? fullNamePipe((changeRequest as StandardChangeRequest)?.projectProposedChanges?.projectManager)
+        : fullNamePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.projectManager)
     }`
   };
 

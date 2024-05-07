@@ -31,6 +31,8 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
     content: `$${project.budget}`
   };
 
+  // a project's proposed changes
+
   const proposedBudget: PotentialChange = {
     field: 'Budget',
     content: `$${(changeRequest as StandardChangeRequest).projectProposedChanges?.budget}`
@@ -78,9 +80,7 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   const initialTeams: PotentialChange = {
     field: 'Teams',
-    content: (project?.teams || [])
-      .map((team, index, array) => team.teamName + (index !== array.length - 1 ? ', ' : ''))
-      .join('')
+    content: project?.teams.map((team, index, array) => team.teamName + (index !== array.length - 1 ? ', ' : '')).join('')
   };
 
   const proposedTeams: PotentialChange = {
@@ -102,7 +102,58 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
       .join('')
   };
 
-  return (
+  // a project's proposed work package changes
+  const proposedDuration: PotentialChange = {
+    field: 'Duration',
+    content: `${(changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.duration} weeks`
+  };
+
+  const proposedStage: PotentialChange = {
+    field: 'Stage',
+    content: `${(changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.stage}`
+  };
+
+  const proposedStartDate: PotentialChange = {
+    field: 'Start Date',
+    content: ''
+  };
+
+  const proposedDeliverables: PotentialChange = {
+    field: 'Deliverables',
+    content: (changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.deliverables || []
+  };
+
+  const proposedExpectedActivities: PotentialChange = {
+    field: 'Expected Activities',
+    content: (changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.expectedActivities || []
+  };
+
+  const proposedBlockedBy: PotentialChange = {
+    field: 'Blocked By',
+    content: ((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.blockedBy || [])
+      .map(
+        (wbs, index, array) =>
+          wbs.carNumber.toString() +
+          '.' +
+          wbs.projectNumber.toString() +
+          '.' +
+          wbs.workPackageNumber.toString() +
+          (index !== array.length - 1 ? ', ' : '')
+      )
+      .join('')
+  };
+
+  return (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
+    <>
+      <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={true} wbsElement={project} />
+      <CompareProposedChanges first={initialBudget} second={proposedDuration} isProposed={true} />
+      <CompareProposedChanges first={initialSummary} second={proposedStage} isProposed={true} />
+      <CompareProposedChanges first={initialGoals} second={proposedStartDate} isProposed={true} />
+      <CompareProposedChanges first={initialFeatures} second={proposedDeliverables} isProposed={true} />
+      <CompareProposedChanges first={initialConstraints} second={proposedExpectedActivities} isProposed={true} />
+      <CompareProposedChanges first={initialTeams} second={proposedBlockedBy} isProposed={true} />
+    </>
+  ) : (
     <>
       <WbsComparisonBlock changeRequest={changeRequest} isProject={true} isProposed={isProposed} wbsElement={project} />
       <CompareProposedChanges first={initialBudget} second={proposedBudget} isProposed={isProposed} />
