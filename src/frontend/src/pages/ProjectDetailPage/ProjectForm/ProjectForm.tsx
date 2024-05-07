@@ -61,7 +61,7 @@ interface ProjectFormContainerProps {
   setProjectLeadId: (id?: string) => void;
   projectLeadId?: string;
   projectManagerId?: string;
-  onSubmitSecondary?: (data: ProjectCreateChangeRequestFormInput) => void;
+  onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -74,7 +74,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   setProjectLeadId,
   projectLeadId,
   projectManagerId,
-  onSubmitSecondary
+  onSubmitChangeRequest
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
@@ -167,8 +167,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
-    if (onSubmitSecondary && changeRequestFormInput)
-      onSubmitSecondary({
+    if (onSubmitChangeRequest && changeRequestFormInput)
+      onSubmitChangeRequest({
         ...changeRequestFormInput,
         ...data
       });
@@ -193,7 +193,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
           <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
-            {onSubmitSecondary && (
+            {onSubmitChangeRequest && (
               <Box display="inline-flex" alignItems="center">
                 <Tooltip
                   title={
@@ -283,7 +283,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         </Stack>
       </PageLayout>
-      {onSubmitSecondary && (
+      {onSubmitChangeRequest && (
         <CreateChangeRequestModal
           onConfirm={async (crFormInput: ChangeRequestFormInput) => {
             changeRequestFormInput = crFormInput;

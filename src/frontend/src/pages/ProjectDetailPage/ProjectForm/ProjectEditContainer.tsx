@@ -171,7 +171,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       defaultValues={defaultValues}
       projectLeadId={projectLeadId}
       projectManagerId={projectManagerId}
-      onSubmitSecondary={onSubmitCreateChangeRequest}
+      onSubmitChangeRequest={onSubmitCreateChangeRequest}
     />
   );
 };
