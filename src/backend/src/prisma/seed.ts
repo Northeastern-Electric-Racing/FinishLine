@@ -215,12 +215,17 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * TEAMS
    */
+  /** Creating Team Types */
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
+
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
-  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId));
+  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
-  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
   const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
@@ -1286,10 +1291,6 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some more notes',
     assembly1.assemblyId
   );
-
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();
