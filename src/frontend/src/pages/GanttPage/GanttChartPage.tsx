@@ -51,6 +51,7 @@ const GanttChartPage: FC = () => {
     }>
   >([]);
   const [searchText, setSearchText] = useState<string>('');
+  const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [projectId: string]: boolean }>({});
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -152,20 +153,6 @@ const GanttChartPage: FC = () => {
     history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
   };
 
-  const expandedHandler = (value: boolean) => {
-    // No more forced reloads
-    if (value === expanded) {
-      ganttTasks.forEach((task) => {
-        if (task.type === 'project') {
-          task.hideChildren = !value;
-        }
-      });
-    } else {
-      const ganttFilters: GanttFilters = { ...defaultGanttFilters, expanded: value };
-      history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
-    }
-  };
-
   const resetHandler = () => {
     // No more forced reloads
     if (query.get('expanded') === null) {
@@ -227,6 +214,10 @@ const GanttChartPage: FC = () => {
     }
   };
 
+  const collapseHandler = () => {
+    setShowWorkPackagesList({});
+  };
+
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
       <GanttChartColorLegend />
@@ -235,8 +226,8 @@ const GanttChartPage: FC = () => {
         teamTypeHandlers={teamTypeHandlers}
         teamHandlers={teamHandlers}
         overdueHandler={overdueHandler}
-        expandedHandler={expandedHandler}
         resetHandler={resetHandler}
+        collapseHandler={collapseHandler}
       />
     </Box>
   );
@@ -273,6 +264,8 @@ const GanttChartPage: FC = () => {
               if (newTask.id === task.id) task = { ...newTask, teamName };
             });
           }}
+          showWorkPackagesList={showWorkPackagesList}
+          setShowWorkPackagesList={setShowWorkPackagesList}
         />
       </Box>
     </PageLayout>

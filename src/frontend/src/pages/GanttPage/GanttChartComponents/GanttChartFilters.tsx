@@ -81,8 +81,8 @@ interface GanttChartFiltersProps {
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
-  expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
+  collapseHandler: () => void;
 }
 
 const GanttChartFilters = ({
@@ -90,29 +90,19 @@ const GanttChartFilters = ({
   teamTypeHandlers,
   teamHandlers,
   overdueHandler,
-  expandedHandler,
-  resetHandler
+  resetHandler,
+  collapseHandler
 }: GanttChartFiltersProps) => {
   const FilterButtons = () => {
     return (
       <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'center', mt: 2 }}>
         <Grid item>
-          <Button
-            onClick={() => {
-              expandedHandler(true);
-            }}
-            startIcon={<UnfoldMoreIcon />}
-          >
+          <Button onClick={() => {}} startIcon={<UnfoldMoreIcon />}>
             Expand
           </Button>
         </Grid>
         <Grid item>
-          <Button
-            onClick={() => {
-              expandedHandler(false);
-            }}
-            startIcon={<UnfoldLessIcon />}
-          >
+          <Button onClick={collapseHandler} startIcon={<UnfoldLessIcon />}>
             Collapse
           </Button>
         </Grid>

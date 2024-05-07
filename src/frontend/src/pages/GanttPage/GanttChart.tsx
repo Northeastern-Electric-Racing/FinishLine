@@ -12,6 +12,8 @@ interface GanttChartProps {
   setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
   onExpanderClick: (newTask: GanttTaskData, teamName: string) => void;
+  showWorkPackagesList: { [projectId: string]: boolean };
+  setShowWorkPackagesList: React.Dispatch<React.SetStateAction<{ [projectId: string]: boolean }>>;
 }
 
 const GanttChart = ({
@@ -22,7 +24,9 @@ const GanttChart = ({
   chartEditingState,
   setChartEditingState,
   saveChanges,
-  onExpanderClick
+  onExpanderClick,
+  showWorkPackagesList,
+  setShowWorkPackagesList
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -91,6 +95,8 @@ const GanttChart = ({
             </Box>
             <Box key={teamName} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
               <GanttChartSection
+                showWorkPackagesList={showWorkPackagesList}
+                setShowWorkPackagesList={setShowWorkPackagesList}
                 tasks={tasks}
                 start={startDate}
                 end={endDate}

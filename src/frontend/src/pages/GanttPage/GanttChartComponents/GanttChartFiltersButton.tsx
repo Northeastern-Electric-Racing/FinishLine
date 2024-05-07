@@ -12,8 +12,8 @@ interface GanttChartFiltersButtonProps {
   }[];
   teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
   overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
-  expandedHandler: (expanded: boolean) => void;
   resetHandler: () => void;
+  collapseHandler: () => void;
 }
 
 const GanttChartFiltersButton = ({
@@ -21,8 +21,8 @@ const GanttChartFiltersButton = ({
   teamTypeHandlers,
   teamHandlers,
   overdueHandler,
-  expandedHandler,
-  resetHandler
+  resetHandler,
+  collapseHandler
 }: GanttChartFiltersButtonProps) => {
   const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -58,8 +58,8 @@ const GanttChartFiltersButton = ({
           teamTypeHandlers={teamTypeHandlers}
           teamHandlers={teamHandlers}
           overdueHandler={overdueHandler}
-          expandedHandler={expandedHandler}
           resetHandler={resetHandler}
+          collapseHandler={collapseHandler}
         />
       </Popover>
     </>
