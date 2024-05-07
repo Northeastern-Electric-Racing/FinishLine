@@ -29,7 +29,7 @@ import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { canReviewChangeRequest } from '../../utils/change-requests.utils';
+import { hasProposedChanges } from '../../utils/change-requests.utils';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -210,7 +210,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             form="review-notes-form"
             sx={{ mx: 1 }}
             onClick={() => {
-              canReviewChangeRequest(cr, selected)
+              selected > -1 || hasProposedChanges(standardChangeRequest)
                 ? handleAcceptDeny(true)
                 : toast.error('Please select a proposed solution!', 4500);
             }}
