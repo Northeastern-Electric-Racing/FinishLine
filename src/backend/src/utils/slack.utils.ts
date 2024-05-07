@@ -28,7 +28,7 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
   const { LEAD_CHANNEL_SLACK_ID } = process.env;
   if (!LEAD_CHANNEL_SLACK_ID) return;
 
-  const lead = workPackage.projectLead;
+  const { lead } = workPackage;
   const slackId = await getUserSlackId(lead?.userId);
   const daysUntilDeadline = daysBetween(workPackage.endDate, new Date());
 

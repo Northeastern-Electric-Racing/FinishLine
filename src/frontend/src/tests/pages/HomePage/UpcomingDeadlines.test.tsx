@@ -56,9 +56,9 @@ describe('upcoming deadlines component', () => {
     mockHook(false, false, exampleAllWorkPackages);
     renderComponent();
     expect(screen.getByText(exampleAllWorkPackages[0].name, { exact: false })).toBeInTheDocument();
-    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[0].projectLead), { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[0].lead), { exact: false })).toBeInTheDocument();
     expect(screen.getByText(exampleAllWorkPackages[1].name, { exact: false })).toBeInTheDocument();
-    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[2].projectManager), { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(fullNamePipe(exampleAllWorkPackages[2].manager), { exact: false })).toBeInTheDocument();
     expect(screen.getByText(datePipe(exampleAllWorkPackages[1].endDate), { exact: false })).toBeInTheDocument();
   });
 

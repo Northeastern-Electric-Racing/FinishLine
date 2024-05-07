@@ -27,8 +27,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const query = useQuery();
 
   const { name, budget, summary } = project;
-  const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.projectManager?.userId.toString());
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.projectLead?.userId.toString());
+  const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.manager?.userId.toString());
+  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.lead?.userId.toString());
   const goals = bulletsToObject(project.goals);
   const features = bulletsToObject(project.features);
   const constraints = bulletsToObject(project.otherConstraints);

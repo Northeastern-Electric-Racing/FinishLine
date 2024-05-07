@@ -10,7 +10,6 @@ import ProjectsPage from './ProjectsPage';
 import CreateWorkPackageForm from '../WorkPackageForm/CreateWorkPackageForm';
 import ProjectCreateContainer from '../ProjectDetailPage/ProjectForm/ProjectCreateContainer';
 import CreateProjectCRContainer from '../ProjectDetailPage/ProjectForm/ProjectAutoCRContainer';
-import CreateWorkPackageCRForm from '../WorkPackageForm/CreateWorkPackageCRForm';
 
 const Projects: React.FC = () => {
   return (
@@ -18,7 +17,6 @@ const Projects: React.FC = () => {
       <Route path={routes.PROJECTS_OVERVIEW} component={ProjectsPage} />
       <Route path={routes.PROJECTS_ALL} component={ProjectsPage} />
       <Route path={routes.WORK_PACKAGE_NEW} component={CreateWorkPackageForm} />
-      <Route path={routes.WORK_PACKAGE_CR_NEW} component={CreateWorkPackageCRForm} />
       <Route path={routes.PROJECTS_NEW} component={ProjectCreateContainer} />
       <Route path={routes.PROJECTS_NEW_CR} component={CreateProjectCRContainer} />
       <Route path={routes.PROJECTS_BY_WBS} component={WBSDetails} />
