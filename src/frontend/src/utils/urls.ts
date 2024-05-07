@@ -82,7 +82,7 @@ const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
-const teamTypes = () => `${teams()}/teamType/all`;
+const teamTypes = () => `${designReviews()}/teamType/all`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -144,6 +144,9 @@ const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${desi
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
+
+/**************** Work Package Template Endpoints ****************/
+const workPackageTemplates = () => `${API_URL}/templates`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -208,6 +211,7 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  teamTypes,
 
   descriptionBulletsCheck,
 
@@ -261,8 +265,9 @@ export const apiUrls = {
   designReviewById,
   designReviewsEdit,
   designReviewMarkUserConfirmed,
-  teamTypes,
   designReviewDelete,
+
+  workPackageTemplates,
 
   version
 };
