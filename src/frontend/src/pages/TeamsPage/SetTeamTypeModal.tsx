@@ -14,6 +14,7 @@ import { isTemplateMiddleOrTemplateTail } from 'typescript';
 
 interface SetTeamTypeInputs {
   teamId: string;
+  teamType: string;
 }
 
 interface SetTeamTypeModelProps {
@@ -22,45 +23,39 @@ interface SetTeamTypeModelProps {
   onHide: () => void;
 }
 
-const { data: teamTypeOptions } = useAllTeamTypes();
-
 const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, onHide }: SetTeamTypeModelProps) => {
   const { data: team, isLoading: teamIsLoading, isError: teamIsError, error: teamError } = useSingleTeam(teamId);
-  const { isLoading: deleteIsLoading, isError: deleteIsError, error: deleteError, mutateAsync } = useSetTeamType(teamId);
+  const { isLoading, isError: deleteIsError, error: deleteError, mutateAsync } = useSetTeamType(teamId);
+  const { data: teamTypeOptions } = useAllTeamTypes();
   const toast = useToast();
-  const teamNameTester = (teamName: string | undefined) =>
-    team !== undefined && teamName !== undefined && teamName.toLowerCase() === team.teamName.toLowerCase();
   const schema = yup.object().shape({
-    teamName: yup.string().required().test('team-name-test', 'Team name does not match', teamNameTester)
+    teamType: yup.string().required()
   });
   const {
     handleSubmit,
     control,
     reset,
-    formState: { errors, isValid }
+    formState: { isValid }
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      teamType: ''
-    },
-    mode: 'onChange'
+      teamType: team && team.teamType?.teamTypeId ? team.teamType.teamTypeId : ''
+    }
   });
-  const history = useHistory();
 
-  const handleConfirm = async ({ teamId }: SetTeamTypeInputs) => {
-      try {
-        await mutateAsync(teamId);
-        onHide();
-        history.goBack();
-        toast.success('Team type set successfully!');
-      } catch (e) {
-        if (e instanceof Error) {
-          toast.error(e.message);
-        }
+  const handleConfirm = async ({ teamType }: SetTeamTypeInputs) => {
+    try {
+      await mutateAsync(teamType);
+      onHide();
+      toast.success('Team type set successfully!');
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
       }
+    }
   };
 
-  if (!team || teamIsLoading || deleteIsLoading) return <LoadingIndicator />;
+  if (!team || teamIsLoading || isLoading) return <LoadingIndicator />;
   if (teamIsError) return <ErrorPage message={teamError.message} />;
   if (deleteIsError) return <ErrorPage message={deleteError?.message} />;
 
@@ -69,12 +64,12 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
       open={showModal}
       onHide={onHide}
       title={'Set Team Type'}
-      reset={() => reset({ teamType: '' })}
+      reset={() => reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleConfirm}
       formId="set-team-type"
       submitText="Submit"
-      disabled={!isValid}
+      disabled={!isValid || isLoading}
       showCloseButton
     >
       <FormControl fullWidth>
@@ -87,7 +82,7 @@ const SetTeamTypeModal: React.FC<SetTeamTypeModelProps> = ({ teamId, showModal, 
               {teamTypeOptions
                 ?.filter((teamType) => teamType.name)
                 .map((teamType) => (
-                  <MenuItem key={teamType.teamTypeId} value={teamType.name}>
+                  <MenuItem key={teamType.teamTypeId} value={teamType.teamTypeId}>
                     {teamType.name}
                   </MenuItem>
                 ))}
