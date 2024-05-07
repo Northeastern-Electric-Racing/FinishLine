@@ -45,7 +45,8 @@ const projectProposedChangesTransformer = (
     goals: projectProposedChanges!.goals.map(descBulletConverter),
     features: projectProposedChanges!.features.map(descBulletConverter),
     otherConstrains: projectProposedChanges!.otherConstraints.map(descBulletConverter),
-    teams: projectProposedChanges!.teams
+    teams: projectProposedChanges!.teams,
+    carNumber: projectProposedChanges?.carNumber ? projectProposedChanges?.carNumber : undefined
   };
 };
 

@@ -52,6 +52,7 @@ export interface ProjectProposedChanges extends WbsProposedChanges {
   features: DescriptionBullet[];
   otherConstrains: DescriptionBullet[];
   teams: TeamPreview[];
+  carNumber?: number;
 }
 
 export interface Project extends WbsElement {

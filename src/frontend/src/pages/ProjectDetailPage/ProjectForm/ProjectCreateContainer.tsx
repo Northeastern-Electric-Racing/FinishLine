@@ -16,6 +16,9 @@ import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
+import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
+import { ProjectProposedChangesCreateArgs, WbsElementStatus } from 'shared';
+import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 
 const ProjectCreateContainer: React.FC = () => {
   const toast = useToast();
@@ -26,6 +29,8 @@ const ProjectCreateContainer: React.FC = () => {
   const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
 
   const { mutateAsync, isLoading } = useCreateSingleProject();
+  const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
+
   const {
     data: allLinkTypes,
     isLoading: allLinkTypesIsLoading,
@@ -33,7 +38,7 @@ const ProjectCreateContainer: React.FC = () => {
     error: allLinkTypesError
   } = useAllLinkTypes();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || isCRHookLoading) return <LoadingIndicator />;
   if (!allLinkTypes || allLinkTypesIsLoading) return <LoadingIndicator />;
   if (allLinkTypesIsError) return <ErrorPage message={allLinkTypesError.message} />;
 
@@ -57,9 +62,9 @@ const ProjectCreateContainer: React.FC = () => {
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
-    crId: yup.number().min(1).typeError('Change Request ID cannot be empty!').required('crId must be a non-zero number!'),
-    carNumber: yup.number().min(0).required('A car number is required!'),
-    teamId: yup.string().required('A Team Id is required'),
+    // TODO update upper bound here once new car model is made
+    carNumber: yup.number().min(0).max(3).required('A car number is required!'),
+    teamIds: yup.array().of(yup.string()).required('Teams are required'),
     budget: yup.number().optional(),
     summary: yup.string().required('Summary is required!'),
     projectLeadId: yup.number().optional(),
@@ -74,6 +79,49 @@ const ProjectCreateContainer: React.FC = () => {
         })
       )
   });
+
+  const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
+    const { name, budget, summary, links, teamIds, carNumber, goals, features, constraints, type, what, why } = data;
+
+    const rules = data.rules.map((rule) => rule.detail);
+
+    try {
+      const projectPayload: ProjectProposedChangesCreateArgs = {
+        name,
+        summary,
+        status: WbsElementStatus.Active,
+        teamIds: teamIds.map((number) => '' + number),
+        budget,
+        rules,
+        goals: goals.map((g) => g.detail),
+        features: features.map((f) => f.detail),
+        otherConstraints: constraints.map((c) => c.detail),
+        links,
+        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined,
+        carNumber: carNumber
+      };
+      const changeRequestPayload: CreateStandardChangeRequestPayload = {
+        wbsNum: {
+          // TODO change this to be the carNumber in the database
+          carNumber: carNumber,
+          projectNumber: 0,
+          workPackageNumber: 0
+        },
+        type: type,
+        what,
+        why,
+        proposedSolutions: [],
+        projectProposedChanges: projectPayload
+      };
+      await mutateCRAsync(changeRequestPayload);
+      history.push(routes.CHANGE_REQUESTS_OVERVIEW);
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
+  };
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links, crId, teamIds, carNumber } = data;
@@ -119,6 +167,7 @@ const ProjectCreateContainer: React.FC = () => {
       schema={schema}
       projectLeadId={projectLeadId}
       projectManagerId={projectManagerId}
+      onSubmitChangeRequest={onSubmitChangeRequest}
     />
   );
 };

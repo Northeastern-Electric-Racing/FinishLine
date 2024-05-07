@@ -19,11 +19,12 @@ import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { ObjectShape } from 'yup/lib/object';
-import InfoIcon from '@mui/icons-material/Info';
 import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 import { useState } from 'react';
 import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { NERButton } from '../../../components/NERButton';
+import HelpIcon from '@mui/icons-material/Help';
 
 export interface ProjectFormInput {
   name: string;
@@ -119,6 +120,9 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     return <ErrorPage message={allUsers.error?.message} />;
   }
 
+  const crWatch = watch('crId');
+  const changeRequestInputExists = crWatch !== 'null' && crWatch !== '';
+
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
@@ -150,22 +154,32 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Stack textAlign="right" direction="row" justifyContent={'flex-end'}>
+          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
+            {onSubmitChangeRequest && (
+              <Box display="inline-flex" alignItems="center">
+                <Tooltip
+                  title={
+                    <Typography fontSize={'16px'}>
+                      If you create a change request from this form, the form value of Change Request ID will be safely
+                      ignored. When the change request is accepted, it will edit the current project.
+                    </Typography>
+                  }
+                  placement="left"
+                >
+                  <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+                </Tooltip>
+                <NERButton variant="contained" onClick={() => setIsModalOpen(true)} sx={{ mx: 1 }}>
+                  Create Change Request
+                </NERButton>
+              </Box>
+            )}
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton
-              variant="contained"
-              onClick={onSubmitChangeRequest ? () => setIsModalOpen(true) : (event) => handleSubmit}
-              sx={{ mx: 1 }}
-            >
-              {onSubmitChangeRequest ? 'Generate Change Request' : 'Submit'}
+            <NERSuccessButton disabled={!changeRequestInputExists} variant="contained" type="submit" sx={{ mx: 1 }}>
+              Submit
             </NERSuccessButton>
-            <Tooltip
-              children={<InfoIcon fontSize="large" />}
-              title={'This form creates a change request with the data for the new project'}
-            ></Tooltip>
-          </Stack>
+          </Box>
         }
       >
         <ProjectFormDetails
@@ -177,7 +191,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           projectLead={projectLeadId}
           projectManager={projectManagerId}
           project={project}
-          autoCRMode={onSubmitChangeRequest != null}
         />
         <Stack spacing={4}>
           <Box>

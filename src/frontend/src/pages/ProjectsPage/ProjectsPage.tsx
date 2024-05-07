@@ -32,7 +32,7 @@ const ProjectsPage: React.FC = () => {
           variant="contained"
           disabled={isGuest(user.role)}
           startIcon={<Add />}
-          onClick={() => history.push(routes.PROJECTS_NEW_CR)}
+          onClick={() => history.push(routes.PROJECTS_NEW)}
         >
           New Project
         </NERButton>
