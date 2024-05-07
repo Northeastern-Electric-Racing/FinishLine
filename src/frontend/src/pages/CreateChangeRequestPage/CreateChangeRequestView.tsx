@@ -49,7 +49,7 @@ interface CreateChangeRequestViewProps {
   proposedSolutions: ProposedSolution[];
   setProposedSolutions: (ps: ProposedSolution[]) => void;
   handleCancel: () => void;
-  hideProposedSolutions?: boolean;
+  modalView?: boolean;
 }
 
 const schema = yup.object().shape({
@@ -81,7 +81,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
   proposedSolutions,
   setProposedSolutions,
   handleCancel,
-  hideProposedSolutions
+  modalView = false
 }) => {
   const query = useQuery();
   const {
@@ -213,9 +213,11 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         previousPages={[{ name: 'Change Requests', route: routes.CHANGE_REQUESTS }]}
         headerRight={
           <Box textAlign="right" sx={{ mb: 2 }}>
-            <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1, width: 90 }}>
-              Cancel
-            </NERFailButton>
+            {!modalView && (
+              <NERFailButton variant="contained" onClick={handleCancel} sx={{ mx: 1, width: 90 }}>
+                Cancel
+              </NERFailButton>
+            )}
             <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1, width: 90, mt: { xs: 1, md: 0 } }}>
               Submit
             </NERSuccessButton>
@@ -223,18 +225,20 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
         }
       >
         <Grid container spacing={2} display="flex" justifyContent="space-between">
-          <Grid container item spacing={2} xs={12} md={6} height="fit-content">
-            <Grid item xs={12}>
-              <FormLabel>WBS</FormLabel>
-              <NERAutocomplete
-                id="wbs-autocomplete"
-                onChange={wbsAutocompleteOnChange}
-                options={wbsDropdownOptions}
-                size="small"
-                placeholder="Select a project or work package"
-                value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
-              />
-            </Grid>
+          <Grid container item spacing={2} xs={12} md={modalView ? 12 : 6} height="fit-content">
+            {!modalView && (
+              <Grid item xs={12}>
+                <FormLabel>WBS</FormLabel>
+                <NERAutocomplete
+                  id="wbs-autocomplete"
+                  onChange={wbsAutocompleteOnChange}
+                  options={wbsDropdownOptions}
+                  size="small"
+                  placeholder="Select a project or work package"
+                  value={wbsDropdownOptions.find((element) => element.id === wbsNum) || null}
+                />
+              </Grid>
+            )}
             <Grid item xs={10}>
               <FormControl fullWidth>
                 <FormLabel>Type</FormLabel>
@@ -321,7 +325,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
               </Button>
             </Grid>
           </Grid>
-          {!hideProposedSolutions && (
+          {!modalView && (
             <Grid item xs={12} md={5} sx={{ mt: -2 }}>
               <CreateProposedSolutionsList
                 proposedSolutions={proposedSolutions}
