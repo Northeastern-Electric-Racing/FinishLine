@@ -8,24 +8,30 @@ import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'reac
 import useMeasure from 'react-use-measure';
 import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE, EventChange, GanttTaskData } from '../../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, IconButton, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { dateToString } from '../../../utils/datetime.utils';
 import { routes } from '../../../utils/routes';
 import { useHistory } from 'react-router-dom';
 import GanttToolTip from './GanttToolTip';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 const GanttTaskBar = ({
   days,
   event,
   createChange,
   isEditMode,
+  onWorkPackageToggle,
+  showWorkPackages = false,
   ...props
 }: {
   days: Date[];
   event: GanttTaskData;
   createChange: (change: EventChange) => void;
   isEditMode: boolean;
+  onWorkPackageToggle?: () => void;
+  showWorkPackages?: boolean;
 } & ComponentProps<'div'>) => {
   const theme = useTheme();
   const id = useId() || 'id'; // id for creating event changes
@@ -119,7 +125,7 @@ const GanttTaskBar = ({
     setShowPopup(false);
   };
 
-  return (
+  return isEditMode ? (
     <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
       <Box
         sx={{
@@ -170,13 +176,10 @@ const GanttTaskBar = ({
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
             backgroundColor: event.styles ? event.styles.backgroundColor : grey[700],
-            cursor: isEditMode ? 'move' : 'pointer'
+            cursor: 'move'
           }}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
-          onMouseOver={handleOnMouseOver}
-          onMouseLeave={handleOnMouseLeave}
-          onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
         >
           <Box
             sx={{
@@ -189,7 +192,7 @@ const GanttTaskBar = ({
             }}
           >
             <Box
-              draggable={isEditMode}
+              draggable
               onDrag={onDragStart}
               onDragEnd={onDragEnd}
               style={{
@@ -201,31 +204,104 @@ const GanttTaskBar = ({
                 userSelect: 'none'
               }}
             >
-              <Typography variant="body1" sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}>
+              <Typography
+                variant="body1"
+                sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}
+                onClick={onWorkPackageToggle}
+              >
                 {event.name}
               </Typography>
             </Box>
-            {isEditMode && (
-              <Box
-                sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
-                onMouseDown={handleMouseDown}
-              />
-            )}
-            {showPopup && (
-              <GanttToolTip
-                xCoordinate={cursorX}
-                yCoordinate={cursorY}
-                title={event.name}
-                startDate={event.start}
-                endDate={event.end}
-                color={event.styles?.backgroundColor}
-                projectLead={event.projectLead}
-                projectManager={event.projectManager}
-              />
-            )}
+            <Box
+              sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
+              onMouseDown={handleMouseDown}
+            />
           </Box>
         </div>
-        {/* {event.children.map((child) => {
+      </Box>
+    </Box>
+  ) : (
+    <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: GANTT_CHART_GAP_SIZE,
+          gridTemplateRows: `repeat(1, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${days.length}, minmax(${GANTT_CHART_CELL_SIZE}, 1fr))`,
+          width: '100%'
+        }}
+      >
+        <div
+          ref={measureRef}
+          {...props}
+          style={{
+            gridColumnStart: getStartCol(event),
+            gridColumnEnd: getEndCol(event),
+            height: '2rem',
+            width: width === 0 ? `unset` : `${width}px`,
+            border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
+            borderRadius: '0.25rem',
+            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700],
+            cursor: 'pointer',
+            gridRow: 1,
+            zIndex: 1
+          }}
+          onMouseOver={handleOnMouseOver}
+          onMouseLeave={handleOnMouseLeave}
+        >
+          <Box
+            sx={{
+              height: '100%',
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              overflow: 'visible'
+            }}
+          >
+            <Box
+              style={{
+                padding: '0.25rem',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 1,
+                userSelect: 'none'
+              }}
+            />
+          </Box>
+        </div>
+        <div
+          style={{
+            gridRow: 1,
+            zIndex: 3,
+            gridColumnStart: getStartCol(event),
+            gridColumnEnd: getEndCol(event),
+            display: 'flex',
+            alignItems: 'center',
+            marginTop: !event.project ? '-10px' : undefined,
+            marginBottom: !event.project ? '-10px' : undefined,
+            cursor: 'pointer',
+            width: 'fit-content'
+          }}
+          onMouseOver={handleOnMouseOver}
+          onMouseLeave={handleOnMouseLeave}
+          onClick={event.project ? () => history.push(`${`${routes.PROJECTS}/${event.id}`}`) : undefined}
+        >
+          {!event.project && (
+            <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-20px', marginLeft: '-10px' }}>
+              {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
+            </IconButton>
+          )}
+          <Typography
+            variant="body1"
+            sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}
+            onClick={onWorkPackageToggle}
+          >
+            {event.name}
+          </Typography>
+        </div>
+        {event.children.map((child) => {
           return (
             <div
               {...props}
@@ -236,17 +312,29 @@ const GanttTaskBar = ({
                 border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
                 borderRadius: '0.25rem',
                 backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
-                cursor: isEditMode ? 'move' : 'pointer'
+                cursor: 'pointer',
+                gridRow: 1,
+                zIndex: 2
               }}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
               onMouseOver={handleOnMouseOver}
               onMouseLeave={handleOnMouseLeave}
               onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
             />
           );
-        })} */}
+        })}
       </Box>
+      {showPopup && (
+        <GanttToolTip
+          xCoordinate={cursorX}
+          yCoordinate={cursorY}
+          title={event.name}
+          startDate={event.start}
+          endDate={event.end}
+          color={event.styles?.backgroundColor}
+          projectLead={event.projectLead}
+          projectManager={event.projectManager}
+        />
+      )}
     </Box>
   );
 };

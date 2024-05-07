@@ -30,7 +30,7 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
       padding: '10px',
       backgroundColor: '#ef4345 ',
       borderRadius: '5px',
-      zIndex: 1
+      zIndex: 4
     }}
   >
     <Box color={'white'}>

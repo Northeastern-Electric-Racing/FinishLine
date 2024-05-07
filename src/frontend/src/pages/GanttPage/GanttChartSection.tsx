@@ -6,10 +6,8 @@
 import { eachDayOfInterval, isMonday } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
-import { Box, Typography, IconButton, Collapse, useTheme } from '@mui/material';
+import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import ChevronRight from '@mui/icons-material/ChevronRight';
 
 interface GanttChartSectionProps {
   start: Date;
@@ -24,7 +22,6 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
   const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [key: string]: boolean }>({});
-  const theme = useTheme();
 
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
@@ -57,25 +54,14 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
           return (
             <>
               <Box display="flex" alignItems="flex-start">
-                <Box
-                  sx={{
-                    position: 'sticky',
-                    left: '0em',
-                    zIndex: '1',
-                    backgroundColor: theme.palette.background.default,
-                    marginRight: '-50px'
-                  }}
-                >
-                  <IconButton onClick={() => toggleWorkPackages(project.id)}>
-                    {showWorkPackagesList[project.id] ? <ExpandMore fontSize="large" /> : <ChevronRight fontSize="large" />}
-                  </IconButton>
-                </Box>
                 <GanttTaskBar
                   key={project.id}
                   days={days}
                   event={project}
                   isEditMode={isEditMode}
                   createChange={createChange}
+                  onWorkPackageToggle={() => toggleWorkPackages(project.id)}
+                  showWorkPackages={showWorkPackagesList[project.id]}
                 />
               </Box>
               <Collapse in={showWorkPackagesList[project.id]}>
