@@ -283,7 +283,7 @@ const GanttTaskBar = ({
             marginTop: !event.project ? '-10px' : undefined,
             marginBottom: !event.project ? '-10px' : undefined,
             cursor: 'pointer',
-            width: 'fit-content'
+            width: '100%'
           }}
           onMouseOver={handleOnMouseOver}
           onMouseLeave={handleOnMouseLeave}
@@ -296,9 +296,14 @@ const GanttTaskBar = ({
           )}
           <Typography
             variant="body1"
-            sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}
+            sx={{
+              color: event.styles ? event.styles.color : '#ffffff',
+              px: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
             onClick={onWorkPackageToggle}
-            noWrap
           >
             {event.name}
           </Typography>
@@ -329,7 +334,7 @@ const GanttTaskBar = ({
         <GanttToolTip
           xCoordinate={cursorX}
           yCoordinate={cursorY}
-          title={event.name}
+          title={event.project ? event.name.substring(6) : event.name.substring(8)}
           startDate={event.start}
           endDate={event.end}
           color={event.styles?.backgroundColor}
