@@ -11,21 +11,13 @@ import { workPackageTransformer } from './transformers/work-packages.transformer
 
 export interface WorkPackageApiInputs {
   name: string;
-  startDate: String;
+  startDate: string;
   duration: number;
-  crId: number;
-  stage: WorkPackageStage | null;
+  crId: number | undefined;
+  stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-}
-
-export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
-  projectWbsNum: {
-    carNumber: number;
-    projectNumber: number;
-    workPackageNumber: number;
-  };
-  deliverables: string[];
-  expectedActivities: string[];
+  deliverables: string[] | { id: number; detail: string }[];
+  expectedActivities: string[] | { id: number; detail: string }[];
 }
 
 /**

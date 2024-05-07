@@ -24,7 +24,7 @@ export function GanttChartTimeline({ start, end }: GanttChartTimelineProps) {
         position: 'sticky',
         top: 0,
         backgroundColor: theme.palette.background.default,
-        zIndex: 1,
+        zIndex: 5,
         width: 'fit-content'
       }}
     >

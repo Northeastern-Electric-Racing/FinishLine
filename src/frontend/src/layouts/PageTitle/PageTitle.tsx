@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Box, Grid, useTheme } from '@mui/material';
+import { Typography, Box, Grid } from '@mui/material';
 import { ReactElement, ReactNode } from 'react';
 
 interface PageTitleProps {
@@ -23,8 +23,6 @@ interface PageTitleProps {
  * @param chips Oval next to the title
  **/
 const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky, chips }) => {
-  const theme = useTheme();
-
   return (
     <>
       <Box
@@ -34,7 +32,6 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
         pt={sticky ? 1 : 0}
         pb={sticky ? 1 : 0}
         zIndex={1}
-        bgcolor={theme.palette.background.default}
         marginTop={2}
       >
         <Grid container>
