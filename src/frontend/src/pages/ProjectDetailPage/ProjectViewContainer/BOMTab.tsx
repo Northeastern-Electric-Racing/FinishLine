@@ -15,6 +15,8 @@ export const addMaterialCosts = (accumulator: number, currentMaterial: MaterialP
   currentMaterial.subtotal + accumulator;
 
 const BOMTab = ({ project }: { project: Project }) => {
+  const initialHideColumn = new Array(12).fill(false);
+  const [hideColumn, setHideColumn] = useState<boolean[]>(initialHideColumn);
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAddAssembly, setShowAddAssembly] = useState(false);
   const theme = useTheme();
@@ -28,7 +30,7 @@ const BOMTab = ({ project }: { project: Project }) => {
       <CreateMaterialModal open={showAddMaterial} onHide={() => setShowAddMaterial(false)} wbsElement={project} />
       <CreateAssemblyModal open={showAddAssembly} onHide={() => setShowAddAssembly(false)} wbsElement={project} />
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 'calc(100vh - 220px)' }}>
-        <BOMTableWrapper project={project} />
+        <BOMTableWrapper project={project} hideColumn={hideColumn} setHideColumn={setHideColumn} />
         <Box justifyContent="space-between" display="flex" flexDirection="row">
           <Box display="flex" gap="20px">
             <NERSuccessButton

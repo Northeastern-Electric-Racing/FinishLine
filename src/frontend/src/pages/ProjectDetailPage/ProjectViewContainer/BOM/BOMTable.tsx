@@ -111,11 +111,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
           Object.keys(model).forEach((toDelete) => {
             tempColumns.push(!model[toDelete]);
           });
-
-          setHideColumn(tempColumns);
-
-          console.log(tempColumns);
-          console.log(hideColumn);
+          localStorage.setItem('hideColumn', JSON.stringify(tempColumns));
         }}
         columns={columns as GridColumns<GridValidRowModel>}
         rows={rows.filter(isAssemblyOpen)}

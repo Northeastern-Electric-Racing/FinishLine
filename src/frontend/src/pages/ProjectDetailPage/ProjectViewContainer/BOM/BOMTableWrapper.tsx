@@ -18,11 +18,11 @@ import { renderLinkBOM, renderStatusBOM } from './BOMTableCustomCells';
 
 interface BOMTableWrapperProps {
   project: Project;
+  hideColumn: boolean[];
+  setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
 }
 
-const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
-  const initialHideColumn = new Array(12).fill(false);
-  const [hideColumn, setHideColumn] = useState<boolean[]>(initialHideColumn);
+const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, setHideColumn }) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
@@ -31,6 +31,13 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
 
   const user = useCurrentUser();
   const toast = useToast();
+  const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
+
+  if (storedHideColumn === 'false') {
+    hideColumn = new Array(12).fill(false);
+  } else {
+    hideColumn = storedHideColumn;
+  }
 
   if (isLoading) return <LoadingIndicator />;
 
