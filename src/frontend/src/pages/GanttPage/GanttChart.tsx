@@ -50,11 +50,17 @@ const GanttChart = ({
 
         if (!tasks) return <></>;
 
+        // Sorting the work packages of each project based on their start date
+        tasks.map((task) => {
+          task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
+          return task;
+        });
+
         return (
           <Box
             sx={{
-              mt: 2,
-              py: 1,
+              mt: 1,
+              py: 0,
               background: isEditMode ? theme.palette.divider : 'transparent',
               borderRadius: '0.25rem',
               width: 'fit-content'
@@ -65,7 +71,7 @@ const GanttChart = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 2,
-                mb: 1,
+                mb: '-15px',
                 pl: 2,
                 position: 'sticky',
                 left: 0,
@@ -73,7 +79,7 @@ const GanttChart = ({
                 height: '30px'
               }}
             >
-              <Typography variant="h5" fontWeight={400}>
+              <Typography variant="h6" fontWeight={400}>
                 {teamName}
               </Typography>
 
@@ -85,7 +91,7 @@ const GanttChart = ({
                 </IconButton>
               )}
             </Box>
-            <Box key={teamName} sx={{ my: 3, width: 'fit-content', pl: 2 }}>
+            <Box key={teamName} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
               <GanttChartSection
                 tasks={tasks}
                 start={startDate}
