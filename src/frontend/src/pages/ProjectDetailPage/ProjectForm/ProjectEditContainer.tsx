@@ -98,13 +98,13 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
     summary: yup.string().required('Summary is required!'),
     projectLeadId: yup.number().optional(),
-    projectManagerId: yup.number().optional()
-    //links: yup.array().of(
-    //  yup.object().shape({
-    //    linkTypeName: yup.string().required('Link Type is required!'),
-    //    url: yup.string().required('URL is required!').url('Invalid URL')
-    //  })
-    //)
+    projectManagerId: yup.number().optional(),
+    links: yup.array().of(
+      yup.object().shape({
+        linkTypeName: yup.string().required('Link Type is required!'),
+        url: yup.string().required('URL is required!').url('Invalid URL')
+      })
+    )
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
