@@ -164,8 +164,8 @@ const performSeed: () => Promise<void> = async () => {
           dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
-          projectLeadId: batman.userId,
-          projectManagerId: cyborg.userId
+          leadId: batman.userId,
+          managerId: cyborg.userId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
@@ -199,21 +199,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 0
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -577,21 +563,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -633,21 +605,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -738,8 +696,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1.wbsElement.projectNumber,
     workPackage1.wbsElement.workPackageNumber,
     'ACTIVATION',
-    workPackage1.project.wbsElement.projectLeadId!,
-    workPackage1.project.wbsElement.projectManagerId!,
+    workPackage1.project.wbsElement.leadId!,
+    workPackage1.project.wbsElement.managerId!,
     new Date('2024-03-25T04:00:00.000Z'),
     true
   );
@@ -803,8 +761,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage3WbsNumber.projectNumber,
     workPackage3WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage3.project.wbsElement.projectLeadId!,
-    workPackage3.project.wbsElement.projectManagerId!,
+    workPackage3.project.wbsElement.leadId!,
+    workPackage3.project.wbsElement.managerId!,
     new Date('2023-08-21T04:00:00.000Z'),
     true
   );
@@ -834,8 +792,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage4WbsNumber.projectNumber,
     workPackage4WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage4.project.wbsElement.projectLeadId!,
-    workPackage4.project.wbsElement.projectManagerId!,
+    workPackage4.project.wbsElement.leadId!,
+    workPackage4.project.wbsElement.managerId!,
     new Date('2023-10-02T04:00:00.000Z'),
     true
   );
@@ -865,8 +823,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage5WbsNumber.projectNumber,
     workPackage5WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage5.project.wbsElement.projectLeadId!,
-    workPackage5.project.wbsElement.projectManagerId!,
+    workPackage5.project.wbsElement.leadId!,
+    workPackage5.project.wbsElement.managerId!,
     new Date('2023-05-08T04:00:00.000Z'),
     true
   );
@@ -896,8 +854,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage6WbsNumber.projectNumber,
     workPackage6WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage6.project.wbsElement.projectLeadId!,
-    workPackage6.project.wbsElement.projectManagerId!,
+    workPackage6.project.wbsElement.leadId!,
+    workPackage6.project.wbsElement.managerId!,
     new Date('2023-07-31T04:00:00.000Z'),
     true
   );
@@ -927,8 +885,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage7WbsNumber.projectNumber,
     workPackage7WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage7.project.wbsElement.projectLeadId!,
-    workPackage7.project.wbsElement.projectManagerId!,
+    workPackage7.project.wbsElement.leadId!,
+    workPackage7.project.wbsElement.managerId!,
     new Date('2023-10-09T04:00:00.000Z'),
     true
   );
@@ -972,21 +930,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 40
       }
     ],
-    {
-      name: 'Change the bodywork through pink paint purchase',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 50,
-      summary: 'Buy hot pink paint',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.3'],
-      teamIds: []
-    },
+    null,
     null
   );
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
