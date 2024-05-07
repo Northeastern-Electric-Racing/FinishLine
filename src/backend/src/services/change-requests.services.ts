@@ -258,15 +258,15 @@ export default class ChangeRequestsService {
    */
   static async reviewActivationChangeRequest(foundCR: ChangeRequestWithChanges, reviewer: User): Promise<void> {
     const { activationChangeRequest } = foundCR;
-    const shouldUpdateProjLead = activationChangeRequest.projectLeadId !== foundCR.wbsElement.projectLeadId;
-    const shouldUpdateProjManager = activationChangeRequest.projectManagerId !== foundCR.wbsElement.projectManagerId;
+    const shouldUpdateProjLead = activationChangeRequest.projectLeadId !== foundCR.wbsElement.leadId;
+    const shouldUpdateProjManager = activationChangeRequest.projectManagerId !== foundCR.wbsElement.managerId;
     const shouldChangeStartDate =
       activationChangeRequest.startDate.setHours(0, 0, 0, 0) !==
       foundCR.wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
     const changes = [];
 
     if (shouldUpdateProjLead) {
-      const oldPL = await getUserFullName(foundCR.wbsElement.projectLeadId);
+      const oldPL = await getUserFullName(foundCR.wbsElement.leadId);
       const newPL = await getUserFullName(activationChangeRequest.projectLeadId);
       changes.push({
         changeRequestId: foundCR.crId,
@@ -277,7 +277,7 @@ export default class ChangeRequestsService {
     }
 
     if (shouldUpdateProjManager) {
-      const oldPM = await getUserFullName(foundCR.wbsElement.projectManagerId);
+      const oldPM = await getUserFullName(foundCR.wbsElement.managerId);
       const newPM = await getUserFullName(activationChangeRequest.projectManagerId);
       changes.push({
         changeRequestId: foundCR.crId,
@@ -312,8 +312,8 @@ export default class ChangeRequestsService {
     await prisma.wBS_Element.update({
       where: { wbsElementId: foundCR.wbsElementId },
       data: {
-        projectLeadId: activationChangeRequest.projectLeadId,
-        projectManagerId: activationChangeRequest.projectManagerId,
+        leadId: activationChangeRequest.projectLeadId,
+        managerId: activationChangeRequest.projectManagerId,
         workPackage: { update: { startDate: activationChangeRequest.startDate } },
         status: WBS_Element_Status.ACTIVE
       }

@@ -13,7 +13,6 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageFormViewPayload } from './WorkPackageFormView';
-import { WPFormType } from '../../utils/form';
 
 interface Props {
   lead?: string;
@@ -24,7 +23,8 @@ interface Props {
   usersForProjectManager: User[];
   control: Control<WorkPackageFormViewPayload>;
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
-  formType: WPFormType;
+  createForm?: boolean;
+  endDate: Date;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -36,7 +36,8 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   usersForProjectManager,
   control,
   errors,
-  formType
+  createForm = false,
+  endDate
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -72,7 +73,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
       <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
         Details
       </Typography>
-      <Grid container spacing={1} xs={12}>
+      <Grid container rowSpacing={2} spacing={1} xs={12}>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
@@ -84,15 +85,13 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {formType !== WPFormType.CREATEWITHCR && (
-          <Grid item xs={12} md={3}>
-            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-          </Grid>
-        )}
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={4}>
           <StageSelect />
         </Grid>
-        <Grid item xs={12} md={formType === WPFormType.CREATEWITHCR ? 3 : 2}>
+        <Grid item xs={12} md={4}>
+          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+        </Grid>
+        <Grid item xs={12} md={4}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
             <FormLabel sx={{ whiteSpace: 'noWrap' }}>Start Date (YYYY-MM-DD)</FormLabel>
             <Controller
@@ -102,7 +101,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
               render={({ field: { onChange, value } }) => (
                 <>
                   <DatePicker
-                    format="yyyy-MM-dd"
+                    format="MM/dd/yyyy"
                     onChange={(date) => onChange(date ?? new Date())}
                     className={'padding: 10'}
                     value={value}
@@ -116,7 +115,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} md={2}>
+        <Grid item xs={12} md={4}>
           <FormControl fullWidth>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
@@ -128,9 +127,15 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {formType === WPFormType.EDIT && (
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth sx={{ overflow: 'hidden' }}>
+            <FormLabel sx={{ whiteSpace: 'noWrap' }}>Calculated End Date (YYYY-MM-DD)</FormLabel>
+            <TextField value={endDate.toLocaleDateString()} disabled />
+          </FormControl>
+        </Grid>
+        {!createForm && (
           <>
-            <Grid item xs={12} md={5}>
+            <Grid item xs={12} md={6}>
               <FormLabel> Project Lead</FormLabel>
               <NERAutocomplete
                 sx={{ width: '100%' }}
@@ -142,7 +147,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
                 value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
               />
             </Grid>
-            <Grid item xs={12} md={5}>
+            <Grid item xs={12} md={6}>
               <FormLabel>Project Manager</FormLabel>
               <NERAutocomplete
                 sx={{ width: '100%' }}

@@ -275,10 +275,10 @@ model WBS_Element {
   workPackageNumber           Int
   name                        String
   status                      WBS_Element_Status              @default(INACTIVE)
-  projectLeadId               Int?
-  projectLead                 User?                           @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
-  projectManagerId            Int?
-  projectManager              User?                           @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  leadId                      Int?
+  lead                        User?                           @relation(name: "projectLead", fields: [leadId], references: [userId])
+  managerId                   Int?
+  manager                     User?                           @relation(name: "projectManager", fields: [managerId], references: [userId])
   changeRequests              Change_Request[]
   changes                     Change[]
   deletedByUserId             Int?
