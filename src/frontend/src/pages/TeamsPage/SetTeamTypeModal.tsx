@@ -2,15 +2,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import { useToast } from '../../hooks/toasts.hooks';
 import * as yup from 'yup';
-import { useDeleteTeam, useSetTeamType, useSingleTeam } from '../../hooks/teams.hooks';
-import { useHistory } from 'react-router-dom';
+import { useSetTeamType, useSingleTeam } from '../../hooks/teams.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import NERFormModal from '../../components/NERFormModal';
-import { Typography, FormControl, FormLabel, Select, MenuItem } from '@mui/material';
-import ReactHookTextField from '../../components/ReactHookTextField';
+import { FormControl, FormLabel, Select, MenuItem } from '@mui/material';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
-import { isTemplateMiddleOrTemplateTail } from 'typescript';
 
 interface SetTeamTypeInputs {
   teamId: string;
