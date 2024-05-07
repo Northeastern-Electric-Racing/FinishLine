@@ -32,13 +32,6 @@ export const mapBulletsToPayload = (ls: { bulletId: number; detail: string }[]) 
   });
 };
 
-// transforms the bullets made by react-hook-forms to strings for change requests
-export const mapBulletsToStrings = (ls: { bulletId: number; detail: string }[]) => {
-  return ls.map((ele) => {
-    return ele.detail;
-  });
-};
-
 /**
  * Tests if a WBS is valid
  * @param wbsNum

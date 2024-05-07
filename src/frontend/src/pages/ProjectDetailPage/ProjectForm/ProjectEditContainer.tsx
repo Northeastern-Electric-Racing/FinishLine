@@ -16,11 +16,14 @@ import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
+import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 
 interface ProjectEditContainerProps {
   project: Project;
   exitEditMode: () => void;
 }
+
+export type ProjectCreateChangeRequestFormInput = ProjectFormInput & ChangeRequestFormInput;
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const toast = useToast();

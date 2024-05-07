@@ -20,6 +20,10 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { ObjectShape } from 'yup/lib/object';
 import InfoIcon from '@mui/icons-material/Info';
+import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
+import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
+import { useState } from 'react';
+import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 
 export interface ProjectFormInput {
   name: string;
@@ -58,7 +62,7 @@ interface ProjectFormContainerProps {
   schema: yup.ObjectSchema<ObjectShape>;
   projectLeadId?: string;
   projectManagerId?: string;
-  autoCRMode?: boolean;
+  onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
@@ -71,8 +75,11 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   schema,
   projectLeadId,
   projectManagerId,
-  autoCRMode
+  onSubmitChangeRequest
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
+
   const allUsers = useAllUsers();
   const {
     register,
@@ -114,6 +121,17 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
 
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
+  const handleCreateChangeRequest = async (data: ProjectFormInput) => {
+    console.log('in handleCreateChangeRequest');
+    if (onSubmitChangeRequest && changeRequestFormInput) {
+      console.log('if passed');
+      onSubmitChangeRequest({
+        ...changeRequestFormInput,
+        ...data
+      });
+    }
+  };
+
   return (
     <form
       noValidate
@@ -136,8 +154,12 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
-              {autoCRMode ? 'Generate Change Request' : 'Submit'}
+            <NERSuccessButton
+              variant="contained"
+              onClick={onSubmitChangeRequest ? () => setIsModalOpen(true) : (event) => handleSubmit}
+              sx={{ mx: 1 }}
+            >
+              {onSubmitChangeRequest ? 'Generate Change Request' : 'Submit'}
             </NERSuccessButton>
             <Tooltip
               children={<InfoIcon fontSize="large" />}
@@ -155,7 +177,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           projectLead={projectLeadId}
           projectManager={projectManagerId}
           project={project}
-          autoCRMode={autoCRMode}
+          autoCRMode={onSubmitChangeRequest != null}
         />
         <Stack spacing={4}>
           <Box>
@@ -210,6 +232,18 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           </Box>
         </Stack>
       </PageLayout>
+      {onSubmitChangeRequest && (
+        <CreateChangeRequestModal
+          onConfirm={async (crFormInput: ChangeRequestFormInput) => {
+            changeRequestFormInput = crFormInput;
+            console.log('submitting');
+            await handleSubmit(handleCreateChangeRequest)();
+          }}
+          onHide={() => setIsModalOpen(false)}
+          wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
+          open={isModalOpen}
+        />
+      )}
     </form>
   );
 };

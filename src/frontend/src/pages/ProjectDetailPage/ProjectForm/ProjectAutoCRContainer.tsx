@@ -3,19 +3,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useAllLinkTypes } from '../../../hooks/projects.hooks';
-import { mapBulletsToStrings } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useState } from 'react';
 import ProjectFormContainer from './ProjectForm';
-import { ProjectFormInput } from './ProjectForm';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
-import { ChangeRequestReason, ChangeRequestType, ProjectProposedChangesCreateArgs, WbsElementStatus } from 'shared';
+import { ProjectProposedChangesCreateArgs, WbsElementStatus } from 'shared';
 import * as yup from 'yup';
+import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
 
 const CreateProjectCRContainer: React.FC = () => {
   const toast = useToast();
@@ -70,13 +69,11 @@ const CreateProjectCRContainer: React.FC = () => {
     )
   });
 
-  const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, teamIds, carNumber } = data;
+  const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
+    console.log('in onSubmitChangeRequest');
+    const { name, budget, summary, links, teamIds, carNumber, goals, features, constraints, type, what, why } = data;
 
     const rules = data.rules.map((rule) => rule.detail);
-    const goals = mapBulletsToStrings(data.goals);
-    const features = mapBulletsToStrings(data.features);
-    const otherConstraints = mapBulletsToStrings(data.constraints);
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
@@ -86,9 +83,9 @@ const CreateProjectCRContainer: React.FC = () => {
         teamIds: teamIds.map((number) => '' + number),
         budget,
         rules,
-        goals,
-        features,
-        otherConstraints,
+        goals: goals.map((g) => g.detail),
+        features: features.map((f) => f.detail),
+        otherConstraints: constraints.map((c) => c.detail),
         links,
         projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
         projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined,
@@ -100,9 +97,9 @@ const CreateProjectCRContainer: React.FC = () => {
           projectNumber: 0,
           workPackageNumber: 0
         },
-        type: ChangeRequestType.Issue,
-        what: name,
-        why: [{ explain: 'New Project for ' + name, type: ChangeRequestReason.Initialization }],
+        type: type,
+        what,
+        why,
         proposedSolutions: [],
         projectProposedChanges: projectPayload
       };
@@ -119,14 +116,14 @@ const CreateProjectCRContainer: React.FC = () => {
     <ProjectFormContainer
       requiredLinkTypeNames={requiredLinkTypeNames}
       exitEditMode={() => history.push(routes.PROJECTS_ALL)}
-      onSubmit={onSubmit}
+      onSubmit={() => {}}
       defaultValues={defaultValues}
       setProjectLeadId={setProjectLeadId}
       setProjectManagerId={setProjectManagerId}
       schema={schema}
       projectLeadId={projectLeadId}
       projectManagerId={projectManagerId}
-      autoCRMode={true}
+      onSubmitChangeRequest={onSubmitChangeRequest}
     />
   );
 };
