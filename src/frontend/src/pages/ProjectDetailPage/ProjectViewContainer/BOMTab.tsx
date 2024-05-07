@@ -44,6 +44,13 @@ const BOMTab = ({ project }: { project: Project }) => {
             <NERButton variant="contained" onClick={() => setShowAddAssembly(true)} disabled={isGuest(user.role)}>
               New Assembly
             </NERButton>
+            <NERButton
+              variant="text"
+              onClick={() => localStorage.setItem('hideColumn', JSON.stringify(new Array(12).fill(false)))}
+              disabled={isGuest(user.role)}
+            >
+              Show Columns
+            </NERButton>
           </Box>
           <Box display="flex" gap="20px" alignItems="center">
             <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '8px 14px 8px 14px', borderRadius: '6px' }}>
