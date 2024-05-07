@@ -125,7 +125,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   };
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
-    console.log(data);
     const { name, startDate, duration, blockedBy, crId, stage } = data;
     const expectedActivities = mapBulletsToPayload(data.expectedActivities);
     const deliverables = mapBulletsToPayload(data.deliverables);

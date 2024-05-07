@@ -17,7 +17,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useQuery } from '../../../hooks/utils.hooks';
 import * as yup from 'yup';
 import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
-import { ProjectProposedChangesCreateArgs, WbsElementStatus } from 'shared';
+import { ProjectProposedChangesCreateArgs } from 'shared';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 
 const ProjectCreateContainer: React.FC = () => {
@@ -89,7 +89,6 @@ const ProjectCreateContainer: React.FC = () => {
       const projectPayload: ProjectProposedChangesCreateArgs = {
         name,
         summary,
-        status: WbsElementStatus.Active,
         teamIds: teamIds.map((number) => '' + number),
         budget,
         rules,
