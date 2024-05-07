@@ -158,53 +158,7 @@ export default class ChangeRequestsService {
 
     // If approving a scope CR
     if (foundCR.scopeChangeRequest && accepted) {
-      if (!foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
-        // if there isn't wbs changes or proposed solutions
-        throw new HttpException(400, 'No proposed solution or proposed changes for scope change request');
-      } else if (psId && !foundCR.scopeChangeRequest.wbsProposedChanges) {
-        // if there is only a proposed solution and no wbs changes
-
-        // reviews a proposed solution applying certain changes based on the content of the proposed solution
-        await reviewProposedSolution(psId, foundCR, reviewer);
-      } else if (foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
-        await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
-        // we don't want to have merge conflict on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
-
-        // must accept and review a change request before using the workpackage and project services
-        await prisma.change_Request.update({
-          where: { crId },
-          data: {
-            accepted: true,
-            dateReviewed: new Date()
-          }
-        });
-
-        const associatedProject = foundCR.wbsElement.project;
-        const associatedWorkPackage = foundCR.wbsElement.workPackage;
-        const { wbsProposedChanges } = foundCR.scopeChangeRequest;
-        const { workPackageProposedChanges } = wbsProposedChanges;
-        const { projectProposedChanges } = wbsProposedChanges;
-
-        if (workPackageProposedChanges) {
-          await applyWorkPackageProposedChanges(
-            wbsProposedChanges,
-            workPackageProposedChanges,
-            associatedProject,
-            associatedWorkPackage,
-            reviewer,
-            crId
-          );
-        } else if (projectProposedChanges) {
-          await applyProjectProposedChanges(
-            wbsProposedChanges,
-            projectProposedChanges,
-            associatedProject,
-            reviewer,
-            crId,
-            foundCR.wbsElement.carNumber
-          );
-        }
-      }
+      await this.reviewScopeChangeRequest(foundCR, reviewer, psId);
     } else if (accepted && foundCR.type === CR_Type.STAGE_GATE) {
       // stage gate cr
       await this.reviewStageGateChangeRequest(foundCR, reviewer);
@@ -242,6 +196,56 @@ export default class ChangeRequestsService {
     await sendSlackCRStatusToThread(relevantThreads, foundCR.crId, accepted);
 
     return updated.crId;
+  }
+
+  static async reviewScopeChangeRequest(foundCR: any, reviewer: User, psId: string | null): Promise<void> {
+    if (!foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
+      // if there isn't wbs changes or proposed solutions
+      throw new HttpException(400, 'No proposed solution or proposed changes for scope change request');
+    } else if (psId && !foundCR.scopeChangeRequest.wbsProposedChanges) {
+      // if there is only a proposed solution and no wbs changes
+
+      // reviews a proposed solution applying certain changes based on the content of the proposed solution
+      await reviewProposedSolution(psId, foundCR, reviewer);
+    } else if (foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
+      await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
+      // we don't want to have merge conflict on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+
+      // must accept and review a change request before using the workpackage and project services
+      await prisma.change_Request.update({
+        where: { crId: foundCR.crId },
+        data: {
+          accepted: true,
+          dateReviewed: new Date()
+        }
+      });
+
+      const associatedProject = foundCR.wbsElement.project;
+      const associatedWorkPackage = foundCR.wbsElement.workPackage;
+      const { wbsProposedChanges } = foundCR.scopeChangeRequest;
+      const { workPackageProposedChanges } = wbsProposedChanges;
+      const { projectProposedChanges } = wbsProposedChanges;
+
+      if (workPackageProposedChanges) {
+        await applyWorkPackageProposedChanges(
+          wbsProposedChanges,
+          workPackageProposedChanges,
+          associatedProject,
+          associatedWorkPackage,
+          reviewer,
+          foundCR.crId
+        );
+      } else if (projectProposedChanges) {
+        await applyProjectProposedChanges(
+          wbsProposedChanges,
+          projectProposedChanges,
+          associatedProject,
+          reviewer,
+          foundCR.crId,
+          foundCR.wbsElement.carNumber
+        );
+      }
+    }
   }
 
   static async reviewActivationChangeRequest(foundCR: any, reviewer: User): Promise<void> {
