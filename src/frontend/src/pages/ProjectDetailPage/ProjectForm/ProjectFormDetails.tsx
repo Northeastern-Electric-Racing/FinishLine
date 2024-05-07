@@ -54,11 +54,6 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
-          <FormControl fullWidth>
-            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-          </FormControl>
-        </Grid>
         {!project && (
           <>
             <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
@@ -74,7 +69,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             </Grid>
             <Grid item lg={2.4} md={6} xs={12}>
               <FormControl fullWidth>
-                <TeamDropdown control={control} name="teamIds" multiple />
+                <TeamDropdown control={control} name="teamIds" multiselect />
               </FormControl>
             </Grid>
           </>
@@ -90,6 +85,11 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
               placeholder="Enter budget..."
               errorMessage={errors.budget}
             />
+          </FormControl>
+        </Grid>
+        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
+          <FormControl fullWidth>
+            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
           </FormControl>
         </Grid>
       </Grid>

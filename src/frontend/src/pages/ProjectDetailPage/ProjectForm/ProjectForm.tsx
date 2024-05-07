@@ -126,9 +126,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
 
   const handleCreateChangeRequest = async (data: ProjectFormInput) => {
-    console.log('in handleCreateChangeRequest');
     if (onSubmitChangeRequest && changeRequestFormInput) {
-      console.log('if passed');
       onSubmitChangeRequest({
         ...changeRequestFormInput,
         ...data
@@ -160,15 +158,20 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
                 <Tooltip
                   title={
                     <Typography fontSize={'16px'}>
-                      If you create a change request from this form, the form value of Change Request ID will be safely
-                      ignored. When the change request is accepted, it will edit the current project.
+                      {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
+                      ${project ? `edit the selected Project` : `create a new Project`} with the inputted values`}
                     </Typography>
                   }
                   placement="left"
                 >
                   <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
                 </Tooltip>
-                <NERButton variant="contained" onClick={() => setIsModalOpen(true)} sx={{ mx: 1 }}>
+                <NERButton
+                  variant="contained"
+                  onClick={() => setIsModalOpen(true)}
+                  sx={{ mx: 1 }}
+                  disabled={changeRequestInputExists}
+                >
                   Create Change Request
                 </NERButton>
               </Box>
@@ -249,7 +252,6 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         <CreateChangeRequestModal
           onConfirm={async (crFormInput: ChangeRequestFormInput) => {
             changeRequestFormInput = crFormInput;
-            console.log('submitting');
             await handleSubmit(handleCreateChangeRequest)();
           }}
           onHide={() => setIsModalOpen(false)}

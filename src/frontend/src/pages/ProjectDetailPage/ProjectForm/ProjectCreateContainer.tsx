@@ -103,7 +103,7 @@ const ProjectCreateContainer: React.FC = () => {
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
-          // TODO change this to be the carNumber in the database
+          // TODO change this to use the car model when we add it to the schema
           carNumber: carNumber,
           projectNumber: 0,
           workPackageNumber: 0

@@ -205,8 +205,10 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
                 <Tooltip
                   title={
                     <Typography fontSize={'16px'}>
-                      If you don't enter a Change Request into this form, you can create one here that when accepted will
-                      create a new Work Package
+                      {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
+                      ${
+                        defaultValues ? `edit the selected Work Package` : `create a new Work Package`
+                      } with the inputted values`}
                     </Typography>
                   }
                   placement="left"
