@@ -5,15 +5,9 @@ import {
   Prisma,
   Change_Request,
   Change,
-  Wbs_Proposed_Changes,
-  Project_Proposed_Changes,
-  Work_Package_Proposed_Changes,
-  Scope_CR,
   WBS_Element,
   Project,
   Work_Package,
-  Description_Bullet,
-  LinkInfo,
   Activation_CR
 } from '@prisma/client';
 import { addWeeksToDate, ChangeRequestReason, WorkPackageStage } from 'shared';
@@ -463,35 +457,6 @@ export const sendCRSubmitterReviewedNotification = async (foundCR: ChangeRequest
 };
 
 // ---------------------------------------------- Types ----------------------------------------------
-
-// export type ChangeRequestWithChanges = Change_Request & {
-//   activationChangeRequest: Activation_CR;
-//   scopeChangeRequest: Scope_CR & {
-//     wbsProposedChanges: Wbs_Proposed_Changes & {
-//       links: LinkInfo[];
-//       projectProposedChanges?: ProjectProposedChangesArgs;
-//       workPackageProposedChanges?: WorkPackageProposedChangesArgs;
-//     };
-//   };
-//   wbsElement: WBS_Element & {
-//     workPackage?: Work_Package & {
-//       expectedActivities: Description_Bullet[];
-//       deliverables: Description_Bullet[];
-//     };
-//     project?: Project;
-//   };
-// };
-
-// export type WorkPackageProposedChangesArgs = Work_Package_Proposed_Changes & {
-//   expectedActivities: Description_Bullet[];
-//   deliverables: Description_Bullet[];
-// };
-
-// export type ProjectProposedChangesArgs = Project_Proposed_Changes & {
-//   goals: Description_Bullet[];
-//   features: Description_Bullet[];
-//   otherConstraints: Description_Bullet[];
-// };
 
 export type ChangeRequestWithChanges = Change_Request & {
   activationChangeRequest: Activation_CR;
