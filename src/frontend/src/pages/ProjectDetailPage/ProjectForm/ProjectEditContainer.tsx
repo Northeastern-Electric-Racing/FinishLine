@@ -17,10 +17,11 @@ import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
 import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { useHistory } from 'react-router-dom';
 
 interface ProjectEditContainerProps {
   project: Project;
-  exitEditMode: () => void;
+  exitEditMode: (pathToRedirectTo?: string) => void;
 }
 
 export type ProjectCreateChangeRequestFormInput = ProjectFormInput & ChangeRequestFormInput;
@@ -28,6 +29,7 @@ export type ProjectCreateChangeRequestFormInput = ProjectFormInput & ChangeReque
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const toast = useToast();
   const query = useQuery();
+  const history = useHistory();
 
   const { name, budget, summary, teams, status } = project;
   const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.manager?.userId.toString());
@@ -37,7 +39,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const constraints = bulletsToObject(project.otherConstraints);
   const rules = rulesToObject(project.rules);
 
-  const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
+  const { mutateAsync: editSingleProjectMutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const { mutateAsync: createScopeCRMutateAsync } = useCreateStandardChangeRequest();
   const {
     data: allLinkTypes,
@@ -113,7 +115,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
         projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
       };
-      await mutateAsync(payload);
+      await editSingleProjectMutateAsync(payload);
       exitEditMode();
     } catch (e) {
       if (e instanceof Error) {
@@ -149,7 +151,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
           teamIds: teams.map((t) => t.teamId)
         }
       });
-      exitEditMode();
+      // redirect user to change requests page for this specific project
+      exitEditMode(`${history.location.pathname.split('/overview')[0]}/change-requests`);
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);

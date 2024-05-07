@@ -36,9 +36,9 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ wbsNum }) => {
     return (
       <ProjectEditContainer
         project={project}
-        exitEditMode={() => {
+        exitEditMode={(pathToRedirectTo?: string) => {
           setEditMode(false);
-          history.push(`${history.location.pathname}`);
+          history.push(pathToRedirectTo ?? history.location.pathname);
         }}
       />
     );
