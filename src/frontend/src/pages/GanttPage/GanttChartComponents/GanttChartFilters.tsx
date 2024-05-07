@@ -4,8 +4,6 @@
  */
 
 import { Button, Checkbox, Chip, Grid, Typography, useTheme } from '@mui/material';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent } from 'react';
 
@@ -96,6 +94,7 @@ const GanttChartFilters = ({
   const FilterButtons = () => {
     return (
       <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+        {/* TODO: Expand & Collapse buttons
         <Grid item>
           <Button onClick={() => {}} startIcon={<UnfoldMoreIcon />}>
             Expand
@@ -105,7 +104,7 @@ const GanttChartFilters = ({
           <Button onClick={collapseHandler} startIcon={<UnfoldLessIcon />}>
             Collapse
           </Button>
-        </Grid>
+        </Grid>*/}
         <Grid item>
           <Button onClick={resetHandler} startIcon={<RestartAltIcon />}>
             Reset
