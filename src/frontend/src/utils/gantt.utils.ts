@@ -85,17 +85,21 @@ export interface GanttTask extends GanttTaskData {
 }
 
 export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilters, searchText: string): Project[] => {
-  ganttFilters.showCars.forEach((car) => {
-    projects = projects.filter((project) => project.wbsNum.carNumber === car);
-  });
+  // inclusive filters
+  if (ganttFilters.showCars.length > 0)
+    projects = projects.filter((project) => ganttFilters.showCars.some((car) => project.wbsNum.carNumber === car));
 
-  ganttFilters.showTeamTypes.forEach((teamType) => {
-    projects = projects.filter((project) => project.teams.some((team) => team.teamType && team.teamType.name === teamType));
-  });
+  if (ganttFilters.showTeamTypes.length > 0)
+    projects = projects.filter((project) =>
+      ganttFilters.showTeamTypes.some((teamType) =>
+        project.teams.some((team) => team.teamType && team.teamType.name === teamType)
+      )
+    );
 
-  ganttFilters.showTeams.forEach((team) => {
-    projects = projects.filter((project) => project.teams.some((t) => t.teamName === team));
-  });
+  if (ganttFilters.showTeams.length > 0)
+    projects = projects.filter((project) =>
+      ganttFilters.showTeams.some((team) => project.teams.some((t) => t.teamName === team))
+    );
 
   // shows only active projects
   projects = projects.filter((project) => project.status === WbsElementStatus.Active);
