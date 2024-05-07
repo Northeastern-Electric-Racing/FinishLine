@@ -13,18 +13,18 @@ import {
 import { wbsNumOf } from '../utils/utils';
 import taskTransformer from './tasks.transformer';
 import { calculateWorkPackageProgress } from '../utils/work-packages.utils';
-import userTransformer from '../transformers/user.transformer';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
 import { linkTransformer } from './links.transformer';
 import { descBulletConverter } from '../utils/description-bullets.utils';
 import { assemblyTransformer, materialTransformer } from './material.transformer';
+import { userTransformer } from './user.transformer';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQueryArgs>): Project => {
   const { wbsElement } = project;
   const wbsNum = wbsNumOf(wbsElement);
 
-  const { projectLead, projectManager } = wbsElement;
+  const { lead, manager } = wbsElement;
 
   return {
     id: project.projectId,
@@ -32,8 +32,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
     dateCreated: wbsElement.dateCreated,
     name: wbsElement.name,
     status: calculateProjectStatus(project),
-    projectLead: projectLead ? userTransformer(projectLead) : undefined,
-    projectManager: projectManager ? userTransformer(projectManager) : undefined,
+    lead: lead ? userTransformer(lead) : undefined,
+    manager: manager ? userTransformer(manager) : undefined,
     changes: wbsElement.changes.map((change) => ({
       changeId: change.changeId,
       changeRequestId: change.changeRequestId,
@@ -72,10 +72,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
         name: workPackage.wbsElement.name,
         links: workPackage.wbsElement.links.map(linkTransformer),
         status: workPackage.wbsElement.status as WbsElementStatus,
-        projectLead: workPackage.wbsElement.projectLead ? userTransformer(workPackage.wbsElement.projectLead) : undefined,
-        projectManager: workPackage.wbsElement.projectManager
-          ? userTransformer(workPackage.wbsElement.projectManager)
-          : undefined,
+        projectLead: workPackage.wbsElement.lead ? userTransformer(workPackage.wbsElement.lead) : undefined,
+        projectManager: workPackage.wbsElement.manager ? userTransformer(workPackage.wbsElement.manager) : undefined,
         changes: workPackage.wbsElement.changes.map((change) => ({
           changeId: change.changeId,
           changeRequestId: change.changeRequestId,

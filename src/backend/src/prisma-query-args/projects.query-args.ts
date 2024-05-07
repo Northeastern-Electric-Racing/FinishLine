@@ -7,8 +7,8 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
     wbsElement: {
       include: {
-        projectLead: true,
-        projectManager: true,
+        lead: true,
+        manager: true,
         tasks: { where: { dateDeleted: null }, ...taskQueryArgs },
         links: { ...linkQueryArgs },
         changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
@@ -35,8 +35,8 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
       include: {
         wbsElement: {
           include: {
-            projectLead: true,
-            projectManager: true,
+            lead: true,
+            manager: true,
             links: { ...linkQueryArgs },
             changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
             materials: {

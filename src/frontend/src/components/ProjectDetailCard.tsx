@@ -47,7 +47,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
   const ProjectDetailCardDetails = () => (
     <Grid container sx={{ marginTop: '0.5rem' }}>
       <Grid item display="flex" xs={4}>
-        <Construction sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectLead)}</Typography>
+        <Construction sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.lead)}</Typography>
       </Grid>
       <Grid item display="flex" sx={{ marginTop: 0.5 }} xs={4}>
         {project.status === WbsElementStatus.Complete ? (
@@ -66,7 +66,7 @@ const ProjectDetailCard: React.FC<ProjectDetailCardProps> = ({ project, projectI
         <TaskIcon sx={{ mr: 1 }} /> <Typography>{`${tasksLeft} task${tasksLeft === 1 ? '' : 's'} left`}</Typography>
       </Grid>
       <Grid item display="flex" xs={4}>
-        <Work sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.projectManager)}</Typography>
+        <Work sx={{ mr: 1 }} /> <Typography>{fullNamePipe(project.manager)}</Typography>
       </Grid>
       {confluenceLink && (
         <Grid item display="flex" justifyContent="left" sx={{ marginTop: 0.5 }} xs={4}>

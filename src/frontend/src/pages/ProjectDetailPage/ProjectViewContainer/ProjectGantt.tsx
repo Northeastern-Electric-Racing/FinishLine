@@ -5,8 +5,17 @@
 
 import Chart from 'react-google-charts';
 import { WorkPackage } from 'shared';
-import { ganttAllColumns } from '../../../utils/chart-data';
 import { Box } from '@mui/material';
+
+export const ganttAllColumns = [
+  { type: 'string', label: 'Task ID' },
+  { type: 'string', label: 'Task Name' },
+  { type: 'date', label: 'Start Date' },
+  { type: 'date', label: 'End Date' },
+  { type: 'number', label: 'Duration' },
+  { type: 'number', label: 'Percent Complete' },
+  { type: 'string', label: 'Dependencies' }
+];
 
 interface ProjectGanttProps {
   workPackages: WorkPackage[];

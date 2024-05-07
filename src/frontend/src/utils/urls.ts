@@ -35,6 +35,7 @@ const projectsDelete = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/delete';
 const projectsToggleFavorite = (wbsNum: string) => projectsByWbsNum(wbsNum) + '/favorite';
 const projectsLinkTypes = () => `${projects()}/link-types`;
 const projectsCreateLinkTypes = () => `${projects()}/link-types/create`;
+const projectsEditLinkTypes = (linkTypeName: string) => `${projects()}/link-types/${linkTypeName}/edit`;
 
 /**************** Tasks Endpoints ********************/
 const tasks = () => `${API_URL}/tasks`;
@@ -81,6 +82,7 @@ const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
+const teamTypes = () => `${teams()}/teamType/all`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -126,15 +128,18 @@ const bomCreateMaterial = (wbsNum: WbsNumber) => `${materialEndpoints()}/${wbsPi
 const bomEditMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/edit`;
 const bomDeleteMaterial = (materialId: string) => `${materialEndpoints()}/${materialId}/delete`;
 const bomCreateAssembly = (wbsNum: WbsNumber) => `${assemblyEndpoints()}/${wbsPipe(wbsNum)}/create`;
+const bomDeleteAssembly = (assemblyId: string) => `${assemblyEndpoints()}/${assemblyId}/delete`;
 const bomAssignAssembly = (materialId: string) => `${materialEndpoints()}/${materialId}/assign-assembly`;
 const bomCreateManufacturer = () => `${bomEndpoints()}/manufacturer/create`;
+const bomDeleteManufacturer = (manufacturerName: string) => `${bomEndpoints()}/manufacturer/${manufacturerName}/delete`;
 const bomCreateMaterialType = () => `${bomEndpoints()}/material-type/create`;
-const bomCreateUnit = () => `${bomEndpoints()}/units/create`;
+const bomCreateUnit = () => `${bomGetAllUnits()}/create`;
+const bomUnitById = (id: string) => `${bomGetAllUnits()}/${id}`;
+const bomDeleteUnit = (id: string) => `${bomUnitById(id)}/delete`;
 
 /************** Design Review Endpoints *******************************/
 const designReviews = () => `${API_URL}/design-reviews`;
 const designReviewsCreate = () => `${designReviews()}/create`;
-const teamTypes = () => `${designReviews()}/teamType/all`;
 const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${designReviewId}/edit`;
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
@@ -166,6 +171,7 @@ export const apiUrls = {
   projectsToggleFavorite,
   projectsLinkTypes,
   projectsCreateLinkTypes,
+  projectsEditLinkTypes,
 
   tasksCreate,
   tasks,
@@ -241,10 +247,14 @@ export const apiUrls = {
   bomEditMaterial,
   bomDeleteMaterial,
   bomCreateAssembly,
+  bomDeleteAssembly,
   bomAssignAssembly,
   bomCreateManufacturer,
+  bomDeleteManufacturer,
   bomCreateMaterialType,
   bomCreateUnit,
+  bomUnitById,
+  bomDeleteUnit,
 
   designReviews,
   designReviewsCreate,
