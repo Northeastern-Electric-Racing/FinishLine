@@ -628,12 +628,12 @@ export default class ChangeRequestsService {
         links,
         budget,
         summary,
-        newProject,
         rules,
         teamIds,
         goals,
         features,
-        otherConstraints
+        otherConstraints,
+        carNumber
       } = projectProposedChanges;
 
       await validateProposedChangesFields(links, projectLeadId, projectManagerId);
@@ -659,12 +659,12 @@ export default class ChangeRequestsService {
             create: {
               budget,
               summary,
-              newProject,
               goals: { create: goals.map((value: string) => ({ detail: value })) },
               features: { create: features.map((value: string) => ({ detail: value })) },
               otherConstraints: { create: otherConstraints.map((value: string) => ({ detail: value })) },
               rules,
-              teams: { connect: teamIds.map((teamId) => ({ teamId })) }
+              teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+              carNumber
             }
           }
         }

@@ -15,11 +15,15 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { useQuery } from '../../../hooks/utils.hooks';
+import * as yup from 'yup';
+import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 
 interface ProjectEditContainerProps {
   project: Project;
   exitEditMode: () => void;
 }
+
+export type ProjectCreateChangeRequestFormInput = ProjectFormInput & ChangeRequestFormInput;
 
 const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, exitEditMode }) => {
   const toast = useToast();
@@ -72,7 +76,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     budget,
     summary,
     // teamId and carNumber aren't used for projectEdit
-    teamId: '',
+    teamIds: [],
     carNumber: 0,
     links,
     crId: query.get('crId') || project.changes[0].changeRequestId.toString(),
@@ -83,6 +87,21 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     projectLeadId,
     projectManagerId
   };
+
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required!'),
+    crId: yup.number().min(1).typeError('Change Request ID cannot be empty!').required('crId must be a non-zero number!'),
+    budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
+    summary: yup.string().required('Summary is required!'),
+    links: yup.array().of(
+      yup.object().shape({
+        linkTypeName: yup.string().required('Link Type is required!'),
+        url: yup.string().required('URL is required!').url('Invalid URL')
+      })
+    ),
+    teamId: yup.string().optional(),
+    carNumber: yup.number().optional()
+  });
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links } = data;
@@ -125,6 +144,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       onSubmit={onSubmit}
       setProjectManagerId={setProjectManagerId}
       setProjectLeadId={setProjectLeadId}
+      schema={schema}
       defaultValues={defaultValues}
       projectLeadId={projectLeadId}
       projectManagerId={projectManagerId}
