@@ -45,6 +45,7 @@ const GanttTaskBar = ({
   const [showPopup, setShowPopup] = useState(false);
   const [cursorX, setCursorX] = useState(0);
   const [cursorY, setCursorY] = useState(0);
+  const isProject = !event.project;
 
   const getStartCol = (event: GanttTaskData) => {
     const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
@@ -280,16 +281,16 @@ const GanttTaskBar = ({
             gridColumnEnd: getEndCol(event),
             display: 'flex',
             alignItems: 'center',
-            marginTop: !event.project ? '-10px' : undefined,
-            marginBottom: !event.project ? '-10px' : undefined,
+            marginTop: isProject ? '-10px' : undefined,
+            marginBottom: isProject ? '-10px' : undefined,
             cursor: 'pointer',
-            width: '100%'
+            width: isProject ? 'fit-content' : '100%'
           }}
           onMouseOver={handleOnMouseOver}
           onMouseLeave={handleOnMouseLeave}
-          onClick={event.project ? () => history.push(`${`${routes.PROJECTS}/${event.id}`}`) : undefined}
+          onClick={!isProject ? () => history.push(`${`${routes.PROJECTS}/${event.id}`}`) : undefined}
         >
-          {!event.project && (
+          {isProject && (
             <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-20px', marginLeft: '-10px' }}>
               {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
             </IconButton>
@@ -334,7 +335,7 @@ const GanttTaskBar = ({
         <GanttToolTip
           xCoordinate={cursorX}
           yCoordinate={cursorY}
-          title={event.project ? event.name.substring(6) : event.name.substring(8)}
+          title={isProject ? event.name.substring(8) : event.name.substring(6)}
           startDate={event.start}
           endDate={event.end}
           color={event.styles?.backgroundColor}
