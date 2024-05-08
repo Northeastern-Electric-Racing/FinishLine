@@ -43,6 +43,8 @@ describe('Reimbursement Requests', () => {
     });
 
     if (!financeHead) {
+      console.log('No finance head found, please run createFinanceTeamAndLead before this function');
+      assert(false);
       throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
 
