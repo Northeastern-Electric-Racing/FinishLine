@@ -33,22 +33,20 @@ describe('Reimbursement Requests', () => {
   test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
     const reimbursement = await createTestReimbursementRequest();
     if (!reimbursement) {
-      console.log('Failed to create Reimbursement');
-      assert(false);
       throw new Error('Failed to create Reimbursement');
     }
+
     const financeHead = await prisma.user.findUnique({
       where: {
-        googleAuthId: '2'
+        googleAuthId: '0'
       }
     });
 
     if (!financeHead) {
-      console.log('No finance head found, please run createFinanceTeamAndLead before this function');
-      assert(false);
       throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
-    await expect(() =>
+
+    await expect(
       ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead)
     ).rejects.toThrow(
       new AccessDeniedException(
