@@ -212,9 +212,9 @@ const GanttChartPage: FC = () => {
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   const addDays = (currentDate: Date, numDays: number) => {
-    const result = new Date(currentDate);
-    result.setDate(result.getDate() + numDays);
-    return result;
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + numDays);
+    return newDate;
   };
 
   const saveChanges = (eventChanges: EventChange[]) => {
