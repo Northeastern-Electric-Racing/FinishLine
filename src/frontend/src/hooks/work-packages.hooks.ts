@@ -32,11 +32,16 @@ export const useAllWorkPackages = (queryParams?: { [field: string]: string }) =>
  *
  * @param wbsNum WBS number of the requested work package.
  */
-export const useSingleWorkPackage = (wbsNum: WbsNumber) => {
-  return useQuery<WorkPackage, Error>(['work packages', wbsNum], async () => {
-    const { data } = await getSingleWorkPackage(wbsNum);
-    return data;
-  });
+export const useSingleWorkPackage = (wbsNum: WbsNumber, disabled?: boolean) => {
+  return useQuery<WorkPackage, Error>(
+    ['work packages', wbsNum],
+    async () => {
+      const { data } = await getSingleWorkPackage(wbsNum);
+      return data;
+    },
+
+    { enabled: !disabled }
+  );
 };
 
 /**

@@ -80,6 +80,15 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
 
+  const isCreateWorkPackge = isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.workPackageProposedChanges;
+  const isCreateProject =
+    (changeRequest as StandardChangeRequest)?.projectProposedChanges &&
+    (changeRequest as StandardChangeRequest)?.projectProposedChanges?.carNumber !== undefined;
+  const isEditWorkPackage = !isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.workPackageProposedChanges;
+  const isEditProject =
+    (changeRequest as StandardChangeRequest)?.projectProposedChanges &&
+    (changeRequest as StandardChangeRequest)?.projectProposedChanges?.carNumber === undefined;
+
   return (
     <PageLayout
       title={`Change Request #${changeRequest.crId}`}
@@ -112,7 +121,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               </Link>
             </Typography>
           </Grid>
-
           <Grid item xs={'auto'}>
             <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
               <b>Submitter: </b>
@@ -120,7 +128,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Typography>
           </Grid>
         </Grid>
-
         <Grid container rowSpacing={2}>
           <Grid container item xs={12} md={isStandard ? 5 : isActivation ? 6 : 12} height={'fit-content'}>
             {buildDetails(changeRequest)}
@@ -132,7 +139,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
                 dateReviewed={changeRequest.dateReviewed}
               />
             </Grid>
-
             <Grid item md={isStandard ? 12 : isActivation ? 0 : 6} sx={{ mt: { xs: 2, md: isStandard ? 2 : 0 } }}>
               {!isActivation && (
                 <ImplementedChangesList
@@ -142,7 +148,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               )}
             </Grid>
           </Grid>
-
           <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 7 : 0}>
             {(changeRequest as StandardChangeRequest)?.projectProposedChanges ||
             (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
@@ -153,43 +158,56 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
                       borderLeft: `1px solid white`
                     }}
                   />
-
-                  <InfoBlock title={'Proposed Changes'} />
+                  <InfoBlock
+                    title={`Proposed Changes - ${
+                      isCreateProject
+                        ? 'Create Project'
+                        : isCreateWorkPackge
+                        ? 'Create Work Package'
+                        : isEditProject
+                        ? 'Edit Project'
+                        : 'Edit Work Package'
+                    }`}
+                  />
                   <Grid container columnSpacing={4}>
-                    {!(isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.workPackageProposedChanges) && (
+                    {isEditProject && (
                       <Grid item xs={6}>
-                        {isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.projectProposedChanges ? (
-                          <Box
-                            sx={{
-                              backgroundColor: '#2C2C2C',
-                              borderRadius: '10px',
-                              padding: 1.4,
-                              mb: 3
-                            }}
-                          >
-                            <ProjectComparisonBlock changeRequest={changeRequest} isProposed={false} />
-                          </Box>
-                        ) : (
-                          <Box
-                            sx={{
-                              backgroundColor: '#2C2C2C',
-                              borderRadius: '10px',
-                              padding: 1.4,
-                              mb: 3
-                            }}
-                          >
-                            <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={false} />
-                          </Box>
-                        )}
+                        <Box
+                          sx={{
+                            backgroundColor: '#2C2C2C',
+                            borderRadius: '10px',
+                            padding: 1.4,
+                            mb: 3
+                          }}
+                        >
+                          <ProjectComparisonBlock changeRequest={changeRequest} isProposed={false} />
+                        </Box>
                       </Grid>
                     )}
-
+                    {isEditWorkPackage && (
+                      <Grid item xs={6}>
+                        <Box
+                          sx={{
+                            backgroundColor: '#2C2C2C',
+                            borderRadius: '10px',
+                            padding: 1.4,
+                            mb: 3
+                          }}
+                        >
+                          <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={false} />
+                        </Box>
+                      </Grid>
+                    )}
                     <Grid item xs={6}>
                       <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
-                        {isProject(wbsNum) ? (
+                        {isCreateProject || isEditProject ? (
                           <ProjectComparisonBlock changeRequest={changeRequest} isProposed={true} />
                         ) : (
-                          <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={true} />
+                          <WorkPackageComparisonBlock
+                            changeRequest={changeRequest}
+                            isProposed={true}
+                            createWorkPackage={!!isCreateWorkPackge}
+                          />
                         )}
                       </Box>
                     </Grid>

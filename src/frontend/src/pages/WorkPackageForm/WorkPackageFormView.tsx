@@ -98,8 +98,10 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const history = useHistory();
 
-  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
-  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
+  const [managerId, setManagerId] = useState<string | undefined>(
+    defaultValues ? wbsElement.lead?.userId.toString() : undefined
+  );
+  const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';

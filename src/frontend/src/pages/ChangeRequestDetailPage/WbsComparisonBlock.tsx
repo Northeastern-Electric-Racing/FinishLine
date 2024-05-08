@@ -7,13 +7,13 @@ interface WbsComparisonBlockProps {
   changeRequest: ChangeRequest;
   isProject: boolean;
   isProposed: boolean;
-  wbsElement: WbsElement;
+  wbsElement?: WbsElement;
 }
 
 const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, isProject, isProposed, wbsElement }) => {
   const initialName: PotentialChange = {
     field: 'Name',
-    content: `${wbsElement.name}`
+    content: wbsElement ? `${wbsElement.name}` : ''
   };
 
   const proposedName: PotentialChange = {
@@ -27,7 +27,7 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialStatus: PotentialChange = {
     field: 'Status',
-    content: `${wbsElement.status}`
+    content: wbsElement ? `${wbsElement.status}` : ''
   };
 
   const proposedStatus: PotentialChange = {
@@ -41,13 +41,13 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialLead: PotentialChange = {
     field: 'Lead',
-    content: `${fullNamePipe(wbsElement.lead)}`
+    content: wbsElement ? `${fullNamePipe(wbsElement.lead)}` : ''
   };
 
   const proposedLead: PotentialChange = {
     field: 'Lead',
     content: `${
-      isProject
+      (changeRequest as StandardChangeRequest)?.projectProposedChanges
         ? fullNamePipe((changeRequest as StandardChangeRequest)?.projectProposedChanges?.projectLead)
         : fullNamePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.projectLead)
     }`
@@ -55,13 +55,13 @@ const WbsComparisonBlock: React.FC<WbsComparisonBlockProps> = ({ changeRequest, 
 
   const initialManager: PotentialChange = {
     field: 'Manager',
-    content: `${fullNamePipe(wbsElement.manager)}`
+    content: wbsElement ? `${fullNamePipe(wbsElement.manager)}` : ''
   };
 
   const proposedManager: PotentialChange = {
     field: 'Manager',
     content: `${
-      isProject
+      (changeRequest as StandardChangeRequest)?.projectProposedChanges
         ? fullNamePipe((changeRequest as StandardChangeRequest)?.projectProposedChanges?.projectManager)
         : fullNamePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.projectManager)
     }`

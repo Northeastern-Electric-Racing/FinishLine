@@ -10,17 +10,22 @@ import WbsComparisonBlock from './WbsComparisonBlock';
 interface CompareProjectFieldsProps {
   changeRequest: ChangeRequest;
   isProposed: boolean;
+  createWorkPackage?: boolean;
 }
 
-const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeRequest, isProposed }) => {
-  const { data: workPackage, isLoading, isError, error } = useSingleWorkPackage(changeRequest.wbsNum);
+const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({
+  changeRequest,
+  isProposed,
+  createWorkPackage = false
+}) => {
+  const { data: workPackage, isLoading, isError, error } = useSingleWorkPackage(changeRequest.wbsNum, createWorkPackage);
 
   if (isError) return <ErrorPage message={error?.message} />;
-  if (!workPackage || isLoading) return <LoadingIndicator />;
+  if (!createWorkPackage && (!workPackage || isLoading)) return <LoadingIndicator />;
 
   const initialDuration: PotentialChange = {
     field: 'Duration',
-    content: `${workPackage.duration} weeks`
+    content: workPackage ? `${workPackage.duration} weeks` : ''
   };
 
   const proposedDuration: PotentialChange = {
@@ -30,7 +35,7 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   const initialStage: PotentialChange = {
     field: 'Stage',
-    content: `${workPackage.stage}`
+    content: workPackage ? `${workPackage.stage}` : ''
   };
 
   const proposedStage: PotentialChange = {
@@ -45,12 +50,12 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   const proposedStartDate: PotentialChange = {
     field: 'Start Date',
-    content: `${datePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.startDate)}`
+    content: `hell`
   };
 
   const initialDeliverables: PotentialChange = {
     field: 'Deliverables',
-    content: workPackage.deliverables
+    content: workPackage ? workPackage.deliverables : []
   };
 
   const proposedDeliverables: PotentialChange = {
@@ -60,7 +65,7 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   const initialExpectedActivities: PotentialChange = {
     field: 'Expected Activities',
-    content: workPackage.expectedActivities
+    content: workPackage ? workPackage.expectedActivities : []
   };
 
   const proposedExpectedActivities: PotentialChange = {
@@ -70,17 +75,19 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ chang
 
   const initialBlockedBy: PotentialChange = {
     field: 'Blocked By',
-    content: workPackage?.blockedBy
-      .map(
-        (wbs, index, array) =>
-          wbs.carNumber.toString() +
-          '.' +
-          wbs.projectNumber.toString() +
-          '.' +
-          wbs.workPackageNumber.toString() +
-          (index !== array.length - 1 ? ', ' : '')
-      )
-      .join('')
+    content: workPackage
+      ? workPackage?.blockedBy
+          .map(
+            (wbs, index, array) =>
+              wbs.carNumber.toString() +
+              '.' +
+              wbs.projectNumber.toString() +
+              '.' +
+              wbs.workPackageNumber.toString() +
+              (index !== array.length - 1 ? ', ' : '')
+          )
+          .join('')
+      : ''
   };
 
   const proposedBlockedBy: PotentialChange = {
