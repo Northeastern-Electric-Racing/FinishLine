@@ -46,7 +46,7 @@ describe('Reimbursement Requests', () => {
       throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
 
-    await expect(
+    await expect(() =>
       ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead)
     ).rejects.toThrow(
       new AccessDeniedException(
