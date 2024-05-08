@@ -78,10 +78,16 @@ export const createFinanceTeamAndLead = async () => {
     data: dbSeedAllUsers.joeBlow
   });
 
+  const financeMember = await prisma.user.create({
+    data: dbSeedAllUsers.johnBoddy
+  });
+
   const team = await TeamsService.createTeam(head, 'Finance Team', head.userId, 'Finance Team', '');
   setFinanceTeamId(team.teamId);
 
   await TeamsService.setTeamLeads(head, team.teamId, [lead.userId]);
+
+  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId]);
 };
 
 const setFinanceTeamId = (id: string) => {

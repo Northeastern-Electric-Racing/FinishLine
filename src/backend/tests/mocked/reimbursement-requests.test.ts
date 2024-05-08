@@ -40,13 +40,14 @@ import {
   batmanSettings
 } from '../test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
-import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
+import { Prisma, Reimbursement_Status_Type, Role } from '@prisma/client';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementTransformer
 } from '../../src/transformers/reimbursement-requests.transformer';
 import { justiceLeague, prismaTeam1, primsaTeam2 } from '../test-data/teams.test-data';
+import { createTestUser } from '../test-utils';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -437,14 +438,46 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
     });
 
-    test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
+    test('Delete Reimbursement Request fails if deleter is not a finance lead', async () => {
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, superman)
       ).rejects.toThrow(
         new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, only the creator or finance leads can delete a reimbursement request'
-          )
+          'You do not have access to delete this reimbursement request, only finance leads can delete a reimbursement request'
+        )
+      );
+    });
+
+    test('Delete Reimbursement Request fails if deleter is just a finance member', async () => {
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+
+      const financeMember = await createTestUser({
+        userId: 123,
+        firstName: 'Johnny',
+        lastName: 'Bravo',
+        googleAuthId: '1',
+        email: 'jbravo@gmail.com',
+        emailId: 'jbravo',
+        role: Role.MEMBER
+      });
+      await expect(() =>
+        ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, financeMember)
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to delete this reimbursement request, only finance leads can delete a reimbursement request'
+        )
+      );
+    });
+
+    test('Delete Reimbursement Request fails if deleter is not the creator', async () => {
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+      await expect(() =>
+        ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, theVisitor)
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+        )
       );
     });
 
