@@ -88,7 +88,7 @@ const huskies = (headId: number, teamTypeId: string): Prisma.TeamCreateArgs => {
 const financeTeam = (headId: number): Prisma.TeamCreateArgs => {
   return {
     data: {
-      teamName: 'Finance',
+      teamName: 'financeTeam',
       slackId: 'finance',
       headId
     }
