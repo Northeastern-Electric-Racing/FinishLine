@@ -38,7 +38,7 @@ describe('Reimbursement Requests', () => {
 
     const financeHead = await prisma.user.findUnique({
       where: {
-        googleAuthId: '0'
+        googleAuthId: '1'
       }
     });
 
