@@ -211,12 +211,31 @@ const GanttChartPage: FC = () => {
   const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  // do something here with the data
+  const addDays = (currentDate: Date, numDays: number) => {
+    const result = new Date(currentDate);
+    result.setDate(result.getDate() + numDays);
+    return result;
+  };
+
   const saveChanges = (eventChanges: EventChange[]) => {
     if (eventChanges.length === 0) {
       console.log('no changes do nothing');
     } else {
-      console.log('Changes:', eventChanges);
+      eventChanges.forEach((change) => {
+        const event = ganttTasks.find((task) => task.id === change.eventId);
+        console.log(event);
+        if (event) {
+          if (change.type === 'change-end-date') {
+            console.log('pre event: ', event);
+            event.end = change.newEnd;
+            console.log('post event: ', event);
+          }
+          if (change.type === 'shift-by-days') {
+            event.start = addDays(event.start, change.days);
+            event.end = addDays(event.end, change.days);
+          }
+        }
+      });
     }
   };
 
