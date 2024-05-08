@@ -1,4 +1,5 @@
-import { Prisma, User } from '@prisma/client';
+import { Prisma, User, Team } from '@prisma/client';
+import { UserWithSettings } from './auth.utils';
 
 const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
   include: {
@@ -49,4 +50,37 @@ export const areUsersPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQuer
  */
 export const isUserPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQueryArgsMembersOnly>[], user: User) => {
   return teams.some((team) => isUserOnTeam(team, user));
+};
+
+export type UserWithTeams = UserWithSettings & {
+  teamAsHead: Team | null;
+  teamsAsLead: Team[] | null;
+  teamsAsMember: Team[] | null;
+};
+
+/**
+ * Gets the teams from a list of users
+ * @param users the users to get the teams from
+ * @returns an array of the teams each user is in
+ */
+export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
+  return users.map((user) => {
+    const teams = [];
+    if (user.teamAsHead) teams.push(user.teamAsHead);
+    if (user.teamsAsLead) teams.push(...user.teamsAsLead);
+    if (user.teamsAsMember) teams.push(...user.teamsAsMember);
+    return teams;
+  });
+};
+
+/**
+ * Removes all users in the second list from the first list. Returns a list of
+ * all users in the first list filtered to exclude those users in the second list.
+ * @param currentUsers The primary list of users
+ * @param usersToRemove the list of users to remove from currentUsers
+ * @returns all users in currentUsers that aren't in usersToRemove
+ */
+export const removeUsersFromList = (currentUsers: User[], usersToRemove: User[]): User[] => {
+  const userIdsToRemove = usersToRemove.map((user) => user.userId);
+  return currentUsers.filter((user) => !userIdsToRemove.includes(user.userId));
 };

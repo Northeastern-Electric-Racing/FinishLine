@@ -56,6 +56,7 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<typeof m
 export const materialPreviewTransformer = (material: Prisma.MaterialGetPayload<{}>): MaterialPreview => {
   return {
     ...material,
+    notes: material.notes ?? undefined,
     userDeletedId: material.userDeletedId ?? undefined,
     dateDeleted: material.dateDeleted ?? undefined,
     assemblyId: material.assemblyId ?? undefined,

@@ -20,13 +20,15 @@ import {
   getPendingAdvisorList,
   getSingleReimbursementRequest,
   markReimbursementRequestAsDelivered,
+  markReimbursementRequestAsReimbursed,
   reportRefund,
   sendPendingAdvisorList,
   setSaboNumber,
   uploadSingleReceipt,
   editAccountCode,
   createAccountCode,
-  createVendor
+  createVendor,
+  editVendor
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -54,11 +56,22 @@ export interface EditReimbursementRequestPayload extends CreateReimbursementRequ
   receiptPictures: ReimbursementReceiptCreateArgs[];
 }
 
+export interface DownloadReceiptsFormInput {
+  fileIds: string[];
+  startDate: Date;
+  endDate: Date;
+  refundSource: string;
+}
+
 export interface ExpenseTypePayload {
   code: number;
   name: string;
   allowed: boolean;
   allowedRefundSources: ClubAccount[];
+}
+
+export interface EditVendorPayload {
+  name: string;
 }
 
 /**
@@ -154,6 +167,22 @@ export const useGetAllVendors = () => {
     return data;
   });
 };
+
+/**
+ * Custom React Hook to edit a vendor.
+ *
+ * @param reimbursementRequestId The id of the reimbursement request being edited
+ * @returns the edited reimbursement request
+ */
+export const useEditVendor = (vendorId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Vendor, Error, EditVendorPayload>(['vendors', 'edit'], async (formData: EditVendorPayload) => {
+    const { data } = await editVendor(vendorId, formData);
+    queryClient.invalidateQueries(['vendors']);
+    return data;
+  });
+};
+
 /**
  * Custom React Hook to get all the reimbursement requests
  */
@@ -207,6 +236,28 @@ export const useMarkReimbursementRequestAsDelivered = (id: string) => {
 };
 
 /**
+ * Custom react hook to mark a reimbursement request as Reimbursed
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created reimbursed reimbursement status
+ */
+export const useMarkReimbursementRequestAsReimbursed = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await markReimbursementRequestAsReimbursed(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to get a single reimbursement request
  *
  * @param id Id of the reimbursement request to get
@@ -221,7 +272,6 @@ export const useSingleReimbursementRequest = (id: string) => {
 
 /**
  * Custom react hook to delete a single reimbursement request
- *
  * @param id id of the reimbursement request to delete
  * @returns the deleted reimbursement request
  */
@@ -291,12 +341,18 @@ export const useDenyReimbursementRequest = (id: string) => {
  * @param fileIds The google file ids to fetch the images for
  */
 export const useDownloadPDFOfImages = () => {
-  return useMutation(['reimbursement-requests'], async (formData: { fileIds: string[] }) => {
+  return useMutation(['reimbursement-requests'], async (formData: DownloadReceiptsFormInput) => {
     const promises = formData.fileIds.map((fileId) => {
       return downloadGoogleImage(fileId);
     });
+
     const blobs = await Promise.all(promises);
-    await downloadBlobsToPdf(blobs, `receipts-${new Date().toLocaleDateString()}.pdf`);
+    const pdfName = `${formData.startDate.toLocaleDateString()}-${formData.endDate.toLocaleDateString()}.pdf`;
+
+    const pdfFileName =
+      formData.refundSource !== 'BOTH' ? `receipts-${formData.refundSource}-${pdfName}` : `receipts-${pdfName}`;
+
+    await downloadBlobsToPdf(blobs, pdfFileName);
   });
 };
 
@@ -353,7 +409,11 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
     ['reimbursement-requests', 'edit'],
     async (formData: { saboNumber: number }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
-      queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', reimbursementRequestId]);
+      }
     }
   );
 };

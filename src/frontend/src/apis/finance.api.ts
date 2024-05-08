@@ -5,7 +5,8 @@
 import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
-  ExpenseTypePayload
+  ExpenseTypePayload,
+  EditVendorPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -53,6 +54,16 @@ export const createReimbursementRequest = (formData: CreateReimbursementRequestP
  */
 export const markReimbursementRequestAsDelivered = (id: string) => {
   return axios.post(apiUrls.financeMarkAsDelivered(id));
+};
+
+/**
+ * Mark a Reimbursement Request as Reimbursed
+ *
+ * @param id id of the reimbursement request being marked as reimbursed
+ * @returns the reimbursed reimbursement status
+ */
+export const markReimbursementRequestAsReimbursed = (id: string) => {
+  return axios.post(apiUrls.financeMarkAsReimbursed(id));
 };
 
 /**
@@ -227,7 +238,8 @@ export const downloadBlobsToPdf = async (blobData: Blob[], filename: string) => 
         break;
       }
       default: {
-        throw new Error(blob.type + ' type not supported');
+        console.log(blob.type + 'type not supported and will not be added to the PDF, name: ' + blob.name);
+        // throw new Error(blob.type + ' type not supported');
       }
     }
   });
@@ -316,4 +328,14 @@ export const createAccountCode = async (accountCodeData: ExpenseTypePayload) => 
  */
 export const createVendor = async (vendorData: { name: string }) => {
   return axios.post(apiUrls.financeCreateVendor(), vendorData);
+};
+
+/**
+ * Edits a vendor in the database
+ * @param id id of the vendor
+ * @param vendorData the edited data of the vendor
+ * @returns the updated vendor
+ */
+export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
+  return axios.post(apiUrls.financeEditVendor(id), vendorData);
 };

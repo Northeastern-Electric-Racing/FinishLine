@@ -3,8 +3,11 @@ import {
   Reimbursement,
   ReimbursementProduct,
   ReimbursementRequest,
+  ReimbursementRequestRow,
   ReimbursementStatus,
   ReimbursementStatusType,
+  User,
+  Vendor,
   WBSElementData,
   WbsNumber,
   wbsPipe
@@ -28,6 +31,59 @@ export const getUniqueWbsElementsWithProductsFromReimbursementRequest = (
     }
   });
   return uniqueWbsElementsWithProducts;
+};
+
+export const descendingComparator = <T>(a: T, b: T, orderBy: keyof T) => {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+};
+
+export const statusDescendingComparator = (a: ReimbursementStatusType, b: ReimbursementStatusType) => {
+  const statusOrder = new Map<ReimbursementStatusType, number>([
+    [ReimbursementStatusType.PENDING_FINANCE, 1],
+    [ReimbursementStatusType.SABO_SUBMITTED, 2],
+    [ReimbursementStatusType.ADVISOR_APPROVED, 3],
+    [ReimbursementStatusType.REIMBURSED, 4],
+    [ReimbursementStatusType.DENIED, 5]
+  ]);
+
+  const bConverted = statusOrder.get(b);
+  const aConverted = statusOrder.get(a);
+
+  if (bConverted !== undefined && aConverted !== undefined) {
+    if (bConverted < aConverted) {
+      return -1;
+    }
+    if (bConverted > aConverted) {
+      return 1;
+    }
+  }
+  return 0;
+};
+
+export const vendorDescendingComparator = (a: Vendor, b: Vendor) => {
+  if (b.name < a.name) {
+    return -1;
+  }
+  if (b.name > a.name) {
+    return 1;
+  }
+  return 0;
+};
+
+export const submitterDescendingComparator = (a: User, b: User) => {
+  if (b.firstName < a.firstName) {
+    return -1;
+  }
+  if (b.firstName > a.firstName) {
+    return 1;
+  }
+  return 0;
 };
 
 export const getAllWbsElements = (projects: Project[]): { wbsNum: WbsNumber; wbsName: string }[] => {
@@ -62,7 +118,7 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
       return 'Reimbursed';
     }
     case ReimbursementStatusType.SABO_SUBMITTED: {
-      return 'Submitted to Sabo';
+      return 'Submitted to SABO';
     }
     case ReimbursementStatusType.DENIED: {
       return 'Denied';
@@ -113,14 +169,17 @@ export const getRefundRowData = (refund: Reimbursement) => {
   return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted };
 };
 
-export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest) => {
+export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest): ReimbursementRequestRow => {
   return {
     id: reimbursementRequest.reimbursementRequestId,
+    identifier: reimbursementRequest.identifier,
     saboId: reimbursementRequest.saboId,
     amount: reimbursementRequest.totalCost,
     dateSubmitted: reimbursementRequest.dateCreated,
     status: getCurrentReimbursementStatus(reimbursementRequest.reimbursementStatuses).type,
     dateSubmittedToSabo: getReimbursementRequestDateSubmittedToSabo(reimbursementRequest),
-    submitter: reimbursementRequest.recipient
+    submitter: reimbursementRequest.recipient,
+    vendor: reimbursementRequest.vendor,
+    refundSource: reimbursementRequest.account
   };
 };

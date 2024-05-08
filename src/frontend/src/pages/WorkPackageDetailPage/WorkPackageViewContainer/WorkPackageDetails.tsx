@@ -36,7 +36,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
       <Grid container spacing={2}>
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <Construction sx={{ mr: 2 }} />
-          <DetailDisplay label="Lead" content={fullNamePipe(workPackage.projectLead)} paddingRight={1} />
+          <DetailDisplay label="Lead" content={fullNamePipe(workPackage.lead)} paddingRight={1} />
         </Grid>
 
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
@@ -56,7 +56,7 @@ const WorkPackageDetails: React.FC<WorkPackageDetailsProps> = ({ workPackage, de
 
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>
           <Work sx={{ mr: 2 }} />
-          <DetailDisplay label="Manager" content={fullNamePipe(workPackage.projectManager)} paddingRight={1} />
+          <DetailDisplay label="Manager" content={fullNamePipe(workPackage.manager)} paddingRight={1} />
         </Grid>
 
         <Grid item display="flex" alignItems="center" xs={12} sm={6} md={3}>

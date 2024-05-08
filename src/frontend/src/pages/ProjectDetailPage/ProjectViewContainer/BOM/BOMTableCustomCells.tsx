@@ -11,22 +11,48 @@ export const renderLinkBOM = (params: GridRenderCellParams) =>
     </Link>
   );
 
+const getStatusColor = (status: MaterialStatus) => {
+  switch (status) {
+    case MaterialStatus.Ordered:
+      return '#dba63e';
+    case MaterialStatus.NotReadyToOrder:
+      return '#a63737';
+    case MaterialStatus.Received:
+      return '#2a712a';
+    case MaterialStatus.Shipped:
+      return '#1b537a';
+    case MaterialStatus.ReadyToOrder:
+      return '#D34B27';
+    default:
+      return 'grey';
+  }
+};
+
+const bomStatusChipStyle = (status: MaterialStatus) => ({
+  backgroundColor: getStatusColor(status),
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '4px',
+  borderRadius: '6px',
+  minWidth: '130px',
+  height: '36px',
+  textAlign: 'center'
+});
+
 export const renderStatusBOM = (params: GridRenderCellParams) => {
   if (!params.value) return;
-  const status = params.value;
-  const color =
-    status === MaterialStatus.Ordered
-      ? 'orange'
-      : status === MaterialStatus.Unordered
-      ? 'red'
-      : status === MaterialStatus.Received
-      ? 'green'
-      : status === MaterialStatus.Shipped
-      ? 'yellow'
-      : 'grey';
+  const status = params.value as MaterialStatus;
+
   return (
-    <Box sx={{ backgroundColor: color, padding: '6px 10px 6px 10px', borderRadius: '6px' }}>
-      <Typography fontSize="14px" color="black">
+    <Box sx={bomStatusChipStyle(status)}>
+      <Typography
+        fontSize={{
+          xs: '11px',
+          sm: '14px'
+        }}
+        color="black"
+      >
         {displayEnum(status)}
       </Typography>
     </Box>

@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField, Tooltip } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
@@ -6,6 +6,12 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
+import NERAutocomplete from '../../../../../components/NERAutocomplete';
+import { NERButton } from '../../../../../components/NERButton';
+import AddIcon from '@mui/icons-material/Add';
+import HelpIcon from '@mui/icons-material/Help';
+import { displayEnum } from '../../../../../utils/pipes';
+import { MaterialStatus } from 'shared';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -20,10 +26,13 @@ export interface MaterialFormViewProps {
   assemblies: Assembly[];
   open: boolean;
   watch: UseFormWatch<MaterialFormInput>;
-  createUnit: (name: string) => void;
   createManufacturer: (name: string) => void;
   setValue: UseFormSetValue<MaterialFormInput>;
 }
+
+const manufacturersToAutocomplete = (manufacturer: Manufacturer): { label: string; id: string } => {
+  return { label: manufacturer.name, id: manufacturer.name };
+};
 
 const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   submitText,
@@ -38,14 +47,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
   assemblies,
   open,
   watch,
-  createUnit,
   createManufacturer,
   setValue
 }) => {
   const quantity = watch('quantity');
   const price = watch('price');
-  const unit = watch('unitName');
-  const subtotal = quantity && price ? (unit ? price : quantity * price) : 0;
+  const subtotal = quantity && price && parseFloat((quantity * price).toFixed(2));
 
   const onCostBlurHandler = (value: number) => {
     setValue(`price`, parseFloat(value.toFixed(2)));
@@ -74,7 +81,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>Status</FormLabel>
             <Controller
@@ -83,9 +90,15 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               defaultValue={control._defaultValues.status}
               render={({ field }) => (
                 <TextField {...field} select variant="outlined" error={!!errors.status} helperText={errors.status?.message}>
-                  {['ORDERED', 'UNORDERED', 'SHIPPED', 'RECEIVED'].map((status) => (
+                  {[
+                    MaterialStatus.Ordered,
+                    MaterialStatus.Received,
+                    MaterialStatus.Shipped,
+                    MaterialStatus.NotReadyToOrder,
+                    MaterialStatus.ReadyToOrder
+                  ].map((status) => (
                     <MenuItem key={status} value={status}>
-                      {status}
+                      {status ? displayEnum(status) : ''}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -93,7 +106,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>Type</FormLabel>
             <Controller
@@ -118,45 +131,70 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer</FormLabel>
+            <FormLabel>
+              Manufacturer
+              <Tooltip
+                title={'Make sure not to enter the distributor (e.g. Amazon)'}
+                style={{ marginRight: '2px' }}
+                placement="right"
+              >
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
+            </FormLabel>
             <Controller
               name="manufacturerName"
               control={control}
-              defaultValue={control._defaultValues.manufacturerName}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  variant="outlined"
-                  error={!!errors.manufacturerName}
-                  helperText={errors.manufacturerName?.message}
-                >
-                  {allManufacturers.map((manufacturer) => (
-                    <MenuItem key={manufacturer.name} value={manufacturer.name}>
-                      {manufacturer.name}
-                    </MenuItem>
-                  ))}
-                  <MenuItem
-                    value="createManufacturer"
-                    onClick={() => {
-                      const manufacturerName = prompt('Enter Manufacturer Name');
-                      if (manufacturerName) {
-                        createManufacturer(manufacturerName);
-                      }
-                    }}
-                  >
-                    + Create Manufacturer
-                  </MenuItem>
-                </TextField>
-              )}
+              render={({ field: { onChange, value } }) => {
+                const mappedManufacturers = allManufacturers
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map(manufacturersToAutocomplete);
+                const onClear = () => {
+                  setValue('manufacturerName', '');
+                  onChange('');
+                };
+                return (
+                  <Box sx={{ alignItems: 'center' }}>
+                    <NERAutocomplete
+                      sx={{ bgcolor: 'inherit' }}
+                      id={'manufacturer'}
+                      size="medium"
+                      options={mappedManufacturers}
+                      value={mappedManufacturers.find((manufacturer) => manufacturer.label === value) || null}
+                      placeholder="Select Manufacturer"
+                      onChange={(_event, newValue) => {
+                        newValue ? onChange(newValue.id) : onClear();
+                      }}
+                    />
+                  </Box>
+                );
+              }}
             />
           </FormControl>
         </Grid>
+        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+          <NERButton
+            sx={{ width: '100%', height: '56px' }}
+            variant="contained"
+            onClick={() => {
+              const newManufacturerName = prompt('Enter New Manufacturer Name');
+              if (newManufacturerName !== null) {
+                createManufacturer(newManufacturerName);
+              }
+            }}
+          >
+            Add New Manufacturer <AddIcon sx={{ paddingLeft: '7px' }}></AddIcon>
+          </NERButton>
+        </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer Part Number</FormLabel>
+            <FormLabel>
+              Manufacturer Part Number
+              <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right" style={{ marginRight: '2px' }}>
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
+            </FormLabel>
             <ReactHookTextField
               name="manufacturerPartNumber"
               control={control}
@@ -202,23 +240,13 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
                     variant="outlined"
                     error={!!errors.unitName}
                     helperText={errors.unitName?.message}
+                    value={field.value || ''}
                   >
                     {allUnits.map((unit) => (
                       <MenuItem key={unit.name} value={unit.name}>
                         {unit.name}
                       </MenuItem>
                     ))}
-                    <MenuItem
-                      value="createUnit"
-                      onClick={() => {
-                        const unitName = prompt('Enter Unit Name');
-                        if (unitName) {
-                          createUnit(unitName);
-                        }
-                      }}
-                    >
-                      + Create Unit
-                    </MenuItem>
                   </TextField>
                 )}
               />
@@ -227,7 +255,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={3}>
           <FormControl fullWidth>
-            <FormLabel>Price</FormLabel>
+            <FormLabel style={{ whiteSpace: 'normal' }}>Price per Unit</FormLabel>
             <Controller
               name={`price`}
               control={control}
@@ -261,7 +289,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
-            <FormLabel>Notes</FormLabel>
+            <FormLabel>Notes (optional)</FormLabel>
             <ReactHookTextField
               name="notes"
               control={control}

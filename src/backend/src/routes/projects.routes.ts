@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString } from '../utils/validation.utils';
 import { validateInputs } from '../utils/utils';
 import ProjectsController from '../controllers/projects.controllers';
 
@@ -31,6 +31,15 @@ const projectValidators = [
   intMinZero(body('projectLeadId').optional()),
   intMinZero(body('projectManagerId').optional())
 ];
+
+projectRouter.post(
+  '/link-types/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.createLinkType
+);
 
 projectRouter.post(
   '/create',
@@ -86,12 +95,12 @@ projectRouter.post(
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
-  intMinZero(body('quantity')),
+  decimalMinZero(body('quantity')),
   nonEmptyString(body('unitName')).optional(),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
   nonEmptyString(body('linkUrl').isURL()),
-  body('notes').isString(),
+  body('notes').isString().optional(),
   validateInputs,
   ProjectsController.createMaterial
 );
@@ -104,7 +113,7 @@ projectRouter.post(
   nonEmptyString(body('manufacturerName')),
   nonEmptyString(body('manufacturerPartNumber')),
   nonEmptyString(body('pdmFileName').optional()),
-  intMinZero(body('quantity')),
+  decimalMinZero(body('quantity')),
   body('unitName').optional(),
   intMinZero(body('price')), // in cents
   intMinZero(body('subtotal')), // in cents
@@ -116,10 +125,20 @@ projectRouter.post(
 
 projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType);
 
-projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssemblyType);
+projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssembly);
 projectRouter.post('/bom/material/:materialId/delete', ProjectsController.deleteMaterial);
 
 projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
+
+projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
+
+projectRouter.post(
+  '/link-types/:linkTypeName/edit',
+  nonEmptyString(body('iconName')),
+  body('required').isBoolean(),
+  validateInputs,
+  ProjectsController.editLinkType
+);
 
 export default projectRouter;

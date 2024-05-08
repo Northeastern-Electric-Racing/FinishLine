@@ -5,7 +5,7 @@
 
 import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
-import { DatePicker } from '@mui/x-date-pickers';
+import { DatePicker, DateValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers';
 import { UserPreview } from 'shared';
 import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
@@ -69,7 +69,7 @@ export const DeadlineEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setDeadline } = params;
   const apiRef = useGridApiContext();
 
-  const handleValueChange = (value: unknown, keyboardInputValue?: string | undefined) => {
+  const handleValueChange = (value: unknown, keyboardInputValue?: PickerChangeHandlerContext<DateValidationError>) => {
     const newValue = value; // The new value entered by the user
     apiRef.current.setEditCellValue({ id, field, value: newValue });
     setDeadline(newValue);
@@ -87,7 +87,7 @@ export const DeadlineEdit = (params: GridRenderEditCellParams) => {
       value={value}
       onChange={handleValueChange}
       ref={handleRef}
-      renderInput={(params) => <TextField {...params} variant="outlined" />}
+      slotProps={{ textField: { variant: 'outlined' } }}
     />
   );
 };
@@ -128,7 +128,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
       options={autocompleteOptions}
       getOptionLabel={(option) => option.label}
       onChange={(_, value) => handleValueChange(value)}
-      value={assignees.map((u: UserPreview) => autocompleteOptions.find((o: any) => o.id === u.userId)!)}
+      value={assignees.map((u: UserPreview) => autocompleteOptions.find((o) => o.id === u.userId)!)}
       // TODO: make assignees an array with a custom method
       renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select A User" />}
       ref={handleRef}

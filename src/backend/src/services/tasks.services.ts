@@ -7,7 +7,7 @@ import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
 import { hasPermissionToEditTask, sendSlackTaskAssignedNotificationToUsers } from '../utils/tasks.utils';
-import { areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
+import { allUsersOnTeam, areUsersPartOfTeams, isUserOnTeam } from '../utils/teams.utils';
 import { getUsers } from '../utils/users.utils';
 import { wbsNumOf } from '../utils/utils';
 
@@ -53,15 +53,12 @@ export default class TasksService {
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
     const isProjectLeadOrManager =
-      createdBy.userId === requestedWbsElement.projectLeadId || createdBy.userId === requestedWbsElement.projectManagerId;
+      createdBy.userId === requestedWbsElement.leadId || createdBy.userId === requestedWbsElement.managerId;
 
     const curWorkPackages = project.workPackages;
 
     const isWorkPackageLeadOrManager = curWorkPackages.some((workPackage) => {
-      return (
-        workPackage.wbsElement.projectLeadId === createdBy.userId ||
-        workPackage.wbsElement.projectManagerId === createdBy.userId
-      );
+      return workPackage.wbsElement.leadId === createdBy.userId || workPackage.wbsElement.managerId === createdBy.userId;
     });
 
     if (
@@ -79,6 +76,9 @@ export default class TasksService {
 
     if (!areUsersPartOfTeams(teams, users))
       throw new HttpException(400, `All assignees must be part of one of the project's team!`);
+
+    if (!teams.some((team) => allUsersOnTeam(team, users)))
+      throw new HttpException(400, 'All assignees must be part of the same team!');
 
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
@@ -202,6 +202,9 @@ export default class TasksService {
       throw new HttpException(400, "All assignees must be part of one of the project's teams");
     }
 
+    if (!teams.some((team) => allUsersOnTeam(team, assigneeUsers)))
+      throw new HttpException(400, 'All assignees must be part of the same team!');
+
     // retrieve userId for every assignee to update task's assignees in the database
     const transformedAssigneeUsers = assigneeUsers.map((user) => {
       return {
@@ -246,7 +249,7 @@ export default class TasksService {
     }
 
     // this checks the current users permissions
-    const isLead = wbsElement.projectLeadId === currentUser.userId || wbsElement.projectManagerId === currentUser.userId;
+    const isLead = wbsElement.leadId === currentUser.userId || wbsElement.managerId === currentUser.userId;
     if (!isAdmin(currentUser.role) && !isLead) {
       throw new AccessDeniedException('Only admin, app-admins, project leads, and project managers can delete tasks');
     }

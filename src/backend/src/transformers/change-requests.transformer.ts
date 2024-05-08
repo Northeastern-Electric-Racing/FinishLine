@@ -1,14 +1,77 @@
 import { Prisma } from '@prisma/client';
-import { ChangeRequest, StandardChangeRequest, ActivationChangeRequest, StageGateChangeRequest } from 'shared';
-import changeRequestRelationArgs from '../prisma-query-args/change-requests.query-args';
+import {
+  ChangeRequest,
+  StandardChangeRequest,
+  ActivationChangeRequest,
+  StageGateChangeRequest,
+  ProjectProposedChanges,
+  WbsElementStatus,
+  LinkInfo,
+  WorkPackageProposedChanges,
+  WorkPackageStage
+} from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/change-requests.utils';
 import proposedSolutionTransformer from './proposed-solutions.transformer';
-import userTransformer from './user.transformer';
 import { getDateImplemented } from '../utils/change-requests.utils';
+import { userTransformer } from './user.transformer';
+import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import { descBulletConverter } from '../utils/description-bullets.utils';
+import { linkTypeTransformer } from './links.transformer';
+import { linkInfoQueryArgs, wbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
+
+const linkInfoTransformer = (linkInfo: Prisma.LinkInfoGetPayload<typeof linkInfoQueryArgs>): LinkInfo => {
+  return {
+    linkInfoId: linkInfo.linkInfoId,
+    url: linkInfo.url,
+    linkType: linkTypeTransformer(linkInfo.linkType)
+  };
+};
+
+const projectProposedChangesTransformer = (
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
+): ProjectProposedChanges => {
+  const { projectProposedChanges } = wbsProposedChanges;
+  return {
+    id: wbsProposedChanges.wbsProposedChangesId,
+    name: wbsProposedChanges.name,
+    status: wbsProposedChanges.status as WbsElementStatus,
+    links: wbsProposedChanges.links.map(linkInfoTransformer),
+    projectLead: wbsProposedChanges.projectLead ? wbsProposedChanges.projectLead : undefined,
+    projectManager: wbsProposedChanges.projectManager ? wbsProposedChanges.projectManager : undefined,
+    summary: projectProposedChanges!.summary,
+    budget: projectProposedChanges!.budget,
+    rules: projectProposedChanges!.rules,
+    goals: projectProposedChanges!.goals.map(descBulletConverter),
+    features: projectProposedChanges!.features.map(descBulletConverter),
+    otherConstrains: projectProposedChanges!.otherConstraints.map(descBulletConverter),
+    teams: projectProposedChanges!.teams,
+    carNumber: projectProposedChanges?.carNumber ? projectProposedChanges?.carNumber : undefined
+  };
+};
+
+const workPackageProposedChangesTransformer = (
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
+): WorkPackageProposedChanges => {
+  const { workPackageProposedChanges } = wbsProposedChanges;
+  return {
+    id: wbsProposedChanges.wbsProposedChangesId,
+    name: wbsProposedChanges.name,
+    status: wbsProposedChanges.status as WbsElementStatus,
+    links: wbsProposedChanges.links.map(linkInfoTransformer),
+    projectLead: wbsProposedChanges.projectLead ? wbsProposedChanges.projectLead : undefined,
+    projectManager: wbsProposedChanges.projectManager ? wbsProposedChanges.projectManager : undefined,
+    startDate: workPackageProposedChanges!.startDate,
+    duration: workPackageProposedChanges!.duration,
+    blockedBy: workPackageProposedChanges!.blockedBy.map(wbsNumOf),
+    expectedActivities: workPackageProposedChanges!.expectedActivities.map(descBulletConverter),
+    deliverables: workPackageProposedChanges!.deliverables.map(descBulletConverter),
+    stage: (workPackageProposedChanges!.stage as WorkPackageStage) || undefined
+  };
+};
 
 const changeRequestTransformer = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestRelationArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
@@ -35,6 +98,12 @@ const changeRequestTransformer = (
     })),
     status,
     // scope cr fields
+    projectProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.projectProposedChanges
+      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsProposedChanges)
+      : undefined,
+    workPackageProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.workPackageProposedChanges
+      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsProposedChanges)
+      : undefined,
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({
       type: convertCRScopeWhyType(why.type),

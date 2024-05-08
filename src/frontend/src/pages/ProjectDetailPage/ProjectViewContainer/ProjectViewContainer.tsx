@@ -19,6 +19,7 @@ import { useSetProjectTeam } from '../../../hooks/projects.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import DeleteProject from '../DeleteProject';
 import GroupIcon from '@mui/icons-material/Group';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
@@ -32,6 +33,7 @@ import NERTabs from '../../../components/Tabs';
 import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
+import ChangeRequestTab from './ChangeRequestTab';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -142,6 +144,20 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     );
   };
 
+  const buildURLForCreateWorkPackage = () => {
+    return `${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`;
+  };
+  const CreateWorkPackageButton = () => {
+    return (
+      <MenuItem onClick={() => history.push(buildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
+        <ListItemIcon>
+          <ContentPasteIcon fontSize="small" />
+        </ListItemIcon>
+        Create New Work Package
+      </MenuItem>
+    );
+  };
+
   const DeleteButton = () => (
     <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
       <ListItemIcon>
@@ -158,6 +174,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         variant="contained"
         id="project-actions-dropdown"
         onClick={handleClick}
+        disabled={isGuest(user.role)}
       >
         Actions
       </NERButton>
@@ -178,6 +195,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <CreateChangeRequestButton />
         <SuggestBudgetIncreaseButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
+        <CreateWorkPackageButton />
         <DeleteButton />
       </Menu>
     </Box>
@@ -207,7 +225,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'bom', tabName: 'BOM' },
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
-            { tabUrlValue: 'gantt', tabName: 'Gantt' }
+            { tabUrlValue: 'gantt', tabName: 'Gantt' },
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -226,8 +245,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ScopeTab project={project} />
       ) : tab === 4 ? (
         <ChangesList changes={project.changes} />
-      ) : (
+      ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
+      ) : (
+        <ChangeRequestTab project={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

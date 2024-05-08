@@ -1,10 +1,12 @@
+import { Decimal } from 'decimal.js';
 import { User, UserPreview } from './user-types';
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
   Received = 'RECEIVED',
-  Unordered = 'UNORDERED',
-  Shipped = 'SHIPPED'
+  Shipped = 'SHIPPED',
+  NotReadyToOrder = 'NOT_READY_TO_ORDER',
+  ReadyToOrder = 'READY_TO_ORDER'
 }
 
 export interface Unit {
@@ -42,9 +44,9 @@ export type AssemblyPreview = Omit<Assembly, 'materials' | 'userCreated' | 'user
 export interface Manufacturer {
   name: string;
   dateCreated: Date;
+  dateDeleted?: Date;
   userCreatedId: number;
   userCreated: User;
-  dateDeleted?: Date;
   materials: MaterialPreview[];
 }
 
@@ -69,13 +71,13 @@ export interface Material {
   manufacturer: ManufacturerPreview;
   manufacturerPartNumber: string;
   pdmFileName?: string;
-  quantity: number;
+  quantity: Decimal;
   unitName?: string;
   quantityUnit?: UnitPreview;
   price: number;
   subtotal: number;
   linkUrl: string;
-  notes: string;
+  notes?: string;
 }
 
 export type MaterialPreview = Omit<
