@@ -106,8 +106,8 @@ const createTestProject = async (user: User): Promise<Project> => {
           dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
-          projectLeadId: user.userId,
-          projectManagerId: user.userId
+          leadId: user.userId,
+          managerId: user.userId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
