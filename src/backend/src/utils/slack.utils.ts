@@ -4,6 +4,8 @@ import { getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 import { Change_Request, Team, WBS_Element } from '@prisma/client';
+import { UserWithSettings } from './auth.utils';
+import { usersToSlackPings } from './notifications.utils';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -26,7 +28,7 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
   const { LEAD_CHANNEL_SLACK_ID } = process.env;
   if (!LEAD_CHANNEL_SLACK_ID) return;
 
-  const lead = workPackage.projectLead;
+  const { lead } = workPackage;
   const slackId = await getUserSlackId(lead?.userId);
   const daysUntilDeadline = daysBetween(workPackage.endDate, new Date());
 
@@ -43,16 +45,25 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
 
 /**
  * Send CR requested review notification to reviewer in Slack
- * @param slackId the slack id of the reviewer
+ * @param reviewers the user information of the reviewers
  * @param changeRequest the requested change request to be reviewed
  */
-export const sendSlackRequestedReviewNotification = async (slackId: string, changeRequest: ChangeRequest): Promise<void> => {
+export const sendSlackRequestedReviewNotification = async (
+  reviewers: UserWithSettings[],
+  changeRequest: ChangeRequest
+): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const changeRequestLink = `<https://finishlinebyner.com/change-requests/${changeRequest.crId.toString()}>`;
+  const btnText = `View CR`;
+  const changeRequestLink = `https://finishlinebyner.com/change-requests/${changeRequest.crId}`;
+  const slackPingMessage = usersToSlackPings(reviewers);
+  const fullMsg = `${slackPingMessage} Your review has been requested on CR #${changeRequest.crId}!`;
 
-  const fullMsg = `Your review has been requested on CR #${changeRequest.crId}: ${changeRequestLink}.`;
-  await sendMessage(slackId, fullMsg);
+  const threads = await prisma.message_Info.findMany({ where: { changeRequestId: changeRequest.crId } });
+
+  threads.forEach((thread) =>
+    replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg, changeRequestLink, btnText)
+  );
 };
 
 /**

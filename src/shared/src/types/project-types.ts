@@ -21,8 +21,8 @@ export interface WbsElement {
   dateCreated: Date;
   name: string;
   status: WbsElementStatus;
-  projectLead?: User;
-  projectManager?: User;
+  lead?: User;
+  manager?: User;
   links: Link[];
   changes: ImplementedChange[];
   materials: Material[];
@@ -52,7 +52,7 @@ export interface ProjectProposedChanges extends WbsProposedChanges {
   features: DescriptionBullet[];
   otherConstrains: DescriptionBullet[];
   teams: TeamPreview[];
-  newProject: boolean;
+  carNumber?: number;
 }
 
 export interface Project extends WbsElement {
