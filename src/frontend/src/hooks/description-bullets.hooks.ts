@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { checkDescriptionBullet } from '../apis/description-bullets.api';
 import { DescriptionBullet } from 'shared';
 
-export interface checkDescriptionBulletRequestPayload {
+export interface CheckDescriptionBulletRequestPayload {
   userId: number;
   descriptionId: number;
 }
@@ -17,9 +17,9 @@ export interface checkDescriptionBulletRequestPayload {
  */
 export const useCheckDescriptionBullet = () => {
   const queryClient = useQueryClient();
-  return useMutation<DescriptionBullet, Error, checkDescriptionBulletRequestPayload>(
+  return useMutation<DescriptionBullet, Error, CheckDescriptionBulletRequestPayload>(
     ['description bullets', 'check'],
-    async (payload: checkDescriptionBulletRequestPayload) => {
+    async (payload: CheckDescriptionBulletRequestPayload) => {
       const { data } = await checkDescriptionBullet(payload.userId, payload.descriptionId);
       return data;
     },
