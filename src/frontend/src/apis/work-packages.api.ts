@@ -31,16 +31,6 @@ export interface WorkPackageTemplateApiInputs {
   workPackageName?: string;
 }
 
-export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
-  projectWbsNum: {
-    carNumber: number;
-    projectNumber: number;
-    workPackageNumber: number;
-  };
-  deliverables: string[];
-  expectedActivities: string[];
-}
-
 /**
  * Fetch all work packages.
  */
