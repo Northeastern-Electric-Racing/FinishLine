@@ -48,8 +48,6 @@ describe('Reimbursement Requests', () => {
       assert(false);
       throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
-    await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead);
-
     await expect(() =>
       ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead)
     ).rejects.toThrow(
