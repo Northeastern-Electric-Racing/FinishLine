@@ -205,13 +205,27 @@ const GanttTaskBar = ({
                 userSelect: 'none'
               }}
             >
-              <Typography
-                variant="body1"
-                sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}
-                onClick={onWorkPackageToggle}
-              >
-                {event.name}
-              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                {isProject && (
+                  <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-15px', marginLeft: '-5px' }}>
+                    {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
+                  </IconButton>
+                )}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: event.styles ? event.styles.color : '#ffffff',
+                    px: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    marginTop: isProject ? 1.6 : 0
+                  }}
+                  onClick={onWorkPackageToggle}
+                >
+                  {event.name}
+                </Typography>
+              </Box>
             </Box>
             <Box
               sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
@@ -291,7 +305,7 @@ const GanttTaskBar = ({
           onClick={!isProject ? () => history.push(`${`${routes.PROJECTS}/${event.id}`}`) : undefined}
         >
           {isProject && (
-            <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-20px', marginLeft: '-10px' }}>
+            <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-15px', marginLeft: '-5px' }}>
               {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
             </IconButton>
           )}
