@@ -223,12 +223,9 @@ const GanttChartPage: FC = () => {
     } else {
       eventChanges.forEach((change) => {
         const event = ganttTasks.find((task) => task.id === change.eventId);
-        console.log(event);
         if (event) {
           if (change.type === 'change-end-date') {
-            console.log('pre event: ', event);
             event.end = change.newEnd;
-            console.log('post event: ', event);
           }
           if (change.type === 'shift-by-days') {
             event.start = addDays(event.start, change.days);
