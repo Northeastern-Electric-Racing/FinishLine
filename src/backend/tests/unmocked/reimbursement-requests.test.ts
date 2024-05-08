@@ -19,6 +19,7 @@ describe('Reimbursement Requests', () => {
     if (!reimbursement) {
       console.log('Failed to create Reimbursement');
       assert(false);
+      throw new Error('Failed to create Reimbursement');
     }
     await expect(() =>
       ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, alfred)
@@ -34,6 +35,7 @@ describe('Reimbursement Requests', () => {
     if (!reimbursement) {
       console.log('Failed to create Reimbursement');
       assert(false);
+      throw new Error('Failed to create Reimbursement');
     }
     const financeHead = await prisma.user.findUnique({
       where: {
@@ -44,6 +46,7 @@ describe('Reimbursement Requests', () => {
     if (!financeHead) {
       console.log('No finance head found, please run createFinanceTeamAndLead before this function');
       assert(false);
+      throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
     await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead);
 
@@ -61,6 +64,7 @@ describe('Reimbursement Requests', () => {
     if (!reimbursement) {
       console.log('Failed to create Reimbursement');
       assert(false);
+      throw new Error('Failed to create Reimbursement');
     }
     const financeHead = await prisma.user.findUnique({
       where: {
@@ -71,6 +75,7 @@ describe('Reimbursement Requests', () => {
     if (!financeHead) {
       console.log('No finance head found, please run createFinanceTeamAndLead before this function');
       assert(false);
+      throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
     await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead);
   });
