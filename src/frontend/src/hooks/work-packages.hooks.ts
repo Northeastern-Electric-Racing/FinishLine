@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WbsNumber } from 'shared';
+import { WorkPackage, WbsNumber, WorkPackageTemplate } from 'shared';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
@@ -14,7 +14,8 @@ import {
   getSingleWorkPackage,
   slackUpcomingDeadlines,
   getManyWorkPackages,
-  WorkPackageApiInputs
+  WorkPackageApiInputs,
+  getAllWorkPackageTemplates
 } from '../apis/work-packages.api';
 
 /**
@@ -120,6 +121,16 @@ export const useGetManyWorkPackages = (wbsNums: WbsNumber[]) => {
 export const useSlackUpcomingDeadlines = () => {
   return useMutation<{ message: string }, Error, Date>(['slack upcoming deadlines'], async (deadline: Date) => {
     const { data } = await slackUpcomingDeadlines(deadline);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get all workpackage templates
+ */
+export const useAllWorkPackageTemplates = () => {
+  return useQuery<WorkPackageTemplate[], Error>(['work package templates'], async () => {
+    const { data } = await getAllWorkPackageTemplates();
     return data;
   });
 };

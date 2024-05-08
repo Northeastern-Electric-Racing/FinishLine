@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import { LinkType, Project, WbsNumber } from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -15,7 +15,6 @@ import {
   toggleProjectFavorite,
   getAllLinkTypes,
   createLinkType,
-  getAllWorkPackageTemplates,
   editLinkType
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
@@ -167,16 +166,6 @@ export const useCreateLinkType = () => {
       }
     }
   );
-};
-
-/**
- * Custom React Hook to get all workpackage templates
- */
-export const useAllWorkPackageTemplates = () => {
-  return useQuery<WorkPackageTemplate[], Error>(['work package templates'], async () => {
-    const { data } = await getAllWorkPackageTemplates();
-    return data;
-  });
 };
 
 /**

@@ -3,28 +3,21 @@ import AdminToolTable from '../AdminToolTable';
 import { NERButton } from '../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
 import { useCurrentUser } from '../../../hooks/users.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { useAllWorkPackageTemplates } from '../../../hooks/work-packages.hooks';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
-  const workPackageTemplate1 = {
-    workPackageTemplateId: 'id',
-    templateName: 'Template 1',
-    templateNotes: 'This is template #1',
-    workPackageName: 'WPName'
-  };
-  const workPackageTemplate2 = {
-    workPackageTemplateId: 'id',
-    templateName: 'Template 2',
-    templateNotes: 'This is template #2',
-    workPackageName: 'WPName'
-  };
-  const workPackageTemplate3 = {
-    workPackageTemplateId: 'id',
-    templateName: 'Template 3',
-    templateNotes: 'This is template #3',
-    workPackageName: 'WPName'
-  };
-  const workPackageTemplates = [workPackageTemplate1, workPackageTemplate2, workPackageTemplate3];
+  const {
+    data: workPackageTemplates,
+    isLoading: workPackageTemplatesIsLoading,
+    isError: workPackageTemplatesIsError,
+    error: workPackageTemplatesError
+  } = useAllWorkPackageTemplates();
+
+  if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
+  if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
   const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplateId) => (
     <TableRow>
