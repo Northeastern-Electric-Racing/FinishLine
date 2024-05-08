@@ -241,6 +241,7 @@ const performSeed: () => Promise<void> = async () => {
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
+
   /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
     currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
@@ -273,6 +274,11 @@ const performSeed: () => Promise<void> = async () => {
       hankHeywood
     ].map((user) => user.userId)
   );
+  await TeamsService.setTeamLeads(
+    batman,
+    justiceLeague.teamId,
+    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
+  );
 
   await TeamsService.setTeamMembers(
     monopolyMan,
@@ -285,11 +291,6 @@ const performSeed: () => Promise<void> = async () => {
     [mrKrabs, richieRich].map((user) => user.userId)
   );
 
-  await TeamsService.setTeamLeads(
-    batman,
-    justiceLeague.teamId,
-    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
-  );
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
