@@ -42,14 +42,13 @@ import {
   member
 } from '../test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
-import { Prisma, Reimbursement_Status_Type, Role } from '@prisma/client';
+import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
 import {
   expenseTypeTransformer,
   reimbursementRequestTransformer,
   reimbursementTransformer
 } from '../../src/transformers/reimbursement-requests.transformer';
 import { justiceLeague, prismaTeam1, primsaTeam2 } from '../test-data/teams.test-data';
-import { createTestUser } from '../test-utils';
 
 describe('Reimbursement Requests', () => {
   beforeEach(() => {});
@@ -446,7 +445,7 @@ describe('Reimbursement Requests', () => {
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, superman)
       ).rejects.toThrow(
         new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, only finance leads can delete a reimbursement request'
+          'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
         )
       );
     });
@@ -458,7 +457,7 @@ describe('Reimbursement Requests', () => {
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, financeMember)
       ).rejects.toThrow(
         new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, reimbursement request can only be deleted by their creator or finance leads and above'
+          'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
         )
       );
     });
@@ -470,7 +469,7 @@ describe('Reimbursement Requests', () => {
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, member)
       ).rejects.toThrow(
         new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, reimbursement request can only be deleted by their creator or finance leads and above'
+          'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
         )
       );
     });
