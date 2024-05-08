@@ -92,10 +92,10 @@ export default class ReimbursementRequestService {
 
   /**
    * Get all the vendors in the database.
-   * @returns all the vendors
+   * @returns all the non-deleted vendors
    */
   static async getAllVendors(): Promise<Vendor[]> {
-    const vendors = await prisma.vendor.findMany();
+    const vendors = await prisma.vendor.findMany({ where: { dateDeleted: null } });
     return vendors.map(vendorTransformer);
   }
 
@@ -864,7 +864,7 @@ export default class ReimbursementRequestService {
    * @param submitter the user editing the vendor name
    * @returns the updated vendor
    */
-  static async editVendors(name: string, vendorId: string, submitter: User) {
+  static async editVendor(name: string, vendorId: string, submitter: User) {
     await isUserAdminOrOnFinance(submitter);
 
     const vendorUniqueName = await prisma.vendor.findUnique({
@@ -878,6 +878,36 @@ export default class ReimbursementRequestService {
       data: { name }
     });
 
+    if (!vendor) throw new NotFoundException('Vendor', vendorId);
+
+    if (vendor.dateDeleted) throw new DeletedException('Vendor', vendorId);
+
     return vendorTransformer(vendor);
+  }
+
+  /**
+   * Deletes the vendor
+   *
+   * @param vendorId the requested vendor to be deleted
+   * @param submitter the user deleting the vendor
+   * @returns the 'deleted' vendor
+   */
+  static async deleteVendor(vendorId: string, submitter: User) {
+    await isUserAdminOrOnFinance(submitter);
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { vendorId }
+    });
+
+    if (!vendor) throw new NotFoundException('Vendor', vendorId);
+
+    if (vendor.dateDeleted) throw new DeletedException('Vendor', vendorId);
+
+    const deletedVendor = await prisma.vendor.update({
+      where: { vendorId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return vendorTransformer(deletedVendor);
   }
 }

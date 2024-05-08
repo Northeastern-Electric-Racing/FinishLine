@@ -11,14 +11,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ProposedSolution } from 'shared';
 import { TextField, Typography, IconButton } from '@mui/material';
+import { generateUUID } from '../../utils/form';
 
 interface ProposedSolutionFormProps {
-  description?: string;
-  budgetImpact?: number;
-  timelineImpact?: number;
-  scopeImpact?: string;
+  defaultValues?: ProposedSolution;
   readOnly?: boolean;
-  onAdd: (data: ProposedSolution) => void;
+  onSubmit: (data: ProposedSolution) => void;
   open: boolean;
   onClose: () => void;
 }
@@ -38,24 +36,21 @@ const schema = yup.object().shape({
     .integer('Timeline Impact must be an integer')
 });
 
-const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
-  description,
-  budgetImpact,
-  timelineImpact,
-  scopeImpact,
-  readOnly,
-  onAdd,
-  open,
-  onClose
-}) => {
+const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({ defaultValues, readOnly, onSubmit, open, onClose }) => {
   const { formState, handleSubmit, control } = useForm<ProposedSolution>({
     resolver: yupResolver(schema),
-    defaultValues: { description, budgetImpact, timelineImpact, scopeImpact }
+    defaultValues: {
+      description: defaultValues?.description,
+      budgetImpact: defaultValues?.budgetImpact,
+      timelineImpact: defaultValues?.timelineImpact,
+      scopeImpact: defaultValues?.scopeImpact,
+      id: defaultValues ? defaultValues.id : generateUUID()
+    }
   });
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Propose a Solution</DialogTitle>
+      <DialogTitle>{defaultValues ? 'Edit Proposed Solution' : 'Propose a Solution'}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onClose}
@@ -80,7 +75,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleSubmit(onAdd)(e);
+            handleSubmit(onSubmit)(e);
           }}
         >
           <Controller
@@ -198,7 +193,7 @@ const ProposedSolutionForm: React.FC<ProposedSolutionFormProps> = ({
                 form="individual-proposed-solution-form"
                 sx={{ textTransform: 'none', fontSize: 16, marginTop: 3 }}
               >
-                Add
+                {defaultValues ? 'Save' : 'Add'}
               </NERSuccessButton>
             </Box>
           )}

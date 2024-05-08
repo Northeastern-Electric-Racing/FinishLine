@@ -887,13 +887,13 @@ describe('Reimbursement Requests', () => {
   describe('Edit Vendor Tests', () => {
     test('Throws error if user isnt an admin or lead/head of the finance', async () => {
       await expect(
-        ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
+        ReimbursementRequestService.editVendor('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
       ).rejects.toThrow(new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors'));
     });
 
     test('Throws error if the vendor name already exists', async () => {
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      await expect(ReimbursementRequestService.editVendors('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
+      await expect(ReimbursementRequestService.editVendor('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
         new HttpException(400, 'vendor name already exists')
       );
     });
@@ -902,7 +902,7 @@ describe('Reimbursement Requests', () => {
       vi.spyOn(prisma.vendor, 'update').mockResolvedValue(KFC);
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
 
-      const vendor = await ReimbursementRequestService.editVendors('kfc', PopEyes.vendorId, batman);
+      const vendor = await ReimbursementRequestService.editVendor('kfc', PopEyes.vendorId, batman);
 
       expect(vendor.name).toBe('kfc');
       expect(prisma.vendor.update).toBeCalledTimes(1);

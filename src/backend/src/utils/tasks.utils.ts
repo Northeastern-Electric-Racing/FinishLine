@@ -27,8 +27,8 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
       assignees: true,
       wbsElement: {
         select: {
-          projectLeadId: true,
-          projectManagerId: true,
+          leadId: true,
+          managerId: true,
           project: {
             select: {
               teams: {
@@ -82,8 +82,8 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
   if (task.createdByUserId === user.userId) return true;
 
   // Check if the task's wbsElement's projectLead or projectManager created the task
-  if (task.wbsElement.projectLeadId === user.userId) return true;
-  if (task.wbsElement.projectManagerId === user.userId) return true;
+  if (task.wbsElement.leadId === user.userId) return true;
+  if (task.wbsElement.managerId === user.userId) return true;
 
   // Check if the user is one of the assignees
   if (task.assignees.map((user) => user.userId).includes(user.userId)) return true;

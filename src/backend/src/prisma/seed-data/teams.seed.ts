@@ -16,6 +16,9 @@ The Baltimore Ravens are a professional American football team based in Baltimor
 
 The Ravens played the Super Bowl XLVII against the San Francisco 49ers. Baltimore built a 28–6 lead early in the third quarter before a partial power outage in the Superdome suspended play for 34 minutes (earning the game the added nickname of the Blackout Bowl).[31][32] After play resumed, San Francisco scored 17 unanswered third-quarter points to cut the Ravens' lead, 28–23, and continued to chip away in the fourth quarter. With the Ravens leading late in the game, 34–29, the 49ers advanced to the Baltimore 7-yard line just before the two-minute warning but turned the ball over on downs. The Ravens then took an intentional safety in the waning moments of the game to preserve the victory. Baltimore quarterback Joe Flacco, who completed 22 of 33 passes for 287 yards and three touchdowns, was named Super Bowl MVP.`;
 
+const meanGirlsDescription = `
+Mean Girls is a 2004 American teen comedy film. This team helps test slackbot stuff through the #slackbot_land channel.`;
+
 const ravens = (headId: number): Prisma.TeamCreateArgs => {
   return {
     data: {
@@ -48,12 +51,13 @@ const justiceLeague = (headId: number): Prisma.TeamCreateArgs => {
   };
 };
 
-const avatarBenders = (headId: number): Prisma.TeamCreateArgs => {
+const avatarBenders = (headId: number, teamTypeId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Avatar: The Last Airbender',
       slackId: 'avatar',
-      headId
+      headId,
+      teamTypeId
     }
   };
 };
@@ -68,14 +72,15 @@ const plLegends = (headId: number): Prisma.TeamCreateArgs => {
   };
 };
 
-const huskies = (headId: number): Prisma.TeamCreateArgs => {
+const huskies = (headId: number, teamTypeId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Huskies',
       slackId: 'neu',
       headId,
       description:
-        '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)'
+        '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)',
+      teamTypeId
     }
   };
 };
@@ -90,4 +95,15 @@ const financeTeam = (headId: number): Prisma.TeamCreateArgs => {
   };
 };
 
-export const dbSeedAllTeams = { ravens, orioles, justiceLeague, huskies, avatarBenders, plLegends, financeTeam };
+const meanGirls = (headId: number): Prisma.TeamCreateArgs => {
+  return {
+    data: {
+      teamName: 'Slack Bot Testing',
+      slackId: 'C06HR7WTTKM',
+      description: meanGirlsDescription,
+      headId
+    }
+  };
+};
+
+export const dbSeedAllTeams = { ravens, orioles, justiceLeague, huskies, avatarBenders, plLegends, financeTeam, meanGirls };
