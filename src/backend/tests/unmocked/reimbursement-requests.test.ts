@@ -25,7 +25,7 @@ describe('Reimbursement Requests', () => {
       ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, alfred)
     ).rejects.toThrow(
       new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, only finance leads can delete a reimbursement request'
+        'You do not have access to delete this reimbursement request, reimbursement request can only be deleted by their creator or finance leads and above'
       )
     );
   });
@@ -54,7 +54,7 @@ describe('Reimbursement Requests', () => {
       ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead)
     ).rejects.toThrow(
       new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+        'You do not have access to delete this reimbursement request, reimbursement request can only be deleted by their creator or finance leads and above'
       )
     );
   });

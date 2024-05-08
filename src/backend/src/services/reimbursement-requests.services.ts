@@ -337,10 +337,11 @@ export default class ReimbursementRequestService {
     });
 
     if (!request) throw new NotFoundException('Reimbursement Request', requestId);
-    if (request.recipientId !== submitter.userId! && !(await isUserLeadOrHeadOfFinanceTeam(submitter)))
+    if (request.recipientId !== submitter.userId! || !(await isUserLeadOrHeadOfFinanceTeam(submitter)))
       throw new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, only finance leads can delete a reimbursement request'
+        'You do not have access to delete this reimbursement request, reimbursement request can only be deleted by their creator or finance leads and above'
       );
+
     if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
     if (
       request.reimbursementStatuses.some(
