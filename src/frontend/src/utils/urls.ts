@@ -149,7 +149,7 @@ const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
 /**************** Work Package Template Endpoints ****************/
-const workPackageTemplates = () => `${API_URL}/templates`;
+const workPackageTemplates = () => `${API_URL}/work-packages/template`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
