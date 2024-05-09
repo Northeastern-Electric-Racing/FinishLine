@@ -148,8 +148,8 @@ const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/c
 
 /******************* Work Package Template Endpoints********************/
 
-const workPackageTemplatesEdit = (workPackageTemplateId: string) => `${workPackageTemplates()}${workPackageTemplateId}/edit`;
 const workPackageTemplates = () => `${workPackages()}/template`;
+const workPackageTemplatesEdit = (workPackageTemplateId: string) => `${workPackageTemplates()}${workPackageTemplateId}/edit`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -270,8 +270,8 @@ export const apiUrls = {
   designReviewMarkUserConfirmed,
   designReviewDelete,
 
-  workPackageTemplatesEdit,
   workPackageTemplates,
+  workPackageTemplatesEdit,
 
   version
 };
