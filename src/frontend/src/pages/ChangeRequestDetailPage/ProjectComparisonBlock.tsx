@@ -76,7 +76,7 @@ const ProjectComparisonBlock: React.FC<CompareProjectFieldsProps> = ({ changeReq
 
   const proposedConstraints: PotentialChange = {
     field: 'Constraints',
-    content: (changeRequest as StandardChangeRequest)?.projectProposedChanges?.otherConstrains || []
+    content: (changeRequest as StandardChangeRequest)?.projectProposedChanges?.otherConstraints || []
   };
 
   const initialTeams: PotentialChange = {
