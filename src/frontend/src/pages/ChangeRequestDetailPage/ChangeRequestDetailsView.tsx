@@ -24,9 +24,7 @@ import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
-import WorkPackageComparisonBlock from './WorkPackageComparisonBlock';
-import ProjectComparisonBlock from './ProjectComparisonBlock';
-import InfoBlock from '../../components/InfoBlock';
+import { DiffSection } from './DiffSection/DiffSection';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -58,8 +56,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
 
-  const wbsNum = changeRequest.wbsNum;
-
   const {
     data: project,
     isLoading,
@@ -79,15 +75,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
     changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
 
   const isActivation = changeRequest.type === ChangeRequestType.Activation;
-
-  const isCreateWorkPackge = isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.workPackageProposedChanges;
-  const isCreateProject =
-    (changeRequest as StandardChangeRequest)?.projectProposedChanges &&
-    (changeRequest as StandardChangeRequest)?.projectProposedChanges?.carNumber !== undefined;
-  const isEditWorkPackage = !isProject(wbsNum) && (changeRequest as StandardChangeRequest)?.workPackageProposedChanges;
-  const isEditProject =
-    (changeRequest as StandardChangeRequest)?.projectProposedChanges &&
-    (changeRequest as StandardChangeRequest)?.projectProposedChanges?.carNumber === undefined;
 
   return (
     <PageLayout
@@ -151,69 +138,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 7 : 0}>
             {(changeRequest as StandardChangeRequest)?.projectProposedChanges ||
             (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
-              <Box>
-                <Grid item>
-                  <Box
-                    sx={{
-                      borderLeft: `1px solid white`
-                    }}
-                  />
-                  <InfoBlock
-                    title={`Proposed Changes - ${
-                      isCreateProject
-                        ? 'Create Project'
-                        : isCreateWorkPackge
-                        ? 'Create Work Package'
-                        : isEditProject
-                        ? 'Edit Project'
-                        : 'Edit Work Package'
-                    }`}
-                  />
-                  <Grid container columnSpacing={4}>
-                    {isEditProject && (
-                      <Grid item xs={6}>
-                        <Box
-                          sx={{
-                            backgroundColor: '#2C2C2C',
-                            borderRadius: '10px',
-                            padding: 1.4,
-                            mb: 3
-                          }}
-                        >
-                          <ProjectComparisonBlock changeRequest={changeRequest} isProposed={false} />
-                        </Box>
-                      </Grid>
-                    )}
-                    {isEditWorkPackage && (
-                      <Grid item xs={6}>
-                        <Box
-                          sx={{
-                            backgroundColor: '#2C2C2C',
-                            borderRadius: '10px',
-                            padding: 1.4,
-                            mb: 3
-                          }}
-                        >
-                          <WorkPackageComparisonBlock changeRequest={changeRequest} isProposed={false} />
-                        </Box>
-                      </Grid>
-                    )}
-                    <Grid item xs={6}>
-                      <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: '10px', padding: 1.4, mb: 3 }}>
-                        {isCreateProject || isEditProject ? (
-                          <ProjectComparisonBlock changeRequest={changeRequest} isProposed={true} />
-                        ) : (
-                          <WorkPackageComparisonBlock
-                            changeRequest={changeRequest}
-                            isProposed={true}
-                            createWorkPackage={!!isCreateWorkPackge}
-                          />
-                        )}
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Box>
+              <DiffSection changeRequest={changeRequest as StandardChangeRequest} />
             ) : (
               isStandard && (
                 <ProposedSolutionsList

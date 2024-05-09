@@ -3,7 +3,7 @@ import { PotentialChange } from './CompareProposedChanges';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useSingleWorkPackage } from '../../hooks/work-packages.hooks';
-import { datePipe } from '../../utils/pipes';
+import { datePipe, displayEnum } from '../../utils/pipes';
 import CompareProposedChanges from './CompareProposedChanges';
 import WbsComparisonBlock from './WbsComparisonBlock';
 
@@ -35,7 +35,7 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({
 
   const initialStage: PotentialChange = {
     field: 'Stage',
-    content: workPackage ? `${workPackage.stage}` : ''
+    content: workPackage?.stage ? displayEnum(workPackage.stage) : ''
   };
 
   const proposedStage: PotentialChange = {
@@ -50,7 +50,7 @@ const WorkPackageComparisonBlock: React.FC<CompareProjectFieldsProps> = ({
 
   const proposedStartDate: PotentialChange = {
     field: 'Start Date',
-    content: `hell`
+    content: datePipe((changeRequest as StandardChangeRequest)?.workPackageProposedChanges?.startDate)
   };
 
   const initialDeliverables: PotentialChange = {
