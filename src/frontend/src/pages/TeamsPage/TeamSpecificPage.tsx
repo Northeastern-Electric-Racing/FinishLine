@@ -42,7 +42,7 @@ const TeamSpecificPage: React.FC = () => {
     </NERButton>
   );
 
-  const setTeamTypeButton = (
+  const SetTeamTypeButton = (
     <NERButton variant="contained" disabled={!isAdmin(user.role)} onClick={() => setShowTeamTypeModal(true)}>
       Set Team Type
     </NERButton>
@@ -54,7 +54,7 @@ const TeamSpecificPage: React.FC = () => {
         isAdmin(user.role) && (
           <>
             {deleteButton}
-            {setTeamTypeButton && <span style={{ marginLeft: '10px' }}>{setTeamTypeButton}</span>}
+            <span style={{ marginLeft: '10px' }}>{SetTeamTypeButton}</span>
           </>
         )
       }
