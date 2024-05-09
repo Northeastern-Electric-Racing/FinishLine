@@ -1,5 +1,6 @@
-import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import { Role, Material_Type, User, Material_Status, Material } from '@prisma/client';
 import {
+  Assembly,
   isAdmin,
   isGuest,
   isHead,
@@ -35,10 +36,11 @@ import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { materialTypeTransformer } from '../transformers/material-type.transformer';
-import { materialPreviewTransformer } from '../transformers/material.transformer';
+import { assemblyTransformer, materialPreviewTransformer } from '../transformers/material.transformer';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import manufacturerTransformer from '../transformers/manufacturer.transformer';
 import { Decimal } from 'decimal.js';
+import { assemblyQueryArgs } from '../prisma-query-args/bom.query-args';
 export default class ProjectsService {
   /**
    * Get all the projects in the database.
@@ -665,10 +667,11 @@ export default class ProjectsService {
         userCreatedId,
         wbsElementId,
         pdmFileName
-      }
+      },
+      ...assemblyQueryArgs
     });
 
-    return assembly;
+    return assemblyTransformer(assembly);
   }
 
   /**
@@ -750,18 +753,20 @@ export default class ProjectsService {
       throw new NotFoundException('Manufacturer', name);
     }
 
-    if (manufacturer.materials.length > 0) {
-      throw new HttpException(400, 'Cannot delete manufacturer if it has materials associated with it');
+    if (manufacturer.dateDeleted) {
+      throw new DeletedException('Manufacturer', manufacturer.userCreatedId);
     }
 
-    const deletedManufacturer = await prisma.manufacturer.delete({
+    const deletedManufacturer = await prisma.manufacturer.update({
       where: {
         name: manufacturer.name
       },
-      ...manufacturerQueryArgs
+      data: {
+        dateDeleted: new Date()
+      }
     });
 
-    return manufacturerTransformer(deletedManufacturer);
+    return deletedManufacturer;
   }
   /**
    * Get all the manufacturers in the database.
@@ -775,6 +780,7 @@ export default class ProjectsService {
 
     return (
       await prisma.manufacturer.findMany({
+        where: { dateDeleted: null },
         ...manufacturerQueryArgs
       })
     ).map(manufacturerTransformer);
@@ -911,24 +917,42 @@ export default class ProjectsService {
       throw new AccessDeniedException('Only an Admin or a head can delete an Assembly');
 
     const assembly = await prisma.assembly.findUnique({
-      where: {
-        assemblyId
+      where: { assemblyId },
+      include: {
+        materials: true
       }
     });
 
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);
     if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
 
+    const materialPromises = assembly.materials.map(async (material) => {
+      return await prisma.material.update({
+        where: {
+          materialId: material.materialId
+        },
+        data: {
+          assembly: {
+            disconnect: true
+          }
+        }
+      });
+    });
+
+    await Promise.all(materialPromises);
+
     const deletedAssembly = await prisma.assembly.update({
       where: {
         assemblyId
       },
       data: {
+        userDeletedId: submitter.userId,
         dateDeleted: new Date()
-      }
+      },
+      ...assemblyQueryArgs
     });
 
-    return deletedAssembly;
+    return assemblyTransformer(deletedAssembly);
   }
 
   /**
@@ -1166,32 +1190,33 @@ export default class ProjectsService {
       data: {
         name,
         pdmFileName
-      }
+      },
+      ...assemblyQueryArgs
     });
 
-    return updatedAssembly;
+    return assemblyTransformer(updatedAssembly);
   }
 
   /**
    * Updates the linkType's name, iconName, or required.
-   * @param linkTypeId the current name/id of the linkType
+   * @param linkName the name of the linkType being editted
    * @param iconName the new iconName
    * @param required the new required status
    * @param submitter user requesting the edit
    */
-  static async editLinkType(linkTypeId: string, iconName: string, required: boolean, submitter: User) {
+  static async editLinkType(linkName: string, iconName: string, required: boolean, submitter: User) {
     if (!isAdmin(submitter.role)) throw new AccessDeniedException('Only an admin can update the linkType');
 
     // check if the linkType we are trying to update exists
     const linkType = await prisma.linkType.findUnique({
-      where: { name: linkTypeId }
+      where: { name: linkName }
     });
 
-    if (!linkType) throw new NotFoundException('Link Type', linkTypeId);
+    if (!linkType) throw new NotFoundException('Link Type', linkName);
 
     // update the LinkType
     const linkTypeUpdated = await prisma.linkType.update({
-      where: { name: linkTypeId },
+      where: { name: linkName },
       data: {
         iconName,
         required

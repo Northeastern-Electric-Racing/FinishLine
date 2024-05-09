@@ -44,6 +44,8 @@ teamsRouter.post('/:teamId/archive');
 
 teamsRouter.get('/teamType/all', TeamsController.getAllTeamTypes);
 
+teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamType);
+
 teamsRouter.post(
   '/teamType/create',
   nonEmptyString(body('name')),
@@ -51,4 +53,6 @@ teamsRouter.post(
   validateInputs,
   TeamsController.createTeamType
 );
+
+teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
 export default teamsRouter;

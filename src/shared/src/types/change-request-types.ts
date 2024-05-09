@@ -4,7 +4,8 @@
  */
 
 import { User } from './user-types';
-import { WbsNumber } from './project-types';
+import { ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
+import { WorkPackageStage } from './work-package-types';
 
 export interface ChangeRequest {
   crId: number;
@@ -40,6 +41,8 @@ export interface StandardChangeRequest extends ChangeRequest {
   budgetImpact: number;
   timelineImpact: number;
   proposedSolutions: ProposedSolution[];
+  projectProposedChanges?: ProjectProposedChanges;
+  workPackageProposedChanges?: WorkPackageProposedChanges;
 }
 
 export interface ProposedSolution {
@@ -104,4 +107,31 @@ export interface ProposedSolutionCreateArgs {
   scopeImpact: string;
   budgetImpact: number;
   timelineImpact: number;
+}
+
+export interface ProjectProposedChangesCreateArgs {
+  name: string;
+  projectLeadId?: number;
+  projectManagerId?: number;
+  links: { url: string; linkTypeName: string }[];
+  budget: number;
+  summary: string;
+  goals: string[];
+  features: string[];
+  otherConstraints: string[];
+  rules: string[];
+  teamIds: string[];
+  carNumber?: number;
+}
+
+export interface WorkPackageProposedChangesCreateArgs {
+  name: string;
+  duration: number;
+  startDate: string;
+  stage?: WorkPackageStage;
+  blockedBy: WbsNumber[];
+  expectedActivities: string[];
+  deliverables: string[];
+  projectLeadId?: number;
+  projectManagerId?: number;
 }

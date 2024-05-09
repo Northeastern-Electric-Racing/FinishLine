@@ -1,6 +1,6 @@
 import prisma from '../../src/prisma/prisma';
 import TeamsService from '../../src/services/teams.services';
-import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batman, superman, theVisitor } from '../test-data/users.test-data';
 
 describe('Team Type Tests', () => {
@@ -40,6 +40,21 @@ describe('Team Type Tests', () => {
       const teamType2 = await TeamsService.createTeamType(batman, 'teamType2', 'WarningIcon');
       const result = await TeamsService.getAllTeamTypes();
       expect(result).toStrictEqual([teamType1, teamType2]);
+    });
+  });
+
+  describe('Get a single team type', () => {
+    it('Get a single team type works', async () => {
+      const teamType1 = await TeamsService.createTeamType(superman, 'teamType1', 'YouTubeIcon');
+      const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId);
+      expect(result).toStrictEqual(teamType1);
+    });
+
+    it('Get a single team type fails', async () => {
+      const nonExistingTeamTypeId = 'nonExistingId';
+      await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId)).rejects.toThrow(
+        new NotFoundException('Team Type', nonExistingTeamTypeId)
+      );
     });
   });
 });
