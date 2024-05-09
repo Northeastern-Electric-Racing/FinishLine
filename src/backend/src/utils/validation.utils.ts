@@ -41,6 +41,18 @@ export const isWorkPackageStageOrNone = (validationObject: ValidationChain): Val
     ]);
 };
 
+export const isWorkPackageStage = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject
+    .isString()
+    .isIn([
+      WorkPackageStage.Research,
+      WorkPackageStage.Design,
+      WorkPackageStage.Manufacturing,
+      WorkPackageStage.Install,
+      WorkPackageStage.Testing
+    ]);
+};
+
 export const isDate = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.custom((value) => !isNaN(Date.parse(value)));
 };
@@ -67,7 +79,6 @@ const projectProposedChangesExists = (validationObject: ValidationChain): Valida
 export const projectProposedChangesValidators = [
   body('projectProposedChanges').optional(),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.name'))),
-  isStatus(projectProposedChangesExists(body('projectProposedChanges.status'))),
   projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
   nonEmptyString(body('projectProposedChanges.links.*.url')),
   nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
@@ -83,9 +94,9 @@ export const projectProposedChangesValidators = [
   nonEmptyString(body('projectProposedChanges.features.*')),
   projectProposedChangesExists(body('projectProposedChanges.otherConstraints')).isArray(),
   nonEmptyString(body('projectProposedChanges.otherConstraints.*')),
-  projectProposedChangesExists(body('projectProposedChanges.newProject')).isBoolean(),
   projectProposedChangesExists(body('projectProposedChanges.teamIds')).isArray(),
-  nonEmptyString(body('projectProposedChanges.teamIds.*'))
+  nonEmptyString(body('projectProposedChanges.teamIds.*')),
+  projectProposedChangesExists(body('projectProposedChanges.carNumber')).optional().isInt()
 ];
 
 const workPackageProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
@@ -95,13 +106,9 @@ const workPackageProposedChangesExists = (validationObject: ValidationChain): Va
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
   nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
-  isStatus(workPackageProposedChangesExists(body('workPackageProposedChanges.status'))),
-  workPackageProposedChangesExists(body('workPackageProposedChanges.links')).isArray(),
-  nonEmptyString(body('workPackageProposedChanges.links.*.url')),
-  nonEmptyString(body('workPackageProposedChanges.links.*.linkTypeName')),
   intMinZero(body('workPackageProposedChanges.projectLeadId').optional()),
   intMinZero(body('workPackageProposedChanges.projectManagerId').optional()),
-  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage'))),
+  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage').optional())),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
   workPackageProposedChangesExists(body('workPackageProposedChanges.blockedBy')).isArray(),

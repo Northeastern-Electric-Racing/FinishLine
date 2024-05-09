@@ -4,28 +4,31 @@
  */
 
 import axios from '../utils/axios';
-import { WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
+import { BlockedByInfo, WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
 
 export interface WorkPackageApiInputs {
   name: string;
-  startDate: String;
+  startDate: string;
   duration: number;
-  crId: number;
-  stage: WorkPackageStage | null;
+  crId: number | undefined;
+  stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
+  deliverables: string[] | { id: number; detail: string }[];
+  expectedActivities: string[] | { id: number; detail: string }[];
 }
 
-export interface CreateWorkPackageApiInputs extends WorkPackageApiInputs {
-  projectWbsNum: {
-    carNumber: number;
-    projectNumber: number;
-    workPackageNumber: number;
-  };
-  deliverables: string[];
+export interface WorkPackageTemplateApiInputs {
+  templateName: string;
+  templateNotes: string;
+  duration: number | undefined;
+  stage?: WorkPackageStage;
+  blockedBy: BlockedByInfo[];
   expectedActivities: string[];
+  deliverables: string[];
+  workPackageName?: string;
 }
 
 /**
@@ -67,6 +70,18 @@ export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
  */
 export const editWorkPackage = (payload: WorkPackageApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
+    ...payload
+  });
+};
+
+/**
+ * Edit a work package template.
+ *
+ * @param payload Object containing required key-value pairs for backend function to edit work package
+ * @returns Promise that will resolve to either a success status code or a fail status code.
+ */
+export const editWorkPackageTemplate = (workPackageTempateId: string, payload: WorkPackageTemplateApiInputs) => {
+  return axios.post<{ message: string }>(apiUrls.workPackageTemplatesEdit(workPackageTempateId), {
     ...payload
   });
 };

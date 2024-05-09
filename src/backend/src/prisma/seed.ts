@@ -128,6 +128,15 @@ const performSeed: () => Promise<void> = async () => {
   const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
+  const zayFlowers = await prisma.user.create({ data: dbSeedAllUsers.zayFlowers });
+  const patrickRicard = await prisma.user.create({ data: dbSeedAllUsers.patrickRicard });
+  const patrickQueen = await prisma.user.create({ data: dbSeedAllUsers.patrickQueen });
+  const jadeveonClowney = await prisma.user.create({ data: dbSeedAllUsers.jadeveonClowney });
+  const marlonHumphrey = await prisma.user.create({ data: dbSeedAllUsers.marlonHumphrey });
+  const kyleHamilton = await prisma.user.create({ data: dbSeedAllUsers.kyleHamilton });
+  const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
+  const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
+  const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
   const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
   const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
   const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
@@ -164,8 +173,8 @@ const performSeed: () => Promise<void> = async () => {
           dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
-          projectLeadId: batman.userId,
-          projectManagerId: cyborg.userId
+          leadId: batman.userId,
+          managerId: cyborg.userId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
@@ -199,21 +208,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 0
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -229,12 +224,17 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * TEAMS
    */
+  /** Creating Team Types */
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
+
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
-  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId));
+  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
-  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
   const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
@@ -310,7 +310,16 @@ const performSeed: () => Promise<void> = async () => {
       chrisHorton,
       mikeMacdonald,
       toddMonken,
-      stephenBisciotti
+      stephenBisciotti,
+      zayFlowers,
+      patrickRicard,
+      patrickQueen,
+      jadeveonClowney,
+      marlonHumphrey,
+      kyleHamilton,
+      marcusWilliams,
+      roquanSmith,
+      justinTucker
     ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
@@ -522,11 +531,41 @@ const performSeed: () => Promise<void> = async () => {
     joeBlow.userId
   );
 
+  /** Project 6 */
+  const { projectWbsNumber: project6WbsNumber, projectId: project6Id } = await seedProject(
+    aang,
+    changeRequest1.crId,
+    0,
+    'Appa Plush',
+    'Manufacture plushes of Appa for moral support.',
+    [avatarBenders.teamId],
+    aang,
+    99999,
+    [],
+    ['Boost team moral by 100000000%'],
+    ['10in Appa plush', '10ft Appa plush', '30ft Appa plush'],
+    [],
+    [
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Confluence'
+      },
+      {
+        linkId: '-1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        linkTypeName: 'Bill of Materials'
+      }
+    ],
+    aang.userId,
+    katara.userId
+  );
+
   /**
    * Change Requests for Creating Work Packages
    */
 
-  const changeRequestWP1 = await ChangeRequestsService.createStandardChangeRequest(
+  const changeRequestProject1 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
     project1WbsNumber.carNumber,
     project1WbsNumber.projectNumber,
@@ -547,30 +586,16 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
-  const changeRequestWP1Id = changeRequestWP1.crId;
+  const changeRequestProject1Id = changeRequestProject1.crId;
 
   // make a proposed solution for it
   const proposedSolution2 = await ChangeRequestsService.addProposedSolution(
     cyborg,
-    changeRequestWP1Id,
+    changeRequestProject1Id,
     0,
     'Initializing seed data',
     0,
@@ -580,9 +605,9 @@ const performSeed: () => Promise<void> = async () => {
   const proposedSolution2Id = proposedSolution2.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP1Id, 'LGTM', true, proposedSolution2Id);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject1Id, 'LGTM', true, proposedSolution2Id);
 
-  const changeRequestWP5 = await ChangeRequestsService.createStandardChangeRequest(
+  const changeRequestProject5 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
     project5WbsNumber.carNumber,
     project5WbsNumber.projectNumber,
@@ -603,40 +628,67 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
-  const changeRequestWP5Id = changeRequestWP5.crId;
+  const changeRequestProject5Id = changeRequestProject5.crId;
 
   // make a proposed solution for it
-  const proposedSolution5 = await ChangeRequestsService.addProposedSolution(
+  const proposedSolution3 = await ChangeRequestsService.addProposedSolution(
     cyborg,
-    changeRequestWP5Id,
+    changeRequestProject5Id,
     0,
     'Initializing seed data',
     0,
     'no scope impact'
   );
 
-  const proposedSolution5Id = proposedSolution5.id;
+  const proposedSolution3Id = proposedSolution3.id;
+  // approve the change request
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject5Id, 'LGTM', true, proposedSolution3Id);
+
+  const changeRequestProject6 = await ChangeRequestsService.createStandardChangeRequest(
+    cyborg,
+    project6WbsNumber.carNumber,
+    project6WbsNumber.projectNumber,
+    project6WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'Initial Change Request',
+    [
+      {
+        type: Scope_CR_Why_Type.INITIALIZATION,
+        explain: 'need this to initialize work packages'
+      }
+    ],
+    [
+      {
+        budgetImpact: 0,
+        description: 'Initializing seed data',
+        timelineImpact: 0,
+        scopeImpact: 'no scope impact'
+      }
+    ],
+    null,
+    null
+  );
+
+  const changeRequestProject6Id = changeRequestProject6.crId;
+
+  // make a proposed solution for it
+  const proposedSolution6 = await ChangeRequestsService.addProposedSolution(
+    cyborg,
+    changeRequestProject6Id,
+    0,
+    'Initializing seed data',
+    0,
+    'no scope impact'
+  );
+
+  const proposedSolution6Id = proposedSolution6.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestWP5Id, 'LGTM', true, proposedSolution5Id);
+  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject6Id, 'LGTM', true, proposedSolution6Id);
 
   /**
    * Work Packages
@@ -645,7 +697,7 @@ const performSeed: () => Promise<void> = async () => {
   const { workPackageWbsNumber: workPackage1WbsNumber, workPackage: workPackage1 } = await seedWorkPackage(
     joeShmoe,
     'Bodywork Concept of Design',
-    changeRequestWP1Id,
+    changeRequestProject1Id,
     WorkPackageStage.Design,
     '01/01/2023',
     3,
@@ -667,9 +719,9 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1.wbsElement.projectNumber,
     workPackage1.wbsElement.workPackageNumber,
     'ACTIVATION',
-    workPackage1.project.wbsElement.projectLeadId!,
-    workPackage1.project.wbsElement.projectManagerId!,
-    new Date(),
+    workPackage1.project.wbsElement.leadId!,
+    workPackage1.project.wbsElement.managerId!,
+    new Date('2024-03-25T04:00:00.000Z'),
     true
   );
 
@@ -685,7 +737,7 @@ const performSeed: () => Promise<void> = async () => {
   const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
     thomasEmrax,
     'Adhesive Shear Strength Test',
-    changeRequestWP1Id,
+    changeRequestProject1Id,
     WorkPackageStage.Research,
     '01/22/2023',
     5,
@@ -705,10 +757,10 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Work Package 3 */
-  const workPackage3WbsString = await WorkPackagesService.createWorkPackage(
+  const { workPackageWbsNumber: workPackage3WbsNumber, workPackage: workPackage3 } = await seedWorkPackage(
     thomasEmrax,
     'Manufacture Wiring Harness',
-    changeRequestWP5Id,
+    changeRequestProject5Id,
     WorkPackageStage.Manufacturing,
     '02/01/2023',
     3,
@@ -719,15 +771,32 @@ const performSeed: () => Promise<void> = async () => {
       'Solder wiring segments together and heat shrink properly',
       'Cut all wires to length'
     ],
-    ['Completed wiring harness for the entire car']
+    ['Completed wiring harness for the entire car'],
+    thomasEmrax,
+    WbsElementStatus.Active,
+    joeShmoe.userId,
+    thomasEmrax.userId
   );
-  const workPackage3WbsNumber = validateWBS(workPackage3WbsString);
+
+  const workPackage3ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    thomasEmrax,
+    workPackage3WbsNumber.carNumber,
+    workPackage3WbsNumber.projectNumber,
+    workPackage3WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    workPackage3.project.wbsElement.leadId!,
+    workPackage3.project.wbsElement.managerId!,
+    new Date('2023-08-21T04:00:00.000Z'),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage3ActivationCrId, 'LGTM!', true, null);
 
   /** Work Package 4 */
   const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
     thomasEmrax,
     'Install Wiring Harness',
-    changeRequest1.crId,
+    changeRequestProject5Id,
     WorkPackageStage.Install,
     '04/01/2023',
     7,
@@ -739,6 +808,113 @@ const performSeed: () => Promise<void> = async () => {
     joeShmoe.userId,
     thomasEmrax.userId
   );
+
+  const workPackage4ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    thomasEmrax,
+    workPackage4WbsNumber.carNumber,
+    workPackage4WbsNumber.projectNumber,
+    workPackage4WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    workPackage4.project.wbsElement.leadId!,
+    workPackage4.project.wbsElement.managerId!,
+    new Date('2023-10-02T04:00:00.000Z'),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage4ActivationCrId, 'LGTM!', true, null);
+
+  /** Work Package 5 */
+  const { workPackageWbsNumber: workPackage5WbsNumber, workPackage: workPackage5 } = await seedWorkPackage(
+    aang,
+    'Design Plush',
+    changeRequestProject6Id,
+    WorkPackageStage.Design,
+    '04/02/2023',
+    7,
+    [],
+    ['Make sketches', 'Get sketches reviewed', 'Finalize sketches'],
+    ['Sketch of designs for plush is finalized'],
+    aang,
+    WbsElementStatus.Complete,
+    katara.userId,
+    aang.userId
+  );
+
+  const workPackage5ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    aang,
+    workPackage5WbsNumber.carNumber,
+    workPackage5WbsNumber.projectNumber,
+    workPackage5WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    workPackage5.project.wbsElement.leadId!,
+    workPackage5.project.wbsElement.managerId!,
+    new Date('2023-05-08T04:00:00.000Z'),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage5ActivationCrId, 'Very cute LGTM!', true, null);
+
+  /** Work Package 6 */
+  const { workPackageWbsNumber: workPackage6WbsNumber, workPackage: workPackage6 } = await seedWorkPackage(
+    aang,
+    'Put Plush Together',
+    changeRequestProject6Id,
+    WorkPackageStage.Manufacturing,
+    '04/02/2023',
+    7,
+    [],
+    ['Get the materials we need', 'Cut the different fabrics', 'Sew the fabrics togehter', 'Stuff the plush'],
+    ['A finished plus'],
+    aang,
+    WbsElementStatus.Active,
+    katara.userId,
+    aang.userId
+  );
+
+  const workPackage6ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    aang,
+    workPackage6WbsNumber.carNumber,
+    workPackage6WbsNumber.projectNumber,
+    workPackage6WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    workPackage6.project.wbsElement.leadId!,
+    workPackage6.project.wbsElement.managerId!,
+    new Date('2023-07-31T04:00:00.000Z'),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage6ActivationCrId, 'LGTM!', true, null);
+
+  /** Work Package 7 */
+  const { workPackageWbsNumber: workPackage7WbsNumber, workPackage: workPackage7 } = await seedWorkPackage(
+    aang,
+    'Plush Testing',
+    changeRequestProject6Id,
+    WorkPackageStage.Testing,
+    '04/02/2023',
+    3,
+    [],
+    [],
+    ['Passes quality inspection'],
+    aang,
+    WbsElementStatus.Active,
+    katara.userId,
+    aang.userId
+  );
+
+  const workPackage7ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
+    aang,
+    workPackage7WbsNumber.carNumber,
+    workPackage7WbsNumber.projectNumber,
+    workPackage7WbsNumber.workPackageNumber,
+    CR_Type.ACTIVATION,
+    workPackage7.project.wbsElement.leadId!,
+    workPackage7.project.wbsElement.managerId!,
+    new Date('2023-10-09T04:00:00.000Z'),
+    true
+  );
+
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage7ActivationCrId, 'LFG', true, null);
 
   /**
    * Change Requests
@@ -777,21 +953,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 40
       }
     ],
-    {
-      name: 'Change the bodywork through pink paint purchase',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 50,
-      summary: 'Buy hot pink paint',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.3'],
-      teamIds: []
-    },
+    null,
     null
   );
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
@@ -1147,10 +1309,6 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some more notes',
     assembly1.assemblyId
   );
-
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();

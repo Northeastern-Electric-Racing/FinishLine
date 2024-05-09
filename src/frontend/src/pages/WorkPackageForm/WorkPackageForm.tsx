@@ -8,16 +8,28 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { ObjectSchema } from 'yup';
+import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 
 interface WorkPackageFormProps {
   wbsNum: WbsNumber;
   exitActiveMode: () => void;
   crId?: string;
-  mutateAsync: (data: WorkPackageApiInputs) => void;
-  createForm?: boolean;
+  workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
+  createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
+  schema: ObjectSchema<any>;
+  breadcrumbs: { name: string; route: string }[];
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, exitActiveMode, crId, createForm }) => {
+const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
+  wbsNum,
+  workPackageMutateAsync,
+  createWorkPackageScopeCR,
+  exitActiveMode,
+  crId,
+  schema,
+  breadcrumbs
+}) => {
   const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: project,
@@ -40,18 +52,17 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
       wp.wbsNum.workPackageNumber === wbsNum.workPackageNumber
   );
 
-  const defaultValues: WorkPackageFormViewPayload | undefined =
-    !createForm && workPackage
-      ? {
-          ...workPackage,
-          workPackageId: workPackage.id,
-          crId: query.get('crId') || workPackage!.changes[0].changeRequestId.toString(),
-          stage: workPackage!.stage ?? 'NONE',
-          blockedBy: workPackage!.blockedBy.map(wbsPipe),
-          expectedActivities: bulletsToObject(workPackage!.expectedActivities),
-          deliverables: bulletsToObject(workPackage!.deliverables)
-        }
-      : undefined;
+  const defaultValues: WorkPackageFormViewPayload | undefined = workPackage
+    ? {
+        ...workPackage,
+        workPackageId: workPackage.id,
+        crId: query.get('crId') || '',
+        stage: workPackage!.stage ?? 'NONE',
+        blockedBy: workPackage!.blockedBy.map(wbsPipe),
+        expectedActivities: bulletsToObject(workPackage!.expectedActivities),
+        deliverables: bulletsToObject(workPackage!.deliverables)
+      }
+    : undefined;
 
   const blockedByToAutocompleteOption = (workPackage: WorkPackage) => {
     return { id: wbsPipe(workPackage.wbsNum), label: `${wbsPipe(workPackage.wbsNum)} - ${workPackage.name}` };
@@ -66,13 +77,15 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({ wbsNum, mutateAsync, 
   return (
     <WorkPackageFormView
       exitActiveMode={exitActiveMode}
-      mutateAsync={mutateAsync}
+      workPackageMutateAsync={workPackageMutateAsync}
+      createWorkPackageScopeCR={createWorkPackageScopeCR}
       defaultValues={defaultValues}
       wbsElement={wbsElement}
       leadOrManagerOptions={leadOrManagerOptions}
       blockedByOptions={blockedByOptions}
       crId={crId}
-      createForm={createForm}
+      schema={schema}
+      breadcrumbs={breadcrumbs}
     />
   );
 };

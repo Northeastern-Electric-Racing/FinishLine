@@ -275,10 +275,10 @@ model WBS_Element {
   workPackageNumber           Int
   name                        String
   status                      WBS_Element_Status              @default(INACTIVE)
-  projectLeadId               Int?
-  projectLead                 User?                           @relation(name: "projectLead", fields: [projectLeadId], references: [userId])
-  projectManagerId            Int?
-  projectManager              User?                           @relation(name: "projectManager", fields: [projectManagerId], references: [userId])
+  leadId                      Int?
+  lead                        User?                           @relation(name: "projectLead", fields: [leadId], references: [userId])
+  managerId                   Int?
+  manager                     User?                           @relation(name: "projectManager", fields: [managerId], references: [userId])
   changeRequests              Change_Request[]
   changes                     Change[]
   deletedByUserId             Int?
@@ -292,7 +292,7 @@ model WBS_Element {
   materials                   Material[]
   reimbursementProductReasons Reimbursement_Product_Reason[]
   designReviews               Design_Review[]
-  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "blockedBy")
+  proposedBlockedByChanges    Work_Package_Proposed_Changes[] @relation(name: "proposedBlockedBy")
 
   @@unique([carNumber, projectNumber, workPackageNumber], name: "wbsNumber")
 }
@@ -698,14 +698,14 @@ model Project_Proposed_Changes {
   teams                    Team[]               @relation(name: "proposedProjectTeams")
   wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique
-  newProject               Boolean
+  carNumber                Int?
 }
 
 model Work_Package_Proposed_Changes {
   workPackageProposedChangesId String               @id @default(uuid())
   startDate                    DateTime             @db.Date
   duration                     Int
-  blockedBy                    WBS_Element[]        @relation(name: "blockedBy")
+  blockedBy                    WBS_Element[]        @relation(name: "proposedBlockedBy")
   expectedActivities           Description_Bullet[] @relation(name: "workPackageExpectedActivities")
   deliverables                 Description_Bullet[] @relation(name: "workPackageDeliverables")
   stage                        Work_Package_Stage?

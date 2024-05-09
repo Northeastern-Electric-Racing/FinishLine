@@ -72,13 +72,8 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
           </Box>
         </Stack>
         <Stack direction="row" sx={{ marginTop: 1 }}>
-          <Chip
-            sx={{ marginTop: 1, marginRight: 2 }}
-            icon={<Construction />}
-            label={fullNamePipe(wp.projectLead)}
-            size="medium"
-          />
-          <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} size="medium" />
+          <Chip sx={{ marginTop: 1, marginRight: 2 }} icon={<Construction />} label={fullNamePipe(wp.lead)} size="medium" />
+          <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.manager)} size="medium" />
         </Stack>
       </CardContent>
     </Card>
