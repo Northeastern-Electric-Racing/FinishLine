@@ -1,7 +1,14 @@
-import * as React from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
+import { Close } from '@mui/icons-material';
+import { Box, IconButton } from '@mui/material';
+
+interface SearchBarProps {
+  placeholder?: string;
+  searchText: string;
+  setSearchText: (searchText: string) => void;
+}
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -44,13 +51,25 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   }
 }));
 
-export const SearchBar = ({ placeholder = 'Search...' }: { placeholder?: string }) => {
+export const SearchBar = ({ placeholder = 'Search...', searchText, setSearchText }: SearchBarProps) => {
   return (
     <Search>
       <SearchIconWrapper>
         <SearchIcon />
       </SearchIconWrapper>
-      <StyledInputBase placeholder={placeholder} inputProps={{ 'aria-label': 'search' }} />
+      <StyledInputBase
+        placeholder={placeholder}
+        inputProps={{ 'aria-label': 'search' }}
+        value={searchText}
+        onChange={(event) => setSearchText(event.target.value)}
+      />
+      {searchText.length > 0 ? (
+        <IconButton onClick={() => setSearchText('')}>
+          <Close />
+        </IconButton>
+      ) : (
+        <Box minWidth="40px" minHeight="40px" />
+      )}
     </Search>
   );
 };

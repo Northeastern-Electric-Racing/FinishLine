@@ -128,6 +128,15 @@ const performSeed: () => Promise<void> = async () => {
   const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
+  const zayFlowers = await prisma.user.create({ data: dbSeedAllUsers.zayFlowers });
+  const patrickRicard = await prisma.user.create({ data: dbSeedAllUsers.patrickRicard });
+  const patrickQueen = await prisma.user.create({ data: dbSeedAllUsers.patrickQueen });
+  const jadeveonClowney = await prisma.user.create({ data: dbSeedAllUsers.jadeveonClowney });
+  const marlonHumphrey = await prisma.user.create({ data: dbSeedAllUsers.marlonHumphrey });
+  const kyleHamilton = await prisma.user.create({ data: dbSeedAllUsers.kyleHamilton });
+  const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
+  const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
+  const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
   const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
   const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
   const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
@@ -215,12 +224,17 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * TEAMS
    */
+  /** Creating Team Types */
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
+
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
-  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId));
+  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
-  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
   const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
@@ -296,7 +310,16 @@ const performSeed: () => Promise<void> = async () => {
       chrisHorton,
       mikeMacdonald,
       toddMonken,
-      stephenBisciotti
+      stephenBisciotti,
+      zayFlowers,
+      patrickRicard,
+      patrickQueen,
+      jadeveonClowney,
+      marlonHumphrey,
+      kyleHamilton,
+      marcusWilliams,
+      roquanSmith,
+      justinTucker
     ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
@@ -1286,10 +1309,6 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some more notes',
     assembly1.assemblyId
   );
-
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();

@@ -4,7 +4,7 @@
  */
 
 import { User } from './user-types';
-import { ProjectProposedChanges, WbsElementStatus, WbsNumber, WorkPackageProposedChanges } from './project-types';
+import { ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
 import { WorkPackageStage } from './work-package-types';
 
 export interface ChangeRequest {
@@ -111,7 +111,6 @@ export interface ProposedSolutionCreateArgs {
 
 export interface ProjectProposedChangesCreateArgs {
   name: string;
-  status: WbsElementStatus;
   projectLeadId?: number;
   projectManagerId?: number;
   links: { url: string; linkTypeName: string }[];

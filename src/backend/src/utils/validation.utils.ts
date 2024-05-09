@@ -79,7 +79,6 @@ const projectProposedChangesExists = (validationObject: ValidationChain): Valida
 export const projectProposedChangesValidators = [
   body('projectProposedChanges').optional(),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.name'))),
-  isStatus(projectProposedChangesExists(body('projectProposedChanges.status'))),
   projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
   nonEmptyString(body('projectProposedChanges.links.*.url')),
   nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),

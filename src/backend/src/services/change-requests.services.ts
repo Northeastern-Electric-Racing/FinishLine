@@ -622,7 +622,6 @@ export default class ChangeRequestsService {
     } else if (projectProposedChanges) {
       const {
         name,
-        status,
         projectLeadId,
         projectManagerId,
         links,
@@ -649,7 +648,7 @@ export default class ChangeRequestsService {
         data: {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
-          status,
+          status: WBS_Element_Status.ACTIVE,
           projectLeadId,
           projectManagerId,
           links: {

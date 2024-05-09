@@ -15,13 +15,26 @@ interface GanttChartSectionProps {
   tasks: GanttTaskData[];
   isEditMode: boolean;
   saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (ganttTasks: GanttTaskData) => void;
+  onExpanderClick: (ganttTasks: GanttTaskData, teamName: string) => void;
+  showWorkPackagesList: { [projectId: string]: boolean };
+  setShowWorkPackagesList: React.Dispatch<
+    React.SetStateAction<{
+      [projectId: string]: boolean;
+    }>
+  >;
 }
 
-const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpanderClick }: GanttChartSectionProps) => {
+const GanttChartSection = ({
+  start,
+  end,
+  tasks,
+  isEditMode,
+  saveChanges,
+  showWorkPackagesList,
+  setShowWorkPackagesList
+}: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
-  const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [key: string]: boolean }>({});
 
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);

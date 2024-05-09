@@ -51,12 +51,13 @@ const justiceLeague = (headId: number): Prisma.TeamCreateArgs => {
   };
 };
 
-const avatarBenders = (headId: number): Prisma.TeamCreateArgs => {
+const avatarBenders = (headId: number, teamTypeId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Avatar: The Last Airbender',
       slackId: 'avatar',
-      headId
+      headId,
+      teamTypeId
     }
   };
 };
@@ -71,14 +72,15 @@ const plLegends = (headId: number): Prisma.TeamCreateArgs => {
   };
 };
 
-const huskies = (headId: number): Prisma.TeamCreateArgs => {
+const huskies = (headId: number, teamTypeId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Huskies',
       slackId: 'neu',
       headId,
       description:
-        '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)'
+        '# Welcome!\nThanks for joining our team! Here are some onboarding docs or something idk:\n\n[very important please read](https://crouton.net)',
+      teamTypeId
     }
   };
 };
