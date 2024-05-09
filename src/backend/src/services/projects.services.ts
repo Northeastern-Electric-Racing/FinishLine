@@ -1181,7 +1181,9 @@ export default class ProjectsService {
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);
     if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
 
-    const perms = isAdmin(submitter.role) || isUserPartOfTeams(assembly.wbsElement.project!.teams, submitter);
+    if (!assembly.wbsElement.project) throw new NotFoundException('Project', assembly.wbsElementId);
+
+    const perms = isAdmin(submitter.role) || isUserPartOfTeams(assembly.wbsElement.project.teams, submitter);
 
     if (!perms) throw new AccessDeniedException('update assembly');
 
