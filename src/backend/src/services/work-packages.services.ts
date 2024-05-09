@@ -531,8 +531,9 @@ export default class WorkPackagesService {
    * Deletes the Work Package
    * @param submitter The user who deleted the work package
    * @param wbsNum The work package number to be deleted
+   * @param crId The id of the change request to be implemented by this deletion
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber): Promise<void> {
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, crId: number): Promise<void> {
     // Verify submitter is allowed to delete work packages
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('delete work packages');
 
