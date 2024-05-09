@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import InfoBlock from '../../../components/InfoBlock';
 import { ProjectProposedChangesPreview, StandardChangeRequest, WorkPackageProposedChangesPreview, isProject } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
-import { DiffSectionCreate } from './DiffSectionCreate';
+import DiffSectionCreate from './DiffSectionCreate';
 
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
@@ -16,7 +16,7 @@ enum ChangeRequestAction {
   EDIT_WORK_PACKAGE = 'EDIT_WORK_PACKAGE'
 }
 
-export const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
+const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
   const { wbsNum, projectProposedChanges, workPackageProposedChanges } = changeRequest;
   const isOnProject = isProject(wbsNum);
 
@@ -81,3 +81,5 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
     </Box>
   );
 };
+
+export default DiffSection;

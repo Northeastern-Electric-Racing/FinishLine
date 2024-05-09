@@ -16,7 +16,7 @@ interface ProjectDiffPanelProps {
   potentialChangeTypeMap: Map<string, PotentialChangeType>;
 }
 
-export const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
+const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
   projectProposedChanges,
   workPackageProposedChanges,
   potentialChangeTypeMap
@@ -96,3 +96,5 @@ export const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
     </Box>
   );
 };
+
+export default DiffPanel;

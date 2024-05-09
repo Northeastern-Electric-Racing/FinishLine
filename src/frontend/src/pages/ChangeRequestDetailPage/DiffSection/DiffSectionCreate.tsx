@@ -1,17 +1,14 @@
 import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview } from 'shared';
 import { Box } from '@mui/system';
 import { PotentialChangeType } from '../../../utils/diff-page.utils';
-import { DiffPanel } from './DiffPanel';
+import DiffPanel from './DiffPanel';
 
 interface DiffSectionCreateProps {
   projectProposedChanges?: ProjectProposedChangesPreview;
   workPackageProposedChanges?: WorkPackageProposedChangesPreview;
 }
 
-export const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({
-  projectProposedChanges,
-  workPackageProposedChanges
-}) => {
+const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({ projectProposedChanges, workPackageProposedChanges }) => {
   const isCreateProject = !!projectProposedChanges;
   const potentialChangeTypeMap: Map<string, PotentialChangeType> = new Map();
 
@@ -39,3 +36,5 @@ export const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({
     </Box>
   );
 };
+
+export default DiffSectionCreate;
