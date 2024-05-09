@@ -18,7 +18,7 @@ CREATE TABLE "Work_Package_Template" (
     "duration" INTEGER,
     "expectedActivities" TEXT[],
     "deliverables" TEXT[],
-    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" INTEGER NOT NULL,
     "dateDeleted" TIMESTAMP(3),
     "userDeletedId" INTEGER,

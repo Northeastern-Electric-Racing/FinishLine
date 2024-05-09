@@ -263,28 +263,6 @@ export const toolMaterial: PrismaMaterialType = {
   dateDeleted: null
 };
 
-export const prismaMaterial3: PrismaMaterial = {
-  materialId: 'id',
-  assemblyId: 'assemblyId',
-  name: 'name2',
-  wbsElementId: 1,
-  dateDeleted: null,
-  userDeletedId: null,
-  dateCreated: new Date('10-18-2023'),
-  userCreatedId: 1,
-  pdmFileName: 'file2',
-  status: 'ORDERED',
-  notes: 'random notes',
-  materialTypeName: 'name',
-  manufacturerName: 'manufacturer',
-  manufacturerPartNumber: 'partNum',
-  price: 1000,
-  subtotal: 500,
-  quantity: new Decimal(8),
-  unitName: 'FT',
-  linkUrl: 'https://www.google.com'
-};
-
 export const prismaMaterial2: PrismaMaterial = {
   materialId: 'id',
   assemblyId: 'assemblyId',

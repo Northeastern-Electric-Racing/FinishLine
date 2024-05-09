@@ -310,7 +310,7 @@ export default class WorkPackagesService {
 
     // get the corresponding IDs of all work package templates in BlockedBy,
     // and throw an errror if the template doesn't exist
-    const blockedByIds: string[] = await Promise.all(
+    await Promise.all(
       blockedBy.map(async (elem) => {
         const template = await prisma.work_Package_Template.findFirst({
           where: {
@@ -320,7 +320,7 @@ export default class WorkPackagesService {
         });
 
         if (!template) {
-          throw new NotFoundException('Work Package', templateName);
+          throw new NotFoundException('Work Package Template', templateName);
         }
         return template.workPackageTemplateId;
       })
@@ -336,7 +336,6 @@ export default class WorkPackagesService {
         duration,
         expectedActivities,
         deliverables,
-        dateCreated: new Date(),
         userCreatedId: user.userId
       },
       ...workPackageTemplateQueryArgs

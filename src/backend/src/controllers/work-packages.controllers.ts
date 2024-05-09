@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage, WorkPackageTemplate } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
-import { Work_Package_Template } from '@prisma/client';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {

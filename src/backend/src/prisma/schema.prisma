@@ -731,7 +731,7 @@ model Work_Package_Template {
   blockedBy             Blocked_By_Info[]
   expectedActivities    String[]
   deliverables          String[]
-  dateCreated           DateTime
+  dateCreated           DateTime            @default(now())
   userCreated           User                @relation(fields: [userCreatedId], references: [userId], name: "workPackageTemplateCreator")
   userCreatedId         Int
   dateDeleted           DateTime?
