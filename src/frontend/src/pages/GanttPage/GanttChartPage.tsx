@@ -19,7 +19,8 @@ import {
   transformProjectToGanttTask,
   getProjectTeamsName,
   EventChange,
-  GanttTaskData
+  GanttTaskData,
+  RequestEventChange
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -32,6 +33,7 @@ import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
+import { GanttRequestChange } from './GanttChartComponents/GanttRequestChangeModal';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -52,6 +54,7 @@ const GanttChartPage: FC = () => {
   >([]);
   const [searchText, setSearchText] = useState<string>('');
   const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [projectId: string]: boolean }>({});
+  const [changeDetails, setChangeDetails] = useState<RequestEventChange[]>([]);
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -211,12 +214,39 @@ const GanttChartPage: FC = () => {
   const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  // do something here with the data
+  const addDays = (currentDate: Date, numDays: number) => {
+    const result = new Date(currentDate);
+    result.setDate(result.getDate() + numDays);
+    return result;
+  };
+
+  // TODO: Handle if one wp has multiple changes to it
   const saveChanges = (eventChanges: EventChange[]) => {
-    if (eventChanges.length === 0) {
-      console.log('no changes do nothing');
-    } else {
-      console.log('Changes:', eventChanges);
+    if (eventChanges.length >= 0) {
+      eventChanges.forEach((change) => {
+        const event = ganttTasks.find((task) => task.id === change.eventId);
+        if (event) {
+          let newEnd = event.end;
+          let newStart = event.start;
+          if (change.type === 'change-end-date') {
+            newEnd = change.newEnd;
+          }
+          if (change.type === 'shift-by-days') {
+            newStart = addDays(event.start, change.days);
+            newEnd = addDays(event.end, change.days);
+          }
+
+          const newRequestEventChange = {
+            eventId: change.eventId,
+            name: event.name,
+            prevStart: event.start,
+            prevEnd: event.end,
+            newStart: newStart,
+            newEnd: newEnd
+          };
+          setChangeDetails((currentDetails) => [...currentDetails, newRequestEventChange]);
+        }
+      });
     }
   };
 
@@ -273,6 +303,9 @@ const GanttChartPage: FC = () => {
           showWorkPackagesList={showWorkPackagesList}
           setShowWorkPackagesList={setShowWorkPackagesList}
         />
+        {changeDetails.map((change) => {
+          return <GanttRequestChange change={change} />;
+        })}
       </Box>
     </PageLayout>
   );

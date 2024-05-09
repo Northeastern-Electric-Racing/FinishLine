@@ -37,7 +37,7 @@ const GanttChartSection = ({
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
 
   const createChange = (change: EventChange) => {
-    setEventChanges([...eventChanges, change]);
+    setEventChanges([change, ...eventChanges]);
   };
 
   useEffect(() => {

@@ -49,6 +49,15 @@ export type EventChange = { id: string; eventId: string } & (
   | { type: 'shift-by-days'; days: number }
 );
 
+export type RequestEventChange = {
+  eventId: string;
+  name: string;
+  prevStart: Date;
+  prevEnd: Date;
+  newStart: Date;
+  newEnd: Date;
+};
+
 export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]) => {
   const changedEvent = { ...event };
   for (const eventChange of eventChanges) {
