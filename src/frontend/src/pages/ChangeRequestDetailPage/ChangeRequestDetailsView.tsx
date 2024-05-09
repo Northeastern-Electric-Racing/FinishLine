@@ -24,7 +24,7 @@ import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
-import { DiffSection } from './DiffSection/DiffSection';
+import DiffSection from './DiffSection/DiffSection';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
