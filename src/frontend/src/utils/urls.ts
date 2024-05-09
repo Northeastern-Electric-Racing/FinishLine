@@ -57,8 +57,6 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
-const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
-  `${workPackages()}/template/${workPackageTemplateId}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
@@ -149,6 +147,11 @@ const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
+/******************* Work Package Template Endpoints********************/
+
+const workPackageTemplates = () => `${workPackages()}/templates`;
+const workPackageTemplatesEdit = (workPackageTemplateId: string) => `${workPackageTemplates()}${workPackageTemplateId}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -188,7 +191,6 @@ export const apiUrls = {
   workPackagesByWbsNum,
   workPackagesCreate,
   workPackagesEdit,
-  workPackageTemplatesEdit,
   workPackagesDelete,
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
@@ -213,6 +215,7 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  teamTypes,
   teamsSetTeamType,
 
   descriptionBulletsCheck,
@@ -267,8 +270,10 @@ export const apiUrls = {
   designReviewById,
   designReviewsEdit,
   designReviewMarkUserConfirmed,
-  teamTypes,
   designReviewDelete,
+
+  workPackageTemplates,
+  workPackageTemplatesEdit,
 
   version
 };
