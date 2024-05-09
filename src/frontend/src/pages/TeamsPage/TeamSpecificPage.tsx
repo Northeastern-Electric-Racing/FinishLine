@@ -31,18 +31,19 @@ const TeamSpecificPage: React.FC = () => {
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !data) return <LoadingIndicator />;
 
-  const deleteButton = (
+  const DeleteButton = () => (
     <NERButton
       variant="contained"
       disabled={!isAdmin(user.role)}
       startIcon={<Delete />}
       onClick={() => setShowDeleteModal(true)}
+      sx={{ marginRight: '10px' }}
     >
       Delete
     </NERButton>
   );
 
-  const SetTeamTypeButton = (
+  const SetTeamTypeButton = () => (
     <NERButton variant="contained" disabled={!isAdmin(user.role)} onClick={() => setShowTeamTypeModal(true)}>
       Set Team Type
     </NERButton>
@@ -53,8 +54,8 @@ const TeamSpecificPage: React.FC = () => {
       headerRight={
         isAdmin(user.role) && (
           <>
-            {deleteButton}
-            <span style={{ marginLeft: '10px' }}>{SetTeamTypeButton}</span>
+            <DeleteButton />
+            <SetTeamTypeButton />
           </>
         )
       }
