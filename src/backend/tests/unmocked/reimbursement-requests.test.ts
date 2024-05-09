@@ -49,7 +49,7 @@ describe('Reimbursement Requests', () => {
     }
 
     await expect(() =>
-      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead)
+      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, alfred)
     ).rejects.toThrow(
       new AccessDeniedException(
         'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
