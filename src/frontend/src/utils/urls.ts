@@ -148,7 +148,7 @@ const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/c
 
 /******************* Work Package Template Endpoints********************/
 
-const workPackageTemplates = () => `${workPackages()}/template`;
+const workPackageTemplates = () => `${workPackages()}/templates`;
 const workPackageTemplatesEdit = (workPackageTemplateId: string) => `${workPackageTemplates()}${workPackageTemplateId}/edit`;
 
 /**************** Other Endpoints ****************/
