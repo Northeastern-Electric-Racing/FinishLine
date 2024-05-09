@@ -13,7 +13,7 @@ import {
   setTeamHead,
   deleteTeam,
   createTeam,
-  setTeamLeads,
+  setTeamLeads
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {

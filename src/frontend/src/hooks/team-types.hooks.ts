@@ -6,7 +6,6 @@
 import { useQueryClient, useMutation } from 'react-query';
 import { setTeamType } from '../apis/team-types.api';
 
-
 export const useSetTeamType = (teamId: string) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, string>(
@@ -22,8 +21,3 @@ export const useSetTeamType = (teamId: string) => {
     }
   );
 };
-
-
-
-
-
