@@ -1,4 +1,4 @@
-import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview } from 'shared';
+import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview, calculateEndDate } from 'shared';
 import { Box } from '@mui/system';
 import { Typography } from '@mui/material';
 import {
@@ -21,24 +21,37 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
   workPackageProposedChanges,
   potentialChangeTypeMap
 }) => {
-  const projectChangeBullets: ChangeBullet[] = [];
+  const changeBullets: ChangeBullet[] = [];
   for (var projectKey in projectProposedChanges) {
     if (projectProposedChanges.hasOwnProperty(projectKey)) {
-      projectChangeBullets.push({
+      changeBullets.push({
         label: projectKey,
         detail: projectProposedChanges[projectKey as keyof ProjectProposedChangesPreview]!
       });
-      potentialChangeTypeMap.set(projectKey, PotentialChangeType.ADDED);
     }
   }
 
   for (var workPackageKey in workPackageProposedChanges) {
     if (workPackageProposedChanges.hasOwnProperty(workPackageKey)) {
-      projectChangeBullets.push({
-        label: workPackageKey,
-        detail: workPackageProposedChanges[workPackageKey as keyof WorkPackageProposedChangesPreview]!
-      });
-      potentialChangeTypeMap.set(workPackageKey, PotentialChangeType.ADDED);
+      if (workPackageKey === 'duration') {
+        workPackageKey = 'endDate';
+
+        const startDate =
+          typeof workPackageProposedChanges.startDate === 'string'
+            ? new Date(workPackageProposedChanges.startDate)
+            : workPackageProposedChanges.startDate;
+        const duration = workPackageProposedChanges.duration;
+        const endDate = calculateEndDate(startDate, duration);
+        changeBullets.push({
+          label: 'endDate',
+          detail: endDate
+        });
+      } else {
+        changeBullets.push({
+          label: workPackageKey,
+          detail: workPackageProposedChanges[workPackageKey as keyof WorkPackageProposedChangesPreview]!
+        });
+      }
     }
   }
 
@@ -62,7 +75,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
 
   return (
     <Box>
-      {projectChangeBullets.map((changeBullet) => {
+      {changeBullets.map((changeBullet) => {
         const detailText = changeBulletDetailText(changeBullet);
         const potentialChangeType = potentialChangeTypeMap.get(changeBullet.label)!;
 

@@ -1,9 +1,9 @@
-import { Grid } from '@mui/material';
 import { Box } from '@mui/system';
 import InfoBlock from '../../../components/InfoBlock';
 import { ProjectProposedChangesPreview, StandardChangeRequest, WorkPackageProposedChangesPreview, isProject } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
 import DiffSectionCreate from './DiffSectionCreate';
+import DiffSectionEdit from './DiffSectionEdit';
 
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
@@ -32,17 +32,17 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
   const projectProposedChangesPreview: ProjectProposedChangesPreview | undefined = projectProposedChanges
     ? {
         name: projectProposedChanges.name,
+        summary: projectProposedChanges.summary,
         status: projectProposedChanges.status,
-        links: projectProposedChanges.links,
         projectLead: projectProposedChanges.projectLead,
         projectManager: projectProposedChanges.projectManager,
-        summary: projectProposedChanges.summary,
+        teams: projectProposedChanges.teams,
         budget: projectProposedChanges.budget,
-        rules: projectProposedChanges.rules,
         goals: projectProposedChanges.goals,
         features: projectProposedChanges.features,
+        rules: projectProposedChanges.rules,
         otherConstraints: projectProposedChanges.otherConstraints,
-        teams: projectProposedChanges.teams
+        links: projectProposedChanges.links
       }
     : undefined;
 
@@ -65,19 +65,19 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
   return (
     <Box>
       <InfoBlock title={`Proposed Changes - ${displayEnum(changeRequestAction)}`} />
-      <Grid container columnSpacing={4}>
-        {changeRequestAction === ChangeRequestAction.CREATE_PROJECT ||
-        changeRequestAction === ChangeRequestAction.CREATE_WORK_PACKAGE ? (
-          <Grid item xs={6}>
-            <DiffSectionCreate
-              projectProposedChanges={projectProposedChangesPreview}
-              workPackageProposedChanges={workPackageProposedChangesPreview}
-            />
-          </Grid>
-        ) : (
-          <></>
-        )}
-      </Grid>
+      {changeRequestAction === ChangeRequestAction.CREATE_PROJECT ||
+      changeRequestAction === ChangeRequestAction.CREATE_WORK_PACKAGE ? (
+        <DiffSectionCreate
+          projectProposedChanges={projectProposedChangesPreview}
+          workPackageProposedChanges={workPackageProposedChangesPreview}
+        />
+      ) : (
+        <DiffSectionEdit
+          projectProposedChanges={projectProposedChangesPreview}
+          workPackageProposedChanges={workPackageProposedChangesPreview}
+          wbsNum={wbsNum}
+        />
+      )}
     </Box>
   );
 };

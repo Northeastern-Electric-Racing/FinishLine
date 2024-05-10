@@ -2,6 +2,7 @@ import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview } from
 import { Box } from '@mui/system';
 import { PotentialChangeType } from '../../../utils/diff-page.utils';
 import DiffPanel from './DiffPanel';
+import { Grid } from '@mui/material';
 
 interface DiffSectionCreateProps {
   projectProposedChanges?: ProjectProposedChangesPreview;
@@ -27,13 +28,15 @@ const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({ projectProposedCh
   }
 
   return (
-    <Box borderRadius="10px" p={1.4} mb={3} sx={{ backgroundColor: '#2C2C2C' }}>
-      <DiffPanel
-        projectProposedChanges={projectProposedChanges}
-        workPackageProposedChanges={workPackageProposedChanges}
-        potentialChangeTypeMap={potentialChangeTypeMap}
-      />
-    </Box>
+    <Grid item xs={6}>
+      <Box borderRadius="10px" p={1.4} mb={3} sx={{ backgroundColor: '#2C2C2C' }}>
+        <DiffPanel
+          projectProposedChanges={projectProposedChanges}
+          workPackageProposedChanges={workPackageProposedChanges}
+          potentialChangeTypeMap={potentialChangeTypeMap}
+        />
+      </Box>
+    </Grid>
   );
 };
 
