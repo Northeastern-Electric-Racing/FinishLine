@@ -6,13 +6,14 @@ import { errorHandler } from './src/utils/errors.utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
-import workPackagesRouter, { workPackageTemplatesRouter } from './src/routes/work-packages.routes';
+import workPackagesRouter from './src/routes/work-packages.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
 import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 import tasksRouter from './src/routes/tasks.routes';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes';
 import notificationsRouter from './src/routes/notifications.routes';
 import designReviewsRouter from './src/routes/design-reviews.routes';
+import workPackageTemplatesRouter from './src/routes/work-package-templates.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
