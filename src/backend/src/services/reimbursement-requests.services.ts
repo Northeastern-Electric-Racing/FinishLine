@@ -50,7 +50,10 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSecureSettings } from '../utils/auth.utils';
-import { sendReimbursementRequestDeniedNotification } from '../utils/slack.utils';
+import {
+  sendReimbursementRequestCreatedNotification,
+  sendReimbursementRequestDeniedNotification
+} from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -163,6 +166,8 @@ export default class ReimbursementRequestService {
         }
       }
     });
+
+    await sendReimbursementRequestCreatedNotification(createdReimbursementRequest.reimbursementRequestId, recipient.userId);
 
     await createReimbursementProducts(
       validatedReimbursementProducts.validatedOtherReimbursementProducts,

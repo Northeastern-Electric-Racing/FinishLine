@@ -4,17 +4,19 @@
  */
 
 import { Button, Checkbox, Chip, Grid, Typography, useTheme } from '@mui/material';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent } from 'react';
 
 const FilterChipButton = ({
   buttonText,
-  onChange
+  onChange,
+  defaultChecked,
+  checked
 }: {
   buttonText: string;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  defaultChecked: boolean;
+  checked: boolean;
 }) => {
   const theme = useTheme();
 
@@ -30,6 +32,8 @@ const FilterChipButton = ({
       checkedIcon={
         <Chip label={buttonText} sx={{ borderRadius: '20px', paddingX: 1, backgroundColor: theme.palette.primary.main }} />
       }
+      defaultChecked={defaultChecked}
+      checked={checked}
     />
   );
 };
@@ -39,61 +43,72 @@ const FilterRow = ({
   buttons
 }: {
   label: string;
-  buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-}) => (
-  <Grid item container xs={12}>
-    <Typography variant="h6" component="label" textAlign="right">
-      {label}
-    </Typography>
+  buttons: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+}) => {
+  const checkedMap: { [filterLabel: string]: boolean } = {};
 
-    <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'center' }}>
-      {buttons.map((button) => (
-        <FilterChipButton buttonText={button.filterLabel} onChange={button.handler} />
-      ))}
+  buttons.forEach((button) => {
+    checkedMap[button.filterLabel] = button.defaultChecked;
+  });
+  return (
+    <Grid item container xs={12}>
+      <Typography variant="h6" component="label" textAlign="right">
+        {label}
+      </Typography>
+
+      <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'cenƒter' }}>
+        {buttons.map((button) => (
+          <FilterChipButton
+            buttonText={button.filterLabel}
+            onChange={button.handler}
+            defaultChecked={button.defaultChecked}
+            checked={checkedMap[button.filterLabel]}
+          />
+        ))}
+      </Grid>
     </Grid>
-  </Grid>
-);
+  );
+};
 
 interface GanttChartFiltersProps {
-  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
-  expandedHandler: (expanded: boolean) => void;
+  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  teamTypeHandlers: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
+  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  overdueHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
   resetHandler: () => void;
+  collapseHandler: () => void;
 }
 
 const GanttChartFilters = ({
   carHandlers,
-  teamCategoriesHandlers,
-  teamsHandlers,
+  teamTypeHandlers,
+  teamHandlers,
   overdueHandler,
-  expandedHandler,
-  resetHandler
+  resetHandler,
+  collapseHandler
 }: GanttChartFiltersProps) => {
   const FilterButtons = () => {
     return (
-      <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+      <Grid item container xs={12} sx={{ justifyContent: 'right', alignItems: 'right' }}>
+        {/* TODO: Expand & Collapse buttons
         <Grid item>
-          <Button
-            onClick={() => {
-              expandedHandler(true);
-            }}
-            startIcon={<UnfoldMoreIcon />}
-          >
+          <Button onClick={() => {}} startIcon={<UnfoldMoreIcon />}>
             Expand
           </Button>
         </Grid>
         <Grid item>
-          <Button
-            onClick={() => {
-              expandedHandler(false);
-            }}
-            startIcon={<UnfoldLessIcon />}
-          >
+          <Button onClick={collapseHandler} startIcon={<UnfoldLessIcon />}>
             Collapse
           </Button>
-        </Grid>
+        </Grid>*/}
         <Grid item>
           <Button onClick={resetHandler} startIcon={<RestartAltIcon />}>
             Reset
@@ -104,23 +119,27 @@ const GanttChartFilters = ({
   };
 
   return (
-    <Grid
-      container
-      rowSpacing={2}
-      sx={{
-        justifyContent: 'start',
-        alignItems: 'start',
-        padding: 2,
-        paddingX: 4,
-        minWidth: { xs: '100%', md: '30rem' },
-        maxWidth: { xs: '100%', md: '30rem' }
-      }}
-    >
-      <FilterRow label="Cars" buttons={carHandlers} />
-      <FilterRow label="Team Category" buttons={teamCategoriesHandlers} />
-      <FilterRow label="Team" buttons={teamsHandlers} />
-      <FilterRow label="Overdue" buttons={[{ filterLabel: 'Overdue', handler: overdueHandler }]} />
-      <FilterButtons />
+    <Grid>
+      <Grid item px={2} pt={1}>
+        <FilterButtons />
+      </Grid>
+      <Grid
+        container
+        rowSpacing={2}
+        sx={{
+          justifyContent: 'start',
+          alignItems: 'start',
+          padding: 2,
+          paddingX: 4,
+          minWidth: { xs: '100%', md: '30rem' },
+          maxWidth: { xs: '100%', md: '30rem' }
+        }}
+      >
+        <FilterRow label="Car" buttons={carHandlers} />
+        <FilterRow label="Subteam" buttons={teamTypeHandlers} />
+        <FilterRow label="Team" buttons={teamHandlers} />
+        <FilterRow label="Overdue" buttons={overdueHandler} />
+      </Grid>
     </Grid>
   );
 };

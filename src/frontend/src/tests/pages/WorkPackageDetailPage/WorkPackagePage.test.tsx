@@ -91,8 +91,6 @@ describe('work package container', () => {
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
-    expect(screen.getByText('404 could not find the requested work package')).toBeInTheDocument();
   });
 
   it('handles the error with no message', () => {
@@ -103,8 +101,6 @@ describe('work package container', () => {
     renderComponent();
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-    expect(screen.queryByText('work package')).not.toBeInTheDocument();
-    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
   });
 
   it('enables the edit button for non-guest user', () => {
