@@ -210,7 +210,7 @@ export const labelPipe = (label: string) => {
 
   for (let i = 1; i < label.length; i++) {
     if (label.charAt(i) === label.charAt(i).toUpperCase()) {
-      result = result.slice(0, i) + ' ' + result.charAt(i).toUpperCase() + result.slice(i + 1);
+      result = result.slice(0, i) + ' ' + result.charAt(i) + result.slice(i + 1);
     }
   }
 
