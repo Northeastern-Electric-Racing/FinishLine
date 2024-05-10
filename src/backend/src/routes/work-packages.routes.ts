@@ -4,6 +4,7 @@ import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, isDate, isWorkPackageStage, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
+
 export const workPackageTemplatesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);

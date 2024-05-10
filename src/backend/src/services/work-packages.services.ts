@@ -718,7 +718,6 @@ export default class WorkPackagesService {
     if (isGuest(submitter.role)) {
       throw new AccessDeniedGuestException('get all work package templates.');
     }
-    console.log('Are you reaching the service?');
     const workPackageTemplates = await prisma.work_Package_Template.findMany({
       where: { dateDeleted: null },
       ...workPackageTemplateQueryArgs
