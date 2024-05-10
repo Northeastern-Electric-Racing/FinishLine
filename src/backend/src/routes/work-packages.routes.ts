@@ -4,6 +4,7 @@ import WorkPackagesController from '../controllers/work-packages.controllers';
 import { validateInputs } from '../utils/utils';
 import { intMinZero, isDate, isWorkPackageStage, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
+export const workPackageTemplatesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
 workPackagesRouter.post(
@@ -65,11 +66,11 @@ workPackagesRouter.post(
   WorkPackagesController.slackMessageUpcomingDeadlines
 );
 
-workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
-workPackagesRouter.get('/templates', WorkPackagesController.getAllWorkPackageTemplates);
+workPackageTemplatesRouter.get('/', WorkPackagesController.getAllWorkPackageTemplates);
+workPackageTemplatesRouter.get('/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
 
-workPackagesRouter.post(
-  '/template/:workpackageTemplateId/edit',
+workPackageTemplatesRouter.post(
+  '/:workpackageTemplateId/edit',
   nonEmptyString(body('templateName')),
   nonEmptyString(body('templateNotes')),
   intMinZero(body('duration').optional()),

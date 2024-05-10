@@ -6,7 +6,7 @@ import { errorHandler } from './src/utils/errors.utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
 import teamsRouter from './src/routes/teams.routes';
-import workPackagesRouter from './src/routes/work-packages.routes';
+import workPackagesRouter, { workPackageTemplatesRouter } from './src/routes/work-packages.routes';
 import changeRequestsRouter from './src/routes/change-requests.routes';
 import descriptionBulletsRouter from './src/routes/description-bullets.routes';
 import tasksRouter from './src/routes/tasks.routes';
@@ -56,6 +56,7 @@ app.use('/tasks', tasksRouter);
 app.use('/reimbursement-requests', reimbursementRequestsRouter);
 app.use('/design-reviews', designReviewsRouter);
 app.use('/notifications', notificationsRouter);
+app.use('/templates', workPackageTemplatesRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });

@@ -149,8 +149,10 @@ const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/c
 
 /******************* Work Package Template Endpoints********************/
 
-const workPackageTemplates = () => `${workPackages()}/templates`;
-const workPackageTemplatesEdit = (workPackageTemplateId: string) => `${workPackageTemplates()}${workPackageTemplateId}/edit`;
+const workPackageTemplates = () => `${API_URL}/templates`;
+const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPackageTemplates()}/${workPackageTemplateId}`;
+const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
+  `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
