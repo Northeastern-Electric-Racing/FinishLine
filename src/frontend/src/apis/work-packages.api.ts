@@ -4,10 +4,11 @@
  */
 
 import axios from '../utils/axios';
-import { BlockedByInfo, WbsNumber, WorkPackage, WorkPackageStage } from 'shared';
+import { BlockedByInfo, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
+import { workPackageTemplateTransformer } from '../../../backend/src/transformers/work-package-template.transformer';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -125,5 +126,15 @@ export const getManyWorkPackages = (wbsNums: WbsNumber[]) => {
 export const slackUpcomingDeadlines = (deadline: Date) => {
   return axios.post<{ message: string }>(apiUrls.workPackagesSlackUpcomingDeadlines(), {
     deadline
+  });
+};
+
+/**
+ * Gets all the workpackage templates from the database
+ * @returns gets all the workpackage templates
+ */
+export const getAllWorkPackageTemplates = () => {
+  return axios.get<WorkPackageTemplate[]>(apiUrls.workPackageTemplates(), {
+    transformResponse: (data) => JSON.parse(data).map(workPackageTemplateTransformer)
   });
 };
