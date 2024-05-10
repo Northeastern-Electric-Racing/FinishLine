@@ -1,28 +1,23 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  TextField,
-  Typography,
-  useTheme
-} from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { RequestEventChange } from '../../../utils/gantt.utils';
-import { ChangeRequestReason } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
 import { useState } from 'react';
+import NERModal from '../../../components/NERModal';
+import dayjs from 'dayjs';
+import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface GanttRequestChangeProps {
   change: RequestEventChange;
 }
 
 export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }) => {
-  const theme = useTheme();
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>();
   const [explanationForChange, setExplanationForChange] = useState('');
   const [showModal, setShowModal] = useState(true);
+
+  const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
 
   const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
     setReasonForChange(event.target.value as ChangeRequestReason);
@@ -32,11 +27,40 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
     setExplanationForChange(event.target.value);
   };
 
-  // finish submit logic
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  const handleSubmit = async () => {
+    if (!reasonForChange) {
+      return;
+    }
+
+    const payload = {
+      wbsNum: validateWBS(change.eventId),
+      type: ChangeRequestType.Issue,
+      what: `Timeline change request for ${change.name}`,
+      why: [
+        {
+          explain: explanationForChange,
+          type: reasonForChange
+        }
+      ],
+      proposedSolutions: [],
+      workPackageProposedChanges: {
+        name: change.name,
+        duration: (change.newEnd.getTime() - change.newStart.getTime()) / (1000 * 60 * 60 * 24), // is there a better way to do this
+        startDate: change.newStart.toLocaleDateString(),
+        blockedBy: [],
+        expectedActivities: [],
+        deliverables: []
+      }
+    };
+    console.log('payload: ', payload);
+    await mutateAsync(payload);
+
     console.log('Reason:', reasonForChange);
     console.log('Explanation:', explanationForChange);
+    setShowModal(false);
   };
 
   if (!showModal) {
@@ -44,52 +68,40 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
   }
 
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: '10%',
-        right: '10%',
-        width: '30%',
-        // overflowY: 'auto',
-        zIndex: 5,
-        borderRadius: '10px',
-        backgroundColor: theme.palette.background.paper
-      }}
+    <NERModal
+      open={true}
+      onHide={() => setShowModal(false)}
+      title="Work Package Timeline Change Request"
+      onSubmit={handleSubmit}
+      disabled={!reasonForChange || !explanationForChange}
     >
-      <Box component="form" onSubmit={(event) => handleSubmit(event)}>
-        <Box sx={{ backgroundColor: '#ef4345', padding: '10px' }}>
-          <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Work Package Timeline Change Request</Typography>
-        </Box>
-        <Box sx={{ backgroundColor: theme.palette.background.paper, padding: '15px' }}>
-          <Typography sx={{ mb: 1 }}>{change.name} Timeline changed from:</Typography>
-          <Typography>
-            {`${change.prevStart.toLocaleDateString()} - ${change.prevEnd.toLocaleDateString()} to
-            ${change.newStart.toLocaleDateString()} - ${change.newEnd.toLocaleDateString()}`}
-          </Typography>
-        </Box>
-        <Box sx={{ padding: '0 15px 0 15px' }}>
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Reason for Change</InputLabel>
-            <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
-              {Object.keys(ChangeRequestReason).map((reason) => (
-                <MenuItem value={reason}>{reason}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            label="Explanation for Change"
-            sx={{ mt: 2 }}
-            value={explanationForChange}
-            onChange={handleExplanationChange}
-            multiline
-          />
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mt: 1, padding: '5px 0 5px 0' }}>
-          <Button type="submit">Submit Change</Button>
-          <Button onClick={() => setShowModal(false)}>Close</Button>
-        </Box>
+      <Box sx={{ width: '450px' }}>
+        <Typography sx={{ mb: 0.5, fontSize: '1.2em' }}>{change.name} Timeline changed</Typography>
+        <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
+          {`From: ${dayjs(change.prevStart).format('MMMM D, YYYY')} - ${dayjs(change.prevEnd).format('MMMM D, YYYY')}`}
+        </Typography>
+        <Typography sx={{ fontSize: '1em' }}>
+          {`To: ${dayjs(change.newStart).format('MMMM D, YYYY')} - ${dayjs(change.newEnd).format('MMMM D, YYYY')}`}
+        </Typography>
       </Box>
-    </Box>
+      <Box sx={{ padding: '0 15px 0 15px', mt: 2 }}>
+        <FormControl fullWidth>
+          <InputLabel>Reason for Change</InputLabel>
+          <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
+            {Object.entries(ChangeRequestReason).map(([key, value]) => (
+              <MenuItem value={value}>{key}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <TextField
+          fullWidth
+          label="Explanation for Change"
+          sx={{ mt: 2 }}
+          value={explanationForChange}
+          onChange={handleExplanationChange}
+          multiline
+        />
+      </Box>
+    </NERModal>
   );
 };
