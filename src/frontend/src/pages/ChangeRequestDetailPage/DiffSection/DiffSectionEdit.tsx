@@ -5,6 +5,7 @@ import {
   WbsNumber,
   WorkPackage,
   WorkPackageProposedChangesPreview,
+  calculateEndDate,
   equalsWbsNumber
 } from 'shared';
 import { useAllProjects } from '../../../hooks/projects.hooks';
@@ -55,6 +56,7 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({ projectProposedChange
       if (projectProposedChanges.hasOwnProperty(projectKey)) {
         const originalValue = projectAsChanges![projectKey as keyof ProjectProposedChangesPreview]!;
         const proposedValue = projectProposedChanges[projectKey as keyof ProjectProposedChangesPreview]!;
+
         if (valueChanged(originalValue as ProposedChangeValue, proposedValue)) {
           originalMap.set(projectKey, PotentialChangeType.SAME);
           proposedMap.set(projectKey, PotentialChangeType.SAME);
@@ -67,8 +69,26 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({ projectProposedChange
   } else {
     for (var workPackageKey in workPackageProposedChanges) {
       if (workPackageProposedChanges.hasOwnProperty(workPackageKey)) {
-        const originalValue = workPackageAsChanges![workPackageKey as keyof WorkPackageProposedChangesPreview]!;
-        const proposedValue = workPackageProposedChanges[workPackageKey as keyof WorkPackageProposedChangesPreview]!;
+        let originalValue = workPackageAsChanges![workPackageKey as keyof WorkPackageProposedChangesPreview]!;
+        let proposedValue = workPackageProposedChanges[workPackageKey as keyof WorkPackageProposedChangesPreview]!;
+
+        if (workPackageKey === 'duration') {
+          workPackageKey = 'endDate';
+          originalValue = calculateEndDate(
+            new Date(
+              new Date(workPackage!.startDate).getTime() - new Date(workPackage!.startDate).getTimezoneOffset() * -60000
+            ),
+            originalValue as number
+          );
+          proposedValue = calculateEndDate(
+            new Date(
+              new Date(workPackageProposedChanges!.startDate).getTime() -
+                new Date(workPackageProposedChanges!.startDate).getTimezoneOffset() * -60000
+            ),
+            proposedValue as number
+          );
+        }
+
         if (valueChanged(originalValue as ProposedChangeValue, proposedValue)) {
           originalMap.set(workPackageKey, PotentialChangeType.REMOVED);
           proposedMap.set(workPackageKey, PotentialChangeType.ADDED);

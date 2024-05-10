@@ -92,8 +92,10 @@ export const valueChanged = (original: ProposedChangeValue, proposed: ProposedCh
   if (original === undefined) return proposed !== undefined;
   if (proposed === undefined) return original !== undefined;
 
-  original = original as string[] | User | TeamPreview[] | DescriptionBullet[] | LinkInfo[];
-  proposed = proposed as string[] | User | TeamPreview[] | DescriptionBullet[] | LinkInfo[];
+  if (original instanceof Date) return datePipe(original) !== datePipe(proposed as Date);
+
+  original = original as string[] | User | TeamPreview[] | DescriptionBullet[] | LinkInfo[] | WbsNumber[];
+  proposed = proposed as string[] | User | TeamPreview[] | DescriptionBullet[] | LinkInfo[] | WbsNumber[];
 
   if ('firstName' in original) {
     return original.userId !== (proposed as User).userId;

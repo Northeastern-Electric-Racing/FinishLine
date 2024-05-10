@@ -36,10 +36,11 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
       if (workPackageKey === 'duration') {
         workPackageKey = 'endDate';
 
-        const startDate =
-          typeof workPackageProposedChanges.startDate === 'string'
-            ? new Date(workPackageProposedChanges.startDate)
-            : workPackageProposedChanges.startDate;
+        const startDate = new Date(
+          new Date(workPackageProposedChanges!.startDate).getTime() -
+            new Date(workPackageProposedChanges!.startDate).getTimezoneOffset() * -6000
+        );
+
         const duration = workPackageProposedChanges.duration;
         const endDate = calculateEndDate(startDate, duration);
         changeBullets.push({
