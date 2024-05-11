@@ -14,7 +14,7 @@ import { useToast } from '../../hooks/toasts.hooks';
 import { useDeleteDesignReview } from '../../hooks/design-reviews.hooks';
 import { designReviewStatusColor, designReviewStatusPipe } from '../../utils/design-review.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { DesignReviewAvailabilityInfo } from './DesignReviewAttendeeModal';
+import { DesignReviewAvailabilityInfo } from './DesignReviewAvailabilityInfo';
 
 interface DRCSummaryModalProps {
   open: boolean;

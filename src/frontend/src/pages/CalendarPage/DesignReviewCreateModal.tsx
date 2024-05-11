@@ -8,7 +8,6 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
-  Grid,
   MenuItem,
   Select,
   SelectChangeEvent,
@@ -18,7 +17,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
-import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
+import { wbsNamePipe } from '../../utils/pipes';
 import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
@@ -28,7 +27,6 @@ import { userToAutocompleteOption } from '../../utils/teams.utils';
 import { useQuery } from '../../hooks/utils.hooks';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { HOURS } from '../../utils/design-review.utils';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),

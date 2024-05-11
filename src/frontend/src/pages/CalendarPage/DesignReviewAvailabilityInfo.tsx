@@ -1,14 +1,13 @@
 import { DesignReview } from 'shared';
-import NERModal from '../../components/NERModal';
 import { Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import ColumnHeader from '../FinancePage/FinanceComponents/ColumnHeader';
 import { fullNamePipe } from '../../utils/pipes';
 
-interface DesignReviewAttendeeModalProps {
+interface DesignReviewAvailabilityInfoProps {
   designReview: DesignReview;
 }
 
-export const DesignReviewAvailabilityInfo: React.FC<DesignReviewAttendeeModalProps> = ({ designReview }) => {
+export const DesignReviewAvailabilityInfo: React.FC<DesignReviewAvailabilityInfoProps> = ({ designReview }) => {
   return (
     <Grid container columnSpacing={4} rowSpacing={2} marginTop="10px">
       <Grid item>
