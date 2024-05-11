@@ -29,6 +29,7 @@ export const useAllTeams = () => {
     return data;
   });
 };
+
 export const useSingleTeam = (teamId: string) => {
   return useQuery<Team, Error>(['teams', teamId], async () => {
     const { data } = await getSingleTeam(teamId);

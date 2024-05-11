@@ -1,5 +1,6 @@
-import { Role, Material_Type, User, Assembly, Material_Status, Material } from '@prisma/client';
+import { Role, Material_Type, User, Material_Status, Material } from '@prisma/client';
 import {
+  Assembly,
   isAdmin,
   isGuest,
   isHead,
@@ -35,10 +36,11 @@ import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args
 import { linkTypeTransformer } from '../transformers/links.transformer';
 import { isUserPartOfTeams } from '../utils/teams.utils';
 import { materialTypeTransformer } from '../transformers/material-type.transformer';
-import { materialPreviewTransformer } from '../transformers/material.transformer';
+import { assemblyTransformer, materialPreviewTransformer } from '../transformers/material.transformer';
 import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
 import manufacturerTransformer from '../transformers/manufacturer.transformer';
 import { Decimal } from 'decimal.js';
+import { assemblyQueryArgs } from '../prisma-query-args/bom.query-args';
 export default class ProjectsService {
   /**
    * Get all the projects in the database.
@@ -665,10 +667,11 @@ export default class ProjectsService {
         userCreatedId,
         wbsElementId,
         pdmFileName
-      }
+      },
+      ...assemblyQueryArgs
     });
 
-    return assembly;
+    return assemblyTransformer(assembly);
   }
 
   /**
@@ -945,10 +948,11 @@ export default class ProjectsService {
       data: {
         userDeletedId: submitter.userId,
         dateDeleted: new Date()
-      }
+      },
+      ...assemblyQueryArgs
     });
 
-    return deletedAssembly;
+    return assemblyTransformer(deletedAssembly);
   }
 
   /**
@@ -1152,7 +1156,51 @@ export default class ProjectsService {
   }
 
   /**
-   * Updates the linkType's iconName, or required.
+   * Update an assembly
+   * @param submitter the submitter of the request
+   * @param assemblyId the assembly id of the edited material
+   * @param name the name of the edited material
+   * @param pdmFileName the pdm file name of the edited material
+   * @throws if permission denied or material's wbsElement is undefined/deleted
+   * @returns the updated assembly
+   */
+  static async editAssembly(submitter: User, assemblyId: string, name?: string, pdmFileName?: string): Promise<Assembly> {
+    const assembly = await prisma.assembly.findUnique({
+      where: {
+        assemblyId
+      },
+      include: {
+        wbsElement: {
+          include: {
+            project: projectQueryArgs
+          }
+        }
+      }
+    });
+
+    if (!assembly) throw new NotFoundException('Assembly', assemblyId);
+    if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
+
+    if (!assembly.wbsElement.project) throw new NotFoundException('Project', assembly.wbsElementId);
+
+    const perms = isAdmin(submitter.role) || isUserPartOfTeams(assembly.wbsElement.project.teams, submitter);
+
+    if (!perms) throw new AccessDeniedException('update assembly');
+
+    const updatedAssembly = await prisma.assembly.update({
+      where: { assemblyId },
+      data: {
+        name,
+        pdmFileName
+      },
+      ...assemblyQueryArgs
+    });
+
+    return assemblyTransformer(updatedAssembly);
+  }
+
+  /**
+   * Updates the linkType's name, iconName, or required.
    * @param linkName the name of the linkType being editted
    * @param iconName the new iconName
    * @param required the new required status

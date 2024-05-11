@@ -256,7 +256,7 @@ const GanttTaskBar = ({
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700],
+            backgroundColor: event.styles ? event.styles.backgroundColor : theme.palette.background.paper,
             cursor: 'pointer',
             gridRow: 1,
             zIndex: 1

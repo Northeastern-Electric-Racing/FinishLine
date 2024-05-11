@@ -119,6 +119,18 @@ export default class TeamsController {
     }
   }
 
+  static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+
+      const teamType = await TeamsService.getSingleTeamType(teamTypeId);
+
+      return res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const teamTypes = await TeamsService.getAllTeamTypes();

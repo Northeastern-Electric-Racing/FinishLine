@@ -128,6 +128,15 @@ const performSeed: () => Promise<void> = async () => {
   const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
+  const zayFlowers = await prisma.user.create({ data: dbSeedAllUsers.zayFlowers });
+  const patrickRicard = await prisma.user.create({ data: dbSeedAllUsers.patrickRicard });
+  const patrickQueen = await prisma.user.create({ data: dbSeedAllUsers.patrickQueen });
+  const jadeveonClowney = await prisma.user.create({ data: dbSeedAllUsers.jadeveonClowney });
+  const marlonHumphrey = await prisma.user.create({ data: dbSeedAllUsers.marlonHumphrey });
+  const kyleHamilton = await prisma.user.create({ data: dbSeedAllUsers.kyleHamilton });
+  const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
+  const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
+  const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
   const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
   const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
   const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
@@ -301,7 +310,16 @@ const performSeed: () => Promise<void> = async () => {
       chrisHorton,
       mikeMacdonald,
       toddMonken,
-      stephenBisciotti
+      stephenBisciotti,
+      zayFlowers,
+      patrickRicard,
+      patrickQueen,
+      jadeveonClowney,
+      marlonHumphrey,
+      kyleHamilton,
+      marcusWilliams,
+      roquanSmith,
+      justinTucker
     ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(

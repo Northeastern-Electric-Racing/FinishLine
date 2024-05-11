@@ -35,7 +35,6 @@ export interface GanttTaskData {
   isDisabled?: boolean;
   project?: string;
   dependencies?: string[];
-  hideChildren?: boolean;
   displayOrder?: number;
   onClick?: () => void;
   projectLead?: User;
@@ -88,7 +87,6 @@ export interface GanttFilters {
   showTeamTypes: string[];
   showTeams: string[];
   showOnlyOverdue: boolean;
-  expanded: boolean;
 }
 
 export interface GanttTask extends GanttTaskData {
@@ -143,8 +141,7 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
     ganttFilters.showCars.map((car) => carFormat(car.toString())).join('') +
     ganttFilters.showTeamTypes.map(teamTypeFormat).join('') +
     ganttFilters.showTeams.map(teamFormat).join('') +
-    `&overdue=${ganttFilters.showOnlyOverdue}` +
-    `&expanded=${ganttFilters.expanded}`
+    `&overdue=${ganttFilters.showOnlyOverdue}`
   );
 };
 
@@ -175,7 +172,7 @@ export const getProjectTeamsName = (project: Project): string => {
   return project.teams.length === 0 ? NO_TEAM : project.teams.map((team) => team.teamName).join(', ');
 };
 
-export const transformProjectToGanttTask = (project: Project, expanded: boolean): GanttTask[] => {
+export const transformProjectToGanttTask = (project: Project): GanttTask[] => {
   const teamName = getProjectTeamsName(project);
 
   const projectTask: GanttTask = {
@@ -185,7 +182,6 @@ export const transformProjectToGanttTask = (project: Project, expanded: boolean)
     end: project.endDate || new Date(),
     progress: 100,
     type: 'project',
-    hideChildren: !expanded,
     teamName,
     children: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
     onClick: () => {
