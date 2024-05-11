@@ -1,4 +1,4 @@
-import { alfred, financeMember } from '../test-data/users.test-data';
+import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createFinanceTeamAndLead, createTestReimbursementRequest, resetUsers } from '../test-utils';
@@ -39,14 +39,14 @@ describe('Reimbursement Requests', () => {
     }
     const financeLead = await prisma.user.findUnique({
       where: {
-        googleAuthId: '2'
+        googleAuthId: '3'
       }
     });
 
     if (!financeLead) {
       console.log('No finance lead found, please run createFinanceTeamAndLead before this function');
       assert(false);
-      throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
+      throw new Error('No finance lead found, please run createFinanceTeamAndLead before this function');
     }
     await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeLead);
   });
