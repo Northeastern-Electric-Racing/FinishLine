@@ -137,8 +137,8 @@ export const projectToProposedChangesPreview = (project: Project | undefined): P
   return {
     name: project.name,
     summary: project.summary,
-    projectLead: project.lead,
-    projectManager: project.manager,
+    lead: project.lead,
+    manager: project.manager,
     teams: project.teams,
     budget: project.budget,
     goals: project.goals,
@@ -163,8 +163,8 @@ export const workPackageToProposedChangesPreview = (
   return {
     name: workPackage.name,
     stage: workPackage.stage,
-    projectLead: workPackage.lead,
-    projectManager: workPackage.manager,
+    lead: workPackage.lead,
+    manager: workPackage.manager,
     startDate: workPackage.startDate,
     duration: workPackage.duration,
     blockedBy: workPackage.blockedBy,

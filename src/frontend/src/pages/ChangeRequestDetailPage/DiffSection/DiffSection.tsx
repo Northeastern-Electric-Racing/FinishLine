@@ -33,8 +33,8 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
     ? {
         name: projectProposedChanges.name,
         summary: projectProposedChanges.summary,
-        projectLead: projectProposedChanges.projectLead,
-        projectManager: projectProposedChanges.projectManager,
+        lead: projectProposedChanges.lead,
+        manager: projectProposedChanges.manager,
         teams: projectProposedChanges.teams,
         budget: projectProposedChanges.budget,
         goals: projectProposedChanges.goals,
@@ -49,8 +49,8 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
     ? {
         name: workPackageProposedChanges.name,
         stage: workPackageProposedChanges.stage,
-        projectLead: workPackageProposedChanges.projectLead,
-        projectManager: workPackageProposedChanges.projectManager,
+        lead: workPackageProposedChanges.lead,
+        manager: workPackageProposedChanges.manager,
         startDate: workPackageProposedChanges.startDate,
         duration: workPackageProposedChanges.duration,
         blockedBy: workPackageProposedChanges.blockedBy,

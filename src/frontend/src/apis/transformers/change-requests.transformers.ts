@@ -31,7 +31,6 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest | Standard
 
   const workPackageProposedChanges = (changeRequest as StandardChangeRequest).workPackageProposedChanges;
   if (workPackageProposedChanges && workPackageProposedChanges.startDate) {
-    console.log('hello');
     const scopeOutput = {
       ...data,
       workPackageProposedChanges: { ...workPackageProposedChanges },
