@@ -34,6 +34,7 @@ import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { GanttRequestChange } from './GanttChartComponents/GanttRequestChangeModal';
+import { StringMappingType } from 'typescript';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -54,7 +55,7 @@ const GanttChartPage: FC = () => {
   >([]);
   const [searchText, setSearchText] = useState<string>('');
   const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [projectId: string]: boolean }>({});
-  const [changeDetails, setChangeDetails] = useState<RequestEventChange[]>([]);
+  const [groupedEventChanges, setGroupedEventChanges] = useState(new Map<string, RequestEventChange>());
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -220,20 +221,54 @@ const GanttChartPage: FC = () => {
     return result;
   };
 
+  const daysBetweenDates = (origonalDate: Date, newDate: Date) => {
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const differenceMs = Math.abs(newDate.getTime() - origonalDate.getTime())
+    return Math.round(differenceMs / msPerDay);
+  };
+
+  type RequestEventChange = {
+    eventId: string;
+    name: string;
+    prevStart: Date;
+    prevEnd: Date;
+    newStart: Date;
+    newEnd: Date;
+    duration: number;
+  };
+
+  const updateEventChange = (eventId: string, newRequestEventChange: RequestEventChange) => {
+    setGroupedEventChanges((prevMap) => {
+      const updatedMap = new Map(prevMap); 
+      updatedMap.set(eventId, newRequestEventChange); 
+      return updatedMap;
+    });
+  };
+
   // TODO: Handle if one wp has multiple changes to it
   const saveChanges = (eventChanges: EventChange[]) => {
     if (eventChanges.length >= 0) {
       eventChanges.forEach((change) => {
         const event = ganttTasks.find((task) => task.id === change.eventId);
         if (event) {
-          let newEnd = event.end;
-          let newStart = event.start;
+          const existingChange = groupedEventChanges.get(change.eventId);
+
+          let newStart = existingChange ? existingChange.newStart : event.start;
+          let newEnd = existingChange ? existingChange.newEnd : event.end;
+          let duration = existingChange ? existingChange.duration : daysBetweenDates(event.start, event.end);
+
           if (change.type === 'change-end-date') {
-            newEnd = change.newEnd;
+            if (groupedEventChanges.has(change.eventId)) {
+              let duration = daysBetweenDates(change.originalEnd, change.newEnd);
+              newEnd = addDays(newStart, duration);
+            } else {
+              newEnd = change.newEnd;
+            }
           }
           if (change.type === 'shift-by-days') {
+            console.log('days: ', change.days);
             newStart = addDays(event.start, change.days);
-            newEnd = addDays(event.end, change.days);
+            newEnd = addDays(newStart, duration);
           }
 
           const newRequestEventChange = {
@@ -242,9 +277,11 @@ const GanttChartPage: FC = () => {
             prevStart: event.start,
             prevEnd: event.end,
             newStart: newStart,
-            newEnd: newEnd
+            newEnd: newEnd,
+            duration: duration
           };
-          setChangeDetails((currentDetails) => [...currentDetails, newRequestEventChange]);
+          updateEventChange(change.eventId, newRequestEventChange);
+          console.log('goruped event changes: ', groupedEventChanges);
         }
       });
     }
@@ -303,7 +340,7 @@ const GanttChartPage: FC = () => {
           showWorkPackagesList={showWorkPackagesList}
           setShowWorkPackagesList={setShowWorkPackagesList}
         />
-        {changeDetails.map((change) => {
+        {Array.from(groupedEventChanges.values()).map((change) => {
           return <GanttRequestChange change={change} />;
         })}
       </Box>

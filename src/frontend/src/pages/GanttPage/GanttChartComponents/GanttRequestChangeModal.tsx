@@ -79,11 +79,7 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
         deliverables: workPackage.deliverables.map((deliverable) => deliverable.detail)
       }
     };
-    console.log('payload: ', payload);
     await mutateAsync(payload);
-
-    console.log('Reason:', reasonForChange);
-    console.log('Explanation:', explanationForChange);
     setShowModal(false);
   };
 
