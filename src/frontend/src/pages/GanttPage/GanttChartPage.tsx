@@ -18,9 +18,7 @@ import {
   GanttTask,
   transformProjectToGanttTask,
   getProjectTeamsName,
-  EventChange,
-  GanttTaskData,
-  RequestEventChange
+  EventChange
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -34,7 +32,6 @@ import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { GanttRequestChange } from './GanttChartComponents/GanttRequestChangeModal';
-import { StringMappingType } from 'typescript';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
