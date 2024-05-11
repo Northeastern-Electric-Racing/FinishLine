@@ -5,9 +5,6 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { DesignReviewCreateModal } from '../DesignReviewCreateModal';
 import { useState } from 'react';
-import { useAllTeamTypes } from '../../../hooks/design-reviews.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 
 interface DesignReviewSummaryModalButtonsProps {
   designReview: DesignReview;
@@ -23,8 +20,6 @@ const DesignReviewSummaryModalButtons: React.FC<DesignReviewSummaryModalButtonsP
   teamTypes
 }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  console.log(designReview.wbsNum);
 
   return (
     <Box display="flex" flexDirection="column" rowGap={1}>

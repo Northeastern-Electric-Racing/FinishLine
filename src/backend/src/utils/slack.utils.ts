@@ -141,7 +141,7 @@ export const sendSlackDesignReviewConfirmNotification = async (
   designReviewName: string
 ) => {
   const isProduction = process.env.NODE_ENV === 'production';
-  //if (!isProduction) return; // don't send msgs unless in prod
+  if (!isProduction) return; // don't send msgs unless in prod
   const msg = `You have been invited to the ${designReviewName} Design Review!`;
   const fullLink = isProduction
     ? `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`
@@ -230,7 +230,7 @@ export const sendSlackDesignReviewNotification = async (
   team: Team,
   message: string
 ): Promise<{ channelId: string; ts: string }[]> => {
-  //if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
   const fullMsg = `${message}`;
   const fullLink = `https://finishlinebyner.com/design-review-calendar`;
@@ -282,7 +282,7 @@ export const sendDRUserConfirmationToThread = async (
   }[],
   submitter: UserWithSettings
 ) => {
-  //if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
   try {
@@ -306,7 +306,7 @@ export const sendDRConfirmationToThread = async (
   }[],
   submitter: UserWithSettings
 ) => {
-  //if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
   try {
@@ -330,7 +330,7 @@ export const sendDRScheduledSlackNotif = async (
   }[],
   designReview: Design_Review & { wbsElement: WBS_Element; userCreated: User }
 ) => {
-  //if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const drName = designReview.wbsElement.name;
   const { dateScheduled } = designReview;

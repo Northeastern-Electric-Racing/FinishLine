@@ -1,13 +1,9 @@
 import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
 import NERModal from '../../components/NERModal';
-import { Box, Button, Chip, IconButton, Typography } from '@mui/material';
+import { Box, Chip, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
-import { DesignReviewDelayModal } from './SummaryComponents/DesignReviewDelayModal';
-import StageGateWorkPackageModalContainer from '../WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import DesignReviewSummaryModalDetails from './SummaryComponents/DesignReviewSummaryModalDetails';
-import DesignReviewSummaryModalCheckBox from './SummaryComponents/DesignReviewSummaryCheckbox';
-import DesignReviewSummaryModalButtons from './SummaryComponents/DesignReviewSummaryModalButtons';
 import DesignReviewSummaryModalAttendees from './SummaryComponents/DesignReviewSummaryModalAttendees';
 import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
