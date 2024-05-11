@@ -15,7 +15,6 @@ interface GanttChartSectionProps {
   tasks: GanttTaskData[];
   isEditMode: boolean;
   saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (ganttTasks: GanttTaskData, teamName: string) => void;
   showWorkPackagesList: { [projectId: string]: boolean };
   setShowWorkPackagesList: React.Dispatch<
     React.SetStateAction<{

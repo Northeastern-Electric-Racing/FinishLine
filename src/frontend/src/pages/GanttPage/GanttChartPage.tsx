@@ -18,8 +18,7 @@ import {
   GanttTask,
   transformProjectToGanttTask,
   getProjectTeamsName,
-  EventChange,
-  GanttTaskData
+  EventChange
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -92,6 +91,8 @@ const GanttChartPage: FC = () => {
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
   };
+
+  console.log(teamTypes);
 
   const teamTypeHandlerFn = (teamType: TeamType) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -265,11 +266,6 @@ const GanttChartPage: FC = () => {
           chartEditingState={chartEditingState}
           setChartEditingState={setChartEditingState}
           saveChanges={saveChanges}
-          onExpanderClick={(newTask: GanttTaskData, teamName: string) => {
-            ganttTasks.forEach((task) => {
-              if (newTask.id === task.id) task = { ...newTask, teamName };
-            });
-          }}
           showWorkPackagesList={showWorkPackagesList}
           setShowWorkPackagesList={setShowWorkPackagesList}
         />
