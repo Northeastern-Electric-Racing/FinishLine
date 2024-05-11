@@ -18,7 +18,8 @@ import {
   GanttTask,
   transformProjectToGanttTask,
   getProjectTeamsName,
-  EventChange
+  EventChange,
+  RequestEventChange
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -29,7 +30,7 @@ import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend'
 import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersButton';
 import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
-import { Team, TeamType } from 'shared';
+import { Team, TeamType, addDaysToDate, daysBetween } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { GanttRequestChange } from './GanttChartComponents/GanttRequestChangeModal';
 
@@ -53,6 +54,7 @@ const GanttChartPage: FC = () => {
   const [searchText, setSearchText] = useState<string>('');
   const [groupedEventChanges, setGroupedEventChanges] = useState(new Map<string, RequestEventChange>());
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
+  const [activeModalIds, setActiveModalIds] = useState<Set<string>>(new Set());
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -201,28 +203,6 @@ const GanttChartPage: FC = () => {
   const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  const addDays = (currentDate: Date, numDays: number) => {
-    const result = new Date(currentDate);
-    result.setDate(result.getDate() + numDays);
-    return result;
-  };
-
-  const daysBetweenDates = (origonalDate: Date, newDate: Date) => {
-    const msPerDay = 1000 * 60 * 60 * 24;
-    const differenceMs = Math.abs(newDate.getTime() - origonalDate.getTime());
-    return Math.round(differenceMs / msPerDay);
-  };
-
-  type RequestEventChange = {
-    eventId: string;
-    name: string;
-    prevStart: Date;
-    prevEnd: Date;
-    newStart: Date;
-    newEnd: Date;
-    duration: number;
-  };
-
   const updateEventChange = (eventId: string, newRequestEventChange: RequestEventChange) => {
     setGroupedEventChanges((prevMap) => {
       const updatedMap = new Map(prevMap);
@@ -241,20 +221,21 @@ const GanttChartPage: FC = () => {
 
           let newStart = existingChange ? existingChange.newStart : event.start;
           let newEnd = existingChange ? existingChange.newEnd : event.end;
-          let duration = existingChange ? existingChange.duration : daysBetweenDates(event.start, event.end);
+          let duration = existingChange ? existingChange.duration : daysBetween(event.end, event.start);
 
           if (change.type === 'change-end-date') {
             if (groupedEventChanges.has(change.eventId)) {
-              let duration = daysBetweenDates(change.originalEnd, change.newEnd);
-              newEnd = addDays(newStart, duration);
+              duration = daysBetween(change.newEnd, change.originalEnd);
+              newEnd = addDaysToDate(newStart, duration);
             } else {
               newEnd = change.newEnd;
+              console.log('new end', newEnd);
             }
           }
           if (change.type === 'shift-by-days') {
             console.log('days: ', change.days);
-            newStart = addDays(event.start, change.days);
-            newEnd = addDays(newStart, duration);
+            newStart = addDaysToDate(event.start, change.days);
+            newEnd = addDaysToDate(newStart, duration);
           }
 
           const newRequestEventChange = {
@@ -267,10 +248,23 @@ const GanttChartPage: FC = () => {
             duration: duration
           };
           updateEventChange(change.eventId, newRequestEventChange);
-          console.log('goruped event changes: ', groupedEventChanges);
         }
       });
+      console.log('goruped event changes: ', groupedEventChanges);
+
+      // populating the activeModals with the ids of all active modals
+      const updatedSet = new Set(activeModalIds);
+      groupedEventChanges.forEach((change) => {
+        updatedSet.add(change.eventId);
+      });
+      setActiveModalIds(updatedSet);
     }
+  };
+
+  const removeActiveModal = (changeId: string) => {
+    const updatedSet = new Set(activeModalIds);
+    updatedSet.delete(changeId);
+    setActiveModalIds(updatedSet);
   };
 
   const collapseHandler = () => {
@@ -330,8 +324,14 @@ const GanttChartPage: FC = () => {
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
         />
-        {Array.from(groupedEventChanges.values()).map((change) => {
-          return <GanttRequestChange change={change} />;
+        {Array.from(groupedEventChanges.entries()).map(([changeId, change]) => {
+          return (
+            <GanttRequestChange
+              change={change}
+              showGanttModal={activeModalIds.has(changeId)}
+              handleClose={() => removeActiveModal(changeId)}
+            />
+          );
         })}
       </Box>
     </PageLayout>

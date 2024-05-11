@@ -55,6 +55,7 @@ export type RequestEventChange = {
   prevEnd: Date;
   newStart: Date;
   newEnd: Date;
+  duration: number;
 };
 
 export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]) => {

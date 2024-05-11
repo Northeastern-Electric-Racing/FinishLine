@@ -11,12 +11,13 @@ import { getSingleWorkPackage } from '../../../apis/work-packages.api';
 
 interface GanttRequestChangeProps {
   change: RequestEventChange;
+  handleClose: () => void;
+  showGanttModal: boolean;
 }
 
-export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }) => {
+export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change, handleClose, showGanttModal }) => {
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>();
   const [explanationForChange, setExplanationForChange] = useState('');
-  const [showModal, setShowModal] = useState(true);
   const [workPackage, setWorkPackage] = useState<WorkPackage>();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
 
@@ -32,9 +33,12 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
     fetchWorkPackage();
   });
 
-  if (!workPackage || !showModal) {
+  if (!workPackage) {
     return null;
   }
+
+  if (isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
 
   const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
     setReasonForChange(event.target.value as ChangeRequestReason);
@@ -43,9 +47,6 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
   const handleExplanationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setExplanationForChange(event.target.value);
   };
-
-  if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
 
   const changeInTimeline = (startDate: Date, endDate: Date) => {
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
@@ -62,7 +63,7 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
       what: `Move timeline From: ${changeInTimeline(change.prevStart, change.prevEnd)} To: ${changeInTimeline(
         change.newStart,
         change.newEnd
-      )} - ${dayjs(change.newEnd).format('MMMM D, YYYY')}`,
+      )}`,
       why: [
         {
           explain: explanationForChange,
@@ -72,7 +73,7 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
       proposedSolutions: [],
       workPackageProposedChanges: {
         name: change.name,
-        duration: (change.newEnd.getTime() - change.newStart.getTime()) / (1000 * 60 * 60 * 24), // is there a better way to do this
+        duration: change.duration,
         startDate: change.newStart.toLocaleDateString(),
         blockedBy: workPackage.blockedBy,
         expectedActivities: workPackage.expectedActivities.map((expectedActivity) => expectedActivity.detail),
@@ -80,13 +81,13 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change }
       }
     };
     await mutateAsync(payload);
-    setShowModal(false);
+    handleClose();
   };
 
   return (
     <NERModal
-      open={true}
-      onHide={() => setShowModal(false)}
+      open={showGanttModal}
+      onHide={handleClose}
       title="Work Package Timeline Change Request"
       onSubmit={handleSubmit}
       disabled={!reasonForChange || !explanationForChange}
