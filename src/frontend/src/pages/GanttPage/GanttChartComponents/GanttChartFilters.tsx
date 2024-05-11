@@ -101,7 +101,7 @@ const GanttChartFilters = ({
 }: GanttChartFiltersProps) => {
   const FilterButtons = () => {
     return (
-      <Grid item container xs={12} sx={{ justifyContent: 'right', alignItems: 'right' }}>
+      <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'right', gap: 4 }}>
         <Grid item>
           <Button onClick={expandHandler} startIcon={<UnfoldMoreIcon />}>
             Expand
