@@ -1,4 +1,4 @@
-import { Blocked_By_Info, Role, User, WBS_Element_Status } from '@prisma/client';
+import { Role, User, WBS_Element_Status } from '@prisma/client';
 import {
   getDay,
   DescriptionBullet,
@@ -12,9 +12,7 @@ import {
   wbsPipe,
   WorkPackage,
   WorkPackageStage,
-  WorkPackageTemplate,
-  BlockedByCreateArgs,
-  BlockedByInfo
+  WorkPackageTemplate
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -37,7 +35,7 @@ import {
   descriptionBulletToChangeListValue,
   descriptionBulletsToChangeListValues
 } from '../utils/description-bullets.utils';
-import { getBlockingWorkPackages } from '../utils/work-packages.utils';
+import { getBlockingWorkPackages, validateBlockedByTemplates } from '../utils/work-packages.utils';
 import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 
@@ -795,7 +793,7 @@ export default class WorkPackagesService {
    * @param templateNotes notes about the work package template
    * @param duration duration value on the template
    * @param stage stage value on the template
-   * @param blockedByInfo array of work package template
+   * @param blockedByInfo array of templates blocking this
    * @param expectedActivities array of expected activity values on the template
    * @param deliverables array of deliverable values on the template
    * @param workPackageName name value on the template
@@ -808,7 +806,7 @@ export default class WorkPackagesService {
     templateNotes: string,
     duration: number | undefined,
     stage: WorkPackageStage | undefined,
-    blockedByInfo: BlockedByCreateArgs[],
+    blockedByIds: string[],
     expectedActivities: string[],
     deliverables: string[],
     workPackageName: string | undefined
@@ -822,64 +820,7 @@ export default class WorkPackagesService {
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
     if (!isAdmin(submitter.role)) throw new AccessDeniedAdminOnlyException('edit work package templates');
 
-    const updatedBlockedByIds = blockedByInfo.map((blockedBy) => blockedBy.blockedByInfoId);
-    const originalBlockedByIds = originalWorkPackageTemplate.blockedBy.map((blockedBy) => blockedBy.blockedByInfoId);
-
-    // A blocked by is deleted if the new list does not contain it
-    const deleteBlockedByIds = originalWorkPackageTemplate.blockedBy
-      .filter((blockedByItem: Blocked_By_Info) => {
-        return !updatedBlockedByIds.includes(blockedByItem.blockedByInfoId);
-      })
-      .map((item) => item.blockedByInfoId);
-
-    // A blocked by is updated if both the new and old list contain it
-    const updatedBlockedBy = blockedByInfo.filter((blockedByItem) => {
-      return blockedByItem.blockedByInfoId && originalBlockedByIds.includes(blockedByItem.blockedByInfoId);
-    });
-
-    // A blocked by is created if the old list does not contain it
-    const newBlockedBy = blockedByInfo.filter((blockedByItem: BlockedByCreateArgs) => {
-      return !originalWorkPackageTemplate.blockedBy.some(
-        (oldItem) => oldItem.blockedByInfoId === blockedByItem.blockedByInfoId
-      );
-    });
-
-    // deleting old blocked by
-    await prisma.blocked_By_Info.deleteMany({
-      where: {
-        blockedByInfoId: {
-          in: deleteBlockedByIds
-        }
-      }
-    });
-
-    // creating new blocked by
-    const createdBlockedByPromises = newBlockedBy.map((blockedBy) =>
-      prisma.blocked_By_Info.create({
-        data: {
-          workPackageTemplateId,
-          stage: blockedBy.stage,
-          name: blockedBy.name
-        }
-      })
-    );
-
-    await Promise.all(createdBlockedByPromises);
-
-    // updating existing blocked by
-    const updatedBlockedByPromises = updatedBlockedBy.map((blockedBy) => {
-      return prisma.blocked_By_Info.update({
-        where: {
-          blockedByInfoId: blockedBy.blockedByInfoId
-        },
-        data: {
-          stage: blockedBy.stage ? blockedBy.stage : null,
-          name: blockedBy.name
-        }
-      });
-    });
-
-    await Promise.all(updatedBlockedByPromises);
+    await validateBlockedByTemplates(blockedByIds, workPackageTemplateId);
 
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({
       where: {
@@ -892,7 +833,11 @@ export default class WorkPackagesService {
         stage,
         expectedActivities,
         deliverables,
-        workPackageName
+        workPackageName,
+        blockedBy: {
+          set: [], // remove all the connections then add all the given ones
+          connect: blockedByIds.map((blockedById) => ({ workPackageTemplateId: blockedById }))
+        }
       },
       ...workPackageTemplateQueryArgs
     });

@@ -12,7 +12,7 @@ export const workPackageTemplateTransformer = (
     workPackageName: wptInput.workPackageName ?? '',
     stage: (wptInput.stage as WorkPackageStage) ?? undefined,
     duration: wptInput.duration ?? undefined,
-    blockedBy: wptInput.blockedBy.map((info) => blockedByInfoTransformer(info)),
+    blockedBy: wptInput.blockedBy.map((info) => workPackageTemplateTransformer(info)),
     expectedActivities: wptInput.expectedActivities,
     deliverables: wptInput.deliverables,
     dateCreated: wptInput.dateCreated,
@@ -22,12 +22,4 @@ export const workPackageTemplateTransformer = (
     userDeleted: wptInput.userDeleted ?? undefined,
     userDeletedId: wptInput.userDeletedId ?? undefined
   } as WorkPackageTemplate;
-};
-
-export const blockedByInfoTransformer = (bbInput: Prisma.Blocked_By_InfoGetPayload<{}>): BlockedByInfo => {
-  return {
-    blockedByInfoId: bbInput.blockedByInfoId,
-    stage: (bbInput.stage as WorkPackageStage) ?? undefined,
-    name: bbInput.name
-  };
 };

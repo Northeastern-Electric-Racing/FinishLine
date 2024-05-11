@@ -1,7 +1,7 @@
-import { Description_Bullet, Prisma } from '@prisma/client';
+import { Description_Bullet, Prisma, Work_Package_Template } from '@prisma/client';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import prisma from '../prisma/prisma';
-import { NotFoundException } from './errors.utils';
+import { HttpException, NotFoundException } from './errors.utils';
 
 export const calculateWorkPackageProgress = (
   deliverables: Description_Bullet[],
@@ -53,4 +53,27 @@ export const getBlockingWorkPackages = async (
   }
 
   return blockingWorkPackages;
+};
+
+export const validateBlockedByTemplates = async (
+  blockedByIds: string[],
+  originalTemplateId: string
+): Promise<Work_Package_Template[]> => {
+  const blockedByTemplates = await prisma.work_Package_Template.findMany({
+    where: {
+      workPackageTemplateId: {
+        in: blockedByIds
+      }
+    }
+  });
+
+  if (blockedByTemplates.length !== blockedByIds.length) {
+    throw new HttpException(400, 'One of the blockers is not a Work Package Template.');
+  }
+
+  if (blockedByIds.includes(originalTemplateId)) {
+    throw new HttpException(400, 'A Work Package Template cannot block itself.');
+  }
+
+  return blockedByTemplates;
 };

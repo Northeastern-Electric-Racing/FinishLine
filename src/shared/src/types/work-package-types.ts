@@ -33,7 +33,7 @@ export interface WorkPackageTemplate {
   workPackageName?: string;
   stage?: WorkPackageStage;
   duration?: number;
-  blockedBy: BlockedByInfo[];
+  blockedBy: WorkPackageTemplate[];
   expectedActivities: String[];
   deliverables: String[];
   dateCreated: Date;
