@@ -86,6 +86,7 @@ const GanttTaskBar = ({
       const deltaX = currentX - startX!;
       setWidth(Math.max(100, width + deltaX));
       setStartX(currentX);
+      console.log(currentX);
     }
   };
 
@@ -127,7 +128,11 @@ const GanttTaskBar = ({
   };
 
   return isEditMode ? (
-    <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
+    <div
+      style={{ position: 'relative', width: '100%', marginTop: 10 }}
+      onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
+    >
       <Box
         sx={{
           width: '100%',
@@ -179,8 +184,6 @@ const GanttTaskBar = ({
             backgroundColor: event.styles ? event.styles.backgroundColor : theme.palette.background.paper,
             cursor: isProject ? 'default' : 'move'
           }}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
         >
           <Box
             sx={{
@@ -233,7 +236,7 @@ const GanttTaskBar = ({
           </Box>
         </div>
       </Box>
-    </Box>
+    </div>
   ) : (
     <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
       <Box
