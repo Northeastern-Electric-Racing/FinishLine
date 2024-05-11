@@ -22,7 +22,7 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
         }
       }
     },
-    teams: { include: { members: true, head: true, leads: true } },
+    teams: { include: { members: true, head: true, leads: true, teamType: true } },
     goals: { where: { dateDeleted: null } },
     features: { where: { dateDeleted: null } },
     otherConstraints: { where: { dateDeleted: null } },

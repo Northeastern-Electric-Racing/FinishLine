@@ -50,7 +50,10 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import reimbursementQueryArgs from '../prisma-query-args/reimbursement.query-args';
 import { UserWithSecureSettings } from '../utils/auth.utils';
-import { sendReimbursementRequestDeniedNotification } from '../utils/slack.utils';
+import {
+  sendReimbursementRequestCreatedNotification,
+  sendReimbursementRequestDeniedNotification
+} from '../utils/slack.utils';
 
 export default class ReimbursementRequestService {
   /**
@@ -163,6 +166,8 @@ export default class ReimbursementRequestService {
         }
       }
     });
+
+    await sendReimbursementRequestCreatedNotification(createdReimbursementRequest.reimbursementRequestId, recipient.userId);
 
     await createReimbursementProducts(
       validatedReimbursementProducts.validatedOtherReimbursementProducts,
@@ -337,10 +342,11 @@ export default class ReimbursementRequestService {
     });
 
     if (!request) throw new NotFoundException('Reimbursement Request', requestId);
-    if (request.recipientId !== submitter.userId)
+    if (request.recipientId !== submitter.userId && !(await isUserLeadOrHeadOfFinanceTeam(submitter)))
       throw new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+        'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
       );
+
     if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
     if (
       request.reimbursementStatuses.some(

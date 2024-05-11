@@ -53,6 +53,7 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
     .map((param) => `${param}=${queryParams[param]}`)
     .join('&')}`;
 };
+
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
@@ -78,6 +79,7 @@ const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
+const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
@@ -145,6 +147,13 @@ const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
+/******************* Work Package Template Endpoints********************/
+
+const workPackageTemplates = () => `${API_URL}/templates`;
+const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPackageTemplates()}/${workPackageTemplateId}`;
+const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
+  `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -208,6 +217,8 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  teamTypes,
+  teamsSetTeamType,
 
   descriptionBulletsCheck,
 
@@ -261,8 +272,10 @@ export const apiUrls = {
   designReviewById,
   designReviewsEdit,
   designReviewMarkUserConfirmed,
-  teamTypes,
   designReviewDelete,
+
+  workPackageTemplates,
+  workPackageTemplatesEdit,
 
   version
 };

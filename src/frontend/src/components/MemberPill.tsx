@@ -4,7 +4,7 @@ import { User } from 'shared';
 import { fullNamePipe } from '../utils/pipes';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
-export const MemberPill: React.FC<{ user: User; handleClick: () => void }> = ({ user, handleClick }) => {
+export const MemberPill: React.FC<{ user: User; handleClick?: () => void }> = ({ user, handleClick }) => {
   return (
     <Box
       sx={{
@@ -16,12 +16,14 @@ export const MemberPill: React.FC<{ user: User; handleClick: () => void }> = ({ 
         margin: '8px'
       }}
     >
-      <Typography fontSize="15px" marginLeft="10px" color="#242526">
+      <Typography fontSize="15px" marginLeft="10px" marginRight={handleClick ? undefined : '10px'} color="#242526">
         {fullNamePipe(user)}
       </Typography>
-      <IconButton onClick={handleClick} size="small">
-        <RemoveCircleOutlineIcon sx={{ color: '#242526', width: '18px' }} />
-      </IconButton>
+      {handleClick && (
+        <IconButton onClick={handleClick} size="small">
+          <RemoveCircleOutlineIcon sx={{ color: '#242526', width: '18px' }} />
+        </IconButton>
+      )}
     </Box>
   );
 };

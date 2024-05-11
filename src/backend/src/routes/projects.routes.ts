@@ -123,6 +123,14 @@ projectRouter.post(
   ProjectsController.editMaterial
 );
 
+projectRouter.post(
+  '/bom/assembly/:assemblyId/edit',
+  nonEmptyString(body('name').optional()),
+  nonEmptyString(body('pdmFileName').optional()),
+  validateInputs,
+  ProjectsController.editAssembly
+);
+
 projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType);
 
 projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssembly);
