@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Checkbox, FormControlLabel, Link, Typography } from '@mui/material';
 import { DesignReview, TeamType } from 'shared';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -7,7 +7,6 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import { DesignReviewPill } from './DesignReviewPill';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import { useState } from 'react';
-import DesignReviewSummaryModalCheckBox from './DesignReviewSummaryCheckbox';
 import StageGateWorkPackageModalContainer from '../../WorkPackageDetailPage/StageGateWorkPackageModalContainer/StageGateWorkPackageModalContainer';
 import { DesignReviewDelayModal } from './DesignReviewDelayModal';
 import DesignReviewSummaryModalButtons from './DesignReviewSummaryModalButtons';
@@ -31,40 +30,43 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
         hideStatus
       />
       <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} designReview={designReview} />
-      <Box display="flex" justifyContent="space-between" paddingRight={'10px'}>
-        <DesignReviewPill
-          icon={<AccessTimeIcon />}
-          isLink={false}
-          displayText={meetingStartTimePipe(designReview.meetingTimes)}
-        />
-        <DesignReviewPill
-          icon={<LocationOnIcon />}
-          isLink={false}
-          displayText={designReview.location ? designReview.location : 'Online'}
-        />
+      <Box display="flex" gap={3} paddingRight={'10px'}>
+        <DesignReviewPill icon={<AccessTimeIcon />} displayText={meetingStartTimePipe(designReview.meetingTimes)} />
+        <DesignReviewPill icon={<LocationOnIcon />} displayText={designReview.location ? designReview.location : 'Online'} />
       </Box>
       <Box rowGap={2} display="flex" flexDirection={'column'}>
         <Box display="flex" gap={8} alignItems={'center'}>
-          <DesignReviewPill
-            isLink
-            icon={<DescriptionIcon />}
-            linkURL={designReview.docTemplateLink ?? ''}
-            displayText={designReview.docTemplateLink ? 'Question Doc' : 'No Doc'}
-          />
-          <DesignReviewSummaryModalCheckBox
-            onChange={(checked) => {
-              setChecked(checked);
-            }}
-            checked={checked}
+          <Box display="flex" gap={1} alignItems={'center'}>
+            <DescriptionIcon />
+            <Link target="_blank" href={designReview.docTemplateLink ?? ''} paddingLeft="4px">
+              <Typography fontSize={18}>
+                {designReview.docTemplateLink ? 'Question Document' : 'No Question Document'}
+              </Typography>
+            </Link>
+          </Box>
+          <FormControlLabel
+            label="Mark Design Review as Complete"
+            control={
+              <Checkbox
+                checked={checked}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setChecked(event.target.checked);
+                }}
+                sx={{
+                  color: 'inherit',
+                  '&.Mui-checked': { color: 'inherit' }
+                }}
+              />
+            }
           />
         </Box>
-        <Box display="flex" gap={12} alignItems={'center'}>
-          <DesignReviewPill
-            isLink
-            icon={<VideocamIcon />}
-            linkURL={designReview.zoomLink ?? ''}
-            displayText={designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}
-          />
+        <Box display="flex" gap={16} alignItems={'center'}>
+          <Box display="flex" gap={1} alignItems={'center'}>
+            <VideocamIcon />
+            <Link target="_blank" href={designReview.zoomLink ?? ''} paddingLeft="4px">
+              <Typography fontSize={18}>{designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}</Typography>
+            </Link>
+          </Box>
           {checked && (
             <DesignReviewSummaryModalButtons
               designReview={designReview}

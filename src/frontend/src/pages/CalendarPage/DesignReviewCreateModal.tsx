@@ -197,7 +197,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                     helperText: errors.date?.message,
                     onClick: (e) => setDatePickerOpen(true),
                     inputProps: { readOnly: true },
-
                     fullWidth: true
                   }
                 }}

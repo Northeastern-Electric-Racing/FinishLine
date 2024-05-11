@@ -66,9 +66,9 @@ export const replyToMessageInThread = async (
 };
 
 /**
- * Sends a slack message as a reply in a thread
- * @param slackId - the channel id of the channel of the message to reply to
- * @param parentTimestamp - the timestamp of the message to reply to in a thread
+ * Edits an existing slack message
+ * @param slackId - the channel id of the channel of the message to edit
+ * @param timestamp - the timestamp of the message to edit
  * @param message - the text content of the message being sent
  * @param link - the link for the button on the message
  * @param linkButtonText - the text for the button on the message
