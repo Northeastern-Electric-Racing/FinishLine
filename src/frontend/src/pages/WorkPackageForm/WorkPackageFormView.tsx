@@ -99,7 +99,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   const history = useHistory();
 
   const [managerId, setManagerId] = useState<string | undefined>(
-    defaultValues ? wbsElement.lead?.userId.toString() : undefined
+    defaultValues ? wbsElement.manager?.userId.toString() : undefined
   );
   const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
