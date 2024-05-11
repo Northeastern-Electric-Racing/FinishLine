@@ -50,7 +50,7 @@ const GanttChartPage: FC = () => {
     }>
   >([]);
   const [searchText, setSearchText] = useState<string>('');
-  const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [projectId: string]: boolean }>({});
+  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -61,21 +61,18 @@ const GanttChartPage: FC = () => {
 
   const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : false;
 
-  const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
-
   const defaultGanttFilters: GanttFilters = {
     showCars,
     showTeamTypes,
     showTeams,
-    showOnlyOverdue,
-    expanded
+    showOnlyOverdue
   };
 
   const filteredProjects = filterGanttProjects(projects ?? [], defaultGanttFilters, searchText);
   const sortedProjects = filteredProjects.sort(
     (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
   );
-  const ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
+  const ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project));
 
   if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
@@ -91,8 +88,6 @@ const GanttChartPage: FC = () => {
       history.push(`${history.location.pathname + buildGanttSearchParams(ganttFilters)}`);
     };
   };
-
-  console.log(teamTypes);
 
   const teamTypeHandlerFn = (teamType: TeamType) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -161,16 +156,8 @@ const GanttChartPage: FC = () => {
   ];
 
   const resetHandler = () => {
-    // No more forced reloads
-    if (query.get('expanded') === null) {
-      ganttTasks.forEach((task) => {
-        if (task.type === 'project') {
-          task.hideChildren = true;
-        }
-      });
-    } else {
-      history.push(routes.GANTT);
-    }
+    history.push(routes.GANTT);
+    showWorkPackagesMap.clear();
   };
 
   /***************************************************** */
@@ -222,7 +209,15 @@ const GanttChartPage: FC = () => {
   };
 
   const collapseHandler = () => {
-    setShowWorkPackagesList({});
+    ganttTasks.forEach((task) => {
+      setShowWorkPackagesMap((prev) => new Map(prev.set(task.id, false)));
+    });
+  };
+
+  const expandHandler = () => {
+    ganttTasks.forEach((task) => {
+      setShowWorkPackagesMap((prev) => new Map(prev.set(task.id, true)));
+    });
   };
 
   const headerRight = (
@@ -235,6 +230,7 @@ const GanttChartPage: FC = () => {
         overdueHandler={overdueHandler}
         resetHandler={resetHandler}
         collapseHandler={collapseHandler}
+        expandHandler={expandHandler}
       />
     </Box>
   );
@@ -266,8 +262,8 @@ const GanttChartPage: FC = () => {
           chartEditingState={chartEditingState}
           setChartEditingState={setChartEditingState}
           saveChanges={saveChanges}
-          showWorkPackagesList={showWorkPackagesList}
-          setShowWorkPackagesList={setShowWorkPackagesList}
+          showWorkPackagesMap={showWorkPackagesMap}
+          setShowWorkPackagesMap={setShowWorkPackagesMap}
         />
       </Box>
     </PageLayout>

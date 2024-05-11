@@ -11,8 +11,8 @@ interface GanttChartProps {
   chartEditingState: Array<{ teamName: string; editing: boolean }>;
   setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
-  showWorkPackagesList: { [projectId: string]: boolean };
-  setShowWorkPackagesList: React.Dispatch<React.SetStateAction<{ [projectId: string]: boolean }>>;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
 }
 
 const GanttChart = ({
@@ -23,8 +23,8 @@ const GanttChart = ({
   chartEditingState,
   setChartEditingState,
   saveChanges,
-  showWorkPackagesList,
-  setShowWorkPackagesList
+  showWorkPackagesMap,
+  setShowWorkPackagesMap
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -51,9 +51,8 @@ const GanttChart = ({
         if (!tasks) return <></>;
 
         // Sorting the work packages of each project based on their start date
-        tasks.map((task) => {
+        tasks.forEach((task) => {
           task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
-          return task;
         });
 
         return (
@@ -93,13 +92,13 @@ const GanttChart = ({
             </Box>
             <Box key={teamName} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
               <GanttChartSection
-                showWorkPackagesList={showWorkPackagesList}
-                setShowWorkPackagesList={setShowWorkPackagesList}
                 tasks={tasks}
                 start={startDate}
                 end={endDate}
                 isEditMode={isEditMode}
                 saveChanges={saveChanges}
+                showWorkPackagesMap={showWorkPackagesMap}
+                setShowWorkPackagesMap={setShowWorkPackagesMap}
               />
             </Box>
           </Box>
