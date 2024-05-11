@@ -176,8 +176,8 @@ const GanttTaskBar = ({
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700],
-            cursor: 'move'
+            backgroundColor: event.styles ? event.styles.backgroundColor : theme.palette.background.paper,
+            cursor: isProject ? 'default' : 'move'
           }}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
@@ -193,7 +193,7 @@ const GanttTaskBar = ({
             }}
           >
             <Box
-              draggable
+              draggable={!isProject}
               onDrag={onDragStart}
               onDragEnd={onDragEnd}
               style={{
@@ -206,11 +206,6 @@ const GanttTaskBar = ({
               }}
             >
               <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {isProject && (
-                  <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-15px', marginLeft: '-5px' }}>
-                    {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
-                  </IconButton>
-                )}
                 <Typography
                   variant="body1"
                   sx={{
@@ -218,10 +213,8 @@ const GanttTaskBar = ({
                     px: 1,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    marginTop: isProject ? 1.6 : 0
+                    whiteSpace: 'nowrap'
                   }}
-                  onClick={onWorkPackageToggle}
                 >
                   {event.name}
                 </Typography>

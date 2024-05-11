@@ -2,6 +2,7 @@ import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import { EventChange, GanttTask } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
 import GanttChartSection from './GanttChartSection';
+import { useEffect } from 'react';
 
 interface GanttChartProps {
   startDate: Date;
@@ -45,6 +46,13 @@ const GanttChart = ({
             chartEditingState[index] = { teamName, editing: !isEditMode };
           }
 
+          if (!isEditMode) {
+            const projects = tasks ? tasks.filter((event) => !event.project) : [];
+            projects.forEach((project) => {
+              setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
+            });
+          }
+
           setChartEditingState([...chartEditingState]);
         };
 
@@ -59,7 +67,7 @@ const GanttChart = ({
           <Box
             sx={{
               mt: 1,
-              py: 0,
+              py: 1,
               background: isEditMode ? theme.palette.divider : 'transparent',
               borderRadius: '0.25rem',
               width: 'fit-content'
