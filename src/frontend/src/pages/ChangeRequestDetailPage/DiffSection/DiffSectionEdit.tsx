@@ -58,11 +58,11 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({ projectProposedChange
         const proposedValue = projectProposedChanges[projectKey as keyof ProjectProposedChangesPreview]!;
 
         if (valueChanged(originalValue as ProposedChangeValue, proposedValue)) {
-          originalMap.set(projectKey, PotentialChangeType.SAME);
-          proposedMap.set(projectKey, PotentialChangeType.SAME);
-        } else {
           originalMap.set(projectKey, PotentialChangeType.REMOVED);
           proposedMap.set(projectKey, PotentialChangeType.ADDED);
+        } else {
+          originalMap.set(projectKey, PotentialChangeType.SAME);
+          proposedMap.set(projectKey, PotentialChangeType.SAME);
         }
       }
     }

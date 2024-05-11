@@ -55,7 +55,7 @@ export interface ProjectProposedChanges extends WbsProposedChanges {
   carNumber?: number;
 }
 
-export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id'>;
+export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id' | 'status'>;
 
 export interface Project extends WbsElement {
   summary: string;
@@ -83,7 +83,7 @@ export interface WorkPackageProposedChanges extends WbsProposedChanges {
   stage?: WorkPackageStage;
 }
 
-export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id'>;
+export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id' | 'links' | 'status'>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;

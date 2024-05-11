@@ -32,7 +32,7 @@ export interface ChangeBullet {
 
 export const changeBulletDetailText = (changeBullet: ChangeBullet): string | string[] => {
   const { label, detail } = changeBullet;
-  if (detail === undefined) return '';
+  if (detail === undefined) return 'None';
   else if (detail instanceof Date) {
     return datePipe(detail);
   } else if (typeof detail === 'string') {
@@ -47,7 +47,7 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
   } else if ('firstName' in detail) {
     return fullNamePipe(detail);
   } else if (detail.length === 0) {
-    return '';
+    return 'None';
   } else {
     // detail is a non-empty array
     const testVal = detail[0];
@@ -61,7 +61,7 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     } else if ('carNumber' in testVal) {
       return (detail as WbsNumber[]).map(wbsPipe);
     } else {
-      return (detail as LinkInfo[]).map((link) => link.linkType.name);
+      return (detail as LinkInfo[]).map((link) => `${link.linkType.name}: ${link.url}`);
     }
   }
 };
@@ -137,22 +137,21 @@ export const projectToProposedChangesPreview = (project: Project | undefined): P
   return {
     name: project.name,
     summary: project.summary,
+    projectLead: project.lead,
+    projectManager: project.manager,
+    teams: project.teams,
     budget: project.budget,
-    rules: project.rules,
     goals: project.goals,
     features: project.features,
+    rules: project.rules,
     otherConstraints: project.otherConstraints,
-    teams: project.teams,
-    status: project.status,
     links: project.links.map((link) => {
       return {
         linkInfoId: link.linkId,
         url: link.url,
         linkType: link.linkType
       };
-    }),
-    projectLead: project.lead,
-    projectManager: project.manager
+    })
   };
 };
 
@@ -163,23 +162,13 @@ export const workPackageToProposedChangesPreview = (
 
   return {
     name: workPackage.name,
-    status: workPackage.status,
-    links: workPackage.links
-      ? workPackage.links.map((link) => {
-          return {
-            linkInfoId: link.linkId,
-            url: link.url,
-            linkType: link.linkType
-          };
-        })
-      : [],
+    stage: workPackage.stage,
     projectLead: workPackage.lead,
     projectManager: workPackage.manager,
     startDate: workPackage.startDate,
     duration: workPackage.duration,
     blockedBy: workPackage.blockedBy,
     expectedActivities: workPackage.expectedActivities,
-    deliverables: workPackage.deliverables,
-    stage: workPackage.stage
+    deliverables: workPackage.deliverables
   };
 };

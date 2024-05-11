@@ -33,7 +33,6 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
     ? {
         name: projectProposedChanges.name,
         summary: projectProposedChanges.summary,
-        status: projectProposedChanges.status,
         projectLead: projectProposedChanges.projectLead,
         projectManager: projectProposedChanges.projectManager,
         teams: projectProposedChanges.teams,
@@ -49,16 +48,14 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
   const workPackageProposedChangesPreview: WorkPackageProposedChangesPreview | undefined = workPackageProposedChanges
     ? {
         name: workPackageProposedChanges.name,
-        status: workPackageProposedChanges.status,
-        links: workPackageProposedChanges.links,
+        stage: workPackageProposedChanges.stage,
         projectLead: workPackageProposedChanges.projectLead,
         projectManager: workPackageProposedChanges.projectManager,
         startDate: workPackageProposedChanges.startDate,
         duration: workPackageProposedChanges.duration,
         blockedBy: workPackageProposedChanges.blockedBy,
         expectedActivities: workPackageProposedChanges.expectedActivities,
-        deliverables: workPackageProposedChanges.deliverables,
-        stage: workPackageProposedChanges.stage
+        deliverables: workPackageProposedChanges.deliverables
       }
     : undefined;
 
