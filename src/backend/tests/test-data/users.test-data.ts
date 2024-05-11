@@ -86,6 +86,26 @@ export const aquaman: PrismaUser = {
   googleAuthId: 'a'
 };
 
+export const financeMember: PrismaUser = {
+  userId: 123,
+  firstName: 'Johnny',
+  lastName: 'Bravo',
+  googleAuthId: '25',
+  email: 'jbravo@gmail.com',
+  emailId: 'jbravo',
+  role: PrismaRole.MEMBER
+};
+
+export const member: PrismaUser = {
+  userId: 123,
+  firstName: 'Johnny',
+  lastName: 'Bravo',
+  googleAuthId: '25',
+  email: 'jbravo@gmail.com',
+  emailId: 'jbravo',
+  role: PrismaRole.MEMBER
+};
+
 export const batmanSettings: User_Settings = {
   id: 'bm',
   userId: 1,
