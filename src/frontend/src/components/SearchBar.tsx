@@ -13,7 +13,7 @@ interface SearchBarProps {
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  backgroundColor: theme.palette.background.paper,
   '&:hover': {
     backgroundColor: alpha(theme.palette.common.white, 0.25)
   },
