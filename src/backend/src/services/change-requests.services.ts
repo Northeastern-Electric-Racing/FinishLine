@@ -622,8 +622,8 @@ export default class ChangeRequestsService {
     } else if (projectProposedChanges) {
       const {
         name,
-        projectLeadId,
-        projectManagerId,
+        leadId,
+        managerId,
         links,
         budget,
         summary,
@@ -635,7 +635,7 @@ export default class ChangeRequestsService {
         carNumber
       } = projectProposedChanges;
 
-      await validateProposedChangesFields(links, projectLeadId, projectManagerId);
+      await validateProposedChangesFields(links, leadId, managerId);
 
       if (teamIds.length > 0) {
         for (const teamId of teamIds) {
@@ -649,8 +649,8 @@ export default class ChangeRequestsService {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
           status: WBS_Element_Status.ACTIVE,
-          projectLeadId,
-          projectManagerId,
+          leadId,
+          managerId,
           links: {
             create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
           },
@@ -669,19 +669,10 @@ export default class ChangeRequestsService {
         }
       });
     } else if (workPackageProposedChanges) {
-      const {
-        name,
-        projectLeadId,
-        projectManagerId,
-        duration,
-        startDate,
-        stage,
-        expectedActivities,
-        deliverables,
-        blockedBy
-      } = workPackageProposedChanges;
+      const { name, leadId, managerId, duration, startDate, stage, expectedActivities, deliverables, blockedBy } =
+        workPackageProposedChanges;
 
-      await validateProposedChangesFields([], projectLeadId, projectManagerId);
+      await validateProposedChangesFields([], leadId, managerId);
 
       await validateBlockedBys(blockedBy);
 
@@ -690,8 +681,8 @@ export default class ChangeRequestsService {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
           status: WBS_Element_Status.INACTIVE,
-          projectLeadId,
-          projectManagerId,
+          leadId,
+          managerId,
           workPackageProposedChanges: {
             create: {
               duration,

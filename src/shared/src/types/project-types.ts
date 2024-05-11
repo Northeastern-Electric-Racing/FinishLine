@@ -34,8 +34,8 @@ export interface WbsProposedChanges {
   name: string;
   status: WbsElementStatus;
   links: LinkInfo[];
-  projectLead?: User;
-  projectManager?: User;
+  lead?: User;
+  manager?: User;
 }
 
 export enum WbsElementStatus {
