@@ -71,11 +71,12 @@ const GanttChartSection = ({
               </Box>
               <Collapse in={showWorkPackagesMap.get(project.id)}>
                 {project.children.map((workPackage) => {
+                  const displayWorkPackage = displayEvents.find((event) => event.id === workPackage.id);
                   return (
                     <GanttTaskBar
                       key={workPackage.id}
                       days={days}
-                      event={workPackage}
+                      event={displayWorkPackage!}
                       isEditMode={isEditMode}
                       createChange={createChange}
                     />

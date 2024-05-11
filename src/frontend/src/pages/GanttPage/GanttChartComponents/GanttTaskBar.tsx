@@ -221,8 +221,14 @@ const GanttTaskBar = ({
               </Box>
             </Box>
             <Box
-              sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
-              onMouseDown={handleMouseDown}
+              sx={{
+                cursor: isProject ? 'default' : 'ew-resize',
+                height: '100%',
+                width: '5rem',
+                position: 'relative',
+                right: '-10'
+              }}
+              onMouseDown={isProject ? undefined : handleMouseDown}
             />
           </Box>
         </div>

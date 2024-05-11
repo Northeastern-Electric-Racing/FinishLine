@@ -2,7 +2,6 @@ import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import { EventChange, GanttTask } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
 import GanttChartSection from './GanttChartSection';
-import { useEffect } from 'react';
 
 interface GanttChartProps {
   startDate: Date;
