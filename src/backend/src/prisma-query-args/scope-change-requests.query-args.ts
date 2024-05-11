@@ -30,8 +30,8 @@ export const wbsProposedChangeQueryArgs = Prisma.validator<Prisma.Wbs_Proposed_C
     projectProposedChanges: projectProposedChangesQueryArgs,
     workPackageProposedChanges: workPackageProposedChangesQueryArgs,
     links: linkInfoQueryArgs,
-    projectLead: true,
-    projectManager: true
+    lead: true,
+    manager: true
   }
 });
 
