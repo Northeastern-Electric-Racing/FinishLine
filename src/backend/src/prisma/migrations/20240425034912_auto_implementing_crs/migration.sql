@@ -1,6 +1,3 @@
--- DropForeignKey
-ALTER TABLE "_blockedBy" DROP CONSTRAINT "_blockedBy_B_fkey";
-
 -- AlterTable
 ALTER TABLE "Description_Bullet" ADD COLUMN     "projectProposedChangesFeaturesId" TEXT,
 ADD COLUMN     "projectProposedChangesGoalsId" TEXT,
@@ -10,9 +7,6 @@ ADD COLUMN     "wpProposedChangesExpectedActivitiesId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Scope_CR" ADD COLUMN     "wbsProposedChangesId" TEXT;
-
--- AlterTable
-ALTER TABLE "_blockedBy" ALTER COLUMN "B" SET DATA TYPE TEXT;
 
 -- CreateTable
 CREATE TABLE "LinkInfo" (
@@ -61,6 +55,12 @@ CREATE TABLE "Work_Package_Proposed_Changes" (
 );
 
 -- CreateTable
+CREATE TABLE "_proposedBlockedBy" (
+    "A" INTEGER NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "_proposedProjectTeams" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
@@ -74,6 +74,12 @@ CREATE UNIQUE INDEX "Project_Proposed_Changes_wbsProposedChangesId_key" ON "Proj
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Work_Package_Proposed_Changes_wbsProposedChangesId_key" ON "Work_Package_Proposed_Changes"("wbsProposedChangesId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_proposedBlockedBy_AB_unique" ON "_proposedBlockedBy"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_proposedBlockedBy_B_index" ON "_proposedBlockedBy"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_proposedProjectTeams_AB_unique" ON "_proposedProjectTeams"("A", "B");
@@ -118,7 +124,10 @@ ALTER TABLE "Project_Proposed_Changes" ADD CONSTRAINT "Project_Proposed_Changes_
 ALTER TABLE "Work_Package_Proposed_Changes" ADD CONSTRAINT "Work_Package_Proposed_Changes_wbsProposedChangesId_fkey" FOREIGN KEY ("wbsProposedChangesId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_blockedBy" ADD CONSTRAINT "_blockedBy_B_fkey" FOREIGN KEY ("B") REFERENCES "Work_Package_Proposed_Changes"("workPackageProposedChangesId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_proposedBlockedBy" ADD CONSTRAINT "_proposedBlockedBy_A_fkey" FOREIGN KEY ("A") REFERENCES "WBS_Element"("wbsElementId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_proposedBlockedBy" ADD CONSTRAINT "_proposedBlockedBy_B_fkey" FOREIGN KEY ("B") REFERENCES "Work_Package_Proposed_Changes"("workPackageProposedChangesId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_proposedProjectTeams" ADD CONSTRAINT "_proposedProjectTeams_A_fkey" FOREIGN KEY ("A") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE CASCADE ON UPDATE CASCADE;

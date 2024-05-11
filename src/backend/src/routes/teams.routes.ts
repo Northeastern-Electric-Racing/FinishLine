@@ -44,6 +44,8 @@ teamsRouter.post('/:teamId/archive');
 
 teamsRouter.get('/teamType/all', TeamsController.getAllTeamTypes);
 
+teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamType);
+
 teamsRouter.post(
   '/teamType/create',
   nonEmptyString(body('name')),

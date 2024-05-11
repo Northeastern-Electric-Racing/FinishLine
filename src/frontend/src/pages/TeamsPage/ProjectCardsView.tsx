@@ -21,7 +21,7 @@ const ActiveProjectCardView: React.FC<ActiveProjectCardViewProps> = ({ project }
         <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(data.wbsNum)}`}>
           {wbsPipe(data.wbsNum) + ' - ' + data.name}
         </Link>
-        <Typography sx={{ mb: 1.5 }}>{'Project Lead: ' + fullNamePipe(data.projectLead)}</Typography>
+        <Typography sx={{ mb: 1.5 }}>{'Project Lead: ' + fullNamePipe(data.lead)}</Typography>
         <Typography sx={{ mb: 1.5 }}>{'Summary: ' + data.summary}</Typography>
       </CardContent>
     </Card>

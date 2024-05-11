@@ -128,6 +128,15 @@ const performSeed: () => Promise<void> = async () => {
   const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
   const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
   const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
+  const zayFlowers = await prisma.user.create({ data: dbSeedAllUsers.zayFlowers });
+  const patrickRicard = await prisma.user.create({ data: dbSeedAllUsers.patrickRicard });
+  const patrickQueen = await prisma.user.create({ data: dbSeedAllUsers.patrickQueen });
+  const jadeveonClowney = await prisma.user.create({ data: dbSeedAllUsers.jadeveonClowney });
+  const marlonHumphrey = await prisma.user.create({ data: dbSeedAllUsers.marlonHumphrey });
+  const kyleHamilton = await prisma.user.create({ data: dbSeedAllUsers.kyleHamilton });
+  const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
+  const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
+  const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
   const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
   const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
   const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
@@ -164,8 +173,8 @@ const performSeed: () => Promise<void> = async () => {
           dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
           status: WBS_Element_Status.INACTIVE,
-          projectLeadId: batman.userId,
-          projectManagerId: cyborg.userId
+          leadId: batman.userId,
+          managerId: cyborg.userId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
@@ -199,21 +208,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 0
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -229,12 +224,17 @@ const performSeed: () => Promise<void> = async () => {
   /**
    * TEAMS
    */
+  /** Creating Team Types */
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
+
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
-  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId));
+  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId));
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
-  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId));
+  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
   const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
@@ -310,7 +310,16 @@ const performSeed: () => Promise<void> = async () => {
       chrisHorton,
       mikeMacdonald,
       toddMonken,
-      stephenBisciotti
+      stephenBisciotti,
+      zayFlowers,
+      patrickRicard,
+      patrickQueen,
+      jadeveonClowney,
+      marlonHumphrey,
+      kyleHamilton,
+      marcusWilliams,
+      roquanSmith,
+      justinTucker
     ].map((user) => user.userId)
   );
   await TeamsService.setTeamMembers(
@@ -577,21 +586,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -633,21 +628,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
-    {
-      name: 'Initial CR change',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 0,
-      summary: 'Add more work packages',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.1'],
-      teamIds: []
-    },
+    null,
     null
   );
 
@@ -738,8 +719,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1.wbsElement.projectNumber,
     workPackage1.wbsElement.workPackageNumber,
     'ACTIVATION',
-    workPackage1.project.wbsElement.projectLeadId!,
-    workPackage1.project.wbsElement.projectManagerId!,
+    workPackage1.project.wbsElement.leadId!,
+    workPackage1.project.wbsElement.managerId!,
     new Date('2024-03-25T04:00:00.000Z'),
     true
   );
@@ -803,8 +784,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage3WbsNumber.projectNumber,
     workPackage3WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage3.project.wbsElement.projectLeadId!,
-    workPackage3.project.wbsElement.projectManagerId!,
+    workPackage3.project.wbsElement.leadId!,
+    workPackage3.project.wbsElement.managerId!,
     new Date('2023-08-21T04:00:00.000Z'),
     true
   );
@@ -834,8 +815,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage4WbsNumber.projectNumber,
     workPackage4WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage4.project.wbsElement.projectLeadId!,
-    workPackage4.project.wbsElement.projectManagerId!,
+    workPackage4.project.wbsElement.leadId!,
+    workPackage4.project.wbsElement.managerId!,
     new Date('2023-10-02T04:00:00.000Z'),
     true
   );
@@ -865,8 +846,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage5WbsNumber.projectNumber,
     workPackage5WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage5.project.wbsElement.projectLeadId!,
-    workPackage5.project.wbsElement.projectManagerId!,
+    workPackage5.project.wbsElement.leadId!,
+    workPackage5.project.wbsElement.managerId!,
     new Date('2023-05-08T04:00:00.000Z'),
     true
   );
@@ -896,8 +877,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage6WbsNumber.projectNumber,
     workPackage6WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage6.project.wbsElement.projectLeadId!,
-    workPackage6.project.wbsElement.projectManagerId!,
+    workPackage6.project.wbsElement.leadId!,
+    workPackage6.project.wbsElement.managerId!,
     new Date('2023-07-31T04:00:00.000Z'),
     true
   );
@@ -927,8 +908,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage7WbsNumber.projectNumber,
     workPackage7WbsNumber.workPackageNumber,
     CR_Type.ACTIVATION,
-    workPackage7.project.wbsElement.projectLeadId!,
-    workPackage7.project.wbsElement.projectManagerId!,
+    workPackage7.project.wbsElement.leadId!,
+    workPackage7.project.wbsElement.managerId!,
     new Date('2023-10-09T04:00:00.000Z'),
     true
   );
@@ -972,21 +953,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 40
       }
     ],
-    {
-      name: 'Change the bodywork through pink paint purchase',
-      status: WbsElementStatus.Active,
-      links: [],
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
-      budget: 50,
-      summary: 'Buy hot pink paint',
-      newProject: false,
-      goals: [],
-      features: [],
-      otherConstraints: [],
-      rules: ['EV3.5.3'],
-      teamIds: []
-    },
+    null,
     null
   );
   await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
@@ -1342,10 +1309,6 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some more notes',
     assembly1.assemblyId
   );
-
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
 
   // Need to do this because the design review cannot be scheduled for a past day
   const nextDay = new Date();

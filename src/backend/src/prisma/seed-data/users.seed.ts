@@ -700,6 +700,87 @@ const snowBite: Prisma.UserCreateInput = {
   role: Role.MEMBER
 };
 
+const zayFlowers: Prisma.UserCreateInput = {
+  firstName: 'Zay',
+  lastName: 'Flowers',
+  googleAuthId: '8172979',
+  email: 'flowers.za@ravens.com',
+  emailId: 'flowers.za',
+  role: Role.MEMBER
+};
+
+const patrickRicard: Prisma.UserCreateInput = {
+  firstName: 'Patrick',
+  lastName: 'Ricard',
+  googleAuthId: '02894828',
+  email: 'ricard.pat@ravens.com',
+  emailId: 'ricard.pat',
+  role: Role.MEMBER
+};
+
+const patrickQueen: Prisma.UserCreateInput = {
+  firstName: 'Patrick',
+  lastName: 'Queen',
+  googleAuthId: '8681663',
+  email: 'queen.pat@ravens.com',
+  emailId: 'queen.pat',
+  role: Role.MEMBER
+};
+
+const jadeveonClowney: Prisma.UserCreateInput = {
+  firstName: 'Jadeveon',
+  lastName: 'Clowney',
+  googleAuthId: '9478927',
+  email: 'clowney.jadev@ravens.com',
+  emailId: 'clowney.jadev',
+  role: Role.MEMBER
+};
+
+const marlonHumphrey: Prisma.UserCreateInput = {
+  firstName: 'Marlon',
+  lastName: 'Humphrey',
+  googleAuthId: '014629n',
+  email: 'humphrey.marl@ravens.com',
+  emailId: 'humphrey.marl',
+  role: Role.MEMBER
+};
+
+const kyleHamilton: Prisma.UserCreateInput = {
+  firstName: 'Kyle',
+  lastName: 'Hamilton',
+  googleAuthId: '937299j',
+  email: 'hamilton.ky@ravens.com',
+  emailId: 'hamilton.ky',
+  role: Role.MEMBER
+};
+
+const marcusWilliams: Prisma.UserCreateInput = {
+  firstName: 'Marcus',
+  lastName: 'Williams',
+  googleAuthId: '018383k',
+  email: 'williams.marc@ravens.com',
+  emailId: 'williams.marc',
+  role: Role.MEMBER
+};
+
+const roquanSmith: Prisma.UserCreateInput = {
+  firstName: 'Roquan',
+  lastName: 'Smith',
+  googleAuthId: '0193739n',
+  email: 'smith.roqu@ravens.com',
+  emailId: 'smith.roqu',
+  role: Role.MEMBER
+};
+
+const justinTucker: Prisma.UserCreateInput = {
+  firstName: 'Justin',
+  lastName: 'Tucker',
+  googleAuthId: '018392w',
+  email: 'tucker.just@ravens.com',
+  emailId: 'tucker.just',
+  role: Role.MEMBER
+};
+
 const monopolyMan: Prisma.UserCreateInput = {
   firstName: 'Milburn',
   lastName: 'Pennybags',
@@ -982,6 +1063,16 @@ export const dbSeedAllUsers = {
   husky,
   howler,
   snowBite,
+
+  zayFlowers,
+  patrickRicard,
+  patrickQueen,
+  jadeveonClowney,
+  marlonHumphrey,
+  kyleHamilton,
+  marcusWilliams,
+  roquanSmith,
+  justinTucker,
   monopolyMan,
   mrKrabs,
   richieRich,

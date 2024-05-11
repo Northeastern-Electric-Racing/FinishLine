@@ -1,6 +1,6 @@
 import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
 import { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
-import { getUserSlackId } from './users.utils';
+import { getUserFullName, getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
 import { Change_Request, Design_Review, Team, WBS_Element } from '@prisma/client';
@@ -29,7 +29,7 @@ export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPac
   const { LEAD_CHANNEL_SLACK_ID } = process.env;
   if (!LEAD_CHANNEL_SLACK_ID) return;
 
-  const lead = workPackage.projectLead;
+  const { lead } = workPackage;
   const slackId = await getUserSlackId(lead?.userId);
   const daysUntilDeadline = daysBetween(workPackage.endDate, new Date());
 
@@ -80,6 +80,38 @@ export const sendSlackTaskAssignedNotification = async (slackId: string, task: T
   const link = `https://finishlinebyner.com/projects/${wbsPipe(task.wbsNum)}/tasks`;
   const linkButtonText = 'View Task';
   await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+/**
+ * Send a notification to users that a reimbursement request is created on Slack
+ * @param requestId the id if the reimbursement request
+ * @param submitterId the id of the user who created the reimbursement request
+ */
+export const sendReimbursementRequestCreatedNotification = async (requestId: string, submitterId: number): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const linkButtonText = 'View Reimbursement Request';
+
+  if (!process.env.FINANCE_TEAM_ID) {
+    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
+  }
+
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  try {
+    await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
+    console.log(msg);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
+    }
+  }
 };
 
 /**

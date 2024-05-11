@@ -243,14 +243,14 @@ export default class ChangeRequestsService {
     // if it's an activation cr and being accepted, we can do some stuff to the associated work package
     if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       const { activationChangeRequest: actCr } = foundCR;
-      const shouldUpdateProjLead = actCr.projectLeadId !== foundCR.wbsElement.projectLeadId;
-      const shouldUpdateProjManager = actCr.projectManagerId !== foundCR.wbsElement.projectManagerId;
+      const shouldUpdateProjLead = actCr.projectLeadId !== foundCR.wbsElement.leadId;
+      const shouldUpdateProjManager = actCr.projectManagerId !== foundCR.wbsElement.managerId;
       const shouldChangeStartDate =
         actCr.startDate.setHours(0, 0, 0, 0) !== foundCR.wbsElement.workPackage?.startDate.setHours(0, 0, 0, 0);
       const changes = [];
 
       if (shouldUpdateProjLead) {
-        const oldPL = await getUserFullName(foundCR.wbsElement.projectLeadId);
+        const oldPL = await getUserFullName(foundCR.wbsElement.leadId);
         const newPL = await getUserFullName(actCr.projectLeadId);
         changes.push({
           changeRequestId: foundCR.crId,
@@ -261,7 +261,7 @@ export default class ChangeRequestsService {
       }
 
       if (shouldUpdateProjManager) {
-        const oldPM = await getUserFullName(foundCR.wbsElement.projectManagerId);
+        const oldPM = await getUserFullName(foundCR.wbsElement.managerId);
         const newPM = await getUserFullName(actCr.projectManagerId);
         changes.push({
           changeRequestId: foundCR.crId,
@@ -296,8 +296,8 @@ export default class ChangeRequestsService {
       await prisma.wBS_Element.update({
         where: { wbsElementId: foundCR.wbsElementId },
         data: {
-          projectLeadId: actCr.projectLeadId,
-          projectManagerId: actCr.projectManagerId,
+          leadId: actCr.projectLeadId,
+          managerId: actCr.projectManagerId,
           workPackage: { update: { startDate: actCr.startDate } },
           status: WBS_Element_Status.ACTIVE
         }
@@ -565,7 +565,12 @@ export default class ChangeRequestsService {
     if (isGuest(submitter.role)) throw new AccessDeniedGuestException('create standard change requests');
 
     //verify proposed solutions length is greater than 0
-    if (proposedSolutions.length === 0) throw new HttpException(400, 'No proposed solutions provided');
+    if (proposedSolutions.length === 0 && !projectProposedChanges && !workPackageProposedChanges)
+      throw new HttpException(400, 'No proposed solutions/changes provided');
+
+    if (proposedSolutions.length > 0 && (projectProposedChanges || workPackageProposedChanges)) {
+      throw new HttpException(400, `Can't have proposed solutions and proposed changes`);
+    }
 
     // verify wbs element exists
     const wbsElement = await prisma.wBS_Element.findUnique({
@@ -617,21 +622,20 @@ export default class ChangeRequestsService {
     } else if (projectProposedChanges) {
       const {
         name,
-        status,
         projectLeadId,
         projectManagerId,
         links,
         budget,
         summary,
-        newProject,
         rules,
         teamIds,
         goals,
         features,
-        otherConstraints
+        otherConstraints,
+        carNumber
       } = projectProposedChanges;
 
-      await validateProposedChangesFields(projectLeadId, projectManagerId, links);
+      await validateProposedChangesFields(links, projectLeadId, projectManagerId);
 
       if (teamIds.length > 0) {
         for (const teamId of teamIds) {
@@ -644,7 +648,7 @@ export default class ChangeRequestsService {
         data: {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
-          status,
+          status: WBS_Element_Status.ACTIVE,
           projectLeadId,
           projectManagerId,
           links: {
@@ -654,12 +658,12 @@ export default class ChangeRequestsService {
             create: {
               budget,
               summary,
-              newProject,
               goals: { create: goals.map((value: string) => ({ detail: value })) },
               features: { create: features.map((value: string) => ({ detail: value })) },
               otherConstraints: { create: otherConstraints.map((value: string) => ({ detail: value })) },
               rules,
-              teams: { connect: teamIds.map((teamId) => ({ teamId })) }
+              teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+              carNumber
             }
           }
         }
@@ -667,10 +671,8 @@ export default class ChangeRequestsService {
     } else if (workPackageProposedChanges) {
       const {
         name,
-        status,
         projectLeadId,
         projectManagerId,
-        links,
         duration,
         startDate,
         stage,
@@ -679,7 +681,7 @@ export default class ChangeRequestsService {
         blockedBy
       } = workPackageProposedChanges;
 
-      await validateProposedChangesFields(projectLeadId, projectManagerId, links);
+      await validateProposedChangesFields([], projectLeadId, projectManagerId);
 
       await validateBlockedBys(blockedBy);
 
@@ -687,16 +689,13 @@ export default class ChangeRequestsService {
         data: {
           changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
           name,
-          status,
+          status: WBS_Element_Status.INACTIVE,
           projectLeadId,
           projectManagerId,
-          links: {
-            create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
-          },
           workPackageProposedChanges: {
             create: {
               duration,
-              startDate,
+              startDate: new Date(startDate),
               stage,
               blockedBy: { connect: blockedBy.map((wbsNumber) => ({ wbsNumber })) },
               expectedActivities: { create: expectedActivities.map((value: string) => ({ detail: value })) },

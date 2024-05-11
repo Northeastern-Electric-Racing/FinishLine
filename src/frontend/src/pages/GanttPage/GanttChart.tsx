@@ -11,8 +11,8 @@ interface GanttChartProps {
   chartEditingState: Array<{ teamName: string; editing: boolean }>;
   setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
-  ganttTasks: GanttTask[];
-  setGanttTasks: (value: React.SetStateAction<GanttTask[]>) => void;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
 }
 
 const GanttChart = ({
@@ -23,8 +23,8 @@ const GanttChart = ({
   chartEditingState,
   setChartEditingState,
   saveChanges,
-  ganttTasks,
-  setGanttTasks
+  showWorkPackagesMap,
+  setShowWorkPackagesMap
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -50,11 +50,16 @@ const GanttChart = ({
 
         if (!tasks) return <></>;
 
+        // Sorting the work packages of each project based on their start date
+        tasks.forEach((task) => {
+          task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
+        });
+
         return (
           <Box
             sx={{
-              mt: 2,
-              py: 1,
+              mt: 1,
+              py: 0,
               background: isEditMode ? theme.palette.divider : 'transparent',
               borderRadius: '0.25rem',
               width: 'fit-content'
@@ -65,7 +70,7 @@ const GanttChart = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 2,
-                mb: 1,
+                mb: '-15px',
                 pl: 2,
                 position: 'sticky',
                 left: 0,
@@ -73,7 +78,7 @@ const GanttChart = ({
                 height: '30px'
               }}
             >
-              <Typography variant="h5" fontWeight={400}>
+              <Typography variant="h6" fontWeight={400}>
                 {teamName}
               </Typography>
 
@@ -85,17 +90,15 @@ const GanttChart = ({
                 </IconButton>
               )}
             </Box>
-            <Box key={teamName} sx={{ my: 3, width: 'fit-content', pl: 2 }}>
+            <Box key={teamName} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
               <GanttChartSection
                 tasks={tasks}
                 start={startDate}
                 end={endDate}
                 isEditMode={isEditMode}
-                onExpanderClick={(newTask) => {
-                  const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-                  setGanttTasks(newTasks);
-                }}
                 saveChanges={saveChanges}
+                showWorkPackagesMap={showWorkPackagesMap}
+                setShowWorkPackagesMap={setShowWorkPackagesMap}
               />
             </Box>
           </Box>
