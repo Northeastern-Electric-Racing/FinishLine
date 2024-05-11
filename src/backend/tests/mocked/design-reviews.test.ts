@@ -13,9 +13,7 @@ import {
   aquaman,
   batman,
   batmanScheduleSettings,
-  batmanWithScheduleSettings,
   batmanWithUserSettings,
-  superman,
   supermanWithUserSettings,
   theVisitor,
   wonderwoman
