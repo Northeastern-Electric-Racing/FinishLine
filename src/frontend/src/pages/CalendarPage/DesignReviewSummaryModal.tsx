@@ -1,6 +1,6 @@
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
 import NERModal from '../../components/NERModal';
-import { Box, Chip, IconButton, Typography } from '@mui/material';
+import { Box, Button, Chip, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import { DesignReviewDelayModal } from './SummaryComponents/DesignReviewDelayModal';
@@ -12,28 +12,30 @@ import DesignReviewSummaryModalAttendees from './SummaryComponents/DesignReviewS
 import { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import { DesignReviewAttendeeModal } from './DesignReviewAttendeeModal';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useDeleteDesignReview } from '../../hooks/design-reviews.hooks';
+import { designReviewStatusColor, designReviewStatusPipe } from '../../utils/design-review.utils';
+import NERSuccessButton from '../../components/NERSuccessButton';
+import { DesignReviewAvailabilityInfo } from './DesignReviewAttendeeModal';
 
 interface DRCSummaryModalProps {
   open: boolean;
   onHide: () => void;
   designReview: DesignReview;
+  teamTypes: TeamType[];
 }
 
-const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview }) => {
+const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview, teamTypes }) => {
   const user = useCurrentUser();
   const toast = useToast();
   const history = useHistory();
-  const [checked, setChecked] = useState<boolean>(false);
-  const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
-  const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { mutateAsync: deleteDesignReview } = useDeleteDesignReview(designReview.designReviewId);
+
+  const isDesignReviewCreator = user.userId === designReview.userCreated.userId;
 
   const isScheduled =
     designReview.status === DesignReviewStatus.SCHEDULED || designReview.status === DesignReviewStatus.DONE;
@@ -64,9 +66,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     );
   };
 
-  return designReview.status === DesignReviewStatus.UNCONFIRMED ? (
-    <DesignReviewAttendeeModal open={open} onHide={onHide} designReview={designReview} />
-  ) : (
+  return (
     <NERModal
       open={open}
       onHide={onHide}
@@ -76,60 +76,53 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       hideBackDrop
       showCloseButton
     >
-      <Box minWidth="500px">
+      <Box minWidth="550px">
         <DeleteModal />
-        {user.userId === designReview.userCreated.userId && (
+        {isDesignReviewCreator && (
           <Box position="absolute" right="52px" top="12px">
-            <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
+            <IconButton onClick={() => setShowDeleteModal(true)}>
               <DeleteIcon />
             </IconButton>
-            <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
-              <EditIcon />
-            </IconButton>
+            {isScheduled && (
+              <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
+                <EditIcon />
+              </IconButton>
+            )}
           </Box>
         )}
-        <StageGateWorkPackageModalContainer
-          wbsNum={designReview.wbsNum}
-          modalShow={showStageGateModal}
-          handleClose={() => setShowStageGateModal(false)}
-          hideStatus
-        />
-        <DesignReviewDelayModal open={showDelayModal} onHide={() => setShowDelayModal(false)} designReview={designReview} />
         <Box>
           <Box display={'flex'} alignItems={'center'}>
-            <Typography flexGrow={1} variant="h3" fontSize={30}>
+            <Typography flexGrow={1} variant="h4">
               {`${designReview.wbsName}`}
             </Typography>
             <Chip
               size="small"
-              label={designReview.status}
+              label={designReviewStatusPipe(designReview.status)}
               variant="filled"
               sx={{
-                fontSize: 12,
+                backgroundColor: designReviewStatusColor(designReview.status),
+                fontSize: 14,
                 color: 'white',
-                width: 100
+                width: 150,
+                fontWeight: 'bold'
               }}
             />
           </Box>
-          {isScheduled && <DesignReviewSummaryModalDetails designReview={designReview} />}
+          {isScheduled && <DesignReviewSummaryModalDetails designReview={designReview} teamTypes={teamTypes} />}
           {designReview.status === DesignReviewStatus.CONFIRMED && (
-            <DesignReviewSummaryModalAttendees designReview={designReview} />
+            <Box>
+              <DesignReviewSummaryModalAttendees designReview={designReview} />
+              {isDesignReviewCreator && (
+                <Box display="flex" justifyContent={'end'}>
+                  <NERSuccessButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
+                    Schedule Design Review
+                  </NERSuccessButton>
+                </Box>
+              )}
+            </Box>
           )}
-          {isScheduled && (
-            <DesignReviewSummaryModalCheckBox
-              onChange={(checked) => {
-                setChecked(checked);
-              }}
-              checked={checked}
-            />
-          )}
-          {isScheduled && (
-            <DesignReviewSummaryModalButtons
-              designReview={designReview}
-              handleStageGateClick={() => setShowStageGateModal(true)}
-              handleDelayClick={() => setShowDelayModal(true)}
-              checked={checked}
-            />
+          {designReview.status === DesignReviewStatus.UNCONFIRMED && (
+            <DesignReviewAvailabilityInfo designReview={designReview} />
           )}
         </Box>
       </Box>

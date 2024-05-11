@@ -14,22 +14,19 @@ const DesignReviewSummaryModalCheckBox: React.FC<DesignReviewSummaryModalCheckBo
   };
 
   return (
-    <Box marginTop="6px">
-      <FormControlLabel
-        label="Mark Design Review as Complete"
-        sx={{ marginBottom: 5 }}
-        control={
-          <Checkbox
-            checked={checked}
-            onChange={handleChange}
-            sx={{
-              color: 'inherit',
-              '&.Mui-checked': { color: 'inherit' }
-            }}
-          />
-        }
-      />
-    </Box>
+    <FormControlLabel
+      label="Mark Design Review as Complete"
+      control={
+        <Checkbox
+          checked={checked}
+          onChange={handleChange}
+          sx={{
+            color: 'inherit',
+            '&.Mui-checked': { color: 'inherit' }
+          }}
+        />
+      }
+    />
   );
 };
 

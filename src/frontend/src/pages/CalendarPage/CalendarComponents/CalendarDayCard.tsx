@@ -10,6 +10,7 @@ import { useState } from 'react';
 import DRCSummaryModal from '../DesignReviewSummaryModal';
 import { DesignReviewCreateModal } from '../DesignReviewCreateModal';
 import DynamicTooltip from '../../../components/DynamicTooltip';
+import { designReviewStatusColor } from '../../../utils/design-review.utils';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -48,36 +49,24 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   const EventCard = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const name = event.wbsName;
-    const cardColor = () => {
-      switch (event.status) {
-        case DesignReviewStatus.SCHEDULED: {
-          return '#ef4345';
-        }
-        case DesignReviewStatus.CONFIRMED: {
-          return 'grey';
-        }
-        case DesignReviewStatus.DONE: {
-          return 'green';
-        }
-        default: {
-          return 'rgba(128,128,128, 0.1)';
-        }
-      }
-    };
 
     return (
       <>
-        <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
+        <DRCSummaryModal
+          open={isSummaryModalOpen}
+          onHide={() => setIsSummaryModalOpen(false)}
+          designReview={event}
+          teamTypes={teamTypes}
+        />
         <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)} sx={{ cursor: 'pointer' }}>
           <Card
             sx={{
-              backgroundColor: cardColor(),
+              backgroundColor: designReviewStatusColor(event.status),
               borderRadius: 1,
               minWidth: 140,
               maxWidth: 140,
               minHeight: 20,
-              maxHeight: 20,
-              border: event.status === DesignReviewStatus.UNCONFIRMED ? '1px solid rgba(239,67,69, .2)' : 0
+              maxHeight: 20
             }}
           >
             <DynamicTooltip
@@ -98,7 +87,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
     return (
       <>
-        <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
+        <DRCSummaryModal
+          open={isSummaryModalOpen}
+          onHide={() => setIsSummaryModalOpen(false)}
+          designReview={event}
+          teamTypes={teamTypes}
+        />
         <Link
           style={{ cursor: 'pointer' }}
           fontSize={15}

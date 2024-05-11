@@ -9,15 +9,16 @@ import {
   AccessDeniedAdminOnlyException,
   AccessDeniedException
 } from '../utils/errors.utils';
-import { getUsers, getPrismaQueryUserIds } from '../utils/users.utils';
+import { getUsers, getPrismaQueryUserIds, areUsersinList } from '../utils/users.utils';
 import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import designReviewQueryArgs from '../prisma-query-args/design-reviews.query-args';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import {
-  sendDRConfirmtationToThread,
+  sendDRUserConfirmationToThread,
   sendDRScheduledSlackNotif,
   sendSlackDRNotifications,
-  sendSlackDesignReviewConfirmNotification
+  sendSlackDesignReviewConfirmNotification,
+  sendDRConfirmationToThread
 } from '../utils/slack.utils';
 import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
@@ -380,11 +381,11 @@ export default class DesignReviewsService {
         }
       });
 
-      // If all requested attendees have confirmed their schedule, mark design review as confirmed
-      if (
-        updatedDesignReview.confirmedMembers.length ===
-        designReview.requiredMembers.length + designReview.optionalMembers.length
-      ) {
+      const relevantThreads = await prisma.message_Info.findMany({ where: { designReviewId: designReview.designReviewId } });
+      await sendDRUserConfirmationToThread(relevantThreads, submitter);
+
+      // If all required attendees have confirmed their schedule, mark design review as confirmed
+      if (areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers)) {
         await prisma.design_Review.update({
           where: { designReviewId },
           ...designReviewQueryArgs,
@@ -392,10 +393,9 @@ export default class DesignReviewsService {
             status: Design_Review_Status.CONFIRMED
           }
         });
-      }
 
-      const relevantThreads = await prisma.message_Info.findMany({ where: { designReviewId: designReview.designReviewId } });
-      await sendDRConfirmtationToThread(relevantThreads, submitter);
+        await sendDRConfirmationToThread(relevantThreads, updatedDesignReview.userCreated);
+      }
 
       return designReviewTransformer(updatedDesignReview);
     }

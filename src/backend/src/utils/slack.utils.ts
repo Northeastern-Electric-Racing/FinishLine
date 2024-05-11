@@ -273,7 +273,7 @@ export const sendSlackDRNotifications = async (
   return notifications;
 };
 
-export const sendDRConfirmtationToThread = async (
+export const sendDRUserConfirmationToThread = async (
   threads: {
     messageInfoId: string;
     channelId: string;
@@ -285,6 +285,30 @@ export const sendDRConfirmtationToThread = async (
   //if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const slackPing = userToSlackPing(submitter);
   const fullMsg = `${slackPing} confirmed their availability!`;
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
+      await Promise.all(msgs);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
+};
+
+export const sendDRConfirmationToThread = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number | null;
+  }[],
+  submitter: UserWithSettings
+) => {
+  //if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const slackPing = userToSlackPing(submitter);
+  const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
   try {
     if (threads && threads.length !== 0) {
       const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));

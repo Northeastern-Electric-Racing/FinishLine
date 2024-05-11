@@ -66,9 +66,9 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
   if (editDesignReviewIsLoading) return <LoadingIndicator />;
 
   return (
-    <Box marginLeft="15px" paddingY="6px">
+    <Box paddingY="20px">
       <Grid container>
-        <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
+        <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '12px' }}>
           <Typography>Required: </Typography>
         </Grid>
         <Grid item xs={10} container>

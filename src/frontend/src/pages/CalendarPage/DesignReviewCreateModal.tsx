@@ -19,7 +19,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
-import { TeamType, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
+import { TeamType, WbsNumber, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -56,13 +56,15 @@ interface DesignReviewCreateModalProps {
   handleClose: () => void;
   teamTypes: TeamType[];
   defaultDate: Date;
+  defaultWbsNum?: WbsNumber;
 }
 
 export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = ({
   showModal,
   handleClose,
   teamTypes,
-  defaultDate
+  defaultDate,
+  defaultWbsNum
 }) => {
   const query = useQuery();
 
@@ -84,7 +86,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     const day = data.date.getDay();
     const adjustedDay = day === 0 ? 6 : day - 1;
     const times = [];
-    for (let i = adjustedDay * 12 + data.startTime; i < adjustedDay * 12 + data.endTime; i++) {
+    for (let i = adjustedDay * 12; i < adjustedDay * 12 + 1; i++) {
       times.push(i);
     }
     try {
@@ -117,7 +119,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       startTime: 0,
       endTime: 1,
       teamTypeId: '',
-      wbsNum: query.get('wbsNum') || ''
+      wbsNum: defaultWbsNum || query.get('wbsNum') || ''
     }
   });
 
@@ -149,9 +151,36 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       formId="create-design-review-form"
       showCloseButton
     >
-      <Box display="flex" flexDirection="row" gap={2}>
-        <FormControl>
-          <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Design Review Date</FormLabel>
+      <FormControl fullWidth>
+        <FormLabel>Work Package</FormLabel>
+        <Controller
+          name="wbsNum"
+          control={control}
+          render={({ field: { onChange, value } }) => {
+            const onClear = () => {
+              setValue('wbsNum', '');
+              onChange('');
+            };
+            return (
+              <NERAutocomplete
+                id="wbs-autocomplete"
+                sx={{ bgcolor: 'inherit' }}
+                onChange={(_event, newValue) => {
+                  newValue ? onChange(newValue.id) : onClear();
+                }}
+                options={wbsDropdownOptions}
+                size="medium"
+                placeholder="Select a work package"
+                value={wbsDropdownOptions.find((element) => element.id === value) || null}
+              />
+            );
+          }}
+        />
+        <FormHelperText error>{errors.wbsNum?.message}</FormHelperText>
+      </FormControl>
+      <Box display="flex" flexDirection="row" gap={2} minWidth="400px">
+        <FormControl fullWidth>
+          <FormLabel sx={{ alignSelf: 'start' }}>Design Review Date</FormLabel>
           <Controller
             name="date"
             control={control}
@@ -169,7 +198,9 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                     error: !!errors.date,
                     helperText: errors.date?.message,
                     onClick: (e) => setDatePickerOpen(true),
-                    inputProps: { readOnly: true }
+                    inputProps: { readOnly: true },
+
+                    fullWidth: true
                   }
                 }}
               />
@@ -177,20 +208,24 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
           />
           <FormHelperText error>{errors.date?.message}</FormHelperText>
         </FormControl>
-        <FormControl>
-          <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Meeting Start Time</FormLabel>
+        <FormControl fullWidth>
+          <FormLabel sx={{ alignSelf: 'start' }}>Team</FormLabel>
           <Controller
-            name={'startTime'}
+            name={'teamTypeId'}
             control={control}
             render={({ field: { onChange, value } }) => (
               <Select
-                id="start-time-autocomplete"
-                displayEmpty
-                renderValue={(value) => meetingStartTimePipe([value])}
+                id="teamType-select"
                 value={value}
-                onChange={(event: SelectChangeEvent<number>) => onChange(Number(event.target.value))}
-                size={'small'}
-                placeholder={'Start Time'}
+                displayEmpty
+                renderValue={() => {
+                  return value ? (
+                    <Typography>{teamTypes.find((teamType) => teamType.teamTypeId === value)?.name} </Typography>
+                  ) : (
+                    <Typography style={{ color: 'gray' }}>Select Subteam</Typography>
+                  );
+                }}
+                onChange={(event: SelectChangeEvent<string>) => onChange(event.target.value)}
                 sx={{ height: 56, width: '100%', textAlign: 'left' }}
                 MenuProps={{
                   anchorOrigin: {
@@ -203,130 +238,19 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                   }
                 }}
               >
-                {HOURS.map((hour) => {
+                {teamTypes.map((teamType) => {
                   return (
-                    <MenuItem key={hour} value={hour}>
-                      {meetingStartTimePipe([hour])}
+                    <MenuItem key={teamType.teamTypeId} value={teamType.teamTypeId}>
+                      {teamType.name}
                     </MenuItem>
                   );
                 })}
               </Select>
             )}
           />
-          <FormHelperText error>{errors.startTime?.message}</FormHelperText>
-        </FormControl>
-        <FormControl>
-          <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Meeting End Time</FormLabel>
-          <Controller
-            name={'endTime'}
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Select
-                id="end-time-autocomplete"
-                displayEmpty
-                renderValue={(value) => meetingStartTimePipe([value])}
-                value={value}
-                onChange={(event: SelectChangeEvent<number>) => onChange(Number(event.target.value))}
-                size={'small'}
-                placeholder={'End Time'}
-                sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                MenuProps={{
-                  anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'right'
-                  },
-                  transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right'
-                  }
-                }}
-              >
-                {HOURS.slice(1).map((hour) => {
-                  return (
-                    <MenuItem key={hour} value={hour}>
-                      {meetingStartTimePipe([hour])}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            )}
-          />
-          <FormHelperText error>{errors.endTime?.message}</FormHelperText>
+          <FormHelperText error>{errors.teamTypeId?.message}</FormHelperText>
         </FormControl>
       </Box>
-      <Grid container gap={1}>
-        <Grid item xs={8} sx={{ alignSelf: 'start', paddingTop: '10px', width: '100%' }}>
-          <FormLabel>Work Package</FormLabel>
-          <Controller
-            name="wbsNum"
-            control={control}
-            render={({ field: { onChange, value } }) => {
-              const onClear = () => {
-                setValue('wbsNum', '');
-                onChange('');
-              };
-              return (
-                <NERAutocomplete
-                  id="wbs-autocomplete"
-                  sx={{ bgcolor: 'inherit' }}
-                  onChange={(_event, newValue) => {
-                    newValue ? onChange(newValue.id) : onClear();
-                  }}
-                  options={wbsDropdownOptions}
-                  size="medium"
-                  placeholder="Select a work package"
-                  value={wbsDropdownOptions.find((element) => element.id === value) || null}
-                />
-              );
-            }}
-          />
-          <FormHelperText error>{errors.wbsNum?.message}</FormHelperText>
-        </Grid>
-        <Grid item xs={3}>
-          <FormControl>
-            <FormLabel sx={{ alignSelf: 'start', paddingTop: '10px' }}>Team</FormLabel>
-            <Controller
-              name={'teamTypeId'}
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Select
-                  id="teamType-select"
-                  value={value}
-                  displayEmpty
-                  renderValue={() => {
-                    return value ? (
-                      <Typography>{teamTypes.find((teamType) => teamType.teamTypeId === value)?.name} </Typography>
-                    ) : (
-                      <Typography style={{ color: 'gray' }}>Select Subteam</Typography>
-                    );
-                  }}
-                  onChange={(event: SelectChangeEvent<string>) => onChange(event.target.value)}
-                  sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                  MenuProps={{
-                    anchorOrigin: {
-                      vertical: 'bottom',
-                      horizontal: 'right'
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right'
-                    }
-                  }}
-                >
-                  {teamTypes.map((teamType) => {
-                    return (
-                      <MenuItem key={teamType.teamTypeId} value={teamType.teamTypeId}>
-                        {teamType.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              )}
-            />
-            <FormHelperText error>{errors.teamTypeId?.message}</FormHelperText>
-          </FormControl>
-        </Grid>
-      </Grid>
       <Box sx={{ alignSelf: 'start', paddingTop: '10px' }}>
         <FormLabel> Required Members</FormLabel>
         <Autocomplete

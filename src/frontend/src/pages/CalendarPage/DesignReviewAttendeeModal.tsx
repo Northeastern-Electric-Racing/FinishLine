@@ -5,74 +5,74 @@ import ColumnHeader from '../FinancePage/FinanceComponents/ColumnHeader';
 import { fullNamePipe } from '../../utils/pipes';
 
 interface DesignReviewAttendeeModalProps {
-  open: boolean;
-  onHide: () => void;
   designReview: DesignReview;
 }
 
-export const DesignReviewAttendeeModal: React.FC<DesignReviewAttendeeModalProps> = ({ open, onHide, designReview }) => {
+export const DesignReviewAvailabilityInfo: React.FC<DesignReviewAttendeeModalProps> = ({ designReview }) => {
   return (
-    <NERModal open={open} title={designReview.wbsName} onHide={onHide} hideFormButtons showCloseButton>
-      <Grid container columnSpacing={8} rowSpacing={2}>
-        <Grid item>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <Typography variant="h6">Required Members</Typography>
-                <TableRow>
-                  <ColumnHeader leftAlign title="Name" />
-                  <ColumnHeader leftAlign title="Confirmed?" />
+    <Grid container columnSpacing={4} rowSpacing={2} marginTop="10px">
+      <Grid item>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <Typography fontWeight={'bold'} fontSize="20px" marginLeft={'10px'}>
+                Required
+              </Typography>
+              <TableRow>
+                <ColumnHeader leftAlign title="Name" />
+                <ColumnHeader leftAlign title="Confirmed?" />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {designReview.requiredMembers.map((member) => (
+                <TableRow key={member.userId}>
+                  <TableCell align="left">
+                    <Typography>{fullNamePipe(member)}</Typography>
+                  </TableCell>
+                  <TableCell align="left">
+                    <Typography>
+                      {designReview.confirmedMembers.some((confirmedMember) => confirmedMember.userId === member.userId)
+                        ? 'Yes'
+                        : 'No'}
+                    </Typography>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {designReview.requiredMembers.map((member) => (
-                  <TableRow key={member.userId}>
-                    <TableCell>
-                      <Typography>{fullNamePipe(member)}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography>
-                        {designReview.confirmedMembers.some((confirmedMember) => confirmedMember.userId === member.userId)
-                          ? 'Yes'
-                          : 'No'}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-        <Grid item>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <Typography variant="h6">Optional Members</Typography>
-                <TableRow>
-                  <ColumnHeader leftAlign title="Name" />
-                  <ColumnHeader leftAlign title="Confirmed?" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {designReview.optionalMembers.map((member) => (
-                  <TableRow key={member.userId}>
-                    <TableCell>
-                      <Typography>{fullNamePipe(member)}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography>
-                        {designReview.confirmedMembers.some((confirmedMember) => confirmedMember.userId === member.userId)
-                          ? 'Yes'
-                          : 'No'}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Grid>
-    </NERModal>
+      <Grid item>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <Typography fontWeight={'bold'} fontSize="20px" marginLeft={'10px'}>
+                Optional
+              </Typography>
+              <TableRow>
+                <ColumnHeader leftAlign title="Name" />
+                <ColumnHeader leftAlign title="Confirmed?" />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {designReview.optionalMembers.map((member) => (
+                <TableRow key={member.userId}>
+                  <TableCell>
+                    <Typography>{fullNamePipe(member)}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography>
+                      {designReview.confirmedMembers.some((confirmedMember) => confirmedMember.userId === member.userId)
+                        ? 'Yes'
+                        : 'No'}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Grid>
+    </Grid>
   );
 };
