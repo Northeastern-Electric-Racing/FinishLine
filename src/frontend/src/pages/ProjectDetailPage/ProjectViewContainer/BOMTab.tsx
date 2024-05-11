@@ -46,10 +46,14 @@ const BOMTab = ({ project }: { project: Project }) => {
             </NERButton>
             <NERButton
               variant="text"
-              onClick={() => localStorage.setItem('hideColumn', JSON.stringify(new Array(12).fill(false)))}
+              onClick={() => {
+                const newHideColumn = new Array(12).fill(false);
+                localStorage.setItem('hideColumn', JSON.stringify(newHideColumn));
+                setHideColumn(newHideColumn);
+              }}
               disabled={isGuest(user.role)}
             >
-              Show Columns
+              Show All Columns
             </NERButton>
           </Box>
           <Box display="flex" gap="20px" alignItems="center">
