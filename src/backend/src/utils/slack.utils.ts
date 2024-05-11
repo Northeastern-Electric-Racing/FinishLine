@@ -1,11 +1,12 @@
 import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
-import { reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
+import { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
 import { getUserFullName, getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
-import { Change_Request, Team, WBS_Element } from '@prisma/client';
+import { Change_Request, Design_Review, Team, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils';
-import { usersToSlackPings } from './notifications.utils';
+import { usersToSlackPings, userToSlackPing } from './notifications.utils';
+import { addHours, meetingStartTimePipe } from './design-reviews.utils';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -134,14 +135,17 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   }
 };
 
-export const sendSlackDesignReviewNotification = async (
+export const sendSlackDesignReviewConfirmNotification = async (
   slackId: string,
   designReviewId: string,
   designReviewName: string
 ) => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction) return; // don't send msgs unless in prod
   const msg = `You have been invited to the ${designReviewName} Design Review!`;
-  const fullLink = `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`;
+  const fullLink = isProduction
+    ? `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`
+    : `http://localhost:3000/settings/preferences?drId=${designReviewId}`;
   const linkButtonText = 'Confirm Availability';
 
   try {
@@ -222,6 +226,142 @@ export const sendAndGetSlackCRNotifications = async (
   return notifications;
 };
 
+export const sendSlackDesignReviewNotification = async (
+  team: Team,
+  message: string
+): Promise<{ channelId: string; ts: string }[]> => {
+  if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
+  const msgs: { channelId: string; ts: string }[] = [];
+  const fullMsg = `${message}`;
+  const fullLink = `https://finishlinebyner.com/design-review-calendar`;
+  const btnText = `View Calendar`;
+  const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
+  if (notification) msgs.push(notification);
+
+  return msgs;
+};
+
+export const sendSlackDRNotifications = async (
+  teams: Team[],
+  designReview: Design_Review,
+  submitter: User,
+  workPackageName: string
+) => {
+  const notifications: { channelId: string; ts: string }[] = [];
+  const message = `:spiral_calendar_pad: Design Review for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
+
+  const completion: Promise<void>[] = teams.map(async (team) => {
+    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackDesignReviewNotification(team, message);
+    if (sentNotifications) notifications.push(...sentNotifications);
+  });
+  await Promise.all(completion);
+
+  const promises = notifications.map((notification) =>
+    prisma.message_Info.create({
+      data: {
+        designReviewId: designReview.designReviewId,
+        channelId: notification.channelId,
+        timestamp: notification.ts
+      },
+      include: {
+        designReview: true
+      }
+    })
+  );
+  await Promise.all(promises);
+
+  return notifications;
+};
+
+export const sendDRUserConfirmationToThread = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number | null;
+  }[],
+  submitter: UserWithSettings
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const slackPing = userToSlackPing(submitter);
+  const fullMsg = `${slackPing} confirmed their availability!`;
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
+      await Promise.all(msgs);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
+};
+
+export const sendDRConfirmationToThread = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number | null;
+  }[],
+  submitter: UserWithSettings
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const slackPing = userToSlackPing(submitter);
+  const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
+      await Promise.all(msgs);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
+};
+
+export const sendDRScheduledSlackNotif = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number | null;
+  }[],
+  designReview: Design_Review & { wbsElement: WBS_Element; userCreated: User }
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const drName = designReview.wbsElement.name;
+  const { dateScheduled } = designReview;
+  const drTime = `${addHours(dateScheduled, 12).toLocaleDateString()} at ${meetingStartTimePipe(designReview.meetingTimes)}`;
+  const drSubmitter = `${designReview.userCreated.firstName} ${designReview.userCreated.lastName}`;
+  const zoomLink = designReview.isOnline && `on <${designReview.zoomLink}|Zoom>`;
+  const location =
+    zoomLink && designReview.isInPerson
+      ? `in ${designReview.location} and ${zoomLink}`
+      : designReview.isInPerson
+      ? `in ${designReview.location}`
+      : zoomLink;
+
+  const msg = `:spiral_calendar_pad: Design Review for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
+  const threadMsg = `The Design Review has been Scheduled! \n <${designReview.docTemplateLink}|Doc Link>`;
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
+      await Promise.all(msgs);
+      const threadMsgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, threadMsg));
+      await Promise.all(threadMsgs);
+      const reactions = threads.map((thread) => reactToMessage(thread.channelId, thread.timestamp, 'calendar'));
+      await Promise.all(reactions);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
+};
+
 export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
@@ -245,7 +385,7 @@ export const sendSlackCRStatusToThread = async (
     messageInfoId: string;
     channelId: string;
     timestamp: string;
-    changeRequestId: number;
+    changeRequestId: number | null;
   }[],
   crId: number,
   approved: boolean

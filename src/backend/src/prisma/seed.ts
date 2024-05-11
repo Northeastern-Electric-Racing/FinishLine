@@ -237,7 +237,7 @@ const performSeed: () => Promise<void> = async () => {
   const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId));
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
-  const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
+  const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
@@ -368,12 +368,12 @@ const performSeed: () => Promise<void> = async () => {
 
   await TeamsService.setTeamMembers(
     regina,
-    meanGirls.teamId,
+    slackBotTeam.teamId,
     [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId)
   );
   await TeamsService.setTeamLeads(
     regina,
-    meanGirls.teamId,
+    slackBotTeam.teamId,
     [janis, cady, damian].map((user) => user.userId)
   );
 
@@ -508,7 +508,7 @@ const performSeed: () => Promise<void> = async () => {
     1,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
-    [huskies.teamId],
+    [slackBotTeam.teamId],
     thomasEmrax,
     234,
     ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
@@ -527,8 +527,8 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
-    thomasEmrax.userId,
-    joeBlow.userId
+    regina.userId,
+    janis.userId
   );
 
   /** Project 6 */
@@ -1192,14 +1192,14 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await TasksService.createTask(
-    batman,
+    regina,
     project5WbsNumber,
     'Cost Assessment',
     'So this is where our funding goes',
     new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [regina.userId]
   );
 
   /**
