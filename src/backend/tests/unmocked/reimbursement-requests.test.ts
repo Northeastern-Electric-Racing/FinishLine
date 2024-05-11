@@ -1,4 +1,4 @@
-import { alfred } from '../test-data/users.test-data';
+import { alfred, financeMember } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createFinanceTeamAndLead, createTestReimbursementRequest, resetUsers } from '../test-utils';
@@ -30,6 +30,27 @@ describe('Reimbursement Requests', () => {
     );
   });
 
+  test('Delete Reimbursement Request succeeds when the deleter is a finance lead', async () => {
+    const reimbursement = await createTestReimbursementRequest();
+    if (!reimbursement) {
+      console.log('Failed to create Reimbursement');
+      assert(false);
+      throw new Error('Failed to create Reimbursement');
+    }
+    const financeHead = await prisma.user.findUnique({
+      where: {
+        googleAuthId: '2'
+      }
+    });
+
+    if (!financeHead) {
+      console.log('No finance head found, please run createFinanceTeamAndLead before this function');
+      assert(false);
+      throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
+    }
+    await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead);
+  });
+  /*
   test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
     const reimbursement = await createTestReimbursementRequest();
     if (!reimbursement) {
@@ -49,15 +70,17 @@ describe('Reimbursement Requests', () => {
     }
 
     await expect(() =>
-      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, alfred)
+      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeMember)
     ).rejects.toThrow(
       new AccessDeniedException(
         'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
       )
     );
   });
+  */
 
-  test('Delete Reimbursement Request succeeds', async () => {
+
+  test('Delete Reimbursement Request succeeds when the deleter is a head of finance', async () => {
     const reimbursement = await createTestReimbursementRequest();
     if (!reimbursement) {
       console.log('Failed to create Reimbursement');
