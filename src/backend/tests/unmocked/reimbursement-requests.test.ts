@@ -37,48 +37,19 @@ describe('Reimbursement Requests', () => {
       assert(false);
       throw new Error('Failed to create Reimbursement');
     }
-    const financeHead = await prisma.user.findUnique({
+    const financeLead = await prisma.user.findUnique({
       where: {
         googleAuthId: '2'
       }
     });
 
-    if (!financeHead) {
-      console.log('No finance head found, please run createFinanceTeamAndLead before this function');
+    if (!financeLead) {
+      console.log('No finance lead found, please run createFinanceTeamAndLead before this function');
       assert(false);
       throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
-    await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead);
+    await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeLead);
   });
-  /*
-  test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
-    const reimbursement = await createTestReimbursementRequest();
-    if (!reimbursement) {
-      throw new Error('Failed to create Reimbursement');
-    }
-
-    const financeHead = await prisma.user.findUnique({
-      where: {
-        googleAuthId: '1'
-      }
-    });
-
-    if (!financeHead) {
-      console.log('No finance head found, please run createFinanceTeamAndLead before this function');
-      assert(false);
-      throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
-    }
-
-    await expect(() =>
-      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeMember)
-    ).rejects.toThrow(
-      new AccessDeniedException(
-        'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
-      )
-    );
-  });
-  */
-
 
   test('Delete Reimbursement Request succeeds when the deleter is a head of finance', async () => {
     const reimbursement = await createTestReimbursementRequest();
