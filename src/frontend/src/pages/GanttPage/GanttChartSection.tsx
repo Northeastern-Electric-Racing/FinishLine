@@ -4,7 +4,7 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
+import { applyChangesToEvents, EventChange, GanttTaskData, RequestEventChange } from '../../utils/gantt.utils';
 import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
 import { useEffect, useState } from 'react';
@@ -17,6 +17,7 @@ interface GanttChartSectionProps {
   saveChanges: (eventChanges: EventChange[]) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  highlightedChange?: RequestEventChange;
 }
 
 const GanttChartSection = ({
@@ -26,7 +27,8 @@ const GanttChartSection = ({
   isEditMode,
   saveChanges,
   showWorkPackagesMap,
-  setShowWorkPackagesMap
+  setShowWorkPackagesMap,
+  highlightedChange
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
@@ -79,6 +81,9 @@ const GanttChartSection = ({
                       event={displayWorkPackage!}
                       isEditMode={isEditMode}
                       createChange={createChange}
+                      highlightedChange={
+                        highlightedChange && workPackage.id === highlightedChange.eventId ? highlightedChange : undefined
+                      }
                     />
                   );
                 })}

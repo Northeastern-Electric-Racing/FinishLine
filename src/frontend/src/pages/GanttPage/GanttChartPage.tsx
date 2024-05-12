@@ -268,6 +268,7 @@ const GanttChartPage: FC = () => {
           saveChanges={saveChanges}
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
+          highlightedChange={ganttTaskChanges[ganttTaskChanges.length - 1]}
         />
         {ganttTaskChanges.map((change) => (
           <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.eventId)} />

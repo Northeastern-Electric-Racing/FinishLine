@@ -20,6 +20,7 @@ export interface NERModalProps {
   hideFormButtons?: boolean;
   hideBackDrop?: boolean;
   icon?: JSX.Element | null;
+  paperProps?: any;
 }
 
 const NERModal = ({
@@ -35,14 +36,19 @@ const NERModal = ({
   showCloseButton = false,
   hideFormButtons = false,
   hideBackDrop = false,
-  icon
+  icon,
+  paperProps
 }: NERModalProps) => {
   return (
     <Dialog
       hideBackdrop={hideBackDrop}
       open={open}
       onClose={onHide}
-      PaperProps={{ style: { borderRadius: '10px', maxWidth: '700px' } }}
+      PaperProps={{
+        style: paperProps
+          ? { ...paperProps, borderRadius: '10px', maxWidth: '700px' }
+          : { borderRadius: '10px', maxWidth: '700px' }
+      }}
     >
       <DialogTitle sx={{ backgroundColor: background, minHeight: '64px' }}>
         {icon ? (

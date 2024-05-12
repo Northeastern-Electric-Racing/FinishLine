@@ -92,13 +92,15 @@ export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequ
       title="Work Package Timeline Change Request"
       onSubmit={handleSubmit}
       disabled={!reasonForChange || !explanationForChange}
+      hideBackDrop
+      paperProps={{ position: 'absolute', left: -30, top: -30 }}
     >
-      <Box sx={{ width: '450px' }}>
-        <Typography sx={{ mb: 0.5, fontSize: '1.2em' }}>{change.name} Timeline changed</Typography>
+      <Box sx={{ width: '250px' }}>
+        <Typography sx={{ mb: 0.5, fontSize: '1.2em' }}>{change.name}</Typography>
         <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
-          {`From: ${changeInTimeline(change.prevStart, change.prevEnd)}`}
+          {`Old: ${changeInTimeline(change.prevStart, change.prevEnd)}`}
         </Typography>
-        <Typography sx={{ fontSize: '1em' }}>{`To: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
+        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
       </Box>
       <Box sx={{ padding: '0 15px 0 15px', mt: 2 }}>
         <FormControl fullWidth>
