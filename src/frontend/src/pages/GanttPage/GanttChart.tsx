@@ -54,8 +54,10 @@ const GanttChart = ({
             });
           }
           if (isEditMode) {
+            console.log('events ', eventChanges);
             saveChanges(eventChanges);
-            setEventChanges([]);
+            setEventChanges([]); // this is still not setting the eventChanges as an empty array
+            console.log('cleaned events ', eventChanges);
           }
 
           setChartEditingState([...chartEditingState]);

@@ -102,11 +102,14 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change, 
       <Box sx={{ padding: '0 15px 0 15px', mt: 2 }}>
         <FormControl fullWidth>
           <InputLabel>Reason for Change</InputLabel>
-          <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
+          {/* In the console, this part kept throwing warnings because the field for reasonForChange 
+          was undefined when I clicked cancel on the modal. Is there a way to fix that */}
+
+          {/* <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
             {Object.entries(ChangeRequestReason).map(([key, value]) => (
               <MenuItem value={value}>{key}</MenuItem>
             ))}
-          </Select>
+          </Select> */}
         </FormControl>
         <TextField
           fullWidth

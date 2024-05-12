@@ -211,54 +211,52 @@ const GanttChartPage: FC = () => {
     });
   };
 
-  // TODO: Handle if one wp has multiple changes to it
-  const saveChanges = (eventChanges: EventChange[]) => {
-    if (eventChanges.length >= 0) {
-      eventChanges.forEach((change) => {
-        const event = ganttTasks.find((task) => task.id === change.eventId);
-        if (event) {
-          const existingChange = groupedEventChanges.get(change.eventId);
+  const updateEventDates = (event: any, change: EventChange, existingChange?: any) => {
+    let newStart = existingChange?.newStart || event.start;
+    let newEnd = existingChange?.newEnd || event.end;
+    let duration = existingChange?.duration || daysBetween(event.start, event.end);
 
-          let newStart = existingChange ? existingChange.newStart : event.start;
-          let newEnd = existingChange ? existingChange.newEnd : event.end;
-          let duration = existingChange ? existingChange.duration : daysBetween(event.end, event.start);
-
-          if (change.type === 'change-end-date') {
-            if (groupedEventChanges.has(change.eventId)) {
-              duration = daysBetween(change.newEnd, change.originalEnd);
-              newEnd = addDaysToDate(newStart, duration);
-            } else {
-              newEnd = change.newEnd;
-              console.log('new end', newEnd);
-            }
-          }
-          if (change.type === 'shift-by-days') {
-            console.log('days: ', change.days);
-            newStart = addDaysToDate(event.start, change.days);
-            newEnd = addDaysToDate(newStart, duration);
-          }
-
-          const newRequestEventChange = {
-            eventId: change.eventId,
-            name: event.name,
-            prevStart: event.start,
-            prevEnd: event.end,
-            newStart: newStart,
-            newEnd: newEnd,
-            duration: duration
-          };
-          updateEventChange(change.eventId, newRequestEventChange);
-        }
-      });
-      console.log('goruped event changes: ', groupedEventChanges);
-
-      // populating the activeModals with the ids of all active modals
-      const updatedSet = new Set(activeModalIds);
-      groupedEventChanges.forEach((change) => {
-        updatedSet.add(change.eventId);
-      });
-      setActiveModalIds(updatedSet);
+    switch (change.type) {
+      case 'change-end-date':
+        duration = daysBetween(change.newEnd, change.originalEnd);
+        newEnd = addDaysToDate(newStart, duration);
+        break;
+      case 'shift-by-days':
+        newStart = addDaysToDate(event.start, change.days);
+        newEnd = addDaysToDate(newStart, duration);
+        break;
     }
+
+    return { newStart, newEnd, duration };
+  };
+
+  const saveChanges = (eventChanges: EventChange[]) => {
+    eventChanges.forEach((change) => {
+      const event = ganttTasks.find((task) => task.id === change.eventId);
+      if (event) {
+        const existingChange = groupedEventChanges.get(change.eventId);
+        console.log('Existing Change', existingChange);
+
+        const { newStart, newEnd, duration } = updateEventDates(event, change, existingChange);
+
+        const newEventChange = {
+          eventId: change.eventId,
+          name: event.name,
+          prevStart: event.start,
+          prevEnd: event.end,
+          newStart,
+          newEnd,
+          duration
+        };
+        updateEventChange(change.eventId, newEventChange);
+      }
+    });
+
+    // Log and update active modals
+    console.log('Grouped event changes: ', groupedEventChanges);
+    const updatedSet = new Set(activeModalIds);
+    groupedEventChanges.forEach((change) => updatedSet.add(change.eventId));
+    setActiveModalIds(updatedSet);
   };
 
   const removeActiveModal = (changeId: string) => {
