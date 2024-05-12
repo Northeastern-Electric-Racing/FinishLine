@@ -106,7 +106,6 @@ export const sendReimbursementRequestCreatedNotification = async (requestId: str
 
   try {
     await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
-    console.log(msg);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
