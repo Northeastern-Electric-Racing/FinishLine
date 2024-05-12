@@ -2,7 +2,11 @@ import { Prisma } from '@prisma/client';
 
 const designReviewQueryArgs = Prisma.validator<Prisma.Design_ReviewArgs>()({
   include: {
-    userCreated: true,
+    userCreated: {
+      include: {
+        userSettings: true
+      }
+    },
     teamType: true,
     requiredMembers: true,
     optionalMembers: true,

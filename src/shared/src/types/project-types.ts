@@ -33,9 +33,9 @@ export interface WbsProposedChanges {
   id: string;
   name: string;
   status: WbsElementStatus;
-  links: LinkInfo[];
-  projectLead?: User;
-  projectManager?: User;
+  links: Link[];
+  lead?: User;
+  manager?: User;
 }
 
 export enum WbsElementStatus {
@@ -50,10 +50,12 @@ export interface ProjectProposedChanges extends WbsProposedChanges {
   rules: string[];
   goals: DescriptionBullet[];
   features: DescriptionBullet[];
-  otherConstrains: DescriptionBullet[];
+  otherConstraints: DescriptionBullet[];
   teams: TeamPreview[];
   carNumber?: number;
 }
+
+export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id' | 'status'>;
 
 export interface Project extends WbsElement {
   summary: string;
@@ -80,6 +82,8 @@ export interface WorkPackageProposedChanges extends WbsProposedChanges {
   deliverables: DescriptionBullet[];
   stage?: WorkPackageStage;
 }
+
+export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id' | 'links' | 'status'>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
@@ -111,12 +115,6 @@ export interface LinkType {
   creator: UserPreview;
   required: boolean;
   iconName: string;
-}
-
-export interface LinkInfo {
-  linkInfoId: string;
-  url: string;
-  linkType: LinkType;
 }
 
 export interface Link {
