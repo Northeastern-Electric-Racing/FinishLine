@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import DesignReviewsService from '../services/design-reviews.services';
-import { getCurrentUser } from '../utils/auth.utils';
+import { getCurrentUser, getCurrentUserWithUserSettings } from '../utils/auth.utils';
 import { User } from '@prisma/client';
 
 export default class DesignReviewsController {
@@ -105,7 +105,7 @@ export default class DesignReviewsController {
     try {
       const { availability } = req.body;
       const { designReviewId } = req.params;
-      const user = await getCurrentUser(res);
+      const user = await getCurrentUserWithUserSettings(res);
 
       const updatedDesignReview = await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
       return res.status(200).json(updatedDesignReview);

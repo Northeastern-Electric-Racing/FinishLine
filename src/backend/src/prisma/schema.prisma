@@ -191,11 +191,13 @@ model Change_Request {
 }
 
 model Message_Info {
-  messageInfoId   String         @id @default(uuid())
+  messageInfoId   String          @id @default(uuid())
   channelId       String
   timestamp       String
-  changeRequestId Int
-  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  changeRequestId Int?
+  changeRequest   Change_Request? @relation(fields: [changeRequestId], references: [crId])
+  designReviewId  String?
+  designReview    Design_Review?  @relation(fields: [designReviewId], references: [designReviewId])
 }
 
 model Scope_CR {
@@ -328,36 +330,28 @@ model Work_Package {
 }
 
 model LinkType {
-  name        String     @id @unique
-  dateCreated DateTime   @default(now())
+  name        String   @id @unique
+  dateCreated DateTime @default(now())
   creatorId   Int
   iconName    String
   required    Boolean
-  creator     User       @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links       Link[]     @relation(name: "linkTypes")
-  linkInfos   LinkInfo[] @relation(name: "linkInfoTypes")
+  creator     User     @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links       Link[]   @relation(name: "linkTypes")
 }
 
 model Link {
-  linkId       String      @id @default(uuid())
-  url          String
-  creatorId    Int
-  creator      User        @relation(name: "linkCreator", fields: [creatorId], references: [userId])
-  dateCreated  DateTime    @default(now())
-  dateDeleted  DateTime?
-  linkTypeName String
-  linkType     LinkType    @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
-  wbsElementId Int
-  wbsElment    WBS_Element @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
-}
-
-model LinkInfo {
-  linkInfoId          String                @id @default(uuid())
-  url                 String
-  linkTypeName        String
-  linkType            LinkType              @relation(name: "linkInfoTypes", fields: [linkTypeName], references: [name])
-  proposedWbsChangeId String?
-  wbsProposedChanges  Wbs_Proposed_Changes? @relation(name: "proposedChangeLinkInfos", fields: [proposedWbsChangeId], references: [wbsProposedChangesId])
+  linkId                                   String                @id @default(uuid())
+  url                                      String
+  creatorId                                Int
+  creator                                  User                  @relation(name: "linkCreator", fields: [creatorId], references: [userId])
+  dateCreated                              DateTime              @default(now())
+  dateDeleted                              DateTime?
+  linkTypeName                             String
+  linkType                                 LinkType              @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
+  wbsElementId                             Int?
+  wbsElment                                WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  Wbs_Proposed_Changes                     Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbs_Proposed_ChangesWbsProposedChangesId], references: [wbsProposedChangesId])
+  wbs_Proposed_ChangesWbsProposedChangesId String?
 }
 
 model Description_Bullet {
@@ -625,31 +619,32 @@ model TeamType {
 }
 
 model Design_Review {
-  designReviewId   String               @id @default(uuid())
-  dateScheduled    DateTime             @db.Date
+  designReviewId           String               @id @default(uuid())
+  dateScheduled            DateTime             @db.Date
   // Meeting times are an integer between 0 and 83 from 10am - 10pm (Monday - Sunday), eg. 0 = 10:00am Monday, 12 = 10:00am Tuesday
-  meetingTimes     Int[]
-  dateCreated      DateTime             @default(now()) @db.Timestamp(3)
-  userCreated      User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
-  userCreatedId    Int
-  status           Design_Review_Status
-  teamType         TeamType             @relation(fields: [teamTypeId], references: [teamTypeId])
-  teamTypeId       String
-  requiredMembers  User[]               @relation(name: "requiredAttendee")
-  optionalMembers  User[]               @relation(name: "optionalAttendee")
-  confirmedMembers User[]               @relation(name: "confirmedAttendee")
-  deniedMembers    User[]               @relation(name: "deniedAttendee")
-  location         String?
-  isOnline         Boolean
-  isInPerson       Boolean
-  zoomLink         String?
-  attendees        User[]               @relation(name: "userAttended")
-  dateDeleted      DateTime?            @db.Timestamp(3)
-  userDeleted      User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
-  userDeletedId    Int?
-  docTemplateLink  String?
-  wbsElementId     Int
-  wbsElement       WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
+  meetingTimes             Int[]
+  dateCreated              DateTime             @default(now()) @db.Timestamp(3)
+  userCreated              User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
+  userCreatedId            Int
+  status                   Design_Review_Status
+  teamType                 TeamType             @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId               String
+  requiredMembers          User[]               @relation(name: "requiredAttendee")
+  optionalMembers          User[]               @relation(name: "optionalAttendee")
+  confirmedMembers         User[]               @relation(name: "confirmedAttendee")
+  deniedMembers            User[]               @relation(name: "deniedAttendee")
+  location                 String?
+  isOnline                 Boolean
+  isInPerson               Boolean
+  zoomLink                 String?
+  attendees                User[]               @relation(name: "userAttended")
+  dateDeleted              DateTime?            @db.Timestamp(3)
+  userDeleted              User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
+  userDeletedId            Int?
+  docTemplateLink          String?
+  wbsElementId             Int
+  wbsElement               WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
+  notificationSlackThreads Message_Info[]
 }
 
 model Schedule_Settings {
@@ -675,11 +670,11 @@ model Wbs_Proposed_Changes {
   wbsProposedChangesId       String                         @id @default(uuid())
   name                       String
   status                     WBS_Element_Status
-  projectLeadId              Int?
-  projectLead                User?                          @relation(name: "wbsProjectLead", fields: [projectLeadId], references: [userId])
-  projectManagerId           Int?
-  projectManager             User?                          @relation(name: "wbsProjectManager", fields: [projectManagerId], references: [userId])
-  links                      LinkInfo[]                     @relation(name: "proposedChangeLinkInfos")
+  leadId                     Int?
+  lead                       User?                          @relation(name: "wbsProjectLead", fields: [leadId], references: [userId])
+  managerId                  Int?
+  manager                    User?                          @relation(name: "wbsProjectManager", fields: [managerId], references: [userId])
+  links                      Link[]                         @relation(name: "proposedChangeLinks")
   changeRequest              Scope_CR                       @relation(fields: [changeRequestId], references: [scopeCrId])
   changeRequestId            Int                            @unique
   projectProposedChanges     Project_Proposed_Changes?      @relation(name: "projectProposedChanges")

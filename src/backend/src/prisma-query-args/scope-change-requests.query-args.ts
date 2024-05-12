@@ -1,12 +1,6 @@
 import { Prisma } from '@prisma/client';
 import proposedSolutionArgs from './proposed-solutions.query-args';
-import linkTypeQueryArgs from './link-types.query-args';
-
-export const linkInfoQueryArgs = Prisma.validator<Prisma.LinkInfoArgs>()({
-  include: {
-    linkType: linkTypeQueryArgs
-  }
-});
+import linkQueryArgs from './links.query-args';
 
 export const projectProposedChangesQueryArgs = Prisma.validator<Prisma.Project_Proposed_ChangesArgs>()({
   include: {
@@ -29,9 +23,9 @@ export const wbsProposedChangeQueryArgs = Prisma.validator<Prisma.Wbs_Proposed_C
   include: {
     projectProposedChanges: projectProposedChangesQueryArgs,
     workPackageProposedChanges: workPackageProposedChangesQueryArgs,
-    links: linkInfoQueryArgs,
-    projectLead: true,
-    projectManager: true
+    links: linkQueryArgs,
+    lead: true,
+    manager: true
   }
 });
 

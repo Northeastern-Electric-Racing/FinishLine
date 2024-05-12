@@ -58,7 +58,8 @@ const ChangeRequestsOverview: React.FC = () => {
       (cr) =>
         !cr.dateReviewed &&
         cr.submitter.userId !== user.userId &&
-        myWbsNumbers.some((wbsNum) => equalsWbsNumber(wbsNum, cr.wbsNum))
+        (myWbsNumbers.some((wbsNum) => equalsWbsNumber(wbsNum, cr.wbsNum)) ||
+          cr.requestedReviewers.map((user) => user.userId).includes(user.userId))
     )
     .sort((a, b) => b.dateSubmitted.getTime() - a.dateSubmitted.getTime());
 
