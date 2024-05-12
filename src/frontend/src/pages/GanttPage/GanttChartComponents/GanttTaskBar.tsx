@@ -86,7 +86,6 @@ const GanttTaskBar = ({
       const deltaX = currentX - startX!;
       setWidth(Math.max(100, width + deltaX));
       setStartX(currentX);
-      console.log(currentX);
     }
   };
 

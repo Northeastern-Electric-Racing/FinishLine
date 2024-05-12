@@ -1,6 +1,6 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { RequestEventChange } from '../../../utils/gantt.utils';
-import { ChangeRequestReason, ChangeRequestType, WorkPackage, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
 import dayjs from 'dayjs';
@@ -8,6 +8,7 @@ import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.h
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface GanttRequestChangeModalProps {
   change: RequestEventChange;
@@ -16,27 +17,19 @@ interface GanttRequestChangeModalProps {
 }
 
 export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequestChangeModalProps) => {
-  const { data, isLoading, isError, error } = useSingleWorkPackage(validateWBS(change.eventId));
-
-  if (!data || isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} />;
-  return <GanttRequestChange open={open} handleClose={handleClose} change={change} workPackage={data} />;
-};
-
-interface GanttRequestChangeProps {
-  workPackage: WorkPackage;
-  change: RequestEventChange;
-  handleClose: () => void;
-  open: boolean;
-}
-
-export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ workPackage, handleClose, open, change }) => {
+  const toast = useToast();
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
   const [explanationForChange, setExplanationForChange] = useState('');
-  const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
+  const {
+    data: workPackage,
+    isLoading: wpIsLoading,
+    isError: wpIsError,
+    error: wpError
+  } = useSingleWorkPackage(validateWBS(change.eventId));
+  const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
 
-  if (isLoading) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (!workPackage || wpIsLoading || isLoading) return <LoadingIndicator />;
+  if (wpIsError) return <ErrorPage error={wpError} />;
 
   const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
     setReasonForChange(event.target.value as ChangeRequestReason);
@@ -78,8 +71,15 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ workPack
         deliverables: workPackage.deliverables.map((deliverable) => deliverable.detail)
       }
     };
-    await mutateAsync(payload);
-    handleClose();
+    try {
+      await mutateAsync(payload);
+      toast.success('Change Request Created Successfully!');
+      handleClose();
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message);
+      }
+    }
   };
 
   return (
@@ -101,7 +101,7 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ workPack
         <FormControl fullWidth>
           <InputLabel>Reason for Change</InputLabel>
           {/* In the console, this part kept throwing warnings because the field for reasonForChange 
-          was undefined when I clicked cancel on the modal. Is there a way to fix that */}
+      was undefined when I clicked cancel on the modal. Is there a way to fix that */}
 
           <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
             {Object.entries(ChangeRequestReason).map(([key, value]) => (

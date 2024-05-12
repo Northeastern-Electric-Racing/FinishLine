@@ -54,7 +54,6 @@ const GanttChartPage: FC = () => {
   const [searchText, setSearchText] = useState<string>('');
   const [groupedEventChanges, setGroupedEventChanges] = useState(new Map<string, RequestEventChange>());
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
-  const [activeModalIds, setActiveModalIds] = useState<Set<string>>(new Set());
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -230,11 +229,9 @@ const GanttChartPage: FC = () => {
   };
 
   const saveChanges = (eventChanges: EventChange[]) => {
-    let updatedGroupEventChanges = new Map<string, RequestEventChange>();
     eventChanges.forEach((change) => {
       const event = ganttTasks.find((task) => task.id === change.eventId);
       if (event) {
-        console.log('new event?');
         const existingChange = groupedEventChanges.get(change.eventId);
 
         const { newStart, newEnd, duration } = updateEventDates(event, change, existingChange);
@@ -248,20 +245,15 @@ const GanttChartPage: FC = () => {
           newEnd,
           duration
         };
-        updatedGroupEventChanges = updateEventChange(change.eventId, newEventChange);
+        updateEventChange(change.eventId, newEventChange);
       }
     });
-
-    // Log and update active modals
-    const updatedSet = new Set(activeModalIds);
-    updatedGroupEventChanges && updatedGroupEventChanges.forEach((change) => updatedSet.add(change.eventId));
-    setActiveModalIds(updatedSet);
   };
 
   const removeActiveModal = (changeId: string) => {
-    const updatedSet = new Set(activeModalIds);
-    updatedSet.delete(changeId);
-    setActiveModalIds(updatedSet);
+    const updatedGroupedEventChanges = new Map(groupedEventChanges);
+    updatedGroupedEventChanges.delete(changeId);
+    setGroupedEventChanges(updatedGroupedEventChanges);
   };
 
   const collapseHandler = () => {
@@ -322,13 +314,7 @@ const GanttChartPage: FC = () => {
           setShowWorkPackagesMap={setShowWorkPackagesMap}
         />
         {Array.from(groupedEventChanges.entries()).map(([changeId, change]) => {
-          return (
-            <GanttRequestChangeModal
-              change={change}
-              open={activeModalIds.has(changeId)}
-              handleClose={() => removeActiveModal(changeId)}
-            />
-          );
+          return <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(changeId)} />;
         })}
       </Box>
     </PageLayout>
