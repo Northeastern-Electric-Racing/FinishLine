@@ -1,41 +1,39 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { RequestEventChange } from '../../../utils/gantt.utils';
 import { ChangeRequestReason, ChangeRequestType, WorkPackage, validateWBS } from 'shared';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
 import dayjs from 'dayjs';
 import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { getSingleWorkPackage } from '../../../apis/work-packages.api';
+import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 
-interface GanttRequestChangeProps {
+interface GanttRequestChangeModalProps {
   change: RequestEventChange;
   handleClose: () => void;
-  showGanttModal: boolean;
+  open: boolean;
 }
 
-export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change, handleClose, showGanttModal }) => {
+export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequestChangeModalProps) => {
+  const { data, isLoading, isError, error } = useSingleWorkPackage(validateWBS(change.eventId));
+
+  if (!data || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} />;
+  return <GanttRequestChange open={open} handleClose={handleClose} change={change} workPackage={data} />;
+};
+
+interface GanttRequestChangeProps {
+  workPackage: WorkPackage;
+  change: RequestEventChange;
+  handleClose: () => void;
+  open: boolean;
+}
+
+export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ workPackage, handleClose, open, change }) => {
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
   const [explanationForChange, setExplanationForChange] = useState('');
-  const [workPackage, setWorkPackage] = useState<WorkPackage>();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
-
-  useEffect(() => {
-    const fetchWorkPackage = async () => {
-      try {
-        const wp = await getSingleWorkPackage(validateWBS(change.eventId));
-        setWorkPackage(wp.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchWorkPackage();
-  });
-
-  if (!workPackage) {
-    return null;
-  }
 
   if (isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -86,7 +84,7 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change, 
 
   return (
     <NERModal
-      open={showGanttModal}
+      open={open}
       onHide={handleClose}
       title="Work Package Timeline Change Request"
       onSubmit={handleSubmit}

@@ -32,7 +32,7 @@ import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType, addDaysToDate, daysBetween } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import { GanttRequestChange } from './GanttChartComponents/GanttRequestChangeModal';
+import { GanttRequestChangeModal } from './GanttChartComponents/GanttRequestChangeModal';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -203,12 +203,11 @@ const GanttChartPage: FC = () => {
   const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  const updateEventChange = (eventId: string, newRequestEventChange: RequestEventChange) => {
-    setGroupedEventChanges((prevMap) => {
-      const updatedMap = new Map(prevMap);
-      updatedMap.set(eventId, newRequestEventChange);
-      return updatedMap;
-    });
+  const updateEventChange = (eventId: string, newRequestEventChange: RequestEventChange): any => {
+    const updatedMap = new Map(groupedEventChanges);
+    updatedMap.set(eventId, newRequestEventChange);
+    setGroupedEventChanges(updatedMap);
+    return updatedMap;
   };
 
   const updateEventDates = (event: any, change: EventChange, existingChange?: any) => {
@@ -231,11 +230,12 @@ const GanttChartPage: FC = () => {
   };
 
   const saveChanges = (eventChanges: EventChange[]) => {
+    let updatedGroupEventChanges = new Map<string, RequestEventChange>();
     eventChanges.forEach((change) => {
       const event = ganttTasks.find((task) => task.id === change.eventId);
       if (event) {
+        console.log('new event?');
         const existingChange = groupedEventChanges.get(change.eventId);
-        console.log('Existing Change', existingChange);
 
         const { newStart, newEnd, duration } = updateEventDates(event, change, existingChange);
 
@@ -248,14 +248,13 @@ const GanttChartPage: FC = () => {
           newEnd,
           duration
         };
-        updateEventChange(change.eventId, newEventChange);
+        updatedGroupEventChanges = updateEventChange(change.eventId, newEventChange);
       }
     });
 
     // Log and update active modals
-    console.log('Grouped event changes: ', groupedEventChanges);
     const updatedSet = new Set(activeModalIds);
-    groupedEventChanges.forEach((change) => updatedSet.add(change.eventId));
+    updatedGroupEventChanges && updatedGroupEventChanges.forEach((change) => updatedSet.add(change.eventId));
     setActiveModalIds(updatedSet);
   };
 
@@ -324,9 +323,9 @@ const GanttChartPage: FC = () => {
         />
         {Array.from(groupedEventChanges.entries()).map(([changeId, change]) => {
           return (
-            <GanttRequestChange
+            <GanttRequestChangeModal
               change={change}
-              showGanttModal={activeModalIds.has(changeId)}
+              open={activeModalIds.has(changeId)}
               handleClose={() => removeActiveModal(changeId)}
             />
           );
