@@ -237,7 +237,7 @@ export const applyProjectProposedChanges = async (
 ) => {
   if (projectProposedChanges) {
     const links = wbsProposedChanges.links.map((link) => ({
-      linkId: link.linkInfoId,
+      linkId: link.linkId,
       linkTypeName: link.linkTypeName,
       url: link.url
     }));

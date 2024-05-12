@@ -330,36 +330,28 @@ model Work_Package {
 }
 
 model LinkType {
-  name        String     @id @unique
-  dateCreated DateTime   @default(now())
+  name        String   @id @unique
+  dateCreated DateTime @default(now())
   creatorId   Int
   iconName    String
   required    Boolean
-  creator     User       @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
-  links       Link[]     @relation(name: "linkTypes")
-  linkInfos   LinkInfo[] @relation(name: "linkInfoTypes")
+  creator     User     @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
+  links       Link[]   @relation(name: "linkTypes")
 }
 
 model Link {
-  linkId       String      @id @default(uuid())
-  url          String
-  creatorId    Int
-  creator      User        @relation(name: "linkCreator", fields: [creatorId], references: [userId])
-  dateCreated  DateTime    @default(now())
-  dateDeleted  DateTime?
-  linkTypeName String
-  linkType     LinkType    @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
-  wbsElementId Int
-  wbsElment    WBS_Element @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
-}
-
-model LinkInfo {
-  linkInfoId          String                @id @default(uuid())
-  url                 String
-  linkTypeName        String
-  linkType            LinkType              @relation(name: "linkInfoTypes", fields: [linkTypeName], references: [name])
-  proposedWbsChangeId String?
-  wbsProposedChanges  Wbs_Proposed_Changes? @relation(name: "proposedChangeLinkInfos", fields: [proposedWbsChangeId], references: [wbsProposedChangesId])
+  linkId                                   String                @id @default(uuid())
+  url                                      String
+  creatorId                                Int
+  creator                                  User                  @relation(name: "linkCreator", fields: [creatorId], references: [userId])
+  dateCreated                              DateTime              @default(now())
+  dateDeleted                              DateTime?
+  linkTypeName                             String
+  linkType                                 LinkType              @relation(name: "linkTypes", fields: [linkTypeName], references: [name])
+  wbsElementId                             Int?
+  wbsElment                                WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  Wbs_Proposed_Changes                     Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbs_Proposed_ChangesWbsProposedChangesId], references: [wbsProposedChangesId])
+  wbs_Proposed_ChangesWbsProposedChangesId String?
 }
 
 model Description_Bullet {
@@ -682,7 +674,7 @@ model Wbs_Proposed_Changes {
   lead                       User?                          @relation(name: "wbsProjectLead", fields: [leadId], references: [userId])
   managerId                  Int?
   manager                    User?                          @relation(name: "wbsProjectManager", fields: [managerId], references: [userId])
-  links                      LinkInfo[]                     @relation(name: "proposedChangeLinkInfos")
+  links                      Link[]                         @relation(name: "proposedChangeLinks")
   changeRequest              Scope_CR                       @relation(fields: [changeRequestId], references: [scopeCrId])
   changeRequestId            Int                            @unique
   projectProposedChanges     Project_Proposed_Changes?      @relation(name: "projectProposedChanges")

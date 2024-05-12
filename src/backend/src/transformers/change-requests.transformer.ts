@@ -6,7 +6,6 @@ import {
   StageGateChangeRequest,
   ProjectProposedChanges,
   WbsElementStatus,
-  LinkInfo,
   WorkPackageProposedChanges,
   WorkPackageStage
 } from 'shared';
@@ -17,16 +16,8 @@ import { getDateImplemented } from '../utils/change-requests.utils';
 import { userTransformer } from './user.transformer';
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { descBulletConverter } from '../utils/description-bullets.utils';
-import { linkTypeTransformer } from './links.transformer';
-import { linkInfoQueryArgs, wbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
-
-const linkInfoTransformer = (linkInfo: Prisma.LinkInfoGetPayload<typeof linkInfoQueryArgs>): LinkInfo => {
-  return {
-    linkInfoId: linkInfo.linkInfoId,
-    url: linkInfo.url,
-    linkType: linkTypeTransformer(linkInfo.linkType)
-  };
-};
+import { wbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
+import { linkTransformer } from './links.transformer';
 
 export const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
@@ -36,7 +27,7 @@ export const projectProposedChangesTransformer = (
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links.map(linkInfoTransformer),
+    links: wbsProposedChanges.links.map(linkTransformer),
     lead: wbsProposedChanges.lead ? wbsProposedChanges.lead : undefined,
     manager: wbsProposedChanges.manager ? wbsProposedChanges.manager : undefined,
     summary: projectProposedChanges!.summary,
@@ -58,7 +49,7 @@ export const workPackageProposedChangesTransformer = (
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links.map(linkInfoTransformer),
+    links: wbsProposedChanges.links.map(linkTransformer),
     lead: wbsProposedChanges.lead ? wbsProposedChanges.lead : undefined,
     manager: wbsProposedChanges.manager ? wbsProposedChanges.manager : undefined,
     startDate: workPackageProposedChanges!.startDate,

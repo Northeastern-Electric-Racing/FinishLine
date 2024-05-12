@@ -637,7 +637,7 @@ export default class ChangeRequestsService {
           leadId,
           managerId,
           links: {
-            create: links.map((linkInfo) => ({ url: linkInfo.url, linkTypeName: linkInfo.linkTypeName }))
+            create: links.map((link) => ({ url: link.url, linkTypeName: link.linkTypeName, creatorId: submitter.userId }))
           },
           projectProposedChanges: {
             create: {
