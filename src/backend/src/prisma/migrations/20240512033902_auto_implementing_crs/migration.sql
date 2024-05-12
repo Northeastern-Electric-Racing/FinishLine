@@ -1,3 +1,6 @@
+-- DropForeignKey
+ALTER TABLE "Link" DROP CONSTRAINT "Link_wbsElementId_fkey";
+
 -- AlterTable
 ALTER TABLE "Description_Bullet" ADD COLUMN     "projectProposedChangesFeaturesId" TEXT,
 ADD COLUMN     "projectProposedChangesGoalsId" TEXT,
@@ -6,17 +9,11 @@ ADD COLUMN     "wpProposedChangesDeliverablesId" TEXT,
 ADD COLUMN     "wpProposedChangesExpectedActivitiesId" TEXT;
 
 -- AlterTable
+ALTER TABLE "Link" ADD COLUMN     "wbs_Proposed_ChangesWbsProposedChangesId" TEXT,
+ALTER COLUMN "wbsElementId" DROP NOT NULL;
+
+-- AlterTable
 ALTER TABLE "Scope_CR" ADD COLUMN     "wbsProposedChangesId" TEXT;
-
--- CreateTable
-CREATE TABLE "LinkInfo" (
-    "linkInfoId" TEXT NOT NULL,
-    "url" TEXT NOT NULL,
-    "linkTypeName" TEXT NOT NULL,
-    "proposedWbsChangeId" TEXT,
-
-    CONSTRAINT "LinkInfo_pkey" PRIMARY KEY ("linkInfoId")
-);
 
 -- CreateTable
 CREATE TABLE "Wbs_Proposed_Changes" (
@@ -88,10 +85,10 @@ CREATE UNIQUE INDEX "_proposedProjectTeams_AB_unique" ON "_proposedProjectTeams"
 CREATE INDEX "_proposedProjectTeams_B_index" ON "_proposedProjectTeams"("B");
 
 -- AddForeignKey
-ALTER TABLE "LinkInfo" ADD CONSTRAINT "LinkInfo_linkTypeName_fkey" FOREIGN KEY ("linkTypeName") REFERENCES "LinkType"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Link" ADD CONSTRAINT "Link_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LinkInfo" ADD CONSTRAINT "LinkInfo_proposedWbsChangeId_fkey" FOREIGN KEY ("proposedWbsChangeId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Link" ADD CONSTRAINT "Link_wbs_Proposed_ChangesWbsProposedChangesId_fkey" FOREIGN KEY ("wbs_Proposed_ChangesWbsProposedChangesId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Description_Bullet" ADD CONSTRAINT "Description_Bullet_projectProposedChangesGoalsId_fkey" FOREIGN KEY ("projectProposedChangesGoalsId") REFERENCES "Project_Proposed_Changes"("projectProposedChangesId") ON DELETE SET NULL ON UPDATE CASCADE;

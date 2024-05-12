@@ -17,10 +17,11 @@ import {
   useSetTaskStatus
 } from '../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { TaskListTabPanelProps, transformDate } from '../../../../utils/task.utils';
+import { TaskListTabPanelProps } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
 import TaskListDataGrid from './TaskListDataGrid';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
+import { transformDate } from '../../../../utils/datetime.utils';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { tasks, status, addTask, onAddCancel, project, setDisabled } = props;

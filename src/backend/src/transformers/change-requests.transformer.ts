@@ -6,7 +6,6 @@ import {
   StageGateChangeRequest,
   ProjectProposedChanges,
   WbsElementStatus,
-  LinkInfo,
   WorkPackageProposedChanges,
   WorkPackageStage
 } from 'shared';
@@ -17,18 +16,10 @@ import { getDateImplemented } from '../utils/change-requests.utils';
 import { userTransformer } from './user.transformer';
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { descBulletConverter } from '../utils/description-bullets.utils';
-import { linkTypeTransformer } from './links.transformer';
-import { linkInfoQueryArgs, wbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
+import { wbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
+import { linkTransformer } from './links.transformer';
 
-const linkInfoTransformer = (linkInfo: Prisma.LinkInfoGetPayload<typeof linkInfoQueryArgs>): LinkInfo => {
-  return {
-    linkInfoId: linkInfo.linkInfoId,
-    url: linkInfo.url,
-    linkType: linkTypeTransformer(linkInfo.linkType)
-  };
-};
-
-const projectProposedChangesTransformer = (
+export const projectProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
 ): ProjectProposedChanges => {
   const { projectProposedChanges } = wbsProposedChanges;
@@ -36,7 +27,7 @@ const projectProposedChangesTransformer = (
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links.map(linkInfoTransformer),
+    links: wbsProposedChanges.links.map(linkTransformer),
     lead: wbsProposedChanges.lead ? wbsProposedChanges.lead : undefined,
     manager: wbsProposedChanges.manager ? wbsProposedChanges.manager : undefined,
     summary: projectProposedChanges!.summary,
@@ -50,7 +41,7 @@ const projectProposedChangesTransformer = (
   };
 };
 
-const workPackageProposedChangesTransformer = (
+export const workPackageProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
 ): WorkPackageProposedChanges => {
   const { workPackageProposedChanges } = wbsProposedChanges;
@@ -58,7 +49,7 @@ const workPackageProposedChangesTransformer = (
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links.map(linkInfoTransformer),
+    links: wbsProposedChanges.links.map(linkTransformer),
     lead: wbsProposedChanges.lead ? wbsProposedChanges.lead : undefined,
     manager: wbsProposedChanges.manager ? wbsProposedChanges.manager : undefined,
     startDate: workPackageProposedChanges!.startDate,

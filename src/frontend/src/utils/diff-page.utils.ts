@@ -1,6 +1,6 @@
 import {
   DescriptionBullet,
-  LinkInfo,
+  Link,
   Project,
   ProjectProposedChangesPreview,
   TeamPreview,
@@ -21,7 +21,7 @@ export type ProposedChangeValue =
   | User
   | TeamPreview[]
   | DescriptionBullet[]
-  | LinkInfo[]
+  | Link[]
   | Date
   | WbsNumber[];
 
@@ -61,7 +61,7 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     } else if ('carNumber' in testVal) {
       return (detail as WbsNumber[]).map(wbsPipe);
     } else {
-      return (detail as LinkInfo[]).map((link) => `${link.linkType.name}: ${link.url}`);
+      return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
     }
   }
 };
@@ -94,15 +94,15 @@ export const valueChanged = (original: ProposedChangeValue, proposed: ProposedCh
 
   if (original instanceof Date) return datePipe(original) !== datePipe(proposed as Date);
 
-  original = original as string[] | User | TeamPreview[] | DescriptionBullet[] | LinkInfo[] | WbsNumber[];
-  proposed = proposed as string[] | User | TeamPreview[] | DescriptionBullet[] | LinkInfo[] | WbsNumber[];
+  original = original as string[] | User | TeamPreview[] | DescriptionBullet[] | Link[] | WbsNumber[];
+  proposed = proposed as string[] | User | TeamPreview[] | DescriptionBullet[] | Link[] | WbsNumber[];
 
   if ('firstName' in original) {
     return original.userId !== (proposed as User).userId;
   }
 
   // they are arrays
-  proposed = proposed as string[] | TeamPreview[] | DescriptionBullet[] | LinkInfo[];
+  proposed = proposed as string[] | TeamPreview[] | DescriptionBullet[] | Link[];
 
   if (original.length === 0) return proposed.length !== 0;
   if (proposed.length === 0) return original.length !== 0;
@@ -125,9 +125,7 @@ export const valueChanged = (original: ProposedChangeValue, proposed: ProposedCh
       (proposed as DescriptionBullet[]).map((bullet) => bullet.detail).join()
     );
   } else {
-    return (
-      (original as LinkInfo[]).map((link) => link.url).join() !== (proposed as LinkInfo[]).map((link) => link.url).join()
-    );
+    return (original as Link[]).map((link) => link.url).join() !== (proposed as Link[]).map((link) => link.url).join();
   }
 };
 
@@ -145,13 +143,7 @@ export const projectToProposedChangesPreview = (project: Project | undefined): P
     features: project.features,
     rules: project.rules,
     otherConstraints: project.otherConstraints,
-    links: project.links.map((link) => {
-      return {
-        linkInfoId: link.linkId,
-        url: link.url,
-        linkType: link.linkType
-      };
-    })
+    links: project.links
   };
 };
 

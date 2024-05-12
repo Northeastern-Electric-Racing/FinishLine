@@ -33,7 +33,7 @@ export interface WbsProposedChanges {
   id: string;
   name: string;
   status: WbsElementStatus;
-  links: LinkInfo[];
+  links: Link[];
   lead?: User;
   manager?: User;
 }
@@ -115,12 +115,6 @@ export interface LinkType {
   creator: UserPreview;
   required: boolean;
   iconName: string;
-}
-
-export interface LinkInfo {
-  linkInfoId: string;
-  url: string;
-  linkType: LinkType;
 }
 
 export interface Link {
