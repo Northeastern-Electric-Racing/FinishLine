@@ -3,13 +3,23 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import {
+  Autocomplete,
+  Box,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  TextField,
   Typography
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
-import { meetingStartTimePipe } from '../../utils/pipes';
-import { Team, TeamType, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
+import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
+import { TeamType, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -17,7 +27,9 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { userToAutocompleteOption } from '../../utils/teams.utils';
 import { useQuery } from '../../hooks/utils.hooks';
 import NERAutocomplete from '../../components/NERAutocomplete';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { HOURS } from '../../utils/design-review.utils';
+import { useAllProjects } from '../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
@@ -61,20 +73,21 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
 
+  const {
+    isLoading: allWorkPackagesIsLoading,
+    isError: allWorkPackagesIsError,
+    error: allWorkPackagesError,
+    data: allWorkPackages
+  } = useAllWorkPackages();
+
+  const {
+    isLoading: allProjectsLoading,
+    isError: allProjectsIsError,
+    error: allProjectsError,
+    data: allProjects
+  } = useAllProjects();
+
   const { mutateAsync, isLoading } = useCreateDesignReviews();
-
-  const [wbsNum, setWbsNum] = useState('')
-  
-
-  const { data: project } = useQuery(['singleProject', validateWBS(wbsNum)], () => {
-    return fetchSingleProject(validateWBS(wbsNum));
-  });
-  
-  // Fetch function for single project
-
-  };
-
-
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     const day = data.date.getDay();
@@ -118,11 +131,22 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   });
 
   if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />
-  if (allUsersIsLoading || !users || isLoading) return <LoadingIndicator />;
+  if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
+  if (allUsersIsLoading || allWorkPackagesIsLoading || !allWorkPackages || !users || isLoading) return <LoadingIndicator />;
+
+
 
   const memberOptions = users.map(userToAutocompleteOption);
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
+
+  allWorkPackages.forEach((workPackage: WorkPackage) => {
+    wbsDropdownOptions.push({
+      label: `${wbsNamePipe(workPackage)}`,
+      id: wbsPipe(workPackage.wbsNum)
+    });
+  });
+
 
   wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp2.id, wp1.id));
 
@@ -257,8 +281,11 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
               const handleWorkPackageSelect = async (selectedValue: string) => {
                 onChange(selectedValue);
-                setWbsNum(selectedValue)
-                const defaultTeamTypeId = project?.teams[0].teamType?.teamTypeId
+                setValue('wbsNum', selectedValue);
+                const projectWithMatchingWbs = allProjects?.find(project => {
+                  return project.workPackages.some(wp => wbsPipe(wp.wbsNum) === selectedValue);
+                });
+                const defaultTeamTypeId = projectWithMatchingWbs?.teams[0].teamType?.teamTypeId
                 setValue('teamTypeId', defaultTeamTypeId!); 
               };
 
