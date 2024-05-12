@@ -19,7 +19,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
 import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
-import { TeamType, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
+import { Project, Team, TeamType, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -29,6 +29,8 @@ import { useQuery } from '../../hooks/utils.hooks';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { HOURS } from '../../utils/design-review.utils';
+import { useSingleProject } from '../../hooks/projects.hooks';
+import { useAllTeams } from '../../hooks/teams.hooks';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
@@ -79,6 +81,15 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   } = useAllWorkPackages();
 
   const { mutateAsync, isLoading } = useCreateDesignReviews();
+
+  const [wbsNum, setWbsNum] = useState('')
+  
+
+  const { data: project } = allWorkPackages && wbsNum
+  ? useSingleProject(allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === wbsNum)!.wbsNum)
+  : { data: undefined };
+
+
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     const day = data.date.getDay();
@@ -264,13 +275,22 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
               const onClear = () => {
                 setValue('wbsNum', '');
                 onChange('');
+                setValue('teamTypeId', '');
               };
+
+              const handleWorkPackageSelect = async (selectedValue: string) => {
+                onChange(selectedValue);
+                setWbsNum(selectedValue)
+                const defaultTeamTypeId = project?.teams[0].teamType?.teamTypeId
+                setValue('teamTypeId', defaultTeamTypeId!); 
+              };
+
               return (
                 <NERAutocomplete
                   id="wbs-autocomplete"
                   sx={{ bgcolor: 'inherit' }}
                   onChange={(_event, newValue) => {
-                    newValue ? onChange(newValue.id) : onClear();
+                    newValue ? handleWorkPackageSelect(newValue.id) : onClear();
                   }}
                   options={wbsDropdownOptions}
                   size="medium"
