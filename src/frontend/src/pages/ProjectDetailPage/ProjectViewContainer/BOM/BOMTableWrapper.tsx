@@ -1,6 +1,6 @@
 import { Box } from '@mui/system';
 import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -29,7 +29,19 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const { mutateAsync: deleteMaterialMutateAsync, isLoading } = useDeleteMaterial();
   const { mutateAsync: deleteAssemblyMutateAsync } = useDeleteAssembly();
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
+  const [ windowWidth, setWindowWidth ] = useState(window.innerWidth);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
 
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
   const user = useCurrentUser();
   const toast = useToast();
 
@@ -81,6 +93,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     const actions: JSX.Element[] = [];
     const rowId = String(params.row.id);
     const material = materials.find((mat) => mat.materialId === params.row.materialId);
+    const shouldShowInMenu = windowWidth < 1000;
 
     if (!rowId.includes('assembly')) {
       actions.push(
@@ -108,6 +121,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
         <GridActionsCellItem
           icon={<LinkIcon fontSize="small" />}
           label="Link"
+          showInMenu={shouldShowInMenu}
           disabled={!editPerms}
           onClick={() => {
             window.open(params.row.link, '_blank');
@@ -118,6 +132,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
         <GridActionsCellItem
           icon={<NotesIcon fontSize="small" />}
           label="Notes"
+          showInMenu={shouldShowInMenu}
           disabled={!editPerms}
           onClick={() => {
             setSelectedMaterialId(params.row.materialId);
@@ -252,6 +267,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       ...bomBaseColDef,
       flex: 1,
       field: 'actions',
+      headerName: "Actions",
       type: 'actions',
       getActions,
       sortable: false,

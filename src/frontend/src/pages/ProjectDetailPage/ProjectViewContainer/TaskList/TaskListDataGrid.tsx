@@ -243,7 +243,6 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
             icon={<DescriptionIcon fontSize="small" />}
             label="notes"
             onClick={() => {
-              console.log('hitting this button');
               setSelectedTask(params.row.task);
               setModalShow(true);
             }}
