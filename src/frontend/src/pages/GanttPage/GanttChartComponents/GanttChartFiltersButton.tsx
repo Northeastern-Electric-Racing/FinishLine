@@ -4,21 +4,31 @@ import GanttChartFilters from './GanttChartFilters';
 import { Tune } from '@mui/icons-material';
 
 interface GanttChartFiltersButtonProps {
-  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamCategoriesHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  teamsHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void }[];
-  overdueHandler: (event: ChangeEvent<HTMLInputElement>) => void;
-  expandedHandler: (expanded: boolean) => void;
+  carHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  teamTypeHandlers: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
+  teamHandlers: { filterLabel: string; handler: (event: ChangeEvent<HTMLInputElement>) => void; defaultChecked: boolean }[];
+  overdueHandler: {
+    filterLabel: string;
+    handler: (event: ChangeEvent<HTMLInputElement>) => void;
+    defaultChecked: boolean;
+  }[];
   resetHandler: () => void;
+  collapseHandler: () => void;
+  expandHandler: () => void;
 }
 
 const GanttChartFiltersButton = ({
   carHandlers,
-  teamCategoriesHandlers,
-  teamsHandlers,
+  teamTypeHandlers,
+  teamHandlers,
   overdueHandler,
-  expandedHandler,
-  resetHandler
+  resetHandler,
+  collapseHandler,
+  expandHandler
 }: GanttChartFiltersButtonProps) => {
   const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -51,11 +61,12 @@ const GanttChartFiltersButton = ({
       >
         <GanttChartFilters
           carHandlers={carHandlers}
-          teamCategoriesHandlers={teamCategoriesHandlers}
-          teamsHandlers={teamsHandlers}
+          teamTypeHandlers={teamTypeHandlers}
+          teamHandlers={teamHandlers}
           overdueHandler={overdueHandler}
-          expandedHandler={expandedHandler}
           resetHandler={resetHandler}
+          collapseHandler={collapseHandler}
+          expandHandler={expandHandler}
         />
       </Popover>
     </>

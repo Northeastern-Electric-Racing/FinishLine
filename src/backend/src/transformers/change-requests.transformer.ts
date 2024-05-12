@@ -37,16 +37,16 @@ export const projectProposedChangesTransformer = (
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
     links: wbsProposedChanges.links.map(linkInfoTransformer),
-    projectLead: wbsProposedChanges.projectLead ? wbsProposedChanges.projectLead : undefined,
-    projectManager: wbsProposedChanges.projectManager ? wbsProposedChanges.projectManager : undefined,
+    lead: wbsProposedChanges.lead ? wbsProposedChanges.lead : undefined,
+    manager: wbsProposedChanges.manager ? wbsProposedChanges.manager : undefined,
     summary: projectProposedChanges!.summary,
     budget: projectProposedChanges!.budget,
     rules: projectProposedChanges!.rules,
     goals: projectProposedChanges!.goals.map(descBulletConverter),
     features: projectProposedChanges!.features.map(descBulletConverter),
-    otherConstrains: projectProposedChanges!.otherConstraints.map(descBulletConverter),
+    otherConstraints: projectProposedChanges!.otherConstraints.map(descBulletConverter),
     teams: projectProposedChanges!.teams,
-    newProject: projectProposedChanges!.newProject
+    carNumber: projectProposedChanges?.carNumber !== null ? projectProposedChanges?.carNumber : undefined
   };
 };
 
@@ -59,8 +59,8 @@ export const workPackageProposedChangesTransformer = (
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
     links: wbsProposedChanges.links.map(linkInfoTransformer),
-    projectLead: wbsProposedChanges.projectLead ? wbsProposedChanges.projectLead : undefined,
-    projectManager: wbsProposedChanges.projectManager ? wbsProposedChanges.projectManager : undefined,
+    lead: wbsProposedChanges.lead ? wbsProposedChanges.lead : undefined,
+    manager: wbsProposedChanges.manager ? wbsProposedChanges.manager : undefined,
     startDate: workPackageProposedChanges!.startDate,
     duration: workPackageProposedChanges!.duration,
     blockedBy: workPackageProposedChanges!.blockedBy.map(wbsNumOf),

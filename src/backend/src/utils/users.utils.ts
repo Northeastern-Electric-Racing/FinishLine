@@ -78,3 +78,7 @@ const validateFoundUsers = (users: User[], userIds: number[]) => {
     throw new HttpException(404, `User(s) with the following ids not found: ${missingUserIds.join(', ')}`);
   }
 };
+
+export const areUsersinList = (users: User[], userList: User[]): boolean => {
+  return users.every((user) => userList.some((u) => u.userId === user.userId));
+};

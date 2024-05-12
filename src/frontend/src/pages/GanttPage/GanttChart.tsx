@@ -11,8 +11,8 @@ interface GanttChartProps {
   chartEditingState: Array<{ teamName: string; editing: boolean }>;
   setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
-  ganttTasks: GanttTask[];
-  setGanttTasks: (value: React.SetStateAction<GanttTask[]>) => void;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
 }
 
 const GanttChart = ({
@@ -23,8 +23,8 @@ const GanttChart = ({
   chartEditingState,
   setChartEditingState,
   saveChanges,
-  ganttTasks,
-  setGanttTasks
+  showWorkPackagesMap,
+  setShowWorkPackagesMap
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -51,9 +51,8 @@ const GanttChart = ({
         if (!tasks) return <></>;
 
         // Sorting the work packages of each project based on their start date
-        tasks.map((task) => {
+        tasks.forEach((task) => {
           task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
-          return task;
         });
 
         return (
@@ -97,11 +96,9 @@ const GanttChart = ({
                 start={startDate}
                 end={endDate}
                 isEditMode={isEditMode}
-                onExpanderClick={(newTask) => {
-                  const newTasks = ganttTasks.map((task) => (newTask.id === task.id ? { ...newTask, teamName } : task));
-                  setGanttTasks(newTasks);
-                }}
                 saveChanges={saveChanges}
+                showWorkPackagesMap={showWorkPackagesMap}
+                setShowWorkPackagesMap={setShowWorkPackagesMap}
               />
             </Box>
           </Box>

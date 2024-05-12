@@ -38,12 +38,16 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
         </Box>
         <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: '0 0 5px 5px', padding: '5px 10px' }}>
           <Box display={'flex'} flexDirection={'row'}>
-            <Typography marginRight={'10px'}>Start: {startDate.toLocaleDateString()}</Typography>
-            <Typography>Project Lead: {fullNamePipe(projectLead)}</Typography>
+            <Typography color={theme.palette.text.primary} marginRight={'10px'}>
+              Start: {startDate.toLocaleDateString()}
+            </Typography>
+            <Typography color={theme.palette.text.primary}>Project Lead: {fullNamePipe(projectLead)}</Typography>
           </Box>
           <Box display={'flex'} flexDirection={'row'}>
-            <Typography marginRight={'10px'}>End: {endDate.toLocaleDateString()}</Typography>
-            <Typography>Project Manager: {fullNamePipe(projectManager)}</Typography>
+            <Typography color={theme.palette.text.primary} marginRight={'10px'}>
+              End: {endDate.toLocaleDateString()}
+            </Typography>
+            <Typography color={theme.palette.text.primary}>Project Manager: {fullNamePipe(projectManager)}</Typography>
           </Box>
         </Box>
       </Box>

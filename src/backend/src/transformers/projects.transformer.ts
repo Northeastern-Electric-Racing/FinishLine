@@ -42,7 +42,9 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<typeof projectQuer
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    teams: project.teams,
+    teams: project.teams.map((team) => {
+      return { ...team, teamType: team.teamType ? team.teamType : undefined };
+    }),
     summary: project.summary,
     budget: project.budget,
     links: project.wbsElement.links.map(linkTransformer),

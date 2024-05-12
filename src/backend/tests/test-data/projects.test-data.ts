@@ -144,7 +144,7 @@ export const prismaLinkType2: LinkType = {
   iconName: 'YouTubeIcon'
 };
 
-export const prismaAssembly1: Assembly = {
+export const prismaAssembly1: Assembly & { materials: Material[] } = {
   name: 'New Assembly',
   pdmFileName: 'file.txt',
   dateCreated: new Date('10-19-2023'),
@@ -152,7 +152,8 @@ export const prismaAssembly1: Assembly = {
   wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null,
-  assemblyId: '1'
+  assemblyId: '1',
+  materials: []
 };
 
 export const prismaMaterialType: PrismaMaterialType = {

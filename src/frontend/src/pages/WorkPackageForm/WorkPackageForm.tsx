@@ -56,7 +56,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     ? {
         ...workPackage,
         workPackageId: workPackage.id,
-        crId: query.get('crId') || workPackage!.changes[0].changeRequestId.toString(),
+        crId: query.get('crId') || '',
         stage: workPackage!.stage ?? 'NONE',
         blockedBy: workPackage!.blockedBy.map(wbsPipe),
         expectedActivities: bulletsToObject(workPackage!.expectedActivities),

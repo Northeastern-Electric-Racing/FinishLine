@@ -15,13 +15,21 @@ interface GanttChartSectionProps {
   tasks: GanttTaskData[];
   isEditMode: boolean;
   saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (ganttTasks: GanttTaskData) => void;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
 }
 
-const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpanderClick }: GanttChartSectionProps) => {
+const GanttChartSection = ({
+  start,
+  end,
+  tasks,
+  isEditMode,
+  saveChanges,
+  showWorkPackagesMap,
+  setShowWorkPackagesMap
+}: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
-  const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [key: string]: boolean }>({});
 
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
@@ -39,11 +47,8 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
   const displayEvents = applyChangesToEvents(tasks, eventChanges);
   const projects = displayEvents.filter((event) => !event.project);
 
-  const toggleWorkPackages = (projectId: string) => {
-    setShowWorkPackagesList((prevState) => ({
-      ...prevState,
-      [projectId]: !prevState[projectId]
-    }));
+  const toggleWorkPackages = (projectTask: GanttTaskData) => {
+    setShowWorkPackagesMap((prev) => new Map(prev.set(projectTask.id, !prev.get(projectTask.id))));
   };
 
   return tasks.length > 0 ? (
@@ -60,11 +65,11 @@ const GanttChartSection = ({ start, end, tasks, isEditMode, saveChanges, onExpan
                   event={project}
                   isEditMode={isEditMode}
                   createChange={createChange}
-                  onWorkPackageToggle={() => toggleWorkPackages(project.id)}
-                  showWorkPackages={showWorkPackagesList[project.id]}
+                  onWorkPackageToggle={() => toggleWorkPackages(project)}
+                  showWorkPackages={showWorkPackagesMap.get(project.id)}
                 />
               </Box>
-              <Collapse in={showWorkPackagesList[project.id]}>
+              <Collapse in={showWorkPackagesMap.get(project.id)}>
                 {project.children.map((workPackage) => {
                   return (
                     <GanttTaskBar

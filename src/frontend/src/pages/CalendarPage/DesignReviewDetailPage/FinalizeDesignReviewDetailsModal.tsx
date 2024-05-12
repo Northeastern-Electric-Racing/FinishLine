@@ -1,7 +1,7 @@
-import { Box, Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Grid, Link, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useState } from 'react';
 import { DesignReview, DesignReviewStatus, wbsPipe } from 'shared';
-import { designReviewNamePipe, meetingStartTimePipe } from '../../../utils/pipes';
+import { meetingStartTimePipe } from '../../../utils/pipes';
 import { DesignReviewEditData } from './DesignReviewDetailPage';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
@@ -44,9 +44,7 @@ const FinalizeDesignReviewDetailsModal = ({
 
   const { selectedDate } = editData;
 
-  const title = `${designReviewNamePipe(designReview)} on ${selectedDate.toDateString()} at ${meetingStartTimePipe([
-    editData.startTime
-  ])}`;
+  const title = `Finalize Design Review for ${designReview.wbsName}`;
 
   const designReviewConflicts = conflictingDesignReviews.map(
     (designReview) =>
@@ -109,8 +107,15 @@ const FinalizeDesignReviewDetailsModal = ({
       reset={() => reset({ docTemplateLink: '', zoomLink: undefined, location: undefined })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
+      submitText="Schedule"
       formId="finalize-design-review-form"
     >
+      <Box style={{ display: 'flex', marginBottom: 20 }}>
+        <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Meeting Time:</Typography>
+        <Typography style={{ fontSize: '1.2em' }}>{`${meetingStartTimePipe([
+          editData.startTime
+        ])} - ${selectedDate.toDateString()}`}</Typography>
+      </Box>
       <Box style={{ display: 'flex', marginBottom: 20 }}>
         <Typography style={{ fontSize: '1.2em', marginRight: 97 }}>Meeting Type:</Typography>
         <ToggleButtonGroup color="primary" value={meetingType} onChange={handleMeetingTypeChange}>
@@ -119,7 +124,17 @@ const FinalizeDesignReviewDetailsModal = ({
         </ToggleButtonGroup>
       </Box>
       <Box style={{ display: 'flex', marginBottom: 20 }}>
-        <Typography style={{ fontSize: '1.2em', marginRight: 53 }}>Add Doc Template:</Typography>
+        <Box>
+          <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Question Doc:</Typography>
+          <Link
+            href="https://docs.google.com/document/d/1Rr2R6m6gr1hg1cjqkEmRg1Kk1-t1-SRPpso-CT_s3bg/edit#heading=h.yy87wzv6zqbj"
+            target="_blank"
+            underline="hover"
+            fontSize={16}
+          >
+            Doc Template
+          </Link>
+        </Box>
         <ReactHookTextField
           name="docTemplateLink"
           control={control}

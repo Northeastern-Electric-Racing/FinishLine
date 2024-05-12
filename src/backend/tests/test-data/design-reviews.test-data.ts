@@ -7,9 +7,11 @@ import {
 import {
   batman,
   sharedBatman,
+  wonderwomanSettings,
   wonderwoman,
   wonderwomanMarkedWithScheduleSettings,
-  wonderwomanWithScheduleSettings
+  wonderwomanWithScheduleSettings,
+  batmanWithUserSettings
 } from './users.test-data';
 import { prismaWbsElement1 } from './wbs-element.test-data';
 import {
@@ -52,7 +54,7 @@ export const prismaDesignReview1: Prisma.Design_ReviewGetPayload<typeof designRe
   meetingTimes: [0, 1, 2, 3],
   dateCreated: today,
   userCreatedId: batman.userId,
-  userCreated: batman,
+  userCreated: batmanWithUserSettings,
   status: PrismaDesignReviewStatus.CONFIRMED,
   teamTypeId: '1',
   teamType: teamType1,
@@ -100,7 +102,7 @@ export const prismaDesignReview2: Prisma.Design_ReviewGetPayload<typeof designRe
   userDeletedId: null,
   docTemplateLink: null,
   wbsElementId: 1,
-  userCreated: wonderwoman,
+  userCreated: { ...wonderwoman, userSettings: wonderwomanSettings },
   requiredMembers: [wonderwoman],
   optionalMembers: [],
   confirmedMembers: [
@@ -138,7 +140,7 @@ export const prismaDesignReview3: Prisma.Design_ReviewGetPayload<typeof designRe
   userDeletedId: null,
   docTemplateLink: null,
   wbsElementId: 1,
-  userCreated: batman,
+  userCreated: batmanWithUserSettings,
   requiredMembers: [batman],
   optionalMembers: [],
   confirmedMembers: [
@@ -166,7 +168,7 @@ export const prismaDesignReview5: Prisma.Design_ReviewGetPayload<typeof designRe
   meetingTimes: [0, 1, 2, 3],
   dateCreated: today,
   userCreatedId: wonderwoman.userId,
-  userCreated: wonderwoman,
+  userCreated: { ...wonderwoman, userSettings: wonderwomanSettings },
   status: PrismaDesignReviewStatus.CONFIRMED,
   teamTypeId: '1',
   teamType: teamType1,

@@ -79,12 +79,11 @@ const projectProposedChangesExists = (validationObject: ValidationChain): Valida
 export const projectProposedChangesValidators = [
   body('projectProposedChanges').optional(),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.name'))),
-  isStatus(projectProposedChangesExists(body('projectProposedChanges.status'))),
   projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
   nonEmptyString(body('projectProposedChanges.links.*.url')),
   nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
-  intMinZero(body('projectProposedChanges.projectLeadId').optional()),
-  intMinZero(body('projectProposedChanges.projectManagerId').optional()),
+  intMinZero(body('projectProposedChanges.leadId').optional()),
+  intMinZero(body('projectProposedChanges.managerId').optional()),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
   intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
   projectProposedChangesExists(body('projectProposedChanges.rules')).isArray(),
@@ -95,9 +94,9 @@ export const projectProposedChangesValidators = [
   nonEmptyString(body('projectProposedChanges.features.*')),
   projectProposedChangesExists(body('projectProposedChanges.otherConstraints')).isArray(),
   nonEmptyString(body('projectProposedChanges.otherConstraints.*')),
-  projectProposedChangesExists(body('projectProposedChanges.newProject')).isBoolean(),
   projectProposedChangesExists(body('projectProposedChanges.teamIds')).isArray(),
-  nonEmptyString(body('projectProposedChanges.teamIds.*'))
+  nonEmptyString(body('projectProposedChanges.teamIds.*')),
+  projectProposedChangesExists(body('projectProposedChanges.carNumber')).optional().isInt()
 ];
 
 const workPackageProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
@@ -107,8 +106,8 @@ const workPackageProposedChangesExists = (validationObject: ValidationChain): Va
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
   nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
-  intMinZero(body('workPackageProposedChanges.projectLeadId').optional()),
-  intMinZero(body('workPackageProposedChanges.projectManagerId').optional()),
+  intMinZero(body('workPackageProposedChanges.leadId').optional()),
+  intMinZero(body('workPackageProposedChanges.managerId').optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage').optional())),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
