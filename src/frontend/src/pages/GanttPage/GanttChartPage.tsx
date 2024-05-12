@@ -19,7 +19,8 @@ import {
   transformProjectToGanttTask,
   getProjectTeamsName,
   EventChange,
-  RequestEventChange
+  RequestEventChange,
+  aggregateGanttChanges
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -30,7 +31,7 @@ import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend'
 import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersButton';
 import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
-import { Team, TeamType, addDaysToDate, daysBetween } from 'shared';
+import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { GanttRequestChangeModal } from './GanttChartComponents/GanttRequestChangeModal';
 
@@ -52,7 +53,7 @@ const GanttChartPage: FC = () => {
     }>
   >([]);
   const [searchText, setSearchText] = useState<string>('');
-  const [groupedEventChanges, setGroupedEventChanges] = useState(new Map<string, RequestEventChange>());
+  const [ganttTaskChanges, setGanttTaskChanges] = useState<RequestEventChange[]>([]);
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
 
   /******************** Filters ***************************/
@@ -202,58 +203,13 @@ const GanttChartPage: FC = () => {
   const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  const updateEventChange = (eventId: string, newRequestEventChange: RequestEventChange): any => {
-    const updatedMap = new Map(groupedEventChanges);
-    updatedMap.set(eventId, newRequestEventChange);
-    setGroupedEventChanges(updatedMap);
-    return updatedMap;
-  };
-
-  const updateEventDates = (event: any, change: EventChange, existingChange?: any) => {
-    let newStart = existingChange?.newStart || event.start;
-    let newEnd = existingChange?.newEnd || event.end;
-    let duration = existingChange?.duration || daysBetween(event.end, event.start);
-
-    switch (change.type) {
-      case 'change-end-date':
-        duration = daysBetween(change.newEnd, change.originalEnd);
-        newEnd = addDaysToDate(newStart, duration);
-        break;
-      case 'shift-by-days':
-        newStart = addDaysToDate(event.start, change.days);
-        newEnd = addDaysToDate(newStart, duration);
-        break;
-    }
-
-    return { newStart, newEnd, duration };
-  };
-
   const saveChanges = (eventChanges: EventChange[]) => {
-    eventChanges.forEach((change) => {
-      const event = ganttTasks.find((task) => task.id === change.eventId);
-      if (event) {
-        const existingChange = groupedEventChanges.get(change.eventId);
-
-        const { newStart, newEnd, duration } = updateEventDates(event, change, existingChange);
-
-        const newEventChange = {
-          eventId: change.eventId,
-          name: event.name,
-          prevStart: event.start,
-          prevEnd: event.end,
-          newStart,
-          newEnd,
-          duration
-        };
-        updateEventChange(change.eventId, newEventChange);
-      }
-    });
+    const updatedGanttTasks = aggregateGanttChanges(eventChanges, ganttTasks);
+    setGanttTaskChanges(updatedGanttTasks);
   };
 
   const removeActiveModal = (changeId: string) => {
-    const updatedGroupedEventChanges = new Map(groupedEventChanges);
-    updatedGroupedEventChanges.delete(changeId);
-    setGroupedEventChanges(updatedGroupedEventChanges);
+    setGanttTaskChanges(ganttTaskChanges.filter((change) => change.eventId !== changeId));
   };
 
   const collapseHandler = () => {
@@ -313,9 +269,9 @@ const GanttChartPage: FC = () => {
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
         />
-        {Array.from(groupedEventChanges.entries()).map(([changeId, change]) => {
-          return <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(changeId)} />;
-        })}
+        {ganttTaskChanges.map((change) => (
+          <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.eventId)} />
+        ))}
       </Box>
     </PageLayout>
   );

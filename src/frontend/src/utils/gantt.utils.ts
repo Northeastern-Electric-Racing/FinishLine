@@ -320,3 +320,45 @@ export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined
       return '#ffffff';
   }
 };
+
+export const aggregateGanttChanges = (eventChanges: EventChange[], ganttTasks: GanttTask[]) => {
+  const aggregatedMap: Map<string, EventChange[]> = new Map();
+
+  // Loop through each eventChange
+  eventChanges.forEach((eventChange) => {
+    if (aggregatedMap.has(eventChange.eventId)) {
+      aggregatedMap.get(eventChange.eventId)?.push(eventChange);
+    } else {
+      aggregatedMap.set(eventChange.eventId, [eventChange]);
+    }
+  });
+
+  const updatedEvents = Array.from(aggregatedMap.entries()).map(([eventId, changeEvents]) => {
+    const task = ganttTasks.find((task) => task.id === eventId);
+
+    const updatedEvent = applyChangeToEvent(task!, changeEvents);
+
+    const start = dayjs(updatedEvent.start);
+    const end = dayjs(updatedEvent.end);
+
+    // Calculate the difference in days
+    const diffInDays = end.diff(start, 'day');
+
+    // Calculate the number of weeks
+    const duration = Math.ceil(diffInDays / 7);
+
+    const change: RequestEventChange = {
+      eventId: updatedEvent.id,
+      name: task!.name,
+      prevStart: task!.start,
+      prevEnd: task!.end,
+      newStart: updatedEvent.start,
+      newEnd: updatedEvent.end,
+      duration
+    };
+
+    return change;
+  });
+
+  return updatedEvents;
+};
