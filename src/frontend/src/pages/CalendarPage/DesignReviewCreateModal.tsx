@@ -80,12 +80,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     data: allWorkPackages
   } = useAllWorkPackages();
 
-  const {
-    isLoading: allProjectsLoading,
-    isError: allProjectsIsError,
-    error: allProjectsError,
-    data: allProjects
-  } = useAllProjects();
+  const { data: allProjects } = useAllProjects();
 
   const { mutateAsync, isLoading } = useCreateDesignReviews();
 
@@ -130,11 +125,9 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     }
   });
 
-  if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />
+  if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
   if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
   if (allUsersIsLoading || allWorkPackagesIsLoading || !allWorkPackages || !users || isLoading) return <LoadingIndicator />;
-
-
 
   const memberOptions = users.map(userToAutocompleteOption);
 
@@ -146,7 +139,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       id: wbsPipe(workPackage.wbsNum)
     });
   });
-
 
   wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp2.id, wp1.id));
 
@@ -170,17 +162,17 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             const onClear = () => {
               setValue('wbsNum', '');
               onChange('');
-                setValue('teamTypeId', '');
-              };
+              setValue('teamTypeId', '');
+            };
 
-              const handleWorkPackageSelect = async (selectedValue: string) => {
-                onChange(selectedValue);
-                setValue('wbsNum', selectedValue);
-                const projectWithMatchingWbs = allProjects?.find(project => {
-                  return project.workPackages.some(wp => wbsPipe(wp.wbsNum) === selectedValue);
-                });
-                const defaultTeamTypeId = projectWithMatchingWbs?.teams[0].teamType?.teamTypeId
-                setValue('teamTypeId', defaultTeamTypeId!); 
+            const handleWorkPackageSelect = async (selectedValue: string) => {
+              onChange(selectedValue);
+              setValue('wbsNum', selectedValue);
+              const projectWithMatchingWbs = allProjects?.find((project) => {
+                return project.workPackages.some((wp) => wbsPipe(wp.wbsNum) === selectedValue);
+              });
+              const defaultTeamTypeId = projectWithMatchingWbs?.teams[0].teamType?.teamTypeId;
+              setValue('teamTypeId', defaultTeamTypeId!);
             };
 
             return (
