@@ -4,7 +4,6 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { useEffect, useState } from 'react';
 import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
 import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
@@ -15,6 +14,8 @@ interface GanttChartSectionProps {
   tasks: GanttTaskData[];
   isEditMode: boolean;
   saveChanges: (eventChanges: EventChange[]) => void;
+  eventChanges: EventChange[];
+  setEventChanges: (e: EventChange[]) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
 }
@@ -25,24 +26,25 @@ const GanttChartSection = ({
   tasks,
   isEditMode,
   saveChanges,
+  eventChanges,
+  setEventChanges,
   showWorkPackagesMap,
   setShowWorkPackagesMap
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
-  const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
 
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
   };
 
-  useEffect(() => {
-    // only try to save changes when we're going from non-editing to editing mode
-    if (!isEditMode) {
-      saveChanges(eventChanges);
-      setEventChanges([]); // reset the changes after sending them
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode]);
+  // useEffect(() => {
+  //   // only try to save changes when we're going from non-editing to editing mode
+  //   if (!isEditMode) {
+  //     saveChanges(eventChanges);
+  //     setEventChanges([]); // reset the changes after sending them
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isEditMode]);
 
   const displayEvents = applyChangesToEvents(tasks, eventChanges);
   const projects = displayEvents.filter((event) => !event.project);

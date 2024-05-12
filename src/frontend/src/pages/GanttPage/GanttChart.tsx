@@ -2,6 +2,7 @@ import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import { EventChange, GanttTask } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
 import GanttChartSection from './GanttChartSection';
+import { useState } from 'react';
 
 interface GanttChartProps {
   startDate: Date;
@@ -27,6 +28,7 @@ const GanttChart = ({
   setShowWorkPackagesMap
 }: GanttChartProps) => {
   const theme = useTheme();
+  const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
 
   return (
     <Box>
@@ -50,6 +52,10 @@ const GanttChart = ({
             projects.forEach((project) => {
               setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
             });
+          }
+          if (isEditMode) {
+            saveChanges(eventChanges);
+            setEventChanges([]);
           }
 
           setChartEditingState([...chartEditingState]);
@@ -104,6 +110,8 @@ const GanttChart = ({
                 end={endDate}
                 isEditMode={isEditMode}
                 saveChanges={saveChanges}
+                eventChanges={eventChanges}
+                setEventChanges={setEventChanges}
                 showWorkPackagesMap={showWorkPackagesMap}
                 setShowWorkPackagesMap={setShowWorkPackagesMap}
               />
