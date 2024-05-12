@@ -98,8 +98,10 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const history = useHistory();
 
-  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
-  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
+  const [managerId, setManagerId] = useState<string | undefined>(
+    defaultValues ? wbsElement.manager?.userId.toString() : undefined
+  );
+  const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
@@ -131,8 +133,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
-        projectLeadId: leadId ? parseInt(leadId) : undefined,
-        projectManagerId: managerId ? parseInt(managerId) : undefined,
+        leadId: leadId ? parseInt(leadId) : undefined,
+        managerId: managerId ? parseInt(managerId) : undefined,
         projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,
