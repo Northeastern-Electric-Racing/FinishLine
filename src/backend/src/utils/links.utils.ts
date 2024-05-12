@@ -60,7 +60,7 @@ export const updateLinks = async (
 export const linkToChangeListValue = (link: LinkCreateArgs) => {
   return {
     element: link,
-    comparator: link.url,
+    comparator: link.linkId,
     displayValue: `${link.linkTypeName}, ${link.url}`
   };
 };
