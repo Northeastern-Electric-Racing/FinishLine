@@ -48,6 +48,16 @@ export type EventChange = { id: string; eventId: string } & (
   | { type: 'shift-by-days'; days: number }
 );
 
+export type RequestEventChange = {
+  eventId: string;
+  name: string;
+  prevStart: Date;
+  prevEnd: Date;
+  newStart: Date;
+  newEnd: Date;
+  duration: number;
+};
+
 export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]) => {
   const changedEvent = { ...event };
   for (const eventChange of eventChanges) {
@@ -309,4 +319,46 @@ export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined
     default:
       return '#ffffff';
   }
+};
+
+export const aggregateGanttChanges = (eventChanges: EventChange[], ganttTasks: GanttTask[]) => {
+  const aggregatedMap: Map<string, EventChange[]> = new Map();
+
+  // Loop through each eventChange
+  eventChanges.forEach((eventChange) => {
+    if (aggregatedMap.has(eventChange.eventId)) {
+      aggregatedMap.get(eventChange.eventId)?.push(eventChange);
+    } else {
+      aggregatedMap.set(eventChange.eventId, [eventChange]);
+    }
+  });
+
+  const updatedEvents = Array.from(aggregatedMap.entries()).map(([eventId, changeEvents]) => {
+    const task = ganttTasks.find((task) => task.id === eventId);
+
+    const updatedEvent = applyChangeToEvent(task!, changeEvents);
+
+    const start = dayjs(updatedEvent.start);
+    const end = dayjs(updatedEvent.end);
+
+    // Calculate the difference in days
+    const diffInDays = end.diff(start, 'day');
+
+    // Calculate the number of weeks
+    const duration = Math.ceil(diffInDays / 7);
+
+    const change: RequestEventChange = {
+      eventId: updatedEvent.id,
+      name: task!.name,
+      prevStart: task!.start,
+      prevEnd: task!.end,
+      newStart: updatedEvent.start,
+      newEnd: updatedEvent.end,
+      duration
+    };
+
+    return change;
+  });
+
+  return updatedEvents;
 };

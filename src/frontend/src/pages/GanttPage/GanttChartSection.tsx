@@ -4,10 +4,10 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { useEffect, useState } from 'react';
-import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
+import { applyChangesToEvents, EventChange, GanttTaskData, RequestEventChange } from '../../utils/gantt.utils';
 import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
+import { useEffect, useState } from 'react';
 
 interface GanttChartSectionProps {
   start: Date;
@@ -17,6 +17,7 @@ interface GanttChartSectionProps {
   saveChanges: (eventChanges: EventChange[]) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  highlightedChange?: RequestEventChange;
 }
 
 const GanttChartSection = ({
@@ -26,7 +27,8 @@ const GanttChartSection = ({
   isEditMode,
   saveChanges,
   showWorkPackagesMap,
-  setShowWorkPackagesMap
+  setShowWorkPackagesMap,
+  highlightedChange
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
@@ -71,13 +73,17 @@ const GanttChartSection = ({
               </Box>
               <Collapse in={showWorkPackagesMap.get(project.id)}>
                 {project.children.map((workPackage) => {
+                  const displayWorkPackage = displayEvents.find((event) => event.id === workPackage.id);
                   return (
                     <GanttTaskBar
                       key={workPackage.id}
                       days={days}
-                      event={workPackage}
+                      event={displayWorkPackage!}
                       isEditMode={isEditMode}
                       createChange={createChange}
+                      highlightedChange={
+                        highlightedChange && workPackage.id === highlightedChange.eventId ? highlightedChange : undefined
+                      }
                     />
                   );
                 })}

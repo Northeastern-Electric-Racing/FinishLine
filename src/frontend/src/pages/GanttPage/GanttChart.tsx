@@ -1,5 +1,5 @@
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
-import { EventChange, GanttTask } from '../../utils/gantt.utils';
+import { EventChange, GanttTask, RequestEventChange } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
 import GanttChartSection from './GanttChartSection';
 
@@ -13,6 +13,7 @@ interface GanttChartProps {
   saveChanges: (eventChanges: EventChange[]) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  highlightedChange?: RequestEventChange;
 }
 
 const GanttChart = ({
@@ -24,7 +25,8 @@ const GanttChart = ({
   setChartEditingState,
   saveChanges,
   showWorkPackagesMap,
-  setShowWorkPackagesMap
+  setShowWorkPackagesMap,
+  highlightedChange
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -45,6 +47,13 @@ const GanttChart = ({
             chartEditingState[index] = { teamName, editing: !isEditMode };
           }
 
+          if (!isEditMode) {
+            const projects = tasks ? tasks.filter((event) => !event.project) : [];
+            projects.forEach((project) => {
+              setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
+            });
+          }
+
           setChartEditingState([...chartEditingState]);
         };
 
@@ -59,7 +68,7 @@ const GanttChart = ({
           <Box
             sx={{
               mt: 1,
-              py: 0,
+              py: 1,
               background: isEditMode ? theme.palette.divider : 'transparent',
               borderRadius: '0.25rem',
               width: 'fit-content'
@@ -99,6 +108,7 @@ const GanttChart = ({
                 saveChanges={saveChanges}
                 showWorkPackagesMap={showWorkPackagesMap}
                 setShowWorkPackagesMap={setShowWorkPackagesMap}
+                highlightedChange={highlightedChange}
               />
             </Box>
           </Box>

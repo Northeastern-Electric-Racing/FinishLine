@@ -18,7 +18,9 @@ import {
   GanttTask,
   transformProjectToGanttTask,
   getProjectTeamsName,
-  EventChange
+  EventChange,
+  RequestEventChange,
+  aggregateGanttChanges
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -31,6 +33,7 @@ import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
+import { GanttRequestChangeModal } from './GanttChartComponents/GanttRequestChangeModal';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -50,6 +53,7 @@ const GanttChartPage: FC = () => {
     }>
   >([]);
   const [searchText, setSearchText] = useState<string>('');
+  const [ganttTaskChanges, setGanttTaskChanges] = useState<RequestEventChange[]>([]);
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
 
   /******************** Filters ***************************/
@@ -199,13 +203,13 @@ const GanttChartPage: FC = () => {
   const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  // do something here with the data
   const saveChanges = (eventChanges: EventChange[]) => {
-    if (eventChanges.length === 0) {
-      console.log('no changes do nothing');
-    } else {
-      console.log('Changes:', eventChanges);
-    }
+    const updatedGanttTasks = aggregateGanttChanges(eventChanges, ganttTasks);
+    setGanttTaskChanges(updatedGanttTasks);
+  };
+
+  const removeActiveModal = (changeId: string) => {
+    setGanttTaskChanges(ganttTaskChanges.filter((change) => change.eventId !== changeId));
   };
 
   const collapseHandler = () => {
@@ -264,7 +268,11 @@ const GanttChartPage: FC = () => {
           saveChanges={saveChanges}
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
+          highlightedChange={ganttTaskChanges[ganttTaskChanges.length - 1]}
         />
+        {ganttTaskChanges.map((change) => (
+          <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.eventId)} />
+        ))}
       </Box>
     </PageLayout>
   );
