@@ -133,8 +133,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
-        projectLeadId: leadId ? parseInt(leadId) : undefined,
-        projectManagerId: managerId ? parseInt(managerId) : undefined,
+        leadId: leadId ? parseInt(leadId) : undefined,
+        managerId: managerId ? parseInt(managerId) : undefined,
         projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,

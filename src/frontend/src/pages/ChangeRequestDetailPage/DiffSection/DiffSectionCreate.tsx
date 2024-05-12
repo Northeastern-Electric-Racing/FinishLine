@@ -12,6 +12,8 @@ interface DiffSectionCreateProps {
 const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({ projectProposedChanges, workPackageProposedChanges }) => {
   const isCreateProject = !!projectProposedChanges;
   const potentialChangeTypeMap: Map<string, PotentialChangeType> = new Map();
+  delete workPackageProposedChanges?.lead;
+  delete workPackageProposedChanges?.manager;
 
   if (isCreateProject) {
     for (var projectKey in projectProposedChanges) {

@@ -5,8 +5,7 @@ import {
   ChangeBullet,
   PotentialChangeType,
   changeBulletDetailText,
-  potentialChangeBackgroundMap,
-  potentialChangeHighlightMap
+  potentialChangeBackgroundMap
 } from '../../../utils/diff-page.utils';
 import { labelPipe } from '../../../utils/pipes';
 
@@ -90,7 +89,6 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
           >
             <Box
               sx={{
-                backgroundColor: potentialChangeHighlightMap.get(potentialChangeType),
                 borderRadius: '5px',
                 width: 'fit-content'
               }}

@@ -25,6 +25,7 @@ import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
 import DiffSection from './DiffSection/DiffSection';
+import { hasProposedChanges } from '../../utils/change-request.utils';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -136,8 +137,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             </Grid>
           </Grid>
           <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 7 : 0}>
-            {(changeRequest as StandardChangeRequest)?.projectProposedChanges ||
-            (changeRequest as StandardChangeRequest)?.workPackageProposedChanges ? (
+            {hasProposedChanges(changeRequest as StandardChangeRequest) ? (
               <DiffSection changeRequest={changeRequest as StandardChangeRequest} />
             ) : (
               isStandard && (
