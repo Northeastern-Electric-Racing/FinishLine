@@ -3,23 +3,13 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  Autocomplete,
-  Box,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  Grid,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  TextField,
   Typography
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useState } from 'react';
-import { meetingStartTimePipe, wbsNamePipe } from '../../utils/pipes';
-import { Project, Team, TeamType, WorkPackage, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
+import { meetingStartTimePipe } from '../../utils/pipes';
+import { Team, TeamType, validateWBS, wbsNumComparator, wbsPipe } from 'shared';
 import { useCreateDesignReviews } from '../../hooks/design-reviews.hooks';
 import { useAllUsers } from '../../hooks/users.hooks';
 import ErrorPage from '../ErrorPage';
@@ -27,10 +17,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import { userToAutocompleteOption } from '../../utils/teams.utils';
 import { useQuery } from '../../hooks/utils.hooks';
 import NERAutocomplete from '../../components/NERAutocomplete';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import { HOURS } from '../../utils/design-review.utils';
-import { useSingleProject } from '../../hooks/projects.hooks';
-import { useAllTeams } from '../../hooks/teams.hooks';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
@@ -73,21 +60,19 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const [requiredMembers, setRequiredMembers] = useState([].map(userToAutocompleteOption));
   const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
-  const {
-    isLoading: allWorkPackagesIsLoading,
-    isError: allWorkPackagesIsError,
-    error: allWorkPackagesError,
-    data: allWorkPackages
-  } = useAllWorkPackages();
 
   const { mutateAsync, isLoading } = useCreateDesignReviews();
 
   const [wbsNum, setWbsNum] = useState('')
   
 
-  const { data: project } = allWorkPackages && wbsNum
-  ? useSingleProject(allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === wbsNum)!.wbsNum)
-  : { data: undefined };
+  const { data: project } = useQuery(['singleProject', validateWBS(wbsNum)], () => {
+    return fetchSingleProject(validateWBS(wbsNum));
+  });
+  
+  // Fetch function for single project
+
+  };
 
 
 
@@ -132,20 +117,12 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     }
   });
 
-  if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
-  if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
-  if (allUsersIsLoading || !users || allWorkPackagesIsLoading || !allWorkPackages || isLoading) return <LoadingIndicator />;
+  if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />
+  if (allUsersIsLoading || !users || isLoading) return <LoadingIndicator />;
 
   const memberOptions = users.map(userToAutocompleteOption);
 
   const wbsDropdownOptions: { label: string; id: string }[] = [];
-
-  allWorkPackages.forEach((workPackage: WorkPackage) => {
-    wbsDropdownOptions.push({
-      label: `${wbsNamePipe(workPackage)}`,
-      id: wbsPipe(workPackage.wbsNum)
-    });
-  });
 
   wbsDropdownOptions.sort((wp1, wp2) => wbsNumComparator(wp2.id, wp1.id));
 
