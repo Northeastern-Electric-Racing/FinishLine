@@ -29,8 +29,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const { mutateAsync: deleteMaterialMutateAsync, isLoading } = useDeleteMaterial();
   const { mutateAsync: deleteAssemblyMutateAsync } = useDeleteAssembly();
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
-  const [ windowWidth, setWindowWidth ] = useState(window.innerWidth);
-  
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -41,7 +41,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-  
+
   const user = useCurrentUser();
   const toast = useToast();
 
@@ -267,7 +267,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       ...bomBaseColDef,
       flex: 1,
       field: 'actions',
-      headerName: "Actions",
+      headerName: 'Actions',
       type: 'actions',
       getActions,
       sortable: false,
