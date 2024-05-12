@@ -253,7 +253,7 @@ export const applyProjectProposedChanges = async (
       id: constraint.descriptionId,
       detail: constraint.detail
     }));
-    if (projectProposedChanges.newProject) {
+    if (projectProposedChanges.carNumber) {
       await ProjectsService.createProject(
         reviewer,
         crId,
@@ -267,10 +267,10 @@ export const applyProjectProposedChanges = async (
         goals,
         features,
         otherConstraints,
-        wbsProposedChanges.projectLeadId,
-        wbsProposedChanges.projectManagerId
+        wbsProposedChanges.leadId,
+        wbsProposedChanges.managerId
       );
-    } else if (associatedProject && !projectProposedChanges.newProject) {
+    } else if (associatedProject && !projectProposedChanges.carNumber) {
       await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
@@ -283,8 +283,8 @@ export const applyProjectProposedChanges = async (
         features,
         otherConstraints,
         links,
-        wbsProposedChanges.projectLeadId,
-        wbsProposedChanges.projectManagerId
+        wbsProposedChanges.leadId,
+        wbsProposedChanges.managerId
       );
     }
   }
@@ -331,8 +331,8 @@ export const applyWorkPackageProposedChanges = async (
       workPackageProposedChanges.blockedBy,
       workPackageProposedChanges.expectedActivities.map(descBulletConverter),
       workPackageProposedChanges.deliverables.map(descBulletConverter),
-      wbsProposedChanges.projectLeadId!,
-      wbsProposedChanges.projectManagerId!
+      wbsProposedChanges.leadId!,
+      wbsProposedChanges.managerId!
     );
   }
 };

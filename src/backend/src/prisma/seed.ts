@@ -1357,8 +1357,8 @@ const performSeed: () => Promise<void> = async () => {
     null,
     {
       name: 'new workpackage test',
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
+      leadId: batman.userId,
+      managerId: cyborg.userId,
       duration: 5,
       startDate: transformDate(new Date()),
       stage: WorkPackageStage.Design,
@@ -1401,8 +1401,8 @@ const performSeed: () => Promise<void> = async () => {
     null,
     {
       name: 'editing a work package test',
-      projectLeadId: batman.userId,
-      projectManagerId: cyborg.userId,
+      leadId: batman.userId,
+      managerId: cyborg.userId,
       duration: 5,
       startDate: transformDate(new Date()),
       stage: WorkPackageStage.Design,
