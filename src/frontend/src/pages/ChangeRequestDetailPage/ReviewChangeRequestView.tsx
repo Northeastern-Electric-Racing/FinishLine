@@ -29,7 +29,7 @@ import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { hasProposedChanges } from '../../utils/change-requests.utils';
+import { hasProposedChanges } from '../../utils/change-request.utils';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -140,7 +140,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             }
           }}
         >
-          <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
+          {!hasProposedChanges(standardChangeRequest) && (
+            <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
+          )}
           <Box
             sx={{
               width: dialogContentWidthRatio,

@@ -253,7 +253,7 @@ export const applyProjectProposedChanges = async (
       id: constraint.descriptionId,
       detail: constraint.detail
     }));
-    if (projectProposedChanges.carNumber) {
+    if (projectProposedChanges.carNumber !== null) {
       await ProjectsService.createProject(
         reviewer,
         crId,
@@ -270,7 +270,7 @@ export const applyProjectProposedChanges = async (
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId
       );
-    } else if (associatedProject && !projectProposedChanges.carNumber) {
+    } else if (associatedProject && projectProposedChanges.carNumber === null) {
       await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
