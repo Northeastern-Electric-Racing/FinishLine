@@ -16,7 +16,7 @@ interface GanttRequestChangeProps {
 }
 
 export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change, handleClose, showGanttModal }) => {
-  const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>();
+  const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
   const [explanationForChange, setExplanationForChange] = useState('');
   const [workPackage, setWorkPackage] = useState<WorkPackage>();
   const { isLoading, isError, error, mutateAsync } = useCreateStandardChangeRequest();
@@ -105,11 +105,11 @@ export const GanttRequestChange: React.FC<GanttRequestChangeProps> = ({ change, 
           {/* In the console, this part kept throwing warnings because the field for reasonForChange 
           was undefined when I clicked cancel on the modal. Is there a way to fix that */}
 
-          {/* <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
+          <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
             {Object.entries(ChangeRequestReason).map(([key, value]) => (
               <MenuItem value={value}>{key}</MenuItem>
             ))}
-          </Select> */}
+          </Select>
         </FormControl>
         <TextField
           fullWidth

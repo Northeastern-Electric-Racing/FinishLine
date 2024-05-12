@@ -214,7 +214,7 @@ const GanttChartPage: FC = () => {
   const updateEventDates = (event: any, change: EventChange, existingChange?: any) => {
     let newStart = existingChange?.newStart || event.start;
     let newEnd = existingChange?.newEnd || event.end;
-    let duration = existingChange?.duration || daysBetween(event.start, event.end);
+    let duration = existingChange?.duration || daysBetween(event.end, event.start);
 
     switch (change.type) {
       case 'change-end-date':
