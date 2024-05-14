@@ -12,7 +12,7 @@ export const workPackageTemplateTransformer = (
     workPackageName: wptInput.workPackageName ?? '',
     stage: (wptInput.stage as WorkPackageStage) ?? undefined,
     duration: wptInput.duration ?? undefined,
-    blockedBy: wptInput.blockedBy.map((info) => workPackageTemplateTransformer(info)),
+    blockedBy: wptInput.blockedBy.map((info) => info.workPackageTemplateId),
     expectedActivities: wptInput.expectedActivities,
     deliverables: wptInput.deliverables,
     dateCreated: wptInput.dateCreated,

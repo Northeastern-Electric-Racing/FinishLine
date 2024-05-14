@@ -793,7 +793,7 @@ export default class WorkPackagesService {
    * @param templateNotes notes about the work package template
    * @param duration duration value on the template
    * @param stage stage value on the template
-   * @param blockedByInfo array of templates blocking this
+   * @param blockedByIds array of templates blocking this
    * @param expectedActivities array of expected activity values on the template
    * @param deliverables array of deliverable values on the template
    * @param workPackageName name value on the template
