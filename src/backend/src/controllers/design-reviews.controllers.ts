@@ -113,4 +113,18 @@ export default class DesignReviewsController {
       next(error);
     }
   }
+
+  // Set a new status for the design review
+  static async setStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { designReviewId } = req.params;
+      const { status } = req.body;
+      const user = await getCurrentUser(res);
+
+      const updatedDesignReview = await DesignReviewsService.setStatus(user, designReviewId, status);
+      return res.status(200).json(updatedDesignReview);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

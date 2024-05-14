@@ -1,5 +1,5 @@
 import { Design_Review_Status, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { DesignReview, DesignReviewStatus, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -245,7 +245,7 @@ export default class DesignReviewsService {
     attendees: number[],
     meetingTimes: number[]
   ): Promise<DesignReview> {
-    // verify user is allowed to edit work package
+    // verify user is allowed to edit the design review
     if (isNotLeadership(user.role)) throw new AccessDeniedMemberException('edit design reviews');
 
     // make sure the requiredMembersIds are not in the optionalMembers
@@ -400,5 +400,37 @@ export default class DesignReviewsService {
       return designReviewTransformer(updatedDesignReview);
     }
     return designReviewTransformer(designReview);
+  }
+
+  /**
+   * Sets the status of a design review, only admin or the user who created the design review can set the status.
+   * @param user the user trying to set the status
+   * @param designReviewId the id of the design review
+   * @param status the status to set the design review to
+   * @returns the modified design review
+   */
+  static async setStatus(user: User, designReviewId: string, status: DesignReviewStatus): Promise<DesignReview> {
+    // validate the design review exists and is not deleted
+    const originaldesignReview = await prisma.design_Review.findUnique({
+      where: { designReviewId }
+    });
+    if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
+    if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+
+    // verify user is allowed to set the status of the design review
+    if (!isAdmin(user.role) && user.userId !== originaldesignReview.userCreatedId) {
+      throw new AccessDeniedMemberException('set the status of a design review');
+    }
+
+    // actually try to update the design review
+    const updatedDesignReview = await prisma.design_Review.update({
+      where: { designReviewId },
+      ...designReviewQueryArgs,
+      data: {
+        status
+      }
+    });
+
+    return designReviewTransformer(updatedDesignReview);
   }
 }

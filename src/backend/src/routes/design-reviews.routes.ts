@@ -57,4 +57,11 @@ designReviewsRouter.post(
   DesignReviewsController.markUserConfirmed
 );
 
+designReviewsRouter.post(
+  '/:designReviewId/set-status',
+  isDesignReviewStatus(body('status')),
+  validateInputs,
+  DesignReviewsController.setStatus
+);
+
 export default designReviewsRouter;
