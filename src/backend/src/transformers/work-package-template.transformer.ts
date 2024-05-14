@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { BlockedByInfo, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import { WorkPackageStage, WorkPackageTemplate } from 'shared';
 import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 
 export const workPackageTemplateTransformer = (
