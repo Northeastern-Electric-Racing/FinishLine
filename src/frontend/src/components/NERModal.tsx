@@ -18,7 +18,9 @@ export interface NERModalProps {
   disabled?: boolean;
   showCloseButton?: boolean;
   hideFormButtons?: boolean;
+  hideBackDrop?: boolean;
   icon?: JSX.Element | null;
+  paperProps?: any;
 }
 
 const NERModal = ({
@@ -33,10 +35,21 @@ const NERModal = ({
   disabled = false,
   showCloseButton = false,
   hideFormButtons = false,
-  icon
+  hideBackDrop = false,
+  icon,
+  paperProps
 }: NERModalProps) => {
   return (
-    <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px', maxWidth: '700px' } }}>
+    <Dialog
+      hideBackdrop={hideBackDrop}
+      open={open}
+      onClose={onHide}
+      PaperProps={{
+        style: paperProps
+          ? { ...paperProps, borderRadius: '10px', maxWidth: '700px' }
+          : { borderRadius: '10px', maxWidth: '700px' }
+      }}
+    >
       <DialogTitle sx={{ backgroundColor: background, minHeight: '64px' }}>
         {icon ? (
           <Box display="flex" justifyContent="left" alignItems="center">

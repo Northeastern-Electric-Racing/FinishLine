@@ -1,5 +1,5 @@
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
-import { EventChange, GanttTask, GanttTaskData } from '../../utils/gantt.utils';
+import { EventChange, GanttTask, RequestEventChange } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
 import GanttChartSection from './GanttChartSection';
 
@@ -11,9 +11,9 @@ interface GanttChartProps {
   chartEditingState: Array<{ teamName: string; editing: boolean }>;
   setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (newTask: GanttTaskData, teamName: string) => void;
-  showWorkPackagesList: { [projectId: string]: boolean };
-  setShowWorkPackagesList: React.Dispatch<React.SetStateAction<{ [projectId: string]: boolean }>>;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  highlightedChange?: RequestEventChange;
 }
 
 const GanttChart = ({
@@ -24,9 +24,9 @@ const GanttChart = ({
   chartEditingState,
   setChartEditingState,
   saveChanges,
-  onExpanderClick,
-  showWorkPackagesList,
-  setShowWorkPackagesList
+  showWorkPackagesMap,
+  setShowWorkPackagesMap,
+  highlightedChange
 }: GanttChartProps) => {
   const theme = useTheme();
 
@@ -47,22 +47,28 @@ const GanttChart = ({
             chartEditingState[index] = { teamName, editing: !isEditMode };
           }
 
+          if (!isEditMode) {
+            const projects = tasks ? tasks.filter((event) => !event.project) : [];
+            projects.forEach((project) => {
+              setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
+            });
+          }
+
           setChartEditingState([...chartEditingState]);
         };
 
         if (!tasks) return <></>;
 
         // Sorting the work packages of each project based on their start date
-        tasks.map((task) => {
+        tasks.forEach((task) => {
           task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
-          return task;
         });
 
         return (
           <Box
             sx={{
               mt: 1,
-              py: 0,
+              py: 1,
               background: isEditMode ? theme.palette.divider : 'transparent',
               borderRadius: '0.25rem',
               width: 'fit-content'
@@ -95,14 +101,14 @@ const GanttChart = ({
             </Box>
             <Box key={teamName} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
               <GanttChartSection
-                showWorkPackagesList={showWorkPackagesList}
-                setShowWorkPackagesList={setShowWorkPackagesList}
                 tasks={tasks}
                 start={startDate}
                 end={endDate}
                 isEditMode={isEditMode}
                 saveChanges={saveChanges}
-                onExpanderClick={onExpanderClick}
+                showWorkPackagesMap={showWorkPackagesMap}
+                setShowWorkPackagesMap={setShowWorkPackagesMap}
+                highlightedChange={highlightedChange}
               />
             </Box>
           </Box>

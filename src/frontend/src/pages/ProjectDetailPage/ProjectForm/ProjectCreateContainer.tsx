@@ -96,8 +96,8 @@ const ProjectCreateContainer: React.FC = () => {
         features: features.map((f) => f.detail),
         otherConstraints: constraints.map((c) => c.detail),
         links,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined,
+        leadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        managerId: projectManagerId ? parseInt(projectManagerId) : undefined,
         carNumber: carNumber
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {

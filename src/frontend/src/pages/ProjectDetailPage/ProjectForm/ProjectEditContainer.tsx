@@ -108,7 +108,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, carNumber, goals, features, constraints, type, what, why } = data;
+    const { name, budget, summary, links, goals, features, constraints, type, what, why } = data;
 
     const rules = data.rules.map((rule) => rule.detail);
 
@@ -123,16 +123,11 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         features: features.map((f) => f.detail),
         otherConstraints: constraints.map((c) => c.detail),
         links,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        leadId: projectLeadId ? parseInt(projectLeadId) : undefined,
+        managerId: projectManagerId ? parseInt(projectManagerId) : undefined
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
-        wbsNum: {
-          // TODO change this to use the car model when we add it to the schema
-          carNumber: carNumber,
-          projectNumber: 0,
-          workPackageNumber: 0
-        },
+        wbsNum: project.wbsNum,
         type: type,
         what,
         why,

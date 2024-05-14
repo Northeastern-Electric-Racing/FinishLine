@@ -1,6 +1,6 @@
 import { Box } from '@mui/system';
-import { GridActionsCellItem, GridColumns, GridRenderCellParams, GridRowParams } from '@mui/x-data-grid';
-import { useState } from 'react';
+import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
 import { Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,10 +11,12 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { useAssignMaterialToAssembly, useDeleteAssembly, useDeleteMaterial } from '../../../../hooks/bom.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import EditMaterialModal from './MaterialForm/EditMaterialModal';
-import { Link, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { bomBaseColDef } from '../../../../utils/bom.utils';
 import NERModal from '../../../../components/NERModal';
-import { renderLinkBOM, renderStatusBOM } from './BOMTableCustomCells';
+import { renderStatusBOM } from './BOMTableCustomCells';
+import LinkIcon from '@mui/icons-material/Link';
+import NotesIcon from '@mui/icons-material/Notes';
 
 interface BOMTableWrapperProps {
   project: Project;
@@ -27,6 +29,18 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
   const { mutateAsync: deleteMaterialMutateAsync, isLoading } = useDeleteMaterial();
   const { mutateAsync: deleteAssemblyMutateAsync } = useDeleteAssembly();
   const { mutateAsync: assignMaterialToAssembly } = useAssignMaterialToAssembly();
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const user = useCurrentUser();
   const toast = useToast();
@@ -65,18 +79,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     }
   };
 
-  const renderNotes = (params: GridRenderCellParams) =>
-    params.value && (
-      <Link
-        onClick={() => {
-          setSelectedMaterialId(params.row.materialId);
-          setModalShow(true);
-        }}
-      >
-        See Notes
-      </Link>
-    );
-
   const editPerms =
     isLeadership(user.role) ||
     project.teams.some((team) => team.head.userId === user.userId) ||
@@ -91,6 +93,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     const actions: JSX.Element[] = [];
     const rowId = String(params.row.id);
     const material = materials.find((mat) => mat.materialId === params.row.materialId);
+    const shouldShowInMenu = windowWidth < 1000;
 
     if (!rowId.includes('assembly')) {
       actions.push(
@@ -111,6 +114,29 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
           onClick={() => {
             setSelectedMaterialId(params.row.materialId);
             setShowEditMaterial(true);
+          }}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          icon={<LinkIcon fontSize="small" />}
+          label="Link"
+          showInMenu={shouldShowInMenu}
+          disabled={!editPerms}
+          onClick={() => {
+            window.open(params.row.link, '_blank');
+          }}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          icon={<NotesIcon fontSize="small" />}
+          label="Notes"
+          showInMenu={shouldShowInMenu}
+          disabled={!editPerms}
+          onClick={() => {
+            setSelectedMaterialId(params.row.materialId);
+            setModalShow(true);
           }}
         />
       );
@@ -239,26 +265,9 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     },
     {
       ...bomBaseColDef,
-      field: 'link',
-      headerName: 'Link',
-      type: 'string',
-      renderCell: renderLinkBOM,
-      sortable: false,
-      filterable: false
-    },
-    {
-      ...bomBaseColDef,
-      field: 'notes',
-      headerName: 'Notes',
-      type: 'string',
-      renderCell: renderNotes,
-      sortable: false,
-      filterable: false
-    },
-    {
-      ...bomBaseColDef,
-      flex: 0.1,
+      flex: 1,
       field: 'actions',
+      headerName: 'Actions',
       type: 'actions',
       getActions,
       sortable: false,

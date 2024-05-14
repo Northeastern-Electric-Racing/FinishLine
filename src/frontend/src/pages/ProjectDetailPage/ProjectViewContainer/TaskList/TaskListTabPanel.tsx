@@ -17,10 +17,11 @@ import {
   useSetTaskStatus
 } from '../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../hooks/toasts.hooks';
-import { TaskListTabPanelProps, transformDate } from '../../../../utils/task.utils';
+import { TaskListTabPanelProps } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
 import TaskListDataGrid from './TaskListDataGrid';
 import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
+import { transformDate } from '../../../../utils/datetime.utils';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { tasks, status, addTask, onAddCancel, project, setDisabled } = props;
@@ -59,7 +60,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
@@ -70,7 +70,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
@@ -81,7 +80,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
@@ -92,7 +90,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await deleteTaskMutate({ taskId: id }).finally(() => toast.success('Task Successfully Deleted!'));
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }

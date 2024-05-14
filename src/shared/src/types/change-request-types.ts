@@ -111,8 +111,8 @@ export interface ProposedSolutionCreateArgs {
 
 export interface ProjectProposedChangesCreateArgs {
   name: string;
-  projectLeadId?: number;
-  projectManagerId?: number;
+  leadId?: number;
+  managerId?: number;
   links: { url: string; linkTypeName: string }[];
   budget: number;
   summary: string;
@@ -132,6 +132,6 @@ export interface WorkPackageProposedChangesCreateArgs {
   blockedBy: WbsNumber[];
   expectedActivities: string[];
   deliverables: string[];
-  projectLeadId?: number;
-  projectManagerId?: number;
+  leadId?: number;
+  managerId?: number;
 }

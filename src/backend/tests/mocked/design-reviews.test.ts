@@ -13,8 +13,8 @@ import {
   aquaman,
   batman,
   batmanScheduleSettings,
-  batmanWithScheduleSettings,
-  superman,
+  batmanWithUserSettings,
+  supermanWithUserSettings,
   theVisitor,
   wonderwoman
 } from '../test-data/users.test-data';
@@ -503,7 +503,7 @@ describe('Design Reviews', () => {
       const result = await DesignReviewsService.markUserConfirmed(
         prismaDesignReview5.designReviewId,
         [1, 2],
-        batmanWithScheduleSettings
+        batmanWithUserSettings
       );
 
       expect(prisma.design_Review.findUnique).toHaveBeenCalledTimes(1);
@@ -513,28 +513,28 @@ describe('Design Reviews', () => {
     test('Design Review was not found', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(null);
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batman)
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batmanWithUserSettings)
       ).rejects.toThrow(new NotFoundException('Design Review', prismaDesignReview5.designReviewId));
     });
 
     test('Design Review was deleted', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue({ ...prismaDesignReview1, dateDeleted: new Date() });
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batman)
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], batmanWithUserSettings)
       ).rejects.toThrow(new DeletedException('Design Review', prismaDesignReview5.designReviewId));
     });
 
     test('User was not in required/optional members of design review', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], superman)
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 1, 2], supermanWithUserSettings)
       ).rejects.toThrow(new HttpException(400, 'Current user is not in the list of this design reviews members'));
     });
 
     test('Availabilities were invalid - out of bounds', async () => {
       vi.spyOn(prisma.design_Review, 'findUnique').mockResolvedValue(prismaDesignReview5);
       await expect(() =>
-        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batman)
+        DesignReviewsService.markUserConfirmed(prismaDesignReview5.designReviewId, [0, 85], batmanWithUserSettings)
       ).rejects.toThrow(new HttpException(400, 'Availability times have to be in range 0-83'));
     });
   });

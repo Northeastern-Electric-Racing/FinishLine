@@ -56,6 +56,13 @@ export const wonderwoman: PrismaUser = {
   googleAuthId: 'w'
 };
 
+export const wonderwomanSettings: User_Settings = {
+  id: 'ww',
+  userId: 4,
+  defaultTheme: Theme.LIGHT,
+  slackId: 'slackWW'
+};
+
 export const flash: PrismaUser = {
   userId: 4,
   firstName: 'Barry',
@@ -84,6 +91,26 @@ export const aquaman: PrismaUser = {
   emailId: 'arhur.curry',
   role: PrismaRole.LEADERSHIP,
   googleAuthId: 'a'
+};
+
+export const financeMember: PrismaUser = {
+  userId: 123,
+  firstName: 'Johnny',
+  lastName: 'Bravo',
+  googleAuthId: '25',
+  email: 'jbravo@gmail.com',
+  emailId: 'jbravo',
+  role: PrismaRole.MEMBER
+};
+
+export const member: PrismaUser = {
+  userId: 123,
+  firstName: 'Johnny',
+  lastName: 'Bravo',
+  googleAuthId: '25',
+  email: 'jbravo@gmail.com',
+  emailId: 'jbravo',
+  role: PrismaRole.MEMBER
 };
 
 export const batmanSettings: User_Settings = {

@@ -4,10 +4,10 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { useEffect, useState } from 'react';
-import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
+import { applyChangesToEvents, EventChange, GanttTaskData, RequestEventChange } from '../../utils/gantt.utils';
 import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
+import { useEffect, useState } from 'react';
 
 interface GanttChartSectionProps {
   start: Date;
@@ -15,13 +15,9 @@ interface GanttChartSectionProps {
   tasks: GanttTaskData[];
   isEditMode: boolean;
   saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (ganttTasks: GanttTaskData, teamName: string) => void;
-  showWorkPackagesList: { [projectId: string]: boolean };
-  setShowWorkPackagesList: React.Dispatch<
-    React.SetStateAction<{
-      [projectId: string]: boolean;
-    }>
-  >;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  highlightedChange?: RequestEventChange;
 }
 
 const GanttChartSection = ({
@@ -30,8 +26,9 @@ const GanttChartSection = ({
   tasks,
   isEditMode,
   saveChanges,
-  showWorkPackagesList,
-  setShowWorkPackagesList
+  showWorkPackagesMap,
+  setShowWorkPackagesMap,
+  highlightedChange
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
@@ -52,11 +49,8 @@ const GanttChartSection = ({
   const displayEvents = applyChangesToEvents(tasks, eventChanges);
   const projects = displayEvents.filter((event) => !event.project);
 
-  const toggleWorkPackages = (projectId: string) => {
-    setShowWorkPackagesList((prevState) => ({
-      ...prevState,
-      [projectId]: !prevState[projectId]
-    }));
+  const toggleWorkPackages = (projectTask: GanttTaskData) => {
+    setShowWorkPackagesMap((prev) => new Map(prev.set(projectTask.id, !prev.get(projectTask.id))));
   };
 
   return tasks.length > 0 ? (
@@ -73,19 +67,23 @@ const GanttChartSection = ({
                   event={project}
                   isEditMode={isEditMode}
                   createChange={createChange}
-                  onWorkPackageToggle={() => toggleWorkPackages(project.id)}
-                  showWorkPackages={showWorkPackagesList[project.id]}
+                  onWorkPackageToggle={() => toggleWorkPackages(project)}
+                  showWorkPackages={showWorkPackagesMap.get(project.id)}
                 />
               </Box>
-              <Collapse in={showWorkPackagesList[project.id]}>
+              <Collapse in={showWorkPackagesMap.get(project.id)}>
                 {project.children.map((workPackage) => {
+                  const displayWorkPackage = displayEvents.find((event) => event.id === workPackage.id);
                   return (
                     <GanttTaskBar
                       key={workPackage.id}
                       days={days}
-                      event={workPackage}
+                      event={displayWorkPackage!}
                       isEditMode={isEditMode}
                       createChange={createChange}
+                      highlightedChange={
+                        highlightedChange && workPackage.id === highlightedChange.eventId ? highlightedChange : undefined
+                      }
                     />
                   );
                 })}

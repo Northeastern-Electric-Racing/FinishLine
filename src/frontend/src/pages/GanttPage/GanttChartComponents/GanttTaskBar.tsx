@@ -6,7 +6,13 @@
 import { addDays, differenceInDays } from 'date-fns';
 import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
-import { GANTT_CHART_GAP_SIZE, GANTT_CHART_CELL_SIZE, EventChange, GanttTaskData } from '../../../utils/gantt.utils';
+import {
+  GANTT_CHART_GAP_SIZE,
+  GANTT_CHART_CELL_SIZE,
+  EventChange,
+  GanttTaskData,
+  RequestEventChange
+} from '../../../utils/gantt.utils';
 import useId from '@mui/material/utils/useId';
 import { Box, IconButton, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
@@ -24,6 +30,7 @@ const GanttTaskBar = ({
   isEditMode,
   onWorkPackageToggle,
   showWorkPackages = false,
+  highlightedChange,
   ...props
 }: {
   days: Date[];
@@ -32,6 +39,7 @@ const GanttTaskBar = ({
   isEditMode: boolean;
   onWorkPackageToggle?: () => void;
   showWorkPackages?: boolean;
+  highlightedChange?: RequestEventChange;
 } & ComponentProps<'div'>) => {
   const theme = useTheme();
   const id = useId() || 'id'; // id for creating event changes
@@ -127,7 +135,11 @@ const GanttTaskBar = ({
   };
 
   return isEditMode ? (
-    <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
+    <div
+      style={{ position: 'relative', width: '100%', marginTop: 10 }}
+      onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
+    >
       <Box
         sx={{
           width: '100%',
@@ -176,11 +188,9 @@ const GanttTaskBar = ({
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700],
-            cursor: 'move'
+            backgroundColor: event.styles ? event.styles.backgroundColor : theme.palette.background.paper,
+            cursor: isProject ? 'default' : 'move'
           }}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
         >
           <Box
             sx={{
@@ -193,7 +203,7 @@ const GanttTaskBar = ({
             }}
           >
             <Box
-              draggable
+              draggable={!isProject}
               onDrag={onDragStart}
               onDragEnd={onDragEnd}
               style={{
@@ -205,22 +215,35 @@ const GanttTaskBar = ({
                 userSelect: 'none'
               }}
             >
-              <Typography
-                variant="body1"
-                sx={{ color: event.styles ? event.styles.color : '#ffffff', px: 1 }}
-                onClick={onWorkPackageToggle}
-              >
-                {event.name}
-              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: event.styles ? event.styles.color : '#ffffff',
+                    px: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {event.name}
+                </Typography>
+              </Box>
             </Box>
             <Box
-              sx={{ cursor: 'ew-resize', height: '100%', width: '5rem', position: 'relative', right: '-10' }}
-              onMouseDown={handleMouseDown}
+              sx={{
+                cursor: isProject ? 'default' : 'ew-resize',
+                height: '100%',
+                width: '5rem',
+                position: 'relative',
+                right: '-10'
+              }}
+              onMouseDown={isProject ? undefined : handleMouseDown}
             />
           </Box>
         </div>
       </Box>
-    </Box>
+    </div>
   ) : (
     <Box style={{ position: 'relative', width: '100%', marginTop: 10 }}>
       <Box
@@ -240,9 +263,11 @@ const GanttTaskBar = ({
             gridColumnEnd: getEndCol(event),
             height: '2rem',
             width: width === 0 ? `unset` : `${width}px`,
-            border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
+            border: highlightedChange
+              ? `1px solid ${theme.palette.text.primary}`
+              : `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
             borderRadius: '0.25rem',
-            backgroundColor: event.styles ? event.styles.backgroundColor : grey[700],
+            backgroundColor: event.styles ? event.styles.backgroundColor : theme.palette.background.paper,
             cursor: 'pointer',
             gridRow: 1,
             zIndex: 1
@@ -291,7 +316,7 @@ const GanttTaskBar = ({
           onClick={!isProject ? () => history.push(`${`${routes.PROJECTS}/${event.id}`}`) : undefined}
         >
           {isProject && (
-            <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-20px', marginLeft: '-10px' }}>
+            <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-15px', marginLeft: '-5px' }}>
               {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
             </IconButton>
           )}
@@ -330,6 +355,40 @@ const GanttTaskBar = ({
             />
           );
         })}
+        {highlightedChange && (
+          <div
+            id="proposedChange"
+            {...props}
+            style={{
+              paddingTop: '2px',
+              paddingLeft: '5px',
+              gridColumnStart: days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1,
+              gridColumnEnd:
+                days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
+                  ? days.length + 1
+                  : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2,
+              height: '2rem',
+              border: `1px solid ${theme.palette.text.primary}`,
+              borderRadius: '0.25rem',
+              backgroundColor: '#ef4345',
+              cursor: 'pointer',
+              gridRow: 1,
+              zIndex: 6
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                color: event.styles ? event.styles.color : '#ffffff',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {highlightedChange.name}
+            </Typography>
+          </div>
+        )}
       </Box>
       {showPopup && (
         <GanttToolTip
