@@ -18,6 +18,8 @@ import { datePipe } from '../../utils/pipes';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { DesignReviewAttendeeModal } from './DesignReviewAttendeeModal';
+import TodayButton from './CalendarComponents/TodayButton';
+import NextPreviousMonthButtons from './CalendarComponents/NextPreviousMonthButtons';
 
 const CalendarPage = () => {
   const theme = useTheme();
@@ -117,7 +119,18 @@ const CalendarPage = () => {
         />
       )}
       <PageLayout
-        title="Design Review Calendar"
+        title={`Calendar ${displayMonthYear.toLocaleString('default', { month: 'long', year: 'numeric' })}`}
+        chips={
+          <Box marginLeft={5}>
+            <Stack direction="row" justifyContent="flex-end">
+              <TodayButton displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
+              <Box marginLeft={1}>
+                {' '}
+                <NextPreviousMonthButtons displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />{' '}
+              </Box>
+            </Stack>
+          </Box>
+        }
         headerRight={
           <Stack direction="row" justifyContent="flex-end">
             <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />

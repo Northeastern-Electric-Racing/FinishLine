@@ -30,7 +30,6 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
           );
         })}
       </TextField>
-
       <TextField
         select
         size="small"
