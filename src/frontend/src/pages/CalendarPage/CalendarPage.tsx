@@ -119,22 +119,14 @@ const CalendarPage = () => {
         />
       )}
       <PageLayout
-        title={`Calendar ${displayMonthYear.toLocaleString('default', { month: 'long', year: 'numeric' })}`}
+        title="Calendar"
         chips={
-          <Box marginLeft={5}>
-            <Stack direction="row" justifyContent="flex-end">
-              <TodayButton displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
-              <Box marginLeft={1}>
-                {' '}
-                <NextPreviousMonthButtons displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />{' '}
-              </Box>
-            </Stack>
-          </Box>
-        }
-        headerRight={
-          <Stack direction="row" justifyContent="flex-end">
-            <MonthSelector displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
-            <Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>
+          <Stack direction="row" spacing={4} alignItems="center" marginLeft={5}>
+            <TodayButton displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
+            <NextPreviousMonthButtons displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
+            <Typography variant="h5">
+              {displayMonthYear.toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </Typography>
           </Stack>
         }
       >
