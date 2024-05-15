@@ -32,9 +32,7 @@ import dayjs from 'dayjs';
 import { useAllWorkPackageTemplates } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { WorkPackageTemplateSection } from './WorkPackageTemplateDetails';
-import { Work } from '@mui/icons-material';
-import { template } from '@babel/core';
-import exp from 'constants';
+import ErrorPage from '../ErrorPage';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -133,6 +131,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     error: workPackageTemplateError
   } = useAllWorkPackageTemplates();
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
+  if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
 
   const testWorkPackageTemplate: WorkPackageTemplate[] = [
     {
