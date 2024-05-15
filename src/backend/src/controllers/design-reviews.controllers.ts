@@ -4,9 +4,10 @@ import { getCurrentUser } from '../utils/auth.utils';
 import { User } from '@prisma/client';
 
 export default class DesignReviewsController {
-  static async getAllDesignReviews(_req: Request, res: Response, next: NextFunction) {
+  static async getAllDesignReviews(req: Request, res: Response, next: NextFunction) {
     try {
-      const designReviews = await DesignReviewsService.getAllDesignReviews();
+      const { organizationId } = req.headers as { organizationId: string };
+      const designReviews = await DesignReviewsService.getAllDesignReviews(organizationId);
       return res.status(200).json(designReviews);
     } catch (error: unknown) {
       next(error);
@@ -17,7 +18,8 @@ export default class DesignReviewsController {
     try {
       const drId: string = req.params.designReviewId;
       const user: User = await getCurrentUser(res);
-      const deletedDesignReview = await DesignReviewsService.deleteDesignReview(user, drId);
+      const { organizationId } = req.headers as { organizationId: string };
+      const deletedDesignReview = await DesignReviewsService.deleteDesignReview(user, drId, organizationId);
       return res.status(200).json(deletedDesignReview);
     } catch (error: unknown) {
       next(error);
@@ -28,6 +30,7 @@ export default class DesignReviewsController {
     try {
       const submitter: User = await getCurrentUser(res);
       const { dateScheduled, teamTypeId, requiredMemberIds, optionalMemberIds, wbsNum, meetingTimes } = req.body;
+      const { organizationId } = req.headers as { organizationId: string };
 
       const createdDesignReview = await DesignReviewsService.createDesignReview(
         submitter,
@@ -36,7 +39,8 @@ export default class DesignReviewsController {
         requiredMemberIds,
         optionalMemberIds,
         wbsNum,
-        meetingTimes
+        meetingTimes,
+        organizationId
       );
       return res.status(200).json(createdDesignReview);
     } catch (error: unknown) {
@@ -48,7 +52,9 @@ export default class DesignReviewsController {
     try {
       const drId: string = req.params.designReviewId;
       const user: User = await getCurrentUser(res);
-      const designReview = await DesignReviewsService.getSingleDesignReview(user, drId);
+      const { organizationId } = req.headers as { organizationId: string };
+
+      const designReview = await DesignReviewsService.getSingleDesignReview(user, drId, organizationId);
       return res.status(200).json(designReview);
     } catch (error: unknown) {
       next(error);
@@ -77,6 +83,7 @@ export default class DesignReviewsController {
 
       // get the user from the submitter
       const user = await getCurrentUser(res);
+      const { organizationId } = req.headers as { organizationId: string };
 
       await DesignReviewsService.editDesignReview(
         user,
@@ -92,7 +99,8 @@ export default class DesignReviewsController {
         docTemplateLink,
         status,
         attendees,
-        meetingTimes
+        meetingTimes,
+        organizationId
       );
       return res.status(200).json({ message: 'Design Review updated successfully' });
     } catch (error: unknown) {
@@ -105,9 +113,15 @@ export default class DesignReviewsController {
     try {
       const { availability } = req.body;
       const { designReviewId } = req.params;
+      const { organizationId } = req.headers as { organizationId: string };
       const user = await getCurrentUser(res);
 
-      const updatedDesignReview = await DesignReviewsService.markUserConfirmed(designReviewId, availability, user);
+      const updatedDesignReview = await DesignReviewsService.markUserConfirmed(
+        designReviewId,
+        availability,
+        user,
+        organizationId
+      );
       return res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
       next(error);

@@ -4,9 +4,11 @@ import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
 
 export default class UsersController {
-  static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
+  static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await UsersService.getAllUsers();
+      const { organizationId } = req.headers as { organizationId: string };
+
+      const users = await UsersService.getAllUsers(organizationId);
 
       res.status(200).json(users);
     } catch (error: unknown) {
@@ -17,7 +19,9 @@ export default class UsersController {
   static async getSingleUser(req: Request, res: Response, next: NextFunction) {
     try {
       const userId: number = parseInt(req.params.userId);
-      const requestedUser = await UsersService.getSingleUser(userId);
+      const { organizationId } = req.headers as { organizationId: string };
+
+      const requestedUser = await UsersService.getSingleUser(userId, organizationId);
 
       res.status(200).json(requestedUser);
     } catch (error: unknown) {
@@ -25,10 +29,11 @@ export default class UsersController {
     }
   }
 
-  static async getUserSettings(req: Request, res: Response, next: NextFunction) {
+  static async getUserSettings(_req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
-      const settings = await UsersService.getUserSettings(userId);
+      const user = await getCurrentUser(res);
+
+      const settings = await UsersService.getUserSettings(user.userId);
 
       res.status(200).json(settings);
     } catch (error: unknown) {
@@ -36,7 +41,7 @@ export default class UsersController {
     }
   }
 
-  static async getCurrentUserSecureSettings(req: Request, res: Response, next: NextFunction) {
+  static async getCurrentUserSecureSettings(_req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
       const secureSettings = await UsersService.getCurrentUserSecureSettings(user);
@@ -49,9 +54,10 @@ export default class UsersController {
 
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
+      const user = await getCurrentUser(res);
+      const { organizationId } = req.headers as { organizationId: string };
 
-      const projects = await UsersService.getUsersFavoriteProjects(userId);
+      const projects = await UsersService.getUsersFavoriteProjects(user.userId, organizationId);
 
       res.status(200).json(projects);
     } catch (error: unknown) {
@@ -111,8 +117,9 @@ export default class UsersController {
       const targetUserId: number = parseInt(req.params.userId);
       const { role } = req.body;
       const user = await getCurrentUser(res);
+      const { organizationId } = req.headers as { organizationId: string };
 
-      const targetUser = await UsersService.updateUserRole(targetUserId, user, role);
+      const targetUser = await UsersService.updateUserRole(targetUserId, user, role, organizationId);
 
       res.status(200).json(targetUser);
     } catch (error: unknown) {
@@ -124,8 +131,9 @@ export default class UsersController {
     try {
       const userId: number = parseInt(req.params.userId);
       const submitter = await getCurrentUser(res);
+      const { organizationId } = req.headers as { organizationId: string };
 
-      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter);
+      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter, organizationId);
 
       res.status(200).json(userSecureSettings);
     } catch (error: unknown) {
@@ -168,6 +176,7 @@ export default class UsersController {
     try {
       const userId: number = parseInt(req.params.userId);
       const submitter = await getCurrentUser(res);
+
       const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, submitter);
       res.status(200).json(userScheduleSettings);
     } catch (error: unknown) {

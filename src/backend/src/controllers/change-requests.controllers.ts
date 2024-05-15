@@ -7,7 +7,8 @@ export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
       const crId: number = parseInt(req.params.crId);
-      const cr = await ChangeRequestsService.getChangeRequestByID(crId);
+      const { organizationId } = req.cookies;
+      const cr = await ChangeRequestsService.getChangeRequestByID(crId, organizationId);
       return res.status(200).json(cr);
     } catch (error: unknown) {
       next(error);
@@ -16,7 +17,8 @@ export default class ChangeRequestsController {
 
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const changeRequests = await ChangeRequestsService.getAllChangeRequests();
+      const { organizationId } = req.headers as { organizationId: string };
+      const changeRequests = await ChangeRequestsService.getAllChangeRequests(organizationId);
       return res.status(200).json(changeRequests);
     } catch (error: unknown) {
       next(error);
@@ -26,8 +28,16 @@ export default class ChangeRequestsController {
   static async reviewChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId, reviewNotes, accepted, psId } = req.body;
+      const { organizationId } = req.headers as { organizationId: string };
       const reviewer = await getCurrentUser(res);
-      const id = await ChangeRequestsService.reviewChangeRequest(reviewer, crId, reviewNotes, accepted, psId);
+      const id = await ChangeRequestsService.reviewChangeRequest(
+        reviewer,
+        crId,
+        reviewNotes,
+        accepted,
+        organizationId,
+        psId
+      );
       return res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
       next(error);
@@ -38,6 +48,8 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, projectLeadId, projectManagerId, startDate, confirmDetails } = req.body;
       const submitter = await getCurrentUser(res);
+      const { organizationId } = req.headers as { organizationId: string };
+
       const id = await ChangeRequestsService.createActivationChangeRequest(
         submitter,
         wbsNum.carNumber,
@@ -47,7 +59,8 @@ export default class ChangeRequestsController {
         projectLeadId,
         projectManagerId,
         startDate,
-        confirmDetails
+        confirmDetails,
+        organizationId
       );
       return res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
     } catch (error: unknown) {
@@ -59,13 +72,15 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, confirmDone } = req.body;
       const submitter = await getCurrentUser(res);
+      const { organizationId } = req.headers as { organizationId: string };
       const id = await ChangeRequestsService.createStageGateChangeRequest(
         submitter,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
         type,
-        confirmDone
+        confirmDone,
+        organizationId
       );
       return res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
     } catch (error: unknown) {
@@ -80,6 +95,8 @@ export default class ChangeRequestsController {
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
         workPackageProposedChanges.stage = null;
       }
+      const { organizationId } = req.headers as { organizationId: string };
+
       const createdCR = await ChangeRequestsService.createStandardChangeRequest(
         submitter,
         wbsNum.carNumber,
@@ -89,6 +106,7 @@ export default class ChangeRequestsController {
         what,
         why,
         proposedSolutions,
+        organizationId,
         projectProposedChanges,
         workPackageProposedChanges
       );
@@ -102,13 +120,15 @@ export default class ChangeRequestsController {
     try {
       const { crId, budgetImpact, description, timelineImpact, scopeImpact } = req.body;
       const submitter = await getCurrentUser(res);
+      const { organizationId } = req.headers as { organizationId: string };
       const id = await ChangeRequestsService.addProposedSolution(
         submitter,
         crId,
         budgetImpact,
         description,
         timelineImpact,
-        scopeImpact
+        scopeImpact,
+        organizationId
       );
       return res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
@@ -120,7 +140,9 @@ export default class ChangeRequestsController {
     try {
       const crId: number = parseInt(req.params.crId);
       const user: User = await getCurrentUser(res);
-      await ChangeRequestsService.deleteChangeRequest(user, crId);
+      const { organizationId } = req.headers as { organizationId: string };
+
+      await ChangeRequestsService.deleteChangeRequest(user, crId, organizationId);
       return res.status(200).json({ message: `Successfully deleted change request #${crId}` });
     } catch (error: unknown) {
       next(error);
@@ -132,7 +154,9 @@ export default class ChangeRequestsController {
       const { userIds } = req.body;
       const crId = parseInt(req.params.crId);
       const submitter: User = await getCurrentUser(res);
-      await ChangeRequestsService.requestCRReview(submitter, userIds, crId);
+      const { organizationId } = req.headers as { organizationId: string };
+
+      await ChangeRequestsService.requestCRReview(submitter, userIds, crId, organizationId);
       return res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
     } catch (error: unknown) {
       next(error);

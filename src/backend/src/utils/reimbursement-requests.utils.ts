@@ -15,9 +15,10 @@ import {
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Team, User } from '@prisma/client';
-import authUserQueryArgs from '../prisma-query-args/auth-user.query-args';
+import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, User } from '@prisma/client';
 import { isUserOnTeam } from './teams.utils';
+import { userHasPermission } from './users.utils';
+import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 
 /**
  * This function removes any deleted receipts and adds any new receipts
@@ -278,15 +279,26 @@ export const createReimbursementProducts = async (
  * Validates that the given user is on the finance team.
  *
  * @param user The user to validate.
+ * @param organizationId The organization to check if the user is on the finance team.
  * @throws {AccessDeniedException} Fails validation when user is not on the
  * finance team.
  */
-export const validateUserIsPartOfFinanceTeam = async (user: User) => {
-  const isUserAuthorized = await isUserOnFinanceTeam(user);
+export const validateUserIsPartOfFinanceTeam = async (user: User, organizationId: string) => {
+  const isUserAuthorized = await isUserOnFinanceTeam(user, organizationId);
 
   if (!isUserAuthorized) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
   }
+};
+
+const getFinanceTeam = async (organizationId: string) => {
+  const financeTeam = await prisma.team.findFirst({
+    where: { financeTeam: true, organizationId },
+    include: { head: true, leads: true, members: true }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+  return financeTeam;
 };
 
 /**
@@ -297,21 +309,12 @@ export const validateUserIsPartOfFinanceTeam = async (user: User) => {
  * produced by authUserQueryArgs that are not in the User type by default.
  *
  * @param user the user to authenticate
+ * @param organizationId the organization id to check if the user is on the finance team
  * @returns whether the user is on the finance team
  * @throws {HttpException} if finance team not found in database
  */
-export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
-  if (!process.env.FINANCE_TEAM_ID) {
-    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
-  }
-
-  const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID },
-    include: { head: true, leads: true, members: true }
-  });
-
-  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
-  return isUserOnTeam(financeTeam, user);
+export const isUserOnFinanceTeam = async (user: User, organizationId: string): Promise<boolean> => {
+  return isUserOnTeam(await getFinanceTeam(organizationId), user);
 };
 
 /**
@@ -325,29 +328,17 @@ export const isUserOnFinanceTeam = async (user: User): Promise<boolean> => {
  * @returns whether the user is lead or head of the finance team
  * @throws {HttpException} if finance team not found in database
  */
-export const isUserLeadOrHeadOfFinanceTeam = async (user: User): Promise<boolean> => {
-  if (!process.env.FINANCE_TEAM_ID) {
-    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
-  }
-
-  const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID },
-    include: { head: true, leads: true }
-  });
-
-  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+export const isUserLeadOrHeadOfFinanceTeam = async (user: User, organizationId: string): Promise<boolean> => {
+  const financeTeam = await getFinanceTeam(organizationId);
 
   return user.userId === financeTeam.headId || financeTeam.leads.map((u) => u.userId).includes(user.userId);
 };
 
-export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
-  if (!process.env.FINANCE_TEAM_ID) return false;
-  const financeTeamId = process.env.FINANCE_TEAM_ID;
-  const { teamAsHead, teamsAsLead, teamsAsMember } = user;
+export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<AuthUserQueryArgs>) => {
   return (
-    teamAsHead?.teamId === financeTeamId ||
-    isTeamIdInList(financeTeamId, teamsAsLead) ||
-    isTeamIdInList(financeTeamId, teamsAsMember)
+    user.teamsAsHead.some((team) => team.financeTeam) ||
+    user.teamsAsLead.some((team) => team.financeTeam) ||
+    user.teamsAsMember.some((team) => team.financeTeam)
   );
 };
 
@@ -356,39 +347,41 @@ export const isAuthUserOnFinance = (user: Prisma.UserGetPayload<typeof authUserQ
  * @param user the user to check
  * @returns Whether they are a finance lead.
  */
-export const isAuthUserAtLeastLeadForFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
-  if (!process.env.FINANCE_TEAM_ID) return false;
-  const financeTeamId = process.env.FINANCE_TEAM_ID;
-  const { teamAsHead, teamsAsLead } = user;
-  return teamAsHead?.teamId === financeTeamId || isTeamIdInList(financeTeamId, teamsAsLead);
+export const isAuthUserAtLeastLeadForFinance = (user: Prisma.UserGetPayload<AuthUserQueryArgs>) => {
+  return user.teamsAsHead.some((team) => team.financeTeam) || user.teamsAsLead.some((team) => team.financeTeam);
 };
 
-export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<typeof authUserQueryArgs>) => {
-  return user.teamAsHead?.teamId === process.env.FINANCE_TEAM_ID;
+export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<AuthUserQueryArgs>) => {
+  return user.teamsAsHead.some((team) => team.financeTeam);
 };
 
-export const isUserAdminOrOnFinance = async (submitter: User) => {
+export const isUserAdminOrOnFinance = async (submitter: User, organizationId: string) => {
   try {
-    await validateUserIsPartOfFinanceTeam(submitter);
+    await validateUserIsPartOfFinanceTeam(submitter, organizationId);
   } catch (error) {
-    if (!isAdmin(submitter.role)) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors');
     }
   }
 };
 
-const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
-  return teamsList.map((team) => team.teamId).includes(teamId);
-};
+// const isTeamIdInList = (teamId: string, teamsList: Team[]) => {
+//   return teamsList.map((team) => team.teamId).includes(teamId);
+// };
 
 /**
  * Validates user has permission to edit the reimbursement request.
  * @param user the person editing the reimbursement request
  * @param reimbursementRequest the reimbursement request to edit
+ * @param organizationId the organization that the user is currently in
  */
-export const validateUserEditRRPermissions = async (user: User, reimbursementRequest: Reimbursement_Request) => {
+export const validateUserEditRRPermissions = async (
+  user: User,
+  reimbursementRequest: Reimbursement_Request,
+  organizationId: string
+) => {
   try {
-    await validateUserIsPartOfFinanceTeam(user);
+    await validateUserIsPartOfFinanceTeam(user, organizationId);
   } catch {
     if (reimbursementRequest.recipientId !== user.userId)
       throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');

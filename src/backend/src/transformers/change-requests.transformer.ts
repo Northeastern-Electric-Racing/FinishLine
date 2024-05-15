@@ -6,7 +6,6 @@ import {
   StageGateChangeRequest,
   ProjectProposedChanges,
   WbsElementStatus,
-  LinkInfo,
   WorkPackageProposedChanges,
   WorkPackageStage
 } from 'shared';
@@ -15,63 +14,57 @@ import { calculateChangeRequestStatus, convertCRScopeWhyType } from '../utils/ch
 import proposedSolutionTransformer from './proposed-solutions.transformer';
 import { getDateImplemented } from '../utils/change-requests.utils';
 import { userTransformer } from './user.transformer';
-import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { descBulletConverter } from '../utils/description-bullets.utils';
-import { linkTypeTransformer } from './links.transformer';
-import { linkInfoQueryArgs, wbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
-
-const linkInfoTransformer = (linkInfo: Prisma.LinkInfoGetPayload<typeof linkInfoQueryArgs>): LinkInfo => {
-  return {
-    linkInfoId: linkInfo.linkInfoId,
-    url: linkInfo.url,
-    linkType: linkTypeTransformer(linkInfo.linkType)
-  };
-};
+import { linkTransformer } from './links.transformer';
+import teamTransformer from './teams.transformer';
+import { WbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
+import { HttpException } from '../utils/errors.utils';
+import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
 const projectProposedChangesTransformer = (
-  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
 ): ProjectProposedChanges => {
   const { projectProposedChanges } = wbsProposedChanges;
+  if (!projectProposedChanges) throw new HttpException(404, 'Project Proposed Changes not found');
+
   return {
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links.map(linkInfoTransformer),
-    projectLead: wbsProposedChanges.projectLead ? wbsProposedChanges.projectLead : undefined,
-    projectManager: wbsProposedChanges.projectManager ? wbsProposedChanges.projectManager : undefined,
-    summary: projectProposedChanges!.summary,
-    budget: projectProposedChanges!.budget,
-    rules: projectProposedChanges!.rules,
-    goals: projectProposedChanges!.goals.map(descBulletConverter),
-    features: projectProposedChanges!.features.map(descBulletConverter),
-    otherConstrains: projectProposedChanges!.otherConstraints.map(descBulletConverter),
-    teams: projectProposedChanges!.teams,
-    carNumber: projectProposedChanges?.carNumber ? projectProposedChanges?.carNumber : undefined
+    links: wbsProposedChanges.links.map(linkTransformer),
+    lead: wbsProposedChanges.lead ? userTransformer(wbsProposedChanges.lead) : undefined,
+    manager: wbsProposedChanges.manager ? userTransformer(wbsProposedChanges.manager) : undefined,
+    summary: projectProposedChanges.summary,
+    budget: projectProposedChanges.budget,
+    descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
+    teams: projectProposedChanges.teams.map(teamTransformer),
+    carNumber: projectProposedChanges.car?.wbsElement.carNumber ?? undefined
   };
 };
 
 const workPackageProposedChangesTransformer = (
-  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
 ): WorkPackageProposedChanges => {
   const { workPackageProposedChanges } = wbsProposedChanges;
+  if (!workPackageProposedChanges) throw new HttpException(404, 'Work Package Proposed Changes not found');
+
   return {
     id: wbsProposedChanges.wbsProposedChangesId,
     name: wbsProposedChanges.name,
     status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links.map(linkInfoTransformer),
-    projectLead: wbsProposedChanges.projectLead ? wbsProposedChanges.projectLead : undefined,
-    projectManager: wbsProposedChanges.projectManager ? wbsProposedChanges.projectManager : undefined,
-    startDate: workPackageProposedChanges!.startDate,
-    duration: workPackageProposedChanges!.duration,
-    blockedBy: workPackageProposedChanges!.blockedBy.map(wbsNumOf),
-    expectedActivities: workPackageProposedChanges!.expectedActivities.map(descBulletConverter),
-    deliverables: workPackageProposedChanges!.deliverables.map(descBulletConverter),
-    stage: (workPackageProposedChanges!.stage as WorkPackageStage) || undefined
+    links: wbsProposedChanges.links.map(linkTransformer),
+    lead: wbsProposedChanges.lead ? userTransformer(wbsProposedChanges.lead) : undefined,
+    manager: wbsProposedChanges.manager ? userTransformer(wbsProposedChanges.manager) : undefined,
+    startDate: workPackageProposedChanges.startDate,
+    duration: workPackageProposedChanges.duration,
+    blockedBy: workPackageProposedChanges.blockedBy.map(wbsNumOf),
+    descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
+    stage: (workPackageProposedChanges.stage as WorkPackageStage) || undefined
   };
 };
 
 const changeRequestTransformer = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
 ): ChangeRequest | StandardChangeRequest | ActivationChangeRequest | StageGateChangeRequest => {
   const status = calculateChangeRequestStatus(changeRequest);
 
@@ -116,18 +109,18 @@ const changeRequestTransformer = (
       ? changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? []
       : undefined,
     // activation cr fields
-    projectLead: changeRequest.activationChangeRequest?.projectLead
-      ? userTransformer(changeRequest.activationChangeRequest?.projectLead)
+    projectLead: changeRequest.activationChangeRequest?.lead
+      ? userTransformer(changeRequest.activationChangeRequest.lead)
       : undefined,
-    projectManager: changeRequest.activationChangeRequest?.projectManager
-      ? userTransformer(changeRequest.activationChangeRequest?.projectManager)
+    projectManager: changeRequest.activationChangeRequest?.manager
+      ? userTransformer(changeRequest.activationChangeRequest.manager)
       : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,
     confirmDetails: changeRequest.activationChangeRequest?.confirmDetails ?? undefined,
     // stage gate cr fields
     leftoverBudget: changeRequest.stageGateChangeRequest?.leftoverBudget ?? undefined,
     confirmDone: changeRequest.stageGateChangeRequest?.confirmDone ?? undefined,
-    requestedReviewers: changeRequest.requestedReviewers ?? []
+    requestedReviewers: changeRequest.requestedReviewers.map(userTransformer) ?? []
   };
 };
 

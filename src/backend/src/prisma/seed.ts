@@ -19,15 +19,12 @@ import {
 import { dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
-import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
-import WorkPackagesService from '../services/work-packages.services';
 import {
   ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
   StandardChangeRequest,
-  validateWBS,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -40,6 +37,8 @@ import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
 import DesignReviewsService from '../services/design-reviews.services';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import BillOfMaterialsService from '../services/boms.services';
 
 const prisma = new PrismaClient();
 
@@ -160,28 +159,30 @@ const performSeed: () => Promise<void> = async () => {
   const carr = await prisma.user.create({ data: dbSeedAllUsers.carr });
   const trang = await prisma.user.create({ data: dbSeedAllUsers.trang });
 
-  /**
-   * Make initial project so that we can start to create other stuff
-   */
-  const genesisProject = await prisma.project.create({
+  const ner = await prisma.organization.create({
+    data: {
+      name: 'NER',
+      userCreatedId: thomasEmrax.userId
+    }
+  });
+
+  const { organizationId } = ner;
+
+  const fergus = await prisma.car.create({
     data: {
       wbsElement: {
         create: {
+          name: 'Fergus',
           carNumber: 0,
           projectNumber: 0,
           workPackageNumber: 0,
-          dateCreated: new Date('01/01/2023'),
-          name: 'Genesis',
-          status: WBS_Element_Status.INACTIVE,
-          leadId: batman.userId,
-          managerId: cyborg.userId
+          organizationId
         }
-      },
-      summary: 'Initial Car so that we can make change requests and projects and other stuff',
-      budget: 1000,
-      rules: []
+      }
     },
-    ...projectQueryArgs
+    include: {
+      wbsElement: true
+    }
   });
 
   /**
@@ -189,9 +190,9 @@ const performSeed: () => Promise<void> = async () => {
    */
   const changeRequest1: StandardChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
-    genesisProject.wbsElement.carNumber,
-    genesisProject.wbsElement.projectNumber,
-    genesisProject.wbsElement.workPackageNumber,
+    fergus.wbsElement.carNumber,
+    fergus.wbsElement.projectNumber,
+    fergus.wbsElement.workPackageNumber,
     CR_Type.OTHER,
     'Initial Change Request',
     [
@@ -208,6 +209,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 0
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -218,26 +220,31 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.crId,
     'LGTM',
     true,
-    changeRequest1.proposedSolutions[0].id
+    changeRequest1.proposedSolutions[0].id,
+    organizationId
   );
 
   /**
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', organizationId);
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', organizationId);
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', organizationId);
 
   /** Creating Teams */
-  const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
-  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId));
-  const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
-  const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
-  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId));
-  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
-  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
-  const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
+  const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
+  const avatarBenders: Team = await prisma.team.create(
+    dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId, organizationId)
+  );
+  const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId, organizationId));
+  const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId, organizationId));
+  const huskies: Team = await prisma.team.create(
+    dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId, organizationId)
+  );
+  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
+  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
+  const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
@@ -272,29 +279,34 @@ const performSeed: () => Promise<void> = async () => {
       redTornado,
       firestorm,
       hankHeywood
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamLeads(
     batman,
     justiceLeague.teamId,
-    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
+    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
     monopolyMan,
     financeTeam.teamId,
-    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId)
+    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamLeads(
     monopolyMan,
     financeTeam.teamId,
-    [mrKrabs, richieRich].map((user) => user.userId)
+    [mrKrabs, richieRich].map((user) => user.userId),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
-    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId)
+    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamMembers(
     johnHarbaugh,
@@ -320,7 +332,8 @@ const performSeed: () => Promise<void> = async () => {
       marcusWilliams,
       roquanSmith,
       justinTucker
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
@@ -338,14 +351,16 @@ const performSeed: () => Promise<void> = async () => {
       boogPowell,
       mannyMachado,
       babyDollJacobson
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamMembers(
     thomasEmrax,
     huskies.teamId,
     [joeShmoe, joeBlow, reidChandler, nightwing, frostBite, snowPaws, paws, whiteTail, husky, howler, snowBite].map(
       (user) => user.userId
-    )
+    ),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
@@ -363,18 +378,21 @@ const performSeed: () => Promise<void> = async () => {
       didierDrogba,
       johnTerry,
       dennisBergkamp
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
     regina,
     meanGirls.teamId,
-    [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId)
+    [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamLeads(
     regina,
     meanGirls.teamId,
-    [janis, cady, damian].map((user) => user.userId)
+    [janis, cady, damian].map((user) => user.userId),
+    organizationId
   );
 
   /**
@@ -391,10 +409,6 @@ const performSeed: () => Promise<void> = async () => {
     [huskies.teamId],
     joeShmoe,
     124,
-    ['EV3.5.2'],
-    ['Decrease size by 90% from 247 cubic inches to 24.7 cubic inches'],
-    ['Capable of absorbing 5000N in a head-on collision'],
-    ['Cannot go further towards the rear of the car than the front roll hoop'],
     [
       {
         linkId: '-1',
@@ -407,8 +421,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     thomasEmrax.userId,
-    joeBlow.userId
+    joeBlow.userId,
+    organizationId
   );
 
   /** Project 2 */
@@ -421,10 +437,6 @@ const performSeed: () => Promise<void> = async () => {
     [huskies.teamId],
     thomasEmrax,
     50,
-    ['T12.3.2', 'T8.2.6'],
-    ['Decrease weight by 90% from 4.8 pounds to 0.48 pounds'],
-    ['Provides removable section for easy access to the pedal box'],
-    ['Compatible with a side-pod chassis design'],
     [
       {
         linkId: '-1',
@@ -437,8 +449,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   /** Project 3 */
@@ -451,10 +465,6 @@ const performSeed: () => Promise<void> = async () => {
     [huskies.teamId],
     thomasEmrax,
     5000,
-    ['EV3.5.2', 'EV1.4.7', 'EV6.3.10'],
-    ['Decrease weight by 60% from 100 pounds to 40 pounds'],
-    ['Provides 50,000 Wh of energy discharge'],
-    ['Maximum power consumption of 25 watts from the low voltage system'],
     [
       {
         linkId: '-1',
@@ -467,8 +477,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   /** Project 4 */
@@ -481,10 +493,6 @@ const performSeed: () => Promise<void> = async () => {
     [huskies.teamId],
     thomasEmrax,
     0,
-    [],
-    ['Power consumption stays under 10 watts from the low voltage system'],
-    ['Capable of interfacing via I2C or comparable serial interface.'],
-    ['Must be compatible with chain drive', 'Must be well designed and whatnot'],
     [
       {
         linkId: '-1',
@@ -497,8 +505,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     joeShmoe.userId,
-    joeBlow.userId
+    joeBlow.userId,
+    organizationId
   );
 
   /** Project 5 */
@@ -511,10 +521,6 @@ const performSeed: () => Promise<void> = async () => {
     [huskies.teamId],
     thomasEmrax,
     234,
-    ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
-    ['Decrease installed component costs by 63% from $2,700 to $1000'],
-    ['All wires are bundled and secured to the chassis at least every 6 inches', 'Wires are not wireless'],
-    ['Utilizes 8020 frame construction'],
     [
       {
         linkId: '-1',
@@ -527,8 +533,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     thomasEmrax.userId,
-    joeBlow.userId
+    joeBlow.userId,
+    organizationId
   );
 
   /** Project 6 */
@@ -541,10 +549,6 @@ const performSeed: () => Promise<void> = async () => {
     [avatarBenders.teamId],
     aang,
     99999,
-    [],
-    ['Boost team moral by 100000000%'],
-    ['10in Appa plush', '10ft Appa plush', '30ft Appa plush'],
-    [],
     [
       {
         linkId: '-1',
@@ -557,8 +561,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     aang.userId,
-    katara.userId
+    katara.userId,
+    organizationId
   );
 
   /**
@@ -586,6 +592,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -599,13 +606,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution2Id = proposedSolution2.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject1Id, 'LGTM', true, proposedSolution2Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject1Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution2Id
+  );
 
   const changeRequestProject5 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -628,6 +643,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -641,12 +657,20 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution3Id = proposedSolution3.id;
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject5Id, 'LGTM', true, proposedSolution3Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject5Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution3Id
+  );
 
   const changeRequestProject6 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -669,6 +693,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -682,13 +707,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution6Id = proposedSolution6.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject6Id, 'LGTM', true, proposedSolution6Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject6Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution6Id
+  );
 
   /**
    * Work Packages
@@ -702,15 +735,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/01/2023',
     3,
     [],
-    [
-      'Assess the bodywork captsone and determine what can be learned from their deliverables',
-      'Compare various material, design, segmentation, and mounting choices available and propose the best combination'
-    ],
-    ['High-level anaylsis of options and direction to go in for the project'],
+    [],
     thomasEmrax,
     WbsElementStatus.Active,
     thomasEmrax.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   const workPackage1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -722,16 +752,24 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1.project.wbsElement.leadId!,
     workPackage1.project.wbsElement.managerId!,
     new Date('2024-03-25T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage1ActivationCrId, 'Looks good to me!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    workPackage1ActivationCrId,
+    'Looks good to me!',
+    true,
+    organizationId,
+    null
+  );
 
-  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[0].descriptionId);
+  // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.description[0].descriptionId);
 
-  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[1].descriptionId);
+  // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[1].descriptionId);
 
-  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.deliverables[0].descriptionId);
+  // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.deliverables[0].descriptionId);
 
   /** Work Package 2 */
   const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
@@ -742,18 +780,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/22/2023',
     5,
     [],
-    [
-      'Build a test procedure for destructively measuring the shear strength of various adhesives interacting with foam and steel plates',
-      'Design and manufacture test fixtures to perform destructive testing',
-      'Write a report to summarize findings'
-    ],
-    [
-      'Lab report with full data on the shear strength of adhesives under test including a summary and conclusion of which adhesive is best'
-    ],
+    [],
     thomasEmrax,
     WbsElementStatus.Inactive,
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   /** Work Package 3 */
@@ -765,17 +797,12 @@ const performSeed: () => Promise<void> = async () => {
     '02/01/2023',
     3,
     [],
-    [
-      'Manufacutre section A of the wiring harness',
-      'Determine which portion of the wiring harness is important',
-      'Solder wiring segments together and heat shrink properly',
-      'Cut all wires to length'
-    ],
-    ['Completed wiring harness for the entire car'],
+    [],
     thomasEmrax,
     WbsElementStatus.Active,
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   const workPackage3ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -787,10 +814,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage3.project.wbsElement.leadId!,
     workPackage3.project.wbsElement.managerId!,
     new Date('2023-08-21T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage3ActivationCrId, 'LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage3ActivationCrId, 'LGTM!', true, organizationId, null);
 
   /** Work Package 4 */
   const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
@@ -801,12 +829,12 @@ const performSeed: () => Promise<void> = async () => {
     '04/01/2023',
     7,
     [],
-    ['Assemble and install wiring harness', 'Confirm the installation was successful'],
-    ['Wiring harness is functional and installed in the car'],
+    [],
     thomasEmrax,
     WbsElementStatus.Active,
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   const workPackage4ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -818,10 +846,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage4.project.wbsElement.leadId!,
     workPackage4.project.wbsElement.managerId!,
     new Date('2023-10-02T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage4ActivationCrId, 'LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage4ActivationCrId, 'LGTM!', true, organizationId, null);
 
   /** Work Package 5 */
   const { workPackageWbsNumber: workPackage5WbsNumber, workPackage: workPackage5 } = await seedWorkPackage(
@@ -832,12 +861,12 @@ const performSeed: () => Promise<void> = async () => {
     '04/02/2023',
     7,
     [],
-    ['Make sketches', 'Get sketches reviewed', 'Finalize sketches'],
-    ['Sketch of designs for plush is finalized'],
+    [],
     aang,
     WbsElementStatus.Complete,
     katara.userId,
-    aang.userId
+    aang.userId,
+    organizationId
   );
 
   const workPackage5ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -849,10 +878,18 @@ const performSeed: () => Promise<void> = async () => {
     workPackage5.project.wbsElement.leadId!,
     workPackage5.project.wbsElement.managerId!,
     new Date('2023-05-08T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage5ActivationCrId, 'Very cute LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    workPackage5ActivationCrId,
+    'Very cute LGTM!',
+    true,
+    organizationId,
+    null
+  );
 
   /** Work Package 6 */
   const { workPackageWbsNumber: workPackage6WbsNumber, workPackage: workPackage6 } = await seedWorkPackage(
@@ -863,12 +900,12 @@ const performSeed: () => Promise<void> = async () => {
     '04/02/2023',
     7,
     [],
-    ['Get the materials we need', 'Cut the different fabrics', 'Sew the fabrics togehter', 'Stuff the plush'],
-    ['A finished plus'],
+    [],
     aang,
     WbsElementStatus.Active,
     katara.userId,
-    aang.userId
+    aang.userId,
+    organizationId
   );
 
   const workPackage6ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -880,10 +917,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage6.project.wbsElement.leadId!,
     workPackage6.project.wbsElement.managerId!,
     new Date('2023-07-31T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage6ActivationCrId, 'LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage6ActivationCrId, 'LGTM!', true, organizationId, null);
 
   /** Work Package 7 */
   const { workPackageWbsNumber: workPackage7WbsNumber, workPackage: workPackage7 } = await seedWorkPackage(
@@ -895,11 +933,11 @@ const performSeed: () => Promise<void> = async () => {
     3,
     [],
     [],
-    ['Passes quality inspection'],
     aang,
     WbsElementStatus.Active,
     katara.userId,
-    aang.userId
+    aang.userId,
+    organizationId
   );
 
   const workPackage7ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -911,10 +949,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage7.project.wbsElement.leadId!,
     workPackage7.project.wbsElement.managerId!,
     new Date('2023-10-09T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage7ActivationCrId, 'LFG', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage7ActivationCrId, 'LFG', true, organizationId, null);
 
   /**
    * Change Requests
@@ -925,7 +964,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1WbsNumber.projectNumber,
     workPackage1WbsNumber.workPackageNumber,
     CR_Type.STAGE_GATE,
-    true
+    true,
+    organizationId
   );
 
   const changeRequest2 = await ChangeRequestsService.createStandardChangeRequest(
@@ -953,10 +993,18 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 40
       }
     ],
+    organizationId,
     null,
     null
   );
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    changeRequest2.crId,
+    'What the hell Thomas',
+    false,
+    organizationId,
+    null
+  );
 
   await ChangeRequestsService.createActivationChangeRequest(
     thomasEmrax,
@@ -967,7 +1015,8 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     joeShmoe.userId,
     new Date('02/01/2023'),
-    true
+    true,
+    organizationId
   );
 
   /**
@@ -981,7 +1030,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -992,7 +1042,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1003,7 +1054,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId, joeBlow.userId]
+    [joeShmoe.userId, joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1015,7 +1067,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-02-17T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
-    [joeBlow.userId]
+    [joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1026,7 +1079,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId]
+    [thomasEmrax.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1037,7 +1091,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-20T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1048,7 +1103,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-05-19T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId]
+    [thomasEmrax.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1059,7 +1115,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.LOW,
     Task_Status.DONE,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1078,7 +1135,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2022-11-16T00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1089,7 +1147,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-03-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
-    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1100,7 +1159,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-04-01T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_BACKLOG,
-    []
+    [],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1111,7 +1171,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1122,7 +1183,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId, joeShmoe.userId]
+    [thomasEmrax.userId, joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1133,7 +1195,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-10-31T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.DONE,
-    [thomasEmrax.userId]
+    [thomasEmrax.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1144,7 +1207,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-05-01T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
-    [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId)
+    [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1155,7 +1219,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-02-29T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1166,7 +1231,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-03-17T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1177,7 +1243,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.DONE,
-    [joeBlow.userId]
+    [joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1188,7 +1255,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
-    [joeBlow.userId]
+    [joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1199,23 +1267,28 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   /**
    * Reimbursements
    */
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
-  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
-  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
+  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', organizationId);
+  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', organizationId);
+  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', organizationId);
 
   const vendors: Vendor[] = [vendor, vendor2, vendor3];
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
-    Club_Accounts.CASH,
-    Club_Accounts.BUDGET
-  ]);
+  const accountCode = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Equipment',
+    123,
+    true,
+    [Club_Accounts.CASH, Club_Accounts.BUDGET],
+    organizationId
+  );
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
@@ -1234,8 +1307,9 @@ const performSeed: () => Promise<void> = async () => {
         cost: 200000
       }
     ],
-    expenseType.expenseTypeId,
-    100
+    accountCode.accountCodeId,
+    100,
+    organizationId
   );
 
   await ReimbursementRequestService.createReimbursementRequest(
@@ -1255,23 +1329,29 @@ const performSeed: () => Promise<void> = async () => {
         cost: 10000
       }
     ],
-    expenseType.expenseTypeId,
-    200
+    accountCode.accountCodeId,
+    200,
+    organizationId
   );
 
   /**
    * Bill of Materials
    */
-  await ProjectsService.createManufacturer(thomasEmrax, 'Digikey');
-  await ProjectsService.createMaterialType('Resistor', thomasEmrax);
+  await BillOfMaterialsService.createManufacturer(thomasEmrax, 'Digikey', organizationId);
+  await BillOfMaterialsService.createMaterialType('Resistor', thomasEmrax, organizationId);
 
-  const assembly1 = await ProjectsService.createAssembly('1', thomasEmrax, {
-    carNumber: 1,
-    projectNumber: 1,
-    workPackageNumber: 0
-  });
+  const assembly1 = await BillOfMaterialsService.createAssembly(
+    '1',
+    thomasEmrax,
+    {
+      carNumber: 1,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    organizationId
+  );
 
-  await ProjectsService.createMaterial(
+  await BillOfMaterialsService.createMaterial(
     thomasEmrax,
     '10k Resistor',
     MaterialStatus.Ordered,
@@ -1290,7 +1370,7 @@ const performSeed: () => Promise<void> = async () => {
     'Here are some notes'
   );
 
-  await ProjectsService.createMaterial(
+  await BillOfMaterialsService.createMaterial(
     thomasEmrax,
     '20k Resistor',
     MaterialStatus.Ordered,
@@ -1325,7 +1405,8 @@ const performSeed: () => Promise<void> = async () => {
       projectNumber: 1,
       workPackageNumber: 0
     },
-    [3, 4, 5, 6, 7]
+    [3, 4, 5, 6, 7],
+    organizationId
   );
 
   await DesignReviewsService.editDesignReview(
@@ -1342,7 +1423,8 @@ const performSeed: () => Promise<void> = async () => {
     null,
     DesignReviewStatus.CONFIRMED,
     [1, 2],
-    [1, 2, 3, 4, 5, 6, 7]
+    [1, 2, 3, 4, 5, 6, 7],
+    organizationId
   );
 };
 

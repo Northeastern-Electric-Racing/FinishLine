@@ -7,7 +7,9 @@ export default class DescriptionBulletsController {
     try {
       const { descriptionId } = req.body;
       const user = await getCurrentUser(res);
-      const updatedDB = await DescriptionBulletsService.checkDescriptionBullet(user, descriptionId);
+      const { organizationId } = req.headers as { organizationId: string };
+      
+      const updatedDB = await DescriptionBulletsService.checkDescriptionBullet(user, descriptionId, organizationId);
       res.status(200).json(updatedDB);
     } catch (error: unknown) {
       next(error);

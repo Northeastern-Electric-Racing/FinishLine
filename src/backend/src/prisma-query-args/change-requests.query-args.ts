@@ -1,26 +1,32 @@
 import { Prisma } from '@prisma/client';
-import scopeCRArgs from './scope-change-requests.query-args';
+import { getScopeChangeRequestQueryArgs } from './scope-change-requests.query-args';
+import { getUserQueryArgs } from './user.query-args';
 
-export const changeRequestQueryArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
-  include: {
-    submitter: true,
-    wbsElement: true,
-    reviewer: true,
-    changes: {
-      where: {
-        wbsElement: {
-          dateDeleted: null
+export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
+
+export const getChangeRequestQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Change_RequestArgs>()({
+    include: {
+      submitter: getUserQueryArgs(organizationId),
+      wbsElement: true,
+      reviewer: getUserQueryArgs(organizationId),
+      changes: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
+          }
+        },
+        include: {
+          implementer: getUserQueryArgs(organizationId),
+          wbsElement: true
         }
       },
-      include: {
-        implementer: true,
-        wbsElement: true
-      }
-    },
-    scopeChangeRequest: scopeCRArgs,
-    stageGateChangeRequest: true,
-    activationChangeRequest: { include: { projectLead: true, projectManager: true } },
-    deletedBy: true,
-    requestedReviewers: true
-  }
-});
+      scopeChangeRequest: getScopeChangeRequestQueryArgs(organizationId),
+      stageGateChangeRequest: true,
+      activationChangeRequest: {
+        include: { lead: getUserQueryArgs(organizationId), manager: getUserQueryArgs(organizationId) }
+      },
+      deletedBy: getUserQueryArgs(organizationId),
+      requestedReviewers: getUserQueryArgs(organizationId)
+    }
+  });

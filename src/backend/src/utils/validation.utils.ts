@@ -155,3 +155,33 @@ export const isDesignReviewStatus = (validationObject: ValidationChain): Validat
       Design_Review_Status.UNCONFIRMED
     ]);
 };
+
+export const descriptionBulletsValidators = [
+  body('descriptionBullets').isArray(),
+  nonEmptyString(body('descriptionBullets.*.detail')),
+  nonEmptyString(body('descriptionBullets.*.type')),
+  body('descriptionBullets.*.id').isInt({ min: -1 }).not().isString()
+];
+
+export const blockedByValidators = [
+  body('blockedBy').isArray(),
+  intMinZero(body('blockedBy.*.carNumber')),
+  intMinZero(body('blockedBy.*.projectNumber')),
+  intMinZero(body('blockedBy.*.workPackageNumber'))
+];
+
+export const linkValidators = [
+  body('links').isArray(),
+  nonEmptyString(body('links.*.url')),
+  nonEmptyString(body('links.*.linkTypeName'))
+];
+
+export const projectValidators = [
+  intMinZero(body('crId')),
+  nonEmptyString(body('name')),
+  nonEmptyString(body('summary')),
+  ...descriptionBulletsValidators,
+  ...linkValidators,
+  intMinZero(body('projectLeadId').optional()),
+  intMinZero(body('projectManagerId').optional())
+];
