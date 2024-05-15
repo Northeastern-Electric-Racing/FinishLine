@@ -169,7 +169,6 @@ export const useCreateLinkType = () => {
   );
 };
 
-
 /**
  * Custom React Hook to edit a LinkType.
  *

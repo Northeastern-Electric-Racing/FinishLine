@@ -21,14 +21,14 @@ export const WorkPackageTemplateSection: React.FC<WorkPackageTemplateProps> = ({
             onClick={() => {
               setCurrentWorkPackageTemplate(template);
             }}
-            
             sx={{
               width: '15em',
               height: '6em',
               borderRadius: '10px',
               backgroundColor: 'transparent',
               border: 1,
-              borderColor: currentWorkPackageTemplate?.workPackageTemplateId === template.workPackageTemplateId ? 'red' : 'gray',
+              borderColor:
+                currentWorkPackageTemplate?.workPackageTemplateId === template.workPackageTemplateId ? 'red' : 'gray',
               borderWidth: 3,
               padding: 1,
               paddingLeft: 2,
