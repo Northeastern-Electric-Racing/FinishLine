@@ -1,6 +1,6 @@
 import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview, calculateEndDate } from 'shared';
 import { Box } from '@mui/system';
-import { Typography } from '@mui/material';
+import { Link, List, ListItem, Typography } from '@mui/material';
 import {
   ChangeBullet,
   PotentialChangeType,
@@ -64,11 +64,25 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
       );
     } else {
       return (
-        <ul style={{ paddingLeft: '23px', marginBottom: '3px', marginTop: '0px' }}>
-          {detailText.map((bullet) => (
-            <li>{bullet}</li>
-          ))}
-        </ul>
+        <List sx={{ listStyleType: 'disc', pl: 4 }}>
+          {detailText.map((bullet) => {
+            const url = bullet.includes('http') ? bullet.split(': ')[1] : undefined;
+            return (
+              <ListItem sx={{ display: 'list-item' }}>
+                {url ? (
+                  <>
+                    {bullet.split(': ')[0]}:{' '}
+                    <Link color={'#ffff'} href={url}>
+                      {bullet.split(': ')[1]}
+                    </Link>
+                  </>
+                ) : (
+                  bullet
+                )}
+              </ListItem>
+            );
+          })}
+        </List>
       );
     }
   };
