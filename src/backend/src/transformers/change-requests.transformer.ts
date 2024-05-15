@@ -40,7 +40,7 @@ const projectProposedChangesTransformer = (
     teams: projectProposedChanges.teams.map(teamTransformer),
     carNumber: projectProposedChanges.car?.wbsElement.carNumber ?? undefined
   };
-};
+};+
 
 const workPackageProposedChangesTransformer = (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>

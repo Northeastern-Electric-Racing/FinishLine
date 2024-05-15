@@ -7,7 +7,7 @@ export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
       const crId: number = parseInt(req.params.crId);
-      const { organizationId } = req.cookies;
+      const { organizationId } = req.headers as { organizationId: string };
       const cr = await ChangeRequestsService.getChangeRequestByID(crId, organizationId);
       return res.status(200).json(cr);
     } catch (error: unknown) {
