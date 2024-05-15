@@ -120,6 +120,7 @@ const CalendarPage = () => {
       )}
       <PageLayout
         title="Calendar"
+        headerRight={<Box marginLeft={1}>{unconfirmedDRSDropdown}</Box>}
         chips={
           <Stack direction="row" spacing={4} alignItems="center" marginLeft={5}>
             <TodayButton displayMonth={displayMonthYear} setDisplayMonth={setDisplayMonthYear} />
