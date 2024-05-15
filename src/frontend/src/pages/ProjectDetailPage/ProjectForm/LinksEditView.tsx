@@ -8,6 +8,7 @@ import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { ProjectFormInput } from './ProjectForm';
 import { Box } from '@mui/system';
 import { NERButton } from '../../../components/NERButton';
+import { useEffect } from 'react';
 
 const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
@@ -17,6 +18,15 @@ const LinksEditView: React.FC<{
   remove: UseFieldArrayRemove;
 }> = ({ ls, register, append, remove, watch }) => {
   const { isLoading, isError, error, data: linkTypes } = useAllLinkTypes();
+
+  useEffect(() => {
+    requiredLinkTypeNames.forEach((linkTypeName) => {
+      if (links.some((link) => link.linkTypeName === linkTypeName)) return;
+      append({ linkId: '-1', url: '', linkTypeName });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkTypes]);
+
   if (isLoading || !linkTypes) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
@@ -36,8 +46,6 @@ const LinksEditView: React.FC<{
     );
   };
 
-  const availableOptions = linkTypes.filter((linkType) => !currentLinkTypeNames.includes(linkType.name));
-
   return (
     <>
       {ls.map((_element, i) => {
@@ -50,7 +58,7 @@ const LinksEditView: React.FC<{
               value={watch(`links.${i}.linkTypeName`)}
             >
               {linkTypes.map((linkType) => (
-                <MenuItem key={linkType.name} value={linkType.name} disabled={!availableOptions.includes(linkType)}>
+                <MenuItem key={linkType.name} value={linkType.name}>
                   {linkType.name}
                 </MenuItem>
               ))}
@@ -66,16 +74,14 @@ const LinksEditView: React.FC<{
           </Box>
         );
       })}
-      {availableOptions.length > 0 && (
-        <NERButton
-          variant="contained"
-          color="primary"
-          onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
-          sx={{ my: 2, width: 'max-content' }}
-        >
-          + Add New Link
-        </NERButton>
-      )}
+      <NERButton
+        variant="contained"
+        color="primary"
+        onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
+        sx={{ my: 2, width: 'max-content' }}
+      >
+        + Add Link
+      </NERButton>
     </>
   );
 };
