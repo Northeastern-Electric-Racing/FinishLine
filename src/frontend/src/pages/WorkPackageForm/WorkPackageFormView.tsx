@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
+import { User, validateWBS, WbsElement, wbsPipe, WorkPackageTemplate } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
@@ -29,6 +29,12 @@ import { routes } from '../../utils/routes';
 import HelpIcon from '@mui/icons-material/Help';
 import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
+import { useAllWorkPackageTemplates } from '../../hooks/work-packages.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import { WorkPackageTemplateSection } from './WorkPackageTemplateDetails';
+import { Work } from '@mui/icons-material';
+import { template } from '@babel/core';
+import exp from 'constants';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -103,6 +109,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   );
   const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate | null>(null);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
 
@@ -119,6 +126,75 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   } = useFieldArray({ control, name: 'deliverables' });
 
   const { userId } = user;
+  const {
+    data: workPackageTemplates,
+    isLoading: workPackageTemplateisLoading,
+    isError: workPackageTemplateisError,
+    error: workPackageTemplateError
+  } = useAllWorkPackageTemplates();
+  if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
+
+  const testWorkPackageTemplate: WorkPackageTemplate[] = [
+    {
+      workPackageTemplateId: '1',
+      templateName: 'Test Template',
+      templateNotes: 'This is a test template',
+      workPackageName: 'Test Package',
+      stage: WorkPackageStage.Design,
+      duration: 10,
+      blockedBy: [],
+      expectedActivities: ['Test Activity'],
+      deliverables: ['Test Deliverable'],
+      dateCreated: new Date(),
+      userCreated: user,
+      userCreatedId: userId
+    },
+
+    {
+      workPackageTemplateId: '2',
+      templateName: 'Test Template',
+      templateNotes: 'This is a test template',
+      workPackageName: 'Test Package',
+      stage: WorkPackageStage.Design,
+      duration: 10,
+      blockedBy: [],
+      expectedActivities: ['Test Activity'],
+      deliverables: ['Test Deliverable'],
+      dateCreated: new Date(),
+      userCreated: user,
+      userCreatedId: userId
+    },
+
+    {
+      workPackageTemplateId: '3',
+      templateName: 'Test Template',
+      templateNotes: 'This is a test template',
+      workPackageName: 'Test Package',
+      stage: WorkPackageStage.Design,
+      duration: 10,
+      blockedBy: [],
+      expectedActivities: ['Test Activity'],
+      deliverables: ['Test Deliverable'],
+      dateCreated: new Date(),
+      userCreated: user,
+      userCreatedId: userId
+    },
+
+    {
+      workPackageTemplateId: '4',
+      templateName: 'Test Template',
+      templateNotes: 'This is a test template',
+      workPackageName: 'Test Package',
+      stage: WorkPackageStage.Design,
+      duration: 10,
+      blockedBy: [],
+      expectedActivities: ['Test Activity'],
+      deliverables: ['Test Deliverable'],
+      dateCreated: new Date(),
+      userCreated: user,
+      userCreatedId: userId
+    }
+  ];
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage } = data;
@@ -226,6 +302,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           </Box>
         }
       >
+        {
+          <WorkPackageTemplateSection
+            workPackageTemplates={testWorkPackageTemplate}
+            currentWorkPackageTemplate={currentWorkPackageTemplate}
+            setCurrentWorkPackageTemplate={setCurrentWorkPackageTemplate}
+          />
+        }
         <WorkPackageFormDetails
           control={control}
           errors={errors}

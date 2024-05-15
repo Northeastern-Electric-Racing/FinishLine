@@ -169,15 +169,6 @@ export const useCreateLinkType = () => {
   );
 };
 
-/**
- * Custom React Hook to get all workpackage templates
- */
-export const useAllWorkPackageTemplates = () => {
-  return useQuery<WorkPackageTemplate[], Error>(['work package templates'], async () => {
-    const { data } = await getAllWorkPackageTemplates();
-    return data;
-  });
-};
 
 /**
  * Custom React Hook to edit a LinkType.
