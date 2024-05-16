@@ -11,6 +11,7 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
           organizationId
         }
       },
+      organizations: true,
       teamsAsLead: {
         where: {
           organizationId

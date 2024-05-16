@@ -9,7 +9,6 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import { useAuth } from '../hooks/auth.hooks';
 
 export const UserContext = createContext<AuthenticatedUser | undefined>(undefined);
-export const OrganizationContext = createContext<string | undefined>(undefined);
 
 const AppContextUser: React.FC = (props) => {
   const auth = useAuth();

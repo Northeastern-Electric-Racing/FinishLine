@@ -21,7 +21,8 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<AuthUserQueryA
     isFinance: isAuthUserOnFinance(user),
     isHeadOfFinance: isAuthUserHeadOfFinance(user),
     isAtLeastFinanceLead: isAuthUserAtLeastLeadForFinance(user),
-    changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId)
+    changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
+    organizations: user.organizations.map((organization) => organization.organizationId)
   };
 };
 

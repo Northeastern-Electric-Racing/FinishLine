@@ -4,6 +4,9 @@
  */
 
 import { Prisma, Theme } from '@prisma/client';
+import { RoleEnum } from 'shared';
+import prisma from '../prisma';
+import { getUserQueryArgs } from '../../prisma-query-args/user.query-args';
 
 const thomasEmrax: Prisma.UserCreateInput = {
   firstName: 'Thomas',
@@ -69,64 +72,56 @@ const lexLuther: Prisma.UserCreateInput = {
   firstName: 'Alexander',
   lastName: 'Luther',
   email: 'lexluther@justiceleague.com',
-  googleAuthId: 'hjkklo',
-  
+  googleAuthId: 'hjkklo'
 };
 
 const hawkgirl: Prisma.UserCreateInput = {
   firstName: 'Shiera',
   lastName: 'Hall',
   email: 'hawkgirl@justiceleague.com',
-  googleAuthId: 'bhuujki',
-  
+  googleAuthId: 'bhuujki'
 };
 
 const elongatedMan: Prisma.UserCreateInput = {
   firstName: 'Randolph',
   lastName: 'Dibney',
   email: 'elongatedmangit @justiceleague.com',
-  googleAuthId: 'joigiug',
-  
+  googleAuthId: 'joigiug'
 };
 
 const zatanna: Prisma.UserCreateInput = {
   firstName: 'Zatanna',
   lastName: 'Zatara',
   email: 'zatanna@justiceleague.com',
-  googleAuthId: 'cawwww',
-  
+  googleAuthId: 'cawwww'
 };
 
 const phantomStranger: Prisma.UserCreateInput = {
   firstName: 'Judas',
   lastName: 'Iscariot',
   email: 'phantomstranger@justiceleague.com',
-  googleAuthId: 'bnhjiuy',
-  
+  googleAuthId: 'bnhjiuy'
 };
 
 const redTornado: Prisma.UserCreateInput = {
   firstName: 'Red',
   lastName: 'Tornado',
   email: 'redtornado@justiceleague.com',
-  googleAuthId: 'vbnhught',
-  
+  googleAuthId: 'vbnhught'
 };
 
 const firestorm: Prisma.UserCreateInput = {
   firstName: 'Ronnie',
   lastName: 'Raymond',
   email: 'firestorm@justiceleague.com',
-  googleAuthId: 'fghttyu',
-  
+  googleAuthId: 'fghttyu'
 };
 
 const hankHeywood: Prisma.UserCreateInput = {
   firstName: 'Hank',
   lastName: 'Heywood III',
   email: 'hankheywood@justiceleague.com',
-  googleAuthId: 'hudhsgf',
-  
+  googleAuthId: 'hudhsgf'
 };
 
 const flash: Prisma.UserCreateInput = {
@@ -134,8 +129,7 @@ const flash: Prisma.UserCreateInput = {
   lastName: 'Allen',
   googleAuthId: 'flaaaash',
   email: 'flash@starlabs.edu',
-  emailId: 'barry.allen',
-  
+  emailId: 'barry.allen'
 };
 
 const aquaman: Prisma.UserCreateInput = {
@@ -143,15 +137,14 @@ const aquaman: Prisma.UserCreateInput = {
   lastName: 'Curry',
   googleAuthId: 'fish',
   email: 'aquaman@gmail.com',
-  emailId: 'thefishman',
-  
+  emailId: 'thefishman'
 };
 
 const robin: Prisma.UserCreateInput = {
   firstName: 'Damien',
   lastName: 'Wayne',
   googleAuthId: 'robin',
-  email: 'robin4@brucewayne.com',
+  email: 'robin4@brucewayne.com'
 };
 
 const batman: Prisma.UserCreateInput = {
@@ -185,500 +178,448 @@ const cyborg: Prisma.UserCreateInput = {
   firstName: 'Vic',
   lastName: 'Stone',
   email: 'cyborg@justiceleague.com',
-  googleAuthId: 'beepboop',
+  googleAuthId: 'beepboop'
 };
 
 const martianManhunter: Prisma.UserCreateInput = {
   firstName: `J'onn`,
   lastName: `J'onnz`,
   email: 'martian.manhunter@justiceleague.com',
-  googleAuthId: 'martian',
-  
+  googleAuthId: 'martian'
 };
 
 const greenLantern: Prisma.UserCreateInput = {
   firstName: 'Hal',
   lastName: 'Jordan',
   email: 'greenlantern1@justiceleague.com',
-  googleAuthId: 'green',
-  
+  googleAuthId: 'green'
 };
 
 const hawkMan: Prisma.UserCreateInput = {
   firstName: 'Hawk',
   lastName: 'Man',
   email: 'hawkman@justiceleague.com',
-  googleAuthId: 'cawwwww',
-  
+  googleAuthId: 'cawwwww'
 };
 
 const hawkWoman: Prisma.UserCreateInput = {
   firstName: 'Hawk',
   lastName: 'Woman',
   email: 'hawkwoman@justiceleague.com',
-  googleAuthId: 'cacawwwww',
-  
+  googleAuthId: 'cacawwwww'
 };
 
 const nightwing: Prisma.UserCreateInput = {
   firstName: 'Dick',
   lastName: 'Grayson',
   email: 'robin1@brucewayne.com',
-  googleAuthId: 'robin1',
-  
+  googleAuthId: 'robin1'
 };
 
 const brandonHyde: Prisma.UserCreateInput = {
   firstName: 'Brandon',
   lastName: 'Hyde',
   email: 'brandon.hyde@orioles.com',
-  googleAuthId: 'letsgoOs',
-  
+  googleAuthId: 'letsgoOs'
 };
 
 const calRipken: Prisma.UserCreateInput = {
   firstName: 'Cal',
   lastName: 'Ripken',
   email: 'cal.ripken@orioles.com',
-  googleAuthId: 'ooooos',
-  
+  googleAuthId: 'ooooos'
 };
 
 const adleyRutschman: Prisma.UserCreateInput = {
   firstName: 'Adley',
   lastName: 'Rutschman',
   email: 'adley.rutschman@orioles.com',
-  googleAuthId: 'catchin',
-  
+  googleAuthId: 'catchin'
 };
 
 const johnHarbaugh: Prisma.UserCreateInput = {
   firstName: 'John',
   lastName: 'Harbaugh',
   email: 'john.harbaugh@ravens.com',
-  googleAuthId: 'hcjh',
+  googleAuthId: 'hcjh'
 };
 
 const lamarJackson: Prisma.UserCreateInput = {
   firstName: 'Lamar',
   lastName: 'Jackson',
   email: 'lamar.jackson@ravens.com',
-  googleAuthId: 'lj8',
-  
+  googleAuthId: 'lj8'
 };
 
 const nezamJazayeri: Prisma.UserCreateInput = {
   firstName: 'Nezam',
   lastName: 'Jazayeri',
   email: 'nezam.jazayeri@steakman.com',
-  googleAuthId: 'strip',
+  googleAuthId: 'strip'
 };
 
 const ryanHowe: Prisma.UserCreateInput = {
   firstName: 'Ryan',
   lastName: 'Howe',
   email: 'howeryan@smoothie.com',
-  googleAuthId: 'ribeye',
+  googleAuthId: 'ribeye'
 };
 
 const jkDobbins: Prisma.UserCreateInput = {
   firstName: 'J.K',
   lastName: 'Dobbins',
   email: 'Dobbins.j.k@ravens.com',
-  googleAuthId: 'ravensRB',
-  
+  googleAuthId: 'ravensRB'
 };
 
 const davidOjabo: Prisma.UserCreateInput = {
   firstName: 'David',
   lastName: 'Ojabo',
   email: 'Ojabo.D@ravens.com',
-  googleAuthId: 'ravensOLB',
-  
+  googleAuthId: 'ravensOLB'
 };
 
 const markAndrews: Prisma.UserCreateInput = {
   firstName: 'Mark',
   lastName: 'Andrews',
   email: 'Andrews.MD@ravens.com',
-  googleAuthId: 'ravensTE',
-  
+  googleAuthId: 'ravensTE'
 };
 
 const odellBeckham: Prisma.UserCreateInput = {
   firstName: 'Odell',
   lastName: 'Beckham',
   email: 'Beckham.O@ravens.com',
-  googleAuthId: 'ravensWR',
-  
+  googleAuthId: 'ravensWR'
 };
 
 const chrisHorton: Prisma.UserCreateInput = {
   firstName: 'Chris',
   lastName: 'Horton',
   email: 'Horton.C@ravens.com',
-  googleAuthId: 'ravensSTC',
-  
+  googleAuthId: 'ravensSTC'
 };
 
 const mikeMacdonald: Prisma.UserCreateInput = {
   firstName: 'Mike',
   lastName: 'Macdonald',
   email: 'Macdonald.M@ravens.com',
-  googleAuthId: 'ravensDC',
-  
+  googleAuthId: 'ravensDC'
 };
 
 const toddMonken: Prisma.UserCreateInput = {
   firstName: 'Todd',
   lastName: 'Monken',
   email: 'Monken.T@ravens.com',
-  googleAuthId: 'ravensOC',
-  
+  googleAuthId: 'ravensOC'
 };
 
 const stephenBisciotti: Prisma.UserCreateInput = {
   firstName: 'Stephen',
   lastName: 'Bisciotti',
   email: 'Bisciotti.S@ravens.com',
-  googleAuthId: 'ravensOwner',
+  googleAuthId: 'ravensOwner'
 };
 
 const anthonyBernardi: Prisma.UserCreateInput = {
   firstName: 'Anthony',
   lastName: 'Bernadi',
   email: 'bernardi.twan@leavingus.com',
-  googleAuthId: 'wagyu',
+  googleAuthId: 'wagyu'
 };
 
 const reidChandler: Prisma.UserCreateInput = {
   firstName: 'Reid',
   lastName: 'Chandler',
   email: 'rchandler@frontend.com',
-  googleAuthId: 'flank',
+  googleAuthId: 'flank'
 };
 
 const aang: Prisma.UserCreateInput = {
   firstName: 'Aang',
   lastName: 'Airbender',
   googleAuthId: 'aang',
-  email: 'aang@avatarBenders.com',
+  email: 'aang@avatarBenders.com'
 };
 
 const katara: Prisma.UserCreateInput = {
   firstName: 'Katara',
   lastName: 'Waterbender',
   googleAuthId: 'katara',
-  email: 'katara@avatarBenders.com',
-  
+  email: 'katara@avatarBenders.com'
 };
 
 const sokka: Prisma.UserCreateInput = {
   firstName: 'Sokka',
   lastName: 'Warrior',
   googleAuthId: 'sokka',
-  email: 'sokka@avatarBenders.com',
-  
+  email: 'sokka@avatarBenders.com'
 };
 
 const toph: Prisma.UserCreateInput = {
   firstName: 'Toph',
   lastName: 'Beifong',
   googleAuthId: 'toph',
-  email: 'toph@avatarBenders.com',
-  
+  email: 'toph@avatarBenders.com'
 };
 
 const zuko: Prisma.UserCreateInput = {
   firstName: 'Zuko',
   lastName: 'Firebender',
   googleAuthId: 'zuko',
-  email: 'zuko@avatarBenders.com',
-  
+  email: 'zuko@avatarBenders.com'
 };
 
 const iroh: Prisma.UserCreateInput = {
   firstName: 'Uncle',
   lastName: 'Iroh',
   googleAuthId: 'iroh',
-  email: 'uncleIroh@avatarBenders.com',
-  
+  email: 'uncleIroh@avatarBenders.com'
 };
 
 const azula: Prisma.UserCreateInput = {
   firstName: 'Azula',
   lastName: 'Firebender',
   googleAuthId: 'azula',
-  email: 'azula@avatarBenders.com',
-  
+  email: 'azula@avatarBenders.com'
 };
 
 const appa: Prisma.UserCreateInput = {
   firstName: 'Appa',
   lastName: 'Skybison',
   googleAuthId: 'appa',
-  email: 'appa@avatarBenders.com',
-  
+  email: 'appa@avatarBenders.com'
 };
 
 const momo: Prisma.UserCreateInput = {
   firstName: 'Momo',
   lastName: 'Monkey',
   googleAuthId: 'momo',
-  email: 'momo@avatarBenders.com',
-  
+  email: 'momo@avatarBenders.com'
 };
 
 const suki: Prisma.UserCreateInput = {
   firstName: 'Suki',
   lastName: '-',
   googleAuthId: 'suki',
-  email: 'suki@avatarBenders.com',
-  
+  email: 'suki@avatarBenders.com'
 };
 
 const yue: Prisma.UserCreateInput = {
   firstName: 'Princess',
   lastName: 'Yue',
   googleAuthId: 'yue',
-  email: 'princessYue@avatarBenders.com',
-  
+  email: 'princessYue@avatarBenders.com'
 };
 
 const bumi: Prisma.UserCreateInput = {
   firstName: 'King',
   lastName: 'Bumi',
   googleAuthId: 'bumi',
-  email: 'kingBumi@avatarBenders.com',
-  
+  email: 'kingBumi@avatarBenders.com'
 };
 
 const cristianoRonaldo: Prisma.UserCreateInput = {
   firstName: 'Cristiano',
   lastName: 'Ronaldo',
   email: 'cronaldo@united.com',
-  googleAuthId: 'Winger',
+  googleAuthId: 'Winger'
 };
 
 const thierryHenry: Prisma.UserCreateInput = {
   firstName: 'Thierry',
   lastName: 'Henry',
   email: 'thenry@arsenal.com',
-  googleAuthId: 'InvincibleStriker',
-  
+  googleAuthId: 'InvincibleStriker'
 };
 
 const frankLampard: Prisma.UserCreateInput = {
   firstName: 'Frank',
   lastName: 'Lampard',
   email: 'flampard@chelsea.com',
-  googleAuthId: 'MidfieldMaestro',
-  
+  googleAuthId: 'MidfieldMaestro'
 };
 
 const stevenGerrard: Prisma.UserCreateInput = {
   firstName: 'Steven',
   lastName: 'Gerrard',
   email: 'sgerrard@liverpool.com',
-  googleAuthId: 'RedCaptain',
-  
+  googleAuthId: 'RedCaptain'
 };
 
 const ryanGiggs: Prisma.UserCreateInput = {
   firstName: 'Ryan',
   lastName: 'Giggs',
   email: 'rgiggs@united.com',
-  googleAuthId: 'WingWizard',
-  
+  googleAuthId: 'WingWizard'
 };
 
 const alanShearer: Prisma.UserCreateInput = {
   firstName: 'Alan',
   lastName: 'Shearer',
   email: 'ashearer@blackburn.com',
-  googleAuthId: 'GoalMachine',
-  
+  googleAuthId: 'GoalMachine'
 };
 
 const paulScholes: Prisma.UserCreateInput = {
   firstName: 'Paul',
   lastName: 'Scholes',
   email: 'pscholes@united.com',
-  googleAuthId: 'PassMaster',
-  
+  googleAuthId: 'PassMaster'
 };
 
 const ericCantona: Prisma.UserCreateInput = {
   firstName: 'Eric',
   lastName: 'Cantona',
   email: 'ecantona@united.com',
-  googleAuthId: 'KingEric',
-  
+  googleAuthId: 'KingEric'
 };
 
 const didierDrogba: Prisma.UserCreateInput = {
   firstName: 'Didier',
   lastName: 'Drogba',
   email: 'ddrogba@chelsea.com',
-  googleAuthId: 'ClutchStriker',
-  
+  googleAuthId: 'ClutchStriker'
 };
 
 const patrickVieira: Prisma.UserCreateInput = {
   firstName: 'Patrick',
   lastName: 'Vieira',
   email: 'pvieira@arsenal.com',
-  googleAuthId: 'MidfieldAnchor',
-  
+  googleAuthId: 'MidfieldAnchor'
 };
 
 const johnTerry: Prisma.UserCreateInput = {
   firstName: 'John',
   lastName: 'Terry',
   email: 'jterry@chelsea.com',
-  googleAuthId: 'DefensiveRock',
-  
+  googleAuthId: 'DefensiveRock'
 };
 
 const dennisBergkamp: Prisma.UserCreateInput = {
   firstName: 'Dennis',
   lastName: 'Bergkamp',
   email: 'dbergkamp@arsenal.com',
-  googleAuthId: 'DutchMaster',
-  
+  googleAuthId: 'DutchMaster'
 };
 
 const brooksRobinson: Prisma.UserCreateInput = {
   firstName: 'Brooks',
   lastName: 'Robinson',
   email: 'the.brooksters@orioles.com',
-  googleAuthId: 'fries',
+  googleAuthId: 'fries'
 };
 
 const jimPalmer: Prisma.UserCreateInput = {
   firstName: 'Jim',
   lastName: 'Palmer',
   email: 'jimmy.palms@orioles.com',
-  googleAuthId: 'burger',
-  
+  googleAuthId: 'burger'
 };
 
 const eddieMurray: Prisma.UserCreateInput = {
   firstName: 'Eddie',
   lastName: 'Murray',
   email: 'eddie.murray@orioles.com',
-  googleAuthId: 'hotdog',
+  googleAuthId: 'hotdog'
 };
 
 const georgeSisler: Prisma.UserCreateInput = {
   firstName: 'George',
   lastName: 'Sisler',
   email: 'g.sisler@orioles.com',
-  googleAuthId: 'popcorn',
-  
+  googleAuthId: 'popcorn'
 };
 
 const urbanShocker: Prisma.UserCreateInput = {
   firstName: 'Urban',
   lastName: 'Shocker',
   email: 'shock.the.game@orioles.com',
-  googleAuthId: 'shocking',
-  
+  googleAuthId: 'shocking'
 };
 
 const kenWilliams: Prisma.UserCreateInput = {
   firstName: 'Ken',
   lastName: 'Williams',
   email: 'justKen@orioles.com',
-  googleAuthId: 'kenough',
-  
+  googleAuthId: 'kenough'
 };
 
 const boogPowell: Prisma.UserCreateInput = {
   firstName: 'Boog',
   lastName: 'Powell',
   email: 'boogs@orioles.com',
-  googleAuthId: 'soda',
-  
+  googleAuthId: 'soda'
 };
 
 const mannyMachado: Prisma.UserCreateInput = {
   firstName: 'Manny',
   lastName: 'Machado',
   email: 'machoman@orioles.com',
-  googleAuthId: 'macho',
+  googleAuthId: 'macho'
 };
 
 const babyDollJacobson: Prisma.UserCreateInput = {
   firstName: 'Baby Doll',
   lastName: 'Jacobson',
   email: 'bbydoll@orioles.com',
-  googleAuthId: 'babes',
-  
+  googleAuthId: 'babes'
 };
 
 const frostBite: Prisma.UserCreateInput = {
   firstName: 'Frost',
   lastName: 'Bite',
   googleAuthId: 'husky1',
-  email: 'frostbite@northeastern.edu',
-  
+  email: 'frostbite@northeastern.edu'
 };
 
 const winter: Prisma.UserCreateInput = {
   firstName: 'Winter',
   lastName: 'Warrior',
   googleAuthId: 'husky2',
-  email: 'winterwarrior@northeastern.edu',
-  
+  email: 'winterwarrior@northeastern.edu'
 };
 
 const paws: Prisma.UserCreateInput = {
   firstName: 'Paws',
   lastName: 'The-Dog',
   googleAuthId: 'husky3',
-  email: 'paws@northeastern.edu',
-  
+  email: 'paws@northeastern.edu'
 };
 
 const snowPaws: Prisma.UserCreateInput = {
   firstName: 'Snow',
   lastName: 'Paws',
   googleAuthId: 'husky4',
-  email: 'snowpaws@northeastern.edu',
-  
+  email: 'snowpaws@northeastern.edu'
 };
 
 const whiteTail: Prisma.UserCreateInput = {
   firstName: 'White',
   lastName: 'Tail',
   googleAuthId: 'husky5',
-  email: 'whitetail@northeastern.edu',
-  
+  email: 'whitetail@northeastern.edu'
 };
 
 const husky: Prisma.UserCreateInput = {
   firstName: 'Husky',
   lastName: 'Dog',
   googleAuthId: 'husky6',
-  email: 'huskydog@northeastern.edu',
-  
+  email: 'huskydog@northeastern.edu'
 };
 
 const howler: Prisma.UserCreateInput = {
   firstName: 'Howler',
   lastName: 'Husky',
   googleAuthId: 'husky7',
-  email: 'howler@northeastern.edu',
-  
+  email: 'howler@northeastern.edu'
 };
 
 const snowBite: Prisma.UserCreateInput = {
   firstName: 'Snow',
   lastName: 'Bite',
   googleAuthId: 'husky8',
-  email: 'SnowBite@northeastern.edu',
-  
+  email: 'SnowBite@northeastern.edu'
 };
 
 const zayFlowers: Prisma.UserCreateInput = {
@@ -686,8 +627,7 @@ const zayFlowers: Prisma.UserCreateInput = {
   lastName: 'Flowers',
   googleAuthId: '8172979',
   email: 'flowers.za@ravens.com',
-  emailId: 'flowers.za',
-  
+  emailId: 'flowers.za'
 };
 
 const patrickRicard: Prisma.UserCreateInput = {
@@ -695,8 +635,7 @@ const patrickRicard: Prisma.UserCreateInput = {
   lastName: 'Ricard',
   googleAuthId: '02894828',
   email: 'ricard.pat@ravens.com',
-  emailId: 'ricard.pat',
-  
+  emailId: 'ricard.pat'
 };
 
 const patrickQueen: Prisma.UserCreateInput = {
@@ -704,8 +643,7 @@ const patrickQueen: Prisma.UserCreateInput = {
   lastName: 'Queen',
   googleAuthId: '8681663',
   email: 'queen.pat@ravens.com',
-  emailId: 'queen.pat',
-  
+  emailId: 'queen.pat'
 };
 
 const jadeveonClowney: Prisma.UserCreateInput = {
@@ -713,8 +651,7 @@ const jadeveonClowney: Prisma.UserCreateInput = {
   lastName: 'Clowney',
   googleAuthId: '9478927',
   email: 'clowney.jadev@ravens.com',
-  emailId: 'clowney.jadev',
-  
+  emailId: 'clowney.jadev'
 };
 
 const marlonHumphrey: Prisma.UserCreateInput = {
@@ -722,8 +659,7 @@ const marlonHumphrey: Prisma.UserCreateInput = {
   lastName: 'Humphrey',
   googleAuthId: '014629n',
   email: 'humphrey.marl@ravens.com',
-  emailId: 'humphrey.marl',
-  
+  emailId: 'humphrey.marl'
 };
 
 const kyleHamilton: Prisma.UserCreateInput = {
@@ -731,8 +667,7 @@ const kyleHamilton: Prisma.UserCreateInput = {
   lastName: 'Hamilton',
   googleAuthId: '937299j',
   email: 'hamilton.ky@ravens.com',
-  emailId: 'hamilton.ky',
-  
+  emailId: 'hamilton.ky'
 };
 
 const marcusWilliams: Prisma.UserCreateInput = {
@@ -740,8 +675,7 @@ const marcusWilliams: Prisma.UserCreateInput = {
   lastName: 'Williams',
   googleAuthId: '018383k',
   email: 'williams.marc@ravens.com',
-  emailId: 'williams.marc',
-  
+  emailId: 'williams.marc'
 };
 
 const roquanSmith: Prisma.UserCreateInput = {
@@ -749,8 +683,7 @@ const roquanSmith: Prisma.UserCreateInput = {
   lastName: 'Smith',
   googleAuthId: '0193739n',
   email: 'smith.roqu@ravens.com',
-  emailId: 'smith.roqu',
-  
+  emailId: 'smith.roqu'
 };
 
 const justinTucker: Prisma.UserCreateInput = {
@@ -758,8 +691,7 @@ const justinTucker: Prisma.UserCreateInput = {
   lastName: 'Tucker',
   googleAuthId: '018392w',
   email: 'tucker.just@ravens.com',
-  emailId: 'tucker.just',
-  
+  emailId: 'tucker.just'
 };
 
 const monopolyMan: Prisma.UserCreateInput = {
@@ -805,40 +737,35 @@ const johnBoddy: Prisma.UserCreateInput = {
   firstName: 'John',
   lastName: 'Boddy',
   googleAuthId: 'deadmillionaire',
-  email: 'johnboddy@clue.com',
-  
+  email: 'johnboddy@clue.com'
 };
 
 const villager: Prisma.UserCreateInput = {
   firstName: 'Minecraft',
   lastName: 'Villager',
   googleAuthId: 'villager',
-  email: 'hrmmm@minecraft.com',
-  
+  email: 'hrmmm@minecraft.com'
 };
 
 const francis: Prisma.UserCreateInput = {
   firstName: 'Francis',
   lastName: 'Francis',
   googleAuthId: 'francis',
-  email: 'ffrancis@puppyco.com',
-  
+  email: 'ffrancis@puppyco.com'
 };
 
 const victorPerkins: Prisma.UserCreateInput = {
   firstName: 'Victor',
   lastName: 'Perkins',
   googleAuthId: 'victorperkins',
-  email: 'mysonstolethemoon@evilbank.com',
-  
+  email: 'mysonstolethemoon@evilbank.com'
 };
 
 const kingJulian: Prisma.UserCreateInput = {
   firstName: 'King',
   lastName: 'Julian',
   googleAuthId: 'kingjulian',
-  email: 'iliketomoveit@jungle.net',
-  
+  email: 'iliketomoveit@jungle.net'
 };
 
 const regina: Prisma.UserCreateInput = {
@@ -858,98 +785,91 @@ const cady: Prisma.UserCreateInput = {
   firstName: 'Cady',
   lastName: 'Heron',
   email: 'cadyheron@gmail.com',
-  googleAuthId: 'cady',
-  
+  googleAuthId: 'cady'
 };
 
 const janis: Prisma.UserCreateInput = {
   firstName: 'Janis',
   lastName: 'Ian',
   email: 'ian.ja@gmail.com',
-  googleAuthId: 'janis',
-  
+  googleAuthId: 'janis'
 };
 
 const damian: Prisma.UserCreateInput = {
   firstName: 'Damian',
   lastName: '',
   email: 'hotty@hotmail.com',
-  googleAuthId: 'damian',
-  
+  googleAuthId: 'damian'
 };
 
 const gretchen: Prisma.UserCreateInput = {
   firstName: 'Gretchen',
   lastName: 'Wieners',
   googleAuthId: 'gretch',
-  email: 'gretchen.weiners@hotmail.com',
-  
+  email: 'gretchen.weiners@hotmail.com'
 };
 
 const karen: Prisma.UserCreateInput = {
   firstName: 'Karen',
   lastName: 'Smith',
   googleAuthId: 'karen',
-  email: 'smithkaren@hotmail.com',
-  
+  email: 'smithkaren@hotmail.com'
 };
 
 const aaron: Prisma.UserCreateInput = {
   firstName: 'Aaron',
   lastName: 'Samuels',
   googleAuthId: 'aaron',
-  email: 'samuels.a@gmail.com',
-  
+  email: 'samuels.a@gmail.com'
 };
 
 const glen: Prisma.UserCreateInput = {
   firstName: 'Glen',
   lastName: 'Coco',
   googleAuthId: 'glen',
-  email: 'glen@gmail.com',
-  
+  email: 'glen@gmail.com'
 };
 
 const shane: Prisma.UserCreateInput = {
   firstName: 'Shane',
   lastName: 'Oman',
   googleAuthId: 'shane',
-  email: 'shane-oman@hotmail.com',
+  email: 'shane-oman@hotmail.com'
 };
 
 const carr: Prisma.UserCreateInput = {
   firstName: 'Coach',
   lastName: 'Carr',
   googleAuthId: 'coach carr',
-  email: 'coachcarr@gmail.com',
+  email: 'coachcarr@gmail.com'
 };
 
 const june: Prisma.UserCreateInput = {
   firstName: 'June',
   lastName: 'George',
   googleAuthId: 'june',
-  email: 'plasticsurgery@hotmail.com',
+  email: 'plasticsurgery@hotmail.com'
 };
 
 const norbury: Prisma.UserCreateInput = {
   firstName: 'Ms',
   lastName: 'Norbury',
   googleAuthId: 'norbury',
-  email: 'norbury@netscape.net',
+  email: 'norbury@netscape.net'
 };
 
 const kevin: Prisma.UserCreateInput = {
   firstName: 'Kevin',
   lastName: 'Gnapoor',
   googleAuthId: 'kevin',
-  email: 'mathclub@gmail.com',
+  email: 'mathclub@gmail.com'
 };
 
 const trang: Prisma.UserCreateInput = {
   firstName: 'Trang',
   lastName: 'Pak',
   googleAuthId: 'trang',
-  email: 'trangPAK@hotmail.com',
+  email: 'trangPAK@hotmail.com'
 };
 
 export const dbSeedAllUsers = {
@@ -1066,4 +986,24 @@ export const dbSeedAllUsers = {
   norbury,
   carr,
   trang
+};
+
+export const createUser = async (user: Prisma.UserCreateInput, role: RoleEnum, organizationId: string) => {
+  return await prisma.user.create({
+    data: {
+      ...user,
+      organizations: {
+        connect: {
+          organizationId
+        }
+      },
+      roles: {
+        create: {
+          roleType: role,
+          organizationId
+        }
+      }
+    },
+    ...getUserQueryArgs(organizationId)
+  });
 };

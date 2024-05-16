@@ -4,10 +4,10 @@ import {
   descriptionBulletsValidators,
   intMinZero,
   isWorkPackageStageOrNone,
-  nonEmptyString
+  nonEmptyString,
+  validateInputs
 } from '../utils/validation.utils';
 import { body } from 'express-validator';
-import { validateInputs } from '../utils/utils';
 
 const workPackageTemplatesRouter = express.Router();
 

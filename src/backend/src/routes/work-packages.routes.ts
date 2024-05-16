@@ -1,14 +1,14 @@
 import express from 'express';
 import { body } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers';
-import { validateInputs } from '../utils/utils';
 import {
   blockedByValidators,
   descriptionBulletsValidators,
   intMinZero,
   isDate,
   isWorkPackageStageOrNone,
-  nonEmptyString
+  nonEmptyString,
+  validateInputs
 } from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 

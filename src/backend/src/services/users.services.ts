@@ -10,7 +10,8 @@ import {
   isHead,
   UserSecureSettings,
   UserScheduleSettings,
-  UserWithScheduleSettings
+  UserWithScheduleSettings,
+  AuthenticatedUser
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -28,6 +29,8 @@ import userScheduleSettingsTransformer from '../transformers/user-schedule-setti
 import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
 import { getUserRole } from '../utils/users.utils';
 import { getUserQueryArgs, getUserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
+import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 
 export default class UsersService {
   /**
@@ -35,7 +38,19 @@ export default class UsersService {
    * @param organizationId the id of the organization to get the users for
    * @returns a list of all the users
    */
-  static async getAllUsers(organizationId: string): Promise<UserWithScheduleSettings[]> {
+  static async getAllUsers(organizationId?: string): Promise<UserWithScheduleSettings[]> {
+    if (!organizationId) {
+      const users = await prisma.user.findMany({
+        include: {
+          roles: true,
+          userSettings: true,
+          drScheduleSettings: true
+        }
+      });
+
+      return users.map(userWithScheduleSettingsTransformer);
+    }
+
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: {
@@ -154,7 +169,7 @@ export default class UsersService {
    * @returns the user that has been signed in, and an access token
    * @throws if the auth server response payload is invalid
    */
-  static async logUserIn(idToken: string, header: string): Promise<{ user: User; token: string }> {
+  static async logUserIn(idToken: string, header: string): Promise<{ user: AuthenticatedUser; token: string }> {
     const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_AUTH_CLIENT_ID);
     const ticket = await client.verifyIdToken({
       idToken,
@@ -166,7 +181,11 @@ export default class UsersService {
     const { sub: userId } = payload; // google user id
     // check if user is already in the database via Google ID
     let user = await prisma.user.findUnique({
-      where: { googleAuthId: userId }
+      where: { googleAuthId: userId },
+      include: {
+        organizations: true,
+        userSettings: true
+      }
     });
 
     if (!payload['given_name']) {
@@ -192,6 +211,10 @@ export default class UsersService {
           email: payload['email'],
           emailId,
           userSettings: { create: {} }
+        },
+        include: {
+          organizations: true,
+          userSettings: true
         }
       });
       user = createdUser;
@@ -207,7 +230,31 @@ export default class UsersService {
 
     const token = generateAccessToken({ userId: user.userId, firstName: user.firstName, lastName: user.lastName });
 
-    return { user, token };
+    if (user.organizations.length > 0) {
+      const [defaultOrganization] = user.organizations;
+      const authenticatedUser = await prisma.user.findUnique({
+        where: { userId: user.userId },
+        ...getAuthUserQueryArgs(defaultOrganization.organizationId)
+      });
+
+      if (!authenticatedUser) throw new NotFoundException('User', userId);
+
+      return { user: authenticatedUserTransformer(authenticatedUser), token };
+    }
+
+    return {
+      user: authenticatedUserTransformer({
+        ...user,
+        organizations: [],
+        favoriteProjects: [],
+        changeRequestsToReview: [],
+        teamsAsHead: [],
+        teamsAsLead: [],
+        teamsAsMember: [],
+        roles: []
+      }),
+      token
+    };
   }
 
   /**
@@ -217,9 +264,13 @@ export default class UsersService {
    * @returns the user that has been logged in
    * @throws if the user with the specified id doesn't exist in the database
    */
-  static async logUserInDev(userId: number, header: string): Promise<User> {
+  static async logUserInDev(userId: number, header: string): Promise<AuthenticatedUser> {
     const user = await prisma.user.findUnique({
-      where: { userId }
+      where: { userId },
+      include: {
+        organizations: true,
+        userSettings: true
+      }
     });
 
     if (!user) throw new NotFoundException('User', userId);
@@ -232,7 +283,28 @@ export default class UsersService {
       }
     });
 
-    return user;
+    if (user.organizations.length > 0) {
+      const [defaultOrganization] = user.organizations;
+      const authenticatedUser = await prisma.user.findUnique({
+        where: { userId },
+        ...getAuthUserQueryArgs(defaultOrganization.organizationId)
+      });
+
+      if (!authenticatedUser) throw new NotFoundException('User', userId);
+
+      return authenticatedUserTransformer(authenticatedUser);
+    }
+
+    return authenticatedUserTransformer({
+      ...user,
+      organizations: [],
+      favoriteProjects: [],
+      changeRequestsToReview: [],
+      teamsAsHead: [],
+      teamsAsLead: [],
+      teamsAsMember: [],
+      roles: []
+    });
   }
 
   /**

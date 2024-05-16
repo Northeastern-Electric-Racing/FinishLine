@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage, WorkPackageTemplate } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
+import { getOrganizationId } from '../utils/utils';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -9,7 +10,7 @@ export default class WorkPackagesController {
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { query } = req;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, organizationId);
 
@@ -23,7 +24,7 @@ export default class WorkPackagesController {
   static async getSingleWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
       const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, organizationId);
 
@@ -36,7 +37,7 @@ export default class WorkPackagesController {
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNums } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, organizationId);
       res.status(200).json(workPackages);
@@ -54,7 +55,7 @@ export default class WorkPackagesController {
         stage = null;
       }
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const workPackage = await WorkPackagesService.createWorkPackage(
         user,
@@ -93,7 +94,7 @@ export default class WorkPackagesController {
         stage = null;
       }
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       await WorkPackagesService.editWorkPackage(
         user,
@@ -120,7 +121,7 @@ export default class WorkPackagesController {
     try {
       const user = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       await WorkPackagesService.deleteWorkPackage(user, wbsNum, organizationId);
       return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
@@ -133,7 +134,7 @@ export default class WorkPackagesController {
   static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNum = validateWBS(req.params.wbsNum);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum, organizationId);
 
@@ -148,7 +149,7 @@ export default class WorkPackagesController {
     try {
       const user = await getCurrentUser(res);
       const { deadline } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline), organizationId);
     } catch (error: unknown) {
@@ -160,7 +161,7 @@ export default class WorkPackagesController {
     try {
       const user = await getCurrentUser(res);
       const { workPackageTemplateId } = req.params;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
         user,
@@ -177,7 +178,7 @@ export default class WorkPackagesController {
   static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
     try {
       const submitter = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const workPackageTemplates: WorkPackageTemplate[] = await WorkPackagesService.getAllWorkPackageTemplates(
         submitter,
@@ -199,7 +200,7 @@ export default class WorkPackagesController {
       if (stage === 'NONE') {
         stage = null;
       }
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
         user,

@@ -9,12 +9,13 @@ import ReimbursementRequestService from '../services/reimbursement-requests.serv
 import { ReimbursementRequest } from '../../../shared/src/types/reimbursement-requests-types';
 import { Vendor } from 'shared';
 import { HttpException } from '../utils/errors.utils';
+import { getOrganizationId } from '../utils/utils';
 
 export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const userReimbursementRequests = await ReimbursementRequestService.getUserReimbursementRequests(user, organizationId);
       res.status(200).json(userReimbursementRequests);
@@ -26,7 +27,7 @@ export default class ReimbursementRequestsController {
   static async getCurrentUserReimbursements(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const userReimbursements = await ReimbursementRequestService.getUserReimbursements(user, organizationId);
       res.status(200).json(userReimbursements);
@@ -38,7 +39,7 @@ export default class ReimbursementRequestsController {
   static async getAllReimbursements(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const reimbursements = await ReimbursementRequestService.getAllReimbursements(user, organizationId);
       res.status(200).json(reimbursements);
@@ -49,7 +50,7 @@ export default class ReimbursementRequestsController {
 
   static async getAllVendors(req: Request, res: Response, next: NextFunction) {
     try {
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors(organizationId);
       return res.status(200).json(vendors);
@@ -70,7 +71,7 @@ export default class ReimbursementRequestsController {
         totalCost
       } = req.body;
       const user = await getCurrentUserWithUserSettings(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
@@ -93,7 +94,7 @@ export default class ReimbursementRequestsController {
     try {
       const user = await getCurrentUser(res);
       const { amount, dateReceived } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const reimbursement = await ReimbursementRequestService.reimburseUser(amount, dateReceived, user, organizationId);
       res.status(200).json(reimbursement);
@@ -116,7 +117,7 @@ export default class ReimbursementRequestsController {
         receiptPictures
       } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
@@ -142,7 +143,7 @@ export default class ReimbursementRequestsController {
       const { reimbursementId } = req.params;
       const { amount, dateReceived } = req.body;
       const editor = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedReimbursement = await ReimbursementRequestService.editReimbursement(
         reimbursementId,
@@ -161,7 +162,7 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const deletedReimbursementRequest = await ReimbursementRequestService.deleteReimbursementRequest(
         requestId,
@@ -177,7 +178,7 @@ export default class ReimbursementRequestsController {
   static async getPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const requestsPendingAdvisors: ReimbursementRequest[] = await ReimbursementRequestService.getPendingAdvisorList(
         user,
@@ -193,7 +194,7 @@ export default class ReimbursementRequestsController {
     try {
       const { saboNumbers } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       await ReimbursementRequestService.sendPendingAdvisorList(user, saboNumbers, organizationId);
       res.status(200).json({ message: 'Successfully sent pending advisor list' });
@@ -207,7 +208,7 @@ export default class ReimbursementRequestsController {
       const { requestId } = req.params;
       const { saboNumber } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, user, organizationId);
       res.status(200).json({ message: 'Successfully set sabo number' });
@@ -220,7 +221,7 @@ export default class ReimbursementRequestsController {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createdVendor = await ReimbursementRequestService.createVendor(user, name, organizationId);
       res.status(200).json(createdVendor);
@@ -233,7 +234,7 @@ export default class ReimbursementRequestsController {
     try {
       const { name, code, allowed, allowedRefundSources } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createdAccountCode = await ReimbursementRequestService.createAccountCode(
         user,
@@ -255,7 +256,7 @@ export default class ReimbursementRequestsController {
       const { requestId } = req.params;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const receipt = await ReimbursementRequestService.uploadReceipt(requestId, file, user, organizationId);
 
@@ -271,7 +272,7 @@ export default class ReimbursementRequestsController {
 
   static async getAllAccountCodes(req: Request, res: Response, next: NextFunction) {
     try {
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
       const accountCodes = await ReimbursementRequestService.getAllAccountCodes(organizationId);
       res.status(200).json(accountCodes);
     } catch (error: unknown) {
@@ -282,7 +283,7 @@ export default class ReimbursementRequestsController {
   static async getAllReimbursementRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const reimbursementRequests: ReimbursementRequest[] = await ReimbursementRequestService.getAllReimbursementRequests(
         user,
@@ -298,7 +299,7 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const reimbursementStatus = await ReimbursementRequestService.approveReimbursementRequest(
         requestId,
@@ -315,7 +316,7 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const reimbursementStatus = await ReimbursementRequestService.denyReimbursementRequest(
         requestId,
@@ -332,7 +333,7 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsReimbursed(
         requestId,
@@ -349,7 +350,7 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         user,
@@ -366,7 +367,7 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const reimbursementRequest: ReimbursementRequest = await ReimbursementRequestService.getSingleReimbursementRequest(
         user,
@@ -383,7 +384,7 @@ export default class ReimbursementRequestsController {
     try {
       const { fileId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const imageData = await ReimbursementRequestService.downloadReceiptImage(fileId, user, organizationId);
 
@@ -403,7 +404,7 @@ export default class ReimbursementRequestsController {
       const { accountCodeId } = req.params;
       const { name, code, allowed, allowedRefundSources } = req.body;
       const submitter = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const accountCodeUpdated = await ReimbursementRequestService.editAccountCode(
         accountCodeId,
@@ -425,7 +426,7 @@ export default class ReimbursementRequestsController {
       const { vendorId } = req.params;
       const { name } = req.body;
       const submitter = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const editedVendor = await ReimbursementRequestService.editVendor(name, vendorId, submitter, organizationId);
       res.status(200).json(editedVendor);
@@ -438,7 +439,7 @@ export default class ReimbursementRequestsController {
     try {
       const { vendorId } = req.params;
       const submitter = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, submitter, organizationId);
       res.status(200).json(deletedVendor);

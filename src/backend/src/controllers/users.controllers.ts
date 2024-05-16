@@ -2,11 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
+import { getOrganizationId } from '../utils/utils';
 
 export default class UsersController {
   static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const { organizationId } = req.headers as { organizationId: string };
+      const { organizationId } = req.headers as { organizationId?: string };
 
       const users = await UsersService.getAllUsers(organizationId);
 
@@ -19,7 +20,7 @@ export default class UsersController {
   static async getSingleUser(req: Request, res: Response, next: NextFunction) {
     try {
       const userId: number = parseInt(req.params.userId);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const requestedUser = await UsersService.getSingleUser(userId, organizationId);
 
@@ -55,7 +56,7 @@ export default class UsersController {
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const projects = await UsersService.getUsersFavoriteProjects(user.userId, organizationId);
 
@@ -117,7 +118,7 @@ export default class UsersController {
       const targetUserId: number = parseInt(req.params.userId);
       const { role } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const targetUser = await UsersService.updateUserRole(targetUserId, user, role, organizationId);
 
@@ -131,7 +132,7 @@ export default class UsersController {
     try {
       const userId: number = parseInt(req.params.userId);
       const submitter = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter, organizationId);
 

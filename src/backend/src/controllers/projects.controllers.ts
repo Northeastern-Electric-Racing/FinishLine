@@ -4,11 +4,12 @@ import { User } from '@prisma/client';
 import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 import BillOfMaterialsService from '../services/boms.services';
+import { getOrganizationId } from '../utils/utils';
 
 export default class ProjectsController {
   static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const { organizationId } = req.params;
+      const organizationId = getOrganizationId(req.headers);
       const projects: Project[] = await ProjectsService.getAllProjects(organizationId);
       return res.status(200).json(projects);
     } catch (error: unknown) {
@@ -19,7 +20,7 @@ export default class ProjectsController {
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const project: Project = await ProjectsService.getSingleProject(wbsNumber, organizationId);
 
@@ -34,7 +35,7 @@ export default class ProjectsController {
       const user: User = await getCurrentUser(res);
       const { name, crId, carNumber, teamIds, budget, summary, projectLeadId, projectManagerId, links, descriptionBullets } =
         req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createdProject = await ProjectsService.createProject(
         user,
@@ -62,7 +63,7 @@ export default class ProjectsController {
       const user = await getCurrentUser(res);
       const { projectId, crId, name, budget, summary, descriptionBullets, links, projectLeadId, projectManagerId } =
         req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const editedProject: Project = await ProjectsService.editProject(
         user,
@@ -89,7 +90,7 @@ export default class ProjectsController {
       const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
       const { teamId } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       await ProjectsService.setProjectTeam(user, wbsNumber, teamId, organizationId);
 
@@ -103,7 +104,7 @@ export default class ProjectsController {
     try {
       const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const deletedProject: Project = await ProjectsService.deleteProject(user, wbsNumber, organizationId);
       res.status(200).json(deletedProject);
@@ -116,7 +117,7 @@ export default class ProjectsController {
     try {
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const targetProject = await ProjectsService.toggleFavorite(wbsNum, user, organizationId);
 
@@ -128,7 +129,7 @@ export default class ProjectsController {
 
   static async getAllLinkTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const linkTypes = await ProjectsService.getAllLinkTypes(organizationId);
       res.status(200).json(linkTypes);
@@ -141,7 +142,7 @@ export default class ProjectsController {
     try {
       const user: User = await getCurrentUser(res);
       const { name, iconName, required } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const newLinkType = await ProjectsService.createLinkType(user, name, iconName, required, organizationId);
       res.status(200).json(newLinkType);
@@ -155,7 +156,7 @@ export default class ProjectsController {
       const user: User = await getCurrentUser(res);
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
       const { name, pdmFileName } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createAssembly = await BillOfMaterialsService.createAssembly(name, user, wbsNum, pdmFileName, organizationId);
       res.status(200).json(createAssembly);
@@ -183,7 +184,7 @@ export default class ProjectsController {
       } = req.body;
       const creator = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const material = await BillOfMaterialsService.createMaterial(
         creator,
@@ -213,7 +214,7 @@ export default class ProjectsController {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createdManufacturer = await BillOfMaterialsService.createManufacturer(user, name, organizationId);
       res.status(200).json(createdManufacturer);
@@ -226,7 +227,7 @@ export default class ProjectsController {
     try {
       const user: User = await getCurrentUser(res);
       const { manufacturerName } = req.params;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const deletedManufacturer = await BillOfMaterialsService.deleteManufacturer(user, manufacturerName, organizationId);
       res.status(200).json(deletedManufacturer);
@@ -239,7 +240,7 @@ export default class ProjectsController {
     try {
       const user: User = await getCurrentUser(res);
       const { unitId } = req.params;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const deletedUnit = await BillOfMaterialsService.deleteUnit(user, unitId, organizationId);
       res.status(200).json(deletedUnit);
@@ -251,7 +252,7 @@ export default class ProjectsController {
   static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const manufacturers: Manufacturer[] = await BillOfMaterialsService.getAllManufacturers(user, organizationId);
       return res.status(200).json(manufacturers);
@@ -263,7 +264,7 @@ export default class ProjectsController {
   static async getAllMaterialTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const materialTypes: MaterialType[] = await BillOfMaterialsService.getAllMaterialTypes(user, organizationId);
       return res.status(200).json(materialTypes);
@@ -276,7 +277,7 @@ export default class ProjectsController {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createdMaterialType = await BillOfMaterialsService.createMaterialType(name, user, organizationId);
       res.status(200).json(createdMaterialType);
@@ -290,7 +291,7 @@ export default class ProjectsController {
       const { materialId } = req.params;
       const { assemblyId } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedMaterial = await BillOfMaterialsService.assignMaterialAssembly(
         user,
@@ -308,7 +309,7 @@ export default class ProjectsController {
     try {
       const { assemblyId } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, user, organizationId);
       res.status(200).json(deletedAssembly);
@@ -321,7 +322,7 @@ export default class ProjectsController {
     try {
       const { materialTypeName } = req.params;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const deletedMaterial = await BillOfMaterialsService.deleteMaterialType(user, materialTypeName, organizationId);
       res.status(200).json(deletedMaterial);
@@ -334,7 +335,7 @@ export default class ProjectsController {
     try {
       const { materialId } = req.params;
       const user: User = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedMaterial = await BillOfMaterialsService.deleteMaterial(user, materialId, organizationId);
       res.status(200).json(updatedMaterial);
@@ -362,7 +363,7 @@ export default class ProjectsController {
         linkUrl,
         notes
       } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
         user,
@@ -391,7 +392,7 @@ export default class ProjectsController {
   static async getAllUnits(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const units = await BillOfMaterialsService.getAllUnits(user, organizationId);
       res.status(200).json(units);
@@ -404,7 +405,7 @@ export default class ProjectsController {
     try {
       const { name } = req.body;
       const user = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const createdUnit = await BillOfMaterialsService.createUnit(name, user, organizationId);
       res.status(200).json(createdUnit);
@@ -418,7 +419,7 @@ export default class ProjectsController {
       const user = await getCurrentUser(res);
       const { assemblyId } = req.params;
       const { name, pdmFileName } = req.body;
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const updatedAssembly = await BillOfMaterialsService.editAssembly(user, assemblyId, organizationId, name, pdmFileName);
       res.status(200).json(updatedAssembly);
@@ -432,7 +433,7 @@ export default class ProjectsController {
       const { linkId } = req.params;
       const { iconName, required, linkTypeName } = req.body;
       const submitter = await getCurrentUser(res);
-      const { organizationId } = req.headers as { organizationId: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkId,

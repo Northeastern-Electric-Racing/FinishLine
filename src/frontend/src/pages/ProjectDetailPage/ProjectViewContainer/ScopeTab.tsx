@@ -5,7 +5,6 @@
 
 import { Project } from 'shared';
 import { Box, Typography } from '@mui/material';
-import RulesList from './RulesList';
 
 const styles = {
   bulletList: {
@@ -15,11 +14,7 @@ const styles = {
 };
 
 export const ScopeTab = ({ project }: { project: Project }) => {
-  const goals = project.goals.filter((goal) => !goal.dateDeleted).map((b, idx) => <li key={idx}>{b.detail}</li>);
-  const features = project.features.filter((feature) => !feature.dateDeleted).map((b, idx) => <li key={idx}>{b.detail}</li>);
-  const otherConstraints = project.otherConstraints
-    .filter((constraint) => !constraint.dateDeleted)
-    .map((b, idx) => <li key={idx}>{b.detail}</li>);
+  const descriptionBullets = project.descriptionBullets.map((bullet, index) => <li key={index}>{bullet}</li>);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', mt: 2 }}>
@@ -32,40 +27,11 @@ export const ScopeTab = ({ project }: { project: Project }) => {
                 cursor: 'pointer'
               }}
             >
-              Goals
+              Description Bullets
             </Typography>
           </Box>
-          <ul style={styles.bulletList}>{goals}</ul>
+          <ul style={styles.bulletList}>{descriptionBullets}</ul>
         </Box>
-        <Box sx={{ marginTop: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                cursor: 'pointer'
-              }}
-            >
-              {'Features'}
-            </Typography>
-          </Box>
-          <ul style={styles.bulletList}>{features}</ul>
-        </Box>
-      </Box>
-      <Box width="50%">
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                cursor: 'pointer'
-              }}
-            >
-              {'Other Constraints'}
-            </Typography>
-          </Box>
-          <ul style={styles.bulletList}>{otherConstraints}</ul>
-        </Box>
-        <RulesList rules={project.rules} />
       </Box>
     </Box>
   );

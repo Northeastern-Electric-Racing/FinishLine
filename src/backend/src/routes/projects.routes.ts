@@ -1,7 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString, projectValidators } from '../utils/validation.utils';
-import { validateInputs } from '../utils/utils';
+import { intMinZero, decimalMinZero, isMaterialStatus, nonEmptyString, projectValidators, validateInputs } from '../utils/validation.utils';
 import ProjectsController from '../controllers/projects.controllers';
 
 const projectRouter = express.Router();

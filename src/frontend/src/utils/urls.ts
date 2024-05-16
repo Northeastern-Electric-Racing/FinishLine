@@ -97,7 +97,7 @@ const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
 const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
 const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
-const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
+const getAllAccountCodes = () => `${financeEndpoints()}/account-codes`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
 const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
@@ -112,8 +112,8 @@ const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
-const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
-const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
+const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
+const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 
@@ -226,7 +226,7 @@ export const apiUrls = {
   financeCreateReimbursementRequest,
   financeEditReimbursementRequest,
   financeReimbursementRequestById,
-  getAllExpenseTypes,
+  getAllAccountCodes,
   getAllVendors,
   financeEndpoints,
   financeUploadReceipt,
@@ -243,8 +243,8 @@ export const apiUrls = {
   financeDenyReimbursementRequest,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
-  financeEditExpenseType,
-  financeCreateExpenseType,
+  financeEditAccountCode,
+  financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
 

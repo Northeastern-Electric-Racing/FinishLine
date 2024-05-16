@@ -1,5 +1,6 @@
 import { Design_Review_Status } from '@prisma/client';
-import { body, ValidationChain } from 'express-validator';
+import { Request, Response } from 'express';
+import { body, ValidationChain, validationResult } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
@@ -185,3 +186,11 @@ export const projectValidators = [
   intMinZero(body('projectLeadId').optional()),
   intMinZero(body('projectManagerId').optional())
 ];
+
+export const validateInputs = (req: Request, res: Response, next: Function): Response | void => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};

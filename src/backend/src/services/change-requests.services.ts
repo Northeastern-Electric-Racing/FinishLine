@@ -69,9 +69,11 @@ export default class ChangeRequestsService {
    */
   static async getAllChangeRequests(organizationId: string): Promise<ChangeRequest[]> {
     const changeRequests = await prisma.change_Request.findMany({
-      where: { dateDeleted: null, wbsElement: { organizationId } },
+      where: { dateDeleted: null, wbsElement: { organizationId: organizationId ?? null } },
       ...getChangeRequestQueryArgs(organizationId)
     });
+    console.log('changeRequests', changeRequests);
+    console.log('organizationId', organizationId);
     return changeRequests.map(changeRequestTransformer);
   }
 

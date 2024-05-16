@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { LinkCreateArgs, Project } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -33,22 +33,7 @@ export interface ProjectFormInput {
   links: LinkCreateArgs[];
   crId: string;
   carNumber: number;
-  goals: {
-    bulletId: number;
-    detail: string;
-  }[];
-  features: {
-    bulletId: number;
-    detail: string;
-  }[];
-  constraints: {
-    bulletId: number;
-    detail: string;
-  }[];
-  rules: {
-    bulletId: number;
-    detail: string;
-  }[];
+  descriptionBullets: DescriptionBulletPreview[];
   teamIds: number[];
 }
 
@@ -58,11 +43,11 @@ interface ProjectFormContainerProps {
   project?: Project;
   onSubmit: (data: ProjectFormInput) => void;
   defaultValues: ProjectFormInput;
-  setProjectManagerId: (id?: string) => void;
-  setProjectLeadId: (id?: string) => void;
+  setManagerId: (id?: string) => void;
+  setLeadId: (id?: string) => void;
   schema: yup.ObjectSchema<ObjectShape>;
-  projectLeadId?: string;
-  projectManagerId?: string;
+  leadId?: string;
+  managerId?: string;
   onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
 }
 
@@ -71,11 +56,11 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   project,
   onSubmit,
   defaultValues,
-  setProjectManagerId,
-  setProjectLeadId,
+  setLeadId,
+  setManagerId,
   schema,
-  projectLeadId,
-  projectManagerId,
+  leadId,
+  managerId,
   onSubmitChangeRequest
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -96,23 +81,18 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       summary: defaultValues?.summary,
       crId: defaultValues?.crId,
       carNumber: defaultValues?.carNumber,
-      rules: defaultValues?.rules,
       links: defaultValues?.links,
-      goals: defaultValues?.goals,
-      features: defaultValues?.features,
-      constraints: defaultValues?.constraints,
+      descriptionBullets: defaultValues?.descriptionBullets,
       teamIds: defaultValues?.teamIds
     }
   });
 
-  const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
-  const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
-  const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
   const {
-    fields: constraints,
-    append: appendConstraint,
-    remove: removeConstraint
-  } = useFieldArray({ control, name: 'constraints' });
+    fields: descriptionBullets,
+    append: appendDescriptionBullet,
+    remove: removeDescriptionBullet
+  } = useFieldArray({ control, name: 'descriptionBullets' });
+
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
@@ -189,10 +169,10 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           users={users}
           control={control}
           errors={errors}
-          setProjectManagerId={setProjectManagerId}
-          setProjectLeadId={setProjectLeadId}
-          projectLead={projectLeadId}
-          projectManager={projectManagerId}
+          setManagerId={setManagerId}
+          setLeadId={setLeadId}
+          leadId={leadId}
+          managerId={managerId}
           project={project}
         />
         <Stack spacing={4}>
@@ -203,47 +183,14 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
           </Box>
           <Box>
-            <Typography variant="h5">{!project ? 'Goals (optional)' : 'Goals'}</Typography>
+            <Typography variant="h5">{!project ? 'Description Bullets (optional)' : 'Description Bullets'}</Typography>
             <ReactHookEditableList
-              name="goals"
+              name="descriptionBullets"
               register={register}
-              ls={goals}
-              append={appendGoal}
-              remove={removeGoal}
+              ls={descriptionBullets}
+              append={appendDescriptionBullet}
+              remove={removeDescriptionBullet}
               bulletName="Goal"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Features (optional)' : 'Features'}</Typography>
-            <ReactHookEditableList
-              name="features"
-              register={register}
-              ls={features}
-              append={appendFeature}
-              remove={removeFeature}
-              bulletName="Feature"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Constraints (optional)' : 'Constraints'}</Typography>
-            <ReactHookEditableList
-              name="constraints"
-              register={register}
-              ls={constraints}
-              append={appendConstraint}
-              remove={removeConstraint}
-              bulletName="Constraint"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Rules (optional)' : 'Rules'}</Typography>
-            <ReactHookEditableList
-              name="rules"
-              register={register}
-              ls={rules}
-              append={appendRule}
-              remove={removeRule}
-              bulletName="Rule"
             />
           </Box>
         </Stack>

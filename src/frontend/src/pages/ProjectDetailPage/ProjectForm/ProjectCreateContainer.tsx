@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useAllLinkTypes, useCreateSingleProject } from '../../../hooks/projects.hooks';
-import { mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { CreateSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
@@ -25,8 +24,8 @@ const ProjectCreateContainer: React.FC = () => {
   const history = useHistory();
   const query = useQuery();
 
-  const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
+  const [managerId, setManagerId] = useState<string | undefined>();
+  const [leadId, setLeadId] = useState<string | undefined>();
 
   const { mutateAsync, isLoading } = useCreateSingleProject();
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
@@ -52,12 +51,9 @@ const ProjectCreateContainer: React.FC = () => {
     carNumber: 0,
     links: [],
     crId: query.get('crId') || '',
-    goals: [],
-    features: [],
-    constraints: [],
-    rules: [],
-    projectLeadId,
-    projectManagerId
+    descriptionBullets: [],
+    leadId,
+    managerId
   };
 
   const schema = yup.object().shape({
@@ -81,9 +77,7 @@ const ProjectCreateContainer: React.FC = () => {
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, teamIds, carNumber, goals, features, constraints, type, what, why } = data;
-
-    const rules = data.rules.map((rule) => rule.detail);
+    const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, type, what, why } = data;
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
@@ -91,13 +85,10 @@ const ProjectCreateContainer: React.FC = () => {
         summary,
         teamIds: teamIds.map((number) => '' + number),
         budget,
-        rules,
-        goals: goals.map((g) => g.detail),
-        features: features.map((f) => f.detail),
-        otherConstraints: constraints.map((c) => c.detail),
+        descriptionBullets,
         links,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined,
+        leadId: leadId ? parseInt(leadId) : undefined,
+        managerId: managerId ? parseInt(managerId) : undefined,
         carNumber: carNumber
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
@@ -123,12 +114,7 @@ const ProjectCreateContainer: React.FC = () => {
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, crId, teamIds, carNumber } = data;
-
-    const rules = data.rules.map((rule) => rule.detail);
-    const goals = mapBulletsToPayload(data.goals);
-    const features = mapBulletsToPayload(data.features);
-    const otherConstraints = mapBulletsToPayload(data.constraints);
+    const { name, budget, summary, links, crId, teamIds, carNumber, descriptionBullets } = data;
 
     try {
       const payload: CreateSingleProjectPayload = {
@@ -138,13 +124,10 @@ const ProjectCreateContainer: React.FC = () => {
         summary,
         teamIds: teamIds.map((number) => '' + number),
         budget,
-        rules,
-        goals,
-        features,
-        otherConstraints,
+        descriptionBullets,
         links,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        leadId: leadId ? parseInt(leadId) : undefined,
+        managerId: managerId ? parseInt(managerId) : undefined
       };
       await mutateAsync(payload);
       history.push(routes.PROJECTS_ALL);
@@ -161,11 +144,11 @@ const ProjectCreateContainer: React.FC = () => {
       exitEditMode={() => history.push(routes.PROJECTS_ALL)}
       onSubmit={onSubmit}
       defaultValues={defaultValues}
-      setProjectLeadId={setProjectLeadId}
-      setProjectManagerId={setProjectManagerId}
+      setLeadId={setLeadId}
+      setManagerId={setManagerId}
       schema={schema}
-      projectLeadId={projectLeadId}
-      projectManagerId={projectManagerId}
+      leadId={leadId}
+      managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
     />
   );

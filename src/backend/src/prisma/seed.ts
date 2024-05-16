@@ -16,7 +16,7 @@ import {
   Vendor,
   WBS_Element_Status
 } from '@prisma/client';
-import { dbSeedAllUsers } from './seed-data/users.seed';
+import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
 import TeamsService from '../services/teams.services';
@@ -24,6 +24,7 @@ import {
   ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
+  RoleEnum,
   StandardChangeRequest,
   WbsElementStatus,
   WorkPackageStage
@@ -39,6 +40,7 @@ import { Decimal } from 'decimal.js';
 import DesignReviewsService from '../services/design-reviews.services';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import BillOfMaterialsService from '../services/boms.services';
+import UsersService from '../services/users.services';
 
 const prisma = new PrismaClient();
 
@@ -47,117 +49,6 @@ const performSeed: () => Promise<void> = async () => {
     data: dbSeedAllUsers.thomasEmrax,
     include: { userSettings: true, userSecureSettings: true }
   });
-  const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
-  const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
-  const lexLuther = await prisma.user.create({ data: dbSeedAllUsers.lexLuther });
-  const hawkgirl = await prisma.user.create({ data: dbSeedAllUsers.hawkgirl });
-  const elongatedMan = await prisma.user.create({ data: dbSeedAllUsers.elongatedMan });
-  const zatanna = await prisma.user.create({ data: dbSeedAllUsers.zatanna });
-  const phantomStranger = await prisma.user.create({ data: dbSeedAllUsers.phantomStranger });
-  const redTornado = await prisma.user.create({ data: dbSeedAllUsers.redTornado });
-  const firestorm = await prisma.user.create({ data: dbSeedAllUsers.firestorm });
-  const hankHeywood = await prisma.user.create({ data: dbSeedAllUsers.hankHeywood });
-  const wonderwoman = await prisma.user.create({ data: dbSeedAllUsers.wonderwoman });
-  const flash = await prisma.user.create({ data: dbSeedAllUsers.flash });
-  const aquaman = await prisma.user.create({ data: dbSeedAllUsers.aquaman });
-  const robin = await prisma.user.create({ data: dbSeedAllUsers.robin });
-  const batman = await prisma.user.create({ data: dbSeedAllUsers.batman });
-  const superman = await prisma.user.create({ data: dbSeedAllUsers.superman });
-  const hawkMan = await prisma.user.create({ data: dbSeedAllUsers.hawkMan });
-  const hawkWoman = await prisma.user.create({ data: dbSeedAllUsers.hawkWoman });
-  const cyborg = await prisma.user.create({ data: dbSeedAllUsers.cyborg });
-  const greenLantern = await prisma.user.create({ data: dbSeedAllUsers.greenLantern });
-  const martianManhunter = await prisma.user.create({ data: dbSeedAllUsers.martianManhunter });
-  const nightwing = await prisma.user.create({ data: dbSeedAllUsers.nightwing });
-  const brandonHyde = await prisma.user.create({ data: dbSeedAllUsers.brandonHyde });
-  const calRipken = await prisma.user.create({ data: dbSeedAllUsers.calRipken });
-  const adleyRutschman = await prisma.user.create({ data: dbSeedAllUsers.adleyRutschman });
-  const johnHarbaugh = await prisma.user.create({ data: dbSeedAllUsers.johnHarbaugh });
-  const lamarJackson = await prisma.user.create({ data: dbSeedAllUsers.lamarJackson });
-  const nezamJazayeri = await prisma.user.create({ data: dbSeedAllUsers.nezamJazayeri });
-  const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
-  const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
-  const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
-  const aang = await prisma.user.create({ data: dbSeedAllUsers.aang });
-  const katara = await prisma.user.create({ data: dbSeedAllUsers.katara });
-  const sokka = await prisma.user.create({ data: dbSeedAllUsers.sokka });
-  const toph = await prisma.user.create({ data: dbSeedAllUsers.toph });
-  const zuko = await prisma.user.create({ data: dbSeedAllUsers.zuko });
-  const iroh = await prisma.user.create({ data: dbSeedAllUsers.iroh });
-  const azula = await prisma.user.create({ data: dbSeedAllUsers.azula });
-  const appa = await prisma.user.create({ data: dbSeedAllUsers.appa });
-  const momo = await prisma.user.create({ data: dbSeedAllUsers.momo });
-  const suki = await prisma.user.create({ data: dbSeedAllUsers.suki });
-  const yue = await prisma.user.create({ data: dbSeedAllUsers.yue });
-  const bumi = await prisma.user.create({ data: dbSeedAllUsers.bumi });
-  const cristianoRonaldo = await prisma.user.create({ data: dbSeedAllUsers.cristianoRonaldo });
-  const thierryHenry = await prisma.user.create({ data: dbSeedAllUsers.thierryHenry });
-  const frankLampard = await prisma.user.create({ data: dbSeedAllUsers.frankLampard });
-  const stevenGerrard = await prisma.user.create({ data: dbSeedAllUsers.stevenGerrard });
-  const ryanGiggs = await prisma.user.create({ data: dbSeedAllUsers.ryanGiggs });
-  const paulScholes = await prisma.user.create({ data: dbSeedAllUsers.paulScholes });
-  const alanShearer = await prisma.user.create({ data: dbSeedAllUsers.alanShearer });
-  const ericCantona = await prisma.user.create({ data: dbSeedAllUsers.ericCantona });
-  const patrickVieira = await prisma.user.create({ data: dbSeedAllUsers.patrickVieira });
-  const didierDrogba = await prisma.user.create({ data: dbSeedAllUsers.didierDrogba });
-  const johnTerry = await prisma.user.create({ data: dbSeedAllUsers.johnTerry });
-  const dennisBergkamp = await prisma.user.create({ data: dbSeedAllUsers.dennisBergkamp });
-  const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
-  const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
-  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
-  const odellBeckham = await prisma.user.create({ data: dbSeedAllUsers.odellBeckham });
-  const chrisHorton = await prisma.user.create({ data: dbSeedAllUsers.chrisHorton });
-  const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
-  const toddMonken = await prisma.user.create({ data: dbSeedAllUsers.toddMonken });
-  const stephenBisciotti = await prisma.user.create({ data: dbSeedAllUsers.stephenBisciotti });
-  const brooksRobinson = await prisma.user.create({ data: dbSeedAllUsers.brooksRobinson });
-  const jimPalmer = await prisma.user.create({ data: dbSeedAllUsers.jimPalmer });
-  const eddieMurray = await prisma.user.create({ data: dbSeedAllUsers.eddieMurray });
-  const georgeSisler = await prisma.user.create({ data: dbSeedAllUsers.georgeSisler });
-  const urbanShocker = await prisma.user.create({ data: dbSeedAllUsers.urbanShocker });
-  const kenWilliams = await prisma.user.create({ data: dbSeedAllUsers.kenWilliams });
-  const boogPowell = await prisma.user.create({ data: dbSeedAllUsers.boogPowell });
-  const mannyMachado = await prisma.user.create({ data: dbSeedAllUsers.mannyMachado });
-  const babyDollJacobson = await prisma.user.create({ data: dbSeedAllUsers.babyDollJacobson });
-  const husky = await prisma.user.create({ data: dbSeedAllUsers.husky });
-  const winter = await prisma.user.create({ data: dbSeedAllUsers.winter });
-  const frostBite = await prisma.user.create({ data: dbSeedAllUsers.frostBite });
-  const snowPaws = await prisma.user.create({ data: dbSeedAllUsers.snowPaws });
-  const paws = await prisma.user.create({ data: dbSeedAllUsers.paws });
-  const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
-  const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
-  const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
-  const zayFlowers = await prisma.user.create({ data: dbSeedAllUsers.zayFlowers });
-  const patrickRicard = await prisma.user.create({ data: dbSeedAllUsers.patrickRicard });
-  const patrickQueen = await prisma.user.create({ data: dbSeedAllUsers.patrickQueen });
-  const jadeveonClowney = await prisma.user.create({ data: dbSeedAllUsers.jadeveonClowney });
-  const marlonHumphrey = await prisma.user.create({ data: dbSeedAllUsers.marlonHumphrey });
-  const kyleHamilton = await prisma.user.create({ data: dbSeedAllUsers.kyleHamilton });
-  const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
-  const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
-  const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
-  const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
-  const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
-  const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
-  const johnBoddy = await prisma.user.create({ data: dbSeedAllUsers.johnBoddy });
-  const villager = await prisma.user.create({ data: dbSeedAllUsers.villager });
-  const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
-  const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
-  const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
-  const regina = await prisma.user.create({ data: dbSeedAllUsers.regina });
-  const gretchen = await prisma.user.create({ data: dbSeedAllUsers.gretchen });
-  const karen = await prisma.user.create({ data: dbSeedAllUsers.karen });
-  const janis = await prisma.user.create({ data: dbSeedAllUsers.janis });
-  const aaron = await prisma.user.create({ data: dbSeedAllUsers.aaron });
-  const cady = await prisma.user.create({ data: dbSeedAllUsers.cady });
-  const damian = await prisma.user.create({ data: dbSeedAllUsers.damian });
-  const glen = await prisma.user.create({ data: dbSeedAllUsers.glen });
-  const shane = await prisma.user.create({ data: dbSeedAllUsers.shane });
-  const june = await prisma.user.create({ data: dbSeedAllUsers.june });
-  const kevin = await prisma.user.create({ data: dbSeedAllUsers.kevin });
-  const norbury = await prisma.user.create({ data: dbSeedAllUsers.norbury });
-  const carr = await prisma.user.create({ data: dbSeedAllUsers.carr });
-  const trang = await prisma.user.create({ data: dbSeedAllUsers.trang });
 
   const ner = await prisma.organization.create({
     data: {
@@ -167,6 +58,137 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   const { organizationId } = ner;
+
+  await prisma.user.update({
+    where: { userId: thomasEmrax.userId },
+    data: {
+      organizations: {
+        connect: {
+          organizationId
+        }
+      },
+      roles: {
+        create: {
+          roleType: 'APP_ADMIN',
+          organizationId
+        }
+      }
+    }
+  });
+
+  const joeShmoe = await createUser(dbSeedAllUsers.joeShmoe, RoleEnum.ADMIN, organizationId);
+  const joeBlow = await createUser(dbSeedAllUsers.joeBlow, RoleEnum.ADMIN, organizationId);
+  const lexLuther = await createUser(dbSeedAllUsers.lexLuther, RoleEnum.HEAD, organizationId);
+  const hawkgirl = await createUser(dbSeedAllUsers.hawkgirl, RoleEnum.LEADERSHIP, organizationId);
+  const elongatedMan = await createUser(dbSeedAllUsers.elongatedMan, RoleEnum.LEADERSHIP, organizationId);
+  const zatanna = await createUser(dbSeedAllUsers.zatanna, RoleEnum.LEADERSHIP, organizationId);
+  const phantomStranger = await createUser(dbSeedAllUsers.phantomStranger, RoleEnum.LEADERSHIP, organizationId);
+  const redTornado = await createUser(dbSeedAllUsers.redTornado, RoleEnum.LEADERSHIP, organizationId);
+  const firestorm = await createUser(dbSeedAllUsers.firestorm, RoleEnum.LEADERSHIP, organizationId);
+  const hankHeywood = await createUser(dbSeedAllUsers.hankHeywood, RoleEnum.LEADERSHIP, organizationId);
+  const wonderwoman = await createUser(dbSeedAllUsers.wonderwoman, RoleEnum.LEADERSHIP, organizationId);
+  const flash = await createUser(dbSeedAllUsers.flash, RoleEnum.LEADERSHIP, organizationId);
+  const aquaman = await createUser(dbSeedAllUsers.aquaman, RoleEnum.LEADERSHIP, organizationId);
+  const robin = await createUser(dbSeedAllUsers.robin, RoleEnum.LEADERSHIP, organizationId);
+  const batman = await createUser(dbSeedAllUsers.batman, RoleEnum.APP_ADMIN, organizationId);
+  const superman = await createUser(dbSeedAllUsers.superman, RoleEnum.LEADERSHIP, organizationId);
+  const hawkMan = await createUser(dbSeedAllUsers.hawkMan, RoleEnum.LEADERSHIP, organizationId);
+  const hawkWoman = await createUser(dbSeedAllUsers.hawkWoman, RoleEnum.LEADERSHIP, organizationId);
+  const cyborg = await createUser(dbSeedAllUsers.cyborg, RoleEnum.LEADERSHIP, organizationId);
+  const greenLantern = await createUser(dbSeedAllUsers.greenLantern, RoleEnum.LEADERSHIP, organizationId);
+  const martianManhunter = await createUser(dbSeedAllUsers.martianManhunter, RoleEnum.LEADERSHIP, organizationId);
+  const nightwing = await createUser(dbSeedAllUsers.nightwing, RoleEnum.LEADERSHIP, organizationId);
+  const brandonHyde = await createUser(dbSeedAllUsers.brandonHyde, RoleEnum.LEADERSHIP, organizationId);
+  const calRipken = await createUser(dbSeedAllUsers.calRipken, RoleEnum.LEADERSHIP, organizationId);
+  const adleyRutschman = await createUser(dbSeedAllUsers.adleyRutschman, RoleEnum.LEADERSHIP, organizationId);
+  const johnHarbaugh = await createUser(dbSeedAllUsers.johnHarbaugh, RoleEnum.LEADERSHIP, organizationId);
+  const lamarJackson = await createUser(dbSeedAllUsers.lamarJackson, RoleEnum.LEADERSHIP, organizationId);
+  const nezamJazayeri = await createUser(dbSeedAllUsers.nezamJazayeri, RoleEnum.LEADERSHIP, organizationId);
+  const ryanHowe = await createUser(dbSeedAllUsers.ryanHowe, RoleEnum.LEADERSHIP, organizationId);
+  const anthonyBernardi = await createUser(dbSeedAllUsers.anthonyBernardi, RoleEnum.LEADERSHIP, organizationId);
+  const reidChandler = await createUser(dbSeedAllUsers.reidChandler, RoleEnum.LEADERSHIP, organizationId);
+  const aang = await createUser(dbSeedAllUsers.aang, RoleEnum.LEADERSHIP, organizationId);
+  const katara = await createUser(dbSeedAllUsers.katara, RoleEnum.LEADERSHIP, organizationId);
+  const sokka = await createUser(dbSeedAllUsers.sokka, RoleEnum.LEADERSHIP, organizationId);
+  const toph = await createUser(dbSeedAllUsers.toph, RoleEnum.LEADERSHIP, organizationId);
+  const zuko = await createUser(dbSeedAllUsers.zuko, RoleEnum.LEADERSHIP, organizationId);
+  const iroh = await createUser(dbSeedAllUsers.iroh, RoleEnum.LEADERSHIP, organizationId);
+  const azula = await createUser(dbSeedAllUsers.azula, RoleEnum.LEADERSHIP, organizationId);
+  const appa = await createUser(dbSeedAllUsers.appa, RoleEnum.LEADERSHIP, organizationId);
+  const momo = await createUser(dbSeedAllUsers.momo, RoleEnum.LEADERSHIP, organizationId);
+  const suki = await createUser(dbSeedAllUsers.suki, RoleEnum.LEADERSHIP, organizationId);
+  const yue = await createUser(dbSeedAllUsers.yue, RoleEnum.LEADERSHIP, organizationId);
+  const bumi = await createUser(dbSeedAllUsers.bumi, RoleEnum.LEADERSHIP, organizationId);
+  const cristianoRonaldo = await createUser(dbSeedAllUsers.cristianoRonaldo, RoleEnum.LEADERSHIP, organizationId);
+  const thierryHenry = await createUser(dbSeedAllUsers.thierryHenry, RoleEnum.LEADERSHIP, organizationId);
+  const frankLampard = await createUser(dbSeedAllUsers.frankLampard, RoleEnum.LEADERSHIP, organizationId);
+  const stevenGerrard = await createUser(dbSeedAllUsers.stevenGerrard, RoleEnum.LEADERSHIP, organizationId);
+  const ryanGiggs = await createUser(dbSeedAllUsers.ryanGiggs, RoleEnum.LEADERSHIP, organizationId);
+  const paulScholes = await createUser(dbSeedAllUsers.paulScholes, RoleEnum.LEADERSHIP, organizationId);
+  const alanShearer = await createUser(dbSeedAllUsers.alanShearer, RoleEnum.LEADERSHIP, organizationId);
+  const ericCantona = await createUser(dbSeedAllUsers.ericCantona, RoleEnum.LEADERSHIP, organizationId);
+  const patrickVieira = await createUser(dbSeedAllUsers.patrickVieira, RoleEnum.LEADERSHIP, organizationId);
+  const didierDrogba = await createUser(dbSeedAllUsers.didierDrogba, RoleEnum.LEADERSHIP, organizationId);
+  const johnTerry = await createUser(dbSeedAllUsers.johnTerry, RoleEnum.LEADERSHIP, organizationId);
+  const dennisBergkamp = await createUser(dbSeedAllUsers.dennisBergkamp, RoleEnum.LEADERSHIP, organizationId);
+  const jkDobbins = await createUser(dbSeedAllUsers.jkDobbins, RoleEnum.LEADERSHIP, organizationId);
+  const davidOjabo = await createUser(dbSeedAllUsers.davidOjabo, RoleEnum.LEADERSHIP, organizationId);
+  const markAndrews = await createUser(dbSeedAllUsers.markAndrews, RoleEnum.LEADERSHIP, organizationId);
+  const odellBeckham = await createUser(dbSeedAllUsers.odellBeckham, RoleEnum.LEADERSHIP, organizationId);
+  const chrisHorton = await createUser(dbSeedAllUsers.chrisHorton, RoleEnum.LEADERSHIP, organizationId);
+  const mikeMacdonald = await createUser(dbSeedAllUsers.mikeMacdonald, RoleEnum.LEADERSHIP, organizationId);
+  const toddMonken = await createUser(dbSeedAllUsers.toddMonken, RoleEnum.LEADERSHIP, organizationId);
+  const stephenBisciotti = await createUser(dbSeedAllUsers.stephenBisciotti, RoleEnum.LEADERSHIP, organizationId);
+  const brooksRobinson = await createUser(dbSeedAllUsers.brooksRobinson, RoleEnum.LEADERSHIP, organizationId);
+  const jimPalmer = await createUser(dbSeedAllUsers.jimPalmer, RoleEnum.LEADERSHIP, organizationId);
+  const eddieMurray = await createUser(dbSeedAllUsers.eddieMurray, RoleEnum.LEADERSHIP, organizationId);
+  const georgeSisler = await createUser(dbSeedAllUsers.georgeSisler, RoleEnum.LEADERSHIP, organizationId);
+  const urbanShocker = await createUser(dbSeedAllUsers.urbanShocker, RoleEnum.LEADERSHIP, organizationId);
+  const kenWilliams = await createUser(dbSeedAllUsers.kenWilliams, RoleEnum.LEADERSHIP, organizationId);
+  const boogPowell = await createUser(dbSeedAllUsers.boogPowell, RoleEnum.LEADERSHIP, organizationId);
+  const mannyMachado = await createUser(dbSeedAllUsers.mannyMachado, RoleEnum.LEADERSHIP, organizationId);
+  const babyDollJacobson = await createUser(dbSeedAllUsers.babyDollJacobson, RoleEnum.LEADERSHIP, organizationId);
+  const husky = await createUser(dbSeedAllUsers.husky, RoleEnum.LEADERSHIP, organizationId);
+  const winter = await createUser(dbSeedAllUsers.winter, RoleEnum.LEADERSHIP, organizationId);
+  const frostBite = await createUser(dbSeedAllUsers.frostBite, RoleEnum.LEADERSHIP, organizationId);
+  const snowPaws = await createUser(dbSeedAllUsers.snowPaws, RoleEnum.LEADERSHIP, organizationId);
+  const paws = await createUser(dbSeedAllUsers.paws, RoleEnum.LEADERSHIP, organizationId);
+  const whiteTail = await createUser(dbSeedAllUsers.whiteTail, RoleEnum.LEADERSHIP, organizationId);
+  const snowBite = await createUser(dbSeedAllUsers.snowBite, RoleEnum.LEADERSHIP, organizationId);
+  const howler = await createUser(dbSeedAllUsers.howler, RoleEnum.LEADERSHIP, organizationId);
+  const zayFlowers = await createUser(dbSeedAllUsers.zayFlowers, RoleEnum.LEADERSHIP, organizationId);
+  const patrickRicard = await createUser(dbSeedAllUsers.patrickRicard, RoleEnum.LEADERSHIP, organizationId);
+  const patrickQueen = await createUser(dbSeedAllUsers.patrickQueen, RoleEnum.LEADERSHIP, organizationId);
+  const jadeveonClowney = await createUser(dbSeedAllUsers.jadeveonClowney, RoleEnum.LEADERSHIP, organizationId);
+  const marlonHumphrey = await createUser(dbSeedAllUsers.marlonHumphrey, RoleEnum.LEADERSHIP, organizationId);
+  const kyleHamilton = await createUser(dbSeedAllUsers.kyleHamilton, RoleEnum.LEADERSHIP, organizationId);
+  const marcusWilliams = await createUser(dbSeedAllUsers.marcusWilliams, RoleEnum.LEADERSHIP, organizationId);
+  const roquanSmith = await createUser(dbSeedAllUsers.roquanSmith, RoleEnum.LEADERSHIP, organizationId);
+  const justinTucker = await createUser(dbSeedAllUsers.justinTucker, RoleEnum.LEADERSHIP, organizationId);
+  const monopolyMan = await createUser(dbSeedAllUsers.monopolyMan, RoleEnum.LEADERSHIP, organizationId);
+  const mrKrabs = await createUser(dbSeedAllUsers.mrKrabs, RoleEnum.LEADERSHIP, organizationId);
+  const richieRich = await createUser(dbSeedAllUsers.richieRich, RoleEnum.LEADERSHIP, organizationId);
+  const johnBoddy = await createUser(dbSeedAllUsers.johnBoddy, RoleEnum.LEADERSHIP, organizationId);
+  const villager = await createUser(dbSeedAllUsers.villager, RoleEnum.LEADERSHIP, organizationId);
+  const francis = await createUser(dbSeedAllUsers.francis, RoleEnum.LEADERSHIP, organizationId);
+  const victorPerkins = await createUser(dbSeedAllUsers.victorPerkins, RoleEnum.LEADERSHIP, organizationId);
+  const kingJulian = await createUser(dbSeedAllUsers.kingJulian, RoleEnum.LEADERSHIP, organizationId);
+  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
+  const gretchen = await createUser(dbSeedAllUsers.gretchen, RoleEnum.LEADERSHIP, organizationId);
+  const karen = await createUser(dbSeedAllUsers.karen, RoleEnum.LEADERSHIP, organizationId);
+  const janis = await createUser(dbSeedAllUsers.janis, RoleEnum.LEADERSHIP, organizationId);
+  const aaron = await createUser(dbSeedAllUsers.aaron, RoleEnum.LEADERSHIP, organizationId);
+  const cady = await createUser(dbSeedAllUsers.cady, RoleEnum.LEADERSHIP, organizationId);
+  const damian = await createUser(dbSeedAllUsers.damian, RoleEnum.LEADERSHIP, organizationId);
+  const glen = await createUser(dbSeedAllUsers.glen, RoleEnum.LEADERSHIP, organizationId);
+  const shane = await createUser(dbSeedAllUsers.shane, RoleEnum.LEADERSHIP, organizationId);
+  const june = await createUser(dbSeedAllUsers.june, RoleEnum.LEADERSHIP, organizationId);
+  const kevin = await createUser(dbSeedAllUsers.kevin, RoleEnum.LEADERSHIP, organizationId);
+  const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.LEADERSHIP, organizationId);
+  const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
+  const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
+
+  await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', organizationId);
 
   const fergus = await prisma.car.create({
     data: {
@@ -220,8 +242,8 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.crId,
     'LGTM',
     true,
-    changeRequest1.proposedSolutions[0].id,
-    organizationId
+    organizationId,
+    changeRequest1.proposedSolutions[0].id
   );
 
   /**
@@ -395,6 +417,13 @@ const performSeed: () => Promise<void> = async () => {
     organizationId
   );
 
+  /** Link Types */
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'doc', true, organizationId);
+
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'doc', true, organizationId);
+
+  const googleDriveLinkType = await ProjectsService.createLinkType(batman, 'Google Drive', 'doc', true, organizationId);
+
   /**
    * Projects
    */
@@ -403,7 +432,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Impact Attenuator',
     'Develop rules-compliant impact attenuator',
     [huskies.teamId],
@@ -413,12 +442,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
     [],
@@ -431,7 +460,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Bodywork',
     'Develop rules-compliant bodywork',
     [huskies.teamId],
@@ -441,12 +470,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
     [],
@@ -459,7 +488,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Battery Box',
     'Develop rules-compliant battery box.',
     [huskies.teamId],
@@ -469,12 +498,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
     [],
@@ -487,7 +516,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Motor Controller Integration',
     'Develop rules-compliant motor controller integration.',
     [huskies.teamId],
@@ -497,12 +526,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
     [],
@@ -515,7 +544,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project5WbsNumber, projectId: project5Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
     [huskies.teamId],
@@ -525,12 +554,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
     [],
@@ -553,12 +582,12 @@ const performSeed: () => Promise<void> = async () => {
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
     [],
@@ -1300,7 +1329,7 @@ const performSeed: () => Promise<void> = async () => {
       {
         name: 'GLUE',
         reason: {
-          carNumber: 1,
+          carNumber: 0,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1322,7 +1351,7 @@ const performSeed: () => Promise<void> = async () => {
       {
         name: 'BOX',
         reason: {
-          carNumber: 1,
+          carNumber: 0,
           projectNumber: 1,
           workPackageNumber: 0
         },
@@ -1344,7 +1373,7 @@ const performSeed: () => Promise<void> = async () => {
     '1',
     thomasEmrax,
     {
-      carNumber: 1,
+      carNumber: 0,
       projectNumber: 1,
       workPackageNumber: 0
     },
@@ -1363,10 +1392,11 @@ const performSeed: () => Promise<void> = async () => {
     600,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
-      carNumber: 1,
+      carNumber: 0,
       projectNumber: 1,
       workPackageNumber: 0
     },
+    organizationId,
     'Here are some notes'
   );
 
@@ -1382,10 +1412,11 @@ const performSeed: () => Promise<void> = async () => {
     70,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
-      carNumber: 1,
+      carNumber: 0,
       projectNumber: 1,
       workPackageNumber: 0
     },
+    organizationId,
     'Here are some more notes',
     assembly1.assemblyId
   );
@@ -1401,7 +1432,7 @@ const performSeed: () => Promise<void> = async () => {
     [1, 2],
     [3, 4],
     {
-      carNumber: 1,
+      carNumber: 0,
       projectNumber: 1,
       workPackageNumber: 0
     },

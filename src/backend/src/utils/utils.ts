@@ -1,7 +1,7 @@
 import { WBS_Element, WBS_Element_Status } from '@prisma/client';
 import { WbsElementStatus, WbsNumber } from 'shared';
-import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
+import { AccessDeniedException } from './errors.utils';
+import { IncomingHttpHeaders } from 'http';
 
 export const wbsNumOf = (element: WBS_Element): WbsNumber => ({
   carNumber: element.carNumber,
@@ -16,10 +16,17 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
     COMPLETE: WbsElementStatus.Complete
   }[status]);
 
-export const validateInputs = (req: Request, res: Response, next: Function): Response | void => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+export const getOrganizationId = (headers: IncomingHttpHeaders): string => {
+  const { organizationid } = headers;
+
+  console.log('headers', headers);
+  if (organizationid === undefined) {
+    throw new AccessDeniedException('Organization not provided');
   }
-  next();
+
+  if (typeof organizationid !== 'string') {
+    throw new AccessDeniedException('Invalid organization ID');
+  }
+
+  return organizationid;
 };
