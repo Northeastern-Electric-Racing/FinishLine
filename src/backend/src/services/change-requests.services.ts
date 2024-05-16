@@ -102,7 +102,7 @@ export default class ChangeRequestsService {
         activationChangeRequest: true,
         scopeChangeRequest: scopeChangeRequestQueryArgs,
         wbsElement: {
-          include: { workPackage: workPackageQueryArgs, project: true }
+          include: { workPackage: workPackageQueryArgs, project: true, links: true }
         }
       }
     });
@@ -174,20 +174,84 @@ export default class ChangeRequestsService {
       // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
       await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
 
-      // must accept and review a change request before using the workpackage and project services
-      await prisma.change_Request.update({
-        where: { crId: foundCR.crId },
-        data: {
-          accepted: true,
-          dateReviewed: new Date()
-        }
-      });
-
       const associatedProject = foundCR.wbsElement.project;
       const associatedWorkPackage = foundCR.wbsElement.workPackage;
       const { wbsProposedChanges } = foundCR.scopeChangeRequest;
       const { workPackageProposedChanges } = wbsProposedChanges;
       const { projectProposedChanges } = wbsProposedChanges;
+
+      // must accept and review a change request before using the workpackage and project services
+      await prisma.scope_CR.update({
+        where: { changeRequestId: foundCR.crId },
+        data: {
+          changeRequest: {
+            update: {
+              accepted: true,
+              dateReviewed: new Date()
+            }
+          },
+          wbsOriginalData: {
+            create: {
+              name: foundCR.wbsElement.name,
+              status: foundCR.wbsElement.status,
+              leadId: foundCR.wbsElement.leadId,
+              managerId: foundCR.wbsElement.managerId,
+              links: {
+                connect: foundCR.wbsElement.links.map((link) => ({
+                  linkId: link.linkId
+                }))
+              },
+              projectProposedChanges: projectProposedChanges
+                ? {
+                    create: {
+                      budget: associatedProject!.budget,
+                      summary: associatedProject!.summary,
+                      rules: associatedProject!.rules,
+                      goals: {
+                        connect: associatedProject!.goals.map((goal) => ({ descriptionId: goal.descriptionId }))
+                      },
+                      features: {
+                        connect: associatedProject!.features.map((feature) => ({ descriptionId: feature.descriptionId }))
+                      },
+                      otherConstraints: {
+                        connect: associatedProject!.otherConstraints.map((constraint) => ({
+                          descriptionId: constraint.descriptionId
+                        }))
+                      },
+                      teams: {
+                        connect: associatedProject!.teams.map((team) => ({ teamId: team.teamId }))
+                      },
+                      carNumber: associatedProject!.wbsElement.carNumber
+                    }
+                  }
+                : undefined,
+              workPackageProposedChanges:
+                workPackageProposedChanges && associatedWorkPackage
+                  ? {
+                      create: {
+                        startDate: associatedWorkPackage.startDate,
+                        duration: associatedWorkPackage.duration,
+                        blockedBy: {
+                          connect: associatedWorkPackage.blockedBy.map((wbsNumber) => ({ wbsNumber }))
+                        },
+                        expectedActivities: {
+                          connect: associatedWorkPackage.expectedActivities.map((activity) => ({
+                            descriptionId: activity.descriptionId
+                          }))
+                        },
+                        deliverables: {
+                          connect: associatedWorkPackage.deliverables.map((deliverable) => ({
+                            descriptionId: deliverable.descriptionId
+                          }))
+                        },
+                        stage: associatedWorkPackage.stage
+                      }
+                    }
+                  : undefined
+            }
+          }
+        }
+      });
 
       if (workPackageProposedChanges) {
         await applyWorkPackageProposedChanges(

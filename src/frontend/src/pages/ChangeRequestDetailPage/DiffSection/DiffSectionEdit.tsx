@@ -24,10 +24,18 @@ import DiffPanel from './DiffPanel';
 interface DiffSectionEditProps {
   projectProposedChanges?: ProjectProposedChangesPreview;
   workPackageProposedChanges?: WorkPackageProposedChangesPreview;
+  originalProjectData?: ProjectProposedChangesPreview;
+  originalWorkPackageData?: WorkPackageProposedChangesPreview;
   wbsNum: WbsNumber;
 }
 
-const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({ projectProposedChanges, workPackageProposedChanges, wbsNum }) => {
+const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
+  projectProposedChanges,
+  workPackageProposedChanges,
+  originalProjectData,
+  originalWorkPackageData,
+  wbsNum
+}) => {
   const { data: projects, isLoading: projectsIsLoading, isError: projectsIsError, error: projectsError } = useAllProjects();
   const {
     data: workPackages,
@@ -48,8 +56,8 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({ projectProposedChange
   const originalMap: Map<string, PotentialChangeType> = new Map();
   const proposedMap: Map<string, PotentialChangeType> = new Map();
 
-  const projectAsChanges = projectToProposedChangesPreview(project);
-  const workPackageAsChanges = workPackageToProposedChangesPreview(workPackage);
+  const projectAsChanges = originalProjectData ?? projectToProposedChangesPreview(project);
+  const workPackageAsChanges = originalWorkPackageData ?? workPackageToProposedChangesPreview(workPackage);
 
   if (isOnProject) {
     for (var projectKey in projectProposedChanges) {

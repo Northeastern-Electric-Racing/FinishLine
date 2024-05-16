@@ -27,6 +27,7 @@ import scopeChangeRequestQueryArgs, {
   workPackageProposedChangesQueryArgs
 } from '../prisma-query-args/scope-change-requests.query-args';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
+import linkQueryArgs from '../prisma-query-args/links.query-args';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -464,6 +465,7 @@ export type ChangeRequestWithChanges = Change_Request & {
   wbsElement: WBS_Element & {
     workPackage?: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>;
     project?: Prisma.ProjectGetPayload<typeof projectQueryArgs>;
+    links: Prisma.LinkGetPayload<typeof linkQueryArgs>[];
   };
 };
 

@@ -201,17 +201,17 @@ model Message_Info {
 }
 
 model Scope_CR {
-  scopeCrId            Int                   @id @default(autoincrement())
-  changeRequestId      Int                   @unique
-  changeRequest        Change_Request        @relation(fields: [changeRequestId], references: [crId])
-  what                 String
-  why                  Scope_CR_Why[]
-  scopeImpact          String
-  timelineImpact       Int
-  budgetImpact         Int
-  proposedSolutions    Proposed_Solution[]
-  wbsProposedChangesId String?
-  wbsProposedChanges   Wbs_Proposed_Changes?
+  scopeCrId          Int                   @id @default(autoincrement())
+  changeRequestId    Int                   @unique
+  changeRequest      Change_Request        @relation(fields: [changeRequestId], references: [crId])
+  what               String
+  why                Scope_CR_Why[]
+  scopeImpact        String
+  timelineImpact     Int
+  budgetImpact       Int
+  proposedSolutions  Proposed_Solution[]
+  wbsProposedChanges Wbs_Proposed_Changes? @relation(name: "wbsProposedChanges")
+  wbsOriginalData    Wbs_Proposed_Changes? @relation(name: "wbsOriginalData")
 }
 
 model Proposed_Solution {
@@ -667,19 +667,21 @@ model Meeting {
 }
 
 model Wbs_Proposed_Changes {
-  wbsProposedChangesId       String                         @id @default(uuid())
-  name                       String
-  status                     WBS_Element_Status
-  leadId                     Int?
-  lead                       User?                          @relation(name: "wbsProjectLead", fields: [leadId], references: [userId])
-  managerId                  Int?
-  manager                    User?                          @relation(name: "wbsProjectManager", fields: [managerId], references: [userId])
-  links                      Link[]                         @relation(name: "proposedChangeLinks")
-  changeRequest              Scope_CR                       @relation(fields: [changeRequestId], references: [scopeCrId])
-  changeRequestId            Int                            @unique
-  projectProposedChanges     Project_Proposed_Changes?      @relation(name: "projectProposedChanges")
-  workPackageProposedChanges Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
-  dateDeleted                DateTime?
+  wbsProposedChangesId          String                         @id @default(uuid())
+  name                          String
+  status                        WBS_Element_Status
+  leadId                        Int?
+  lead                          User?                          @relation(name: "wbsProjectLead", fields: [leadId], references: [userId])
+  managerId                     Int?
+  manager                       User?                          @relation(name: "wbsProjectManager", fields: [managerId], references: [userId])
+  links                         Link[]                         @relation(name: "proposedChangeLinks")
+  changeRequest                 Scope_CR?                      @relation(name: "wbsProposedChanges", fields: [changeRequestId], references: [scopeCrId])
+  changeRequestId               Int?                           @unique
+  projectProposedChanges        Project_Proposed_Changes?      @relation(name: "projectProposedChanges")
+  workPackageProposedChanges    Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
+  dateDeleted                   DateTime?
+  changeRequestAsOriginalData   Scope_CR?                      @relation(name: "wbsOriginalData", fields: [changeRequestAsOriginalDataId], references: [scopeCrId])
+  changeRequestAsOriginalDataId Int?                           @unique
 }
 
 model Project_Proposed_Changes {

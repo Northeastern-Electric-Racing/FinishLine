@@ -45,6 +45,32 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
       }
     : undefined;
 
+  const originalProjectData: ProjectProposedChangesPreview | undefined = changeRequest.originalProjectData && {
+    name: changeRequest.originalProjectData.name,
+    summary: changeRequest.originalProjectData.summary,
+    lead: changeRequest.originalProjectData.lead,
+    manager: changeRequest.originalProjectData.manager,
+    teams: changeRequest.originalProjectData.teams,
+    budget: changeRequest.originalProjectData.budget,
+    goals: changeRequest.originalProjectData.goals,
+    features: changeRequest.originalProjectData.features,
+    rules: changeRequest.originalProjectData.rules,
+    otherConstraints: changeRequest.originalProjectData.otherConstraints,
+    links: changeRequest.originalProjectData.links
+  };
+
+  const originalWorkPackageData: WorkPackageProposedChangesPreview | undefined = changeRequest.originalWorkPackageData && {
+    name: changeRequest.originalWorkPackageData.name,
+    stage: changeRequest.originalWorkPackageData.stage,
+    lead: changeRequest.originalWorkPackageData.lead,
+    manager: changeRequest.originalWorkPackageData.manager,
+    startDate: changeRequest.originalWorkPackageData.startDate,
+    duration: changeRequest.originalWorkPackageData.duration,
+    blockedBy: changeRequest.originalWorkPackageData.blockedBy,
+    expectedActivities: changeRequest.originalWorkPackageData.expectedActivities,
+    deliverables: changeRequest.originalWorkPackageData.deliverables
+  };
+
   const workPackageProposedChangesPreview: WorkPackageProposedChangesPreview | undefined = workPackageProposedChanges
     ? {
         name: workPackageProposedChanges.name,
@@ -72,6 +98,8 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
         <DiffSectionEdit
           projectProposedChanges={projectProposedChangesPreview}
           workPackageProposedChanges={workPackageProposedChangesPreview}
+          originalProjectData={originalProjectData}
+          originalWorkPackageData={originalWorkPackageData}
           wbsNum={wbsNum}
         />
       )}

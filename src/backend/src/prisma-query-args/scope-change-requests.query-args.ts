@@ -35,7 +35,8 @@ const scopeChangeRequestQueryArgs = Prisma.validator<Prisma.Scope_CRArgs>()({
     proposedSolutions: proposedSolutionArgs,
     wbsProposedChanges: {
       ...wbsProposedChangeQueryArgs
-    }
+    },
+    wbsOriginalData: wbsProposedChangeQueryArgs
   }
 });
 
