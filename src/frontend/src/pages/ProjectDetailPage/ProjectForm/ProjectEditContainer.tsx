@@ -5,7 +5,7 @@
 
 import { Project, ProjectProposedChangesCreateArgs } from 'shared';
 import { useAllLinkTypes, useEditSingleProject } from '../../../hooks/projects.hooks';
-import { bulletsToObject, mapBulletsToPayload, rulesToObject } from '../../../utils/form';
+import { bulletsToObject } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { EditSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
@@ -34,12 +34,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   const history = useHistory();
 
   const { name, budget, summary } = project;
-  const [projectManagerId, setProjectManagerId] = useState<string | undefined>(project.manager?.userId.toString());
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>(project.lead?.userId.toString());
-  const goals = bulletsToObject(project.goals);
-  const features = bulletsToObject(project.features);
-  const constraints = bulletsToObject(project.otherConstraints);
-  const rules = rulesToObject(project.rules);
+  const [managerId, setManagerId] = useState<string | undefined>(project.manager?.userId.toString());
+  const [leadId, setLeadId] = useState<string | undefined>(project.lead?.userId.toString());
+  const descriptionBullets = bulletsToObject(project.descriptionBullets);
 
   const { mutateAsync, isLoading } = useEditSingleProject(project.wbsNum);
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
@@ -85,20 +82,17 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     carNumber: 0,
     links,
     crId: query.get('crId') || '',
-    goals,
-    features,
-    constraints,
-    rules,
-    projectLeadId,
-    projectManagerId
+    descriptionBullets,
+    leadId,
+    managerId
   };
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
     budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
     summary: yup.string().required('Summary is required!'),
-    projectLeadId: yup.number().optional(),
-    projectManagerId: yup.number().optional(),
+    leadId: yup.number().optional(),
+    managerId: yup.number().optional(),
     links: yup.array().of(
       yup.object().shape({
         linkTypeName: yup.string().required('Link Type is required!'),
@@ -108,9 +102,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, carNumber, goals, features, constraints, type, what, why } = data;
-
-    const rules = data.rules.map((rule) => rule.detail);
+    const { name, budget, summary, links, carNumber, type, what, why } = data;
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
@@ -118,13 +110,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         summary,
         teamIds: project.teams.map((team) => team.teamId),
         budget,
-        rules,
-        goals: goals.map((g) => g.detail),
-        features: features.map((f) => f.detail),
-        otherConstraints: constraints.map((c) => c.detail),
+        descriptionBullets,
         links,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        leadId: leadId ? parseInt(leadId) : undefined,
+        managerId: managerId ? parseInt(managerId) : undefined
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
@@ -149,13 +138,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links } = data;
-    const rules = data.rules.map((rule) => rule.detail);
+    const { name, budget, summary, links, descriptionBullets } = data;
     const crId = data.crId;
-
-    const goals = mapBulletsToPayload(data.goals);
-    const features = mapBulletsToPayload(data.features);
-    const otherConstraints = mapBulletsToPayload(data.constraints);
 
     try {
       const payload: EditSingleProjectPayload = {
@@ -165,12 +149,9 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         links,
         projectId: project.id,
         crId: Number(crId),
-        rules,
-        goals,
-        features,
-        otherConstraints,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        descriptionBullets,
+        leadId: leadId ? parseInt(leadId) : undefined,
+        managerId: managerId ? parseInt(managerId) : undefined
       };
       await mutateAsync(payload);
       exitEditMode();
@@ -187,12 +168,12 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       exitEditMode={exitEditMode}
       project={project}
       onSubmit={onSubmit}
-      setProjectManagerId={setProjectManagerId}
-      setProjectLeadId={setProjectLeadId}
+      setManagerId={setManagerId}
+      setLeadId={setLeadId}
       schema={schema}
       defaultValues={defaultValues}
-      projectLeadId={projectLeadId}
-      projectManagerId={projectManagerId}
+      leadId={leadId}
+      managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
     />
   );

@@ -43,6 +43,7 @@ export interface AuthenticatedUser {
   changeRequestsToReviewId: number[];
   isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
+  organizations: string[];
 }
 
 export interface UserSettings {

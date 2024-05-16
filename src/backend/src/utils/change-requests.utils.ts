@@ -1,11 +1,11 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, User, Prisma, Change_Request, Change } from '@prisma/client';
-import { addWeeksToDate, ChangeRequestReason } from 'shared';
+import { Scope_CR_Why_Type, User, Prisma, Change_Request, Change, Link_Type, Description_Bullet_Type } from '@prisma/client';
+import { addWeeksToDate, ChangeRequestReason, DescriptionBulletPreview, LinkCreateArgs } from 'shared';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail } from './changes.utils';
-import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -31,7 +31,7 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
  * @param reviewer the reviewer of the change request
  */
 export const updateBlocking = async (
-  initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>,
+  initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>,
   timelineImpact: number,
   crId: number,
   reviewer: User
@@ -122,7 +122,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 export const calculateChangeRequestStatus = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
 ): ChangeRequestStatus => {
   if (changeRequest.changes.length) {
     return ChangeRequestStatus.Implemented;
@@ -151,34 +151,67 @@ export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
   return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
 };
 
+export interface ProposedChangedValidationResult {
+  links: (LinkCreateArgs & { linkType: Link_Type })[];
+  descriptionBullets: (DescriptionBulletPreview & { descriptionBulletType: Description_Bullet_Type })[];
+}
+
 /**
  * Determines if the project lead, project manager, and links all exist
+ * @param links the links to be verified
+ * @param descriptionBullets the description bullets to be verified
+ * @param organizationId the organization id the current user is in
  * @param projectLeadId the project lead id to be verified
  * @param projectManagerId the project manager id to be verified
- * @param links the links to be verified
  */
 export const validateProposedChangesFields = async (
-  links: {
-    url: string;
-    linkTypeName: string;
-  }[],
+  links: LinkCreateArgs[],
+  descriptionBullets: DescriptionBulletPreview[],
+  organizationId: string,
   projectLeadId?: number,
   projectManagerId?: number
-) => {
+): Promise<ProposedChangedValidationResult> => {
   if (projectLeadId) {
-    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId }, include: { organizations: true } });
     if (!projectLead) throw new NotFoundException('User', projectLeadId);
+    if (!projectLead.organizations.map((org) => org.organizationId).includes(organizationId))
+      throw new HttpException(400, 'Project lead does not belong to the organization');
   }
 
   if (projectManagerId) {
-    const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+    const projectManager = await prisma.user.findUnique({
+      where: { userId: projectManagerId },
+      include: { organizations: true }
+    });
     if (!projectManager) throw new NotFoundException('User', projectManagerId);
+    if (!projectManager.organizations.map((org) => org.organizationId).includes(organizationId))
+      throw new HttpException(400, 'Project manager does not belong to the organization');
   }
 
-  if (links.length > 0) {
-    for (const link of links) {
-      const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
-      if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
-    }
-  }
+  const linksWithLinkTypes = links.map(async (link) => {
+    const linkType = await prisma.link_Type.findUnique({
+      where: { uniqueLinkType: { name: link.linkTypeName, organizationId } }
+    });
+    if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+    return {
+      ...link,
+      linkType
+    };
+  });
+
+  const descriptionBulletsWithTypes = descriptionBullets.map(async (bullet) => {
+    const descriptionBulletType = await prisma.description_Bullet_Type.findUnique({
+      where: { uniqueDescriptionBulletType: { name: bullet.type, organizationId } }
+    });
+    if (!descriptionBulletType) throw new NotFoundException('Description Bullet Type', bullet.type);
+    return {
+      ...bullet,
+      descriptionBulletType
+    };
+  });
+
+  return {
+    links: await Promise.all(linksWithLinkTypes),
+    descriptionBullets: await Promise.all(descriptionBulletsWithTypes)
+  };
 };

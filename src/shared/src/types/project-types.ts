@@ -5,7 +5,7 @@
 
 import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
-import { TimelineStatus, WorkPackageStage } from './work-package-types';
+import { WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
 import { Assembly, Material, Task } from 'shared';
 
@@ -16,7 +16,8 @@ export interface WbsNumber {
 }
 
 export interface WbsElement {
-  id: number;
+  wbsElementId: number; // wbs element id
+  id: number; // project/ work package id
   wbsNum: WbsNumber;
   dateCreated: Date;
   name: string;
@@ -27,15 +28,7 @@ export interface WbsElement {
   changes: ImplementedChange[];
   materials: Material[];
   assemblies: Assembly[];
-}
-
-export interface WbsProposedChanges {
-  id: string;
-  name: string;
-  status: WbsElementStatus;
-  links: LinkInfo[];
-  projectLead?: User;
-  projectManager?: User;
+  descriptionBullets: DescriptionBullet[];
 }
 
 export enum WbsElementStatus {
@@ -44,54 +37,26 @@ export enum WbsElementStatus {
   Complete = 'COMPLETE'
 }
 
-export interface ProjectProposedChanges extends WbsProposedChanges {
-  summary: string;
-  budget: number;
-  rules: string[];
-  goals: DescriptionBullet[];
-  features: DescriptionBullet[];
-  otherConstrains: DescriptionBullet[];
-  teams: TeamPreview[];
-  carNumber?: number;
-}
-
 export interface Project extends WbsElement {
   summary: string;
   budget: number;
-  rules: string[];
   endDate?: Date;
   duration: number;
   startDate?: Date;
-  goals: DescriptionBullet[];
-  features: DescriptionBullet[];
-  otherConstraints: DescriptionBullet[];
   workPackages: WorkPackage[];
   teams: TeamPreview[];
   tasks: Task[];
+  favoritedBy: UserPreview[];
 }
 
 export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
 
-export interface WorkPackageProposedChanges extends WbsProposedChanges {
-  startDate: Date;
-  duration: number;
-  blockedBy: WbsNumber[];
-  expectedActivities: DescriptionBullet[];
-  deliverables: DescriptionBullet[];
-  stage?: WorkPackageStage;
-}
-
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
-  progress: number;
   startDate: Date;
   endDate: Date;
   duration: number;
-  expectedProgress: number;
-  timelineStatus: TimelineStatus;
   blockedBy: WbsNumber[];
-  expectedActivities: DescriptionBullet[];
-  deliverables: DescriptionBullet[];
   projectName: string;
   stage?: WorkPackageStage;
 }
@@ -100,6 +65,7 @@ export interface DescriptionBullet {
   id: number;
   detail: string;
   dateAdded: Date;
+  type: string;
   dateDeleted?: Date;
   userChecked?: User;
   dateChecked?: Date;
@@ -131,4 +97,28 @@ export interface LinkCreateArgs {
   linkId: string;
   linkTypeName: string;
   url: string;
+}
+
+export interface WbsProposedChanges {
+  id: string;
+  name: string;
+  status: WbsElementStatus;
+  links: Link[];
+  descriptionBullets: DescriptionBullet[];
+  lead?: UserPreview;
+  manager?: UserPreview;
+}
+
+export interface ProjectProposedChanges extends WbsProposedChanges {
+  summary: string;
+  budget: number;
+  teams: TeamPreview[];
+  carNumber?: number;
+}
+
+export interface WorkPackageProposedChanges extends WbsProposedChanges {
+  startDate: Date;
+  duration: number;
+  blockedBy: WbsNumber[];
+  stage?: WorkPackageStage;
 }

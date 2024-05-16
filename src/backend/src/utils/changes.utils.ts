@@ -1,3 +1,13 @@
+import { WBS_Element } from '@prisma/client';
+import { DescriptionBulletPreview, WorkPackageStage, wbsPipe } from 'shared';
+import { getUserFullName } from './users.utils';
+import {
+  DescriptionBulletWithType,
+  descriptionBulletToChangeListValue,
+  descriptionBulletsToChangeListValues,
+  separateDescriptionBulletsByType
+} from './description-bullets.utils';
+
 export enum ChangeType {
   ADDED = 'Added new',
   REMOVED = 'Removed',
@@ -16,6 +26,14 @@ export interface ChangeListValue<T> {
   comparator: string;
   displayValue: string;
 }
+
+export const transformBlockedByToChangeListValue = (blockedBy: WBS_Element): ChangeListValue<WBS_Element> => {
+  return {
+    element: blockedBy,
+    comparator: `${blockedBy.wbsElementId}`,
+    displayValue: `${wbsPipe(blockedBy)}`
+  };
+};
 
 export const buildChangeDetail = (itemChanged: string, oldValue: string, newValue: string): string => {
   return `Changed ${itemChanged} from "${oldValue}" to "${newValue}"`;
@@ -131,5 +149,134 @@ export const createListChanges = <T>(
           : `${change.type} ${nameOfField} "${change.changeListValue.displayValue}"`;
       return { changeRequestId: crId, implementerId, wbsElementId, detail };
     })
+  };
+};
+
+export const getWorkPackageChanges = async (
+  oldName: string | null,
+  newName: string,
+  oldStage: string | null,
+  newStage: WorkPackageStage | null,
+  oldStartDate: Date | null,
+  newStartDate: Date,
+  oldDuration: number | null,
+  newDuration: number,
+  oldBlockedBy: WBS_Element[],
+  newBlockedBy: WBS_Element[],
+  oldManagerId: number | null,
+  newManagerId: number | null,
+  oldLeadId: number | null,
+  newLeadId: number | null,
+  oldDescriptionBullets: DescriptionBulletWithType[],
+  newDescriptionBullets: DescriptionBulletPreview[],
+  crId: number,
+  wbsElementId: number,
+  submitterId: number
+) => {
+  let changes: ChangeCreateArgs[] = [];
+  const nameChangeJson = createChange('name', oldName, newName, crId, submitterId, wbsElementId);
+  const stageChangeJson = createChange('stage', oldStage, newStage, crId, submitterId, wbsElementId);
+  const startDateChangeJson = createChange(
+    'start date',
+    oldStartDate?.toDateString() || null,
+    new Date(newStartDate).toDateString(),
+    crId,
+    submitterId,
+    wbsElementId
+  );
+  const durationChangeJson = createChange('duration', oldDuration, newDuration, crId, submitterId, wbsElementId);
+  const blockedByChangeJson = createListChanges(
+    'blocked by',
+    oldBlockedBy.map(transformBlockedByToChangeListValue),
+    newBlockedBy.map(transformBlockedByToChangeListValue),
+    crId,
+    submitterId,
+    wbsElementId
+  );
+
+  const managerChange = createChange(
+    'manager',
+    await getUserFullName(oldManagerId),
+    await getUserFullName(newManagerId),
+    crId,
+    submitterId,
+    wbsElementId
+  );
+
+  const leadChange = createChange(
+    'lead',
+    await getUserFullName(oldLeadId),
+    await getUserFullName(newLeadId),
+    crId,
+    submitterId,
+    wbsElementId
+  );
+
+  const descriptionBulletChanges = await getDescriptionBulletChanges(
+    oldDescriptionBullets,
+    newDescriptionBullets,
+    crId,
+    wbsElementId,
+    submitterId
+  );
+
+  // add to changes if not undefined
+  if (nameChangeJson) changes.push(nameChangeJson);
+  if (startDateChangeJson) changes.push(startDateChangeJson);
+  if (durationChangeJson) changes.push(durationChangeJson);
+  if (stageChangeJson) changes.push(stageChangeJson);
+  if (leadChange) changes.push(leadChange);
+  if (managerChange) changes.push(managerChange);
+
+  // add the changes for each of blockers, expected activities, and deliverables
+  changes = changes.concat(blockedByChangeJson.changes).concat(descriptionBulletChanges.changes);
+
+  return {
+    changes,
+    deletedBlockedBy: blockedByChangeJson.deletedElements,
+    addedBlockedBy: blockedByChangeJson.addedElements,
+    editedBlockedBy: blockedByChangeJson.editedElements,
+    deletedDescriptionBullets: descriptionBulletChanges.deleted,
+    addedDescriptionBullets: descriptionBulletChanges.added,
+    editedDescriptionBullets: descriptionBulletChanges.edited
+  };
+};
+
+export const getDescriptionBulletChanges = async (
+  oldDescriptionBullets: DescriptionBulletWithType[],
+  newDescriptionBullets: DescriptionBulletPreview[],
+  crId: number,
+  wbsElementId: number,
+  submitterId: number
+) => {
+  const descriptionBulletsSeparatedByType = separateDescriptionBulletsByType(newDescriptionBullets);
+  const descriptionBulletChanges: ChangeCreateArgs[] = [];
+  const descriptionBulletDeletions: DescriptionBulletPreview[] = [];
+  const descriptionBulletAdditions: DescriptionBulletPreview[] = [];
+  const descriptionBulletEdits: DescriptionBulletPreview[] = [];
+
+  for (const [type, descriptionBullets] of descriptionBulletsSeparatedByType) {
+    const descriptionBulletsChangeJson = createListChanges(
+      type,
+      descriptionBulletsToChangeListValues(
+        oldDescriptionBullets.filter((ele) => !ele.dateDeleted && ele.descriptionBulletType.name === type)
+      ),
+      descriptionBullets.map(descriptionBulletToChangeListValue),
+      crId,
+      submitterId,
+      wbsElementId
+    );
+
+    descriptionBulletChanges.concat(descriptionBulletsChangeJson.changes);
+    descriptionBulletDeletions.concat(descriptionBulletsChangeJson.deletedElements);
+    descriptionBulletAdditions.concat(descriptionBulletsChangeJson.addedElements);
+    descriptionBulletEdits.concat(descriptionBulletsChangeJson.editedElements);
+  }
+
+  return {
+    changes: descriptionBulletChanges,
+    deleted: descriptionBulletDeletions,
+    added: descriptionBulletAdditions,
+    edited: descriptionBulletEdits
   };
 };

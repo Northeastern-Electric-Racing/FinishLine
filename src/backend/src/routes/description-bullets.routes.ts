@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import DescriptionBulletsController from '../controllers/description-bullets.controllers';
-import { validateInputs } from '../utils/utils';
+import { validateInputs } from '../utils/validation.utils';
 
 const descriptionBulletsRouter = express.Router();
 

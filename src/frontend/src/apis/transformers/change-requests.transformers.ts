@@ -16,7 +16,7 @@ interface MaybeActiveChangeRequest extends ChangeRequest {
   startDate?: Date;
 }
 
-export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
+export const changeRequestTransformer = (changeRequest: ChangeRequest): ChangeRequest => {
   const data: MaybeActiveChangeRequest = {
     ...changeRequest,
     implementedChanges: changeRequest.implementedChanges?.map(implementedChangeTransformer),
@@ -37,7 +37,7 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
  * @param immplementedChange Incoming implemented change object supplied by the HTTP response.
  * @returns Properly transformed implemented change object.
  */
-export const implementedChangeTransformer = (implementedChange: ImplementedChange) => {
+export const implementedChangeTransformer = (implementedChange: ImplementedChange): ImplementedChange => {
   return {
     ...implementedChange,
     dateImplemented: new Date(implementedChange.dateImplemented)

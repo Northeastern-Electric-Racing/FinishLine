@@ -10,17 +10,31 @@ import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
+import { useOrganization } from '../hooks/organization.hooks';
+import Organizations from '../pages/OrganizationPage/Organizations';
 
 const AppPublic: React.FC = () => {
   const auth = useAuth();
   const history = useHistory();
   const theme = useProvideThemeToggle();
   const devUserId = localStorage.getItem('devUserId');
+  const organization = useOrganization();
+
   const render: ((props: RouteComponentProps) => React.ReactNode) | undefined = (e) => {
     // if logged in, go to authenticated app
     if (auth.user) {
       if (auth.user.defaultTheme && auth.user.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
         theme.toggleTheme();
+      }
+
+      console.log('organization.organizationId:', organization.organizationId);
+
+      if (auth.user.organizations.length > 0 && !organization.organizationId) {
+        organization.selectOrganization(auth.user.organizations[0]);
+      }
+
+      if (!organization.organizationId) {
+        return <Organizations></Organizations>;
       }
 
       return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} />;

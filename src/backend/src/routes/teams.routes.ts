@@ -1,8 +1,7 @@
 import express from 'express';
 import TeamsController from '../controllers/teams.controllers';
 import { body } from 'express-validator';
-import { validateInputs } from '../utils/utils';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString, validateInputs } from '../utils/validation.utils';
 
 const teamsRouter = express.Router();
 
