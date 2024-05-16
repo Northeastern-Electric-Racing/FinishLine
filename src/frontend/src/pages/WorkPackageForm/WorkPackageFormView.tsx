@@ -122,7 +122,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         duration,
         blockedBy: blockedByWbsNums,
         descriptionBullets: descriptionBullets,
-        stage: stage as WorkPackageStage
+        stage: stage as WorkPackageStage,
+        links: []
       };
       if (changeRequestFormInput) {
         await createWorkPackageScopeCR({
