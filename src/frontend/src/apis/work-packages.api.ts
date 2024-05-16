@@ -8,7 +8,6 @@ import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackageStage, Wor
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
-import { workPackageTemplateTransformer } from '../../../backend/src/transformers/work-package-template.transformer';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -133,6 +132,6 @@ export const slackUpcomingDeadlines = (deadline: Date) => {
  */
 export const getAllWorkPackageTemplates = () => {
   return axios.get<WorkPackageTemplate[]>(apiUrls.workPackageTemplates(), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTemplateTransformer)
+    transformResponse: (data) => JSON.parse(data)
   });
 };

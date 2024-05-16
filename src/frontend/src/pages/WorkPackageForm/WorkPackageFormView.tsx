@@ -19,7 +19,7 @@ import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
-import { getMonday } from '../../utils/datetime.utils';
+import { getMonday, transformDate } from '../../utils/datetime.utils';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
 import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequest';
@@ -89,8 +89,10 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const history = useHistory();
 
-  const [managerId, setManagerId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
-  const [leadId, setLeadId] = useState<string | undefined>(wbsElement.lead?.userId.toString());
+  const [managerId, setManagerId] = useState<string | undefined>(
+    defaultValues ? wbsElement.manager?.userId.toString() : undefined
+  );
+  const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
@@ -104,19 +106,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const { userId } = user;
 
-  const transformDate = (date: Date) => {
-    const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-    const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
-    return `${date.getFullYear().toString()}-${month}-${day}`;
-  };
-
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
-        projectLeadId: leadId ? parseInt(leadId) : undefined,
-        projectManagerId: managerId ? parseInt(managerId) : undefined,
+        leadId: leadId ? parseInt(leadId) : undefined,
+        managerId: managerId ? parseInt(managerId) : undefined,
         projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,

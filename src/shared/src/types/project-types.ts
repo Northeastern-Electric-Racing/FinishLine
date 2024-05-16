@@ -79,12 +79,6 @@ export interface LinkType {
   iconName: string;
 }
 
-export interface LinkInfo {
-  linkInfoId: string;
-  url: string;
-  linkType: LinkType;
-}
-
 export interface Link {
   linkId: string;
   linkType: LinkType;

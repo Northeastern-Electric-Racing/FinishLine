@@ -120,6 +120,7 @@ export interface WBSProposedChangesCreateArgs {
   leadId?: number;
   managerId?: number;
   descriptionBullets: DescriptionBulletPreview[];
+  links: LinkCreateArgs[];
 }
 
 export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
@@ -127,7 +128,6 @@ export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCrea
   summary: string;
   teamIds: string[];
   carNumber?: number;
-  links: LinkCreateArgs[];
 }
 
 export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {

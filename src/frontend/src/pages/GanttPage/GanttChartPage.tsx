@@ -19,7 +19,8 @@ import {
   transformProjectToGanttTask,
   getProjectTeamsName,
   EventChange,
-  GanttTaskData
+  RequestEventChange,
+  aggregateGanttChanges
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -32,6 +33,7 @@ import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
+import { GanttRequestChangeModal } from './GanttChartComponents/GanttRequestChangeModal';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -51,7 +53,8 @@ const GanttChartPage: FC = () => {
     }>
   >([]);
   const [searchText, setSearchText] = useState<string>('');
-  const [showWorkPackagesList, setShowWorkPackagesList] = useState<{ [projectId: string]: boolean }>({});
+  const [ganttTaskChanges, setGanttTaskChanges] = useState<RequestEventChange[]>([]);
+  const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -62,21 +65,18 @@ const GanttChartPage: FC = () => {
 
   const showOnlyOverdue = query.get('overdue') ? query.get('overdue') === 'true' : false;
 
-  const expanded = query.get('expanded') ? query.get('expanded') === 'true' : false;
-
   const defaultGanttFilters: GanttFilters = {
     showCars,
     showTeamTypes,
     showTeams,
-    showOnlyOverdue,
-    expanded
+    showOnlyOverdue
   };
 
   const filteredProjects = filterGanttProjects(projects ?? [], defaultGanttFilters, searchText);
   const sortedProjects = filteredProjects.sort(
     (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
   );
-  const ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project, expanded));
+  const ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project));
 
   if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
@@ -160,16 +160,8 @@ const GanttChartPage: FC = () => {
   ];
 
   const resetHandler = () => {
-    // No more forced reloads
-    if (query.get('expanded') === null) {
-      ganttTasks.forEach((task) => {
-        if (task.type === 'project') {
-          task.hideChildren = true;
-        }
-      });
-    } else {
-      history.push(routes.GANTT);
-    }
+    history.push(routes.GANTT);
+    showWorkPackagesMap.clear();
   };
 
   /***************************************************** */
@@ -211,17 +203,25 @@ const GanttChartPage: FC = () => {
   const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
-  // do something here with the data
   const saveChanges = (eventChanges: EventChange[]) => {
-    if (eventChanges.length === 0) {
-      console.log('no changes do nothing');
-    } else {
-      console.log('Changes:', eventChanges);
-    }
+    const updatedGanttTasks = aggregateGanttChanges(eventChanges, ganttTasks);
+    setGanttTaskChanges(updatedGanttTasks);
+  };
+
+  const removeActiveModal = (changeId: string) => {
+    setGanttTaskChanges(ganttTaskChanges.filter((change) => change.eventId !== changeId));
   };
 
   const collapseHandler = () => {
-    setShowWorkPackagesList({});
+    ganttTasks.forEach((task) => {
+      setShowWorkPackagesMap((prev) => new Map(prev.set(task.id, false)));
+    });
+  };
+
+  const expandHandler = () => {
+    ganttTasks.forEach((task) => {
+      setShowWorkPackagesMap((prev) => new Map(prev.set(task.id, true)));
+    });
   };
 
   const headerRight = (
@@ -234,6 +234,7 @@ const GanttChartPage: FC = () => {
         overdueHandler={overdueHandler}
         resetHandler={resetHandler}
         collapseHandler={collapseHandler}
+        expandHandler={expandHandler}
       />
     </Box>
   );
@@ -265,14 +266,13 @@ const GanttChartPage: FC = () => {
           chartEditingState={chartEditingState}
           setChartEditingState={setChartEditingState}
           saveChanges={saveChanges}
-          onExpanderClick={(newTask: GanttTaskData, teamName: string) => {
-            ganttTasks.forEach((task) => {
-              if (newTask.id === task.id) task = { ...newTask, teamName };
-            });
-          }}
-          showWorkPackagesList={showWorkPackagesList}
-          setShowWorkPackagesList={setShowWorkPackagesList}
+          showWorkPackagesMap={showWorkPackagesMap}
+          setShowWorkPackagesMap={setShowWorkPackagesMap}
+          highlightedChange={ganttTaskChanges[ganttTaskChanges.length - 1]}
         />
+        {ganttTaskChanges.map((change) => (
+          <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.eventId)} />
+        ))}
       </Box>
     </PageLayout>
   );

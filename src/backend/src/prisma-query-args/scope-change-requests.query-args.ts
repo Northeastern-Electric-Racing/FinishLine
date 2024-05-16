@@ -25,7 +25,7 @@ const getProjectProposedChangesQueryArgs = (organizationId: string) =>
     }
   });
 
-const workPackageProposedChangesQueryArgs = Prisma.validator<Prisma.Work_Package_Proposed_ChangesArgs>()({
+export const workPackageProposedChangesQueryArgs = Prisma.validator<Prisma.Work_Package_Proposed_ChangesArgs>()({
   include: {
     blockedBy: true
   }
@@ -39,7 +39,7 @@ export const getWbsProposedChangeQueryArgs = (organizationId: string) =>
       links: getLinkQueryArgs(organizationId),
       lead: getUserQueryArgs(organizationId),
       manager: getUserQueryArgs(organizationId),
-      proposedDescriptionBulletChanges: getDescriptionBulletQueryArgs(organizationId)
+      proposedDescriptionBulletChanges: getDescriptionBulletQueryArgs(organizationId),
     }
   });
 

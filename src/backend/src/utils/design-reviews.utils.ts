@@ -24,3 +24,15 @@ export const isUserOnDesignReview = (user: User, designReview: DesignReview): bo
   const optionalMembers = designReview.optionalMembers.map((user) => user.userId);
   return requiredMembers.includes(user.userId) || optionalMembers.includes(user.userId);
 };
+
+export const meetingStartTimePipe = (times: number[]) => {
+  const time = (times[0] % 12) + 10;
+
+  return time <= 12 ? time + 'am' : time - 12 + 'pm';
+};
+
+export const addHours = (date: Date, hours: number) => {
+  const hoursToAdd = hours * 60 * 60 * 1000;
+  date.setTime(date.getTime() + hoursToAdd);
+  return date;
+};

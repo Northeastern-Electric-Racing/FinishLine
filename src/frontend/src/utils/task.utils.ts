@@ -1,3 +1,8 @@
+/*
+ * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
+ * See the LICENSE file in the repository root folder for details.
+ */
+
 import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
 import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview } from 'shared';
 import { FormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskListNotesModal';
@@ -55,12 +60,6 @@ export interface TaskListDataGridProps {
   editTask: (editInfo: FormInput) => Promise<void>;
   setDisabled: Dispatch<SetStateAction<boolean>>;
 }
-
-export const transformDate = (date: Date) => {
-  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-  const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
-  return `${date.getFullYear().toString()}/${month}/${day}`;
-};
 
 export const taskUserToAutocompleteOption = (user: User): { label: string; id: number } => {
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };

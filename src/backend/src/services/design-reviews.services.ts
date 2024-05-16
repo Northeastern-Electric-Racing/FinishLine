@@ -10,11 +10,19 @@ import {
   AccessDeniedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { getUsers, getPrismaQueryUserIds, userHasPermission } from '../utils/users.utils';
+import { getUsers, getPrismaQueryUserIds, userHasPermission, areUsersinList } from '../utils/users.utils';
 import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
-import { sendSlackDesignReviewNotification } from '../utils/slack.utils';
+import {
+  sendDRConfirmationToThread,
+  sendDRScheduledSlackNotif,
+  sendDRUserConfirmationToThread,
+  sendSlackDRNotifications,
+  sendSlackDesignReviewConfirmNotification
+} from '../utils/slack.utils';
 import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
+import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { UserWithSettings } from '../utils/auth.utils';
 
 export default class DesignReviewsService {
   /**
@@ -98,6 +106,9 @@ export default class DesignReviewsService {
           workPackageNumber: wbsNum.workPackageNumber,
           organizationId
         }
+      },
+      include: {
+        workPackage: getWorkPackageQueryArgs(organizationId)
       }
     });
 
@@ -163,7 +174,7 @@ export default class DesignReviewsService {
     for (const memberUserSetting of memberUserSettings) {
       if (memberUserSetting.slackId) {
         try {
-          await sendSlackDesignReviewNotification(
+          await sendSlackDesignReviewConfirmNotification(
             memberUserSetting.slackId,
             designReview.designReviewId,
             designReview.wbsElement.name
@@ -174,6 +185,12 @@ export default class DesignReviewsService {
           }
         }
       }
+    }
+
+    const project = wbsElement.workPackage?.project;
+    const teams = project?.teams;
+    if (teams && teams.length > 0) {
+      await sendSlackDRNotifications(teams, designReview, submitter, wbsElement.name);
     }
 
     return designReviewTransformer(designReview);
@@ -287,7 +304,7 @@ export default class DesignReviewsService {
     const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
     // actually try to update the design review
-    const updateDesignReview = await prisma.design_Review.update({
+    const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
       ...getDesignReviewQueryArgs(organizationId),
       data: {
@@ -312,7 +329,13 @@ export default class DesignReviewsService {
         }
       }
     });
-    return designReviewTransformer(updateDesignReview);
+
+    if (status === Design_Review_Status.SCHEDULED) {
+      const relevantThreads = await prisma.message_Info.findMany({ where: {} });
+      await sendDRScheduledSlackNotif(relevantThreads, updatedDesignReview);
+    }
+
+    return designReviewTransformer(updatedDesignReview);
   }
 
   /**
@@ -326,7 +349,7 @@ export default class DesignReviewsService {
   static async markUserConfirmed(
     designReviewId: string,
     availability: number[],
-    submitter: User,
+    submitter: UserWithSettings,
     organizationId: string
   ): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
@@ -374,11 +397,11 @@ export default class DesignReviewsService {
         }
       });
 
-      // If all requested attendees have confirmed their schedule, mark design review as confirmed
-      if (
-        updatedDesignReview.confirmedMembers.length ===
-        designReview.requiredMembers.length + designReview.optionalMembers.length
-      ) {
+      const relevantThreads = await prisma.message_Info.findMany({ where: { designReviewId: designReview.designReviewId } });
+      await sendDRUserConfirmationToThread(relevantThreads, submitter);
+
+      // If all required attendees have confirmed their schedule, mark design review as confirmed
+      if (areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers)) {
         await prisma.design_Review.update({
           where: { designReviewId },
           ...getDesignReviewQueryArgs(organizationId),
@@ -386,6 +409,8 @@ export default class DesignReviewsService {
             status: Design_Review_Status.CONFIRMED
           }
         });
+
+        await sendDRConfirmationToThread(relevantThreads, updatedDesignReview.userCreated);
       }
 
       return designReviewTransformer(updatedDesignReview);

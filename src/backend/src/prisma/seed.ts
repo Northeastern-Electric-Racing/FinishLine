@@ -38,9 +38,9 @@ import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
 import DesignReviewsService from '../services/design-reviews.services';
-import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
+import { transformDate } from '../utils/datetime.utils';
 
 const prisma = new PrismaClient();
 
@@ -266,7 +266,7 @@ const performSeed: () => Promise<void> = async () => {
   );
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
-  const meanGirls: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
+  const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
@@ -406,13 +406,19 @@ const performSeed: () => Promise<void> = async () => {
 
   await TeamsService.setTeamMembers(
     regina,
-    meanGirls.teamId,
+    slackBotTeam.teamId,
+    [thomasEmrax, batman, cyborg].map((user) => user.userId),
+    organizationId
+  );
+  await TeamsService.setTeamLeads(
+    regina,
+    slackBotTeam.teamId,
     [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId),
     organizationId
   );
   await TeamsService.setTeamLeads(
     regina,
-    meanGirls.teamId,
+    slackBotTeam.teamId,
     [janis, cady, damian].map((user) => user.userId),
     organizationId
   );
@@ -547,7 +553,7 @@ const performSeed: () => Promise<void> = async () => {
     fergus.wbsElement.carNumber,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
-    [huskies.teamId],
+    [slackBotTeam.teamId],
     thomasEmrax,
     234,
     [
@@ -563,8 +569,8 @@ const performSeed: () => Promise<void> = async () => {
       }
     ],
     [],
-    thomasEmrax.userId,
-    joeBlow.userId,
+    regina.userId,
+    janis.userId,
     organizationId
   );
 
@@ -1289,14 +1295,14 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   await TasksService.createTask(
-    batman,
+    regina,
     project5WbsNumber,
     'Cost Assessment',
     'So this is where our funding goes',
     new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId],
+    [regina.userId],
     organizationId
   );
 
@@ -1456,6 +1462,78 @@ const performSeed: () => Promise<void> = async () => {
     [1, 2],
     [1, 2, 3, 4, 5, 6, 7],
     organizationId
+  );
+
+  const newWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
+    batman,
+    project2WbsNumber.carNumber,
+    project2WbsNumber.projectNumber,
+    project2WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'This is a wpchange test',
+    [{ type: Scope_CR_Why_Type.OTHER, explain: 'Creating work package' }],
+    [],
+    organizationId,
+    null,
+    {
+      name: 'new workpackage test',
+      leadId: batman.userId,
+      managerId: cyborg.userId,
+      duration: 5,
+      startDate: transformDate(new Date()),
+      stage: WorkPackageStage.Design,
+      blockedBy: [],
+      descriptionBullets: [],
+      links: []
+    }
+  );
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    newWorkPackageChangeRequest.crId,
+    'create wp',
+    true,
+    organizationId,
+    null
+  );
+
+  const { workPackageWbsNumber: workPackage9WbsNumber, workPackage: workPackage9 } = await seedWorkPackage(
+    thomasEmrax,
+    'Slim and Light Car',
+    newWorkPackageChangeRequest.crId,
+    WorkPackageStage.Design,
+    '01/22/2024',
+    5,
+    [],
+    [],
+    thomasEmrax,
+    WbsElementStatus.Inactive,
+    joeShmoe.userId,
+    thomasEmrax.userId,
+    organizationId
+  );
+
+  const editingWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
+    joeShmoe,
+    workPackage9WbsNumber.carNumber,
+    workPackage9WbsNumber.projectNumber,
+    workPackage9WbsNumber.workPackageNumber,
+    CR_Type.OTHER,
+    'This is editing a wp through CR',
+    [{ type: Scope_CR_Why_Type.OTHER, explain: 'editing a workpackage' }],
+    [],
+    organizationId,
+    null,
+    {
+      name: 'editing a work package test',
+      leadId: batman.userId,
+      managerId: cyborg.userId,
+      duration: 5,
+      startDate: transformDate(new Date()),
+      stage: WorkPackageStage.Design,
+      blockedBy: [],
+      descriptionBullets: [],
+      links: []
+    }
   );
 };
 

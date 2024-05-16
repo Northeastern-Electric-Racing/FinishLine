@@ -56,6 +56,13 @@ export const wonderwoman: PrismaUser = {
   googleAuthId: 'w'
 };
 
+export const wonderwomanSettings: User_Settings = {
+  id: 'ww',
+  userId: 4,
+  defaultTheme: Theme.LIGHT,
+  slackId: 'slackWW'
+};
+
 export const flash: PrismaUser = {
   userId: 4,
   firstName: 'Barry',

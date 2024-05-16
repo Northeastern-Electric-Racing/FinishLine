@@ -248,11 +248,13 @@ model Change_Request {
 }
 
 model Message_Info {
-  messageInfoId   String         @id @default(uuid())
+  messageInfoId   String          @id @default(uuid())
   channelId       String
   timestamp       String
-  changeRequestId Int
-  changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
+  changeRequestId Int?
+  changeRequest   Change_Request? @relation(fields: [changeRequestId], references: [crId])
+  designReviewId  String?
+  designReview    Design_Review?  @relation(fields: [designReviewId], references: [designReviewId])
 }
 
 model Scope_CR {
@@ -689,8 +691,8 @@ model Team_Type {
 }
 
 model Design_Review {
-  designReviewId   String               @id @default(uuid())
-  dateScheduled    DateTime             @db.Date
+  designReviewId           String               @id @default(uuid())
+  dateScheduled            DateTime             @db.Date
   // Meeting times are an integer between 0 and 83 from 10am - 10pm (Monday - Sunday), eg. 0 = 10:00am Monday, 12 = 10:00am Tuesday
   meetingTimes     Int[]
   dateCreated      DateTime             @default(now()) @db.Timestamp(3)
@@ -714,6 +716,7 @@ model Design_Review {
   docTemplateLink  String?
   wbsElementId     Int
   wbsElement       WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
+  notificationSlackThreads Message_Info[]
 }
 
 model Schedule_Settings {

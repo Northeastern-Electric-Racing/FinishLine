@@ -4,6 +4,8 @@
  */
 
 import { Button, Checkbox, Chip, Grid, Typography, useTheme } from '@mui/material';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ChangeEvent } from 'react';
 
@@ -85,6 +87,7 @@ interface GanttChartFiltersProps {
   }[];
   resetHandler: () => void;
   collapseHandler: () => void;
+  expandHandler: () => void;
 }
 
 const GanttChartFilters = ({
@@ -93,14 +96,14 @@ const GanttChartFilters = ({
   teamHandlers,
   overdueHandler,
   resetHandler,
-  collapseHandler
+  collapseHandler,
+  expandHandler
 }: GanttChartFiltersProps) => {
   const FilterButtons = () => {
     return (
-      <Grid item container xs={12} sx={{ justifyContent: 'right', alignItems: 'right' }}>
-        {/* TODO: Expand & Collapse buttons
+      <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'right', gap: 4 }}>
         <Grid item>
-          <Button onClick={() => {}} startIcon={<UnfoldMoreIcon />}>
+          <Button onClick={expandHandler} startIcon={<UnfoldMoreIcon />}>
             Expand
           </Button>
         </Grid>
@@ -108,7 +111,7 @@ const GanttChartFilters = ({
           <Button onClick={collapseHandler} startIcon={<UnfoldLessIcon />}>
             Collapse
           </Button>
-        </Grid>*/}
+        </Grid>
         <Grid item>
           <Button onClick={resetHandler} startIcon={<RestartAltIcon />}>
             Reset

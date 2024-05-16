@@ -6,7 +6,7 @@ export type DesignReviewQueryArgs = ReturnType<typeof getDesignReviewQueryArgs>;
 export const getDesignReviewQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Design_ReviewArgs>()({
     include: {
-      userCreated: getUserQueryArgs(organizationId),
+      userCreated: getUserWithSettingsQueryArgs(organizationId),
       teamType: true,
       requiredMembers: getUserQueryArgs(organizationId),
       optionalMembers: getUserQueryArgs(organizationId),

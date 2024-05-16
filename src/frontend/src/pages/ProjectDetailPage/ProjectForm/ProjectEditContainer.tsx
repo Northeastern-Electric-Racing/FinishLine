@@ -112,16 +112,12 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         budget,
         descriptionBullets,
         links,
+        carNumber,
         leadId: leadId ? parseInt(leadId) : undefined,
         managerId: managerId ? parseInt(managerId) : undefined
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
-        wbsNum: {
-          // TODO change this to use the car model when we add it to the schema
-          carNumber: carNumber,
-          projectNumber: 0,
-          workPackageNumber: 0
-        },
+        wbsNum: project.wbsNum,
         type: type,
         what,
         why,
