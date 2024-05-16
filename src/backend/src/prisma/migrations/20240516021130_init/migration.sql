@@ -117,7 +117,8 @@ CREATE TABLE "Message_Info" (
     "messageInfoId" TEXT NOT NULL,
     "channelId" TEXT NOT NULL,
     "timestamp" TEXT NOT NULL,
-    "changeRequestId" INTEGER NOT NULL,
+    "changeRequestId" INTEGER,
+    "designReviewId" TEXT,
 
     CONSTRAINT "Message_Info_pkey" PRIMARY KEY ("messageInfoId")
 );
@@ -946,7 +947,10 @@ ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_reviewerId_fkey" FOR
 ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_deletedByUserId_fkey" FOREIGN KEY ("deletedByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message_Info" ADD CONSTRAINT "Message_Info_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Message_Info" ADD CONSTRAINT "Message_Info_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message_Info" ADD CONSTRAINT "Message_Info_designReviewId_fkey" FOREIGN KEY ("designReviewId") REFERENCES "Design_Review"("designReviewId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Scope_CR" ADD CONSTRAINT "Scope_CR_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -71,6 +71,16 @@ export const descriptionBulletToChangeListValue = (
   };
 };
 
+export const descriptionBulletToDescriptionBulletPreview = (
+  descriptionBullet: DescriptionBulletWithType
+): DescriptionBulletPreview => {
+  return {
+    id: descriptionBullet.descriptionId,
+    detail: descriptionBullet.detail,
+    type: descriptionBullet.descriptionBulletType.name
+  };
+};
+
 export const descriptionBulletsToChangeListValues = (
   descriptionBullets: DescriptionBulletWithType[]
 ): ChangeListValue<DescriptionBulletPreview>[] => {

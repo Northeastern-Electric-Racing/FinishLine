@@ -44,7 +44,8 @@ export default class UsersService {
         include: {
           roles: true,
           userSettings: true,
-          drScheduleSettings: true
+          drScheduleSettings: true,
+          organizations: true
         }
       });
 

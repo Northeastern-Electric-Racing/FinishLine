@@ -25,6 +25,8 @@ export const getUserWithSettingsQueryArgs = (organizationId: string) =>
           organizationId
         }
       },
-      drScheduleSettings: true
+      drScheduleSettings: true,
+      userSettings: true,
+      organizations: true
     }
   });

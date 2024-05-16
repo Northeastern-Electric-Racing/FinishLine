@@ -10,7 +10,8 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
     include: {
       project: {
         include: {
-          wbsElement: true
+          wbsElement: true,
+          teams: true
         }
       },
       wbsElement: {

@@ -230,15 +230,9 @@ export default class ProjectsService {
    * @param name the new name of the project
    * @param budget the new budget of the project
    * @param summary the new summary of the project
-   * @param rules the new rules of the project
-   * @param goals the new goals of the project
-   * @param features the new features of the project
-   * @param otherConstraints the new otherConstraints of the project
-   * @param googleDriveFolderLink the new googleDriveFolderLink of the project
-   * @param slideDeckLink the new slideDeckLink of the project
-   * @param bomLink the new bomLink of the project
-   * @param taskListLink the new taskListLink of the project
-   * @param projectLeadId the new projectLead of the project
+   * @param newDescriptionBullets the new description bullets of the project
+   * @param linkCreateArgs the new links of the project
+   * @param leadId the new projectLead of the project
    * @param projectManagerId the new projectManager of the project
    * @param organizationId the id of the organization the user is currently in
    * @returns the edited project
