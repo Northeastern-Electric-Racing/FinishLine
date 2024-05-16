@@ -4,7 +4,7 @@
  */
 
 import { EventChange, GanttTaskData, RequestEventChange } from '../../../../utils/gantt.utils';
-import { dateToString } from '../../../../utils/datetime.utils';
+import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
 
@@ -32,16 +32,16 @@ const GanttTaskBar = ({
   const isProject = !event.project;
 
   const getStartCol = (event: GanttTaskData) => {
-    const startCol = days.findIndex((day) => dateToString(day) === dateToString(event.start)) + 1;
+    const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(event.start))) + 1;
     return startCol;
   };
 
   // if the end date doesn't exist within the timeframe, have it span to the end
   const getEndCol = (event: GanttTaskData) => {
     const endCol =
-      days.findIndex((day) => dateToString(day) === dateToString(event.end)) === -1
+      days.findIndex((day) => dateToString(day) === dateToString(getMonday(event.end))) === -1
         ? days.length + 1
-        : days.findIndex((day) => dateToString(day) === dateToString(event.end)) + 2;
+        : days.findIndex((day) => dateToString(day) === dateToString(getMonday(event.end))) + 2;
     return endCol;
   };
 

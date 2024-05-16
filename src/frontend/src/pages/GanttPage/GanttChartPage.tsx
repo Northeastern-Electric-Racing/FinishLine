@@ -168,11 +168,19 @@ const GanttChartPage: FC = () => {
     teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
   });
 
+  const allGanttTasks = ganttProjectTasks
+    .flatMap((projectTask) =>
+      projectTask.workPackages.map((wp) => {
+        return { ...wp, teamName: projectTask.teamName };
+      })
+    )
+    .concat(ganttProjectTasks);
+
   // find the earliest start date and subtract 2 weeks to use as the first date on calendar
   const startDate =
-    ganttProjectTasks.length !== 0
+    allGanttTasks.length !== 0
       ? sub(
-          ganttProjectTasks
+          allGanttTasks
             .map((task) => task.start)
             .reduce((previous, current) => {
               return previous < current ? previous : current;
@@ -183,9 +191,9 @@ const GanttChartPage: FC = () => {
 
   // find the latest end date and add 6 months to use as the last date on calendar
   const endDate =
-    ganttProjectTasks.length !== 0
+    allGanttTasks.length !== 0
       ? add(
-          ganttProjectTasks
+          allGanttTasks
             .map((task) => task.end)
             .reduce((previous, current) => {
               return previous > current ? previous : current;
@@ -199,16 +207,7 @@ const GanttChartPage: FC = () => {
 
   const saveChanges = (eventChanges: EventChange[]) => {
     //get wps out of each project
-    const updatedGanttTasks = aggregateGanttChanges(
-      eventChanges,
-      ganttProjectTasks
-        .flatMap((projectTask) =>
-          projectTask.workPackages.map((wp) => {
-            return { ...wp, teamName: projectTask.teamName };
-          })
-        )
-        .concat(ganttProjectTasks)
-    );
+    const updatedGanttTasks = aggregateGanttChanges(eventChanges, allGanttTasks);
     setGanttTaskChanges(updatedGanttTasks);
   };
 
