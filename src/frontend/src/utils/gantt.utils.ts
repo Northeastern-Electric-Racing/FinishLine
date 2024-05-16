@@ -20,22 +20,13 @@ export interface GanttTaskData {
   name: string;
   start: Date;
   end: Date;
-  /**
-   * From 0 to 100
-   */
-  progress: number;
-  children: GanttTaskData[];
+  workPackages: GanttTaskData[];
   styles?: {
     color?: string;
     backgroundColor?: string;
     backgroundSelectedColor?: string;
-    progressColor?: string;
-    progressSelectedColor?: string;
   };
-  isDisabled?: boolean;
   project?: string;
-  dependencies?: string[];
-  displayOrder?: number;
   onClick?: () => void;
   projectLead?: User;
   projectManager?: User;
@@ -59,8 +50,12 @@ export type RequestEventChange = {
 };
 
 export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]): GanttTaskData => {
+  const workPackages = event.workPackages && event.workPackages.map((wpEvent) => applyChangeToEvent(wpEvent, eventChanges));
+
+  const currentEventChanges = eventChanges.filter((ec) => ec.eventId === event.id);
+
   const changedEvent = { ...event };
-  for (const eventChange of eventChanges) {
+  for (const eventChange of currentEventChanges) {
     switch (eventChange.type) {
       case 'change-end-date': {
         changedEvent.end = eventChange.newEnd;
@@ -73,13 +68,12 @@ export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChan
       }
     }
   }
-  return changedEvent;
+  return { ...changedEvent, workPackages };
 };
 
 export const applyChangesToEvents = (events: GanttTaskData[], eventChanges: EventChange[]): GanttTaskData[] => {
   return events.map((event) => {
-    const changes = eventChanges.filter((ec) => ec.eventId === event.id);
-    return applyChangeToEvent(event, changes);
+    return applyChangeToEvent(event, eventChanges);
   });
 };
 
@@ -152,11 +146,10 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
     start: workPackage.startDate,
     end: workPackage.endDate,
-    progress: 100,
     project: projectWbsPipe(workPackage.wbsNum),
     type: 'task',
     teamName,
-    children: [],
+    workPackages: [],
     styles: {
       color: GanttWorkPackageTextColorPipe(workPackage.stage),
       backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
@@ -181,20 +174,15 @@ export const transformProjectToGanttTask = (project: Project): GanttTask[] => {
     name: wbsPipe(project.wbsNum) + ' - ' + project.name,
     start: project.startDate || new Date(),
     end: project.endDate || new Date(),
-    progress: 100,
     type: 'project',
     teamName,
-    children: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
+    workPackages: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }
   };
 
-  const workPackageTasks = project.workPackages
-    .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-    .map((workPackage) => transformWorkPackageToGanttTask(workPackage, teamName));
-
-  return [projectTask, ...workPackageTasks];
+  return [projectTask];
 };
 
 /**

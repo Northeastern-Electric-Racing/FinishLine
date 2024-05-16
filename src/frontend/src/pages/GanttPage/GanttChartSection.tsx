@@ -13,7 +13,7 @@ import GanttToolTip from './GanttChartComponents/GanttToolTip';
 interface GanttChartSectionProps {
   start: Date;
   end: Date;
-  displayEvents: GanttTaskData[];
+  projects: GanttTaskData[];
   isEditMode: boolean;
   createChange: (change: EventChange) => void;
   showWorkPackagesMap: Map<string, boolean>;
@@ -24,7 +24,7 @@ interface GanttChartSectionProps {
 const GanttChartSection = ({
   start,
   end,
-  displayEvents,
+  projects,
   isEditMode,
   createChange,
   showWorkPackagesMap,
@@ -32,7 +32,6 @@ const GanttChartSection = ({
   highlightedChange
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
-  const projects = displayEvents.filter((event) => !event.project);
   const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
   const [cursorX, setCursorX] = useState(0);
   const [cursorY, setCursorY] = useState(0);
@@ -53,7 +52,7 @@ const GanttChartSection = ({
     setShowWorkPackagesMap((prev) => new Map(prev.set(projectTask.id, !prev.get(projectTask.id))));
   };
 
-  return displayEvents.length > 0 ? (
+  return projects.length > 0 ? (
     <Box sx={{ width: 'fit-content' }}>
       <Box sx={{ mt: '1rem', width: 'fit-content' }}>
         {projects.map((project) => {
@@ -73,13 +72,12 @@ const GanttChartSection = ({
                 />
               </Box>
               <Collapse in={showWorkPackagesMap.get(project.id)}>
-                {project.children.map((workPackage) => {
-                  const displayWorkPackage = displayEvents.find((event) => event.id === workPackage.id);
+                {project.workPackages.map((workPackage) => {
                   return (
                     <GanttTaskBar
                       key={workPackage.id}
                       days={days}
-                      event={displayWorkPackage!}
+                      event={workPackage}
                       isEditMode={isEditMode}
                       createChange={createChange}
                       handleOnMouseOver={handleOnMouseOver}

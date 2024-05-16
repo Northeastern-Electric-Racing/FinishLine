@@ -123,7 +123,7 @@ const GanttTaskBarView = ({
             {event.name}
           </Typography>
         </div>
-        {event.children.map((child) => {
+        {event.workPackages.map((child) => {
           return (
             <div
               style={{

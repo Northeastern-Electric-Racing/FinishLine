@@ -7,69 +7,52 @@ import { useState } from 'react';
 interface GanttChartTeamSectionProps {
   startDate: Date;
   endDate: Date;
-  chartEditingState: Array<{ teamName: string; editing: boolean }>;
-  setChartEditingState: (array: Array<{ teamName: string; editing: boolean }>) => void;
   saveChanges: (eventChanges: EventChange[]) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
-  isEditMode: boolean;
   teamName: string;
-  tasks: GanttTask[];
+  projectTasks: GanttTask[];
   highlightedChange?: RequestEventChange;
 }
 
 const GanttChartTeamSection = ({
   startDate,
   endDate,
-  chartEditingState,
-  setChartEditingState,
   saveChanges,
   showWorkPackagesMap,
   setShowWorkPackagesMap,
-  isEditMode,
   teamName,
-  tasks,
+  projectTasks,
   highlightedChange
 }: GanttChartTeamSectionProps) => {
   const theme = useTheme();
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
   };
 
   const handleSave = () => {
-    const index = chartEditingState.findIndex((entry) => entry.teamName === teamName);
-    if (index !== -1) {
-      chartEditingState[index] = { teamName, editing: !isEditMode };
-    }
-
-    setChartEditingState([...chartEditingState]);
-
     saveChanges(eventChanges);
-    setEventChanges([]); // reset the changes after sending them
+    setEventChanges([]);
+    setIsEditMode(false);
   };
 
   const handleEdit = () => {
-    const index = chartEditingState.findIndex((entry) => entry.teamName === teamName);
-    if (index !== -1) {
-      chartEditingState[index] = { teamName, editing: !isEditMode };
-    }
-
-    const projects = tasks ? tasks.filter((event) => !event.project) : [];
-    projects.forEach((project) => {
+    projectTasks.forEach((project) => {
       setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
     });
 
-    setChartEditingState([...chartEditingState]);
+    setIsEditMode(true);
   };
 
   // Sorting the work packages of each project based on their start date
-  tasks.forEach((task) => {
-    task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
+  projectTasks.forEach((task) => {
+    task.workPackages.sort((a, b) => a.start.getTime() - b.start.getTime());
   });
 
-  const displayEvents = applyChangesToEvents(tasks, eventChanges);
+  const displayedProjects = isEditMode ? applyChangesToEvents(projectTasks, eventChanges) : projectTasks;
 
   return (
     <Box
@@ -108,10 +91,10 @@ const GanttChartTeamSection = ({
       </Box>
       <Box key={teamName} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
         <GanttChartSection
-          displayEvents={displayEvents}
           start={startDate}
           end={endDate}
           isEditMode={isEditMode}
+          projects={displayedProjects}
           createChange={createChange}
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}

@@ -46,12 +46,6 @@ const GanttChartPage: FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
-  const [chartEditingState, setChartEditingState] = React.useState<
-    Array<{
-      teamName: string;
-      editing: boolean;
-    }>
-  >([]);
   const [searchText, setSearchText] = useState<string>('');
   const [ganttTaskChanges, setGanttTaskChanges] = useState<RequestEventChange[]>([]);
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
@@ -76,7 +70,7 @@ const GanttChartPage: FC = () => {
   const sortedProjects = filteredProjects.sort(
     (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
   );
-  const ganttTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project));
+  const ganttProjectTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project));
 
   if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
@@ -168,7 +162,7 @@ const GanttChartPage: FC = () => {
 
   const teamNameToGanttTasksMap = new Map<string, GanttTask[]>();
 
-  ganttTasks.forEach((ganttTask) => {
+  ganttProjectTasks.forEach((ganttTask) => {
     const tasks: GanttTask[] = teamNameToGanttTasksMap.get(ganttTask.teamName) || [];
     tasks.push(ganttTask);
     teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
@@ -176,9 +170,9 @@ const GanttChartPage: FC = () => {
 
   // find the earliest start date and subtract 2 weeks to use as the first date on calendar
   const startDate =
-    ganttTasks.length !== 0
+    ganttProjectTasks.length !== 0
       ? sub(
-          ganttTasks
+          ganttProjectTasks
             .map((task) => task.start)
             .reduce((previous, current) => {
               return previous < current ? previous : current;
@@ -189,9 +183,9 @@ const GanttChartPage: FC = () => {
 
   // find the latest end date and add 6 months to use as the last date on calendar
   const endDate =
-    ganttTasks.length !== 0
+    ganttProjectTasks.length !== 0
       ? add(
-          ganttTasks
+          ganttProjectTasks
             .map((task) => task.end)
             .reduce((previous, current) => {
               return previous > current ? previous : current;
@@ -204,7 +198,17 @@ const GanttChartPage: FC = () => {
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   const saveChanges = (eventChanges: EventChange[]) => {
-    const updatedGanttTasks = aggregateGanttChanges(eventChanges, ganttTasks);
+    //get wps out of each project
+    const updatedGanttTasks = aggregateGanttChanges(
+      eventChanges,
+      ganttProjectTasks
+        .flatMap((projectTask) =>
+          projectTask.workPackages.map((wp) => {
+            return { ...wp, teamName: projectTask.teamName };
+          })
+        )
+        .concat(ganttProjectTasks)
+    );
     setGanttTaskChanges(updatedGanttTasks);
   };
 
@@ -213,13 +217,13 @@ const GanttChartPage: FC = () => {
   };
 
   const collapseHandler = () => {
-    ganttTasks.forEach((task) => {
+    ganttProjectTasks.forEach((task) => {
       setShowWorkPackagesMap((prev) => new Map(prev.set(task.id, false)));
     });
   };
 
   const expandHandler = () => {
-    ganttTasks.forEach((task) => {
+    ganttProjectTasks.forEach((task) => {
       setShowWorkPackagesMap((prev) => new Map(prev.set(task.id, true)));
     });
   };
@@ -263,8 +267,6 @@ const GanttChartPage: FC = () => {
           endDate={endDate}
           teamsList={sortedTeamList}
           teamNameToGanttTasksMap={teamNameToGanttTasksMap}
-          chartEditingState={chartEditingState}
-          setChartEditingState={setChartEditingState}
           saveChanges={saveChanges}
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}

@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import { EventChange, GANTT_CHART_CELL_SIZE, GANTT_CHART_GAP_SIZE, GanttTaskData } from '../../../../utils/gantt.utils';
 import { addDays, differenceInDays } from 'date-fns';
-import { ComponentProps, DragEvent, MouseEvent, useEffect, useState } from 'react';
+import { DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useId from '@mui/material/utils/useId';
 import useMeasure from 'react-use-measure';
 
@@ -12,7 +12,6 @@ const GanttTaskBarEdit = ({
   getStartCol,
   getEndCol,
   isProject,
-  ...props
 }: {
   days: Date[];
   event: GanttTaskData;
@@ -20,7 +19,7 @@ const GanttTaskBarEdit = ({
   getStartCol: (event: GanttTaskData) => number;
   getEndCol: (event: GanttTaskData) => number;
   isProject: boolean;
-} & ComponentProps<'div'>) => {
+}) => {
   const theme = useTheme();
   const id = useId() || 'id'; // id for creating event changes
   const [startX, setStartX] = useState<number | null>(null);
@@ -129,7 +128,6 @@ const GanttTaskBarEdit = ({
       >
         <div
           ref={measureRef}
-          {...props}
           style={{
             gridColumnStart: getStartCol(event),
             gridColumnEnd: getEndCol(event),
