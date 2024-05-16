@@ -131,13 +131,16 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
     return `&team=${name}`;
   };
 
-  return (
+  const newParams =
     '?' +
     ganttFilters.showCars.map((car) => carFormat(car.toString())).join('') +
     ganttFilters.showTeamTypes.map(teamTypeFormat).join('') +
     ganttFilters.showTeams.map(teamFormat).join('') +
-    `&overdue=${ganttFilters.showOnlyOverdue}`
-  );
+    `&overdue=${ganttFilters.showOnlyOverdue}`;
+
+  localStorage.setItem('ganttURL', newParams);
+
+  return newParams;
 };
 
 export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {

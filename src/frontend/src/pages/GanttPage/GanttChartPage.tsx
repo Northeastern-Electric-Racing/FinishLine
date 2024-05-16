@@ -38,6 +38,10 @@ import { GanttRequestChangeModal } from './GanttChartComponents/GanttRequestChan
 const GanttChartPage: FC = () => {
   const query = useQuery();
   const history = useHistory();
+  const ganttParams = localStorage.getItem('ganttURL');
+  if (ganttParams && history.location.search !== ganttParams) {
+    history.push(`${history.location.pathname + ganttParams}`);
+  }
   const { isLoading: projectsIsLoading, isError: projectsIsError, data: projects, error: projectsError } = useAllProjects();
   const {
     isLoading: teamTypesIsLoading,
@@ -155,6 +159,7 @@ const GanttChartPage: FC = () => {
 
   const resetHandler = () => {
     history.push(routes.GANTT);
+    localStorage.removeItem('ganttURL');
     showWorkPackagesMap.clear();
   };
 
