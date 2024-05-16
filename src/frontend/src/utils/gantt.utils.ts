@@ -58,7 +58,7 @@ export type RequestEventChange = {
   duration: number;
 };
 
-export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]) => {
+export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]): GanttTaskData => {
   const changedEvent = { ...event };
   for (const eventChange of eventChanges) {
     switch (eventChange.type) {
@@ -76,7 +76,7 @@ export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChan
   return changedEvent;
 };
 
-export const applyChangesToEvents = (events: GanttTaskData[], eventChanges: EventChange[]) => {
+export const applyChangesToEvents = (events: GanttTaskData[], eventChanges: EventChange[]): GanttTaskData[] => {
   return events.map((event) => {
     const changes = eventChanges.filter((ec) => ec.eventId === event.id);
     return applyChangeToEvent(event, changes);
