@@ -9,7 +9,7 @@ export default class ChangeRequestsController {
     try {
       const crId: number = parseInt(req.params.crId);
       const organizationId = getOrganizationId(req.headers);
-      console.log('organizationId', organizationId);
+
       const cr = await ChangeRequestsService.getChangeRequestByID(crId, organizationId);
       return res.status(200).json(cr);
     } catch (error: unknown) {
@@ -20,7 +20,7 @@ export default class ChangeRequestsController {
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const organizationId = getOrganizationId(req.headers);
-      console.log('organizationId', organizationId);
+
       const changeRequests = await ChangeRequestsService.getAllChangeRequests(organizationId);
       return res.status(200).json(changeRequests);
     } catch (error: unknown) {
