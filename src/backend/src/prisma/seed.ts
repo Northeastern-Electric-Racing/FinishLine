@@ -40,6 +40,7 @@ import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
 import DesignReviewsService from '../services/design-reviews.services';
 import { transformDate } from '../utils/datetime.utils';
+import WorkPackagesService from '../services/work-packages.services';
 
 const prisma = new PrismaClient();
 
@@ -1410,6 +1411,55 @@ const performSeed: () => Promise<void> = async () => {
       expectedActivities: [],
       deliverables: []
     }
+  );
+
+  const workPackageTemplate1 = await WorkPackagesService.createWorkPackageTemplate(
+    batman,
+    'Batmobile Config 1',
+    'This is the first Batmobile configuration',
+    null,
+    null,
+    5,
+    [],
+    [],
+    []
+  );
+  /*
+Schematic
+a. Expected Activities 
+	i. Complete the schematic design 
+	ii. Spec components and add to Altium
+	iii. Complete confluence page documenting design philosophy, calculations, etc
+
+b. Deliverables 
+	i. Schematics completed
+*/
+  const schematicWpTemplate = await WorkPackagesService.createWorkPackageTemplate(
+    batman,
+    'Schematic',
+    'This is the schematic template',
+    null,
+    WorkPackageStage.Design,
+    4,
+    [
+      'Complete the schematic design',
+      'Spec components and add to Altium',
+      'Complete confluence page documenting design philosophy, calculations, etc'
+    ],
+    ['Schematics completed'],
+    []
+  );
+
+  const layoutWpTemplate = await WorkPackagesService.createWorkPackageTemplate(
+    batman,
+    'Layout ',
+    'This is the Layout  template',
+    null,
+    WorkPackageStage.Design,
+    4,
+    ['Complete the layout'],
+    ['Board ready to order'],
+    [schematicWpTemplate]
   );
 };
 
