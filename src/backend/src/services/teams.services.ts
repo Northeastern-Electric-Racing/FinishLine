@@ -217,6 +217,7 @@ export default class TeamsService {
    * @param headId the id of the user who will be the head on the new team
    * @param slackId the slack id for the slack channel for the team
    * @param description a short description of the team (must be less than 300 words)
+   * @param isFinanceTeam whether the team is the finance team
    * @param organizationId The organization the user is currently in
    * @returns The newly created team
    */
@@ -226,6 +227,7 @@ export default class TeamsService {
     headId: number,
     slackId: string,
     description: string,
+    isFinanceTeam: boolean,
     organizationId: string
   ): Promise<Team> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
@@ -256,13 +258,20 @@ export default class TeamsService {
 
     if (duplicateName) throw new HttpException(400, 'The new team name must not be the name of another team');
 
+    const financeTeam = await prisma.team.findFirst({
+      where: { financeTeam: true, organizationId }
+    });
+
+    if (isFinanceTeam && financeTeam) throw new HttpException(400, 'There can only be one finance team in an organization');
+
     const createdTeam = await prisma.team.create({
       data: {
         teamName,
         slackId,
         description,
         head: { connect: { userId: headId } },
-        organization: { connect: { organizationId } }
+        organization: { connect: { organizationId } },
+        financeTeam: isFinanceTeam
       },
       ...getTeamQueryArgs(organizationId)
     });

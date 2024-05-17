@@ -19,7 +19,6 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
 export const getOrganizationId = (headers: IncomingHttpHeaders): string => {
   const { organizationid } = headers;
 
-  console.log('headers', headers);
   if (organizationid === undefined) {
     throw new AccessDeniedException('Organization not provided');
   }
