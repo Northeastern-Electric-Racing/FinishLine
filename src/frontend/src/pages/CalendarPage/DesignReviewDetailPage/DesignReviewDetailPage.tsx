@@ -139,7 +139,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             sx={{
               padding: 1.5,
               fontSize: '1.2em',
-              backgroundColor: 'grey',
+              backgroundColor: theme.palette.background.paper,
               borderRadius: 3,
               textAlign: 'center',
               width: '100%'
@@ -149,7 +149,19 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           </Box>
         </Grid>
         <Grid item xs={2}>
-          <DatePicker value={date} onChange={handleDateChange} />
+          <DatePicker
+            value={date}
+            onChange={handleDateChange}
+            sx={{
+              height: 56,
+              width: '100%',
+              textAlign: 'left',
+              backgroundColor: 'grey',
+              border: 1,
+              borderColors: 'grey',
+              borderRadius: 3
+            }}
+          />
         </Grid>
         <Grid item xs={3} display="flex" gap={3}>
           <Select
@@ -160,7 +172,15 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
             size={'small'}
             placeholder={'Start Time'}
-            sx={{ height: 56, width: '100%', textAlign: 'left' }}
+            sx={{
+              height: 56,
+              width: '100%',
+              textAlign: 'left',
+              backgroundColor: 'grey',
+              border: 1,
+              borderColors: 'grey',
+              borderRadius: 3
+            }}
           >
             {HOURS.map((hour) => {
               return (
@@ -181,7 +201,15 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
             placeholder={'End Time'}
-            sx={{ height: 56, width: '100%', textAlign: 'left' }}
+            sx={{
+              height: 56,
+              width: '100%',
+              textAlign: 'left',
+              backgroundColor: 'grey',
+              border: 1,
+              borderColors: 'grey',
+              borderRadius: 3
+            }}
           >
             {HOURS.map((hour) => {
               return (
@@ -211,7 +239,16 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               </Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ padding: 1, border: 1, borderColors: 'grey', borderRadius: 3, textAlign: 'center' }}>
+              <Box
+                sx={{
+                  padding: 1,
+                  border: 1,
+                  borderColors: 'grey',
+                  borderRadius: 3,
+                  textAlign: 'center',
+                  backgroundColor: 'grey'
+                }}
+              >
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
@@ -262,7 +299,16 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               </Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ padding: 1, border: 1, borderColors: 'grey', borderRadius: 3, textAlign: 'center' }}>
+              <Box
+                sx={{
+                  padding: 1,
+                  border: 1,
+                  borderColors: 'grey',
+                  borderRadius: 3,
+                  textAlign: 'center',
+                  backgroundColor: 'grey'
+                }}
+              >
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
