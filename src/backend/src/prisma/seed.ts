@@ -48,6 +48,10 @@ const performSeed: () => Promise<void> = async () => {
     data: dbSeedAllUsers.thomasEmrax,
     include: { userSettings: true, userSecureSettings: true }
   });
+  const regina = await prisma.user.create({
+    data: dbSeedAllUsers.regina,
+    include: { userSettings: true, userSecureSettings: true }
+  });
   const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
   const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
   const lexLuther = await prisma.user.create({ data: dbSeedAllUsers.lexLuther });
@@ -145,7 +149,6 @@ const performSeed: () => Promise<void> = async () => {
   const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
   const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
   const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
-  const regina = await prisma.user.create({ data: dbSeedAllUsers.regina });
   const gretchen = await prisma.user.create({ data: dbSeedAllUsers.gretchen });
   const karen = await prisma.user.create({ data: dbSeedAllUsers.karen });
   const janis = await prisma.user.create({ data: dbSeedAllUsers.janis });
@@ -242,9 +245,13 @@ const performSeed: () => Promise<void> = async () => {
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
 
-  /** If the .env file exists, set the FINANCE_TEAM_ID */
+  /** If the .env file exists, set the FINANCE_TEAM_ID and slack ids*/
   if (currentEnv) {
     currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
+
+    currentEnv.THOMAS_EMRAX_SLACK_ID = thomasEmrax.userSettings?.slackId;
+    currentEnv.REGINA_GEORGE_SLACK_ID = regina.userSettings?.slackId;
+
     /** Write the new .env file */
     let stringifiedEnv = '';
     Object.keys(currentEnv).forEach((key) => {
