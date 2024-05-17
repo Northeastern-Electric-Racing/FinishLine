@@ -11,7 +11,7 @@ const GanttTaskBarEdit = ({
   createChange,
   getStartCol,
   getEndCol,
-  isProject,
+  isProject
 }: {
   days: Date[];
   event: GanttTaskData;
