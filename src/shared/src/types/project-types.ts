@@ -116,3 +116,7 @@ export interface WorkPackageProposedChanges extends WbsProposedChanges {
   blockedBy: WbsNumber[];
   stage?: WorkPackageStage;
 }
+
+export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id' | 'links' | 'status'>;
+
+export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id' | 'status'>;

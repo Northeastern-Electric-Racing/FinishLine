@@ -78,8 +78,7 @@ export default class ChangeRequestsService {
       where: { dateDeleted: null, wbsElement: { organizationId: organizationId ?? null } },
       ...getChangeRequestQueryArgs(organizationId)
     });
-    console.log('changeRequests', changeRequests);
-    console.log('organizationId', organizationId);
+
     return changeRequests.map(changeRequestTransformer);
   }
 

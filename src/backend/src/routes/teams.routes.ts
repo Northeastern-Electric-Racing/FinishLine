@@ -35,6 +35,8 @@ teamsRouter.post(
   intMinZero(body('headId')),
   nonEmptyString(body('slackId')),
   nonEmptyString(body('description')),
+  body('isFinanceTeam').isBoolean(),
+  validateInputs,
   TeamsController.createTeam
 );
 teamsRouter.post('/:teamId/archive');

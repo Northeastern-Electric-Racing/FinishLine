@@ -73,11 +73,11 @@ export default class TeamsController {
 
   static async createTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamName, headId, slackId, description } = req.body;
+      const { teamName, headId, slackId, description, isFinanceTeam } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
-      const team = await TeamsService.createTeam(submitter, teamName, headId, slackId, description, organizationId);
+      const team = await TeamsService.createTeam(submitter, teamName, headId, slackId, description, isFinanceTeam, organizationId);
       return res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
