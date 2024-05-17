@@ -171,8 +171,12 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
               const projectWithMatchingWbs = allProjects?.find((project) => {
                 return project.workPackages.some((wp) => wbsPipe(wp.wbsNum) === selectedValue);
               });
-              const defaultTeamTypeId = projectWithMatchingWbs?.teams[0].teamType?.teamTypeId;
-              setValue('teamTypeId', defaultTeamTypeId!);
+              const defaultTeam = projectWithMatchingWbs?.teams;
+
+              if (defaultTeam) {
+                const defaultTeamTypeId = defaultTeam[0].teamType?.teamTypeId;
+                setValue('teamTypeId', defaultTeamTypeId!);
+              }
             };
 
             return (
