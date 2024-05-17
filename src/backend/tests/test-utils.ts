@@ -189,7 +189,7 @@ export const createTestWorkPackageTemplate = async (organizationId?: string) => 
       userCreatedId: user.userId,
       organizationId
     },
-    ...getWorkPackageTemplateQueryArgs()
+    ...getWorkPackageTemplateQueryArgs(organizationId)
   });
 
   return workPackageTemplate;

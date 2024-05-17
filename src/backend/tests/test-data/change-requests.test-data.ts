@@ -2,7 +2,6 @@ import {
   Change_Request as PrismaChangeRequest,
   Proposed_Solution as PrismaProposedSolution,
   Scope_CR as PrismaScopeCR,
-  Description_Bullet as PrismaDescriptionBullet,
   CR_Type as PrismaCRType
 } from '@prisma/client';
 import { ChangeRequest as SharedChangeRequest, ChangeRequestStatus, ChangeRequestType } from 'shared';
@@ -42,24 +41,6 @@ export const prismaScopeChangeRequest1: PrismaScopeCR = {
   timelineImpact: 10,
   budgetImpact: 1000,
   wbsProposedChangesId: null
-};
-
-export const whipExpectedActivites: PrismaDescriptionBullet = {
-  descriptionId: 1,
-  dateAdded: new Date('10/10/2022'),
-  userCheckedId: 1,
-  dateTimeChecked: new Date('10/10/2022'),
-  dateDeleted: null,
-  detail: 'redesign whip'
-};
-
-export const whipDeliverables: PrismaDescriptionBullet = {
-  descriptionId: 2,
-  dateAdded: new Date('10/10/2022'),
-  userCheckedId: 1,
-  dateTimeChecked: new Date('10/10/2022'),
-  detail: 'Gotta Finish',
-  dateDeleted: null
 };
 
 export const sharedChangeRequest: SharedChangeRequest = {
