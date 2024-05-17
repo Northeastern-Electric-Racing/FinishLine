@@ -27,8 +27,6 @@ const AppPublic: React.FC = () => {
         theme.toggleTheme();
       }
 
-      console.log('organization.organizationId:', organization.organizationId);
-
       if (auth.user.organizations.length > 0 && !organization.organizationId) {
         organization.selectOrganization(auth.user.organizations[0]);
       }

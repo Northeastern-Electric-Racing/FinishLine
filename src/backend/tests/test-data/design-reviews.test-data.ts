@@ -1,14 +1,12 @@
 import {
   Design_Review_Status as PrismaDesignReviewStatus,
   Prisma,
-  TeamType as PrismaTeamType,
+  Team_Type as PrismaTeamType,
   Design_Review as PrismaDesignReview
 } from '@prisma/client';
 import {
-  batman,
   sharedBatman,
   wonderwomanSettings,
-  wonderwoman,
   wonderwomanMarkedWithScheduleSettings,
   wonderwomanWithScheduleSettings,
   batmanWithUserSettings
@@ -20,7 +18,6 @@ import {
   DesignReview as SharedDesignReview,
   DesignReviewStatus as sharedDesignReviewStatus
 } from 'shared';
-import designReviewQueryArgs from '../../src/prisma-query-args/design-reviews.query-args';
 
 const today = new Date();
 
