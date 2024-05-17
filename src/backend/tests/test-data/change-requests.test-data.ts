@@ -40,8 +40,7 @@ export const prismaScopeChangeRequest1: PrismaScopeCR = {
   what: 'redesign whip',
   scopeImpact: 'huge',
   timelineImpact: 10,
-  budgetImpact: 1000,
-  wbsProposedChangesId: null
+  budgetImpact: 1000
 };
 
 export const whipExpectedActivites: PrismaDescriptionBullet = {

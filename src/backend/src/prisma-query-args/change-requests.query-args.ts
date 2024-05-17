@@ -1,10 +1,17 @@
 import { Prisma } from '@prisma/client';
 import scopeCRArgs from './scope-change-requests.query-args';
+import projectQueryArgs from './projects.query-args';
+import workPackageQueryArgs from './work-packages.query-args';
 
 export const changeRequestQueryArgs = Prisma.validator<Prisma.Change_RequestArgs>()({
   include: {
     submitter: true,
-    wbsElement: true,
+    wbsElement: {
+      include: {
+        project: projectQueryArgs,
+        workPackage: workPackageQueryArgs
+      }
+    },
     reviewer: true,
     changes: {
       where: {

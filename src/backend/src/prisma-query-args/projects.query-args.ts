@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import taskQueryArgs from './tasks.query-args';
 import linkQueryArgs from './links.query-args';
 import { assemblyQueryArgs, materialQueryArgs } from './bom.query-args';
+import descriptionBulletQueryArgs from './description-bullets.query-args';
 
 const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
   include: {
@@ -23,9 +24,9 @@ const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
       }
     },
     teams: { include: { members: true, head: true, leads: true, teamType: true } },
-    goals: { where: { dateDeleted: null } },
-    features: { where: { dateDeleted: null } },
-    otherConstraints: { where: { dateDeleted: null } },
+    goals: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
+    features: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
+    otherConstraints: { where: { dateDeleted: null }, ...descriptionBulletQueryArgs },
     workPackages: {
       where: {
         wbsElement: {
