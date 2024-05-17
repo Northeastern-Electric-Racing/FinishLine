@@ -34,23 +34,7 @@ workPackagesRouter.post(
   validateInputs,
   WorkPackagesController.createWorkPackage
 );
-workPackagesRouter.post(
-  '/template/create',
-  nonEmptyString(body('templateName')),
-  nonEmptyString(body('templateNotes')),
-  nonEmptyString(body('workPackageName').optional()),
-  isWorkPackageStageOrNone(body('stage').optional()),
-  intMinZero(body('duration').optional()),
-  body('expectedActivities').isArray(),
-  nonEmptyString(body('expectedActivities.*')),
-  body('deliverables').isArray(),
-  nonEmptyString(body('deliverables.*')),
-  body('blockedBy').isArray(),
-  nonEmptyString(body('blockedByInfo.*.name')),
-  isWorkPackageStageOrNone(body('blockedByInfo.*.stage').optional()),
-  validateInputs,
-  WorkPackagesController.createWorkPackageTemplate
-);
+
 workPackagesRouter.post(
   '/edit',
   intMinZero(body('workPackageId')),
