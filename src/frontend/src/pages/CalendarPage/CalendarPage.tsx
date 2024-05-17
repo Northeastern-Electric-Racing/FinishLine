@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview } from 'shared';
-import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
 import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth, isConfirmed } from '../../utils/design-review.utils';

@@ -45,11 +45,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
                   {title}
                 </Typography>
               </Grid>
-              {chips && (
-                <Grid item mt={1}>
-                  {chips}
-                </Grid>
-              )}
+              {chips && <Grid item>{chips}</Grid>}
             </Grid>
             <Grid item md={5} xs={12}>
               <Box textAlign={['left', 'right']}>{headerRight}</Box>
