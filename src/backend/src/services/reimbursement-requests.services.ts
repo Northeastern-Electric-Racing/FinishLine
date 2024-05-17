@@ -606,7 +606,7 @@ export default class ReimbursementRequestService {
    * @param submitter the person editing account code code number
    * @param allowedRefundSources the new allowed refund sources
    * @param orgainzationId the organization the user is currently in
-   * @returns the updated account code 
+   * @returns the updated account code
    */
   static async editAccountCode(
     accountCodeId: string,

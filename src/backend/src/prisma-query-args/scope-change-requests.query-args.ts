@@ -39,7 +39,7 @@ export const getWbsProposedChangeQueryArgs = (organizationId: string) =>
       links: getLinkQueryArgs(organizationId),
       lead: getUserQueryArgs(organizationId),
       manager: getUserQueryArgs(organizationId),
-      proposedDescriptionBulletChanges: getDescriptionBulletQueryArgs(organizationId),
+      proposedDescriptionBulletChanges: getDescriptionBulletQueryArgs(organizationId)
     }
   });
 
