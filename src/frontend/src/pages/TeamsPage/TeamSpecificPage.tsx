@@ -15,6 +15,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
 import { useState } from 'react';
 import DeleteTeamModal from './DeleteTeamModal';
+import SetTeamTypeModal from './SetTeamTypeModal';
 
 interface ParamTypes {
   teamId: string;
@@ -25,24 +26,39 @@ const TeamSpecificPage: React.FC = () => {
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
   const user = useCurrentUser();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showTeamTypeModal, setShowTeamTypeModal] = useState(false);
 
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading || !data) return <LoadingIndicator />;
 
-  const deleteButton = (
+  const DeleteButton = () => (
     <NERButton
       variant="contained"
       disabled={!isAdmin(user.role)}
       startIcon={<Delete />}
       onClick={() => setShowDeleteModal(true)}
+      sx={{ marginRight: '10px' }}
     >
       Delete
     </NERButton>
   );
 
+  const SetTeamTypeButton = () => (
+    <NERButton variant="contained" disabled={!isAdmin(user.role)} onClick={() => setShowTeamTypeModal(true)}>
+      Set Team Type
+    </NERButton>
+  );
+
   return (
     <PageLayout
-      headerRight={isAdmin(user.role) && deleteButton}
+      headerRight={
+        isAdmin(user.role) && (
+          <>
+            <DeleteButton />
+            <SetTeamTypeButton />
+          </>
+        )
+      }
       title={`Team ${data.teamName}`}
       previousPages={[{ name: 'Teams', route: routes.TEAMS }]}
     >
@@ -64,6 +80,7 @@ const TeamSpecificPage: React.FC = () => {
         </Grid>
       </Grid>
       <DeleteTeamModal teamId={teamId} showModal={showDeleteModal} onHide={() => setShowDeleteModal(false)} />
+      <SetTeamTypeModal teamId={teamId} showModal={showTeamTypeModal} onHide={() => setShowTeamTypeModal(false)} />
     </PageLayout>
   );
 };

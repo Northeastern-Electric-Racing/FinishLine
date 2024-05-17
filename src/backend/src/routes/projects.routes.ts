@@ -123,9 +123,17 @@ projectRouter.post(
   ProjectsController.editMaterial
 );
 
+projectRouter.post(
+  '/bom/assembly/:assemblyId/edit',
+  nonEmptyString(body('name').optional()),
+  nonEmptyString(body('pdmFileName').optional()),
+  validateInputs,
+  ProjectsController.editAssembly
+);
+
 projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsController.deleteMaterialType);
 
-projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssemblyType);
+projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssembly);
 projectRouter.post('/bom/material/:materialId/delete', ProjectsController.deleteMaterial);
 
 projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
@@ -134,7 +142,7 @@ projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);
 
 projectRouter.post(
-  '/link-types/:linkTypeId/edit',
+  '/link-types/:linkTypeName/edit',
   nonEmptyString(body('iconName')),
   body('required').isBoolean(),
   validateInputs,

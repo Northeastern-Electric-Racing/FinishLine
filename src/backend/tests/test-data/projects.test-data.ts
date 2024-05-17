@@ -36,10 +36,10 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
     workPackageNumber: 0,
     name: 'Project 1',
     status: PrismaWBSElementStatus.ACTIVE,
-    projectLeadId: batman.userId,
-    projectLead: batman,
-    projectManagerId: superman.userId,
-    projectManager: superman,
+    leadId: batman.userId,
+    lead: batman,
+    managerId: superman.userId,
+    manager: superman,
     dateDeleted: null,
     deletedByUserId: null,
     changes: [],
@@ -80,10 +80,10 @@ export const prismaProject1: Prisma.ProjectGetPayload<typeof projectQueryArgs> =
         status: PrismaWBSElementStatus.ACTIVE,
         dateDeleted: null,
         deletedByUserId: null,
-        projectLeadId: null,
-        projectLead: null,
-        projectManagerId: null,
-        projectManager: null,
+        leadId: null,
+        lead: null,
+        managerId: null,
+        manager: null,
         changes: [],
         links: [],
         materials: [],
@@ -144,7 +144,7 @@ export const prismaLinkType2: LinkType = {
   iconName: 'YouTubeIcon'
 };
 
-export const prismaAssembly1: Assembly = {
+export const prismaAssembly1: Assembly & { materials: Material[] } = {
   name: 'New Assembly',
   pdmFileName: 'file.txt',
   dateCreated: new Date('10-19-2023'),
@@ -152,7 +152,8 @@ export const prismaAssembly1: Assembly = {
   wbsElementId: sharedProject1.id,
   dateDeleted: null,
   userDeletedId: null,
-  assemblyId: '1'
+  assemblyId: '1',
+  materials: []
 };
 
 export const prismaMaterialType: PrismaMaterialType = {
@@ -219,18 +220,21 @@ export const material1: Material = {
 export const prismaManufacturer1: PrismaManufacturer = {
   name: 'PrismaManufacturer1',
   dateCreated: new Date('10-1-2023'),
+  dateDeleted: new Date('10-2-2023'),
   userCreatedId: 1
 };
 
 export const prismaManufacturer2: PrismaManufacturer = {
   name: 'name',
   dateCreated: new Date('10-18-2023'),
+  dateDeleted: new Date('10-20-2023'),
   userCreatedId: 1
 };
 
 export const manufacturer1: Manufacturer = {
   name: 'Manufacturer1',
   dateCreated: new Date('02-19-2023'),
+  dateDeleted: undefined,
   userCreatedId: 1,
   userCreated: batman,
   materials: []
@@ -241,7 +245,8 @@ export const manufacturer2: Manufacturer = {
   dateCreated: new Date('02-19-2023'),
   userCreatedId: 1,
   userCreated: batman,
-  materials: [material1]
+  materials: [material1],
+  dateDeleted: undefined
 };
 
 export const manufacturer3: Manufacturer = {

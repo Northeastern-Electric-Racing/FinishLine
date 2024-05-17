@@ -4,7 +4,7 @@ import NERModal, { NERModalProps } from './NERModal';
 
 interface NERFormModalProps<T extends FieldValues> extends NERModalProps {
   reset: UseFormReset<T>;
-  handleUseFormSubmit: UseFormHandleSubmit<T, undefined>;
+  handleUseFormSubmit: UseFormHandleSubmit<T, any>;
   onFormSubmit: (data: T) => void;
   children?: ReactNode;
 }
@@ -21,7 +21,8 @@ const NERFormModal = ({
   submitText,
   disabled,
   children,
-  showCloseButton
+  showCloseButton,
+  hideBackDrop = false
 }: NERFormModalProps<any>) => {
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
@@ -44,6 +45,7 @@ const NERFormModal = ({
       submitText={submitText ? submitText : 'Submit'}
       disabled={disabled}
       showCloseButton={showCloseButton}
+      hideBackDrop={hideBackDrop}
     >
       <form id={formId} onSubmit={handleUseFormSubmit(onSubmitWrapper)} noValidate>
         {children}

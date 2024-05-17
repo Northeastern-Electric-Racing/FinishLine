@@ -24,6 +24,8 @@ import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
 import ChangeRequestTypePill from '../../components/ChangeRequestTypePill';
 import ChangeRequestStatusPill from '../../components/ChangeRequestStatusPill';
+import DiffSection from './DiffSection/DiffSection';
+import { hasProposedChanges } from '../../utils/change-request.utils';
 
 const buildDetails = (cr: ChangeRequest): ReactElement => {
   switch (cr.type) {
@@ -54,6 +56,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const [deleteModalShow, setDeleteModalShow] = useState<boolean>(false);
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
+
   const {
     data: project,
     isLoading,
@@ -114,8 +117,9 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
           </Grid>
         </Grid>
         <Grid container rowSpacing={2}>
-          <Grid container item xs={12} md={isStandard ? 7 : isActivation ? 6 : 12} height={'fit-content'}>
+          <Grid container item xs={12} md={isStandard ? 5 : isActivation ? 6 : 12} height={'fit-content'}>
             {buildDetails(changeRequest)}
+
             <Grid item xs={12} md={isStandard ? 12 : isActivation ? 12 : 5} height={'fit-content'}>
               <ReviewNotes
                 reviewer={changeRequest.reviewer}
@@ -132,15 +136,20 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               )}
             </Grid>
           </Grid>
-          <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 5 : 0}>
-            {isStandard && (
-              <ProposedSolutionsList
-                proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
-                crReviewed={changeRequest.accepted}
-                crId={changeRequest.crId}
-              />
+          <Grid item xs={isStandard ? 12 : 0} md={isStandard ? 7 : 0}>
+            {hasProposedChanges(changeRequest as StandardChangeRequest) ? (
+              <DiffSection changeRequest={changeRequest as StandardChangeRequest} />
+            ) : (
+              isStandard && (
+                <ProposedSolutionsList
+                  proposedSolutions={(changeRequest as StandardChangeRequest).proposedSolutions}
+                  crReviewed={changeRequest.accepted}
+                  crId={changeRequest.crId}
+                />
+              )
             )}
           </Grid>
+
           <Grid item xs={isActivation ? 12 : 0} md={isActivation ? 6 : 0}>
             {isActivation && (
               <ImplementedChangesList

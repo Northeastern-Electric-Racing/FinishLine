@@ -125,6 +125,7 @@ export default class WorkPackagesController {
     }
   }
 
+  // Get all work packages that are blocked by the given work package
   static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNum = validateWBS(req.params.wbsNum);
@@ -136,6 +137,7 @@ export default class WorkPackagesController {
     }
   }
 
+  // Send reminder message to project lead of every work package that is due before/on given deadline
   static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
@@ -146,6 +148,7 @@ export default class WorkPackagesController {
       next(error);
     }
   }
+  // Get a single work package template that corresponds to the given work package template id
   static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
@@ -156,6 +159,50 @@ export default class WorkPackagesController {
       );
 
       res.status(200).json(workPackageTemplate);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+  // Get all work package templates
+  static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
+    try {
+      const submitter = await getCurrentUser(res);
+      const workPackageTemplates: WorkPackageTemplate[] = await WorkPackagesService.getAllWorkPackageTemplates(submitter);
+
+      res.status(200).json(workPackageTemplates);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { workpackageTemplateId } = req.params;
+
+      const { templateName, templateNotes, duration, blockedBy, expectedActivities, deliverables, workPackageName } =
+        req.body;
+
+      const user = await getCurrentUser(res);
+
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
+      const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
+        user,
+        workpackageTemplateId,
+        templateName,
+        templateNotes,
+        duration,
+        stage,
+        blockedBy,
+        expectedActivities,
+        deliverables,
+        workPackageName
+      );
+
+      return res.status(200).json(updatedWorkPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }

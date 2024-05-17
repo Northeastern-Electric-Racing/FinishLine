@@ -21,12 +21,21 @@ export interface WbsElement {
   dateCreated: Date;
   name: string;
   status: WbsElementStatus;
-  projectLead?: User;
-  projectManager?: User;
+  lead?: User;
+  manager?: User;
   links: Link[];
   changes: ImplementedChange[];
   materials: Material[];
   assemblies: Assembly[];
+}
+
+export interface WbsProposedChanges {
+  id: string;
+  name: string;
+  status: WbsElementStatus;
+  links: Link[];
+  lead?: User;
+  manager?: User;
 }
 
 export enum WbsElementStatus {
@@ -34,6 +43,19 @@ export enum WbsElementStatus {
   Active = 'ACTIVE',
   Complete = 'COMPLETE'
 }
+
+export interface ProjectProposedChanges extends WbsProposedChanges {
+  summary: string;
+  budget: number;
+  rules: string[];
+  goals: DescriptionBullet[];
+  features: DescriptionBullet[];
+  otherConstraints: DescriptionBullet[];
+  teams: TeamPreview[];
+  carNumber?: number;
+}
+
+export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id' | 'status'>;
 
 export interface Project extends WbsElement {
   summary: string;
@@ -51,6 +73,17 @@ export interface Project extends WbsElement {
 }
 
 export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
+
+export interface WorkPackageProposedChanges extends WbsProposedChanges {
+  startDate: Date;
+  duration: number;
+  blockedBy: WbsNumber[];
+  expectedActivities: DescriptionBullet[];
+  deliverables: DescriptionBullet[];
+  stage?: WorkPackageStage;
+}
+
+export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id' | 'links' | 'status'>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;

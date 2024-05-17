@@ -37,7 +37,9 @@ import {
   theVisitor,
   aquaman,
   greenlantern,
-  batmanSettings
+  batmanSettings,
+  financeMember,
+  member
 } from '../test-data/users.test-data';
 import reimbursementRequestQueryArgs from '../../src/prisma-query-args/reimbursement-requests.query-args';
 import { Prisma, Reimbursement_Status_Type } from '@prisma/client';
@@ -437,14 +439,37 @@ describe('Reimbursement Requests', () => {
       ).rejects.toThrow(new DeletedException('Reimbursement Request', GiveMeMyMoney.reimbursementRequestId));
     });
 
-    test('Delete Reimbursement Request fails when deleter is not the creator', async () => {
+    test('Delete Reimbursement Request fails if deleter is not a finance lead', async () => {
       vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
-
       await expect(() =>
         ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, superman)
       ).rejects.toThrow(
         new AccessDeniedException(
-          'You do not have access to delete this reimbursement request, only the creator can delete a reimbursement request'
+          'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
+        )
+      );
+    });
+
+    test('Delete Reimbursement Request fails if deleter is just a finance member', async () => {
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+
+      await expect(() =>
+        ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, financeMember)
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
+        )
+      );
+    });
+
+    test('Delete Reimbursement Request fails if deleter is not the creator', async () => {
+      vi.spyOn(prisma.reimbursement_Request, 'findUnique').mockResolvedValue(GiveMeMyMoney);
+
+      await expect(() =>
+        ReimbursementRequestService.deleteReimbursementRequest(GiveMeMyMoney.reimbursementRequestId, member)
+      ).rejects.toThrow(
+        new AccessDeniedException(
+          'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
         )
       );
     });
@@ -888,13 +913,13 @@ describe('Reimbursement Requests', () => {
   describe('Edit Vendor Tests', () => {
     test('Throws error if user isnt an admin or lead/head of the finance', async () => {
       await expect(
-        ReimbursementRequestService.editVendors('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
+        ReimbursementRequestService.editVendor('I Love Benny', GiveMeMyMoney.vendorId, wonderwoman)
       ).rejects.toThrow(new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors'));
     });
 
     test('Throws error if the vendor name already exists', async () => {
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(PopEyes);
-      await expect(ReimbursementRequestService.editVendors('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
+      await expect(ReimbursementRequestService.editVendor('CHICKEN', GiveMeMyMoney.vendorId, batman)).rejects.toThrow(
         new HttpException(400, 'vendor name already exists')
       );
     });
@@ -903,7 +928,7 @@ describe('Reimbursement Requests', () => {
       vi.spyOn(prisma.vendor, 'update').mockResolvedValue(KFC);
       vi.spyOn(prisma.vendor, 'findUnique').mockResolvedValue(null);
 
-      const vendor = await ReimbursementRequestService.editVendors('kfc', PopEyes.vendorId, batman);
+      const vendor = await ReimbursementRequestService.editVendor('kfc', PopEyes.vendorId, batman);
 
       expect(vendor.name).toBe('kfc');
       expect(prisma.vendor.update).toBeCalledTimes(1);

@@ -8,6 +8,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Typography,
   useTheme
 } from '@mui/material';
@@ -19,9 +20,11 @@ import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
-import ColumnHeader from './FinanceComponents/ColumnHeader';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { getRefundRowData } from '../../utils/reimbursement-request.utils';
+
+type Order = 'asc' | 'desc'; // ascending or descending
+type OrderBy = keyof { date: Date; amount: number };
 
 const RefundHeader = ({ header, data }: { header: string; data: string }) => {
   return (
@@ -39,9 +42,56 @@ interface RefundTableProps {
   allReimbursementRequests?: ReimbursementRequest[];
 }
 
+// determines order of array
+// @param orderby - what key to order by of T
+const descendingComparator = <T extends Record<string, any>>(a: T, b: T, orderBy: keyof T) => {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+};
+
+// get comparator based on order
+const getComparator = <Key extends keyof any>(
+  order: Order,
+  orderBy: Key
+): ((a: { [key in Key]: number | Date }, b: { [key in Key]: number | Date }) => number) => {
+  return order === 'desc' ? (a, b) => descendingComparator(a, b, orderBy) : (a, b) => -descendingComparator(a, b, orderBy);
+};
+
+const columnHeaders = [
+  {
+    id: 'date',
+    label: 'Date Recevied'
+  },
+  {
+    id: 'amount',
+    label: 'Amount'
+  }
+];
+
 const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: RefundTableProps) => {
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
+  const [order, setOrder] = useState<Order>('desc');
+  const [orderBy, setOrderBy] = useState<
+    keyof {
+      date: Date;
+      amount: number;
+    }
+  >('date');
+
+  const handleSort = (orderByIn: OrderBy) => {
+    if (orderByIn !== orderBy) {
+      setOrderBy(orderByIn);
+      setOrder('asc');
+      return;
+    }
+    setOrder(order === 'asc' ? 'desc' : 'asc');
+  };
 
   const {
     data: userReimbursements,
@@ -58,12 +108,13 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const theme = useTheme();
 
   const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
-
   if (canViewAllReimbursementRequests && allReimbursementsIsError)
     return <ErrorPage message={allReimbursementsError?.message} />;
+  if (user.isFinance && allReimbursementsIsError) return <ErrorPage message={allReimbursementsError?.message} />;
   if (userReimbursementsIsError) return <ErrorPage message={userReimbursementError?.message} />;
   if (
     (canViewAllReimbursementRequests && (allReimbursementsIsLoading || !allReimbursements)) ||
+    (user.isFinance && (allReimbursementsIsLoading || !allReimbursements)) ||
     userReimbursementsIsLoading ||
     !userReimbursements
   )
@@ -73,7 +124,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const displayedReimbursementRequests =
     allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests;
 
-  const rows = displayedReimbursements.map(getRefundRowData).sort((a, b) => b.date.valueOf() - a.date.valueOf());
+  const rows = displayedReimbursements.map(getRefundRowData).sort(getComparator(order, orderBy));
 
   const totalReceived = displayedReimbursements.reduce(
     (accumulator: number, currentVal: Reimbursement) => accumulator + currentVal.amount,
@@ -88,6 +139,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
 
   const tabs = [{ label: 'My Refunds', value: 0 }];
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Refunds', value: 1 });
+  if (user.isFinance) tabs.push({ label: 'All Club Refunds', value: 1 });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
@@ -109,9 +161,40 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
           <Table aria-label="simple table">
             <TableHead>
               <TableRow>
-                <ColumnHeader title="Date Received" />
-                <ColumnHeader title="Amount ($)" />
-                {tabValue === 1 && <ColumnHeader title="Recipient" />}
+                {columnHeaders.map((columnHeader) => (
+                  <TableCell
+                    key={columnHeader.id}
+                    align="center"
+                    sortDirection={orderBy === columnHeader.id ? order : false}
+                  >
+                    <TableSortLabel
+                      active={orderBy === columnHeader.id}
+                      direction={orderBy === columnHeader.id ? order : 'asc'}
+                      onClick={() => {
+                        handleSort(columnHeader.id as OrderBy);
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {columnHeader.label}
+                      </Typography>
+                    </TableSortLabel>
+                  </TableCell>
+                ))}
+                {tabValue === 1 && (
+                  <TableCell key="Recipient">
+                    <Typography
+                      sx={{
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Recipient
+                    </Typography>
+                  </TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>

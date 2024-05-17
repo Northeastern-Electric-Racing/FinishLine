@@ -39,7 +39,7 @@ workPackagesRouter.post(
   intMinZero(body('workPackageId')),
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  body('startDate').isDate(),
+  isDate(body('startDate')),
   intMinZero(body('duration')),
   isWorkPackageStageOrNone(body('stage')),
   intMinZero(body('blockedBy.*.carNumber')),
@@ -64,7 +64,5 @@ workPackagesRouter.post(
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
 );
-
-workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
 
 export default workPackagesRouter;

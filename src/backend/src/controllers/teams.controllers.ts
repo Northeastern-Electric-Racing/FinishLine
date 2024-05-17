@@ -119,10 +119,36 @@ export default class TeamsController {
     }
   }
 
+  static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.params;
+
+      const teamType = await TeamsService.getSingleTeamType(teamTypeId);
+
+      return res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const teamTypes = await TeamsService.getAllTeamTypes();
       return res.status(200).json(teamTypes);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.body;
+      const { teamId } = req.params;
+      const submitter = await getCurrentUser(res);
+
+      const updatedTeam = await TeamsService.setTeamType(submitter, teamId, teamTypeId);
+
+      return res.status(200).json(updatedTeam);
     } catch (error: unknown) {
       next(error);
     }
