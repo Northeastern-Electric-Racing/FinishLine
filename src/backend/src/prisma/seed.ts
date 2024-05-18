@@ -16,17 +16,16 @@ import {
   Vendor,
   WBS_Element_Status
 } from '@prisma/client';
-import { dbSeedAllUsers } from './seed-data/users.seed';
+import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
-import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import TeamsService from '../services/teams.services';
 import {
   ClubAccount,
   DesignReviewStatus,
   MaterialStatus,
+  RoleEnum,
   StandardChangeRequest,
-  validateWBS,
   WbsElementStatus,
   WorkPackageStage
 } from 'shared';
@@ -39,6 +38,8 @@ import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
 import DesignReviewsService from '../services/design-reviews.services';
+import BillOfMaterialsService from '../services/boms.services';
+import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
 
 const prisma = new PrismaClient();
@@ -48,140 +49,162 @@ const performSeed: () => Promise<void> = async () => {
     data: dbSeedAllUsers.thomasEmrax,
     include: { userSettings: true, userSecureSettings: true }
   });
-  const joeShmoe = await prisma.user.create({ data: dbSeedAllUsers.joeShmoe });
-  const joeBlow = await prisma.user.create({ data: dbSeedAllUsers.joeBlow });
-  const lexLuther = await prisma.user.create({ data: dbSeedAllUsers.lexLuther });
-  const hawkgirl = await prisma.user.create({ data: dbSeedAllUsers.hawkgirl });
-  const elongatedMan = await prisma.user.create({ data: dbSeedAllUsers.elongatedMan });
-  const zatanna = await prisma.user.create({ data: dbSeedAllUsers.zatanna });
-  const phantomStranger = await prisma.user.create({ data: dbSeedAllUsers.phantomStranger });
-  const redTornado = await prisma.user.create({ data: dbSeedAllUsers.redTornado });
-  const firestorm = await prisma.user.create({ data: dbSeedAllUsers.firestorm });
-  const hankHeywood = await prisma.user.create({ data: dbSeedAllUsers.hankHeywood });
-  const wonderwoman = await prisma.user.create({ data: dbSeedAllUsers.wonderwoman });
-  const flash = await prisma.user.create({ data: dbSeedAllUsers.flash });
-  const aquaman = await prisma.user.create({ data: dbSeedAllUsers.aquaman });
-  const robin = await prisma.user.create({ data: dbSeedAllUsers.robin });
-  const batman = await prisma.user.create({ data: dbSeedAllUsers.batman });
-  const superman = await prisma.user.create({ data: dbSeedAllUsers.superman });
-  const hawkMan = await prisma.user.create({ data: dbSeedAllUsers.hawkMan });
-  const hawkWoman = await prisma.user.create({ data: dbSeedAllUsers.hawkWoman });
-  const cyborg = await prisma.user.create({ data: dbSeedAllUsers.cyborg });
-  const greenLantern = await prisma.user.create({ data: dbSeedAllUsers.greenLantern });
-  const martianManhunter = await prisma.user.create({ data: dbSeedAllUsers.martianManhunter });
-  const nightwing = await prisma.user.create({ data: dbSeedAllUsers.nightwing });
-  const brandonHyde = await prisma.user.create({ data: dbSeedAllUsers.brandonHyde });
-  const calRipken = await prisma.user.create({ data: dbSeedAllUsers.calRipken });
-  const adleyRutschman = await prisma.user.create({ data: dbSeedAllUsers.adleyRutschman });
-  const johnHarbaugh = await prisma.user.create({ data: dbSeedAllUsers.johnHarbaugh });
-  const lamarJackson = await prisma.user.create({ data: dbSeedAllUsers.lamarJackson });
-  const nezamJazayeri = await prisma.user.create({ data: dbSeedAllUsers.nezamJazayeri });
-  const ryanHowe = await prisma.user.create({ data: dbSeedAllUsers.ryanHowe });
-  const anthonyBernardi = await prisma.user.create({ data: dbSeedAllUsers.anthonyBernardi });
-  const reidChandler = await prisma.user.create({ data: dbSeedAllUsers.reidChandler });
-  const aang = await prisma.user.create({ data: dbSeedAllUsers.aang });
-  const katara = await prisma.user.create({ data: dbSeedAllUsers.katara });
-  const sokka = await prisma.user.create({ data: dbSeedAllUsers.sokka });
-  const toph = await prisma.user.create({ data: dbSeedAllUsers.toph });
-  const zuko = await prisma.user.create({ data: dbSeedAllUsers.zuko });
-  const iroh = await prisma.user.create({ data: dbSeedAllUsers.iroh });
-  const azula = await prisma.user.create({ data: dbSeedAllUsers.azula });
-  const appa = await prisma.user.create({ data: dbSeedAllUsers.appa });
-  const momo = await prisma.user.create({ data: dbSeedAllUsers.momo });
-  const suki = await prisma.user.create({ data: dbSeedAllUsers.suki });
-  const yue = await prisma.user.create({ data: dbSeedAllUsers.yue });
-  const bumi = await prisma.user.create({ data: dbSeedAllUsers.bumi });
-  const cristianoRonaldo = await prisma.user.create({ data: dbSeedAllUsers.cristianoRonaldo });
-  const thierryHenry = await prisma.user.create({ data: dbSeedAllUsers.thierryHenry });
-  const frankLampard = await prisma.user.create({ data: dbSeedAllUsers.frankLampard });
-  const stevenGerrard = await prisma.user.create({ data: dbSeedAllUsers.stevenGerrard });
-  const ryanGiggs = await prisma.user.create({ data: dbSeedAllUsers.ryanGiggs });
-  const paulScholes = await prisma.user.create({ data: dbSeedAllUsers.paulScholes });
-  const alanShearer = await prisma.user.create({ data: dbSeedAllUsers.alanShearer });
-  const ericCantona = await prisma.user.create({ data: dbSeedAllUsers.ericCantona });
-  const patrickVieira = await prisma.user.create({ data: dbSeedAllUsers.patrickVieira });
-  const didierDrogba = await prisma.user.create({ data: dbSeedAllUsers.didierDrogba });
-  const johnTerry = await prisma.user.create({ data: dbSeedAllUsers.johnTerry });
-  const dennisBergkamp = await prisma.user.create({ data: dbSeedAllUsers.dennisBergkamp });
-  const jkDobbins = await prisma.user.create({ data: dbSeedAllUsers.jkDobbins });
-  const davidOjabo = await prisma.user.create({ data: dbSeedAllUsers.davidOjabo });
-  const markAndrews = await prisma.user.create({ data: dbSeedAllUsers.markAndrews });
-  const odellBeckham = await prisma.user.create({ data: dbSeedAllUsers.odellBeckham });
-  const chrisHorton = await prisma.user.create({ data: dbSeedAllUsers.chrisHorton });
-  const mikeMacdonald = await prisma.user.create({ data: dbSeedAllUsers.mikeMacdonald });
-  const toddMonken = await prisma.user.create({ data: dbSeedAllUsers.toddMonken });
-  const stephenBisciotti = await prisma.user.create({ data: dbSeedAllUsers.stephenBisciotti });
-  const brooksRobinson = await prisma.user.create({ data: dbSeedAllUsers.brooksRobinson });
-  const jimPalmer = await prisma.user.create({ data: dbSeedAllUsers.jimPalmer });
-  const eddieMurray = await prisma.user.create({ data: dbSeedAllUsers.eddieMurray });
-  const georgeSisler = await prisma.user.create({ data: dbSeedAllUsers.georgeSisler });
-  const urbanShocker = await prisma.user.create({ data: dbSeedAllUsers.urbanShocker });
-  const kenWilliams = await prisma.user.create({ data: dbSeedAllUsers.kenWilliams });
-  const boogPowell = await prisma.user.create({ data: dbSeedAllUsers.boogPowell });
-  const mannyMachado = await prisma.user.create({ data: dbSeedAllUsers.mannyMachado });
-  const babyDollJacobson = await prisma.user.create({ data: dbSeedAllUsers.babyDollJacobson });
-  const husky = await prisma.user.create({ data: dbSeedAllUsers.husky });
-  const winter = await prisma.user.create({ data: dbSeedAllUsers.winter });
-  const frostBite = await prisma.user.create({ data: dbSeedAllUsers.frostBite });
-  const snowPaws = await prisma.user.create({ data: dbSeedAllUsers.snowPaws });
-  const paws = await prisma.user.create({ data: dbSeedAllUsers.paws });
-  const whiteTail = await prisma.user.create({ data: dbSeedAllUsers.whiteTail });
-  const snowBite = await prisma.user.create({ data: dbSeedAllUsers.snowBite });
-  const howler = await prisma.user.create({ data: dbSeedAllUsers.howler });
-  const zayFlowers = await prisma.user.create({ data: dbSeedAllUsers.zayFlowers });
-  const patrickRicard = await prisma.user.create({ data: dbSeedAllUsers.patrickRicard });
-  const patrickQueen = await prisma.user.create({ data: dbSeedAllUsers.patrickQueen });
-  const jadeveonClowney = await prisma.user.create({ data: dbSeedAllUsers.jadeveonClowney });
-  const marlonHumphrey = await prisma.user.create({ data: dbSeedAllUsers.marlonHumphrey });
-  const kyleHamilton = await prisma.user.create({ data: dbSeedAllUsers.kyleHamilton });
-  const marcusWilliams = await prisma.user.create({ data: dbSeedAllUsers.marcusWilliams });
-  const roquanSmith = await prisma.user.create({ data: dbSeedAllUsers.roquanSmith });
-  const justinTucker = await prisma.user.create({ data: dbSeedAllUsers.justinTucker });
-  const monopolyMan = await prisma.user.create({ data: dbSeedAllUsers.monopolyMan });
-  const mrKrabs = await prisma.user.create({ data: dbSeedAllUsers.mrKrabs });
-  const richieRich = await prisma.user.create({ data: dbSeedAllUsers.richieRich });
-  const johnBoddy = await prisma.user.create({ data: dbSeedAllUsers.johnBoddy });
-  const villager = await prisma.user.create({ data: dbSeedAllUsers.villager });
-  const francis = await prisma.user.create({ data: dbSeedAllUsers.francis });
-  const victorPerkins = await prisma.user.create({ data: dbSeedAllUsers.victorPerkins });
-  const kingJulian = await prisma.user.create({ data: dbSeedAllUsers.kingJulian });
-  const regina = await prisma.user.create({ data: dbSeedAllUsers.regina });
-  const gretchen = await prisma.user.create({ data: dbSeedAllUsers.gretchen });
-  const karen = await prisma.user.create({ data: dbSeedAllUsers.karen });
-  const janis = await prisma.user.create({ data: dbSeedAllUsers.janis });
-  const aaron = await prisma.user.create({ data: dbSeedAllUsers.aaron });
-  const cady = await prisma.user.create({ data: dbSeedAllUsers.cady });
-  const damian = await prisma.user.create({ data: dbSeedAllUsers.damian });
-  const glen = await prisma.user.create({ data: dbSeedAllUsers.glen });
-  const shane = await prisma.user.create({ data: dbSeedAllUsers.shane });
-  const june = await prisma.user.create({ data: dbSeedAllUsers.june });
-  const kevin = await prisma.user.create({ data: dbSeedAllUsers.kevin });
-  const norbury = await prisma.user.create({ data: dbSeedAllUsers.norbury });
-  const carr = await prisma.user.create({ data: dbSeedAllUsers.carr });
-  const trang = await prisma.user.create({ data: dbSeedAllUsers.trang });
 
-  /**
-   * Make initial project so that we can start to create other stuff
-   */
-  const genesisProject = await prisma.project.create({
+  const ner = await prisma.organization.create({
+    data: {
+      name: 'NER',
+      userCreatedId: thomasEmrax.userId
+    }
+  });
+
+  const { organizationId } = ner;
+
+  await prisma.user.update({
+    where: { userId: thomasEmrax.userId },
+    data: {
+      organizations: {
+        connect: {
+          organizationId
+        }
+      },
+      roles: {
+        create: {
+          roleType: 'APP_ADMIN',
+          organizationId
+        }
+      }
+    }
+  });
+
+  const joeShmoe = await createUser(dbSeedAllUsers.joeShmoe, RoleEnum.ADMIN, organizationId);
+  const joeBlow = await createUser(dbSeedAllUsers.joeBlow, RoleEnum.ADMIN, organizationId);
+  const lexLuther = await createUser(dbSeedAllUsers.lexLuther, RoleEnum.HEAD, organizationId);
+  const hawkgirl = await createUser(dbSeedAllUsers.hawkgirl, RoleEnum.LEADERSHIP, organizationId);
+  const elongatedMan = await createUser(dbSeedAllUsers.elongatedMan, RoleEnum.LEADERSHIP, organizationId);
+  const zatanna = await createUser(dbSeedAllUsers.zatanna, RoleEnum.LEADERSHIP, organizationId);
+  const phantomStranger = await createUser(dbSeedAllUsers.phantomStranger, RoleEnum.LEADERSHIP, organizationId);
+  const redTornado = await createUser(dbSeedAllUsers.redTornado, RoleEnum.LEADERSHIP, organizationId);
+  const firestorm = await createUser(dbSeedAllUsers.firestorm, RoleEnum.LEADERSHIP, organizationId);
+  const hankHeywood = await createUser(dbSeedAllUsers.hankHeywood, RoleEnum.LEADERSHIP, organizationId);
+  const wonderwoman = await createUser(dbSeedAllUsers.wonderwoman, RoleEnum.LEADERSHIP, organizationId);
+  const flash = await createUser(dbSeedAllUsers.flash, RoleEnum.LEADERSHIP, organizationId);
+  const aquaman = await createUser(dbSeedAllUsers.aquaman, RoleEnum.LEADERSHIP, organizationId);
+  const robin = await createUser(dbSeedAllUsers.robin, RoleEnum.LEADERSHIP, organizationId);
+  const batman = await createUser(dbSeedAllUsers.batman, RoleEnum.APP_ADMIN, organizationId);
+  const superman = await createUser(dbSeedAllUsers.superman, RoleEnum.LEADERSHIP, organizationId);
+  const hawkMan = await createUser(dbSeedAllUsers.hawkMan, RoleEnum.LEADERSHIP, organizationId);
+  const hawkWoman = await createUser(dbSeedAllUsers.hawkWoman, RoleEnum.LEADERSHIP, organizationId);
+  const cyborg = await createUser(dbSeedAllUsers.cyborg, RoleEnum.LEADERSHIP, organizationId);
+  const greenLantern = await createUser(dbSeedAllUsers.greenLantern, RoleEnum.LEADERSHIP, organizationId);
+  const martianManhunter = await createUser(dbSeedAllUsers.martianManhunter, RoleEnum.LEADERSHIP, organizationId);
+  const nightwing = await createUser(dbSeedAllUsers.nightwing, RoleEnum.LEADERSHIP, organizationId);
+  const brandonHyde = await createUser(dbSeedAllUsers.brandonHyde, RoleEnum.LEADERSHIP, organizationId);
+  const calRipken = await createUser(dbSeedAllUsers.calRipken, RoleEnum.LEADERSHIP, organizationId);
+  const adleyRutschman = await createUser(dbSeedAllUsers.adleyRutschman, RoleEnum.LEADERSHIP, organizationId);
+  const johnHarbaugh = await createUser(dbSeedAllUsers.johnHarbaugh, RoleEnum.LEADERSHIP, organizationId);
+  const lamarJackson = await createUser(dbSeedAllUsers.lamarJackson, RoleEnum.LEADERSHIP, organizationId);
+  const nezamJazayeri = await createUser(dbSeedAllUsers.nezamJazayeri, RoleEnum.LEADERSHIP, organizationId);
+  const ryanHowe = await createUser(dbSeedAllUsers.ryanHowe, RoleEnum.LEADERSHIP, organizationId);
+  const anthonyBernardi = await createUser(dbSeedAllUsers.anthonyBernardi, RoleEnum.LEADERSHIP, organizationId);
+  const reidChandler = await createUser(dbSeedAllUsers.reidChandler, RoleEnum.LEADERSHIP, organizationId);
+  const aang = await createUser(dbSeedAllUsers.aang, RoleEnum.LEADERSHIP, organizationId);
+  const katara = await createUser(dbSeedAllUsers.katara, RoleEnum.LEADERSHIP, organizationId);
+  const sokka = await createUser(dbSeedAllUsers.sokka, RoleEnum.LEADERSHIP, organizationId);
+  const toph = await createUser(dbSeedAllUsers.toph, RoleEnum.LEADERSHIP, organizationId);
+  const zuko = await createUser(dbSeedAllUsers.zuko, RoleEnum.LEADERSHIP, organizationId);
+  const iroh = await createUser(dbSeedAllUsers.iroh, RoleEnum.LEADERSHIP, organizationId);
+  const azula = await createUser(dbSeedAllUsers.azula, RoleEnum.LEADERSHIP, organizationId);
+  const appa = await createUser(dbSeedAllUsers.appa, RoleEnum.LEADERSHIP, organizationId);
+  const momo = await createUser(dbSeedAllUsers.momo, RoleEnum.LEADERSHIP, organizationId);
+  const suki = await createUser(dbSeedAllUsers.suki, RoleEnum.LEADERSHIP, organizationId);
+  const yue = await createUser(dbSeedAllUsers.yue, RoleEnum.LEADERSHIP, organizationId);
+  const bumi = await createUser(dbSeedAllUsers.bumi, RoleEnum.LEADERSHIP, organizationId);
+  const cristianoRonaldo = await createUser(dbSeedAllUsers.cristianoRonaldo, RoleEnum.LEADERSHIP, organizationId);
+  const thierryHenry = await createUser(dbSeedAllUsers.thierryHenry, RoleEnum.LEADERSHIP, organizationId);
+  const frankLampard = await createUser(dbSeedAllUsers.frankLampard, RoleEnum.LEADERSHIP, organizationId);
+  const stevenGerrard = await createUser(dbSeedAllUsers.stevenGerrard, RoleEnum.LEADERSHIP, organizationId);
+  const ryanGiggs = await createUser(dbSeedAllUsers.ryanGiggs, RoleEnum.LEADERSHIP, organizationId);
+  const paulScholes = await createUser(dbSeedAllUsers.paulScholes, RoleEnum.LEADERSHIP, organizationId);
+  const alanShearer = await createUser(dbSeedAllUsers.alanShearer, RoleEnum.LEADERSHIP, organizationId);
+  const ericCantona = await createUser(dbSeedAllUsers.ericCantona, RoleEnum.LEADERSHIP, organizationId);
+  const patrickVieira = await createUser(dbSeedAllUsers.patrickVieira, RoleEnum.LEADERSHIP, organizationId);
+  const didierDrogba = await createUser(dbSeedAllUsers.didierDrogba, RoleEnum.LEADERSHIP, organizationId);
+  const johnTerry = await createUser(dbSeedAllUsers.johnTerry, RoleEnum.LEADERSHIP, organizationId);
+  const dennisBergkamp = await createUser(dbSeedAllUsers.dennisBergkamp, RoleEnum.LEADERSHIP, organizationId);
+  const jkDobbins = await createUser(dbSeedAllUsers.jkDobbins, RoleEnum.LEADERSHIP, organizationId);
+  const davidOjabo = await createUser(dbSeedAllUsers.davidOjabo, RoleEnum.LEADERSHIP, organizationId);
+  const markAndrews = await createUser(dbSeedAllUsers.markAndrews, RoleEnum.LEADERSHIP, organizationId);
+  const odellBeckham = await createUser(dbSeedAllUsers.odellBeckham, RoleEnum.LEADERSHIP, organizationId);
+  const chrisHorton = await createUser(dbSeedAllUsers.chrisHorton, RoleEnum.LEADERSHIP, organizationId);
+  const mikeMacdonald = await createUser(dbSeedAllUsers.mikeMacdonald, RoleEnum.LEADERSHIP, organizationId);
+  const toddMonken = await createUser(dbSeedAllUsers.toddMonken, RoleEnum.LEADERSHIP, organizationId);
+  const stephenBisciotti = await createUser(dbSeedAllUsers.stephenBisciotti, RoleEnum.LEADERSHIP, organizationId);
+  const brooksRobinson = await createUser(dbSeedAllUsers.brooksRobinson, RoleEnum.LEADERSHIP, organizationId);
+  const jimPalmer = await createUser(dbSeedAllUsers.jimPalmer, RoleEnum.LEADERSHIP, organizationId);
+  const eddieMurray = await createUser(dbSeedAllUsers.eddieMurray, RoleEnum.LEADERSHIP, organizationId);
+  const georgeSisler = await createUser(dbSeedAllUsers.georgeSisler, RoleEnum.LEADERSHIP, organizationId);
+  const urbanShocker = await createUser(dbSeedAllUsers.urbanShocker, RoleEnum.LEADERSHIP, organizationId);
+  const kenWilliams = await createUser(dbSeedAllUsers.kenWilliams, RoleEnum.LEADERSHIP, organizationId);
+  const boogPowell = await createUser(dbSeedAllUsers.boogPowell, RoleEnum.LEADERSHIP, organizationId);
+  const mannyMachado = await createUser(dbSeedAllUsers.mannyMachado, RoleEnum.LEADERSHIP, organizationId);
+  const babyDollJacobson = await createUser(dbSeedAllUsers.babyDollJacobson, RoleEnum.LEADERSHIP, organizationId);
+  const husky = await createUser(dbSeedAllUsers.husky, RoleEnum.LEADERSHIP, organizationId);
+  const winter = await createUser(dbSeedAllUsers.winter, RoleEnum.LEADERSHIP, organizationId);
+  const frostBite = await createUser(dbSeedAllUsers.frostBite, RoleEnum.LEADERSHIP, organizationId);
+  const snowPaws = await createUser(dbSeedAllUsers.snowPaws, RoleEnum.LEADERSHIP, organizationId);
+  const paws = await createUser(dbSeedAllUsers.paws, RoleEnum.LEADERSHIP, organizationId);
+  const whiteTail = await createUser(dbSeedAllUsers.whiteTail, RoleEnum.LEADERSHIP, organizationId);
+  const snowBite = await createUser(dbSeedAllUsers.snowBite, RoleEnum.LEADERSHIP, organizationId);
+  const howler = await createUser(dbSeedAllUsers.howler, RoleEnum.LEADERSHIP, organizationId);
+  const zayFlowers = await createUser(dbSeedAllUsers.zayFlowers, RoleEnum.LEADERSHIP, organizationId);
+  const patrickRicard = await createUser(dbSeedAllUsers.patrickRicard, RoleEnum.LEADERSHIP, organizationId);
+  const patrickQueen = await createUser(dbSeedAllUsers.patrickQueen, RoleEnum.LEADERSHIP, organizationId);
+  const jadeveonClowney = await createUser(dbSeedAllUsers.jadeveonClowney, RoleEnum.LEADERSHIP, organizationId);
+  const marlonHumphrey = await createUser(dbSeedAllUsers.marlonHumphrey, RoleEnum.LEADERSHIP, organizationId);
+  const kyleHamilton = await createUser(dbSeedAllUsers.kyleHamilton, RoleEnum.LEADERSHIP, organizationId);
+  const marcusWilliams = await createUser(dbSeedAllUsers.marcusWilliams, RoleEnum.LEADERSHIP, organizationId);
+  const roquanSmith = await createUser(dbSeedAllUsers.roquanSmith, RoleEnum.LEADERSHIP, organizationId);
+  const justinTucker = await createUser(dbSeedAllUsers.justinTucker, RoleEnum.LEADERSHIP, organizationId);
+  const monopolyMan = await createUser(dbSeedAllUsers.monopolyMan, RoleEnum.LEADERSHIP, organizationId);
+  const mrKrabs = await createUser(dbSeedAllUsers.mrKrabs, RoleEnum.LEADERSHIP, organizationId);
+  const richieRich = await createUser(dbSeedAllUsers.richieRich, RoleEnum.LEADERSHIP, organizationId);
+  const johnBoddy = await createUser(dbSeedAllUsers.johnBoddy, RoleEnum.LEADERSHIP, organizationId);
+  const villager = await createUser(dbSeedAllUsers.villager, RoleEnum.LEADERSHIP, organizationId);
+  const francis = await createUser(dbSeedAllUsers.francis, RoleEnum.LEADERSHIP, organizationId);
+  const victorPerkins = await createUser(dbSeedAllUsers.victorPerkins, RoleEnum.LEADERSHIP, organizationId);
+  const kingJulian = await createUser(dbSeedAllUsers.kingJulian, RoleEnum.LEADERSHIP, organizationId);
+  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
+  const gretchen = await createUser(dbSeedAllUsers.gretchen, RoleEnum.LEADERSHIP, organizationId);
+  const karen = await createUser(dbSeedAllUsers.karen, RoleEnum.LEADERSHIP, organizationId);
+  const janis = await createUser(dbSeedAllUsers.janis, RoleEnum.LEADERSHIP, organizationId);
+  const aaron = await createUser(dbSeedAllUsers.aaron, RoleEnum.LEADERSHIP, organizationId);
+  const cady = await createUser(dbSeedAllUsers.cady, RoleEnum.LEADERSHIP, organizationId);
+  const damian = await createUser(dbSeedAllUsers.damian, RoleEnum.LEADERSHIP, organizationId);
+  const glen = await createUser(dbSeedAllUsers.glen, RoleEnum.LEADERSHIP, organizationId);
+  const shane = await createUser(dbSeedAllUsers.shane, RoleEnum.LEADERSHIP, organizationId);
+  const june = await createUser(dbSeedAllUsers.june, RoleEnum.LEADERSHIP, organizationId);
+  const kevin = await createUser(dbSeedAllUsers.kevin, RoleEnum.LEADERSHIP, organizationId);
+  const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.LEADERSHIP, organizationId);
+  const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
+  const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
+
+  await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', organizationId);
+
+  const fergus = await prisma.car.create({
     data: {
       wbsElement: {
         create: {
+          name: 'Fergus',
           carNumber: 0,
           projectNumber: 0,
           workPackageNumber: 0,
-          dateCreated: new Date('01/01/2023'),
-          name: 'Genesis',
-          status: WBS_Element_Status.INACTIVE,
-          leadId: batman.userId,
-          managerId: cyborg.userId
+          organizationId
         }
-      },
-      summary: 'Initial Car so that we can make change requests and projects and other stuff',
-      budget: 1000,
-      rules: []
+      }
     },
-    ...projectQueryArgs
+    include: {
+      wbsElement: true
+    }
   });
 
   /**
@@ -189,9 +212,9 @@ const performSeed: () => Promise<void> = async () => {
    */
   const changeRequest1: StandardChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
-    genesisProject.wbsElement.carNumber,
-    genesisProject.wbsElement.projectNumber,
-    genesisProject.wbsElement.workPackageNumber,
+    fergus.wbsElement.carNumber,
+    fergus.wbsElement.projectNumber,
+    fergus.wbsElement.workPackageNumber,
     CR_Type.OTHER,
     'Initial Change Request',
     [
@@ -208,6 +231,7 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 0
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -218,6 +242,7 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.crId,
     'LGTM',
     true,
+    organizationId,
     changeRequest1.proposedSolutions[0].id
   );
 
@@ -225,19 +250,23 @@ const performSeed: () => Promise<void> = async () => {
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon');
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon');
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon');
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', organizationId);
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', organizationId);
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', organizationId);
 
   /** Creating Teams */
-  const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId));
-  const avatarBenders: Team = await prisma.team.create(dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId));
-  const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId));
-  const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId));
-  const huskies: Team = await prisma.team.create(dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId));
-  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId));
-  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId));
-  const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId));
+  const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
+  const avatarBenders: Team = await prisma.team.create(
+    dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId, organizationId)
+  );
+  const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId, organizationId));
+  const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId, organizationId));
+  const huskies: Team = await prisma.team.create(
+    dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId, organizationId)
+  );
+  const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
+  const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
+  const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
 
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
@@ -272,29 +301,34 @@ const performSeed: () => Promise<void> = async () => {
       redTornado,
       firestorm,
       hankHeywood
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamLeads(
     batman,
     justiceLeague.teamId,
-    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId)
+    [wonderwoman, cyborg, martianManhunter].map((user) => user.userId),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
     monopolyMan,
     financeTeam.teamId,
-    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId)
+    [johnBoddy, villager, francis, victorPerkins, kingJulian].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamLeads(
     monopolyMan,
     financeTeam.teamId,
-    [mrKrabs, richieRich].map((user) => user.userId)
+    [mrKrabs, richieRich].map((user) => user.userId),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
-    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId)
+    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamMembers(
     johnHarbaugh,
@@ -320,7 +354,8 @@ const performSeed: () => Promise<void> = async () => {
       marcusWilliams,
       roquanSmith,
       justinTucker
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamMembers(
     brandonHyde,
@@ -338,14 +373,16 @@ const performSeed: () => Promise<void> = async () => {
       boogPowell,
       mannyMachado,
       babyDollJacobson
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamMembers(
     thomasEmrax,
     huskies.teamId,
     [joeShmoe, joeBlow, reidChandler, nightwing, frostBite, snowPaws, paws, whiteTail, husky, howler, snowBite].map(
       (user) => user.userId
-    )
+    ),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
@@ -363,19 +400,35 @@ const performSeed: () => Promise<void> = async () => {
       didierDrogba,
       johnTerry,
       dennisBergkamp
-    ].map((user) => user.userId)
+    ].map((user) => user.userId),
+    organizationId
   );
 
   await TeamsService.setTeamMembers(
     regina,
     slackBotTeam.teamId,
-    [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId)
+    [thomasEmrax, batman, cyborg].map((user) => user.userId),
+    organizationId
   );
   await TeamsService.setTeamLeads(
     regina,
     slackBotTeam.teamId,
-    [janis, cady, damian].map((user) => user.userId)
+    [gretchen, karen, aaron, glen, shane, june, kevin, norbury, carr, trang].map((user) => user.userId),
+    organizationId
   );
+  await TeamsService.setTeamLeads(
+    regina,
+    slackBotTeam.teamId,
+    [janis, cady, damian].map((user) => user.userId),
+    organizationId
+  );
+
+  /** Link Types */
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'doc', true, organizationId);
+
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'doc', true, organizationId);
+
+  const googleDriveLinkType = await ProjectsService.createLinkType(batman, 'Google Drive', 'doc', true, organizationId);
 
   /**
    * Projects
@@ -385,150 +438,140 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Impact Attenuator',
     'Develop rules-compliant impact attenuator',
     [huskies.teamId],
     joeShmoe,
     124,
-    ['EV3.5.2'],
-    ['Decrease size by 90% from 247 cubic inches to 24.7 cubic inches'],
-    ['Capable of absorbing 5000N in a head-on collision'],
-    ['Cannot go further towards the rear of the car than the front roll hoop'],
     [
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
+    [],
     thomasEmrax.userId,
-    joeBlow.userId
+    joeBlow.userId,
+    organizationId
   );
 
   /** Project 2 */
   const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Bodywork',
     'Develop rules-compliant bodywork',
     [huskies.teamId],
     thomasEmrax,
     50,
-    ['T12.3.2', 'T8.2.6'],
-    ['Decrease weight by 90% from 4.8 pounds to 0.48 pounds'],
-    ['Provides removable section for easy access to the pedal box'],
-    ['Compatible with a side-pod chassis design'],
     [
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
+    [],
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   /** Project 3 */
   const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Battery Box',
     'Develop rules-compliant battery box.',
     [huskies.teamId],
     thomasEmrax,
     5000,
-    ['EV3.5.2', 'EV1.4.7', 'EV6.3.10'],
-    ['Decrease weight by 60% from 100 pounds to 40 pounds'],
-    ['Provides 50,000 Wh of energy discharge'],
-    ['Maximum power consumption of 25 watts from the low voltage system'],
     [
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
+    [],
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   /** Project 4 */
   const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Motor Controller Integration',
     'Develop rules-compliant motor controller integration.',
     [huskies.teamId],
     thomasEmrax,
     0,
-    [],
-    ['Power consumption stays under 10 watts from the low voltage system'],
-    ['Capable of interfacing via I2C or comparable serial interface.'],
-    ['Must be compatible with chain drive', 'Must be well designed and whatnot'],
     [
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
+    [],
     joeShmoe.userId,
-    joeBlow.userId
+    joeBlow.userId,
+    organizationId
   );
 
   /** Project 5 */
   const { projectWbsNumber: project5WbsNumber, projectId: project5Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
-    1,
+    fergus.wbsElement.carNumber,
     'Wiring Harness',
     'Develop rules-compliant wiring harness.',
     [slackBotTeam.teamId],
     thomasEmrax,
     234,
-    ['EV3.5.2', 'T12.3.2', 'T8.2.6', 'EV1.4.7', 'EV6.3.10'],
-    ['Decrease installed component costs by 63% from $2,700 to $1000'],
-    ['All wires are bundled and secured to the chassis at least every 6 inches', 'Wires are not wireless'],
-    ['Utilizes 8020 frame construction'],
     [
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
+    [],
     regina.userId,
-    janis.userId
+    janis.userId,
+    organizationId
   );
 
   /** Project 6 */
@@ -541,24 +584,22 @@ const performSeed: () => Promise<void> = async () => {
     [avatarBenders.teamId],
     aang,
     99999,
-    [],
-    ['Boost team moral by 100000000%'],
-    ['10in Appa plush', '10ft Appa plush', '30ft Appa plush'],
-    [],
     [
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Confluence'
+        linkTypeName: confluenceLinkType.name
       },
       {
         linkId: '-1',
         url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        linkTypeName: 'Bill of Materials'
+        linkTypeName: bomLinkType.name
       }
     ],
+    [],
     aang.userId,
-    katara.userId
+    katara.userId,
+    organizationId
   );
 
   /** Project 7 */
@@ -571,10 +612,6 @@ const performSeed: () => Promise<void> = async () => {
     [justiceLeague.teamId],
     zatanna,
     500,
-    ['T2.1.1', 'T5.5.2'],
-    ['Increase accuracy by 20% from 80% to 100%'],
-    ['Capable of penetrating reinforced steel'],
-    ['Must be mounted on the roof of the Batmobile'],
     [
       {
         linkId: '-1',
@@ -587,8 +624,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   /** Project 8 */
@@ -601,10 +640,6 @@ const performSeed: () => Promise<void> = async () => {
     [ravens.teamId],
     mikeMacdonald,
     1000000,
-    ['T9.7.3'],
-    ['Install new seating with better sightlines'],
-    ['Upgrade concession stands with more variety'],
-    ['Implement a state-of-the-art sound system'],
     [
       {
         linkId: '-1',
@@ -617,8 +652,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   /** Project 9 */
@@ -631,10 +668,6 @@ const performSeed: () => Promise<void> = async () => {
     [slackBotTeam.teamId],
     june,
     5000,
-    ['T11.2.5', 'T13.8.1'],
-    ['Increase participation by 50% from 100 to 150 students'],
-    ['Expand program to include after-school tutoring'],
-    ['Establish partnerships with local businesses for sponsorship'],
     [
       {
         linkId: '-1',
@@ -647,8 +680,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     june.userId,
-    glen.userId
+    glen.userId,
+    organizationId
   );
 
   /**
@@ -676,6 +711,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -689,13 +725,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution2Id = proposedSolution2.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject1Id, 'LGTM', true, proposedSolution2Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject1Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution2Id
+  );
 
   const changeRequestProject5 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -718,6 +762,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -731,12 +776,20 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution3Id = proposedSolution3.id;
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject5Id, 'LGTM', true, proposedSolution3Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject5Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution3Id
+  );
 
   const changeRequestProject6 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -759,6 +812,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -772,13 +826,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution6Id = proposedSolution6.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject6Id, 'LGTM', true, proposedSolution6Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject6Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution6Id
+  );
 
   const changeRequestProject7 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -801,6 +863,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -814,13 +877,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution7Id = proposedSolution7.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject7Id, 'LGTM', true, proposedSolution7Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject7Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution7Id
+  );
 
   const changeRequestProject8 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -843,6 +914,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -856,13 +928,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution8Id = proposedSolution8.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject8Id, 'LGTM', true, proposedSolution8Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject8Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution8Id
+  );
 
   const changeRequestProject9 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -885,6 +965,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -898,13 +979,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution9Id = proposedSolution9.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject9Id, 'LGTM', true, proposedSolution9Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject9Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution9Id
+  );
   /**
    * Work Packages
    */
@@ -917,15 +1006,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/01/2023',
     3,
     [],
-    [
-      'Assess the bodywork captsone and determine what can be learned from their deliverables',
-      'Compare various material, design, segmentation, and mounting choices available and propose the best combination'
-    ],
-    ['High-level anaylsis of options and direction to go in for the project'],
+    [],
     thomasEmrax,
     WbsElementStatus.Active,
     thomasEmrax.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   const workPackage1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -937,16 +1023,24 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1.project.wbsElement.leadId!,
     workPackage1.project.wbsElement.managerId!,
     new Date('2024-03-25T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage1ActivationCrId, 'Looks good to me!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    workPackage1ActivationCrId,
+    'Looks good to me!',
+    true,
+    organizationId,
+    null
+  );
 
-  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[0].descriptionId);
+  // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.description[0].descriptionId);
 
-  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[1].descriptionId);
+  // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.expectedActivities[1].descriptionId);
 
-  await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.deliverables[0].descriptionId);
+  // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.deliverables[0].descriptionId);
 
   /** Work Package 2 */
   const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
@@ -957,18 +1051,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/22/2023',
     5,
     [],
-    [
-      'Build a test procedure for destructively measuring the shear strength of various adhesives interacting with foam and steel plates',
-      'Design and manufacture test fixtures to perform destructive testing',
-      'Write a report to summarize findings'
-    ],
-    [
-      'Lab report with full data on the shear strength of adhesives under test including a summary and conclusion of which adhesive is best'
-    ],
+    [],
     thomasEmrax,
     WbsElementStatus.Inactive,
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   /** Work Package 3 */
@@ -980,17 +1068,12 @@ const performSeed: () => Promise<void> = async () => {
     '02/01/2023',
     3,
     [],
-    [
-      'Manufacutre section A of the wiring harness',
-      'Determine which portion of the wiring harness is important',
-      'Solder wiring segments together and heat shrink properly',
-      'Cut all wires to length'
-    ],
-    ['Completed wiring harness for the entire car'],
+    [],
     thomasEmrax,
     WbsElementStatus.Active,
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   const workPackage3ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1002,10 +1085,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage3.project.wbsElement.leadId!,
     workPackage3.project.wbsElement.managerId!,
     new Date('2023-08-21T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage3ActivationCrId, 'LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage3ActivationCrId, 'LGTM!', true, organizationId, null);
 
   /** Work Package 4 */
   const { workPackageWbsNumber: workPackage4WbsNumber, workPackage: workPackage4 } = await seedWorkPackage(
@@ -1016,12 +1100,12 @@ const performSeed: () => Promise<void> = async () => {
     '04/01/2023',
     7,
     [],
-    ['Assemble and install wiring harness', 'Confirm the installation was successful'],
-    ['Wiring harness is functional and installed in the car'],
+    [],
     thomasEmrax,
     WbsElementStatus.Active,
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   const workPackage4ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1033,10 +1117,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage4.project.wbsElement.leadId!,
     workPackage4.project.wbsElement.managerId!,
     new Date('2023-10-02T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage4ActivationCrId, 'LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage4ActivationCrId, 'LGTM!', true, organizationId, null);
 
   /** Work Package 5 */
   const { workPackageWbsNumber: workPackage5WbsNumber, workPackage: workPackage5 } = await seedWorkPackage(
@@ -1047,12 +1132,12 @@ const performSeed: () => Promise<void> = async () => {
     '04/02/2023',
     7,
     [],
-    ['Make sketches', 'Get sketches reviewed', 'Finalize sketches'],
-    ['Sketch of designs for plush is finalized'],
+    [],
     aang,
     WbsElementStatus.Complete,
     katara.userId,
-    aang.userId
+    aang.userId,
+    organizationId
   );
 
   const workPackage5ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1064,10 +1149,18 @@ const performSeed: () => Promise<void> = async () => {
     workPackage5.project.wbsElement.leadId!,
     workPackage5.project.wbsElement.managerId!,
     new Date('2023-05-08T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage5ActivationCrId, 'Very cute LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    workPackage5ActivationCrId,
+    'Very cute LGTM!',
+    true,
+    organizationId,
+    null
+  );
 
   /** Work Package 6 */
   const { workPackageWbsNumber: workPackage6WbsNumber, workPackage: workPackage6 } = await seedWorkPackage(
@@ -1078,12 +1171,12 @@ const performSeed: () => Promise<void> = async () => {
     '04/02/2023',
     7,
     [],
-    ['Get the materials we need', 'Cut the different fabrics', 'Sew the fabrics togehter', 'Stuff the plush'],
-    ['A finished plus'],
+    [],
     aang,
     WbsElementStatus.Active,
     katara.userId,
-    aang.userId
+    aang.userId,
+    organizationId
   );
 
   const workPackage6ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1095,10 +1188,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage6.project.wbsElement.leadId!,
     workPackage6.project.wbsElement.managerId!,
     new Date('2023-07-31T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage6ActivationCrId, 'LGTM!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage6ActivationCrId, 'LGTM!', true, organizationId, null);
 
   /** Work Package 7 */
   const { workPackageWbsNumber: workPackage7WbsNumber, workPackage: workPackage7 } = await seedWorkPackage(
@@ -1110,11 +1204,11 @@ const performSeed: () => Promise<void> = async () => {
     3,
     [],
     [],
-    ['Passes quality inspection'],
     aang,
     WbsElementStatus.Active,
     katara.userId,
-    aang.userId
+    aang.userId,
+    organizationId
   );
 
   const workPackage7ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1126,10 +1220,11 @@ const performSeed: () => Promise<void> = async () => {
     workPackage7.project.wbsElement.leadId!,
     workPackage7.project.wbsElement.managerId!,
     new Date('2023-10-09T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage7ActivationCrId, 'LFG', true, null);
+  await ChangeRequestsService.reviewChangeRequest(joeShmoe, workPackage7ActivationCrId, 'LFG', true, organizationId, null);
 
   /** Work Packages for Project 7 */
   /** Work Package 1 */
@@ -1141,16 +1236,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/01/2023',
     3,
     [],
-    [
-      'Define the specifications and requirements for the laser cannon prototype',
-      'Research and evaluate existing laser technologies and components',
-      'Design the conceptual framework and architecture of the prototype'
-    ],
-    ['Conceptual design and specifications document for the laser cannon prototype'],
+    [],
     zatanna,
     WbsElementStatus.Active,
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   const project3WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1162,10 +1253,18 @@ const performSeed: () => Promise<void> = async () => {
     project3WP1.project.wbsElement.leadId!,
     project3WP1.project.wbsElement.managerId!,
     new Date('2024-03-25T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, project3WP1ActivationCrId, 'Approved!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    project3WP1ActivationCrId,
+    'Approved!',
+    true,
+    organizationId,
+    null
+  );
 
   /** Work Package 2 */
   const { workPackageWbsNumber: project3WP2WbsNumber, workPackage: project3WP2 } = await seedWorkPackage(
@@ -1176,16 +1275,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/22/2023',
     5,
     [],
-    [
-      'Research and select appropriate materials for the construction of the laser cannon',
-      'Design and fabricate the structural components of the prototype',
-      'Test and validate the structural integrity of the prototype'
-    ],
-    ['Prototype design and materials report'],
+    [],
     zatanna,
     WbsElementStatus.Active,
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   /** Work Package 3 */
@@ -1197,16 +1292,12 @@ const performSeed: () => Promise<void> = async () => {
     '02/15/2023',
     3,
     [],
-    [
-      'Construct and integrate the electronic components into the prototype',
-      'Perform functionality tests and evaluate the performance of the prototype',
-      'Generate a comprehensive test report and make necessary adjustments'
-    ],
-    ['Prototype integration and testing report'],
+    [],
     zatanna,
     WbsElementStatus.Active,
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   /** Work Packages for Project 8 */
@@ -1219,16 +1310,12 @@ const performSeed: () => Promise<void> = async () => {
     '02/01/2023',
     5,
     [],
-    [
-      'Conduct a site survey and assessment of the current stadium infrastructure',
-      'Develop a detailed project plan including timelines, resource allocation, and budget estimates',
-      'Obtain necessary permits and regulatory approvals'
-    ],
-    ['Comprehensive project plan and timeline'],
+    [],
     mikeMacdonald,
     WbsElementStatus.Active,
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   const project4WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1240,10 +1327,18 @@ const performSeed: () => Promise<void> = async () => {
     project4WP1.project.wbsElement.leadId!,
     project4WP1.project.wbsElement.managerId!,
     new Date('2023-08-21T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, project4WP1ActivationCrId, 'Approved!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    project4WP1ActivationCrId,
+    'Approved!',
+    true,
+    organizationId,
+    null
+  );
 
   /** Work Package 2 */
   const { workPackageWbsNumber: project4WP2WbsNumber, workPackage: project4WP2 } = await seedWorkPackage(
@@ -1254,16 +1349,12 @@ const performSeed: () => Promise<void> = async () => {
     '03/01/2023',
     8,
     [],
-    [
-      'Demolish and remove existing seating and infrastructure',
-      'Construct and install new seating structures according to specifications',
-      'Install amenities such as restrooms, concession stands, and VIP areas'
-    ],
-    ['Completed construction of stadium infrastructure'],
+    [],
     mikeMacdonald,
     WbsElementStatus.Active,
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   /** Work Package 3 */
@@ -1275,16 +1366,12 @@ const performSeed: () => Promise<void> = async () => {
     '06/01/2023',
     3,
     [],
-    [
-      'Perform thorough testing of all stadium systems including lighting, sound, and safety equipment',
-      'Simulate crowd scenarios to evaluate traffic flow and security measures',
-      'Address any deficiencies and make necessary adjustments'
-    ],
-    ['Stadium testing and commissioning report'],
+    [],
     mikeMacdonald,
     WbsElementStatus.Active,
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   /**
@@ -1296,7 +1383,8 @@ const performSeed: () => Promise<void> = async () => {
     workPackage1WbsNumber.projectNumber,
     workPackage1WbsNumber.workPackageNumber,
     CR_Type.STAGE_GATE,
-    true
+    true,
+    organizationId
   );
 
   const changeRequest2 = await ChangeRequestsService.createStandardChangeRequest(
@@ -1324,10 +1412,18 @@ const performSeed: () => Promise<void> = async () => {
         budgetImpact: 40
       }
     ],
+    organizationId,
     null,
     null
   );
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, changeRequest2.crId, 'What the hell Thomas', false, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    changeRequest2.crId,
+    'What the hell Thomas',
+    false,
+    organizationId,
+    null
+  );
 
   await ChangeRequestsService.createActivationChangeRequest(
     thomasEmrax,
@@ -1338,7 +1434,8 @@ const performSeed: () => Promise<void> = async () => {
     thomasEmrax.userId,
     joeShmoe.userId,
     new Date('02/01/2023'),
-    true
+    true,
+    organizationId
   );
 
   /**
@@ -1352,7 +1449,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1363,7 +1461,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1374,7 +1473,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId, joeBlow.userId]
+    [joeShmoe.userId, joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1386,7 +1486,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-02-17T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
-    [joeBlow.userId]
+    [joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1397,7 +1498,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId]
+    [thomasEmrax.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1408,7 +1510,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-20T00:00:00-05:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1419,7 +1522,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-05-19T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId]
+    [thomasEmrax.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1430,7 +1534,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('01/01/2024'),
     Task_Priority.LOW,
     Task_Status.DONE,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1449,7 +1554,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2022-11-16T00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1460,7 +1566,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-03-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
-    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId]
+    [thomasEmrax.userId, joeBlow.userId, joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1471,7 +1578,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-04-01T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.IN_BACKLOG,
-    []
+    [],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1482,7 +1590,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1493,7 +1602,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-01-01T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [thomasEmrax.userId, joeShmoe.userId]
+    [thomasEmrax.userId, joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1504,7 +1614,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-10-31T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.DONE,
-    [thomasEmrax.userId]
+    [thomasEmrax.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1515,7 +1626,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-05-01T00:00:00-04:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
-    [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId)
+    [thomasEmrax, joeShmoe, joeBlow].map((user) => user.userId),
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1526,7 +1638,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-02-29T00:00:00-05:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1537,7 +1650,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-03-17T00:00:00-05:00'),
     Task_Priority.MEDIUM,
     Task_Status.IN_BACKLOG,
-    [joeShmoe.userId]
+    [joeShmoe.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1548,7 +1662,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.LOW,
     Task_Status.DONE,
-    [joeBlow.userId]
+    [joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1559,7 +1674,8 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2024-04-15T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.DONE,
-    [joeBlow.userId]
+    [joeBlow.userId],
+    organizationId
   );
 
   await TasksService.createTask(
@@ -1570,23 +1686,28 @@ const performSeed: () => Promise<void> = async () => {
     new Date('2023-06-23T00:00:00-04:00'),
     Task_Priority.HIGH,
     Task_Status.IN_PROGRESS,
-    [regina.userId]
+    [regina.userId],
+    organizationId
   );
 
   /**
    * Reimbursements
    */
 
-  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla');
-  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon');
-  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google');
+  const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', organizationId);
+  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', organizationId);
+  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', organizationId);
 
   const vendors: Vendor[] = [vendor, vendor2, vendor3];
 
-  const expenseType = await ReimbursementRequestService.createExpenseType(thomasEmrax, 'Equipment', 123, true, [
-    Club_Accounts.CASH,
-    Club_Accounts.BUDGET
-  ]);
+  const accountCode = await ReimbursementRequestService.createAccountCode(
+    thomasEmrax,
+    'Equipment',
+    123,
+    true,
+    [Club_Accounts.CASH, Club_Accounts.BUDGET],
+    organizationId
+  );
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
@@ -1598,15 +1719,16 @@ const performSeed: () => Promise<void> = async () => {
       {
         name: 'GLUE',
         reason: {
-          carNumber: 1,
+          carNumber: 0,
           projectNumber: 1,
           workPackageNumber: 0
         },
         cost: 200000
       }
     ],
-    expenseType.expenseTypeId,
-    100
+    accountCode.accountCodeId,
+    100,
+    organizationId
   );
 
   await ReimbursementRequestService.createReimbursementRequest(
@@ -1619,30 +1741,36 @@ const performSeed: () => Promise<void> = async () => {
       {
         name: 'BOX',
         reason: {
-          carNumber: 1,
+          carNumber: 0,
           projectNumber: 1,
           workPackageNumber: 0
         },
         cost: 10000
       }
     ],
-    expenseType.expenseTypeId,
-    200
+    accountCode.accountCodeId,
+    200,
+    organizationId
   );
 
   /**
    * Bill of Materials
    */
-  await ProjectsService.createManufacturer(thomasEmrax, 'Digikey');
-  await ProjectsService.createMaterialType('Resistor', thomasEmrax);
+  await BillOfMaterialsService.createManufacturer(thomasEmrax, 'Digikey', organizationId);
+  await BillOfMaterialsService.createMaterialType('Resistor', thomasEmrax, organizationId);
 
-  const assembly1 = await ProjectsService.createAssembly('1', thomasEmrax, {
-    carNumber: 1,
-    projectNumber: 1,
-    workPackageNumber: 0
-  });
+  const assembly1 = await BillOfMaterialsService.createAssembly(
+    '1',
+    thomasEmrax,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    organizationId
+  );
 
-  await ProjectsService.createMaterial(
+  await BillOfMaterialsService.createMaterial(
     thomasEmrax,
     '10k Resistor',
     MaterialStatus.Ordered,
@@ -1654,14 +1782,15 @@ const performSeed: () => Promise<void> = async () => {
     600,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
-      carNumber: 1,
+      carNumber: 0,
       projectNumber: 1,
       workPackageNumber: 0
     },
+    organizationId,
     'Here are some notes'
   );
 
-  await ProjectsService.createMaterial(
+  await BillOfMaterialsService.createMaterial(
     thomasEmrax,
     '20k Resistor',
     MaterialStatus.Ordered,
@@ -1673,10 +1802,11 @@ const performSeed: () => Promise<void> = async () => {
     70,
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     {
-      carNumber: 1,
+      carNumber: 0,
       projectNumber: 1,
       workPackageNumber: 0
     },
+    organizationId,
     'Here are some more notes',
     assembly1.assemblyId
   );
@@ -1692,11 +1822,12 @@ const performSeed: () => Promise<void> = async () => {
     [1, 2],
     [3, 4],
     {
-      carNumber: 1,
+      carNumber: 0,
       projectNumber: 1,
       workPackageNumber: 0
     },
-    [3, 4, 5, 6, 7]
+    [3, 4, 5, 6, 7],
+    organizationId
   );
 
   await DesignReviewsService.editDesignReview(
@@ -1713,7 +1844,8 @@ const performSeed: () => Promise<void> = async () => {
     null,
     DesignReviewStatus.CONFIRMED,
     [1, 2],
-    [1, 2, 3, 4, 5, 6, 7]
+    [1, 2, 3, 4, 5, 6, 7],
+    organizationId
   );
 
   const newWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
@@ -1725,6 +1857,7 @@ const performSeed: () => Promise<void> = async () => {
     'This is a wpchange test',
     [{ type: Scope_CR_Why_Type.OTHER, explain: 'Creating work package' }],
     [],
+    organizationId,
     null,
     {
       name: 'new workpackage test',
@@ -1734,11 +1867,18 @@ const performSeed: () => Promise<void> = async () => {
       startDate: transformDate(new Date()),
       stage: WorkPackageStage.Design,
       blockedBy: [],
-      expectedActivities: [],
-      deliverables: []
+      descriptionBullets: [],
+      links: []
     }
   );
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, newWorkPackageChangeRequest.crId, 'create wp', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    newWorkPackageChangeRequest.crId,
+    'create wp',
+    true,
+    organizationId,
+    null
+  );
 
   const { workPackageWbsNumber: workPackage9WbsNumber, workPackage: workPackage9 } = await seedWorkPackage(
     thomasEmrax,
@@ -1748,16 +1888,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/22/2024',
     5,
     [],
-    [
-      'Create a very vroom vroom car that goes very fast',
-      'Design a nose that is very pointy so the car goes faster',
-      'Remove the wheels to reduce weight and make the car go... welp'
-    ],
-    ['Speed and weight data from the data engineering team'],
+    [],
     thomasEmrax,
     WbsElementStatus.Inactive,
     joeShmoe.userId,
-    thomasEmrax.userId
+    thomasEmrax.userId,
+    organizationId
   );
 
   const editingWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
@@ -1769,6 +1905,7 @@ const performSeed: () => Promise<void> = async () => {
     'This is editing a wp through CR',
     [{ type: Scope_CR_Why_Type.OTHER, explain: 'editing a workpackage' }],
     [],
+    organizationId,
     null,
     {
       name: 'editing a work package test',
@@ -1778,8 +1915,8 @@ const performSeed: () => Promise<void> = async () => {
       startDate: transformDate(new Date()),
       stage: WorkPackageStage.Design,
       blockedBy: [],
-      expectedActivities: [],
-      deliverables: []
+      descriptionBullets: [],
+      links: []
     }
   );
 };
