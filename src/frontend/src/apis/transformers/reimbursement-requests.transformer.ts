@@ -5,36 +5,35 @@
 
 import { Receipt, Reimbursement, ReimbursementProduct, ReimbursementRequest, ReimbursementStatus, Vendor } from 'shared';
 
-const reimbursementStatusTransformer = (status: ReimbursementStatus) => {
+const reimbursementStatusTransformer = (status: ReimbursementStatus): ReimbursementStatus => {
   return {
     ...status,
     dateCreated: new Date(status.dateCreated)
   };
 };
 
-export const vendorTransformer = (vendor: Vendor) => {
+export const vendorTransformer = (vendor: Vendor): Vendor => {
   return {
     ...vendor,
-    id: vendor.vendorId,
     dateCreated: new Date(vendor.dateCreated)
   };
 };
 
-const receiptTransformer = (receipt: Receipt) => {
+const receiptTransformer = (receipt: Receipt): Receipt => {
   return {
     ...receipt,
     dateDeleted: receipt.dateDeleted ? new Date(receipt.dateDeleted) : undefined
   };
 };
 
-const reimbursementProductTransformer = (product: ReimbursementProduct) => {
+const reimbursementProductTransformer = (product: ReimbursementProduct): ReimbursementProduct => {
   return {
     ...product,
     dateDeleted: product.dateDeleted ? new Date(product.dateDeleted) : undefined
   };
 };
 
-export const reimbursementRequestTransformer = (request: ReimbursementRequest) => {
+export const reimbursementRequestTransformer = (request: ReimbursementRequest): ReimbursementRequest => {
   return {
     ...request,
     dateCreated: new Date(request.dateCreated),
@@ -48,7 +47,7 @@ export const reimbursementRequestTransformer = (request: ReimbursementRequest) =
   };
 };
 
-export const reimbursementTransformer = (reimbursement: Reimbursement) => {
+export const reimbursementTransformer = (reimbursement: Reimbursement): Reimbursement => {
   return {
     ...reimbursement,
     dateCreated: new Date(reimbursement.dateCreated)

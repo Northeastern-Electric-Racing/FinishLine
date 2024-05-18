@@ -2,11 +2,11 @@ import express from 'express';
 import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
 import ChangeRequestsController from '../controllers/change-requests.controllers';
-import { validateInputs } from '../utils/utils';
 import {
   intMinZero,
   nonEmptyString,
   projectProposedChangesValidators,
+  validateInputs,
   workPackageProposedChangesValidators
 } from '../utils/validation.utils';
 
