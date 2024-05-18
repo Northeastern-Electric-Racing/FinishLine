@@ -47,7 +47,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [requiredUsers, setRequiredUsers] = useState(designReview.requiredMembers.map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState(designReview.optionalMembers.map(userToAutocompleteOption));
   const [date, setDate] = useState(
-    new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
+    new Date(designReview.dateScheduled?.getTime() - designReview.dateScheduled?.getTimezoneOffset() * -60000)
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [startTime, setStateTime] = useState(designReview.meetingTimes[0] % 12);

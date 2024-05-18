@@ -27,33 +27,23 @@ interface WorkPackageSummaryProps {
 }
 
 const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) => {
-  const expectedActivitiesList = (
-    <ul>
-      {workPackage.expectedActivities.slice(0, 3).map((item, idx) => (
-        <li key={idx}>
-          <Typography>{item.detail}</Typography>
-        </li>
-      ))}
-    </ul>
-  );
-
   const { data: dependencies, isError, isLoading, error } = useGetManyWorkPackages(workPackage.blockedBy);
   const theme = useTheme();
 
   if (!dependencies || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
-  const numMoreExpectedActivities = workPackage.expectedActivities.length - 3;
-  const deliverablesList = (
+  const numMoreDescriptionBullets = workPackage.descriptionBullets.length - 3;
+  const descriptionBulletList = (
     <ul>
-      {workPackage.deliverables.slice(0, 3).map((item, idx) => (
+      {workPackage.descriptionBullets.slice(0, 3).map((item, idx) => (
         <li key={idx}>
           <Typography>{item.detail}</Typography>
         </li>
       ))}
     </ul>
   );
-  const numMoreDeliverables = workPackage.deliverables.length - 3;
+
   const DependencyList = () => (
     <Box sx={{ fontWeight: 'normal', display: 'inline' }}>
       {dependencies.map((wp: WorkPackage, idx) => (
@@ -109,24 +99,11 @@ const WorkPackageSummary: React.FC<WorkPackageSummaryProps> = ({ workPackage }) 
             </Grid>
             <Grid item xs={6}>
               <Typography fontWeight="bold">Expected Activities:</Typography>
-              {expectedActivitiesList}
-              {numMoreExpectedActivities > 0 ? (
+              {descriptionBulletList}
+              {numMoreDescriptionBullets > 0 && (
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
-                  Show {numMoreExpectedActivities} more...
+                  Show {numMoreDescriptionBullets} more...
                 </Link>
-              ) : (
-                <></>
-              )}
-            </Grid>
-            <Grid item xs={6}>
-              <Typography fontWeight="bold">Deliverables:</Typography>
-              {deliverablesList}
-              {numMoreDeliverables > 0 ? (
-                <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}>
-                  Show {numMoreDeliverables} more...
-                </Link>
-              ) : (
-                <></>
               )}
             </Grid>
           </Grid>
