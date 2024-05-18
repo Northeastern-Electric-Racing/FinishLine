@@ -249,33 +249,6 @@ const performSeed: () => Promise<void> = async () => {
   if (currentEnv) {
     currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
 
-    /** Updating slack ids of Thomas Emrax and Regina George */
-    prisma.user.update({
-      where: {
-        googleAuthId: thomasEmrax.googleAuthId
-      },
-      data: {
-        userSettings: {
-          update: {
-            slackId: currentEnv.SLACK_ID
-          }
-        }
-      }
-    });
-
-    prisma.user.update({
-      where: {
-        googleAuthId: regina.googleAuthId
-      },
-      data: {
-        userSettings: {
-          update: {
-            slackId: currentEnv.SLACK_ID
-          }
-        }
-      }
-    });
-
     /** Write the new .env file */
     let stringifiedEnv = '';
     Object.keys(currentEnv).forEach((key) => {

@@ -5,6 +5,9 @@
 
 import { Prisma, Role, Theme } from '@prisma/client';
 
+/** Gets the current content of the .env file */
+const currentEnv = require('dotenv').config().parsed;
+
 const thomasEmrax: Prisma.UserCreateInput = {
   firstName: 'Thomas',
   lastName: 'Emrax',
@@ -15,7 +18,7 @@ const thomasEmrax: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.DARK,
-      slackId: 'emrax'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'emrax'
     }
   },
   userSecureSettings: {
@@ -872,7 +875,7 @@ const regina: Prisma.UserCreateInput = {
   userSettings: {
     create: {
       defaultTheme: Theme.DARK,
-      slackId: 'Queen Regina'
+      slackId: currentEnv && currentEnv.SLACK_ID ? currentEnv.SLACK_ID : 'Queen Regina'
     }
   }
 };
