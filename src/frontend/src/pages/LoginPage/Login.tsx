@@ -63,7 +63,6 @@ const Login = () => {
     }
     if (authedUser.organizations.length > 0) {
       const defaultOrganization = authedUser.organizations[0];
-      console.log(defaultOrganization);
       organizationContext.selectOrganization(defaultOrganization);
     }
     redirectAfterLogin();
