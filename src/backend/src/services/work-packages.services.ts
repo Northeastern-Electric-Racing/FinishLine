@@ -617,9 +617,9 @@ export default class WorkPackagesService {
    * @param duration the duration of the work package template in weeks
    * @param expectedActivities the expected activities descriptions for this WPT
    * @param deliverables the expected deliverables descriptions for this WPT
-   * @param blockedBy the WBS elements that need to be completed before this WPT
+   * @param blockedByIds the WBS elements that need to be completed before this WPT
    * @param organizationId the id of the organization that the user is currently in
-   * @returns the WBS number of the successfully created work package template
+   * @returns the created work package template
    * @throws if the work package template could not be created
    */
   static async createWorkPackageTemplate(
@@ -694,7 +694,7 @@ export default class WorkPackagesService {
    * @param deliverables array of deliverable values on the template
    * @param workPackageName name value on the template
    * @param organizationId id of the organization that the user is currently in
-   * @returns
+   * @returns the updated work package template
    */
   static async editWorkPackageTemplate(
     submitter: User,
