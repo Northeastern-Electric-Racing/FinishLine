@@ -645,7 +645,7 @@ export default class WorkPackagesService {
         });
 
         if (!template) {
-          throw new NotFoundException('Work Package Template', templateName);
+          throw new NotFoundException('Work Package Template', workPackageTemplateId);
         }
         return template.workPackageTemplateId;
       })
