@@ -284,26 +284,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
     },
     {
       ...bomBaseColDef,
-      field: 'link',
-      headerName: 'Link',
-      type: 'string',
-      renderCell: renderLinkBOM,
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[9]
-    },
-    {
-      ...bomBaseColDef,
-      field: 'notes',
-      headerName: 'Notes',
-      type: 'string',
-      renderCell: renderNotes,
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[10]
-    },
-    {
-      ...bomBaseColDef,
       flex: 1,
       field: 'actions',
       headerName: 'Actions',
