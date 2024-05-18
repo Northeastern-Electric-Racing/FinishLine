@@ -1,11 +1,31 @@
 import prisma from '../prisma/prisma';
-import { Scope_CR_Why_Type, User, Prisma, Change_Request, Change } from '@prisma/client';
-import { addWeeksToDate, ChangeRequestReason } from 'shared';
+import {
+  Scope_CR_Why_Type,
+  User,
+  Prisma,
+  Change_Request,
+  Change,
+  Link_Type,
+  Description_Bullet_Type,
+  Project,
+  Work_Package
+} from '@prisma/client';
+import { addWeeksToDate, ChangeRequestReason, DescriptionBulletPreview, LinkCreateArgs, WorkPackageStage } from 'shared';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
-import { buildChangeDetail } from './changes.utils';
-import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import { buildChangeDetail, createChange } from './changes.utils';
+import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import {
+  ProjectProposedChangesQueryArgs,
+  WbsProposedChangeQueryArgs,
+  workPackageProposedChangesQueryArgs
+} from '../prisma-query-args/scope-change-requests.query-args';
+import ProjectsService from '../services/projects.services';
+import WorkPackagesService from '../services/work-packages.services';
+import { transformDate } from './datetime.utils';
+import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils';
+import { sendSlackCRReviewedNotification } from './slack.utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -31,7 +51,7 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
  * @param reviewer the reviewer of the change request
  */
 export const updateBlocking = async (
-  initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>,
+  initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>,
   timelineImpact: number,
   crId: number,
   reviewer: User
@@ -122,7 +142,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 export const calculateChangeRequestStatus = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
 ): ChangeRequestStatus => {
   if (changeRequest.changes.length) {
     return ChangeRequestStatus.Implemented;
@@ -151,34 +171,347 @@ export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
   return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
 };
 
+export interface ProposedChangedValidationResult {
+  links: (LinkCreateArgs & { linkType: Link_Type })[];
+  descriptionBullets: (DescriptionBulletPreview & { descriptionBulletType: Description_Bullet_Type })[];
+  carId?: string;
+}
+
 /**
  * Determines if the project lead, project manager, and links all exist
+ * @param links the links to be verified
+ * @param descriptionBullets the description bullets to be verified
+ * @param organizationId the organization id the current user is in
+ * @param carNumber the car number of the change request's WBS element
  * @param projectLeadId the project lead id to be verified
  * @param projectManagerId the project manager id to be verified
- * @param links the links to be verified
  */
 export const validateProposedChangesFields = async (
-  projectLeadId: number,
-  projectManagerId: number,
-  links: {
-    url: string;
-    linkTypeName: string;
-  }[]
-) => {
+  links: LinkCreateArgs[],
+  descriptionBullets: DescriptionBulletPreview[],
+  organizationId: string,
+  carNumber?: number,
+  projectLeadId?: number,
+  projectManagerId?: number
+): Promise<ProposedChangedValidationResult> => {
   if (projectLeadId) {
-    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId } });
+    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId }, include: { organizations: true } });
     if (!projectLead) throw new NotFoundException('User', projectLeadId);
+    if (!projectLead.organizations.map((org) => org.organizationId).includes(organizationId))
+      throw new HttpException(400, 'Project lead does not belong to the organization');
   }
 
   if (projectManagerId) {
-    const projectManager = await prisma.user.findUnique({ where: { userId: projectManagerId } });
+    const projectManager = await prisma.user.findUnique({
+      where: { userId: projectManagerId },
+      include: { organizations: true }
+    });
     if (!projectManager) throw new NotFoundException('User', projectManagerId);
+    if (!projectManager.organizations.map((org) => org.organizationId).includes(organizationId))
+      throw new HttpException(400, 'Project manager does not belong to the organization');
   }
 
-  if (links.length > 0) {
-    for (const link of links) {
-      const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
-      if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+  const linksWithLinkTypes = links.map(async (link) => {
+    const linkType = await prisma.link_Type.findUnique({
+      where: { uniqueLinkType: { name: link.linkTypeName, organizationId } }
+    });
+    if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+    return {
+      ...link,
+      linkType
+    };
+  });
+
+  const descriptionBulletsWithTypes = descriptionBullets.map(async (bullet) => {
+    const descriptionBulletType = await prisma.description_Bullet_Type.findUnique({
+      where: { uniqueDescriptionBulletType: { name: bullet.type, organizationId } }
+    });
+    if (!descriptionBulletType) throw new NotFoundException('Description Bullet Type', bullet.type);
+    return {
+      ...bullet,
+      descriptionBulletType
+    };
+  });
+
+  let foundCarId = undefined;
+  if (carNumber) {
+    const carWbs = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          carNumber,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      },
+      include: {
+        car: true
+      }
+    });
+    if (!carWbs?.car) throw new NotFoundException('Car', carNumber);
+    foundCarId = carWbs.car.carId;
+  }
+
+  return {
+    links: await Promise.all(linksWithLinkTypes),
+    descriptionBullets: await Promise.all(descriptionBulletsWithTypes),
+    carId: foundCarId
+  };
+};
+
+/**
+ * throws an error if there are any other open unreviewed change requests for this wbs element
+ * @param wbsElemId the wbs element id to find CRs with
+ * @throws if the WBS element has open unreviewed change requests
+ *
+ */
+export const validateNoUnreviewedOpenCRs = async (wbsElemId: number) => {
+  const openCRs = await prisma.change_Request.findMany({
+    where: { wbsElementId: wbsElemId, dateReviewed: null }
+  });
+  if (openCRs.length > 1)
+    throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
+};
+
+/**
+ * Applies the proposed changes by either creating a project if the newProject field is true or editing a project if the newProject field is false and there is an associated project
+ * @param wbsProposedChanges the wbs proposed changes of the change request
+ * @param projectProposedChanges  the project proposed changes of the change request
+ * @param associatedProject the optional associated project of the change request
+ * @param reviewer  the user reviewing the change request
+ * @param crId  the change request id
+ * @param carNumber the car number of the change request's WBS element
+ */
+export const applyProjectProposedChanges = async (
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
+  projectProposedChanges: Prisma.Project_Proposed_ChangesGetPayload<ProjectProposedChangesQueryArgs>,
+  associatedProject: Project,
+  reviewer: User,
+  crId: number,
+  carNumber: number,
+  organizationId: string
+) => {
+  if (projectProposedChanges) {
+    const links = wbsProposedChanges.links.map((link) => {
+      return {
+        ...link,
+        linkTypeName: link.linkType.name
+      };
+    });
+    const descriptionBullets = wbsProposedChanges.proposedDescriptionBulletChanges.map(
+      descriptionBulletToDescriptionBulletPreview
+    );
+
+    if (projectProposedChanges.car?.wbsElement.carNumber !== null) {
+      await ProjectsService.createProject(
+        reviewer,
+        crId,
+        carNumber,
+        wbsProposedChanges.name,
+        projectProposedChanges.summary,
+        projectProposedChanges.teams.map((team) => team.teamId),
+        projectProposedChanges.budget,
+        links,
+        descriptionBullets,
+        wbsProposedChanges.leadId,
+        wbsProposedChanges.managerId,
+        organizationId
+      );
+    } else if (associatedProject && projectProposedChanges.car.wbsElement.carNumber === null) {
+      await ProjectsService.editProject(
+        reviewer,
+        associatedProject.projectId,
+        crId,
+        wbsProposedChanges.name,
+        projectProposedChanges.budget,
+        projectProposedChanges.summary,
+        descriptionBullets,
+        links,
+        wbsProposedChanges.leadId,
+        wbsProposedChanges.managerId,
+        organizationId
+      );
+    }
+  }
+};
+
+/**
+ * Applies the proposed changes by either creating a work package if the change request's WBS element is a project or editing a work package if the change request's WBS element is a work package
+ * @param wbsProposedChanges the wbs proposed changes of the change request
+ * @param workPackageProposedChanges the work package proposed changes of the change request
+ * @param associatedProject the optional associated project of the change request
+ * @param associatedWorkPackage  the optional associated work package of the change request
+ * @param reviewer  the user reviewing the change request
+ * @param crId  the change request id
+ * @param organizationId the organization id of the user
+ */
+export const applyWorkPackageProposedChanges = async (
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
+  workPackageProposedChanges: Prisma.Work_Package_Proposed_ChangesGetPayload<typeof workPackageProposedChangesQueryArgs>,
+  associatedProject: Project | null,
+  associatedWorkPackage: Work_Package | null,
+  reviewer: User,
+  crId: number,
+  organizationId: string
+) => {
+  if (associatedProject) {
+    await WorkPackagesService.createWorkPackage(
+      reviewer,
+      wbsProposedChanges.name,
+      crId,
+      workPackageProposedChanges.stage as WorkPackageStage,
+      transformDate(workPackageProposedChanges.startDate),
+      workPackageProposedChanges.duration,
+      workPackageProposedChanges.blockedBy,
+      wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
+      organizationId
+    );
+  } else if (associatedWorkPackage) {
+    if (wbsProposedChanges.leadId === null) {
+      throw new HttpException(400, 'Lead ID cannot be null');
+    }
+    if (wbsProposedChanges.managerId === null) {
+      throw new HttpException(400, 'Manager ID cannot be null');
+    }
+    await WorkPackagesService.editWorkPackage(
+      reviewer,
+      associatedWorkPackage.workPackageId,
+      wbsProposedChanges.name,
+      crId,
+      workPackageProposedChanges.stage as WorkPackageStage,
+      transformDate(workPackageProposedChanges.startDate),
+      workPackageProposedChanges.duration,
+      workPackageProposedChanges.blockedBy,
+      wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
+      wbsProposedChanges.leadId,
+      wbsProposedChanges.managerId,
+      organizationId
+    );
+  }
+};
+
+/**
+ * Reviews a proposed solution and automates the changes
+ * @param psId the proposed solution id
+ * @param foundCR the change request being reviewed
+ * @param crId the change request id
+ * @param reviewer  the user reviewing the change request
+ */
+export const reviewProposedSolution = async (
+  psId: string,
+  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
+  reviewer: User,
+  organizationId: string
+) => {
+  const foundPs = await prisma.proposed_Solution.findUnique({
+    where: { proposedSolutionId: psId }
+  });
+  if (!foundPs || foundPs.changeRequestId !== foundCR.scopeChangeRequest?.scopeCrId)
+    throw new NotFoundException('Proposed Solution', psId);
+
+  // automate the changes for the proposed solution
+  // if cr is for a project: update the budget based off of the proposed solution
+  // else if cr is for a wp: update the budget and duration based off of the proposed solution
+  if (!foundCR.wbsElement.workPackage && foundCR.wbsElement.project) {
+    const newBudget = foundCR.wbsElement.project.budget + foundPs.budgetImpact;
+    const change = createChange(
+      'Budget',
+      foundCR.wbsElement.project.budget,
+      newBudget,
+      foundCR.crId,
+      reviewer.userId,
+      foundCR.wbsElementId
+    );
+    await prisma.project.update({
+      where: { projectId: foundCR.wbsElement.project.projectId },
+      data: {
+        budget: newBudget
+      }
+    });
+
+    //Make the associated budget change if there was a change
+    if (change) await prisma.change.create({ data: change });
+  } else if (foundCR.wbsElement.workPackage) {
+    // get the project for the work package
+    const wpProj = await prisma.project.findUnique({
+      where: { projectId: foundCR.wbsElement.workPackage.projectId },
+      include: { workPackages: getWorkPackageQueryArgs(organizationId) }
+    });
+    if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
+
+    // calculate the new budget and new duration
+    const newBudget = wpProj.budget + foundPs.budgetImpact;
+    const updatedDuration = foundCR.wbsElement.workPackage.duration + foundPs.timelineImpact;
+
+    // create changes that reflect the new budget and duration
+    const changes = [
+      createChange('Budget', wpProj.budget, newBudget, foundCR.crId, reviewer.userId, foundCR.wbsElementId),
+      createChange(
+        'Duration',
+        foundCR.wbsElement.workPackage.duration,
+        updatedDuration,
+        foundCR.crId,
+        reviewer.userId,
+        foundCR.wbsElementId
+      )
+    ];
+
+    // update all the wps this wp is blocking (and nested blockings) of this work package so that their start dates reflect the new duration
+    if (foundPs.timelineImpact > 0) {
+      await updateBlocking(foundCR.wbsElement.workPackage, foundPs.timelineImpact, foundCR.crId, reviewer);
+    }
+
+    // update the project and work package
+    await prisma.project.update({
+      where: { projectId: foundCR.wbsElement.workPackage.projectId },
+      data: {
+        budget: newBudget,
+        workPackages: {
+          update: {
+            where: { workPackageId: foundCR.wbsElement.workPackage.workPackageId },
+            data: {
+              duration: updatedDuration
+            }
+          }
+        }
+      }
+    });
+
+    //Making associated changes
+    const changePromises = changes.map(async (change) => {
+      //Checking if change is not zero so we dont make changes for zero budget or timeline impact
+      if (change) {
+        await prisma.change.create({ data: change });
+      }
+    });
+
+    await Promise.all(changePromises);
+  }
+
+  // finally update the proposed solution
+  await prisma.proposed_Solution.update({
+    where: { proposedSolutionId: psId },
+    data: {
+      approved: true
+    }
+  });
+};
+
+/**
+ * Sends a slack notification to the submitter of the change request that their change request has been reviewed
+ * @param foundCR the change request that was reviewed
+ */
+export const sendCRSubmitterReviewedNotification = async (
+  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
+) => {
+  const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
+  if (creatorUserSettings && creatorUserSettings.slackId) {
+    try {
+      await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+      }
     }
   }
 };

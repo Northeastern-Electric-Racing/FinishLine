@@ -1,5 +1,5 @@
-import { User, UserPreview } from './user-types';
 import { Decimal } from 'decimal.js';
+import { User, UserPreview } from './user-types';
 
 export enum MaterialStatus {
   Ordered = 'ORDERED',
@@ -44,6 +44,7 @@ export type AssemblyPreview = Omit<Assembly, 'materials' | 'userCreated' | 'user
 export interface Manufacturer {
   name: string;
   dateCreated: Date;
+  dateDeleted?: Date;
   userCreatedId: number;
   userCreated: User;
   materials: MaterialPreview[];

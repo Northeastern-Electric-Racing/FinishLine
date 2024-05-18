@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { ProposedSolution } from 'shared';
-import proposedSolutionArgs from '../prisma-query-args/proposed-solutions.query-args';
 import { userTransformer } from './user.transformer';
+import { ProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
 
 const proposedSolutionTransformer = (
-  proposedSolution: Prisma.Proposed_SolutionGetPayload<typeof proposedSolutionArgs>
+  proposedSolution: Prisma.Proposed_SolutionGetPayload<ProposedSolutionQueryArgs>
 ): ProposedSolution => {
   return {
     id: proposedSolution.proposedSolutionId,

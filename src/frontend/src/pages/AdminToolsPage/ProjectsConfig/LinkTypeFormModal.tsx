@@ -5,24 +5,25 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { LinkType } from 'shared';
-import { LinkTypeCreatePayload } from '../../../utils/types';
+import { LinkType, LinkTypeCreatePayload } from 'shared';
 import Icon from '@mui/material/Icon';
 import HelpIcon from '@mui/icons-material/Help';
 import { useTheme } from '@mui/material/styles';
 
 interface LinkTypeFormModalProps {
-  showModal: boolean;
+  open: boolean;
   handleClose: () => void;
   defaultValues?: LinkType;
   onSubmit: (data: LinkTypeCreatePayload) => void;
   linkTypes: LinkType[];
 }
 
-const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
+const LinkTypeFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTypes }: LinkTypeFormModalProps) => {
   const toast = useToast();
+  const creatingNew = defaultValues === undefined;
 
-  const uniqueLinkTypeTest = (name?: string) => !!name && linkTypes && !linkTypes.map((v) => v.name).includes(name);
+  const uniqueLinkTypeTest = (name?: string) =>
+    !creatingNew || (!!name && linkTypes && !linkTypes.map((v) => v.name).includes(name));
 
   const schema = yup.object().shape({
     name: yup
@@ -69,7 +70,7 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
   );
   return (
     <NERFormModal
-      open={showModal}
+      open={open}
       onHide={handleClose}
       title={!!defaultValues ? 'Edit LinkType' : 'Create LinkType'}
       reset={() => reset({ name: '' })}
@@ -82,7 +83,7 @@ const LinkTypeFormModal = ({ showModal, handleClose, defaultValues, onSubmit, li
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>LinkType Name</FormLabel>
-            <ReactHookTextField name="name" control={control} />
+            <ReactHookTextField name="name" control={control} disabled={!creatingNew} />
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>

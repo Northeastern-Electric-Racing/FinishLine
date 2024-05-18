@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField, Tooltip } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
@@ -6,12 +6,11 @@ import ReactHookTextField from '../../../../../components/ReactHookTextField';
 import { MaterialFormInput } from './MaterialForm';
 import NERFormModal from '../../../../../components/NERFormModal';
 import DetailDisplay from '../../../../../components/DetailDisplay';
-import DynamicTooltip from '../../../../../components/DynamicTooltip';
-import InfoIcon from '@mui/icons-material/Info';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
 import { Dispatch, SetStateAction, useEffect } from 'react';
+import HelpIcon from '@mui/icons-material/Help';
 import { displayEnum } from '../../../../../utils/pipes';
 import { MaterialStatus } from 'shared';
 
@@ -151,9 +150,13 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
           <FormControl fullWidth>
             <FormLabel>
               Manufacturer
-              <DynamicTooltip title={`Make sure to enter the manufacturer and not the distributor!`}>
-                <InfoIcon sx={{ height: 11 }} />
-              </DynamicTooltip>
+              <Tooltip
+                title={'Make sure not to enter the distributor (e.g. Amazon)'}
+                style={{ marginRight: '2px' }}
+                placement="right"
+              >
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
             </FormLabel>
             <Controller
               name="manufacturerName"
@@ -201,7 +204,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer Part Number</FormLabel>
+            <FormLabel>
+              Manufacturer Part Number
+              <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right" style={{ marginRight: '2px' }}>
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
+            </FormLabel>
             <ReactHookTextField
               name="manufacturerPartNumber"
               control={control}

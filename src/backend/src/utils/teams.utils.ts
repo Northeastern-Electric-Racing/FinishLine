@@ -53,7 +53,7 @@ export const isUserPartOfTeams = (teams: Prisma.TeamGetPayload<typeof teamQueryA
 };
 
 export type UserWithTeams = UserWithSettings & {
-  teamAsHead: Team | null;
+  teamsAsHead: Team[] | null;
   teamsAsLead: Team[] | null;
   teamsAsMember: Team[] | null;
 };
@@ -66,9 +66,25 @@ export type UserWithTeams = UserWithSettings & {
 export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
   return users.map((user) => {
     const teams = [];
-    if (user.teamAsHead) teams.push(user.teamAsHead);
+    if (user.teamsAsHead) teams.push(...user.teamsAsHead);
     if (user.teamsAsLead) teams.push(...user.teamsAsLead);
     if (user.teamsAsMember) teams.push(...user.teamsAsMember);
     return teams;
   });
+};
+
+export type UserWithId = {
+  userId: number;
+};
+
+/**
+ * Removes all users in the second list from the first list. Returns a list of
+ * all users in the first list filtered to exclude those users in the second list.
+ * @param currentUsers The primary list of users
+ * @param usersToRemove the list of users to remove from currentUsers
+ * @returns all users in currentUsers that aren't in usersToRemove
+ */
+export const removeUsersFromList = (currentUsers: UserWithId[], usersToRemove: UserWithId[]): UserWithId[] => {
+  const userIdsToRemove = usersToRemove.map((user) => user.userId);
+  return currentUsers.filter((user) => !userIdsToRemove.includes(user.userId));
 };

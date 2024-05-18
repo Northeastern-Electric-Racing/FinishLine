@@ -1,4 +1,4 @@
-import { Material, WbsNumber } from 'shared';
+import { Material, WbsNumber, Assembly } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 import { manufacturerTransformer, materialTypeTransformer } from './transformers/bom.transformers';
@@ -34,6 +34,16 @@ export const getAllManufacturers = async () => {
  */
 export const createManufacturer = async (name: string) => {
   const { data } = await axios.post(apiUrls.bomCreateManufacturer(), { name });
+  return data;
+};
+
+/**
+ * Requests to delete a manufacturer.
+ * @param manufacturer The manufacturer to delete
+ * @returns The deleted manufacturer
+ */
+export const deleteManufacturer = async (name: string) => {
+  const { data } = await axios.delete(apiUrls.bomDeleteManufacturer(name));
   return data;
 };
 
@@ -112,6 +122,15 @@ export const deleteSingleMaterial = async (materialId: string) => {
 export const createAssembly = async (wbsNum: WbsNumber, assembly: AssemblyFormInput) => {
   const { data } = await axios.post(apiUrls.bomCreateAssembly(wbsNum), assembly);
   return data;
+};
+
+/**
+ * Soft deletes a material.
+ * @param assemblyId
+ * @returns
+ */
+export const deleteSingleAssembly = async (assemblyId: string) => {
+  return axios.delete<Assembly>(apiUrls.bomDeleteAssembly(assemblyId));
 };
 
 /**

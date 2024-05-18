@@ -1,34 +1,49 @@
-/*
- * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
- * See the LICENSE file in the repository root folder for details.
- */
+import { Box } from '@mui/material';
+import { EventChange, GanttTask, RequestEventChange } from '../../utils/gantt.utils';
+import GanttChartTeamSection from './GanttChartTeamSection';
 
-import { Typography } from '@mui/material';
-import { calculateEndDate } from 'shared';
-import { Gantt } from './GanttPackage/components/gantt/gantt';
-import { Task, ViewMode } from './GanttPackage/types/public-types';
-
-interface GanttPageProps {
-  ganttTasks: Task[];
-  onExpanderClick: (ganttTasks: Task) => void;
+interface GanttChartProps {
+  startDate: Date;
+  endDate: Date;
+  teamsList: string[];
+  teamNameToGanttTasksMap: Map<string, GanttTask[]>;
+  saveChanges: (eventChanges: EventChange[]) => void;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  highlightedChange?: RequestEventChange;
 }
 
-const GanttChart: React.FC<GanttPageProps> = ({ ganttTasks, onExpanderClick }) => {
-  return ganttTasks.length > 0 ? (
-    <Gantt
-      tasks={ganttTasks}
-      viewMode={ViewMode.Week}
-      viewDate={calculateEndDate(new Date(), -3)}
-      preStepsCount={1}
-      locale={'US'}
-      onExpanderClick={onExpanderClick}
-      columnWidth={35}
-      onClick={(task) => {
-        if (task.onClick) task.onClick();
-      }}
-    />
-  ) : (
-    <Typography sx={{ mx: 1 }}>No items to display</Typography>
+const GanttChart = ({
+  startDate,
+  endDate,
+  teamsList,
+  teamNameToGanttTasksMap,
+  saveChanges,
+  showWorkPackagesMap,
+  setShowWorkPackagesMap,
+  highlightedChange
+}: GanttChartProps) => {
+  return (
+    <Box>
+      {teamsList.map((teamName: string) => {
+        const projectTasks = teamNameToGanttTasksMap.get(teamName);
+
+        return projectTasks ? (
+          <GanttChartTeamSection
+            startDate={startDate}
+            endDate={endDate}
+            saveChanges={saveChanges}
+            showWorkPackagesMap={showWorkPackagesMap}
+            setShowWorkPackagesMap={setShowWorkPackagesMap}
+            teamName={teamName}
+            projectTasks={projectTasks}
+            highlightedChange={highlightedChange}
+          />
+        ) : (
+          <></>
+        );
+      })}
+    </Box>
   );
 };
 

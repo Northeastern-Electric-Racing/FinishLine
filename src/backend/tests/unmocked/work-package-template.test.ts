@@ -1,13 +1,14 @@
-import prisma from '../../src/prisma/prisma';
 import WorkPackageService from '../../src/services/work-packages.services';
 import { AccessDeniedGuestException, HttpException } from '../../src/utils/errors.utils';
-import { createTestUser, resetUsers } from '../test-utils';
-import { batman, theVisitor } from '../test-data/users.test-data';
-import { WorkPackageTemplate1 } from '../test-data/work-packages.test-data';
+import { createTestOrganization, createTestUser, createTestWorkPackageTemplate, resetUsers } from '../test-utils';
+import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
+import { workPackageTemplateTransformer } from '../../src/transformers/work-package-template.transformer';
 
 describe('Work Package Template Tests', () => {
+  let orgId: string;
   beforeEach(async () => {
     await resetUsers();
+    orgId = (await createTestOrganization()).organizationId;
   });
 
   afterEach(async () => {
@@ -16,36 +17,29 @@ describe('Work Package Template Tests', () => {
 
   describe('Get single work package template', () => {
     it('fails if user is a guest', async () => {
-      await expect(async () => await WorkPackageService.getSingleWorkPackageTemplate(theVisitor, 'id')).rejects.toThrow(
-        new AccessDeniedGuestException('get a work package template')
-      );
+      await expect(
+        async () =>
+          await WorkPackageService.getSingleWorkPackageTemplate(await createTestUser(theVisitorGuest, orgId), 'id', orgId)
+      ).rejects.toThrow(new AccessDeniedGuestException('get a work package template'));
     });
 
     it('fails is the work package template ID is not found', async () => {
-      await expect(async () => await WorkPackageService.getSingleWorkPackageTemplate(batman, 'id1')).rejects.toThrow(
-        new HttpException(400, `Work package template with id id1 not found`)
-      );
+      await expect(
+        async () =>
+          await WorkPackageService.getSingleWorkPackageTemplate(await createTestUser(batmanAppAdmin, orgId), 'id1', orgId)
+      ).rejects.toThrow(new HttpException(400, `Work package template with id id1 not found`));
     });
 
     it('get single work package template succeeds', async () => {
-      const createdUser = await createTestUser(batman);
-      await prisma.work_Package_Template.create({
-        data: {
-          workPackageTemplateId: 'id1',
-          workPackageName: 'Work Package 1',
-          templateName: 'Template 1',
-          templateNotes: 'This is a new work package template',
-          dateCreated: new Date('03/25/2024'),
-          userCreatedId: createdUser.userId
-        }
-      });
+      const createdWorkPackageTemplate = await createTestWorkPackageTemplate(orgId);
 
-      const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(batman, 'id1');
-      expect(recievedWorkPackageTemplate).toStrictEqual({
-        ...WorkPackageTemplate1,
-        userCreated: { ...batman, userId: createdUser.userId },
-        userCreatedId: createdUser.userId
-      });
+      const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(
+        await createTestUser(supermanAdmin, orgId),
+        createdWorkPackageTemplate.workPackageTemplateId,
+        orgId
+      );
+
+      expect(recievedWorkPackageTemplate).toStrictEqual(workPackageTemplateTransformer(createdWorkPackageTemplate));
     });
   });
 });

@@ -2,11 +2,11 @@ import express from 'express';
 import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
 import ChangeRequestsController from '../controllers/change-requests.controllers';
-import { validateInputs } from '../utils/utils';
 import {
   intMinZero,
   nonEmptyString,
   projectProposedChangesValidators,
+  validateInputs,
   workPackageProposedChangesValidators
 } from '../utils/validation.utils';
 
@@ -67,7 +67,7 @@ changeRequestsRouter.post(
   body('why').isArray(),
   nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
-  body('proposedSolutions').isArray({ min: 1 }),
+  body('proposedSolutions').isArray({ min: 0 }),
   nonEmptyString(body('proposedSolutions.*.description')),
   nonEmptyString(body('proposedSolutions.*.scopeImpact')),
   body('proposedSolutions.*.timelineImpact').isInt(),

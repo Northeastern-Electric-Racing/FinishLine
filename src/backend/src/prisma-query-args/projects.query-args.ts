@@ -1,59 +1,62 @@
 import { Prisma } from '@prisma/client';
-import taskQueryArgs from './tasks.query-args';
-import linkQueryArgs from './links.query-args';
-import { assemblyQueryArgs, materialQueryArgs } from './bom.query-args';
+import { getLinkQueryArgs } from './links.query-args';
+import { getUserQueryArgs } from './user.query-args';
+import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
+import { getTeamQueryArgs } from './teams.query-args';
+import { getMaterialQueryArgs, getAssemblyQueryArgs } from './bom.query-args';
+import { getTaskQueryArgs } from './tasks.query-args';
 
-const projectQueryArgs = Prisma.validator<Prisma.ProjectArgs>()({
-  include: {
-    wbsElement: {
-      include: {
-        projectLead: true,
-        projectManager: true,
-        tasks: { where: { dateDeleted: null }, ...taskQueryArgs },
-        links: { ...linkQueryArgs },
-        changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
-        materials: {
-          where: { dateDeleted: null },
-          ...materialQueryArgs
-        },
-        assemblies: {
-          where: { dateDeleted: null },
-          ...assemblyQueryArgs
-        }
-      }
-    },
-    teams: { include: { members: true, head: true, leads: true } },
-    goals: { where: { dateDeleted: null } },
-    features: { where: { dateDeleted: null } },
-    otherConstraints: { where: { dateDeleted: null } },
-    workPackages: {
-      where: {
-        wbsElement: {
-          dateDeleted: null
+export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
+
+export const getProjectQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.ProjectArgs>()({
+    include: {
+      wbsElement: {
+        include: {
+          lead: getUserQueryArgs(organizationId),
+          manager: getUserQueryArgs(organizationId),
+          descriptionBullets: getDescriptionBulletQueryArgs(organizationId),
+          tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) },
+          links: getLinkQueryArgs(organizationId),
+          changes: {
+            where: { changeRequest: { dateDeleted: null } },
+            include: { implementer: getUserQueryArgs(organizationId) }
+          },
+          materials: {
+            where: { dateDeleted: null },
+            ...getMaterialQueryArgs(organizationId)
+          },
+          assemblies: {
+            where: { dateDeleted: null },
+            ...getAssemblyQueryArgs(organizationId)
+          }
         }
       },
-      include: {
-        wbsElement: {
-          include: {
-            projectLead: true,
-            projectManager: true,
-            links: { ...linkQueryArgs },
-            changes: { where: { changeRequest: { dateDeleted: null } }, include: { implementer: true } },
-            materials: {
-              ...materialQueryArgs
-            },
-            assemblies: {
-              ...assemblyQueryArgs
-            }
+      teams: getTeamQueryArgs(organizationId),
+      workPackages: {
+        where: {
+          wbsElement: {
+            dateDeleted: null
           }
         },
-        blockedBy: { where: { dateDeleted: null } },
-        expectedActivities: { where: { dateDeleted: null } },
-        deliverables: { where: { dateDeleted: null } }
-      }
-    },
-    favoritedBy: true
-  }
-});
-
-export default projectQueryArgs;
+        include: {
+          wbsElement: {
+            include: {
+              lead: getUserQueryArgs(organizationId),
+              descriptionBullets: getDescriptionBulletQueryArgs(organizationId),
+              manager: getUserQueryArgs(organizationId),
+              links: getLinkQueryArgs(organizationId),
+              changes: {
+                where: { changeRequest: { dateDeleted: null } },
+                include: { implementer: getUserQueryArgs(organizationId) }
+              },
+              materials: getMaterialQueryArgs(organizationId),
+              assemblies: getAssemblyQueryArgs(organizationId)
+            }
+          },
+          blockedBy: { where: { dateDeleted: null } }
+        }
+      },
+      favoritedBy: getUserQueryArgs(organizationId)
+    }
+  });

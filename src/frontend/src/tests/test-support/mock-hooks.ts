@@ -1,5 +1,6 @@
 import { UseMutationResult } from 'react-query';
 import { AuthenticatedUser, DescriptionBullet, Project, User, UserSettings, WorkPackage } from 'shared';
+import { CheckDescriptionBulletRequestPayload } from '../../hooks/description-bullets.hooks';
 import { CreateTaskPayload, DeleteTaskPayload, TaskPayload } from '../../hooks/tasks.hooks';
 import { VersionObject } from '../../utils/types';
 import { mockUseMutationResult, mockUseQueryResult } from './test-data/test-utils.stub';
@@ -70,9 +71,9 @@ export const mockDeleteTaskReturnValue = mockUseMutationResult<{ message: string
 export const mockCheckDescBulletReturnValue = mockUseMutationResult<DescriptionBullet>(
   false,
   false,
-  { id: 1, detail: 'detail', dateAdded: new Date() },
+  { id: 1, detail: 'detail', dateAdded: new Date(), type: 'your mom' },
   undefined
-);
+) as UseMutationResult<DescriptionBullet, Error, CheckDescriptionBulletRequestPayload, unknown>;
 
 export const mockGetVersionNumberReturnValue = (versionObject: VersionObject) =>
   mockUseQueryResult<VersionObject>(false, false, versionObject);

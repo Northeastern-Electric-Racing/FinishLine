@@ -1,8 +1,15 @@
 import express from 'express';
 import { body } from 'express-validator';
 import WorkPackagesController from '../controllers/work-packages.controllers';
-import { validateInputs } from '../utils/utils';
-import { intMinZero, isDate, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
+import {
+  blockedByValidators,
+  descriptionBulletsValidators,
+  intMinZero,
+  isDate,
+  isWorkPackageStageOrNone,
+  nonEmptyString,
+  validateInputs
+} from '../utils/validation.utils';
 const workPackagesRouter = express.Router();
 
 workPackagesRouter.get('/', WorkPackagesController.getAllWorkPackages);
@@ -23,14 +30,8 @@ workPackagesRouter.post(
   isWorkPackageStageOrNone(body('stage')),
   isDate(body('startDate')),
   intMinZero(body('duration')),
-  body('blockedBy').isArray(),
-  intMinZero(body('blockedBy.*.carNumber')),
-  intMinZero(body('blockedBy.*.projectNumber')),
-  intMinZero(body('blockedBy.*.workPackageNumber')),
-  body('expectedActivities').isArray(),
-  nonEmptyString(body('expectedActivities.*')),
-  body('deliverables').isArray(),
-  nonEmptyString(body('deliverables.*')),
+  ...blockedByValidators,
+  ...descriptionBulletsValidators,
   validateInputs,
   WorkPackagesController.createWorkPackage
 );
@@ -39,18 +40,11 @@ workPackagesRouter.post(
   intMinZero(body('workPackageId')),
   intMinZero(body('crId')),
   nonEmptyString(body('name')),
-  body('startDate').isDate(),
+  isDate(body('startDate')),
   intMinZero(body('duration')),
   isWorkPackageStageOrNone(body('stage')),
-  intMinZero(body('blockedBy.*.carNumber')),
-  intMinZero(body('blockedBy.*.projectNumber')),
-  intMinZero(body('blockedBy.*.workPackageNumber')),
-  body('expectedActivities').isArray(),
-  body('expectedActivities.*.id').isInt({ min: -1 }).not().isString(),
-  nonEmptyString(body('expectedActivities.*.detail')),
-  body('deliverables').isArray(),
-  body('deliverables.*.id').isInt({ min: -1 }).not().isString(),
-  nonEmptyString(body('deliverables.*.detail')),
+  ...blockedByValidators,
+  ...descriptionBulletsValidators,
   intMinZero(body('projectLeadId').optional()),
   intMinZero(body('projectManagerId').optional()),
   validateInputs,
@@ -64,7 +58,5 @@ workPackagesRouter.post(
   validateInputs,
   WorkPackagesController.slackMessageUpcomingDeadlines
 );
-
-workPackagesRouter.get('/template/:workPackageTemplateId', WorkPackagesController.getSingleWorkPackageTemplate);
 
 export default workPackagesRouter;

@@ -1,9 +1,14 @@
 import { Prisma } from '@prisma/client';
-import { BlockedByInfo, WorkPackageStage, WorkPackageTemplate } from 'shared';
-import { workPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
+import { WorkPackageStage, WorkPackageTemplate, WorkPackageTemplatePreview } from 'shared';
+import {
+  WorkPackageTemplatePreviewQueryArgs,
+  WorkPackageTemplateQueryArgs
+} from '../prisma-query-args/work-package-template.query-args';
+import descriptionBulletTransformer from './description-bullets.transformer';
+import { userTransformer } from './user.transformer';
 
 export const workPackageTemplateTransformer = (
-  wptInput: Prisma.Work_Package_TemplateGetPayload<typeof workPackageTemplateQueryArgs>
+  wptInput: Prisma.Work_Package_TemplateGetPayload<WorkPackageTemplateQueryArgs>
 ): WorkPackageTemplate => {
   return {
     workPackageTemplateId: wptInput.workPackageTemplateId,
@@ -12,22 +17,24 @@ export const workPackageTemplateTransformer = (
     workPackageName: wptInput.workPackageName ?? '',
     stage: (wptInput.stage as WorkPackageStage) ?? undefined,
     duration: wptInput.duration ?? undefined,
-    blockedBy: wptInput.blockedBy.map((info) => blockedByInfoTransformer(info)),
-    expectedActivities: wptInput.expectedActivities,
-    deliverables: wptInput.deliverables,
+    blockedBy: wptInput.blockedBy.map(WorkPackageTemplatePreviewTransformer),
+    descriptionBullets: wptInput.descriptionBullets.map(descriptionBulletTransformer),
     dateCreated: wptInput.dateCreated,
-    userCreated: wptInput.userCreated,
+    userCreated: userTransformer(wptInput.userCreated),
     userCreatedId: wptInput.userCreatedId,
     dateDeleted: wptInput.dateDeleted ?? undefined,
-    userDeleted: wptInput.userDeleted ?? undefined,
+    userDeleted: wptInput.userDeleted ? userTransformer(wptInput.userDeleted) : undefined,
     userDeletedId: wptInput.userDeletedId ?? undefined
-  } as WorkPackageTemplate;
+  };
 };
 
-const blockedByInfoTransformer = (bbInput: Prisma.Blocked_By_InfoGetPayload<{}>): BlockedByInfo => {
+const WorkPackageTemplatePreviewTransformer = (
+  workPackageTemplate: Prisma.Work_Package_TemplateGetPayload<WorkPackageTemplatePreviewQueryArgs>
+): WorkPackageTemplatePreview => {
   return {
-    blockedByInfoId: bbInput.blockedByInfoId,
-    stage: (bbInput.stage as WorkPackageStage) ?? undefined,
-    name: bbInput.name
+    workPackageTemplateId: workPackageTemplate.workPackageTemplateId,
+    templateName: workPackageTemplate.templateName,
+    stage: (workPackageTemplate.stage as WorkPackageStage) ?? undefined,
+    templateNotes: workPackageTemplate.templateNotes
   };
 };

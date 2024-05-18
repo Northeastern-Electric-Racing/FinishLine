@@ -1,16 +1,13 @@
-import { WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
-import { LinkCreateArgs, WbsElementStatus, WbsNumber } from 'shared';
-import { DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { ChangeCreateArgs, createChange, createListChanges } from './changes.utils';
-import {
-  DescriptionBulletPreview,
-  descriptionBulletToChangeListValue,
-  descriptionBulletsToChangeListValues
-} from './description-bullets.utils';
+import { DescriptionBulletPreview, LinkCreateArgs, WbsElementStatus } from 'shared';
+import { DeletedException, NotFoundException } from './errors.utils';
+import { ChangeCreateArgs, createChange, createListChanges, getDescriptionBulletChanges } from './changes.utils';
+import { DescriptionBulletDestination, addRawDescriptionBullets, editDescriptionBullets } from './description-bullets.utils';
 import { linkToChangeListValue, updateLinks } from './links.utils';
-import linkQueryArgs from '../prisma-query-args/links.query-args';
-import projectQueryArgs from '../prisma-query-args/projects.query-args';
+import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
+import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 
 /**
  * calculate the project's status based on its workpacakges' status
@@ -35,33 +32,6 @@ export const getHighestProjectNumber = async (carNumber: number) => {
   return maxProjectNumber._max.projectNumber ?? 0;
 };
 
-// helper method to add the given description bullets into the database, linked to the given work package or project
-export const addDescriptionBullets = async (addedDetails: string[], id: number, descriptionBulletIdField: string) => {
-  // add the added bullets
-  if (addedDetails.length > 0) {
-    await prisma.description_Bullet.createMany({
-      data: addedDetails.map((element) => {
-        return {
-          detail: element,
-          [descriptionBulletIdField]: id
-        };
-      })
-    });
-  }
-};
-
-// edit descrption bullets in the db for each id and detail pair
-export const editDescriptionBullets = async (editedIdsAndDetails: { id: number; detail: string }[]) => {
-  if (editedIdsAndDetails.length < 1) return;
-  editedIdsAndDetails.forEach(
-    async (element) =>
-      await prisma.description_Bullet.update({
-        where: { descriptionId: element.id },
-        data: { detail: element.detail }
-      })
-  );
-};
-
 // Given a user's id, this method returns the user's full name
 export const getUserFullName = async (userId: number | null): Promise<string | null> => {
   if (!userId) return null;
@@ -78,13 +48,11 @@ export const updateProjectAndCreateChanges = async (
   name: string,
   budget: number | null,
   summary: string,
-  newRules: string[] | null,
-  newGoals: { id: number; detail: string }[] | null,
-  newFeatures: { id: number; detail: string }[] | null,
-  newOtherConstraints: { id: number; detail: string }[] | null,
+  newDescriptionBullets: DescriptionBulletPreview[],
   newLinkCreateArgs: LinkCreateArgs[] | null,
   projectLeadId: number | null,
-  projectManagerId: number | null
+  projectManagerId: number | null,
+  organizationId: string
 ) => {
   let changesJson: ChangeCreateArgs[] = [];
 
@@ -93,10 +61,12 @@ export const updateProjectAndCreateChanges = async (
       projectId
     },
     include: {
-      wbsElement: { include: { links: { ...linkQueryArgs } } },
-      goals: true,
-      features: true,
-      otherConstraints: true
+      wbsElement: {
+        include: {
+          links: getLinkQueryArgs(organizationId),
+          descriptionBullets: getDescriptionBulletQueryArgs(organizationId)
+        }
+      }
     }
   });
 
@@ -111,7 +81,7 @@ export const updateProjectAndCreateChanges = async (
   const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);
   const projectManagerChangeJson = createChange(
     'project manager',
-    await getUserFullName(originalProject.wbsElement.projectManagerId),
+    await getUserFullName(originalProject.wbsElement.managerId),
     await getUserFullName(projectManagerId),
     crId,
     implementerId,
@@ -119,7 +89,7 @@ export const updateProjectAndCreateChanges = async (
   );
   const projectLeadChangeJson = createChange(
     'project lead',
-    await getUserFullName(originalProject.wbsElement.projectLeadId),
+    await getUserFullName(originalProject.wbsElement.leadId),
     await getUserFullName(projectLeadId),
     crId,
     implementerId,
@@ -127,76 +97,30 @@ export const updateProjectAndCreateChanges = async (
   );
 
   // Dealing with lists
-  const rulesChangeJson = createListChanges(
-    'rules',
-    originalProject.rules.map((rule) => {
-      return {
-        element: rule,
-        comparator: rule,
-        displayValue: rule
-      };
-    }),
-    newRules
-      ? newRules.map((rule) => {
-          return {
-            element: rule,
-            comparator: rule,
-            displayValue: rule
-          };
-        })
-      : [],
-    crId,
-    implementerId,
-    wbsElementId
-  );
-  if (nameChangeJson !== undefined) changesJson.push(nameChangeJson);
-  if (budgetChangeJson !== undefined) changesJson.push(budgetChangeJson);
-  if (summaryChangeJson !== undefined) changesJson.push(summaryChangeJson);
-  if (projectManagerChangeJson !== undefined) changesJson.push(projectManagerChangeJson);
-  if (projectLeadChangeJson !== undefined) changesJson.push(projectLeadChangeJson);
+  if (nameChangeJson) changesJson.push(nameChangeJson);
+  if (budgetChangeJson) changesJson.push(budgetChangeJson);
+  if (summaryChangeJson) changesJson.push(summaryChangeJson);
+  if (projectManagerChangeJson) changesJson.push(projectManagerChangeJson);
+  if (projectLeadChangeJson) changesJson.push(projectLeadChangeJson);
 
-  const goalsChangeJson = createListChanges(
-    'goals',
-    descriptionBulletsToChangeListValues(originalProject.goals),
-    newGoals ? newGoals.map((goal) => descriptionBulletToChangeListValue(goal)) : [],
+  const descriptionBulletChanges = await getDescriptionBulletChanges(
+    originalProject.wbsElement.descriptionBullets,
+    newDescriptionBullets,
     crId,
-    implementerId,
-    wbsElementId
-  );
-
-  const featuresChangeJson = createListChanges(
-    'features',
-    descriptionBulletsToChangeListValues(originalProject.features),
-    newFeatures ? newFeatures.map((feature) => descriptionBulletToChangeListValue(feature)) : [],
-    crId,
-    implementerId,
-    wbsElementId
-  );
-
-  const otherConstraintsChangeJson = createListChanges(
-    'other constraints',
-    descriptionBulletsToChangeListValues(originalProject.otherConstraints),
-    newOtherConstraints ? newOtherConstraints.map((constraint) => descriptionBulletToChangeListValue(constraint)) : [],
-    crId,
-    implementerId,
-    wbsElementId
+    wbsElementId,
+    implementerId
   );
 
   const linkChanges = createListChanges(
     'link',
-    originalProject.wbsElement.links.map(linkToChangeListValue),
+    originalProject.wbsElement.links.map((link) => linkToChangeListValue({ ...link, linkTypeName: link.linkType.name })),
     newLinkCreateArgs ? newLinkCreateArgs.map(linkToChangeListValue) : [],
     crId,
     implementerId,
     wbsElementId
   );
 
-  changesJson = changesJson
-    .concat(rulesChangeJson.changes)
-    .concat(goalsChangeJson.changes)
-    .concat(featuresChangeJson.changes)
-    .concat(otherConstraintsChangeJson.changes)
-    .concat(linkChanges.changes);
+  changesJson = changesJson.concat(descriptionBulletChanges.changes).concat(linkChanges.changes);
 
   // update the project with the input fields
   const updatedProject = await prisma.project.update({
@@ -206,22 +130,19 @@ export const updateProjectAndCreateChanges = async (
     data: {
       budget: budget ?? undefined,
       summary,
-      rules: newRules ?? undefined,
       wbsElement: {
         update: {
           name,
-          projectLeadId,
-          projectManagerId
+          leadId: projectLeadId,
+          managerId: projectManagerId
         }
       }
     },
-    ...projectQueryArgs
+    ...getProjectQueryArgs(organizationId)
   });
 
   // Update any deleted description bullets to have their date deleted as right now
-  const deletedDescriptionBullets: DescriptionBulletPreview[] = goalsChangeJson.deletedElements
-    .concat(featuresChangeJson.deletedElements)
-    .concat(otherConstraintsChangeJson.deletedElements);
+  const deletedDescriptionBullets: DescriptionBulletPreview[] = descriptionBulletChanges.deleted;
 
   if (deletedDescriptionBullets.length > 0) {
     await prisma.description_Bullet.updateMany({
@@ -236,31 +157,19 @@ export const updateProjectAndCreateChanges = async (
     });
   }
 
-  await addDescriptionBullets(
-    goalsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-    originalProject.projectId,
-    'projectIdGoals'
-  );
-  await addDescriptionBullets(
-    featuresChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-    originalProject.projectId,
-    'projectIdFeatures'
-  );
-  // Add the new other constraints
-  await addDescriptionBullets(
-    otherConstraintsChangeJson.addedElements.map((descriptionBullet) => descriptionBullet.detail),
-    originalProject.projectId,
-    'projectIdOtherConstraints'
-  );
-  // Edit the existing description bullets
-  await editDescriptionBullets(
-    goalsChangeJson.editedElements
-      .concat(featuresChangeJson.editedElements)
-      .concat(otherConstraintsChangeJson.editedElements)
+  // Add the new description bullets
+  await addRawDescriptionBullets(
+    descriptionBulletChanges.added,
+    DescriptionBulletDestination.WBS_ELEMENT,
+    wbsElementId,
+    organizationId
   );
 
+  // Edit the existing description bullets
+  await editDescriptionBullets(descriptionBulletChanges.edited, organizationId);
+
   // Update links
-  await updateLinks(linkChanges, wbsElementId, implementerId);
+  await updateLinks(linkChanges, wbsElementId, implementerId, organizationId);
 
   await prisma.change.createMany({
     data: changesJson
@@ -303,40 +212,4 @@ export const checkMaterialInputs = async (
     });
     if (!unit) throw new NotFoundException('Unit', unitName);
   }
-};
-
-export const validateBlockedBys = async (blockedBy: WbsNumber[]) => {
-  blockedBy.forEach((dep: WbsNumber) => {
-    if (dep.workPackageNumber === 0) {
-      throw new HttpException(400, 'A Project cannot be a Blocker');
-    }
-  });
-
-  const blockedByWBSElems: (WBS_Element | null)[] = await Promise.all(
-    blockedBy.map(async (ele: WbsNumber) => {
-      return await prisma.wBS_Element.findUnique({
-        where: {
-          wbsNumber: {
-            carNumber: ele.carNumber,
-            projectNumber: ele.projectNumber,
-            workPackageNumber: ele.workPackageNumber
-          }
-        }
-      });
-    })
-  );
-
-  // populate blockedByIds with the element ID's
-  // and return error 400 if any elems are null
-  const blockedByIds: number[] = [];
-
-  blockedByWBSElems.forEach((elem) => {
-    if (!elem) {
-      throw new HttpException(400, 'One of the blockers was not found.');
-    } else {
-      blockedByIds.push(elem.wbsElementId);
-    }
-  });
-
-  return blockedByIds;
 };

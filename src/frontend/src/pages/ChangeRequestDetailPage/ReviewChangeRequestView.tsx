@@ -29,6 +29,7 @@ import { useGetBlockingWorkPackages } from '../../hooks/work-packages.hooks';
 import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWarning';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { hasProposedChanges } from '../../utils/change-request.utils';
 
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
@@ -139,7 +140,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             }
           }}
         >
-          <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
+          {!hasProposedChanges(standardChangeRequest) && (
+            <Typography sx={{ paddingBottom: 1 }}>{'Select Proposed Solution'}</Typography>
+          )}
           <Box
             sx={{
               width: dialogContentWidthRatio,
@@ -209,7 +212,9 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             form="review-notes-form"
             sx={{ mx: 1 }}
             onClick={() => {
-              selected > -1 ? handleAcceptDeny(true) : toast.error('Please select a proposed solution!', 4500);
+              selected > -1 || hasProposedChanges(standardChangeRequest)
+                ? handleAcceptDeny(true)
+                : toast.error('Please select a proposed solution!', 4500);
             }}
           >
             Accept

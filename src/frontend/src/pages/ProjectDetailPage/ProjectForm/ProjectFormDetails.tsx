@@ -14,10 +14,10 @@ interface ProjectEditDetailsProps {
   control: Control<ProjectFormInput>;
   errors: FieldErrorsImpl<ProjectFormInput>;
   project?: Project;
-  projectManager?: string;
-  projectLead?: string;
-  setProjectManagerId: (projectManager?: string) => void;
-  setProjectLeadId: (projectLead?: string) => void;
+  managerId?: string;
+  leadId?: string;
+  setManagerId: (id?: string) => void;
+  setLeadId: (id?: string) => void;
   setcrId?: (crId?: number) => void;
   setCarNumber?: (carNumber?: number) => void;
 }
@@ -32,10 +32,10 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
   control,
   errors,
   project,
-  projectManager,
-  projectLead,
-  setProjectLeadId,
-  setProjectManagerId
+  managerId,
+  leadId,
+  setLeadId,
+  setManagerId
 }) => {
   return (
     <Box>
@@ -54,11 +54,6 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
-        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
-          <FormControl fullWidth>
-            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
-          </FormControl>
-        </Grid>
         {!project && (
           <>
             <Grid item lg={2.4} md={6} xs={12} sx={{ display: 'flex' }}>
@@ -74,7 +69,7 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             </Grid>
             <Grid item lg={2.4} md={6} xs={12}>
               <FormControl fullWidth>
-                <TeamDropdown control={control} name="teamId" />
+                <TeamDropdown control={control} name="teamIds" multiselect />
               </FormControl>
             </Grid>
           </>
@@ -92,28 +87,33 @@ const ProjectFormDetails: React.FC<ProjectEditDetailsProps> = ({
             />
           </FormControl>
         </Grid>
+        <Grid item lg={project ? 4 : 2.4} md={6} xs={12}>
+          <FormControl fullWidth>
+            <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+          </FormControl>
+        </Grid>
       </Grid>
       <Grid container spacing={2}>
         <Grid item lg={6} md={12} xs={12} mt={{ xs: 3, md: 3, lg: 2 }}>
           <FormLabel>{!project ? 'Project Lead (optional)' : 'Project Lead'}</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={(_event, value) => setProjectLeadId(value?.id)}
+            onChange={(_event, value) => setLeadId(value?.id)}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Lead"
-            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectLead))}
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === leadId))}
           />
         </Grid>
         <Grid item lg={6} md={12} xs={12} mt={{ xs: 0, md: 0, lg: 2 }}>
           <FormLabel>{!project ? 'Project Manager (optional)' : 'Project Manager'}</FormLabel>
           <NERAutocomplete
             id="users-autocomplete"
-            onChange={(_event, value) => setProjectManagerId(value?.id)}
+            onChange={(_event, value) => setManagerId(value?.id)}
             options={users.map(userToAutocompleteOption)}
             size="small"
             placeholder="Select a Project Manager"
-            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === projectManager))}
+            value={userToAutocompleteOption(users.find((user) => user.userId.toString() === managerId))}
           />
         </Grid>
         <Grid item lg={12} md={12} xs={12}>

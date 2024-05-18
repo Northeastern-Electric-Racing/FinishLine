@@ -5,15 +5,24 @@
 
 import Chart from 'react-google-charts';
 import { WorkPackage } from 'shared';
-import { ganttAllColumns } from '../../../utils/chart-data';
 import { Box } from '@mui/material';
+
+export const ganttAllColumns = [
+  { type: 'string', label: 'Task ID' },
+  { type: 'string', label: 'Task Name' },
+  { type: 'date', label: 'Start Date' },
+  { type: 'date', label: 'End Date' },
+  { type: 'number', label: 'Duration' },
+  { type: 'number', label: 'Percent Complete' },
+  { type: 'string', label: 'Dependencies' }
+];
 
 interface ProjectGanttProps {
   workPackages: WorkPackage[];
 }
 
 const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
-  const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, wp.progress, null]);
+  const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, null]);
   const data = [ganttAllColumns, ...rows];
   const options = {
     height: 30 * rows.length + 50,
