@@ -1,7 +1,8 @@
-import { Description_Bullet, Prisma, Work_Package_Template } from '@prisma/client';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
+import { Description_Bullet, Prisma, WBS_Element, Work_Package_Template } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
+import { WbsNumber } from 'shared';
+import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 
 export const calculateWorkPackageProgress = (
   deliverables: Description_Bullet[],
@@ -16,15 +17,13 @@ export const calculateWorkPackageProgress = (
  * @param initialWorkPackage the work package to get the blocking work packages for
  * @returns an array of the blocking work packages
  */
-export const getBlockingWorkPackages = async (
-  initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>
-) => {
+export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>) => {
   // track the wbs element ids we've seen so far so we don't update the same one multiple times
   const seenWbsElementIds: Set<number> = new Set<number>([initialWorkPackage.wbsElement.wbsElementId]);
 
   // blocking ids that still need to be updated
   const blockingUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
-  const blockingWorkPackages: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>[] = [];
+  const blockingWorkPackages: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>[] = [];
   while (blockingUpdateQueue.length > 0) {
     const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
 
@@ -38,9 +37,12 @@ export const getBlockingWorkPackages = async (
       where: { wbsElementId: currWbsId },
       include: {
         blocking: true,
-        workPackage: { ...workPackageQueryArgs }
+        workPackage: { ...getWorkPackageQueryArgs(initialWorkPackage.wbsElement.organizationId) }
       }
     });
+
+    if (currWbs?.wbsElementId === initialWorkPackage.wbsElementId)
+      throw new HttpException(400, 'Circular dependency detected');
 
     if (!currWbs) throw new NotFoundException('WBS Element', currWbsId);
     if (currWbs.dateDeleted) continue; // this wbs element has been deleted so skip it
@@ -53,6 +55,43 @@ export const getBlockingWorkPackages = async (
   }
 
   return blockingWorkPackages;
+};
+
+export const validateBlockedBys = async (blockedBy: WbsNumber[], organizationId: string): Promise<WBS_Element[]> => {
+  blockedBy.forEach((dep: WbsNumber) => {
+    if (dep.workPackageNumber === 0) {
+      throw new HttpException(400, 'A Project cannot be a Blocker');
+    }
+  });
+
+  const blockedByWBSElems: (WBS_Element | null)[] = await Promise.all(
+    blockedBy.map(async (ele: WbsNumber) => {
+      return await prisma.wBS_Element.findUnique({
+        where: {
+          wbsNumber: {
+            carNumber: ele.carNumber,
+            projectNumber: ele.projectNumber,
+            workPackageNumber: ele.workPackageNumber,
+            organizationId
+          }
+        }
+      });
+    })
+  );
+
+  // populate blockedByIds with the element ID's
+  // and return error 400 if any elems are null
+  const blockedByIds: WBS_Element[] = [];
+
+  blockedByWBSElems.forEach((elem) => {
+    if (!elem) {
+      throw new HttpException(400, 'One of the blockers was not found.');
+    } else {
+      blockedByIds.push(elem);
+    }
+  });
+
+  return blockedByIds;
 };
 
 export const validateBlockedByTemplates = async (

@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { DescriptionBullet } from './project-types';
 import { User } from './user-types';
 
 export enum TimelineStatus {
@@ -20,11 +21,10 @@ export enum WorkPackageStage {
   Testing = 'TESTING'
 }
 
-export interface BlockedByInfo {
-  blockedByInfoId: string;
-  stage?: WorkPackageStage;
-  name: string;
-}
+export type WorkPackageTemplatePreview = Pick<
+  WorkPackageTemplate,
+  'workPackageTemplateId' | 'templateName' | 'stage' | 'templateNotes'
+>;
 
 export interface WorkPackageTemplate {
   workPackageTemplateId: string;
@@ -33,9 +33,8 @@ export interface WorkPackageTemplate {
   workPackageName?: string;
   stage?: WorkPackageStage;
   duration?: number;
-  blockedBy: string[];
-  expectedActivities: String[];
-  deliverables: String[];
+  blockedBy: WorkPackageTemplatePreview[];
+  descriptionBullets: DescriptionBullet[];
   dateCreated: Date;
   userCreated: User;
   userCreatedId: Number;

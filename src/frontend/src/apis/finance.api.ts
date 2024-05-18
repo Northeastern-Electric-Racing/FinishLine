@@ -17,7 +17,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { ExpenseType } from 'shared';
+import { AccountCode } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -88,14 +88,14 @@ export const deleteReimbursementRequest = (id: string) => {
 };
 
 /**
- * Gets all the expense types
+ * Gets all the account codes
  *
- * @returns all the expense types
+ * @returns all the account codes
  */
-export const getAllExpenseTypes = () => {
-  return axios.get(apiUrls.getAllExpenseTypes(), {
+export const getAllAccountCodes = () => {
+  return axios.get(apiUrls.getAllAccountCodes(), {
     transformResponse: (data) => {
-      return JSON.parse(data) as ExpenseType[];
+      return JSON.parse(data) as AccountCode[];
     }
   });
 };
@@ -309,7 +309,7 @@ export const reportRefund = (amount: number, dateReceived: string) => {
  * @returns the updated expense type
  */
 export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePayload) => {
-  return axios.post(apiUrls.financeEditExpenseType(id), accountCodeData);
+  return axios.post(apiUrls.financeEditAccountCode(id), accountCodeData);
 };
 
 /**
@@ -318,7 +318,7 @@ export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePa
  * @returns the new expense type
  */
 export const createAccountCode = async (accountCodeData: ExpenseTypePayload) => {
-  return axios.post(apiUrls.financeCreateExpenseType(), accountCodeData);
+  return axios.post(apiUrls.financeCreateAccountCode(), accountCodeData);
 };
 
 /**
