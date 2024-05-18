@@ -36,7 +36,6 @@ axios.interceptors.request.use(
   (request) => {
     if (import.meta.env.MODE === 'development') request.headers!['Authorization'] = localStorage.getItem('devUserId') || '';
     const organizationId = localStorage.getItem('organizationId');
-    console.log('organizationId', organizationId);
     request.headers!['organizationId'] = organizationId ?? '';
     return request;
   },

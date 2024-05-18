@@ -12,7 +12,6 @@ import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
-import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
@@ -28,6 +27,7 @@ import { routes } from '../../utils/routes';
 import HelpIcon from '@mui/icons-material/Help';
 import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
+import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -243,14 +243,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             />
           </FormControl>
         </Box>
-        <Typography variant="h5">Description Bullets</Typography>
-        <ReactHookEditableList
-          name="descriptionBullets"
-          register={register}
+        <DescriptionBulletsEditView
+          watch={watch}
           ls={descriptionBullets}
+          register={register}
           append={appendDescriptionBullet}
           remove={removeDescriptionBullet}
-          bulletName="Expected Activity"
+          type='workPackage'
         />
       </PageLayout>
       <CreateChangeRequestModal

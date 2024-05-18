@@ -9,10 +9,9 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
-import ReactHookEditableList from '../../../components/ReactHookEditableList';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import LinksEditView from './LinksEditView';
+import LinksEditView from '../../../components/LinksEditView';
 import PageLayout from '../../../components/PageLayout';
 import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
@@ -25,6 +24,7 @@ import { useState } from 'react';
 import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
 import { NERButton } from '../../../components/NERButton';
 import HelpIcon from '@mui/icons-material/Help';
+import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
 
 export interface ProjectFormInput {
   name: string;
@@ -183,14 +183,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
           </Box>
           <Box>
-            <Typography variant="h5">{!project ? 'Description Bullets (optional)' : 'Description Bullets'}</Typography>
-            <ReactHookEditableList
-              name="descriptionBullets"
-              register={register}
+            <DescriptionBulletsEditView
+              type="project"
+              watch={watch}
               ls={descriptionBullets}
+              register={register}
               append={appendDescriptionBullet}
               remove={removeDescriptionBullet}
-              bulletName="Goal"
             />
           </Box>
         </Stack>

@@ -268,9 +268,10 @@ CREATE TABLE "Link" (
 CREATE TABLE "Description_Bullet_Type" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
-    "required" BOOLEAN NOT NULL,
+    "projectRequired" BOOLEAN NOT NULL,
+    "workPackageRequired" BOOLEAN NOT NULL,
     "userCreatedId" INTEGER NOT NULL,
     "userDeletedId" INTEGER,
     "organizationId" TEXT NOT NULL,

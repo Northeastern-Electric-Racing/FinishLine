@@ -16,6 +16,8 @@ const ScopeTab = ({ workPackage }: { workPackage: WorkPackage }) => {
     descriptoinBulletsSplitByType.get(bullet.type)!.push(bullet);
   }
 
+  console.log(workPackage.descriptionBullets);
+
   return (
     <>
       {Array.from(descriptoinBulletsSplitByType.entries()).map(([type, bullets]) => (

@@ -89,6 +89,9 @@ const teamTypes = () => `${teams()}/teamType/all`;
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
+const descriptionBulletTypes = () => `${descriptionBullets()}/types`;
+const editDescriptionBulletType = () => `${descriptionBullets()}/types/edit`;
+const createDescriptionBulletType = () => `${descriptionBullets()}/types/create`;
 
 /**************** Finance Endpoints **************************/
 const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
@@ -221,6 +224,9 @@ export const apiUrls = {
   teamsSetTeamType,
 
   descriptionBulletsCheck,
+  descriptionBulletTypes,
+  editDescriptionBulletType,
+  createDescriptionBulletType,
 
   financeUploadRceipt,
   financeCreateReimbursementRequest,

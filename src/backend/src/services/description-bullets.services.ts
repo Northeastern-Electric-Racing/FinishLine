@@ -3,8 +3,9 @@ import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
 import descriptionBulletTransformer from '../transformers/description-bullets.transformer';
-import { DescriptionBullet } from 'shared';
+import { DescriptionBullet, DescriptionBulletType, isAdmin } from 'shared';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
+import { userHasPermission } from '../utils/users.utils';
 
 export default class DescriptionBulletsService {
   /**
@@ -66,5 +67,109 @@ export default class DescriptionBulletsService {
     }
 
     return descriptionBulletTransformer(updatedDB);
+  }
+
+  /**
+   * Get all description bullet types
+   * @param organizationId organization id of the user
+   * @returns all description bullet types
+   */
+  static async getAllDescriptionBulletTypes(organizationId: string): Promise<DescriptionBulletType[]> {
+    const descriptionBulletTypes = await prisma.description_Bullet_Type.findMany({
+      where: {
+        organizationId
+      }
+    });
+
+    return descriptionBulletTypes;
+  }
+
+  static async createDescriptionBulletType(
+    user: User,
+    name: string,
+    workPackageRequired: boolean,
+    projectRequired: boolean,
+    organizationId: string
+  ): Promise<DescriptionBulletType> {
+    if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
+      throw new AccessDeniedException('create a description bullet type');
+
+    const existingDescriptionBulletType = await prisma.description_Bullet_Type.findUnique({
+      where: {
+        uniqueDescriptionBulletType: {
+          name,
+          organizationId
+        }
+      }
+    });
+
+    if (existingDescriptionBulletType && existingDescriptionBulletType.dateDeleted === null)
+      throw new HttpException(400, 'Cannot create a description bullet type with the same name');
+    else if (existingDescriptionBulletType) {
+      await prisma.description_Bullet_Type.update({
+        where: {
+          id: existingDescriptionBulletType.id
+        },
+        data: {
+          dateDeleted: null
+        }
+      });
+
+      return existingDescriptionBulletType;
+    }
+
+    const newDescriptionBulletType = await prisma.description_Bullet_Type.create({
+      data: {
+        name,
+        workPackageRequired,
+        projectRequired,
+        userCreated: {
+          connect: {
+            userId: user.userId
+          }
+        },
+        organization: {
+          connect: {
+            organizationId
+          }
+        }
+      }
+    });
+
+    return newDescriptionBulletType;
+  }
+
+  static async editDescriptionBulletType(
+    user: User,
+    name: string,
+    workPackageRequired: boolean,
+    projectRequired: boolean,
+    organizationId: string
+  ): Promise<DescriptionBulletType> {
+    if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
+      throw new AccessDeniedException('edit a description bullet type');
+
+    const existingDescriptionBulletType = await prisma.description_Bullet_Type.findUnique({
+      where: {
+        uniqueDescriptionBulletType: {
+          name,
+          organizationId
+        }
+      }
+    });
+
+    if (!existingDescriptionBulletType) throw new NotFoundException('Description Bullet Type', name);
+
+    const updatedDescriptionBulletType = await prisma.description_Bullet_Type.update({
+      where: {
+        id: existingDescriptionBulletType.id
+      },
+      data: {
+        workPackageRequired,
+        projectRequired
+      }
+    });
+
+    return updatedDescriptionBulletType;
   }
 }

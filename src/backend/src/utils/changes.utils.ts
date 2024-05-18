@@ -250,10 +250,10 @@ export const getDescriptionBulletChanges = async (
   submitterId: number
 ) => {
   const descriptionBulletsSeparatedByType = separateDescriptionBulletsByType(newDescriptionBullets);
-  const descriptionBulletChanges: ChangeCreateArgs[] = [];
-  const descriptionBulletDeletions: DescriptionBulletPreview[] = [];
-  const descriptionBulletAdditions: DescriptionBulletPreview[] = [];
-  const descriptionBulletEdits: DescriptionBulletPreview[] = [];
+  let descriptionBulletChanges: ChangeCreateArgs[] = [];
+  let descriptionBulletDeletions: DescriptionBulletPreview[] = [];
+  let descriptionBulletAdditions: DescriptionBulletPreview[] = [];
+  let descriptionBulletEdits: DescriptionBulletPreview[] = [];
 
   for (const [type, descriptionBullets] of descriptionBulletsSeparatedByType) {
     const descriptionBulletsChangeJson = createListChanges(
@@ -267,10 +267,10 @@ export const getDescriptionBulletChanges = async (
       wbsElementId
     );
 
-    descriptionBulletChanges.concat(descriptionBulletsChangeJson.changes);
-    descriptionBulletDeletions.concat(descriptionBulletsChangeJson.deletedElements);
-    descriptionBulletAdditions.concat(descriptionBulletsChangeJson.addedElements);
-    descriptionBulletEdits.concat(descriptionBulletsChangeJson.editedElements);
+    descriptionBulletChanges = descriptionBulletChanges.concat(descriptionBulletsChangeJson.changes);
+    descriptionBulletDeletions = descriptionBulletDeletions.concat(descriptionBulletsChangeJson.deletedElements);
+    descriptionBulletAdditions = descriptionBulletAdditions.concat(descriptionBulletsChangeJson.addedElements);
+    descriptionBulletEdits = descriptionBulletEdits.concat(descriptionBulletsChangeJson.editedElements);
   }
 
   return {

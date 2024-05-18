@@ -120,3 +120,22 @@ export interface WorkPackageProposedChanges extends WbsProposedChanges {
 export type WorkPackageProposedChangesPreview = Omit<WorkPackageProposedChanges, 'id' | 'links' | 'status'>;
 
 export type ProjectProposedChangesPreview = Omit<ProjectProposedChanges, 'carNumber' | 'id' | 'status'>;
+
+export interface DescriptionBulletType {
+  id: string;
+  name: string;
+  workPackageRequired: boolean;
+  projectRequired: boolean;
+}
+
+export interface LinkTypeCreatePayload {
+  name: string;
+  iconName: string;
+  required: boolean;
+}
+
+export interface DescriptionBulletTypeCreatePayload {
+  name: string;
+  workPackageRequired: boolean;
+  projectRequired: boolean;
+}
