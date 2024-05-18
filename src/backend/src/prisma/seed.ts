@@ -50,10 +50,10 @@ const performSeed: () => Promise<void> = async () => {
     include: { userSettings: true, userSecureSettings: true }
   });
 
-   const regina = await prisma.user.create({
-     data: dbSeedAllUsers.regina,
-     include: { userSettings: true, userSecureSettings: true }
-   });
+  const regina = await prisma.user.create({
+    data: dbSeedAllUsers.regina,
+    include: { userSettings: true, userSecureSettings: true }
+  });
 
   const ner = await prisma.organization.create({
     data: {
