@@ -2,8 +2,7 @@ import { Theme } from '@prisma/client';
 import express from 'express';
 import { body } from 'express-validator';
 import UsersController from '../controllers/users.controllers';
-import { validateInputs } from '../utils/utils';
-import { isRole, nonEmptyString, intMinZero } from '../utils/validation.utils';
+import { isRole, nonEmptyString, intMinZero, validateInputs } from '../utils/validation.utils';
 
 const userRouter = express.Router();
 
