@@ -12,6 +12,7 @@ import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
 import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
+import { useOrganization } from '../../hooks/organization.hooks';
 
 /**
  * Page for unauthenticated users to do login.
@@ -22,6 +23,7 @@ const Login = () => {
   const query = useQuery();
   const theme = useToggleTheme();
   const auth = useAuth();
+  const organizationContext = useOrganization();
 
   if (auth.isLoading) return <LoadingIndicator />;
 
@@ -59,6 +61,11 @@ const Login = () => {
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
       theme.toggleTheme();
     }
+    if (authedUser.organizations.length > 0) {
+      const defaultOrganization = authedUser.organizations[0];
+      console.log(defaultOrganization);
+      organizationContext.selectOrganization(defaultOrganization);
+    }
     redirectAfterLogin();
   };
 
@@ -71,6 +78,10 @@ const Login = () => {
     const authedUser = await auth.signin(id_token);
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
+    }
+    if (authedUser.organizations.length > 0) {
+      const defaultOrganization = authedUser.organizations[0];
+      organizationContext.selectOrganization(defaultOrganization);
     }
     redirectAfterLogin();
   };
