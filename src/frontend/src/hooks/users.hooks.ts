@@ -70,7 +70,6 @@ export const useSingleUser = (id: number) => {
 export const useLogUserIn = () => {
   return useMutation<AuthenticatedUser, Error, string>(['users', 'login'], async (id_token: string) => {
     const { data } = await logUserIn(id_token);
-    console.log(data);
     return data;
   });
 };
