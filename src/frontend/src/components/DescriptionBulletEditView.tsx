@@ -37,19 +37,19 @@ const DescriptionBulletsEditView: React.FC<{
 
   const requiredDescriptionBulletNames = getRequiredDescriptionBulletTypeNames(descriptionBulletTypes, type);
 
-  const descriptionBullets = watch('descriptionBullets');
+  //   const descriptionBullets = watch('descriptionBullets');
 
-  const currentDescriptionBulletNames = descriptionBullets.map((descriptionBullet) => descriptionBullet.type);
+  //   const currentDescriptionBulletNames = descriptionBullets.map((descriptionBullet) => descriptionBullet.type);
 
   /* Checks whether the link at the given index is of a required type and does not already exist  */
-  const isRequired = (index: number) => {
-    const descriptionBullet = watch(`descriptionBullets.${index}`);
-    const { type } = descriptionBullet;
-    return (
-      requiredDescriptionBulletNames.includes(type) &&
-      !currentDescriptionBulletNames.includes(type, currentDescriptionBulletNames.indexOf(type) + 1)
-    );
-  };
+  //   const isRequired = (index: number) => {
+  //     const descriptionBullet = watch(`descriptionBullets.${index}`);
+  //     const { type } = descriptionBullet;
+  //     return (
+  //       requiredDescriptionBulletNames.includes(type) &&
+  //       !currentDescriptionBulletNames.includes(type, currentDescriptionBulletNames.indexOf(type) + 1)
+  //     );
+  //   };
 
   const getSeparatedDescriptionBullets = () => {
     const descriptionBulletsSeparatedByType = new Map<string, DescriptionBulletWithIndex[]>();
@@ -69,40 +69,44 @@ const DescriptionBulletsEditView: React.FC<{
     return Array.from(descriptionBulletsSeparatedByType);
   };
 
-  return getSeparatedDescriptionBullets().map((descriptionBullets) => {
-    return (
-      <>
-        <Typography variant="h6" key={descriptionBullets[0]}>
-          {descriptionBullets[0]}
-        </Typography>
-        {descriptionBullets[1].map((descriptionBullet) => {
-          return (
-            <Box display={'flex'} alignItems={'center'} mt={'5px'}>
-              <TextField
-                required
-                fullWidth
-                autoComplete="off"
-                {...register(`descriptionBullets.${descriptionBullet.index}.detail`, { required: true })}
-              />
-              <Box sx={{ minWidth: '56px', height: '40px' }}>
-                <IconButton type="button" onClick={() => remove(descriptionBullet.index)} sx={{ mx: 1, my: 0 }}>
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            </Box>
-          );
-        })}
-        <NERButton
-          variant="contained"
-          color="primary"
-          onClick={() => append({ id: -1, detail: '', type: descriptionBullets[0] })}
-          sx={{ my: 2, width: 'max-content' }}
-        >
-          + Add New Description Bullet
-        </NERButton>
-      </>
-    );
-  });
+  return (
+    <>
+      {getSeparatedDescriptionBullets().map((descriptionBullets) => {
+        return (
+          <>
+            <Typography variant="h6" key={descriptionBullets[0]}>
+              {descriptionBullets[0]}
+            </Typography>
+            {descriptionBullets[1].map((descriptionBullet) => {
+              return (
+                <Box display={'flex'} alignItems={'center'} mt={'5px'}>
+                  <TextField
+                    required
+                    fullWidth
+                    autoComplete="off"
+                    {...register(`descriptionBullets.${descriptionBullet.index}.detail`, { required: true })}
+                  />
+                  <Box sx={{ minWidth: '56px', height: '40px' }}>
+                    <IconButton type="button" onClick={() => remove(descriptionBullet.index)} sx={{ mx: 1, my: 0 }}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                </Box>
+              );
+            })}
+            <NERButton
+              variant="contained"
+              color="primary"
+              onClick={() => append({ id: -1, detail: '', type: descriptionBullets[0] })}
+              sx={{ my: 2, width: 'max-content' }}
+            >
+              + Add New Description Bullet
+            </NERButton>
+          </>
+        );
+      })}
+    </>
+  );
 };
 
 export default DescriptionBulletsEditView;

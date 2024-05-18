@@ -249,7 +249,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           register={register}
           append={appendDescriptionBullet}
           remove={removeDescriptionBullet}
-          type='workPackage'
+          type="workPackage"
         />
       </PageLayout>
       <CreateChangeRequestModal
