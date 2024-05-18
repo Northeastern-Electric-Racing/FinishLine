@@ -23,12 +23,11 @@ import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import { Container, Typography } from '@mui/material';
+import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
-import { Role, RoleEnum, isGuest } from 'shared';
+import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
-import PageBlock from '../layouts/PageBlock';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -50,14 +49,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
     }
   }
 
-  const Maintainenance = () => {
-    return (
-      <PageBlock>
-        <Typography>This Page is Currently Undergoing Maintainenance</Typography>
-      </PageBlock>
-    );
-  };
-
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
       <Box display={'flex'}>
@@ -67,7 +58,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
-            <Route path={routes.GANTT} component={userRole === RoleEnum.APP_ADMIN ? GanttChartPage : Maintainenance} />
+            <Route path={routes.GANTT} component={GanttChartPage} />
             <Route path={routes.TEAMS} component={Teams} />
             <Route path={routes.SETTINGS} component={Settings} />
             <Route path={routes.ADMIN_TOOLS} component={AdminTools} />

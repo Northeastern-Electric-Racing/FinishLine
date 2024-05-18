@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import { LinkType, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -18,7 +18,7 @@ import {
   getAllWorkPackageTemplates,
   editLinkType
 } from '../apis/projects.api';
-import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
 
 /**

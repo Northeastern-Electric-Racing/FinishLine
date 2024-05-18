@@ -1,7 +1,12 @@
-import { User } from '@prisma/client';
+import { User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
-import { UserWithSettings } from './auth.utils';
+import { PermissionCheck, Role, RoleEnum } from 'shared';
+import { UserWithId } from './teams.utils';
+
+type UserWithSettings = {
+  userSettings: User_Settings | null;
+} & User;
 
 export const getUserFullName = async (userId: number | null) => {
   if (!userId) return 'no one';
@@ -15,6 +20,12 @@ export const getUserSlackId = async (userId?: number): Promise<string | undefine
   const user = await prisma.user.findUnique({ where: { userId }, include: { userSettings: true } });
   if (!user) throw new NotFoundException('User', userId);
   return user.userSettings?.slackId;
+};
+
+export const getUserRole = async (userId: number, organizationId: string): Promise<Role> => {
+  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: true } });
+  if (!user) throw new NotFoundException('User', userId);
+  return user.roles.find((role) => role.organizationId === organizationId)?.roleType ?? RoleEnum.GUEST;
 };
 
 /**
@@ -38,7 +49,7 @@ export const getUsers = async (userIds: number[]): Promise<User[]> => {
  * @param userIds the userIds to get as users
  * @returns userIds in prisma format
  */
-export const getPrismaQueryUserIds = (users: User[]) => {
+export const getPrismaQueryUserIds = (users: UserWithId[]) => {
   const userIds = users.map((user) => {
     return {
       userId: user.userId
@@ -77,6 +88,20 @@ const validateFoundUsers = (users: User[], userIds: number[]) => {
     const missingUserIds = userIds.filter((id) => !prismaUserIds.includes(id));
     throw new HttpException(404, `User(s) with the following ids not found: ${missingUserIds.join(', ')}`);
   }
+};
+
+export const userHasPermission = async (
+  userId: number,
+  organizationId: string,
+  permissionCheck: PermissionCheck
+): Promise<boolean> => {
+  const user = await prisma.user.findUnique({ where: { userId }, include: { roles: true } });
+  if (!user) throw new NotFoundException('User', userId);
+
+  const organization = await prisma.organization.findUnique({ where: { organizationId } });
+  if (!organization) throw new NotFoundException('Organization', organizationId);
+
+  return permissionCheck(user.roles.find((role) => role.organizationId === organizationId)?.roleType as Role | undefined);
 };
 
 export const areUsersinList = (users: User[], userList: User[]): boolean => {

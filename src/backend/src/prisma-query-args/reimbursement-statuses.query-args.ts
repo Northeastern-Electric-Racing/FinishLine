@@ -1,9 +1,11 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
 
-const reimbursementStatusQueryArgs = Prisma.validator<Prisma.Reimbursement_StatusArgs>()({
-  include: {
-    user: true
-  }
-});
+export type ReimbursementStatusQueryArgs = ReturnType<typeof getReimbursementStatusQueryArgs>;
 
-export default reimbursementStatusQueryArgs;
+export const getReimbursementStatusQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Reimbursement_StatusArgs>()({
+    include: {
+      user: getUserQueryArgs(organizationId)
+    }
+  });

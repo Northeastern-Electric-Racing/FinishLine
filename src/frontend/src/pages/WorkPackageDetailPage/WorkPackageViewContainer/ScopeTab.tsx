@@ -1,4 +1,4 @@
-import { WbsElementStatus, WorkPackage, isGuest } from 'shared';
+import { DescriptionBullet, WbsElementStatus, WorkPackage, isGuest } from 'shared';
 import CheckList, { CheckListItem } from '../../../components/CheckList';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 
@@ -7,28 +7,29 @@ const ScopeTab = ({ workPackage }: { workPackage: WorkPackage }) => {
 
   const checkListDisabled = workPackage.status !== WbsElementStatus.Active || isGuest(user.role);
 
+  const descriptoinBulletsSplitByType = new Map<string, DescriptionBullet[]>();
+  for (const bullet of workPackage.descriptionBullets) {
+    if (bullet.dateDeleted) continue;
+    if (!descriptoinBulletsSplitByType.has(bullet.type)) {
+      descriptoinBulletsSplitByType.set(bullet.type, []);
+    }
+    descriptoinBulletsSplitByType.get(bullet.type)!.push(bullet);
+  }
+
+  console.log(workPackage.descriptionBullets);
+
   return (
     <>
-      <CheckList
-        title={'Expected Activities'}
-        items={workPackage.expectedActivities
-          .filter((ea) => !ea.dateDeleted)
-          .map((ea): CheckListItem => {
-            return { ...ea, resolved: !!ea.userChecked, user: ea.userChecked };
-          })}
-        isDisabled={checkListDisabled}
-      />
-      <div style={{ marginTop: 5 }}>
+      {Array.from(descriptoinBulletsSplitByType.entries()).map(([type, bullets]) => (
         <CheckList
-          title={'Deliverables'}
-          items={workPackage.deliverables
-            .filter((del) => !del.dateDeleted)
-            .map((del): CheckListItem => {
-              return { ...del, resolved: !!del.userChecked, user: del.userChecked };
-            })}
+          key={type}
+          title={type}
+          items={bullets.map((db): CheckListItem => {
+            return { ...db, resolved: !!db.userChecked, user: db.userChecked };
+          })}
           isDisabled={checkListDisabled}
         />
-      </div>
+      ))}
     </>
   );
 };

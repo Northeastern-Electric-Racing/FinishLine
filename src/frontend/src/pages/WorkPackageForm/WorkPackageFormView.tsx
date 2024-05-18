@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, validateWBS, WbsElement, wbsPipe } from 'shared';
+import { DescriptionBulletPreview, User, validateWBS, WbsElement, wbsPipe } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
@@ -12,10 +12,8 @@ import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
-import ReactHookEditableList from '../../components/ReactHookEditableList';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { mapBulletsToPayload } from '../../utils/form';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
@@ -29,6 +27,7 @@ import { routes } from '../../utils/routes';
 import HelpIcon from '@mui/icons-material/Help';
 import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
+import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -51,14 +50,7 @@ export interface WorkPackageFormViewPayload {
   crId: string;
   stage: string;
   blockedBy: string[];
-  expectedActivities: {
-    bulletId: number;
-    detail: string;
-  }[];
-  deliverables: {
-    bulletId: number;
-    detail: string;
-  }[];
+  descriptionBullets: DescriptionBulletPreview[];
 }
 
 const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
@@ -90,8 +82,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       duration: defaultValues?.duration ?? 0,
       crId: crId ?? defaultValues?.crId ?? '',
       blockedBy: defaultValues?.blockedBy ?? [],
-      expectedActivities: defaultValues?.expectedActivities ?? [],
-      deliverables: defaultValues?.deliverables ?? [],
+      descriptionBullets: defaultValues?.descriptionBullets ?? [],
       stage: defaultValues?.stage ?? 'NONE'
     }
   });
@@ -108,22 +99,15 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   // lists of stuff
   const {
-    fields: expectedActivities,
-    append: appendExpectedActivity,
-    remove: removeExpectedActivity
-  } = useFieldArray({ control, name: 'expectedActivities' });
-  const {
-    fields: deliverables,
-    append: appendDeliverable,
-    remove: removeDeliverable
-  } = useFieldArray({ control, name: 'deliverables' });
+    fields: descriptionBullets,
+    append: appendDescriptionBullet,
+    remove: removeDescriptionBullet
+  } = useFieldArray({ control, name: 'descriptionBullets' });
 
   const { userId } = user;
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
-    const { name, startDate, duration, blockedBy, crId, stage } = data;
-    const expectedActivities = mapBulletsToPayload(data.expectedActivities);
-    const deliverables = mapBulletsToPayload(data.deliverables);
+    const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
@@ -137,18 +121,16 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        expectedActivities: !defaultValues ? expectedActivities.map((activity) => activity.detail) : expectedActivities,
-        deliverables: !defaultValues ? deliverables.map((deliverable) => deliverable.detail) : deliverables,
-        stage: stage as WorkPackageStage
+        descriptionBullets: descriptionBullets,
+        stage: stage as WorkPackageStage,
+        links: []
       };
       if (changeRequestFormInput) {
         await createWorkPackageScopeCR({
           ...changeRequestFormInput,
           wbsNum: wbsElement.wbsNum,
           workPackageProposedChanges: {
-            ...payload,
-            expectedActivities: expectedActivities.map((activity) => activity.detail),
-            deliverables: deliverables.map((deliverable) => deliverable.detail)
+            ...payload
           },
           proposedSolutions: []
         });
@@ -261,23 +243,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             />
           </FormControl>
         </Box>
-        <Typography variant="h5">Expected Activities</Typography>
-        <ReactHookEditableList
-          name="expectedActivities"
+        <DescriptionBulletsEditView
+          watch={watch}
+          ls={descriptionBullets}
           register={register}
-          ls={expectedActivities}
-          append={appendExpectedActivity}
-          remove={removeExpectedActivity}
-          bulletName="Expected Activity"
-        />
-        <Typography variant="h5">Deliverables</Typography>
-        <ReactHookEditableList
-          name="deliverables"
-          register={register}
-          ls={deliverables}
-          append={appendDeliverable}
-          remove={removeDeliverable}
-          bulletName="Deliverable"
+          append={appendDescriptionBullet}
+          remove={removeDescriptionBullet}
+          type="workPackage"
         />
       </PageLayout>
       <CreateChangeRequestModal
