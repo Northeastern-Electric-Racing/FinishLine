@@ -3,12 +3,10 @@ import ErrorPage from '../pages/ErrorPage';
 import { IconButton, TextField, Typography } from '@mui/material';
 import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ProjectFormInput } from '../pages/ProjectDetailPage/ProjectForm/ProjectForm';
 import { Box } from '@mui/system';
 import { NERButton } from './NERButton';
 import { useGetAllDescriptionBulletTypes } from '../hooks/description-bullets.hooks';
 import { DescriptionBulletRequiredType, getRequiredDescriptionBulletTypeNames } from '../utils/description-bullet.utils';
-import { WorkPackageFormViewPayload } from '../pages/WorkPackageForm/WorkPackageFormView';
 
 interface DescriptionBulletWithIndex {
   detail: string;
@@ -19,18 +17,12 @@ interface DescriptionBulletWithIndex {
 
 const DescriptionBulletsEditView: React.FC<{
   ls: FieldArrayWithId[];
-  register: UseFormRegister<ProjectFormInput> | UseFormRegister<WorkPackageFormViewPayload>;
-  watch: UseFormWatch<ProjectFormInput> | UseFormWatch<WorkPackageFormViewPayload>;
-  append:
-    | UseFieldArrayAppend<ProjectFormInput, 'descriptionBullets'>
-    | UseFieldArrayAppend<WorkPackageFormViewPayload, 'descriptionBullets'>;
+  register: UseFormRegister<any>; // Do not try to not make any of these not any, it wont work typescript is stupid
+  watch: UseFormWatch<any>;
+  append: UseFieldArrayAppend<any, 'descriptionBullets'>;
   remove: UseFieldArrayRemove;
   type: DescriptionBulletRequiredType;
 }> = ({ ls, register, append, remove, watch, type }) => {
-  watch = watch as UseFormWatch<WorkPackageFormViewPayload>;
-  register = register as UseFormRegister<WorkPackageFormViewPayload>;
-  append = append as UseFieldArrayAppend<WorkPackageFormViewPayload, 'descriptionBullets'>;
-
   const { isLoading, isError, error, data: descriptionBulletTypes } = useGetAllDescriptionBulletTypes();
   if (isLoading || !descriptionBulletTypes) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;

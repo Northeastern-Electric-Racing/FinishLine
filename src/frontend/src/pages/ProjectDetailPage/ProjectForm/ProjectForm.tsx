@@ -33,8 +33,8 @@ export interface ProjectFormInput {
   links: LinkCreateArgs[];
   crId: string;
   carNumber: number;
-  descriptionBullets: DescriptionBulletPreview[];
   teamIds: number[];
+  descriptionBullets: DescriptionBulletPreview[];
 }
 
 interface ProjectFormContainerProps {
