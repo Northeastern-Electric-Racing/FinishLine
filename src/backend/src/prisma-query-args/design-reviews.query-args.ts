@@ -1,21 +1,19 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs, getUserWithSettingsQueryArgs } from './user.query-args';
 
-const designReviewQueryArgs = Prisma.validator<Prisma.Design_ReviewArgs>()({
-  include: {
-    userCreated: true,
-    teamType: true,
-    requiredMembers: true,
-    optionalMembers: true,
-    confirmedMembers: {
-      include: {
-        drScheduleSettings: true
-      }
-    },
-    deniedMembers: true,
-    attendees: true,
-    userDeleted: true,
-    wbsElement: true
-  }
-});
+export type DesignReviewQueryArgs = ReturnType<typeof getDesignReviewQueryArgs>;
 
-export default designReviewQueryArgs;
+export const getDesignReviewQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Design_ReviewArgs>()({
+    include: {
+      userCreated: getUserWithSettingsQueryArgs(organizationId),
+      teamType: true,
+      requiredMembers: getUserQueryArgs(organizationId),
+      optionalMembers: getUserQueryArgs(organizationId),
+      confirmedMembers: getUserWithSettingsQueryArgs(organizationId),
+      deniedMembers: getUserQueryArgs(organizationId),
+      attendees: getUserQueryArgs(organizationId),
+      userDeleted: getUserQueryArgs(organizationId),
+      wbsElement: true
+    }
+  });

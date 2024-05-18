@@ -12,7 +12,7 @@ import {
   WbsNumber,
   WbsReimbursementProductCreateArgs
 } from 'shared';
-import { useGetAllExpenseTypes, useGetAllVendors } from '../../../hooks/finance.hooks';
+import { useGetAllAccountCodes, useGetAllVendors } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -130,11 +130,11 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     data: allVendors
   } = useGetAllVendors();
   const {
-    isLoading: allExpenseTypesIsLoading,
-    isError: allExpenseTypesIsError,
-    error: allExpenseTypesError,
-    data: allExpenseTypes
-  } = useGetAllExpenseTypes();
+    isLoading: allAccountCodesIsLoading,
+    isError: allAccountCodesIsError,
+    error: allAccountCodesError,
+    data: allAccountCodes
+  } = useGetAllAccountCodes();
 
   const {
     isLoading: allProjectsIsLoading,
@@ -153,15 +153,15 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   const history = useHistory();
 
   if (allVendorsIsError) return <ErrorPage message={allVendorsError?.message} />;
-  if (allExpenseTypesIsError) return <ErrorPage message={allExpenseTypesError?.message} />;
+  if (allAccountCodesIsError) return <ErrorPage message={allAccountCodesError?.message} />;
   if (allProjectsIsError) return <ErrorPage message={allProjectsError?.message} />;
 
   if (
-    allExpenseTypesIsLoading ||
+    allAccountCodesIsLoading ||
     allVendorsIsLoading ||
     allProjectsIsLoading ||
     !allVendors ||
-    !allExpenseTypes ||
+    !allAccountCodes ||
     !allProjects ||
     checkSecureSettingsIsLoading
   )
@@ -220,7 +220,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       watch={watch}
       errors={errors}
       allVendors={allVendors}
-      allExpenseTypes={allExpenseTypes}
+      allAccountCodes={allAccountCodes}
       receiptFiles={receiptFiles}
       control={control}
       reimbursementProducts={reimbursementProducts}

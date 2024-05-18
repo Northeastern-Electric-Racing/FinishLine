@@ -24,29 +24,8 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
 
   const noAssemblyMaterials = materials.filter((material) => !material.assembly);
   const theme = useTheme();
-  const miscAssembly: BomRow = {
-    id: `assembly-misc`,
-    materialId: '',
-    status: '',
-    type: '',
-    name: '',
-    manufacturer: '',
-    manufacturerPN: `Miscellaneous Materials: $${centsToDollar(
-      noAssemblyMaterials.reduce(addMaterialCosts, 0)
-    )}  ${arrowSymbol('assembly-misc')}`,
-    pdmFileName: '',
-    quantity: '',
-    price: '',
-    subtotal: '',
-    link: '',
-    notes: '',
-    assemblyId: 'assembly-misc'
-  };
 
-  const rows: BomRow[] = [miscAssembly].concat(
-    noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx))
-  );
-
+  const rows: BomRow[] = noAssemblyMaterials.map((material: Material, idx: number) => materialToRow(material, idx));
   const isAssemblyOpen = (row: BomRow) => {
     return !row.assemblyId || row.assemblyId === '' || openRows.includes(row.assemblyId) || row.id.startsWith('assembly');
   };
@@ -60,10 +39,12 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
     }
   };
 
+  const materialsWithAssemblies: BomRow[] = [];
+
   assemblies.forEach((assembly) => {
     console.log(assembly);
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
-    rows.push({
+    materialsWithAssemblies.push({
       id: `assembly-${assembly.name}`,
       materialId: '',
       status: '',
@@ -81,7 +62,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
       notes: '',
       assemblyId: assembly.assemblyId
     });
-    assemblyMaterials.forEach((material, indx) => rows.push(materialToRow(material, indx)));
+    assemblyMaterials.forEach((material, indx) => materialsWithAssemblies.push(materialToRow(material, indx)));
   });
 
   return (
@@ -114,7 +95,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
           localStorage.setItem('hideColumn', JSON.stringify(tempColumns));
         }}
         columns={columns as GridColumns<GridValidRowModel>}
-        rows={rows.filter(isAssemblyOpen)}
+        rows={rows.concat(materialsWithAssemblies.filter(isAssemblyOpen))}
         getRowClassName={(params) =>
           `super-app-theme--${String(params.row.id).includes('assembly') ? 'assembly' : 'material'}`
         }

@@ -21,6 +21,7 @@ export interface CreateTeamPayload {
   headId: number;
   slackId: string;
   description: string;
+  isFinanceTeam: boolean;
 }
 
 export const useAllTeams = () => {
@@ -29,6 +30,7 @@ export const useAllTeams = () => {
     return data;
   });
 };
+
 export const useSingleTeam = (teamId: string) => {
   return useQuery<Team, Error>(['teams', teamId], async () => {
     const { data } = await getSingleTeam(teamId);

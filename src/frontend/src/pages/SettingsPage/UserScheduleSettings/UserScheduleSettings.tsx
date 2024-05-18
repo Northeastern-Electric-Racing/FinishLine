@@ -7,10 +7,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import { IconButton, Box } from '@mui/material';
+import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
-import PageBlock from '../../../layouts/PageBlock';
 import { User } from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -71,27 +70,41 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
   };
 
   return (
-    <PageBlock
-      title="User Schedule Settings"
-      headerRight={
-        !edit ? (
-          <IconButton onClick={() => setEdit(true)}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        ) : (
-          <Box
-            sx={{
-              display: { xs: 'none', sm: 'flex' }
-            }}
-          >
-            <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
-            <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-schedule-settings">
-              Save
-            </NERSuccessButton>
-          </Box>
-        )
-      }
-    >
+    <>
+      <Grid
+        container
+        direction={'row'}
+        spacing={edit ? 2 : 1}
+        mt={1}
+        borderBottom={1}
+        borderColor={'white'}
+        marginBottom={'20px'}
+        paddingBottom={'5px'}
+      >
+        <Grid item>
+          <Typography gutterBottom color={'primary'} variant="h5">
+            Schedule Settings
+          </Typography>
+        </Grid>
+        <Grid item>
+          {!edit ? (
+            <IconButton onClick={() => setEdit(true)}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          ) : (
+            <Box
+              sx={{
+                display: { xs: 'none', sm: 'flex' }
+              }}
+            >
+              <NERFailButton onClick={() => setEdit(false)}>Cancel</NERFailButton>
+              <NERSuccessButton sx={{ ml: 2 }} type="submit" form="update-user-schedule-settings">
+                Save
+              </NERSuccessButton>
+            </Box>
+          )}
+        </Grid>
+      </Grid>
       {!edit ? (
         <UserScheduleSettingsView scheduleSettings={data} designReview={designReview} />
       ) : (
@@ -110,7 +123,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
           </NERSuccessButton>
         </Box>
       )}
-    </PageBlock>
+    </>
   );
 };
 

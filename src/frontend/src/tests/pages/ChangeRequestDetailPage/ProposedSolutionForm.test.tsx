@@ -5,6 +5,7 @@
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
 import ProposedSolutionForm from '../../../pages/ChangeRequestDetailPage/ProposedSolutionForm';
+import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 
 /**
  * Mock function for submitting the form, use if there is additional functionality added while submitting
@@ -20,11 +21,17 @@ const renderComponent = (readOnly: boolean, description = '', budgetImpact = 0, 
     <RouterWrapper>
       <ProposedSolutionForm
         readOnly={readOnly}
-        onAdd={mockHandleSubmit}
-        description={description}
-        budgetImpact={budgetImpact}
-        timelineImpact={timelineImpact}
-        scopeImpact={scopeImpact}
+        onSubmit={mockHandleSubmit}
+        defaultValues={{
+          description,
+          budgetImpact,
+          timelineImpact,
+          scopeImpact,
+          id: '',
+          createdBy: exampleAdminUser,
+          dateCreated: new Date(),
+          approved: false
+        }}
         open={true}
         onClose={() => {}}
       />
@@ -48,7 +55,7 @@ describe('Individual Proposed Solution Form Test Suite', () => {
     expect(screen.getByText('Budget Impact')).toBeInTheDocument();
     expect(screen.getByText('Timeline Impact')).toBeInTheDocument();
     expect(screen.getByText('Scope Impact')).toBeInTheDocument();
-    expect(screen.getByText('Add')).toBeInTheDocument();
+    expect(screen.getByText('Save')).toBeInTheDocument();
   });
 
   it('Renders prefill elements when readOnly', () => {

@@ -1,21 +1,34 @@
-import { Box, FormControl, FormLabel, Grid, TableCell, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  FormLabel,
+  Grid,
+  TableCell,
+  TableRow,
+  Button,
+  TextField,
+  useTheme,
+  Typography
+} from '@mui/material';
 import { routes } from '../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { NERButton } from '../../components/NERButton';
 import { useAllTeams, useCreateTeam } from '../../hooks/teams.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import AdminToolTable from './AdminToolTable';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useToast } from '../../hooks/toasts.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import ReactMarkdown from 'react-markdown';
 import * as yup from 'yup';
-import { isHead } from 'shared';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import { isHead, isUnderWordCount, countWords } from 'shared';
 import { userComparator, userToAutocompleteOption } from '../../utils/teams.utils';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERAutocomplete from '../../components/NERAutocomplete';
+import { useState } from 'react';
 
 const schema = yup.object().shape({
   teamName: yup.string().required('Team Name is Required'),
@@ -29,21 +42,24 @@ interface CreateTeamFormInput {
   headId: string;
   slackId: string;
   description: string;
+  isFinanceTeam: boolean;
 }
 
 const defaultValues = {
   teamName: '',
   slackId: '',
   description: '',
-  headId: ''
+  headId: '',
+  isFinanceTeam: false
 };
 
 const TeamsTools = () => {
   const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
   const { isLoading, mutateAsync } = useCreateTeam();
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+  const theme = useTheme();
+  const [showPreview, setShowPreview] = useState(false);
   const toast = useToast();
-
   const {
     handleSubmit,
     control,
@@ -60,8 +76,7 @@ const TeamsTools = () => {
     return <ErrorPage message={allTeamsError.message} />;
   }
 
-  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
-
+  if (allUsersIsError) return <ErrorPage message={allUsersError.message} />;
   const onFormSubmit = async (data: CreateTeamFormInput) => {
     try {
       await mutateAsync({ ...data, headId: Number(data.headId) });
@@ -90,7 +105,7 @@ const TeamsTools = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'}>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Team Management
       </Typography>
       <Grid container columnSpacing={2}>
@@ -105,15 +120,15 @@ const TeamsTools = () => {
             noValidate
           >
             <FormControl sx={{ width: '50%', marginRight: '10px' }}>
-              <FormLabel>Team Name</FormLabel>
+              <FormLabel sx={{ marginTop: '6px' }}>Team Name</FormLabel>
               <ReactHookTextField name="teamName" control={control} fullWidth errorMessage={errors.teamName} />
             </FormControl>
             <FormControl sx={{ width: '45%' }}>
-              <FormLabel>Slack Channel ID</FormLabel>
+              <FormLabel sx={{ marginTop: '6px' }}>Slack Channel ID</FormLabel>
               <ReactHookTextField name="slackId" control={control} fullWidth errorMessage={errors.slackId} />
             </FormControl>
             <FormControl fullWidth>
-              <FormLabel>Head</FormLabel>
+              <FormLabel sx={{ marginTop: '6px' }}>Head</FormLabel>
               <Controller
                 name="headId"
                 control={control}
@@ -131,18 +146,73 @@ const TeamsTools = () => {
               />
             </FormControl>
             <FormControl fullWidth>
-              <FormLabel>Description</FormLabel>
-              <ReactHookTextField
+              <Controller
                 name="description"
                 control={control}
-                fullWidth
-                multiline
-                rows={5}
-                errorMessage={errors.description}
-                maxLength={300}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Box>
+                    <Box
+                      sx={{
+                        marginTop: '6px',
+                        marginBottom: '6px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'end'
+                      }}
+                    >
+                      <FormLabel>Description</FormLabel>
+                      <Button
+                        onClick={() => {
+                          setShowPreview(!showPreview);
+                        }}
+                        sx={{
+                          backgroundColor: theme.palette.grey[600],
+                          color: theme.palette.getContrastText(theme.palette.grey[600]),
+                          '&:hover': {
+                            backgroundColor: theme.palette.grey[700]
+                          }
+                        }}
+                      >
+                        {showPreview ? 'Edit' : 'Preview'}
+                      </Button>
+                    </Box>
+                    {showPreview ? (
+                      <ReactMarkdown>{field.value}</ReactMarkdown>
+                    ) : (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        multiline
+                        rows={5}
+                        id={'description-input'}
+                        inputProps={{
+                          maxLength: isUnderWordCount(field.value, 300) ? null : 0
+                        }}
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
+                        error={!!errors.description || !isUnderWordCount(field.value, 300)}
+                        helperText={errors.description ? errors.description.message : `${countWords(field.value)}/300 words`}
+                      />
+                    )}
+                  </Box>
+                )}
               />
             </FormControl>
-            <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <FormControl>
+                <FormLabel>Finance Team</FormLabel>
+                <Controller
+                  name="isFinanceTeam"
+                  control={control}
+                  render={({ field }) => (
+                    <NERButton variant={field.value ? 'contained' : 'outlined'} onClick={() => field.onChange(!field.value)}>
+                      {field.value ? 'Yes' : 'No'}
+                    </NERButton>
+                  )}
+                />
+              </FormControl>
               <NERButton variant="contained" type="submit">
                 Create Team
               </NERButton>

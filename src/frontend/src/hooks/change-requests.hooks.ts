@@ -4,7 +4,15 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { ChangeRequest, ChangeRequestReason, ChangeRequestType, ProposedSolutionCreateArgs, WbsNumber } from 'shared';
+import {
+  ChangeRequest,
+  ChangeRequestReason,
+  ChangeRequestType,
+  ProjectProposedChangesCreateArgs,
+  ProposedSolutionCreateArgs,
+  WbsNumber,
+  WorkPackageProposedChangesCreateArgs
+} from 'shared';
 import {
   createActivationChangeRequest,
   createStandardChangeRequest,
@@ -94,19 +102,28 @@ export const useDeleteChangeRequest = () => {
 export type CreateStandardChangeRequestPayload = {
   wbsNum: WbsNumber;
   type: Exclude<ChangeRequestType, 'STAGE_GATE' | 'ACTIVATION'>;
+  what: string;
   why: { explain: string; type: ChangeRequestReason }[];
   proposedSolutions: ProposedSolutionCreateArgs[];
+  projectProposedChanges?: ProjectProposedChangesCreateArgs;
+  workPackageProposedChanges?: WorkPackageProposedChangesCreateArgs;
 };
 
 /**
  * Custom React Hook to create a standard change request.
  */
 export const useCreateStandardChangeRequest = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, CreateStandardChangeRequestPayload>(
     ['change requests', 'create', 'standard'],
     async (payload: CreateStandardChangeRequestPayload) => {
       const { data } = await createStandardChangeRequest(payload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['change requests']);
+      }
     }
   );
 };

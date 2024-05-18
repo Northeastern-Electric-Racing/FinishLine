@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { LinkType, Project, WbsNumber } from 'shared';
+import { LinkType, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -14,9 +14,11 @@ import {
   deleteProject,
   toggleProjectFavorite,
   getAllLinkTypes,
-  createLinkType
+  createLinkType,
+  getAllWorkPackageTemplates,
+  editLinkType
 } from '../apis/projects.api';
-import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
 
 /**
@@ -157,6 +159,38 @@ export const useCreateLinkType = () => {
     ['linkTypes', 'create'],
     async (linkTypeData: LinkTypeCreatePayload) => {
       const { data } = await createLinkType(linkTypeData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['linkTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all workpackage templates
+ */
+export const useAllWorkPackageTemplates = () => {
+  return useQuery<WorkPackageTemplate[], Error>(['work package templates'], async () => {
+    const { data } = await getAllWorkPackageTemplates();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to edit a LinkType.
+ *
+ * @param linkTypeName The name of the LinkType to edit (unique)
+ * @returns the edited linkType
+ */
+export const useEditLinkType = (linkTypeName: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<LinkType, Error, LinkTypeCreatePayload>(
+    ['linkTypes', 'edit'],
+    async (formData: LinkTypeCreatePayload) => {
+      const { data } = await editLinkType(linkTypeName, formData);
       return data;
     },
     {

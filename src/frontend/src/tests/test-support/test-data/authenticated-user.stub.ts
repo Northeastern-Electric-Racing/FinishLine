@@ -13,5 +13,6 @@ export const exampleAuthenticatedAdminUser: AuthenticatedUser = {
   emailId: 'shmoe.j',
   role: RoleEnum.ADMIN,
   favoritedProjectsId: [],
-  changeRequestsToReviewId: []
+  changeRequestsToReviewId: [],
+  organizations: []
 };

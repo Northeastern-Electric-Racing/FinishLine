@@ -30,7 +30,7 @@ export default class NotificationsService {
         assignees: {
           include: {
             userSettings: true,
-            teamAsHead: true,
+            teamsAsHead: true,
             teamsAsLead: true,
             teamsAsMember: true
           }

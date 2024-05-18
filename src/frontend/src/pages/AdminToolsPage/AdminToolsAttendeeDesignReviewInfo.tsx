@@ -69,7 +69,7 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
 
   return (
     <Grid>
-      <Typography variant="h5" color="red" borderBottom={1} borderColor={'white'} gutterBottom>
+      <Typography variant="h5" color="#ef4345" borderBottom={1} borderColor={'white'} gutterBottom>
         Design Review Attendee Info
       </Typography>
       <FormControl fullWidth sx={{ marginBottom: 2 }}>

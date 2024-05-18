@@ -50,6 +50,9 @@ const ADMIN_TOOLS = `/admin-tools`;
 const CALENDAR = `/design-review-calendar`;
 const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 
+/**************** Organizations ****************/
+const ORGANIZATIONS = `/organizations`;
+
 export const routes = {
   HOME,
   LOGIN,
@@ -89,5 +92,7 @@ export const routes = {
   ADMIN_TOOLS,
 
   CALENDAR,
-  DESIGN_REVIEW_BY_ID
+  DESIGN_REVIEW_BY_ID,
+
+  ORGANIZATIONS
 };

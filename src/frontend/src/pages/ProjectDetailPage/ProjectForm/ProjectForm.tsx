@@ -2,22 +2,29 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { LinkCreateArgs, Project } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Box, Stack, Typography } from '@mui/material';
-import ReactHookEditableList from '../../../components/ReactHookEditableList';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
-import LinksEditView from './LinksEditView';
+import LinksEditView from '../../../components/LinksEditView';
 import PageLayout from '../../../components/PageLayout';
 import ProjectFormDetails from './ProjectFormDetails';
 import { useAllUsers } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { ObjectShape } from 'yup/lib/object';
+import CreateChangeRequestModal from '../../CreateChangeRequestPage/CreateChangeRequestModal';
+import { ProjectCreateChangeRequestFormInput } from './ProjectEditContainer';
+import { useState } from 'react';
+import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPage/CreateChangeRequest';
+import { NERButton } from '../../../components/NERButton';
+import HelpIcon from '@mui/icons-material/Help';
+import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
 
 export interface ProjectFormInput {
   name: string;
@@ -26,23 +33,8 @@ export interface ProjectFormInput {
   links: LinkCreateArgs[];
   crId: string;
   carNumber: number;
-  goals: {
-    bulletId: number;
-    detail: string;
-  }[];
-  features: {
-    bulletId: number;
-    detail: string;
-  }[];
-  constraints: {
-    bulletId: number;
-    detail: string;
-  }[];
-  rules: {
-    bulletId: number;
-    detail: string;
-  }[];
-  teamId: string;
+  teamIds: number[];
+  descriptionBullets: DescriptionBulletPreview[];
 }
 
 interface ProjectFormContainerProps {
@@ -51,69 +43,30 @@ interface ProjectFormContainerProps {
   project?: Project;
   onSubmit: (data: ProjectFormInput) => void;
   defaultValues: ProjectFormInput;
-  setProjectManagerId: (id?: string) => void;
-  setProjectLeadId: (id?: string) => void;
-  projectLeadId?: string;
-  projectManagerId?: string;
+  setManagerId: (id?: string) => void;
+  setLeadId: (id?: string) => void;
+  schema: yup.ObjectSchema<ObjectShape>;
+  leadId?: string;
+  managerId?: string;
+  onSubmitChangeRequest?: (data: ProjectCreateChangeRequestFormInput) => void;
 }
 
 const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   exitEditMode,
-  requiredLinkTypeNames,
   project,
   onSubmit,
   defaultValues,
-  setProjectManagerId,
-  setProjectLeadId,
-  projectLeadId,
-  projectManagerId
+  setLeadId,
+  setManagerId,
+  schema,
+  leadId,
+  managerId,
+  onSubmitChangeRequest
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  let changeRequestFormInput: ChangeRequestFormInput | undefined = undefined;
+
   const allUsers = useAllUsers();
-  const schema = !project
-    ? yup.object().shape({
-        name: yup.string().required('Name is required!'),
-        crId: yup
-          .number()
-          .min(1)
-          .typeError('Change Request ID cannot be empty!')
-          .required('crId must be a non-zero number!'),
-        carNumber: yup.number().min(0).required('A car number is required!'),
-        teamId: yup.string().required('A Team Id is required'),
-        budget: yup.number().optional(),
-        summary: yup.string().required('Summary is required!'),
-        projectLeadId: yup.number().optional(),
-        projectManagerId: yup.number().optional(),
-        links: yup
-          .array()
-          .optional()
-          .of(
-            yup
-              .object()
-              .optional()
-              .shape({
-                linkTypeName: yup.string().optional(),
-                url: yup.string().optional().url('Invalid URL')
-              })
-          )
-      })
-    : yup.object().shape({
-        name: yup.string().required('Name is required!'),
-        crId: yup
-          .number()
-          .min(1)
-          .typeError('Change Request ID cannot be empty!')
-          .required('crId must be a non-zero number!'),
-        budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
-        summary: yup.string().required('Summary is required!'),
-        links: yup.array().of(
-          yup.object().shape({
-            linkTypeName: yup.string().required('Link Type is required!'),
-            url: yup.string().required('URL is required!').url('Invalid URL')
-          })
-        ),
-        teamId: yup.string().optional(),
-        carNumber: yup.number().optional()
-      });
   const {
     register,
     handleSubmit,
@@ -128,23 +81,18 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       summary: defaultValues?.summary,
       crId: defaultValues?.crId,
       carNumber: defaultValues?.carNumber,
-      rules: defaultValues?.rules,
       links: defaultValues?.links,
-      goals: defaultValues?.goals,
-      features: defaultValues?.features,
-      constraints: defaultValues?.constraints,
-      teamId: defaultValues?.teamId
+      descriptionBullets: defaultValues?.descriptionBullets,
+      teamIds: defaultValues?.teamIds
     }
   });
 
-  const { fields: rules, append: appendRule, remove: removeRule } = useFieldArray({ control, name: 'rules' });
-  const { fields: goals, append: appendGoal, remove: removeGoal } = useFieldArray({ control, name: 'goals' });
-  const { fields: features, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: 'features' });
   const {
-    fields: constraints,
-    append: appendConstraint,
-    remove: removeConstraint
-  } = useFieldArray({ control, name: 'constraints' });
+    fields: descriptionBullets,
+    append: appendDescriptionBullet,
+    remove: removeDescriptionBullet
+  } = useFieldArray({ control, name: 'descriptionBullets' });
+
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
@@ -152,7 +100,19 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
     return <ErrorPage message={allUsers.error?.message} />;
   }
 
+  const crWatch = watch('crId');
+  const changeRequestInputExists = crWatch !== 'null' && crWatch !== '';
+
   const users = allUsers.data.filter((u) => u.role !== 'GUEST');
+
+  const handleCreateChangeRequest = async (data: ProjectFormInput) => {
+    if (onSubmitChangeRequest && changeRequestFormInput) {
+      onSubmitChangeRequest({
+        ...changeRequestFormInput,
+        ...data
+      });
+    }
+  };
 
   return (
     <form
@@ -172,11 +132,34 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         title={project ? `${wbsPipe(project.wbsNum)} - ${project.name}` : 'New Project'}
         previousPages={[{ name: 'Projects', route: routes.PROJECTS }]}
         headerRight={
-          <Box textAlign="right">
+          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
+            {onSubmitChangeRequest && (
+              <Box display="inline-flex" alignItems="center">
+                <Tooltip
+                  title={
+                    <Typography fontSize={'16px'}>
+                      {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
+                      ${project ? `edit the selected Project` : `create a new Project`} with the inputted values`}
+                    </Typography>
+                  }
+                  placement="left"
+                >
+                  <HelpIcon style={{ fontSize: '1.5em', color: 'lightgray' }} />
+                </Tooltip>
+                <NERButton
+                  variant="contained"
+                  onClick={() => setIsModalOpen(true)}
+                  sx={{ mx: 1 }}
+                  disabled={changeRequestInputExists}
+                >
+                  Create Change Request
+                </NERButton>
+              </Box>
+            )}
             <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
               Cancel
             </NERFailButton>
-            <NERSuccessButton variant="contained" onClick={(event) => handleSubmit} type="submit" sx={{ mx: 1 }}>
+            <NERSuccessButton disabled={!changeRequestInputExists} variant="contained" type="submit" sx={{ mx: 1 }}>
               Submit
             </NERSuccessButton>
           </Box>
@@ -186,10 +169,10 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
           users={users}
           control={control}
           errors={errors}
-          setProjectManagerId={setProjectManagerId}
-          setProjectLeadId={setProjectLeadId}
-          projectLead={projectLeadId}
-          projectManager={projectManagerId}
+          setManagerId={setManagerId}
+          setLeadId={setLeadId}
+          leadId={leadId}
+          managerId={managerId}
           project={project}
         />
         <Stack spacing={4}>
@@ -200,51 +183,28 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
           </Box>
           <Box>
-            <Typography variant="h5">{!project ? 'Goals (optional)' : 'Goals'}</Typography>
-            <ReactHookEditableList
-              name="goals"
+            <DescriptionBulletsEditView
+              type="project"
+              watch={watch}
+              ls={descriptionBullets}
               register={register}
-              ls={goals}
-              append={appendGoal}
-              remove={removeGoal}
-              bulletName="Goal"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Features (optional)' : 'Features'}</Typography>
-            <ReactHookEditableList
-              name="features"
-              register={register}
-              ls={features}
-              append={appendFeature}
-              remove={removeFeature}
-              bulletName="Feature"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Constraints (optional)' : 'Constraints'}</Typography>
-            <ReactHookEditableList
-              name="constraints"
-              register={register}
-              ls={constraints}
-              append={appendConstraint}
-              remove={removeConstraint}
-              bulletName="Constraint"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">{!project ? 'Rules (optional)' : 'Rules'}</Typography>
-            <ReactHookEditableList
-              name="rules"
-              register={register}
-              ls={rules}
-              append={appendRule}
-              remove={removeRule}
-              bulletName="Rule"
+              append={appendDescriptionBullet}
+              remove={removeDescriptionBullet}
             />
           </Box>
         </Stack>
       </PageLayout>
+      {onSubmitChangeRequest && (
+        <CreateChangeRequestModal
+          onConfirm={async (crFormInput: ChangeRequestFormInput) => {
+            changeRequestFormInput = crFormInput;
+            await handleSubmit(handleCreateChangeRequest)();
+          }}
+          onHide={() => setIsModalOpen(false)}
+          wbsNum={project ? wbsPipe(project!.wbsNum) : '0.0.0'}
+          open={isModalOpen}
+        />
+      )}
     </form>
   );
 };

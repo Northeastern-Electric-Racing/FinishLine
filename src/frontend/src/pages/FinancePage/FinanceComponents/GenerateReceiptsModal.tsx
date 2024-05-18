@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, MenuItem, Select, TextField } from '@mui/material';
+import { FormControl, FormLabel, MenuItem, Select } from '@mui/material';
 import NERFormModal from '../../../components/NERFormModal';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -114,18 +114,14 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                   onChange={(newValue) => {
                     onChange(newValue ?? new Date());
                   }}
-                  PopperProps={{
-                    placement: 'right'
+                  slotProps={{
+                    textField: {
+                      error: !!errors.startDate,
+                      helperText: errors.startDate?.message,
+                      onClick: (e) => setStartDatePickerOpen(true),
+                      inputProps: { readOnly: true }
+                    }
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      inputProps={{ ...params.inputProps, readOnly: true }}
-                      error={!!errors.startDate}
-                      helperText={errors.startDate?.message}
-                      onClick={(e) => setStartDatePickerOpen(true)}
-                    />
-                  )}
                 />
               )}
             />
@@ -144,18 +140,14 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                   onChange={(newValue) => {
                     onChange(newValue ?? new Date());
                   }}
-                  PopperProps={{
-                    placement: 'right'
+                  slotProps={{
+                    textField: {
+                      error: !!errors.endDate,
+                      helperText: errors.endDate?.message,
+                      onClick: (e) => setEndDatePickerOpen(true),
+                      inputProps: { readOnly: true }
+                    }
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      inputProps={{ ...params.inputProps, readOnly: true }}
-                      error={!!errors.endDate}
-                      helperText={errors.endDate?.message}
-                      onClick={(e) => setEndDatePickerOpen(true)}
-                    />
-                  )}
                 />
               )}
             />

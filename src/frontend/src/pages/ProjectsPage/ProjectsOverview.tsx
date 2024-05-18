@@ -34,8 +34,8 @@ const ProjectsOverview: React.FC = () => {
 
   const projectsImLeading = projects.filter(
     (project) =>
-      (project.status !== WbsElementStatus.Complete && project.projectLead?.userId === user.userId) ||
-      project.projectManager?.userId === user.userId
+      (project.status !== WbsElementStatus.Complete && project.lead?.userId === user.userId) ||
+      project.manager?.userId === user.userId
   );
   const myTeamsProjects = projects.filter(
     (project) => project.status !== WbsElementStatus.Complete && project.teams.some((team) => isUserOnTeam(team, user))
