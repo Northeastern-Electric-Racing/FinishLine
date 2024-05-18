@@ -139,8 +139,5 @@
     ]
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "react-draggable": "^4.4.6"
-  }
+  "license": "ISC"
 }
