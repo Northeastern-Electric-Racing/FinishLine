@@ -78,8 +78,7 @@ export default class WorkPackagesController {
   // Create a work package template with the given details
   static async createWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const { templateName, templateNotes, workPackageName, duration, expectedActivities, deliverables, blockedBy } =
-        req.body;
+      const { templateName, templateNotes, workPackageName, duration, descriptionBullets, blockedBy } = req.body;
 
       let { stage } = req.body;
       if (stage === 'NONE') {
@@ -87,6 +86,7 @@ export default class WorkPackagesController {
       }
 
       const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
 
       const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.createWorkPackageTemplate(
         user,
@@ -95,9 +95,9 @@ export default class WorkPackagesController {
         workPackageName,
         stage,
         duration,
-        expectedActivities,
-        deliverables,
-        blockedBy
+        descriptionBullets,
+        blockedBy,
+        organizationId
       );
 
       res.status(200).json(workPackageTemplate);

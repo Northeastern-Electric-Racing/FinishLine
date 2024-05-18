@@ -35,13 +35,10 @@ workPackageTemplatesRouter.post(
   nonEmptyString(body('workPackageName').optional()),
   isWorkPackageStageOrNone(body('stage').optional()),
   intMinZero(body('duration').optional()),
-  body('expectedActivities').isArray(),
-  nonEmptyString(body('expectedActivities.*')),
-  body('deliverables').isArray(),
-  nonEmptyString(body('deliverables.*')),
   body('blockedBy').isArray(),
   nonEmptyString(body('blockedByInfo.*.name')),
   isWorkPackageStageOrNone(body('blockedByInfo.*.stage').optional()),
+  ...descriptionBulletsValidators,
   validateInputs,
   WorkPackagesController.createWorkPackageTemplate
 );
