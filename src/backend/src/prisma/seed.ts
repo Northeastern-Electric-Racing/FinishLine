@@ -245,12 +245,36 @@ const performSeed: () => Promise<void> = async () => {
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
 
-  /** If the .env file exists, set the FINANCE_TEAM_ID and slack ids*/
+  /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
     currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
 
-    currentEnv.THOMAS_EMRAX_SLACK_ID = thomasEmrax.userSettings?.slackId;
-    currentEnv.REGINA_GEORGE_SLACK_ID = regina.userSettings?.slackId;
+    /** Updating slack ids of Thomas Emrax and Regina George */
+    prisma.user.update({
+      where: {
+        googleAuthId: thomasEmrax.googleAuthId
+      },
+      data: {
+        userSettings: {
+          update: {
+            slackId: currentEnv.SLACK_ID
+          }
+        }
+      }
+    });
+
+    prisma.user.update({
+      where: {
+        googleAuthId: regina.googleAuthId
+      },
+      data: {
+        userSettings: {
+          update: {
+            slackId: currentEnv.SLACK_ID
+          }
+        }
+      }
+    });
 
     /** Write the new .env file */
     let stringifiedEnv = '';
