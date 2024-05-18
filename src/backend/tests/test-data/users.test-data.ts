@@ -1,41 +1,34 @@
-import {
-  Role as PrismaRole,
-  Theme,
-  User as PrismaUser,
-  User_Settings,
-  User_Secure_Settings,
-  Team,
-  Schedule_Settings
-} from '@prisma/client';
-import { User as SharedUser, UserScheduleSettings } from 'shared';
+import { Theme, User_Settings, User_Secure_Settings, Team, Schedule_Settings } from '@prisma/client';
+import { RoleEnum, User as SharedUser, UserScheduleSettings } from 'shared';
+import { CreateTestUserParams } from '../test-utils';
 
-export const batman: PrismaUser = {
+export const batmanAppAdmin: CreateTestUserParams = {
   userId: 1,
   firstName: 'Bruce',
   lastName: 'Wayne',
   email: 'notbatman@gmail.com',
   emailId: 'notbatman',
-  role: PrismaRole.APP_ADMIN,
+  role: RoleEnum.APP_ADMIN,
   googleAuthId: 'b'
 };
 
-export const theVisitor: PrismaUser = {
+export const theVisitorGuest: CreateTestUserParams = {
   userId: 7,
   firstName: 'The',
   lastName: 'Visitor',
   email: 'oooscary@gmail.com',
   emailId: 'oooscary',
-  role: PrismaRole.GUEST,
+  role: RoleEnum.GUEST,
   googleAuthId: 't'
 };
 
-export const superman: PrismaUser = {
+export const supermanAdmin: CreateTestUserParams = {
   userId: 2,
   firstName: 'Clark',
   lastName: 'Kent',
   email: 'clark.kent@thedailyplanet.com',
   emailId: 'clark.kent',
-  role: PrismaRole.ADMIN,
+  role: RoleEnum.ADMIN,
   googleAuthId: 's'
 };
 
@@ -46,13 +39,13 @@ export const supermanSettings: User_Settings = {
   slackId: 'slackSM'
 };
 
-export const wonderwoman: PrismaUser = {
+export const wonderwomanGuest: CreateTestUserParams = {
   userId: 3,
   firstName: 'Wonder',
   lastName: 'Woman',
   email: 'amazonian1@savingtheday.com',
   emailId: 'amazonian1',
-  role: PrismaRole.GUEST,
+  role: RoleEnum.GUEST,
   googleAuthId: 'w'
 };
 
@@ -63,54 +56,54 @@ export const wonderwomanSettings: User_Settings = {
   slackId: 'slackWW'
 };
 
-export const flash: PrismaUser = {
+export const flashAdmin: CreateTestUserParams = {
   userId: 4,
   firstName: 'Barry',
   lastName: 'Allen',
   email: 'b.allen@fast.com',
   emailId: 'barry.allen',
-  role: PrismaRole.ADMIN,
+  role: RoleEnum.ADMIN,
   googleAuthId: 'f'
 };
 
-export const greenlantern: PrismaUser = {
+export const greenlanternHead: CreateTestUserParams = {
   userId: 5,
   firstName: 'Hal',
   lastName: 'Jordan',
   email: 'h.jordam@pilot.com',
   emailId: 'hal.jordan',
-  role: PrismaRole.HEAD,
+  role: RoleEnum.HEAD,
   googleAuthId: 'g'
 };
 
-export const aquaman: PrismaUser = {
+export const aquamanLeadership: CreateTestUserParams = {
   userId: 6,
   firstName: 'Arthur',
   lastName: 'Curry',
   email: 'a.curry@water.com',
   emailId: 'arhur.curry',
-  role: PrismaRole.LEADERSHIP,
+  role: RoleEnum.LEADERSHIP,
   googleAuthId: 'a'
 };
 
-export const financeMember: PrismaUser = {
+export const financeMember: CreateTestUserParams = {
   userId: 123,
   firstName: 'Johnny',
   lastName: 'Bravo',
   googleAuthId: '25',
   email: 'jbravo@gmail.com',
   emailId: 'jbravo',
-  role: PrismaRole.MEMBER
+  role: RoleEnum.MEMBER
 };
 
-export const member: PrismaUser = {
+export const member: CreateTestUserParams = {
   userId: 123,
   firstName: 'Johnny',
   lastName: 'Bravo',
   googleAuthId: '25',
   email: 'jbravo@gmail.com',
   emailId: 'jbravo',
-  role: PrismaRole.MEMBER
+  role: RoleEnum.MEMBER
 };
 
 export const batmanSettings: User_Settings = {
@@ -140,13 +133,13 @@ export const batmanSecureSettings: User_Secure_Settings = {
   zipcode: '12345'
 };
 
-export const alfred: PrismaUser & { teamsAsMember: Team[]; teamsAsLead: Team[] } = {
+export const alfred: CreateTestUserParams & { teamsAsMember: Team[]; teamsAsLead: Team[] } = {
   userId: 10,
   firstName: 'Alfred',
   lastName: 'Pennyworth',
   email: 'butler@gmail.com',
   emailId: 'butler',
-  role: PrismaRole.APP_ADMIN,
+  role: RoleEnum.APP_ADMIN,
   googleAuthId: 'u',
   // Do NOT put a team here! This will create a circular dependency that breaks tests.
   // Do this instead: { ...alfred, teamsAsMember: [<your team>]}
@@ -154,15 +147,15 @@ export const alfred: PrismaUser & { teamsAsMember: Team[]; teamsAsLead: Team[] }
   teamsAsLead: []
 };
 
-export const batmanWithUserSettings: PrismaUser & { userSettings: User_Settings } = {
-  ...batman,
+export const batmanWithUserSettings: CreateTestUserParams & { userSettings: User_Settings } = {
+  ...batmanAppAdmin,
   userSettings: {
     ...batmanSettings
   }
 };
 
-export const supermanWithUserSettings: PrismaUser & { userSettings: User_Settings } = {
-  ...superman,
+export const supermanWithUserSettings: CreateTestUserParams & { userSettings: User_Settings } = {
+  ...supermanAdmin,
   userSettings: {
     ...supermanSettings
   }
@@ -176,8 +169,8 @@ export const batmanScheduleSettings: Schedule_Settings = {
   userId: 69
 };
 
-export const batmanWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
-  ...batman,
+export const batmanWithScheduleSettings: CreateTestUserParams & { scheduleSettings: Schedule_Settings } = {
+  ...batmanAppAdmin,
   scheduleSettings: {
     ...batmanScheduleSettings
   }
@@ -206,15 +199,15 @@ export const wonderwomanMarkedScheduleSettings: Schedule_Settings = {
   userId: 72
 };
 
-export const wonderwomanWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
-  ...wonderwoman,
+export const wonderwomanWithScheduleSettings: CreateTestUserParams & { scheduleSettings: Schedule_Settings } = {
+  ...wonderwomanGuest,
   scheduleSettings: {
     ...wonderwomanScheduleSettings
   }
 };
 
-export const wonderwomanMarkedWithScheduleSettings: PrismaUser & { scheduleSettings: Schedule_Settings } = {
-  ...wonderwoman,
+export const wonderwomanMarkedWithScheduleSettings: CreateTestUserParams & { scheduleSettings: Schedule_Settings } = {
+  ...wonderwomanGuest,
   scheduleSettings: {
     ...wonderwomanMarkedScheduleSettings
   }

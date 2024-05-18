@@ -1,7 +1,9 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
 
-const descriptionBulletQueryArgs = Prisma.validator<Prisma.Description_BulletArgs>()({
-  include: { userChecked: true }
-});
+export type DescriptionBulletQueryArgs = ReturnType<typeof getDescriptionBulletQueryArgs>;
 
-export default descriptionBulletQueryArgs;
+export const getDescriptionBulletQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Description_BulletArgs>()({
+    include: { userChecked: getUserQueryArgs(organizationId), descriptionBulletType: true }
+  });

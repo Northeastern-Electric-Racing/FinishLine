@@ -20,22 +20,13 @@ export interface GanttTaskData {
   name: string;
   start: Date;
   end: Date;
-  /**
-   * From 0 to 100
-   */
-  progress: number;
-  children: GanttTaskData[];
+  workPackages: GanttTaskData[];
   styles?: {
     color?: string;
     backgroundColor?: string;
     backgroundSelectedColor?: string;
-    progressColor?: string;
-    progressSelectedColor?: string;
   };
-  isDisabled?: boolean;
   project?: string;
-  dependencies?: string[];
-  displayOrder?: number;
   onClick?: () => void;
   projectLead?: User;
   projectManager?: User;
@@ -48,9 +39,23 @@ export type EventChange = { id: string; eventId: string } & (
   | { type: 'shift-by-days'; days: number }
 );
 
-export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]) => {
+export type RequestEventChange = {
+  eventId: string;
+  name: string;
+  prevStart: Date;
+  prevEnd: Date;
+  newStart: Date;
+  newEnd: Date;
+  duration: number;
+};
+
+export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChange[]): GanttTaskData => {
+  const workPackages = event.workPackages && event.workPackages.map((wpEvent) => applyChangeToEvent(wpEvent, eventChanges));
+
+  const currentEventChanges = eventChanges.filter((ec) => ec.eventId === event.id);
+
   const changedEvent = { ...event };
-  for (const eventChange of eventChanges) {
+  for (const eventChange of currentEventChanges) {
     switch (eventChange.type) {
       case 'change-end-date': {
         changedEvent.end = eventChange.newEnd;
@@ -63,13 +68,12 @@ export const applyChangeToEvent = (event: GanttTaskData, eventChanges: EventChan
       }
     }
   }
-  return changedEvent;
+  return { ...changedEvent, workPackages };
 };
 
-export const applyChangesToEvents = (events: GanttTaskData[], eventChanges: EventChange[]) => {
+export const applyChangesToEvents = (events: GanttTaskData[], eventChanges: EventChange[]): GanttTaskData[] => {
   return events.map((event) => {
-    const changes = eventChanges.filter((ec) => ec.eventId === event.id);
-    return applyChangeToEvent(event, changes);
+    return applyChangeToEvent(event, eventChanges);
   });
 };
 
@@ -127,13 +131,16 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
     return `&team=${name}`;
   };
 
-  return (
+  const newParams =
     '?' +
     ganttFilters.showCars.map((car) => carFormat(car.toString())).join('') +
     ganttFilters.showTeamTypes.map(teamTypeFormat).join('') +
     ganttFilters.showTeams.map(teamFormat).join('') +
-    `&overdue=${ganttFilters.showOnlyOverdue}`
-  );
+    `&overdue=${ganttFilters.showOnlyOverdue}`;
+
+  localStorage.setItem('ganttURL', newParams);
+
+  return newParams;
 };
 
 export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {
@@ -142,11 +149,10 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
     start: workPackage.startDate,
     end: workPackage.endDate,
-    progress: 100,
     project: projectWbsPipe(workPackage.wbsNum),
     type: 'task',
     teamName,
-    children: [],
+    workPackages: [],
     styles: {
       color: GanttWorkPackageTextColorPipe(workPackage.stage),
       backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
@@ -171,20 +177,15 @@ export const transformProjectToGanttTask = (project: Project): GanttTask[] => {
     name: wbsPipe(project.wbsNum) + ' - ' + project.name,
     start: project.startDate || new Date(),
     end: project.endDate || new Date(),
-    progress: 100,
     type: 'project',
     teamName,
-    children: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
+    workPackages: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }
   };
 
-  const workPackageTasks = project.workPackages
-    .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-    .map((workPackage) => transformWorkPackageToGanttTask(workPackage, teamName));
-
-  return [projectTask, ...workPackageTasks];
+  return [projectTask];
 };
 
 /**
@@ -309,4 +310,46 @@ export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined
     default:
       return '#ffffff';
   }
+};
+
+export const aggregateGanttChanges = (eventChanges: EventChange[], ganttTasks: GanttTask[]) => {
+  const aggregatedMap: Map<string, EventChange[]> = new Map();
+
+  // Loop through each eventChange
+  eventChanges.forEach((eventChange) => {
+    if (aggregatedMap.has(eventChange.eventId)) {
+      aggregatedMap.get(eventChange.eventId)?.push(eventChange);
+    } else {
+      aggregatedMap.set(eventChange.eventId, [eventChange]);
+    }
+  });
+
+  const updatedEvents = Array.from(aggregatedMap.entries()).map(([eventId, changeEvents]) => {
+    const task = ganttTasks.find((task) => task.id === eventId);
+
+    const updatedEvent = applyChangeToEvent(task!, changeEvents);
+
+    const start = dayjs(updatedEvent.start);
+    const end = dayjs(updatedEvent.end);
+
+    // Calculate the difference in days
+    const diffInDays = end.diff(start, 'day');
+
+    // Calculate the number of weeks
+    const duration = Math.ceil(diffInDays / 7);
+
+    const change: RequestEventChange = {
+      eventId: updatedEvent.id,
+      name: task!.name,
+      prevStart: task!.start,
+      prevEnd: task!.end,
+      newStart: updatedEvent.start,
+      newEnd: updatedEvent.end,
+      duration
+    };
+
+    return change;
+  });
+
+  return updatedEvents;
 };

@@ -4,11 +4,10 @@
  */
 
 import axios from '../utils/axios';
-import { BlockedByInfo, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
-import { workPackageTemplateTransformer } from '../../../backend/src/transformers/work-package-template.transformer';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -17,8 +16,7 @@ export interface WorkPackageApiInputs {
   crId: number | undefined;
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-  deliverables: string[] | { id: number; detail: string }[];
-  expectedActivities: string[] | { id: number; detail: string }[];
+  descriptionBullets: DescriptionBulletPreview[];
 }
 
 export interface WorkPackageTemplateApiInputs {
@@ -26,9 +24,8 @@ export interface WorkPackageTemplateApiInputs {
   templateNotes: string;
   duration: number | undefined;
   stage?: WorkPackageStage;
-  blockedBy: BlockedByInfo[];
-  expectedActivities: string[];
-  deliverables: string[];
+  blockedBy: string[];
+  descriptionBullets: DescriptionBulletPreview[];
   workPackageName?: string;
 }
 
@@ -70,6 +67,7 @@ export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
 export const editWorkPackage = (payload: WorkPackageApiInputs) => {
+  console.log(payload);
   return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
     ...payload
   });
@@ -135,6 +133,6 @@ export const slackUpcomingDeadlines = (deadline: Date) => {
  */
 export const getAllWorkPackageTemplates = () => {
   return axios.get<WorkPackageTemplate[]>(apiUrls.workPackageTemplates(), {
-    transformResponse: (data) => JSON.parse(data).map(workPackageTemplateTransformer)
+    transformResponse: (data) => JSON.parse(data)
   });
 };

@@ -60,7 +60,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_BACKLOG });
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
@@ -71,7 +70,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.IN_PROGRESS });
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
@@ -82,7 +80,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await editTaskStatus.mutateAsync({ taskId: id, status: TaskStatus.DONE });
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
@@ -93,7 +90,6 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     try {
       await deleteTaskMutate({ taskId: id }).finally(() => toast.success('Task Successfully Deleted!'));
     } catch (e: unknown) {
-      console.log(e);
       if (e instanceof Error) {
         toast.error(e.message, 6000);
       }
