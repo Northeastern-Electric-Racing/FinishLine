@@ -612,10 +612,6 @@ const performSeed: () => Promise<void> = async () => {
     [justiceLeague.teamId],
     zatanna,
     500,
-    ['T2.1.1', 'T5.5.2'],
-    ['Increase accuracy by 20% from 80% to 100%'],
-    ['Capable of penetrating reinforced steel'],
-    ['Must be mounted on the roof of the Batmobile'],
     [
       {
         linkId: '-1',
@@ -628,8 +624,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   /** Project 8 */
@@ -642,10 +640,6 @@ const performSeed: () => Promise<void> = async () => {
     [ravens.teamId],
     mikeMacdonald,
     1000000,
-    ['T9.7.3'],
-    ['Install new seating with better sightlines'],
-    ['Upgrade concession stands with more variety'],
-    ['Implement a state-of-the-art sound system'],
     [
       {
         linkId: '-1',
@@ -658,8 +652,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   /** Project 9 */
@@ -672,10 +668,6 @@ const performSeed: () => Promise<void> = async () => {
     [slackBotTeam.teamId],
     june,
     5000,
-    ['T11.2.5', 'T13.8.1'],
-    ['Increase participation by 50% from 100 to 150 students'],
-    ['Expand program to include after-school tutoring'],
-    ['Establish partnerships with local businesses for sponsorship'],
     [
       {
         linkId: '-1',
@@ -688,8 +680,10 @@ const performSeed: () => Promise<void> = async () => {
         linkTypeName: 'Bill of Materials'
       }
     ],
+    [],
     june.userId,
-    glen.userId
+    glen.userId,
+    organizationId
   );
 
   /**
@@ -869,6 +863,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -882,13 +877,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution7Id = proposedSolution7.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject7Id, 'LGTM', true, proposedSolution7Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject7Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution7Id
+  );
 
   const changeRequestProject8 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -911,6 +914,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -924,13 +928,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution8Id = proposedSolution8.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject8Id, 'LGTM', true, proposedSolution8Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject8Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution8Id
+  );
 
   const changeRequestProject9 = await ChangeRequestsService.createStandardChangeRequest(
     cyborg,
@@ -953,6 +965,7 @@ const performSeed: () => Promise<void> = async () => {
         scopeImpact: 'no scope impact'
       }
     ],
+    organizationId,
     null,
     null
   );
@@ -966,13 +979,21 @@ const performSeed: () => Promise<void> = async () => {
     0,
     'Initializing seed data',
     0,
-    'no scope impact'
+    'no scope impact',
+    organizationId
   );
 
   const proposedSolution9Id = proposedSolution9.id;
 
   // approve the change request
-  await ChangeRequestsService.reviewChangeRequest(batman, changeRequestProject9Id, 'LGTM', true, proposedSolution9Id);
+  await ChangeRequestsService.reviewChangeRequest(
+    batman,
+    changeRequestProject9Id,
+    'LGTM',
+    true,
+    organizationId,
+    proposedSolution9Id
+  );
   /**
    * Work Packages
    */
@@ -1215,16 +1236,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/01/2023',
     3,
     [],
-    [
-      'Define the specifications and requirements for the laser cannon prototype',
-      'Research and evaluate existing laser technologies and components',
-      'Design the conceptual framework and architecture of the prototype'
-    ],
-    ['Conceptual design and specifications document for the laser cannon prototype'],
+    [],
     zatanna,
     WbsElementStatus.Active,
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   const project3WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1236,10 +1253,18 @@ const performSeed: () => Promise<void> = async () => {
     project3WP1.project.wbsElement.leadId!,
     project3WP1.project.wbsElement.managerId!,
     new Date('2024-03-25T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, project3WP1ActivationCrId, 'Approved!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    project3WP1ActivationCrId,
+    'Approved!',
+    true,
+    organizationId,
+    null
+  );
 
   /** Work Package 2 */
   const { workPackageWbsNumber: project3WP2WbsNumber, workPackage: project3WP2 } = await seedWorkPackage(
@@ -1250,16 +1275,12 @@ const performSeed: () => Promise<void> = async () => {
     '01/22/2023',
     5,
     [],
-    [
-      'Research and select appropriate materials for the construction of the laser cannon',
-      'Design and fabricate the structural components of the prototype',
-      'Test and validate the structural integrity of the prototype'
-    ],
-    ['Prototype design and materials report'],
+    [],
     zatanna,
     WbsElementStatus.Active,
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   /** Work Package 3 */
@@ -1271,16 +1292,12 @@ const performSeed: () => Promise<void> = async () => {
     '02/15/2023',
     3,
     [],
-    [
-      'Construct and integrate the electronic components into the prototype',
-      'Perform functionality tests and evaluate the performance of the prototype',
-      'Generate a comprehensive test report and make necessary adjustments'
-    ],
-    ['Prototype integration and testing report'],
+    [],
     zatanna,
     WbsElementStatus.Active,
     zatanna.userId,
-    lexLuther.userId
+    lexLuther.userId,
+    organizationId
   );
 
   /** Work Packages for Project 8 */
@@ -1293,16 +1310,12 @@ const performSeed: () => Promise<void> = async () => {
     '02/01/2023',
     5,
     [],
-    [
-      'Conduct a site survey and assessment of the current stadium infrastructure',
-      'Develop a detailed project plan including timelines, resource allocation, and budget estimates',
-      'Obtain necessary permits and regulatory approvals'
-    ],
-    ['Comprehensive project plan and timeline'],
+    [],
     mikeMacdonald,
     WbsElementStatus.Active,
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   const project4WP1ActivationCrId = await ChangeRequestsService.createActivationChangeRequest(
@@ -1314,10 +1327,18 @@ const performSeed: () => Promise<void> = async () => {
     project4WP1.project.wbsElement.leadId!,
     project4WP1.project.wbsElement.managerId!,
     new Date('2023-08-21T04:00:00.000Z'),
-    true
+    true,
+    organizationId
   );
 
-  await ChangeRequestsService.reviewChangeRequest(joeShmoe, project4WP1ActivationCrId, 'Approved!', true, null);
+  await ChangeRequestsService.reviewChangeRequest(
+    joeShmoe,
+    project4WP1ActivationCrId,
+    'Approved!',
+    true,
+    organizationId,
+    null
+  );
 
   /** Work Package 2 */
   const { workPackageWbsNumber: project4WP2WbsNumber, workPackage: project4WP2 } = await seedWorkPackage(
@@ -1328,16 +1349,12 @@ const performSeed: () => Promise<void> = async () => {
     '03/01/2023',
     8,
     [],
-    [
-      'Demolish and remove existing seating and infrastructure',
-      'Construct and install new seating structures according to specifications',
-      'Install amenities such as restrooms, concession stands, and VIP areas'
-    ],
-    ['Completed construction of stadium infrastructure'],
+    [],
     mikeMacdonald,
     WbsElementStatus.Active,
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   /** Work Package 3 */
@@ -1349,16 +1366,12 @@ const performSeed: () => Promise<void> = async () => {
     '06/01/2023',
     3,
     [],
-    [
-      'Perform thorough testing of all stadium systems including lighting, sound, and safety equipment',
-      'Simulate crowd scenarios to evaluate traffic flow and security measures',
-      'Address any deficiencies and make necessary adjustments'
-    ],
-    ['Stadium testing and commissioning report'],
+    [],
     mikeMacdonald,
     WbsElementStatus.Active,
     mikeMacdonald.userId,
-    ryanGiggs.userId
+    ryanGiggs.userId,
+    organizationId
   );
 
   /**
