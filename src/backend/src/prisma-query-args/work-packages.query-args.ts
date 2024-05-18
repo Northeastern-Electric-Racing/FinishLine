@@ -23,7 +23,7 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
             include: { implementer: getUserQueryArgs(organizationId) },
             orderBy: { dateImplemented: 'asc' }
           },
-          blocking: true,
+          blocking: true
           tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) },
           descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }

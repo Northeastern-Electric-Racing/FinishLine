@@ -6,7 +6,7 @@
 import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { WorkPackageStage } from './work-package-types';
-import { TeamPreview } from './team-types';
+import { Team, TeamPreview } from './team-types';
 import { Assembly, Material, Task } from 'shared';
 
 export interface WbsNumber {
@@ -59,6 +59,7 @@ export interface WorkPackage extends WbsElement {
   blockedBy: WbsNumber[];
   projectName: string;
   stage?: WorkPackageStage;
+  teams: TeamPreview[]
 }
 
 export interface DescriptionBullet {
