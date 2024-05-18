@@ -1,9 +1,10 @@
-import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
+import { Box, Button, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import { EventChange, GanttTask, RequestEventChange } from '../../utils/gantt.utils';
 import { Edit } from '@mui/icons-material';
 import GanttChartSection from './GanttChartSection';
-import GanttChartCreateButtons from './GanttChartComponents/GanttChartCreateButtons';
-import { useEffect, useState } from 'react';
+import { NERButton } from '../../components/NERButton';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 
 interface GanttChartProps {
   startDate: Date;
@@ -31,24 +32,16 @@ const GanttChart = ({
   highlightedChange
 }: GanttChartProps) => {
   const theme = useTheme();
-  const [allTasks, setAllTasks] = useState<GanttTask[]>([]);
-
-  useEffect(() => {
-    const tasks: GanttTask[] = [];
-    teamsList.forEach((teamName) => {
-      const currentTasks = teamNameToGanttTasksMap.get(teamName);
-      if (currentTasks) {
-        tasks.push(...currentTasks);
-      }
-    });
-
-    setAllTasks(tasks);
-  }, [teamNameToGanttTasksMap, teamsList]);
+  const history = useHistory();
 
   return (
     <>
-      <GanttChartCreateButtons tasks={allTasks} />
-      <Box sx={{marginTop: '2em'}}>
+      <Box sx={{ mt: '1em', position: 'fixed', right: '2%' }}>
+        <NERButton variant="contained" onClick={() => history.push(routes.PROJECTS_NEW)}>
+          Create Project
+        </NERButton>
+      </Box>
+      <Box sx={{ marginTop: '2em' }}>
         {teamsList.map((teamName: string) => {
           const tasks = teamNameToGanttTasksMap.get(teamName);
 
@@ -80,7 +73,6 @@ const GanttChart = ({
           tasks.forEach((task) => {
             task.children.sort((a, b) => a.start.getTime() - b.start.getTime());
           });
-          
           return (
             <Box
               sx={{
