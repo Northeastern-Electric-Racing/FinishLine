@@ -630,7 +630,7 @@ export default class WorkPackagesService {
     stage: WorkPackageStage | null,
     duration: number,
     descriptionBullets: DescriptionBulletPreview[],
-    blockedBy: WorkPackageTemplate[],
+    blockedByIds: string[],
     organizationId: string
   ): Promise<WorkPackageTemplate> {
     if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
@@ -639,9 +639,9 @@ export default class WorkPackagesService {
     // get the corresponding IDs of all work package templates in BlockedBy,
     // and throw an errror if the template doesn't exist
     await Promise.all(
-      blockedBy.map(async (elem) => {
+      blockedByIds.map(async (workPackageTemplateId) => {
         const template = await prisma.work_Package_Template.findFirst({
-          where: { workPackageTemplateId: elem.workPackageTemplateId }
+          where: { workPackageTemplateId }
         });
 
         if (!template) {
@@ -662,8 +662,12 @@ export default class WorkPackagesService {
         stage,
         duration,
         userCreatedId: user.userId,
-        organizationId
+        organizationId,
+        blockedBy: {
+          connect: blockedByIds.map((blockedById) => ({ workPackageTemplateId: blockedById }))
+        }
       },
+
       ...getWorkPackageTemplateQueryArgs(organizationId)
     });
 

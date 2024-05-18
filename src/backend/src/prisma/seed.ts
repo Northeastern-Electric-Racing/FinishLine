@@ -1937,16 +1937,7 @@ const performSeed: () => Promise<void> = async () => {
     [],
     organizationId
   );
-  /*
-Schematic
-a. Expected Activities 
-	i. Complete the schematic design 
-	ii. Spec components and add to Altium
-	iii. Complete confluence page documenting design philosophy, calculations, etc
 
-b. Deliverables 
-	i. Schematics completed
-*/
   const schematicWpTemplate = await WorkPackagesService.createWorkPackageTemplate(
     batman,
     'Schematic',
@@ -1967,7 +1958,7 @@ b. Deliverables
     WorkPackageStage.Design,
     4,
     [],
-    [schematicWpTemplate],
+    [schematicWpTemplate.workPackageTemplateId],
     organizationId
   );
 };
