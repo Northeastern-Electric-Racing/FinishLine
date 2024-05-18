@@ -166,7 +166,6 @@ export default class WorkPackagesService {
     if (await userHasPermission(user.userId, organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
-    console.log(descriptionBullets);
     const changeRequest = await validateChangeRequestAccepted(crId);
 
     const wbsElem = await prisma.wBS_Element.findUnique({
@@ -401,8 +400,6 @@ export default class WorkPackagesService {
         data: { dateDeleted: new Date() }
       });
     }
-
-    console.log(changes.addedDescriptionBullets);
 
     // Add the new description bullets to the workpackage
     await addRawDescriptionBullets(
