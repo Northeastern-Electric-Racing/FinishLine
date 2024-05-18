@@ -57,7 +57,7 @@ const GanttChartTeamSection = ({
   return (
     <Box
       sx={{
-        mt: 1,
+        mt: 4,
         py: 1,
         background: isEditMode ? theme.palette.divider : 'transparent',
         borderRadius: '0.25rem',

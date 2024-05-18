@@ -23,13 +23,17 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
   projectManager
 }) => {
   const theme = useTheme();
+  const maxWidth = window.innerWidth;
+  const tooltipWidth = 300;
+  const adjustedX = Math.min(xCoordinate, maxWidth - tooltipWidth);
   return (
     <Box
       style={{
         position: 'fixed',
-        left: `${xCoordinate}px`,
+        left: `${adjustedX}px`,
         top: `${yCoordinate + 20}px`,
-        zIndex: 4
+        zIndex: 4,
+        width: tooltipWidth
       }}
     >
       <Box color={'white'}>
