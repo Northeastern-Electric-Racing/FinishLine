@@ -5,17 +5,16 @@
 
 import { Prisma } from '@prisma/client';
 import { Manufacturer } from 'shared';
-import manufacturerQueryArgs from '../prisma-query-args/manufacturers.query-args';
+import { ManufacturerQueryArgs } from '../prisma-query-args/manufacturers.query-args';
 import { materialPreviewTransformer } from './material.transformer';
+import { userTransformer } from './user.transformer';
 
-const manufacturerTransformer = (
-  manufacturer: Prisma.ManufacturerGetPayload<typeof manufacturerQueryArgs>
-): Manufacturer => {
+const manufacturerTransformer = (manufacturer: Prisma.ManufacturerGetPayload<ManufacturerQueryArgs>): Manufacturer => {
   return {
     name: manufacturer.name,
     dateCreated: manufacturer.dateCreated,
     userCreatedId: manufacturer.userCreatedId,
-    userCreated: manufacturer.userCreated,
+    userCreated: userTransformer(manufacturer.userCreated),
     dateDeleted: manufacturer.dateDeleted ?? undefined,
     materials: manufacturer.materials.map(materialPreviewTransformer)
   };

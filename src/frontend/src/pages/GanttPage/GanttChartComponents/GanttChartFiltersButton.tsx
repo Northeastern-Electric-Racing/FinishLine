@@ -50,14 +50,14 @@ const GanttChartFiltersButton = ({
         anchorEl={anchorFilterEl}
         onClose={handleFilterClose}
         anchorOrigin={{
-          vertical: 'bottom',
+          vertical: 'top',
           horizontal: 'right'
         }}
         transformOrigin={{
           vertical: 'top',
           horizontal: 'right'
         }}
-        sx={{ dispaly: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        sx={{ maxWidth: '100rem' }}
       >
         <GanttChartFilters
           carHandlers={carHandlers}

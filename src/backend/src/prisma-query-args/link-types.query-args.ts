@@ -1,7 +1,9 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
 
-const linkTypeQueryArgs = Prisma.validator<Prisma.LinkTypeArgs>()({
-  include: { creator: true }
-});
+export type LinkTypeQueryArgs = ReturnType<typeof getLinkTypeQueryArgs>;
 
-export default linkTypeQueryArgs;
+export const getLinkTypeQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Link_TypeArgs>()({
+    include: { creator: getUserQueryArgs(organizationId) }
+  });
