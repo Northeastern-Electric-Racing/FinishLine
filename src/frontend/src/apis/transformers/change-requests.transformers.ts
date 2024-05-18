@@ -47,7 +47,7 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest | Standard
  * @param immplementedChange Incoming implemented change object supplied by the HTTP response.
  * @returns Properly transformed implemented change object.
  */
-export const implementedChangeTransformer = (implementedChange: ImplementedChange) => {
+export const implementedChangeTransformer = (implementedChange: ImplementedChange): ImplementedChange => {
   return {
     ...implementedChange,
     dateImplemented: new Date(implementedChange.dateImplemented)

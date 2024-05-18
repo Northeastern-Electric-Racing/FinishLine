@@ -11,7 +11,6 @@ import {
   downloadBlobsToPdf,
   downloadGoogleImage,
   editReimbursementRequest,
-  getAllExpenseTypes,
   getAllReimbursementRequests,
   getAllReimbursements,
   getAllVendors,
@@ -28,11 +27,12 @@ import {
   editAccountCode,
   createAccountCode,
   createVendor,
-  editVendor
+  editVendor,
+  getAllAccountCodes
 } from '../apis/finance.api';
 import {
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -135,13 +135,13 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
 };
 
 /**
- * Custom react hook to get all expense types
+ * Custom react hook to get all account codes
  *
- * @returns all the expense types
+ * @returns all the account codes
  */
-export const useGetAllExpenseTypes = () => {
-  return useQuery<ExpenseType[], Error>(['expense-types'], async () => {
-    const { data } = await getAllExpenseTypes();
+export const useGetAllAccountCodes = () => {
+  return useQuery<AccountCode[], Error>(['expense-types'], async () => {
+    const { data } = await getAllAccountCodes();
     return data;
   });
 };

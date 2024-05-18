@@ -16,8 +16,6 @@ const WorkPackageTemplateTable = () => {
     error: workPackageTemplatesError
   } = useAllWorkPackageTemplates();
 
-  console.log(workPackageTemplates);
-
   if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
