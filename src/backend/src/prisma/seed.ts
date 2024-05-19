@@ -50,6 +50,11 @@ const performSeed: () => Promise<void> = async () => {
     include: { userSettings: true, userSecureSettings: true }
   });
 
+  const regina = await prisma.user.create({
+    data: dbSeedAllUsers.regina,
+    include: { userSettings: true, userSecureSettings: true }
+  });
+
   const ner = await prisma.organization.create({
     data: {
       name: 'NER',
@@ -173,7 +178,6 @@ const performSeed: () => Promise<void> = async () => {
   const francis = await createUser(dbSeedAllUsers.francis, RoleEnum.LEADERSHIP, organizationId);
   const victorPerkins = await createUser(dbSeedAllUsers.victorPerkins, RoleEnum.LEADERSHIP, organizationId);
   const kingJulian = await createUser(dbSeedAllUsers.kingJulian, RoleEnum.LEADERSHIP, organizationId);
-  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
   const gretchen = await createUser(dbSeedAllUsers.gretchen, RoleEnum.LEADERSHIP, organizationId);
   const karen = await createUser(dbSeedAllUsers.karen, RoleEnum.LEADERSHIP, organizationId);
   const janis = await createUser(dbSeedAllUsers.janis, RoleEnum.LEADERSHIP, organizationId);
@@ -274,6 +278,7 @@ const performSeed: () => Promise<void> = async () => {
   /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
     currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
+
     /** Write the new .env file */
     let stringifiedEnv = '';
     Object.keys(currentEnv).forEach((key) => {
@@ -606,7 +611,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project7WbsNumber, projectId: project7Id } = await seedProject(
     lexLuther,
     changeRequest1.crId,
-    1,
+    0,
     'Laser Cannon Prototype',
     'Develop a prototype of a laser cannon for the Justice League',
     [justiceLeague.teamId],
@@ -634,7 +639,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project8WbsNumber, projectId: project8Id } = await seedProject(
     ryanGiggs,
     changeRequest1.crId,
-    1,
+    0,
     'Stadium Renovation',
     `Renovate the team's stadium to improve fan experience`,
     [ravens.teamId],
@@ -662,7 +667,7 @@ const performSeed: () => Promise<void> = async () => {
   const { projectWbsNumber: project9WbsNumber, projectId: project9Id } = await seedProject(
     glen,
     changeRequest1.crId,
-    1,
+    0,
     'Community Outreach Program',
     'Initiate a community outreach program to engage with local schools',
     [slackBotTeam.teamId],
