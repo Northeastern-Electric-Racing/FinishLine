@@ -67,9 +67,7 @@ export const NERDraggableForm = ({
             <Box className="draggable-handle" sx={{ backgroundColor: '#ef4345', padding: 2, borderRadius: '10px 10px 0 0' }}>
               <Typography sx={{ fontSize: '1.2em' }}>{title}</Typography>
             </Box>
-            <Box>
-              {children}
-            </Box>
+            <Box>{children}</Box>
             {!hideFormButtons && (
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '15px' }}>
                 <NERFailButton onClick={onHide} form={formId}>
