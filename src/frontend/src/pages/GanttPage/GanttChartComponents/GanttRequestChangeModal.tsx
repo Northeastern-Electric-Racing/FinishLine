@@ -68,10 +68,10 @@ export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequ
         duration: change.duration,
         startDate: change.newStart.toLocaleDateString(),
         blockedBy: workPackage.blockedBy,
-        expectedActivities: workPackage.expectedActivities.map((expectedActivity) => expectedActivity.detail),
-        deliverables: workPackage.deliverables.map((deliverable) => deliverable.detail),
+        descriptionBullets: workPackage.descriptionBullets,
         leadId: workPackage.lead ? workPackage.lead.userId : undefined,
-        managerId: workPackage.manager ? workPackage.manager.userId : undefined
+        managerId: workPackage.manager ? workPackage.manager.userId : undefined,
+        links: []
       }
     };
     try {

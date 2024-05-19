@@ -6,7 +6,7 @@ import { Task } from 'shared';
  * @param workPackage Incoming work package object supplied by the HTTP response.
  * @returns Properly transformed work package object.
  */
-export const taskTransformer = (task: Task) => {
+export const taskTransformer = (task: Task): Task => {
   return {
     ...task,
     dateCreated: new Date(task.dateCreated),

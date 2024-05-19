@@ -42,13 +42,15 @@ interface CreateTeamFormInput {
   headId: string;
   slackId: string;
   description: string;
+  isFinanceTeam: boolean;
 }
 
 const defaultValues = {
   teamName: '',
   slackId: '',
   description: '',
-  headId: ''
+  headId: '',
+  isFinanceTeam: false
 };
 
 const TeamsTools = () => {
@@ -198,7 +200,19 @@ const TeamsTools = () => {
                 )}
               />
             </FormControl>
-            <Box sx={{ display: 'flex', justifyContent: 'right' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <FormControl>
+                <FormLabel>Finance Team</FormLabel>
+                <Controller
+                  name="isFinanceTeam"
+                  control={control}
+                  render={({ field }) => (
+                    <NERButton variant={field.value ? 'contained' : 'outlined'} onClick={() => field.onChange(!field.value)}>
+                      {field.value ? 'Yes' : 'No'}
+                    </NERButton>
+                  )}
+                />
+              </FormControl>
               <NERButton variant="contained" type="submit">
                 Create Team
               </NERButton>
