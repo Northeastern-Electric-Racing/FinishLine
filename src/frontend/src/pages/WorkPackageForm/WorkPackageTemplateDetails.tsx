@@ -3,8 +3,8 @@ import { Box, Typography } from '@mui/material';
 
 interface WorkPackageTemplateProps {
   workPackageTemplates: WorkPackageTemplate[];
-  currentWorkPackageTemplate: WorkPackageTemplate | null;
-  setCurrentWorkPackageTemplate: (value: WorkPackageTemplate | null) => void;
+  currentWorkPackageTemplate?: WorkPackageTemplate;
+  setCurrentWorkPackageTemplate: (value: WorkPackageTemplate) => void;
 }
 
 export const WorkPackageTemplateSection: React.FC<WorkPackageTemplateProps> = ({

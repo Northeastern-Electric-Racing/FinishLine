@@ -107,7 +107,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   );
   const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate | null>(null);
+  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate | undefined>(undefined);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
 
@@ -319,6 +319,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           setManager={setManagerId}
           createForm={!defaultValues}
           endDate={calculatedEndDate}
+          currentWorkPackageTemplate={currentWorkPackageTemplate}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>

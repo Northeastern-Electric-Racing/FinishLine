@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, WorkPackageStage } from 'shared';
+import { User, WorkPackageStage, WorkPackageTemplate } from 'shared';
 import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -25,6 +25,7 @@ interface Props {
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
   createForm?: boolean;
   endDate: Date;
+  currentWorkPackageTemplate?: WorkPackageTemplate;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -37,7 +38,8 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   control,
   errors,
   createForm = false,
-  endDate
+  endDate,
+  currentWorkPackageTemplate
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -55,7 +57,12 @@ const WorkPackageFormDetails: React.FC<Props> = ({
         name="stage"
         control={control}
         render={({ field: { onChange, value } }) => (
-          <TextField select onChange={onChange} value={value} fullWidth>
+          <TextField
+            select
+            onChange={onChange}
+            value={currentWorkPackageTemplate ? currentWorkPackageTemplate.stage : value}
+            fullWidth
+          >
             <MenuItem value={'NONE'}>NONE</MenuItem>
             {Object.values(WorkPackageStage).map((stage) => (
               <MenuItem key={stage} value={stage}>
@@ -82,6 +89,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
               control={control}
               placeholder="Enter work package name..."
               errorMessage={errors.name}
+              defaultValue= {currentWorkPackageTemplate ? currentWorkPackageTemplate.workPackageName : ""}
             />
           </FormControl>
         </Grid>
