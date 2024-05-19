@@ -112,8 +112,8 @@ const GanttChartSection = ({
           startDate={currentTask.start}
           endDate={currentTask.end}
           color={currentTask.styles?.backgroundColor}
-          projectLead={currentTask.projectLead}
-          projectManager={currentTask.projectManager}
+          lead={currentTask.lead}
+          manager={currentTask.manager}
         />
       )}
     </Box>

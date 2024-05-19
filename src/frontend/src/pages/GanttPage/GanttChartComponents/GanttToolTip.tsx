@@ -9,8 +9,8 @@ interface GanttToolTipProps {
   startDate: Date;
   endDate: Date;
   color?: string;
-  projectLead?: User;
-  projectManager?: User;
+  lead?: User;
+  manager?: User;
 }
 
 const GanttToolTip: React.FC<GanttToolTipProps> = ({
@@ -19,12 +19,12 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
   title,
   startDate,
   endDate,
-  projectLead,
-  projectManager
+  lead,
+  manager
 }) => {
   const theme = useTheme();
   const maxWidth = window.innerWidth;
-  const tooltipWidth = 300;
+  const tooltipWidth = 375;
   const adjustedX = Math.min(xCoordinate, maxWidth - tooltipWidth);
   return (
     <Box
@@ -45,13 +45,13 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
               Start: {startDate.toLocaleDateString()}
             </Typography>
-            <Typography color={theme.palette.text.primary}>Project Lead: {fullNamePipe(projectLead)}</Typography>
+            <Typography color={theme.palette.text.primary}>Project Lead: {fullNamePipe(lead)}</Typography>
           </Box>
           <Box display={'flex'} flexDirection={'row'}>
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
               End: {endDate.toLocaleDateString()}
             </Typography>
-            <Typography color={theme.palette.text.primary}>Project Manager: {fullNamePipe(projectManager)}</Typography>
+            <Typography color={theme.palette.text.primary}>Project Manager: {fullNamePipe(manager)}</Typography>
           </Box>
         </Box>
       </Box>
