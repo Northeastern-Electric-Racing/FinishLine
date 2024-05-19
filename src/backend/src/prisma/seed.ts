@@ -279,6 +279,7 @@ const performSeed: () => Promise<void> = async () => {
   /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
     currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
+    currentEnv.DEV_ORGANIZATION_ID = organizationId;
 
     /** Write the new .env file */
     let stringifiedEnv = '';

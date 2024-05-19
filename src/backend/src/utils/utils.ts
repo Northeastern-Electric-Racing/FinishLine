@@ -17,15 +17,19 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
   }[status]);
 
 export const getOrganizationId = (headers: IncomingHttpHeaders): string => {
-  const { organizationid } = headers;
+  let { organizationId } = headers;
 
-  if (organizationid === undefined) {
+  if (organizationId === undefined) {
+    organizationId = process.env.DEV_ORGANIZATION_ID;
+  }
+
+  if (organizationId === undefined) {
     throw new AccessDeniedException('Organization not provided');
   }
 
-  if (typeof organizationid !== 'string') {
+  if (typeof organizationId !== 'string') {
     throw new AccessDeniedException('Invalid organization ID');
   }
 
-  return organizationid;
+  return organizationId;
 };

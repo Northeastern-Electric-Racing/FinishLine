@@ -36,8 +36,7 @@ workPackageTemplatesRouter.post(
   isWorkPackageStageOrNone(body('stage').optional()),
   intMinZero(body('duration').optional()),
   body('blockedBy').isArray(),
-  nonEmptyString(body('blockedByInfo.*.name')),
-  isWorkPackageStageOrNone(body('blockedByInfo.*.stage').optional()),
+  nonEmptyString(body('blockedBy.*')),
   ...descriptionBulletsValidators,
   validateInputs,
   WorkPackagesController.createWorkPackageTemplate
