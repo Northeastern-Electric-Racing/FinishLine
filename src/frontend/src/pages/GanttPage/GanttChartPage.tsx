@@ -33,7 +33,7 @@ import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import { GanttRequestChangeModal } from './GanttChartComponents/GanttRequestChangeModal';
+import { GanttRequestChangeForm } from './GanttChartComponents/GanttRequestChangeForm';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -277,7 +277,7 @@ const GanttChartPage: FC = () => {
           highlightedChange={ganttTaskChanges[ganttTaskChanges.length - 1]}
         />
         {ganttTaskChanges.map((change) => (
-          <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.eventId)} />
+          <GanttRequestChangeForm change={change} open handleClose={() => removeActiveModal(change.eventId)} />
         ))}
       </Box>
     </PageLayout>
