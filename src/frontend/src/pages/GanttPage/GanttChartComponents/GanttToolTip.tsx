@@ -45,13 +45,13 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
               Start: {startDate.toLocaleDateString()}
             </Typography>
-            <Typography color={theme.palette.text.primary}>Project Lead: {fullNamePipe(lead)}</Typography>
+            <Typography color={theme.palette.text.primary}>Lead: {fullNamePipe(lead)}</Typography>
           </Box>
           <Box display={'flex'} flexDirection={'row'}>
             <Typography color={theme.palette.text.primary} marginRight={'10px'}>
               End: {endDate.toLocaleDateString()}
             </Typography>
-            <Typography color={theme.palette.text.primary}>Project Manager: {fullNamePipe(manager)}</Typography>
+            <Typography color={theme.palette.text.primary}>Manager: {fullNamePipe(manager)}</Typography>
           </Box>
         </Box>
       </Box>

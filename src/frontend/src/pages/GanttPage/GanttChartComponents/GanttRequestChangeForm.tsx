@@ -86,39 +86,37 @@ export const GanttRequestChangeForm = ({ change, handleClose, open }: GanttReque
   };
 
   return (
-    <>
-      <NERDraggableForm
-        open={open}
-        title={change.name}
-        disableSuccessButton={!reasonForChange || !explanationForChange}
-        handleSubmit={handleSubmit}
-        onHide={handleClose}
-      >
-        <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
-          <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
-            {`Old: ${changeInTimeline(change.prevStart, change.prevEnd)}`}
-          </Typography>
-          <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
-          <Box sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Reason for Change</InputLabel>
-              <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
-                {Object.entries(ChangeRequestReason).map(([key, value]) => (
-                  <MenuItem value={value}>{key}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Explanation for Change"
-              sx={{ mt: 2 }}
-              value={explanationForChange}
-              onChange={handleExplanationChange}
-              multiline
-            />
-          </Box>
+    <NERDraggableForm
+      open={open}
+      title={change.name}
+      disableSuccessButton={!reasonForChange || !explanationForChange}
+      handleSubmit={handleSubmit}
+      onHide={handleClose}
+    >
+      <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
+        <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
+          {`Old: ${changeInTimeline(change.prevStart, change.prevEnd)}`}
+        </Typography>
+        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
+        <Box sx={{ mt: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel>Reason for Change</InputLabel>
+            <Select value={reasonForChange} label="Reason for Change" onChange={handleReasonChange}>
+              {Object.entries(ChangeRequestReason).map(([key, value]) => (
+                <MenuItem value={value}>{key}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            fullWidth
+            label="Explanation for Change"
+            sx={{ mt: 2 }}
+            value={explanationForChange}
+            onChange={handleExplanationChange}
+            multiline
+          />
         </Box>
-      </NERDraggableForm>
-    </>
+      </Box>
+    </NERDraggableForm>
   );
 };
