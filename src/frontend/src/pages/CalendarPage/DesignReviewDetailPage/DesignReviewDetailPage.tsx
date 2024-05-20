@@ -30,6 +30,8 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { routes } from '../../../utils/routes';
 import NERModal from '../../../components/NERModal';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { borderRadius, fontSize, textAlign } from '@mui/system';
+import { Style } from '@mui/icons-material';
 
 export interface DesignReviewEditData {
   requiredUserIds: number[];
@@ -106,34 +108,29 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   };
 
   const DateField = () => {
-    return (
-      <div>
-        <DatePicker value={date} onChange={handleDateChange} sx={DetailPageStyles('grey', 'left', 0, '16px', false, true)} />
-      </div>
-    );
+    return <DatePicker value={date} onChange={handleDateChange} sx={Style1} />;
   };
 
-  const DetailPageStyles = (
-    bgColor: string,
-    align: string,
-    padding: number,
-    fontsize: string,
-    underline: boolean,
-    border: boolean
-  ) => {
-    return {
-      padding: padding,
-      paddingTop: padding,
-      paddingBottom: padding,
-      fontSize: fontsize,
-      backgroundColor: bgColor,
-      borderRadius: 3,
-      textAlign: align,
-      textDecoration: underline ? 'underline' : 'none',
-      width: '100%',
-      borderColors: 'grey',
-      border: border ? '2px solid' : 'none'
-    };
+  const Style1 = {
+    fontSize: '16px',
+    backgroundColor: 'grey',
+    borderRadius: 3,
+    textAlign: 'left',
+    border: '2px solid',
+    width: '100%'
+  };
+
+  const Style2 = {
+    padding: 1.5,
+    paddingTop: 1.5,
+    paddingBottom: 1.5,
+    fontSize: '1.2em',
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: 3,
+    textAlign: 'center',
+    textDecoration: 'underline',
+    width: '100%',
+    border: 'none'
   };
 
   const hasDeletePerms = user.userId === designReview.userCreated.userId || isAdmin(user.role);
@@ -152,12 +149,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       <DeleteModal />
       <Grid container spacing={3} display={'flex'} paddingBottom={2}>
         <Grid item xs={1}>
-          <Box sx={DetailPageStyles(theme.palette.background.paper, 'center', 1.5, '1.2em', true, false)}>Name</Box>
+          <Box sx={Style2}>Name</Box>
         </Grid>
         <Grid item xs={6}>
-          <Box sx={DetailPageStyles(theme.palette.background.paper, 'center', 1.5, '1.2em', false, false)}>
-            {designReviewNamePipe(designReview)}
-          </Box>
+          <Box sx={{ ...Style2, textDecoration: 'none' }}>{designReviewNamePipe(designReview)}</Box>
         </Grid>
         <Grid item xs={2}>
           <DateField />
@@ -171,7 +166,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
             size={'small'}
             placeholder={'Start Time'}
-            sx={DetailPageStyles('grey', 'left', 0, '16px', false, true)}
+            sx={Style1}
           >
             {HOURS.map((hour) => {
               return (
@@ -192,7 +187,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
             placeholder={'End Time'}
-            sx={DetailPageStyles('grey', 'left', 0, '16px', false, true)}
+            sx={Style1}
           >
             {HOURS.map((hour) => {
               return (
@@ -206,10 +201,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         <Grid item xs={12}>
           <Grid container spacing={2}>
             <Grid item xs={2}>
-              <Box sx={DetailPageStyles(theme.palette.background.paper, 'center', 1.5, '1.2em', true, false)}>Required</Box>
+              <Box sx={Style2}>Required</Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={DetailPageStyles('grey', 'center', 1, '16px', false, true)}>
+              <Box sx={{ ...Style1, padding: 1 }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
@@ -244,10 +239,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               </Box>
             </Grid>
             <Grid item xs={2}>
-              <Box sx={DetailPageStyles(theme.palette.background.paper, 'center', 1.5, '1.2em', true, false)}>Optional</Box>
+              <Box sx={Style2}>Optional</Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={DetailPageStyles('grey', 'center', 1, '16px', false, true)}>
+              <Box sx={{ ...Style1, padding: 1 }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
