@@ -88,3 +88,7 @@ export const removeUsersFromList = (currentUsers: UserWithId[], usersToRemove: U
   const userIdsToRemove = usersToRemove.map((user) => user.userId);
   return currentUsers.filter((user) => !userIdsToRemove.includes(user.userId));
 };
+
+export type submitText = 'Submit' | 'Save' | 'Create' | 'Yes' | 'Delete' | 'Schedule' | 'Send To Advisor' | 'Submit to SABO';
+
+export type cancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';
