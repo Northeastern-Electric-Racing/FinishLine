@@ -2,12 +2,14 @@ import {
   DescriptionBullet,
   Link,
   Project,
+  ProjectProposedChanges,
   ProjectProposedChangesPreview,
   TeamPreview,
   User,
   WbsElementStatus,
   WbsNumber,
   WorkPackage,
+  WorkPackageProposedChanges,
   WorkPackageProposedChangesPreview,
   WorkPackageStage,
   wbsPipe
@@ -163,4 +165,42 @@ export const workPackageToProposedChangesPreview = (
     expectedActivities: workPackage.expectedActivities,
     deliverables: workPackage.deliverables
   };
+};
+
+export const projectProposedChangesToPreview = (
+  proposedChanges: ProjectProposedChanges | undefined
+): ProjectProposedChangesPreview | undefined => {
+  return (
+    proposedChanges && {
+      name: proposedChanges.name,
+      summary: proposedChanges.summary,
+      lead: proposedChanges.lead,
+      manager: proposedChanges.manager,
+      teams: proposedChanges.teams,
+      budget: proposedChanges.budget,
+      goals: proposedChanges.goals,
+      features: proposedChanges.features,
+      rules: proposedChanges.rules,
+      otherConstraints: proposedChanges.otherConstraints,
+      links: proposedChanges.links
+    }
+  );
+};
+
+export const workPackageProposedChangesToPreview = (
+  proposedChanges: WorkPackageProposedChanges | undefined
+): WorkPackageProposedChangesPreview | undefined => {
+  return (
+    proposedChanges && {
+      name: proposedChanges.name,
+      stage: proposedChanges.stage,
+      lead: proposedChanges.lead,
+      manager: proposedChanges.manager,
+      startDate: proposedChanges.startDate,
+      duration: proposedChanges.duration,
+      blockedBy: proposedChanges.blockedBy,
+      expectedActivities: proposedChanges.expectedActivities,
+      deliverables: proposedChanges.deliverables
+    }
+  );
 };
