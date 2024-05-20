@@ -30,8 +30,6 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import { routes } from '../../../utils/routes';
 import NERModal from '../../../components/NERModal';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { borderRadius, fontSize, textAlign } from '@mui/system';
-import { Style } from '@mui/icons-material';
 
 export interface DesignReviewEditData {
   requiredUserIds: number[];
