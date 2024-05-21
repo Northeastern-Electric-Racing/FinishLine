@@ -106,11 +106,11 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   };
 
   const DateField = () => {
-    return <DatePicker value={date} onChange={handleDateChange} sx={Style1} />;
+    return <DatePicker value={date} onChange={handleDateChange} sx={EditableFieldStyle} />;
   };
 
   // styling for the editable fields at the top of the page with light grey backgrounds
-  const Style1 = {
+  const EditableFieldStyle = {
     fontSize: '16px',
     backgroundColor: 'grey',
     borderRadius: 3,
@@ -120,7 +120,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   };
 
   // styling for the non-editable fields at the top of the page with dark backgrounds
-  const Style2 = {
+  const NonEditableFieldStyle = {
     padding: 1.5,
     paddingTop: 1.5,
     paddingBottom: 1.5,
@@ -149,10 +149,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       <DeleteModal />
       <Grid container spacing={3} display={'flex'} paddingBottom={2}>
         <Grid item xs={1}>
-          <Box sx={Style2}>Name</Box>
+          <Box sx={NonEditableFieldStyle}>Name</Box>
         </Grid>
         <Grid item xs={6}>
-          <Box sx={{ ...Style2, textDecoration: 'none' }}>{designReviewNamePipe(designReview)}</Box>
+          <Box sx={{ ...NonEditableFieldStyle, textDecoration: 'none' }}>{designReviewNamePipe(designReview)}</Box>
         </Grid>
         <Grid item xs={2}>
           <DateField />
@@ -166,7 +166,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
             size={'small'}
             placeholder={'Start Time'}
-            sx={Style1}
+            sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {
               return (
@@ -187,7 +187,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
             placeholder={'End Time'}
-            sx={Style1}
+            sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {
               return (
@@ -201,10 +201,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         <Grid item xs={12}>
           <Grid container spacing={2}>
             <Grid item xs={2}>
-              <Box sx={Style2}>Required</Box>
+              <Box sx={NonEditableFieldStyle}>Required</Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ ...Style1, padding: 1 }}>
+              <Box sx={{ ...EditableFieldStyle, padding: 1 }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
@@ -239,10 +239,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               </Box>
             </Grid>
             <Grid item xs={2}>
-              <Box sx={Style2}>Optional</Box>
+              <Box sx={NonEditableFieldStyle}>Optional</Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ ...Style1, padding: 1 }}>
+              <Box sx={{ ...EditableFieldStyle, padding: 1 }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
