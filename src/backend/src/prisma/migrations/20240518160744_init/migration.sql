@@ -596,7 +596,7 @@ CREATE TABLE "Work_Package_Template" (
     "workPackageName" TEXT,
     "stage" "Work_Package_Stage",
     "duration" INTEGER,
-    "dateCreated" TIMESTAMP(3) NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userCreatedId" INTEGER NOT NULL,
     "dateDeleted" TIMESTAMP(3),
     "userDeletedId" INTEGER,
