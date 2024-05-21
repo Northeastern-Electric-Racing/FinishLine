@@ -109,6 +109,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     return <DatePicker value={date} onChange={handleDateChange} sx={Style1} />;
   };
 
+  // styling for the editable fields at the top of the page with light grey backgrounds
   const Style1 = {
     fontSize: '16px',
     backgroundColor: 'grey',
@@ -118,6 +119,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     width: '100%'
   };
 
+  // styling for the non-editable fields at the top of the page with dark backgrounds
   const Style2 = {
     padding: 1.5,
     paddingTop: 1.5,
