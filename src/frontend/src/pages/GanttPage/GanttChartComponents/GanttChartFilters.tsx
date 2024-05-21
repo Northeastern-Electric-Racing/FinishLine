@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button, Checkbox, Chip, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Checkbox, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -53,12 +53,11 @@ const FilterRow = ({
     checkedMap[button.filterLabel] = button.defaultChecked;
   });
   return (
-    <Grid item container xs={12}>
+    <Box width={label === 'Team' ? '60%' : undefined}>
       <Typography variant="h6" component="label" textAlign="right">
         {label}
       </Typography>
-
-      <Grid container item xs={12} sx={{ display: 'flex', alignItems: 'cenƒter' }}>
+      <Box display={'flex'} flexDirection={label === 'Team' ? undefined : 'column'} flexWrap={'wrap'}>
         {buttons.map((button) => (
           <FilterChipButton
             buttonText={button.filterLabel}
@@ -67,8 +66,8 @@ const FilterRow = ({
             checked={checkedMap[button.filterLabel]}
           />
         ))}
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 
@@ -101,49 +100,59 @@ const GanttChartFilters = ({
 }: GanttChartFiltersProps) => {
   const FilterButtons = () => {
     return (
-      <Grid item container xs={12} sx={{ justifyContent: 'center', alignItems: 'right', gap: 4 }}>
-        <Grid item>
-          <Button onClick={expandHandler} startIcon={<UnfoldMoreIcon />}>
-            Expand
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button onClick={collapseHandler} startIcon={<UnfoldLessIcon />}>
-            Collapse
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button onClick={resetHandler} startIcon={<RestartAltIcon />}>
-            Reset
-          </Button>
-        </Grid>
-      </Grid>
+      <Box display={'flex'} flexDirection={'column'} alignItems={'center'} mt={-1} mb={1}>
+        <IconButton onClick={expandHandler}>
+          <UnfoldMoreIcon sx={{ color: '#ef4345' }} />
+        </IconButton>
+        <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
+          Expand
+        </Typography>
+        <IconButton onClick={collapseHandler}>
+          <UnfoldLessIcon sx={{ color: '#ef4345' }} />
+        </IconButton>
+        <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
+          Collapse
+        </Typography>
+        <IconButton onClick={resetHandler}>
+          <RestartAltIcon sx={{ color: '#ef4345' }} />
+        </IconButton>
+        <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
+          Reset
+        </Typography>
+        <Checkbox
+          onChange={overdueHandler[0].handler}
+          sx={{
+            '&:hover': {
+              backgroundColor: 'transparent'
+            },
+            color: '#ef4345'
+          }}
+          defaultChecked={overdueHandler[0].defaultChecked}
+          checked={overdueHandler[0].defaultChecked}
+        />
+        <Typography fontSize={'10px'} sx={{ color: '#ef4345' }}>
+          Overdue
+        </Typography>
+      </Box>
     );
   };
 
   return (
-    <Grid>
-      <Grid item px={2} pt={1}>
-        <FilterButtons />
-      </Grid>
-      <Grid
-        container
-        rowSpacing={2}
-        sx={{
-          justifyContent: 'start',
-          alignItems: 'start',
-          padding: 2,
-          paddingX: 4,
-          minWidth: { xs: '100%', md: '30rem' },
-          maxWidth: { xs: '100%', md: '30rem' }
-        }}
-      >
-        <FilterRow label="Car" buttons={carHandlers} />
-        <FilterRow label="Subteam" buttons={teamTypeHandlers} />
-        <FilterRow label="Team" buttons={teamHandlers} />
-        <FilterRow label="Overdue" buttons={overdueHandler} />
-      </Grid>
-    </Grid>
+    <Box
+      display={'flex'}
+      sx={{
+        justifyContent: 'start',
+        alignItems: 'start',
+        paddingLeft: 2,
+        paddingTop: 2,
+        maxWidth: '45rem'
+      }}
+    >
+      <FilterRow label="Car" buttons={carHandlers} />
+      <FilterRow label="Subteam" buttons={teamTypeHandlers} />
+      <FilterRow label="Team" buttons={teamHandlers} />
+      <FilterButtons />
+    </Box>
   );
 };
 

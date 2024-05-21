@@ -6,13 +6,16 @@
 import AppContextAuth from './AppContextAuth';
 import AppContextQuery from './AppContextQuery';
 import AppContextTheme from './AppContextTheme';
+import AppContextOrganization from './AppOrganizationContext';
 
 const AppContext: React.FC = (props) => {
   return (
     <AppContextQuery>
-      <AppContextAuth>
-        <AppContextTheme>{props.children}</AppContextTheme>
-      </AppContextAuth>
+      <AppContextOrganization>
+        <AppContextAuth>
+          <AppContextTheme>{props.children}</AppContextTheme>
+        </AppContextAuth>
+      </AppContextOrganization>
     </AppContextQuery>
   );
 };
