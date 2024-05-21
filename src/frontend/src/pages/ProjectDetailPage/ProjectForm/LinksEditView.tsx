@@ -8,7 +8,7 @@ import { getRequiredLinkTypeNames } from '../../../utils/link.utils';
 import { ProjectFormInput } from './ProjectForm';
 import { Box } from '@mui/system';
 import { NERButton } from '../../../components/NERButton';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
@@ -19,20 +19,21 @@ const LinksEditView: React.FC<{
 }> = ({ ls, register, append, remove, watch }) => {
   const { isLoading, isError, error, data: linkTypes } = useAllLinkTypes();
 
+  const requiredLinkTypeNames = useMemo(() => {
+    return linkTypes ? getRequiredLinkTypeNames(linkTypes) : [];
+  }, [linkTypes]);
+
+  const links = watch('links');
+
   useEffect(() => {
     requiredLinkTypeNames.forEach((linkTypeName) => {
       if (links.some((link) => link.linkTypeName === linkTypeName)) return;
       append({ linkId: '-1', url: '', linkTypeName });
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [linkTypes]);
+  }, [append, linkTypes, links, requiredLinkTypeNames]);
 
   if (isLoading || !linkTypes) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
-
-  const requiredLinkTypeNames = getRequiredLinkTypeNames(linkTypes);
-
-  const links = watch('links');
 
   const currentLinkTypeNames = links.map((link) => link.linkTypeName);
 

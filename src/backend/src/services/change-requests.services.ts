@@ -201,30 +201,31 @@ export default class ChangeRequestsService {
                   linkId: link.linkId
                 }))
               },
-              projectProposedChanges: projectProposedChanges
-                ? {
-                    create: {
-                      budget: associatedProject!.budget,
-                      summary: associatedProject!.summary,
-                      rules: associatedProject!.rules,
-                      goals: {
-                        connect: associatedProject!.goals.map((goal) => ({ descriptionId: goal.descriptionId }))
-                      },
-                      features: {
-                        connect: associatedProject!.features.map((feature) => ({ descriptionId: feature.descriptionId }))
-                      },
-                      otherConstraints: {
-                        connect: associatedProject!.otherConstraints.map((constraint) => ({
-                          descriptionId: constraint.descriptionId
-                        }))
-                      },
-                      teams: {
-                        connect: associatedProject!.teams.map((team) => ({ teamId: team.teamId }))
-                      },
-                      carNumber: associatedProject!.wbsElement.carNumber
+              projectProposedChanges:
+                projectProposedChanges && associatedProject
+                  ? {
+                      create: {
+                        budget: associatedProject.budget,
+                        summary: associatedProject.summary,
+                        rules: associatedProject.rules,
+                        goals: {
+                          connect: associatedProject.goals.map((goal) => ({ descriptionId: goal.descriptionId }))
+                        },
+                        features: {
+                          connect: associatedProject.features.map((feature) => ({ descriptionId: feature.descriptionId }))
+                        },
+                        otherConstraints: {
+                          connect: associatedProject.otherConstraints.map((constraint) => ({
+                            descriptionId: constraint.descriptionId
+                          }))
+                        },
+                        teams: {
+                          connect: associatedProject.teams.map((team) => ({ teamId: team.teamId }))
+                        },
+                        carNumber: associatedProject.wbsElement.carNumber
+                      }
                     }
-                  }
-                : undefined,
+                  : undefined,
               workPackageProposedChanges:
                 workPackageProposedChanges && associatedWorkPackage
                   ? {
