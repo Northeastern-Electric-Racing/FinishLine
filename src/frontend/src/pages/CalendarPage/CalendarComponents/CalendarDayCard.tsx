@@ -165,7 +165,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   };
 
   return (
-    <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, minHeight: 90, maxHeight: 90 }}>
+    <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
       <DesignReviewCreateModal
         showModal={isCreateModalOpen}
         handleClose={() => {
