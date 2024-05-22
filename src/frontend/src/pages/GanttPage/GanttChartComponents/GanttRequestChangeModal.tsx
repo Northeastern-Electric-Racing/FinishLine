@@ -10,13 +10,13 @@ import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { NERDraggableForm } from '../../../components/NERDraggableForm';
 
-interface GanttRequestChangeFormProps {
+interface GanttRequestChangeModalProps {
   change: RequestEventChange;
   handleClose: () => void;
   open: boolean;
 }
 
-export const GanttRequestChangeForm = ({ change, handleClose, open }: GanttRequestChangeFormProps) => {
+export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequestChangeModalProps) => {
   const toast = useToast();
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
   const [explanationForChange, setExplanationForChange] = useState('');

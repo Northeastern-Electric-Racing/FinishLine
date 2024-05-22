@@ -4,14 +4,14 @@ import NERSuccessButton from './NERSuccessButton';
 import Draggable from 'react-draggable';
 import CloseIcon from '@mui/icons-material/Close';
 import { ReactNode } from 'react';
-import { cancelText, submitText } from '../../../backend/src/utils/teams.utils';
+import { CancelText, SubmitText } from '../utils/teams.utils';
 
 interface NERDraggableFormProps {
   open: boolean;
   title: string;
   children?: ReactNode;
-  cancelText?: cancelText;
-  submitText?: submitText;
+  cancelText?: CancelText;
+  submitText?: SubmitText;
   formId?: string;
   disableSuccessButton?: boolean;
   showCloseButton?: boolean;
@@ -27,9 +27,9 @@ export const NERDraggableForm = ({
   cancelText,
   submitText,
   formId,
-  disableSuccessButton,
-  showCloseButton,
-  hideFormButtons,
+  disableSuccessButton = false,
+  showCloseButton = false,
+  hideFormButtons = false,
   handleSubmit,
   onHide
 }: NERDraggableFormProps) => {
