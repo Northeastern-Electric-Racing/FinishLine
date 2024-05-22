@@ -267,7 +267,7 @@ export const validateProposedChangesFields = async (
  */
 export const validateNoUnreviewedOpenCRs = async (wbsElemId: number) => {
   const openCRs = await prisma.change_Request.findMany({
-    where: { wbsElementId: wbsElemId, dateReviewed: null }
+    where: { wbsElementId: wbsElemId, dateReviewed: null, dateDeleted: null }
   });
   if (openCRs.length > 1)
     throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
