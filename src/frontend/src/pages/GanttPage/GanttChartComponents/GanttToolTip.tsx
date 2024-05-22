@@ -12,16 +12,9 @@ interface GanttToolTipProps {
   manager?: User;
 }
 
-const GanttToolTip: React.FC<GanttToolTipProps> = ({
-  yCoordinate,
-  title,
-  startDate,
-  endDate,
-  lead,
-  manager
-}) => {
+const GanttToolTip: React.FC<GanttToolTipProps> = ({ yCoordinate, title, startDate, endDate, lead, manager }) => {
   const theme = useTheme();
-  const xCoordinate = window.innerWidth - 375 - 35; 
+  const xCoordinate = window.innerWidth - 375 - 35;
   return (
     <Box
       style={{
