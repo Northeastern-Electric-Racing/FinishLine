@@ -3,7 +3,6 @@ import { User } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 
 interface GanttToolTipProps {
-  xCoordinate: number;
   yCoordinate: number;
   title: string;
   startDate: Date;
@@ -14,7 +13,6 @@ interface GanttToolTipProps {
 }
 
 const GanttToolTip: React.FC<GanttToolTipProps> = ({
-  xCoordinate,
   yCoordinate,
   title,
   startDate,
@@ -23,17 +21,15 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
   manager
 }) => {
   const theme = useTheme();
-  const maxWidth = window.innerWidth;
-  const tooltipWidth = 375;
-  const adjustedX = Math.min(xCoordinate, maxWidth - tooltipWidth);
+  const xCoordinate = window.innerWidth - 375 - 35; 
   return (
     <Box
       style={{
         position: 'fixed',
-        left: `${adjustedX}px`,
+        left: `${xCoordinate}px`,
         top: `${yCoordinate + 20}px`,
         zIndex: 4,
-        width: tooltipWidth
+        width: 375
       }}
     >
       <Box color={'white'}>

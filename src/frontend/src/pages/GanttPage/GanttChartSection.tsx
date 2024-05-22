@@ -7,7 +7,7 @@ import { eachDayOfInterval, isMonday } from 'date-fns';
 import { EventChange, GanttTaskData, RequestEventChange } from '../../utils/gantt.utils';
 import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
-import { useEffect, useState } from 'react';
+import { SetStateAction, useState } from 'react';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 
 interface GanttChartSectionProps {
@@ -33,31 +33,19 @@ const GanttChartSection = ({
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [cursorY, setCursorY] = useState<number>(0);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
 
   const handleOnMouseOver = (e: React.MouseEvent, event: GanttTaskData) => {
     if (!isEditMode) {
       setCurrentTask(event);
+      setCursorY(e.clientY);
     }
   };
 
   const handleOnMouseLeave = () => {
     setCurrentTask(undefined);
   };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    setCursorPosition({ x: e.clientX, y: e.clientY });
-  };
-
-  useEffect(() => {
-    if (!isEditMode) {
-      window.addEventListener('mousemove', handleMouseMove);
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, [isEditMode]);
 
   const toggleWorkPackages = (projectTask: GanttTaskData) => {
     setShowWorkPackagesMap((prev) => new Map(prev.set(projectTask.id, !prev.get(projectTask.id))));
@@ -106,8 +94,7 @@ const GanttChartSection = ({
       </Box>
       {currentTask && (
         <GanttToolTip
-          xCoordinate={cursorPosition.x}
-          yCoordinate={cursorPosition.y}
+          yCoordinate={cursorY}
           title={!currentTask.project ? currentTask.name.substring(8) : currentTask.name.substring(6)}
           startDate={currentTask.start}
           endDate={currentTask.end}

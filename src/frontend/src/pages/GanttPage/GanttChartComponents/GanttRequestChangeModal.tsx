@@ -8,7 +8,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
-import { NERDraggableForm } from '../../../components/NERDraggableForm';
+import { NERDraggableFormModal } from '../../../components/NERDraggableFormModal';
 
 interface GanttRequestChangeModalProps {
   change: RequestEventChange;
@@ -86,7 +86,7 @@ export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequ
   };
 
   return (
-    <NERDraggableForm
+    <NERDraggableFormModal
       open={open}
       title={change.name}
       disableSuccessButton={!reasonForChange || !explanationForChange}
@@ -117,6 +117,6 @@ export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequ
           />
         </Box>
       </Box>
-    </NERDraggableForm>
+    </NERDraggableFormModal>
   );
 };

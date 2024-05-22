@@ -6,7 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { ReactNode } from 'react';
 import { CancelText, SubmitText } from '../utils/teams.utils';
 
-interface NERDraggableFormProps {
+interface NERDraggableFormModalModalProps {
   open: boolean;
   title: string;
   children?: ReactNode;
@@ -20,7 +20,7 @@ interface NERDraggableFormProps {
   onHide: () => void;
 }
 
-export const NERDraggableForm = ({
+export const NERDraggableFormModal = ({
   open,
   title,
   children,
@@ -32,7 +32,7 @@ export const NERDraggableForm = ({
   hideFormButtons = false,
   handleSubmit,
   onHide
-}: NERDraggableFormProps) => {
+}: NERDraggableFormModalModalProps) => {
   const theme = useTheme();
 
   return (
