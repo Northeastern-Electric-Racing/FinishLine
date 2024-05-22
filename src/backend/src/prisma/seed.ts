@@ -41,6 +41,7 @@ import DesignReviewsService from '../services/design-reviews.services';
 import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
+import WorkPackagesService from '../services/work-packages.services';
 
 const prisma = new PrismaClient();
 
@@ -278,6 +279,7 @@ const performSeed: () => Promise<void> = async () => {
   /** If the .env file exists, set the FINANCE_TEAM_ID */
   if (currentEnv) {
     currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
+    currentEnv.DEV_ORGANIZATION_ID = organizationId;
 
     /** Write the new .env file */
     let stringifiedEnv = '';
@@ -1923,6 +1925,42 @@ const performSeed: () => Promise<void> = async () => {
       descriptionBullets: [],
       links: []
     }
+  );
+
+  const workPackageTemplate1 = await WorkPackagesService.createWorkPackageTemplate(
+    batman,
+    'Batmobile Config 1',
+    'This is the first Batmobile configuration',
+    null,
+    null,
+    5,
+    [],
+    [],
+    organizationId
+  );
+
+  const schematicWpTemplate = await WorkPackagesService.createWorkPackageTemplate(
+    batman,
+    'Schematic',
+    'This is the schematic template',
+    null,
+    WorkPackageStage.Design,
+    4,
+    [],
+    [],
+    organizationId
+  );
+
+  const layoutWpTemplate = await WorkPackagesService.createWorkPackageTemplate(
+    batman,
+    'Layout ',
+    'This is the Layout  template',
+    null,
+    WorkPackageStage.Design,
+    4,
+    [],
+    [schematicWpTemplate.workPackageTemplateId],
+    organizationId
   );
 };
 
