@@ -35,6 +35,7 @@ workPackagesRouter.post(
   validateInputs,
   WorkPackagesController.createWorkPackage
 );
+
 workPackagesRouter.post(
   '/edit',
   intMinZero(body('workPackageId')),
