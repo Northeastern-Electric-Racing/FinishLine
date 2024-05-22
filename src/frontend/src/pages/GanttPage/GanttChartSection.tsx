@@ -7,7 +7,7 @@ import { eachDayOfInterval, isMonday } from 'date-fns';
 import { EventChange, GanttTaskData, RequestEventChange } from '../../utils/gantt.utils';
 import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 
 interface GanttChartSectionProps {
@@ -34,7 +34,6 @@ const GanttChartSection = ({
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
   const [cursorY, setCursorY] = useState<number>(0);
-  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
 
   const handleOnMouseOver = (e: React.MouseEvent, event: GanttTaskData) => {
     if (!isEditMode) {
