@@ -106,7 +106,6 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
       <BomStyledDataGrid
         onColumnVisibilityModelChange={(model: GridColumnVisibilityModel) => {
           //store a state inside a parent array (array in a parent class), and then every time the state changes, update the parent state, add another part that, on reload, we check the parent state and update the child state
-          console.log(columns);
           const tempColumns: boolean[] = [];
           Object.keys(model).forEach((toDelete) => {
             tempColumns.push(!model[toDelete]);
