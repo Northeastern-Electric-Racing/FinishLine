@@ -139,7 +139,6 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
 
   const tabs = [{ label: 'My Refunds', value: 0 }];
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Refunds', value: 1 });
-  if (user.isFinance) tabs.push({ label: 'All Club Refunds', value: 1 });
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
