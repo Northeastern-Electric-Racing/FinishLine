@@ -198,9 +198,16 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
-              Links
+              {!!project ? 'Links' : 'Links (optional)'}
             </Typography>
-            <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
+            <LinksEditView
+              watch={watch}
+              ls={links}
+              register={register}
+              append={appendLink}
+              remove={removeLink}
+              enforceRequired={!!project}
+            />
           </Box>
           <Box>
             <Typography variant="h5">{!project ? 'Goals (optional)' : 'Goals'}</Typography>

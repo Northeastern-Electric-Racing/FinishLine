@@ -16,7 +16,8 @@ const LinksEditView: React.FC<{
   watch: UseFormWatch<ProjectFormInput>;
   append: UseFieldArrayAppend<ProjectFormInput, 'links'>;
   remove: UseFieldArrayRemove;
-}> = ({ ls, register, append, remove, watch }) => {
+  enforceRequired?: boolean;
+}> = ({ ls, register, append, remove, watch, enforceRequired }) => {
   const { isLoading, isError, error, data: linkTypes } = useAllLinkTypes();
 
   const requiredLinkTypeNames = useMemo(() => {
@@ -26,11 +27,13 @@ const LinksEditView: React.FC<{
   const links = watch('links');
 
   useEffect(() => {
-    requiredLinkTypeNames.forEach((linkTypeName) => {
-      if (links.some((link) => link.linkTypeName === linkTypeName)) return;
-      append({ linkId: '-1', url: '', linkTypeName });
-    });
-  }, [append, linkTypes, links, requiredLinkTypeNames]);
+    if (enforceRequired) {
+      requiredLinkTypeNames.forEach((linkTypeName) => {
+        if (links.some((link) => link.linkTypeName === linkTypeName)) return;
+        append({ linkId: '-1', url: '', linkTypeName });
+      });
+    }
+  }, [append, enforceRequired, linkTypes, links, requiredLinkTypeNames]);
 
   if (isLoading || !linkTypes) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -55,7 +58,7 @@ const LinksEditView: React.FC<{
             <Select
               {...register(`links.${i}.linkTypeName`, { required: true })}
               sx={{ minWidth: '200px', mr: '5px' }}
-              disabled={isRequired(i)}
+              disabled={enforceRequired && isRequired(i)}
               value={watch(`links.${i}.linkTypeName`)}
             >
               {linkTypes.map((linkType) => (
@@ -66,7 +69,7 @@ const LinksEditView: React.FC<{
             </Select>
             <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
             <Box sx={{ minWidth: '56px', height: '40px' }}>
-              {!isRequired(i) && (
+              {(!enforceRequired || !isRequired(i)) && (
                 <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
                   <DeleteIcon />
                 </IconButton>
