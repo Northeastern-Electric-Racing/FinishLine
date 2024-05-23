@@ -46,6 +46,7 @@ import {
 import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 import { validateBlockedBys } from '../utils/projects.utils';
 import scopeChangeRequestQueryArgs from '../prisma-query-args/scope-change-requests.query-args';
+import projectQueryArgs from '../prisma-query-args/projects.query-args';
 
 export default class ChangeRequestsService {
   /**
@@ -102,7 +103,7 @@ export default class ChangeRequestsService {
         activationChangeRequest: true,
         scopeChangeRequest: scopeChangeRequestQueryArgs,
         wbsElement: {
-          include: { workPackage: workPackageQueryArgs, project: true, links: true }
+          include: { workPackage: workPackageQueryArgs, project: projectQueryArgs, links: true }
         }
       }
     });
@@ -208,16 +209,10 @@ export default class ChangeRequestsService {
                         budget: associatedProject.budget,
                         summary: associatedProject.summary,
                         rules: associatedProject.rules,
-                        goals: {
-                          connect: associatedProject.goals.map((goal) => ({ descriptionId: goal.descriptionId }))
-                        },
-                        features: {
-                          connect: associatedProject.features.map((feature) => ({ descriptionId: feature.descriptionId }))
-                        },
+                        goals: { create: associatedProject.goals.map((goal) => ({ detail: goal.detail })) },
+                        features: { create: associatedProject.features.map((feature) => ({ detail: feature.detail })) },
                         otherConstraints: {
-                          connect: associatedProject.otherConstraints.map((constraint) => ({
-                            descriptionId: constraint.descriptionId
-                          }))
+                          create: associatedProject.otherConstraints.map((constraint) => ({ detail: constraint.detail }))
                         },
                         teams: {
                           connect: associatedProject.teams.map((team) => ({ teamId: team.teamId }))
