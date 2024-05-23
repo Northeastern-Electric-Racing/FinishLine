@@ -209,10 +209,14 @@ export default class ChangeRequestsService {
                         budget: associatedProject.budget,
                         summary: associatedProject.summary,
                         rules: associatedProject.rules,
-                        goals: { create: associatedProject.goals.map((goal) => ({ detail: goal.detail })) },
-                        features: { create: associatedProject.features.map((feature) => ({ detail: feature.detail })) },
+                        goals: { connect: associatedProject.goals.map((goal) => ({ descriptionId: goal.descriptionId })) },
+                        features: {
+                          connect: associatedProject.features.map((feature) => ({ descriptionId: feature.descriptionId }))
+                        },
                         otherConstraints: {
-                          create: associatedProject.otherConstraints.map((constraint) => ({ detail: constraint.detail }))
+                          connect: associatedProject.otherConstraints.map((constraint) => ({
+                            descriptionId: constraint.descriptionId
+                          }))
                         },
                         teams: {
                           connect: associatedProject.teams.map((team) => ({ teamId: team.teamId }))
