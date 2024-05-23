@@ -42,7 +42,6 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
   const materialsWithAssemblies: BomRow[] = [];
 
   assemblies.forEach((assembly) => {
-    console.log(assembly);
     const assemblyMaterials = materials.filter((material) => material.assemblyId === assembly.assemblyId);
     materialsWithAssemblies.push({
       id: `assembly-${assembly.name}`,
