@@ -75,6 +75,37 @@ export default class WorkPackagesController {
     }
   }
 
+  // Create a work package template with the given details
+  static async createWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { templateName, templateNotes, workPackageName, duration, descriptionBullets, blockedBy } = req.body;
+
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.createWorkPackageTemplate(
+        user,
+        templateName,
+        templateNotes,
+        workPackageName,
+        stage,
+        duration,
+        descriptionBullets,
+        blockedBy,
+        organizationId
+      );
+
+      res.status(200).json(workPackageTemplate);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
