@@ -1,4 +1,4 @@
-import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField } from '@mui/material';
+import { FormControl, FormHelperText, FormLabel, Grid, InputAdornment, MenuItem, TextField, Tooltip } from '@mui/material';
 import { Box } from '@mui/system';
 import { Control, Controller, FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Assembly, Manufacturer, MaterialType, Unit } from 'shared';
@@ -9,6 +9,9 @@ import DetailDisplay from '../../../../../components/DetailDisplay';
 import NERAutocomplete from '../../../../../components/NERAutocomplete';
 import { NERButton } from '../../../../../components/NERButton';
 import AddIcon from '@mui/icons-material/Add';
+import HelpIcon from '@mui/icons-material/Help';
+import { displayEnum } from '../../../../../utils/pipes';
+import { MaterialStatus } from 'shared';
 
 export interface MaterialFormViewProps {
   submitText: 'Add' | 'Edit';
@@ -87,9 +90,15 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
               defaultValue={control._defaultValues.status}
               render={({ field }) => (
                 <TextField {...field} select variant="outlined" error={!!errors.status} helperText={errors.status?.message}>
-                  {['ORDERED', 'UNORDERED', 'SHIPPED', 'RECEIVED'].map((status) => (
+                  {[
+                    MaterialStatus.Ordered,
+                    MaterialStatus.Received,
+                    MaterialStatus.Shipped,
+                    MaterialStatus.NotReadyToOrder,
+                    MaterialStatus.ReadyToOrder
+                  ].map((status) => (
                     <MenuItem key={status} value={status}>
-                      {status}
+                      {status ? displayEnum(status) : ''}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -124,7 +133,16 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer</FormLabel>
+            <FormLabel>
+              Manufacturer
+              <Tooltip
+                title={'Make sure not to enter the distributor (e.g. Amazon)'}
+                style={{ marginRight: '2px' }}
+                placement="right"
+              >
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
+            </FormLabel>
             <Controller
               name="manufacturerName"
               control={control}
@@ -171,7 +189,12 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>Manufacturer Part Number</FormLabel>
+            <FormLabel>
+              Manufacturer Part Number
+              <Tooltip title={"Enter 'N/A' if no Manufacturer Part Number"} placement="right" style={{ marginRight: '2px' }}>
+                <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
+              </Tooltip>
+            </FormLabel>
             <ReactHookTextField
               name="manufacturerPartNumber"
               control={control}
@@ -232,7 +255,7 @@ const MaterialFormView: React.FC<MaterialFormViewProps> = ({
         </Grid>
         <Grid item xs={3}>
           <FormControl fullWidth>
-            <FormLabel>Price</FormLabel>
+            <FormLabel style={{ whiteSpace: 'normal' }}>Price per Unit</FormLabel>
             <Controller
               name={`price`}
               control={control}

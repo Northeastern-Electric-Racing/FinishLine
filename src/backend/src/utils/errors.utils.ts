@@ -17,6 +17,16 @@ export class HttpException extends Error {
   }
 }
 
+export class InvalidOrganizationException extends HttpException {
+  /**
+   * Constructs an invalid organization error
+   * @param item the name of the object that has an invalid organization
+   */
+  constructor(item: ExceptionObjectNames) {
+    super(400, `${item} does not exist in current organization!`);
+  }
+}
+
 export class DeletedException extends HttpException {
   /**
    * Constructs a deleted error
@@ -96,7 +106,7 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req: Request,
 };
 
 // type so that the not found error messages are consistent
-type ExceptionObjectNames =
+export type ExceptionObjectNames =
   | 'User'
   | 'Work Package'
   | 'Project'
@@ -108,7 +118,7 @@ type ExceptionObjectNames =
   | 'User Settings'
   | 'Task'
   | 'Vendor'
-  | 'Expense Type'
+  | 'Account Code'
   | 'Reimbursement Request'
   | 'Reimbursement'
   | 'User Secure Settings'
@@ -122,4 +132,8 @@ type ExceptionObjectNames =
   | 'Material'
   | 'Link Type'
   | 'Design Review'
-  | 'Team Type';
+  | 'Team Type'
+  | 'Work Package Template'
+  | 'Description Bullet Type'
+  | 'Organization'
+  | 'Car';

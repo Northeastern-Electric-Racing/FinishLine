@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { ChangeRequest, ImplementedChange } from 'shared';
+import { ChangeRequest, ImplementedChange, StandardChangeRequest } from 'shared';
 
 /**
  * Transforms a change request to ensure deep field transformation of date objects.
@@ -16,7 +16,7 @@ interface MaybeActiveChangeRequest extends ChangeRequest {
   startDate?: Date;
 }
 
-export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
+export const changeRequestTransformer = (changeRequest: ChangeRequest | StandardChangeRequest) => {
   const data: MaybeActiveChangeRequest = {
     ...changeRequest,
     implementedChanges: changeRequest.implementedChanges?.map(implementedChangeTransformer),
@@ -28,6 +28,16 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
     data.startDate = new Date(data.startDate);
   }
   const output: ChangeRequest = data;
+
+  const workPackageProposedChanges = (changeRequest as StandardChangeRequest).workPackageProposedChanges;
+  if (workPackageProposedChanges && workPackageProposedChanges.startDate) {
+    const scopeOutput = {
+      ...data,
+      workPackageProposedChanges: { ...workPackageProposedChanges },
+      startDate: new Date(workPackageProposedChanges.startDate)
+    };
+    return scopeOutput;
+  }
   return output;
 };
 
@@ -37,7 +47,7 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest) => {
  * @param immplementedChange Incoming implemented change object supplied by the HTTP response.
  * @returns Properly transformed implemented change object.
  */
-export const implementedChangeTransformer = (implementedChange: ImplementedChange) => {
+export const implementedChangeTransformer = (implementedChange: ImplementedChange): ImplementedChange => {
   return {
     ...implementedChange,
     dateImplemented: new Date(implementedChange.dateImplemented)

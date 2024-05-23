@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { expenseTypePipe } from '../../../utils/pipes';
+import { accountCodePipe } from '../../../utils/pipes';
 import { Assignment, Edit } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -189,13 +189,13 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
             <VerticalDetailDisplay label="Purchased From" content={reimbursementRequest.vendor.name} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Sabo Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
+            <VerticalDetailDisplay label="SABO Number" content={`${undefinedPipe(reimbursementRequest.saboId)}`} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay label="Refund Source" content={codeAndRefundSourceName(reimbursementRequest.account)} />
           </Grid>
           <Grid item sm={6} xs={12}>
-            <VerticalDetailDisplay label="Expense Type" content={expenseTypePipe(reimbursementRequest.expenseType)} />
+            <VerticalDetailDisplay label="Expense Type" content={accountCodePipe(reimbursementRequest.accountCode)} />
           </Grid>
           <Grid item sm={6} xs={12}>
             <VerticalDetailDisplay
@@ -283,7 +283,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled: !!reimbursementRequest.dateDelivered
     },
     {
-      title: 'Add Sabo #',
+      title: 'Add SABO #',
       onClick: () => setAddSaboNumberModalShow(true),
       icon: <ConfirmationNumberIcon />,
       disabled: !user.isFinance
@@ -298,7 +298,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         isReimbursementRequestDenied(reimbursementRequest)
     },
     {
-      title: isSaboSubmitted ? 'Sabo Info' : 'Submit to Sabo',
+      title: isSaboSubmitted ? 'SABO Info' : 'Submit to SABO',
       onClick: () => setShowSubmitToSaboModal(true),
       icon: isSaboSubmitted ? <Assignment /> : <CheckIcon />,
       disabled: !user.isFinance
@@ -319,7 +319,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const recentStatus = statusTypes[statusTypes.length - 1];
   return (
     <PageLayout
-      title={`${fullNamePipe(reimbursementRequest.recipient)}'s Reimbursement Request`}
+      title={`Reimbursement Request #${reimbursementRequest.identifier} (${fullNamePipe(reimbursementRequest.recipient)})`}
       chips={
         <Box id="status" display="flex">
           {statusTypes.length > 0 && <ReimbursementRequestStatusPill status={recentStatus} />}

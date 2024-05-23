@@ -4,7 +4,7 @@
  */
 
 import { NERButton } from '../../components/NERButton';
-import { Box, Grid, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Grid, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useSlackUpcomingDeadlines } from '../../hooks/work-packages.hooks';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -44,7 +44,7 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom color={'red'} borderBottom={1} borderColor={'white'}>
+      <Typography variant="h5" gutterBottom color={'#ef4345'} borderBottom={1} borderColor={'white'}>
         Slack Upcoming Deadlines
       </Typography>
       <Grid container spacing={2} alignItems="center">
@@ -53,10 +53,10 @@ const AdminToolsSlackUpcomingDeadlines: React.FC = () => {
             <HelpIcon sx={{ mr: 2, height: 50 }} />
           </Tooltip>
           <DatePicker
-            inputFormat="yyyy-MM-dd"
+            format="yyyy-MM-dd"
             onChange={datePickerOnChange}
             value={deadline}
-            renderInput={(params) => <TextField autoComplete="off" {...params} />}
+            slotProps={{ textField: { autoComplete: 'off' } }}
           />
         </Grid>
         <Grid item>

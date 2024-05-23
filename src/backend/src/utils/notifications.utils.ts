@@ -10,7 +10,11 @@ export type TaskWithAssignees = Prisma_Task & {
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {
   // https://api.slack.com/reference/surfaces/formatting#mentioning-users
-  return users.map((user) => `<@${user.userSettings?.slackId}>`).join(' ');
+  return users.map(userToSlackPing).join(' ');
+};
+
+export const userToSlackPing = (user: UserWithSettings) => {
+  return `<@${user.userSettings?.slackId}>`;
 };
 
 /**

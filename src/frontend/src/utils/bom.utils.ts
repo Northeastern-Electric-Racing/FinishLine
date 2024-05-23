@@ -62,6 +62,10 @@ export const bomTableStyles = {
     },
     '.MuiDataGrid-columnHeader:focus-within': {
       outline: 'none'
+    },
+    '& .MuiDataGrid-columnHeaderTitle': {
+      whiteSpace: 'normal',
+      lineHeight: 'normal'
     }
   }
 };

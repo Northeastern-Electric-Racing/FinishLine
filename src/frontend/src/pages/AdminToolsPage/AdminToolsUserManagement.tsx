@@ -84,7 +84,7 @@ const AdminToolsUserManagement: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom borderBottom={1} color="red" borderColor={'white'} marginBottom={'20px'}>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'} marginBottom={'20px'}>
         Role Management
       </Typography>
       <Grid container spacing={2}>

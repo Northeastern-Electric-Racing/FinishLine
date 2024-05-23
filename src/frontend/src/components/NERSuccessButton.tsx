@@ -11,6 +11,6 @@ const NERSuccessButton = styled(Button)(({ theme }) => ({
   '&:hover': {
     backgroundColor: theme.palette.success.dark
   }
-}));
+})) as typeof Button;
 
 export default NERSuccessButton;

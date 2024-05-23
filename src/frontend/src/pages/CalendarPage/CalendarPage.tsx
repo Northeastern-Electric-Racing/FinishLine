@@ -3,13 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { DesignReview } from 'shared';
+import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
 import CalendarDayCard, { getTeamTypeIcon } from './CalendarComponents/CalendarDayCard';
 import FillerCalendarDayCard from './CalendarComponents/FillerCalendarDayCard';
-import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth, isConfirmed } from '../../utils/design-review.utils';
+import { DAY_NAMES, EnumToArray, calendarPaddingDays, daysInMonth } from '../../utils/design-review.utils';
 import ActionsMenu from '../../components/ActionsMenu';
 import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
 import ErrorPage from '../ErrorPage';
@@ -17,7 +17,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { datePipe } from '../../utils/pipes';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { DesignReviewAttendeeModal } from './DesignReviewAttendeeModal';
+import DRCSummaryModal from './DesignReviewSummaryModal';
 
 const CalendarPage = () => {
   const theme = useTheme();
@@ -32,11 +32,13 @@ const CalendarPage = () => {
   const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
   const user = useCurrentUser();
   const [unconfirmedDesignReview, setUnconfirmedDesignReview] = useState<DesignReview>();
+  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
+  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const confirmedDesignReviews = allDesignReviews.filter(isConfirmed);
+  const confirmedDesignReviews = allDesignReviews;
 
   const eventDict = new Map<string, DesignReview[]>();
   confirmedDesignReviews.sort((designReview1, designReview2) => {
@@ -59,8 +61,8 @@ const CalendarPage = () => {
     }
   });
 
-  const unconfirmedDesignReviews = allDesignReviews.filter(
-    (designReview) => designReview.userCreated.userId === user.userId && !isConfirmed(designReview)
+  const currentUserDesignReviews = allDesignReviews.filter(
+    (designReview) => designReview.userCreated.userId === user.userId && designReview.status !== DesignReviewStatus.DONE
   );
 
   const startOfEachWeek = [0, 7, 14, 21, 28, 35];
@@ -82,6 +84,16 @@ const CalendarPage = () => {
     });
   };
 
+  const NoDRSButton = () => {
+    return [
+      {
+        title: 'No Design Reviews',
+        disabled: true,
+        onClick: () => {}
+      }
+    ];
+  };
+
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
     .map(
       (day) =>
@@ -97,7 +109,10 @@ const CalendarPage = () => {
     .concat(paddingArrayEnd.length < 7 ? paddingArrayEnd : []);
 
   const unconfirmedDRSDropdown = (
-    <ActionsMenu title="My Unconfirmed DRS" buttons={designReviewButtons(unconfirmedDesignReviews)}>
+    <ActionsMenu
+      title="My Design Reviews"
+      buttons={currentUserDesignReviews.length === 0 ? NoDRSButton() : designReviewButtons(currentUserDesignReviews)}
+    >
       My Unconfirmed DRs
     </ActionsMenu>
   );
@@ -108,12 +123,13 @@ const CalendarPage = () => {
   return (
     <>
       {unconfirmedDesignReview && (
-        <DesignReviewAttendeeModal
+        <DRCSummaryModal
           open={!!unconfirmedDesignReview}
           onHide={() => {
             setUnconfirmedDesignReview(undefined);
           }}
           designReview={unconfirmedDesignReview as DesignReview}
+          teamTypes={allTeamTypes}
         />
       )}
       <PageLayout
@@ -129,7 +145,10 @@ const CalendarPage = () => {
           {EnumToArray(DAY_NAMES).map((day) => (
             <Grid item xs={12 / 7}>
               <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                {day}
+                {
+                  // Day of the week display based on current breakpoint
+                  isLargerView ? day : isExtraSmallView ? day.charAt(0) : day.substring(0, 3)
+                }
               </Typography>
             </Grid>
           ))}
@@ -142,7 +161,7 @@ const CalendarPage = () => {
                   const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
                   return (
                     <Grid item xs={12 / 7}>
-                      <Box marginLeft={1.5} marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
+                      <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
                         {isDayInDifferentMonth(day, week) ? (
                           <FillerCalendarDayCard day={day} />
                         ) : (

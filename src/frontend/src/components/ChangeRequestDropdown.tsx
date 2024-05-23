@@ -45,12 +45,10 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
 
   const filteredRequests = getFilteredChangeRequests(changeRequests, user);
 
-  const crIdToAutocompleteOption = (cr: ChangeRequest): { label: string; id: string } => ({
+  const approvedChangeRequestOptions = filteredRequests.map((cr) => ({
     label: `${cr.crId} - ${wbsPipe(cr.wbsNum)} - ${cr.submitter.firstName} ${cr.submitter.lastName} - ${cr.type}`,
     id: cr.crId.toString()
-  });
-
-  const approvedChangeRequestOptions = filteredRequests.map(crIdToAutocompleteOption);
+  }));
 
   return (
     <Box>
@@ -61,13 +59,13 @@ const ChangeRequestDropdown = ({ control, name, errors }: ChangeRequestDropdownP
           name={name}
           render={({ field: { onChange, value } }) => (
             <NERAutocomplete
-              id="cr-autocomplete"
+              sx={{ width: '100%' }}
+              id="change-request-id-autocomplete"
               onChange={(_event, newValue) => onChange(newValue ? newValue.id : '')}
               options={approvedChangeRequestOptions}
-              size={'small'}
-              placeholder={'Change Request ID'}
+              size="small"
+              placeholder="Change Request ID"
               value={approvedChangeRequestOptions.find((cr) => cr.id === value) || { id: '', label: '' }}
-              errorMessage={errors.crId}
             />
           )}
         />

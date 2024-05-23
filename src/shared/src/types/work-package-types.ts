@@ -3,6 +3,9 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { DescriptionBullet } from './project-types';
+import { User } from './user-types';
+
 export enum TimelineStatus {
   Ahead = 'AHEAD',
   OnTrack = 'ON_TRACK',
@@ -16,4 +19,26 @@ export enum WorkPackageStage {
   Manufacturing = 'MANUFACTURING',
   Install = 'INSTALL',
   Testing = 'TESTING'
+}
+
+export type WorkPackageTemplatePreview = Pick<
+  WorkPackageTemplate,
+  'workPackageTemplateId' | 'templateName' | 'stage' | 'templateNotes'
+>;
+
+export interface WorkPackageTemplate {
+  workPackageTemplateId: string;
+  templateName: string;
+  templateNotes: string;
+  workPackageName?: string;
+  stage?: WorkPackageStage;
+  duration?: number;
+  blockedBy: WorkPackageTemplatePreview[];
+  descriptionBullets: DescriptionBullet[];
+  dateCreated: Date;
+  userCreated: User;
+  userCreatedId: Number;
+  dateDeleted?: Date;
+  userDeleted?: User;
+  userDeletedId?: Number;
 }

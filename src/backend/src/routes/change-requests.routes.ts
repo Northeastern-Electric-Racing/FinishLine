@@ -2,8 +2,13 @@ import express from 'express';
 import { body } from 'express-validator';
 import { ChangeRequestReason, ChangeRequestType } from 'shared';
 import ChangeRequestsController from '../controllers/change-requests.controllers';
-import { validateInputs } from '../utils/utils';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import {
+  intMinZero,
+  nonEmptyString,
+  projectProposedChangesValidators,
+  validateInputs,
+  workPackageProposedChangesValidators
+} from '../utils/validation.utils';
 
 const changeRequestsRouter = express.Router();
 
@@ -51,6 +56,7 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/standard',
+  nonEmptyString(body('what')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
@@ -61,11 +67,13 @@ changeRequestsRouter.post(
   body('why').isArray(),
   nonEmptyString(body('why.*.explain')),
   body('why.*.type').custom((value) => Object.values(ChangeRequestReason).includes(value)),
-  body('proposedSolutions').isArray({ min: 1 }),
+  body('proposedSolutions').isArray({ min: 0 }),
   nonEmptyString(body('proposedSolutions.*.description')),
   nonEmptyString(body('proposedSolutions.*.scopeImpact')),
   body('proposedSolutions.*.timelineImpact').isInt(),
   body('proposedSolutions.*.budgetImpact').isInt(),
+  ...projectProposedChangesValidators,
+  ...workPackageProposedChangesValidators,
   validateInputs,
   ChangeRequestsController.createStandardChangeRequest
 );

@@ -33,6 +33,7 @@ import NERTabs from '../../../components/Tabs';
 import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
+import ChangeRequestTab from './ChangeRequestTab';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -144,16 +145,15 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
   };
 
   const buildURLForCreateWorkPackage = () => {
-    return `${routes.CHANGE_REQUESTS_NEW}?wbsNum=${projectWbsPipe(project.wbsNum)}&createWP=${true}`;
+    return `${routes.WORK_PACKAGE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`;
   };
-
   const CreateWorkPackageButton = () => {
     return (
       <MenuItem onClick={() => history.push(buildURLForCreateWorkPackage())} disabled={isGuest(user.role)}>
         <ListItemIcon>
           <ContentPasteIcon fontSize="small" />
         </ListItemIcon>
-        Create Work Package
+        Create New Work Package
       </MenuItem>
     );
   };
@@ -225,7 +225,8 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
             { tabUrlValue: 'bom', tabName: 'BOM' },
             { tabUrlValue: 'scope', tabName: 'Scope' },
             { tabUrlValue: 'changes', tabName: 'Changes' },
-            { tabUrlValue: 'gantt', tabName: 'Gantt' }
+            { tabUrlValue: 'gantt', tabName: 'Gantt' },
+            { tabUrlValue: 'change-requests', tabName: 'Change Requests' }
           ]}
           baseUrl={`${routes.PROJECTS}/${wbsNum}`}
           defaultTab="overview"
@@ -244,8 +245,10 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <ScopeTab project={project} />
       ) : tab === 4 ? (
         <ChangesList changes={project.changes} />
-      ) : (
+      ) : tab === 5 ? (
         <ProjectGantt workPackages={project.workPackages} />
+      ) : (
+        <ChangeRequestTab project={project} />
       )}
       {deleteModalShow && (
         <DeleteProject modalShow={deleteModalShow} handleClose={handleDeleteClose} wbsNum={project.wbsNum} />

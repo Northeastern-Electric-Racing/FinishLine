@@ -20,7 +20,7 @@ const schema = yup.object().shape({
   manufacturerName: yup.string().required('Select a Manufacturer'),
   manufacturerPartNumber: yup.string().required('Manufacturer Part Number is required!'),
   quantity: yup.number().required('Enter a quantity!'),
-  price: yup.number().required('Price is required!'),
+  price: yup.number().required('Price per Unit is required!'),
   unitName: yup.string().optional(),
   linkUrl: yup.string().required('URL is required!').url('Invalid URL'),
   notes: yup.string().optional()
@@ -76,7 +76,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ submitText, onSubmit, defau
   } = useForm<MaterialFormInput>({
     defaultValues: {
       name: defaultValues?.name ?? '',
-      status: defaultValues?.status ?? ('UNORDERED' as MaterialStatus),
+      status: defaultValues?.status ?? MaterialStatus.NotReadyToOrder,
       materialTypeName: defaultValues?.materialTypeName ?? '',
       manufacturerPartNumber: defaultValues?.manufacturerPartNumber ?? '',
       quantity: defaultValues?.quantity ?? 0,

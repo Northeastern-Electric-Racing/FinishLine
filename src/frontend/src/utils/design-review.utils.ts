@@ -94,3 +94,29 @@ export const isConfirmed = (designReview: DesignReview): boolean => {
     designReview.status === DesignReviewStatus.DONE
   );
 };
+
+export const designReviewStatusPipe = (status: DesignReviewStatus) => {
+  switch (status) {
+    case DesignReviewStatus.CONFIRMED:
+      return 'Ready to Schedule';
+    case DesignReviewStatus.UNCONFIRMED:
+      return 'Unconfirmed';
+    case DesignReviewStatus.SCHEDULED:
+      return 'Scheduled';
+    case DesignReviewStatus.DONE:
+      return 'Completed';
+  }
+};
+
+export const designReviewStatusColor = (status: DesignReviewStatus) => {
+  switch (status) {
+    case DesignReviewStatus.CONFIRMED:
+      return 'orange';
+    case DesignReviewStatus.UNCONFIRMED:
+      return 'grey';
+    case DesignReviewStatus.SCHEDULED:
+      return '#ef4345';
+    case DesignReviewStatus.DONE:
+      return 'green';
+  }
+};

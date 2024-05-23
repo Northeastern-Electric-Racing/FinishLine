@@ -12,11 +12,11 @@ import {
   useTheme
 } from '@mui/material';
 import { wbsPipe, WorkPackage } from 'shared';
-import { datePipe, fullNamePipe, projectWbsPipe, timelinePipe } from '../../utils/pipes';
+import { datePipe, fullNamePipe, projectWbsPipe } from '../../utils/pipes';
 import { routes } from '../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 
-function CircularProgressWithLabel(props: CircularProgressProps & { value: number }) {
+export const CircularProgressWithLabel = (props: CircularProgressProps & { value: number }) => {
   return (
     <Box
       sx={{ position: 'relative', display: 'inline-flex', width: '40px', alignItems: 'center', justifyContent: 'center' }}
@@ -32,7 +32,7 @@ function CircularProgressWithLabel(props: CircularProgressProps & { value: numbe
       </div>
     </Box>
   );
-}
+};
 
 const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
   const theme = useTheme();
@@ -62,23 +62,10 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
               {datePipe(wp.startDate) + ' ⟝ ' + wp.duration + ' wks ⟞ ' + datePipe(wp.endDate)}
             </Typography>
           </Box>
-          <Box sx={{ marginLeft: 2 }}>
-            <Typography variant="subtitle1" noWrap>
-              {timelinePipe(wp.timelineStatus)}
-            </Typography>
-            <Box textAlign={'right'} sx={{ marginTop: 1 }}>
-              <CircularProgressWithLabel variant="determinate" value={wp.progress} />
-            </Box>
-          </Box>
         </Stack>
         <Stack direction="row" sx={{ marginTop: 1 }}>
-          <Chip
-            sx={{ marginTop: 1, marginRight: 2 }}
-            icon={<Construction />}
-            label={fullNamePipe(wp.projectLead)}
-            size="medium"
-          />
-          <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.projectManager)} size="medium" />
+          <Chip sx={{ marginTop: 1, marginRight: 2 }} icon={<Construction />} label={fullNamePipe(wp.lead)} size="medium" />
+          <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.manager)} size="medium" />
         </Stack>
       </CardContent>
     </Card>
