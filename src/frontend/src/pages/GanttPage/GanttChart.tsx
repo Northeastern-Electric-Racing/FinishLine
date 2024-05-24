@@ -23,7 +23,6 @@ const GanttChart = ({
   setShowWorkPackagesMap,
   highlightedChange
 }: GanttChartProps) => {
-
   return (
     <Box>
       {teamsList.map((teamName: string) => {
