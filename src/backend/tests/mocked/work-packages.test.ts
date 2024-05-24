@@ -222,23 +222,23 @@ describe('Work Packages', () => {
     const wbsNum: WbsNumber = { carNumber: 1, projectNumber: 2, workPackageNumber: 3 };
 
     test('User does not have submit permission', async () => {
-      await expect(() => WorkPackageService.deleteWorkPackage(wonderwoman, wbsNum)).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('delete work packages')
-      );
+      await expect(() =>
+        WorkPackageService.deleteWorkPackage(wonderwoman, wbsNum, wbsNum.workPackageNumber)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete work packages'));
     });
 
     test('Work package does not exist', async () => {
       vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue(null);
-      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum, wbsNum.workPackageNumber)).rejects.toThrow(
         new NotFoundException('Work Package', '1.2.3')
       );
       expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
     });
 
     test('Work package wbs has invalid work package number', async () => {
-      await expect(() => WorkPackageService.deleteWorkPackage(batman, { ...wbsNum, workPackageNumber: 0 })).rejects.toThrow(
-        new HttpException(400, '1.2.0 is not a valid work package WBS!')
-      );
+      await expect(() =>
+        WorkPackageService.deleteWorkPackage(batman, { ...wbsNum, workPackageNumber: 0 }, 0)
+      ).rejects.toThrow(new HttpException(400, '1.2.0 is not a valid work package WBS!'));
     });
 
     test('Work package already deleted', async () => {
@@ -247,7 +247,7 @@ describe('Work Packages', () => {
         wbsElement: { dateDeleted: new Date() }
       } as any);
 
-      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum)).rejects.toThrow(
+      await expect(() => WorkPackageService.deleteWorkPackage(batman, wbsNum, wbsNum.workPackageNumber)).rejects.toThrow(
         new DeletedException('Work Package', '1.2.3')
       );
 
@@ -258,7 +258,7 @@ describe('Work Packages', () => {
       vi.spyOn(prisma.work_Package, 'findFirst').mockResolvedValue({ ...prismaWorkPackage1, wbsElement: {} } as any);
       vi.spyOn(prisma.work_Package, 'update').mockResolvedValue(prismaWorkPackage1);
 
-      await WorkPackageService.deleteWorkPackage(batman, wbsNum);
+      await WorkPackageService.deleteWorkPackage(batman, wbsNum, wbsNum.workPackageNumber);
 
       expect(prisma.work_Package.findFirst).toHaveBeenCalledTimes(1);
       expect(prisma.work_Package.update).toHaveBeenCalledTimes(1);
