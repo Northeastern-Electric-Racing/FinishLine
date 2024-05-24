@@ -5,7 +5,7 @@ const octoKit = new Octokit({
     auth: ''
   });
 
-  const endpointNames = [];
+  const endpointNames = [ ];
 
   const createIssue = async (endpoint) => {
     await octoKit.request('POST /repos/Northeastern-Electric-Racing/FinishLine/issues', {
@@ -17,6 +17,8 @@ const octoKit = new Octokit({
     });
   };
 
-  endpointNames.forEach(async (endpoint) => {
+  for (const endpoint of endpointNames) {
+    for (let i = 0; i < 10000000; i++) {}
+    console.log("Creating issue for endpoint: ", endpoint, "\n");
     await createIssue(endpoint);
-  });
+  }

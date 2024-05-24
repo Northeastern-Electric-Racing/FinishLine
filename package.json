@@ -139,8 +139,5 @@
     ]
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@octokit/core": "^6.1.2"
-  }
+  "license": "ISC"
 }
