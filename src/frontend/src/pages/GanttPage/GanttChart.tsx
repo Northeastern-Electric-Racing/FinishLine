@@ -1,9 +1,6 @@
 import { Box } from '@mui/material';
 import { EventChange, GanttTask, RequestEventChange } from '../../utils/gantt.utils';
 import GanttChartTeamSection from './GanttChartTeamSection';
-import { NERButton } from '../../components/NERButton';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../utils/routes';
 
 interface GanttChartProps {
   startDate: Date;
@@ -26,17 +23,8 @@ const GanttChart = ({
   setShowWorkPackagesMap,
   highlightedChange
 }: GanttChartProps) => {
-  const history = useHistory();
-
   return (
     <Box>
-      <NERButton
-        onClick={() => history.push(routes.PROJECTS_NEW)}
-        variant="contained"
-        sx={{ position: 'fixed', right: '2.5%', mt: -2 }}
-      >
-        Create Project
-      </NERButton>
       {teamsList.map((teamName: string) => {
         const projectTasks = teamNameToGanttTasksMap.get(teamName);
 
