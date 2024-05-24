@@ -2,3 +2,5 @@
 **/dist
 **/tests
 **/*.test.ts
+
+**/backend
