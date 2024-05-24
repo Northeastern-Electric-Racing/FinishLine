@@ -59,7 +59,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       open={open}
       onHide={() => setOpen(false)}
       title="Input these fields into the SABO Form"
-      submitText={isSaboSubmitted ? '' : 'Submit to SABO'}
+      submitText={isSaboSubmitted ? undefined : 'Submit to SABO'}
       showCloseButton={isSaboSubmitted}
       hideFormButtons={isSaboSubmitted}
       onSubmit={() => handleSubmitToSabo()}
