@@ -248,13 +248,15 @@ model Change_Request {
 }
 
 model Message_Info {
-  messageInfoId   String          @id @default(uuid())
-  channelId       String
-  timestamp       String
-  changeRequestId Int?
-  changeRequest   Change_Request? @relation(fields: [changeRequestId], references: [crId])
-  designReviewId  String?
-  designReview    Design_Review?  @relation(fields: [designReviewId], references: [designReviewId])
+  messageInfoId          String                 @id @default(uuid())
+  channelId              String
+  timestamp              String
+  changeRequestId        Int?
+  changeRequest          Change_Request?        @relation(fields: [changeRequestId], references: [crId])
+  designReviewId         String?
+  designReview           Design_Review?         @relation(fields: [designReviewId], references: [designReviewId])
+  reimbursementRequestId String?
+  reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }
 
 model Scope_CR {
@@ -503,24 +505,25 @@ model Receipt {
 }
 
 model Reimbursement_Request {
-  reimbursementRequestId String                  @id @default(uuid())
-  identifier             Int                     @unique @default(autoincrement())
-  saboId                 Int?                    @unique
-  dateCreated            DateTime                @default(now())
-  dateDeleted            DateTime?
-  dateOfExpense          DateTime
-  reimbursementStatuses  Reimbursement_Status[]
-  recipientId            Int
-  recipient              User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
-  vendorId               String
-  vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
-  account                Club_Accounts
-  totalCost              Int
-  receiptPictures        Receipt[]
-  reimbursementProducts  Reimbursement_Product[]
-  dateDelivered          DateTime?
-  accountCodeId          String
-  accountCode            Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
+  reimbursementRequestId   String                  @id @default(uuid())
+  identifier               Int                     @unique @default(autoincrement())
+  saboId                   Int?                    @unique
+  dateCreated              DateTime                @default(now())
+  dateDeleted              DateTime?
+  dateOfExpense            DateTime
+  reimbursementStatuses    Reimbursement_Status[]
+  recipientId              Int
+  recipient                User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
+  vendorId                 String
+  vendor                   Vendor                  @relation(fields: [vendorId], references: [vendorId])
+  account                  Club_Accounts
+  totalCost                Int
+  receiptPictures          Receipt[]
+  reimbursementProducts    Reimbursement_Product[]
+  dateDelivered            DateTime?
+  accountCodeId            String
+  accountCode              Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
+  notificationSlackThreads Message_Info[]
 }
 
 model Reimbursement_Product_Reason {
