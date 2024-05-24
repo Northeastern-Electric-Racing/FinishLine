@@ -19,5 +19,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.17.1
+          cache: 'yarn'
+      - name: Yarn Install
+        run: yarn install
       - name: Run Tests
         run: yarn containerize:teste2e

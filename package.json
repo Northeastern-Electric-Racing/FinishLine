@@ -131,7 +131,8 @@
       "node_modules",
       "public",
       "lib",
-      "dist"
+      "dist",
+      "system-tests/**"
     ]
   },
   "jest": {

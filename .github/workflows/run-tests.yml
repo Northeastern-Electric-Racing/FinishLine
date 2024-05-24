@@ -38,4 +38,4 @@ jobs:
       - name: Install modules
         run: yarn install && yarn prisma:generate && yarn prisma:migrate:prod
       - name: Run tests
-        run: yarn test:backend; yarn test:client
+        run: yarn test:backend; yarn test:frontend
