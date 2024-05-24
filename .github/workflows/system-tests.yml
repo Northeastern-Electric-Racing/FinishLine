@@ -6,11 +6,7 @@ on:
     branches:
       - main
       - develop
-  pull_request:
-    branches:
-      - main
-      - develop
-      - 'feature/**'
+      - feature/**
 
 jobs:
   run-tests:
