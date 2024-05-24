@@ -1,8 +1,13 @@
 import express from 'express';
 import WorkPackagesController from '../controllers/work-packages.controllers';
-import { intMinZero, isWorkPackageStage, isWorkPackageStageOrNone, nonEmptyString } from '../utils/validation.utils';
+import {
+  descriptionBulletsValidators,
+  intMinZero,
+  isWorkPackageStageOrNone,
+  nonEmptyString,
+  validateInputs
+} from '../utils/validation.utils';
 import { body } from 'express-validator';
-import { validateInputs } from '../utils/utils';
 
 const workPackageTemplatesRouter = express.Router();
 
@@ -16,14 +21,25 @@ workPackageTemplatesRouter.post(
   intMinZero(body('duration').optional()),
   isWorkPackageStageOrNone(body('stage')),
   body('blockedBy').isArray(),
-  nonEmptyString(body('blockedBy.*.blockedByInfoId').optional()),
-  isWorkPackageStage(body('blockedBy.*.stage').optional()),
-  nonEmptyString(body('blockedBy.*.name')),
-  body('expectedActivities').isArray(),
-  body('deliverables').isArray(),
+  nonEmptyString(body('blockedBy.*')),
   nonEmptyString(body('workPackageName').optional()),
+  ...descriptionBulletsValidators,
   validateInputs,
   WorkPackagesController.editWorkPackageTemplate
+);
+
+workPackageTemplatesRouter.post(
+  '/create',
+  nonEmptyString(body('templateName')),
+  nonEmptyString(body('templateNotes')),
+  nonEmptyString(body('workPackageName').optional()),
+  isWorkPackageStageOrNone(body('stage').optional()),
+  intMinZero(body('duration').optional()),
+  body('blockedBy').isArray(),
+  nonEmptyString(body('blockedBy.*')),
+  ...descriptionBulletsValidators,
+  validateInputs,
+  WorkPackagesController.createWorkPackageTemplate
 );
 
 export default workPackageTemplatesRouter;

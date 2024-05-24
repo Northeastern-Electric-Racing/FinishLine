@@ -11,6 +11,7 @@ export const AuthContext = createContext<Auth | undefined>(undefined);
 
 const AppContextAuth: React.FC = (props) => {
   const auth = useProvideAuth();
+
   return <AuthContext.Provider value={auth}>{props.children}</AuthContext.Provider>;
 };
 

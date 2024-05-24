@@ -12,7 +12,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
   const years = [...Array(50).keys()].map((num) => (num + 2024).toString());
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
       <TextField
         size="small"
         select
@@ -34,7 +34,6 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ displayMonth, setDisplayM
       <TextField
         select
         size="small"
-        sx={{ marginLeft: 1 }}
         defaultValue={displayMonth.getFullYear()}
         onChange={(event) => {
           displayMonth.setFullYear(Number.parseInt(event.target.value));
