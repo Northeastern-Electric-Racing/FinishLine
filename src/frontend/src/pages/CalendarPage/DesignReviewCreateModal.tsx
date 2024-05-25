@@ -27,7 +27,6 @@ import { userToAutocompleteOption } from '../../utils/teams.utils';
 import { useQuery } from '../../hooks/utils.hooks';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { useAllProjects } from '../../hooks/projects.hooks';
 
 const schema = yup.object().shape({
   date: yup.date().required('Date is required'),
@@ -79,8 +78,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     error: allWorkPackagesError,
     data: allWorkPackages
   } = useAllWorkPackages();
-
-  const { data: allProjects } = useAllProjects();
 
   const { mutateAsync, isLoading } = useCreateDesignReviews();
 
@@ -168,16 +165,10 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             const handleWorkPackageSelect = async (selectedValue: string) => {
               onChange(selectedValue);
               setValue('wbsNum', selectedValue);
-              const projectWithMatchingWbs = allProjects?.find((project) => {
-                return project.workPackages.some((wp) => wbsPipe(wp.wbsNum) === selectedValue);
-              });
-              const defaultTeam = projectWithMatchingWbs?.teams;
+              const defaultTeamTypeId = allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === selectedValue)?.teamTypeId;
 
-              if (defaultTeam && defaultTeam.length > 0) {
-                const defaultTeamTypeId = defaultTeam?.[0]?.teamType?.teamTypeId;
-                if (defaultTeamTypeId) {
-                  setValue('teamTypeId', defaultTeamTypeId);
-                }
+              if (defaultTeamTypeId) {
+                setValue('teamTypeId', defaultTeamTypeId);
               }
             };
 
