@@ -5,29 +5,27 @@ import {
   Prisma,
   Change_Request,
   Change,
-  WBS_Element,
+  Link_Type,
+  Description_Bullet_Type,
   Project,
-  Work_Package,
-  Activation_CR
+  Work_Package
 } from '@prisma/client';
-import { addWeeksToDate, ChangeRequestReason, WorkPackageStage } from 'shared';
+import { addWeeksToDate, ChangeRequestReason, DescriptionBulletPreview, LinkCreateArgs, WorkPackageStage } from 'shared';
 import { HttpException, NotFoundException } from './errors.utils';
 import { ChangeRequestStatus } from 'shared';
-import workPackageQueryArgs from '../prisma-query-args/work-packages.query-args';
 import { buildChangeDetail, createChange } from './changes.utils';
-import { changeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
-import { transformDate } from './datetime.utils';
-import WorkPackagesService from '../services/work-packages.services';
-import { descBulletConverter } from './description-bullets.utils';
-import ProjectsService from '../services/projects.services';
-import { sendSlackCRReviewedNotification } from './slack.utils';
-import scopeChangeRequestQueryArgs, {
-  projectProposedChangesQueryArgs,
-  wbsProposedChangeQueryArgs,
+import { WorkPackageQueryArgs, getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
+import {
+  ProjectProposedChangesQueryArgs,
+  WbsProposedChangeQueryArgs,
   workPackageProposedChangesQueryArgs
 } from '../prisma-query-args/scope-change-requests.query-args';
-import projectQueryArgs from '../prisma-query-args/projects.query-args';
-import linkQueryArgs from '../prisma-query-args/links.query-args';
+import ProjectsService from '../services/projects.services';
+import WorkPackagesService from '../services/work-packages.services';
+import { transformDate } from './datetime.utils';
+import { descriptionBulletToDescriptionBulletPreview } from './description-bullets.utils';
+import { sendSlackCRReviewedNotification } from './slack.utils';
 
 export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequestReason =>
   ({
@@ -53,7 +51,7 @@ export const convertCRScopeWhyType = (whyType: Scope_CR_Why_Type): ChangeRequest
  * @param reviewer the reviewer of the change request
  */
 export const updateBlocking = async (
-  initialWorkPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>,
+  initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>,
   timelineImpact: number,
   crId: number,
   reviewer: User
@@ -144,7 +142,7 @@ export const validateChangeRequestAccepted = async (crId: number) => {
  * @returns The status of the change request. Can either be Open, Accepted, Denied, or Implemented
  */
 export const calculateChangeRequestStatus = (
-  changeRequest: Prisma.Change_RequestGetPayload<typeof changeRequestQueryArgs>
+  changeRequest: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
 ): ChangeRequestStatus => {
   if (changeRequest.changes.length) {
     return ChangeRequestStatus.Implemented;
@@ -173,36 +171,92 @@ export const allChangeRequestsReviewed = (changeRequests: Change_Request[]) => {
   return changeRequests.every((changeRequest) => changeRequest.dateReviewed);
 };
 
+export interface ProposedChangedValidationResult {
+  links: (LinkCreateArgs & { linkType: Link_Type })[];
+  descriptionBullets: (DescriptionBulletPreview & { descriptionBulletType: Description_Bullet_Type })[];
+  carId?: string;
+}
+
 /**
  * Determines if the project lead, project manager, and links all exist
+ * @param links the links to be verified
+ * @param descriptionBullets the description bullets to be verified
+ * @param organizationId the organization id the current user is in
+ * @param carNumber the car number of the change request's WBS element
  * @param projectLeadId the project lead id to be verified
  * @param projectManagerId the project manager id to be verified
- * @param links the links to be verified
  */
 export const validateProposedChangesFields = async (
-  links: {
-    url: string;
-    linkTypeName: string;
-  }[],
-  leadId?: number,
-  managerId?: number
-) => {
-  if (leadId) {
-    const lead = await prisma.user.findUnique({ where: { userId: leadId } });
-    if (!lead) throw new NotFoundException('User', leadId);
+  links: LinkCreateArgs[],
+  descriptionBullets: DescriptionBulletPreview[],
+  organizationId: string,
+  carNumber?: number,
+  projectLeadId?: number,
+  projectManagerId?: number
+): Promise<ProposedChangedValidationResult> => {
+  if (projectLeadId) {
+    const projectLead = await prisma.user.findUnique({ where: { userId: projectLeadId }, include: { organizations: true } });
+    if (!projectLead) throw new NotFoundException('User', projectLeadId);
+    if (!projectLead.organizations.map((org) => org.organizationId).includes(organizationId))
+      throw new HttpException(400, 'Project lead does not belong to the organization');
   }
 
-  if (managerId) {
-    const manager = await prisma.user.findUnique({ where: { userId: managerId } });
-    if (!manager) throw new NotFoundException('User', managerId);
+  if (projectManagerId) {
+    const projectManager = await prisma.user.findUnique({
+      where: { userId: projectManagerId },
+      include: { organizations: true }
+    });
+    if (!projectManager) throw new NotFoundException('User', projectManagerId);
+    if (!projectManager.organizations.map((org) => org.organizationId).includes(organizationId))
+      throw new HttpException(400, 'Project manager does not belong to the organization');
   }
 
-  if (links.length > 0) {
-    for (const link of links) {
-      const linkType = await prisma.linkType.findUnique({ where: { name: link.linkTypeName } });
-      if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
-    }
+  const linksWithLinkTypes = links.map(async (link) => {
+    const linkType = await prisma.link_Type.findUnique({
+      where: { uniqueLinkType: { name: link.linkTypeName, organizationId } }
+    });
+    if (!linkType) throw new NotFoundException('Link Type', link.linkTypeName);
+    return {
+      ...link,
+      linkType
+    };
+  });
+
+  const descriptionBulletsWithTypes = descriptionBullets.map(async (bullet) => {
+    const descriptionBulletType = await prisma.description_Bullet_Type.findUnique({
+      where: { uniqueDescriptionBulletType: { name: bullet.type, organizationId } }
+    });
+    if (!descriptionBulletType) throw new NotFoundException('Description Bullet Type', bullet.type);
+    return {
+      ...bullet,
+      descriptionBulletType
+    };
+  });
+
+  let foundCarId = undefined;
+  if (carNumber) {
+    const carWbs = await prisma.wBS_Element.findUnique({
+      where: {
+        wbsNumber: {
+          carNumber,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          organizationId
+        }
+      },
+      include: {
+        car: true
+      }
+    });
+    if (!carWbs?.car) throw new NotFoundException('Car', carNumber);
+    foundCarId = carWbs.car.carId;
   }
+
+  return {
+    links: await Promise.all(linksWithLinkTypes),
+    descriptionBullets: await Promise.all(descriptionBulletsWithTypes),
+    carId: foundCarId
+  };
 };
 
 /**
@@ -213,7 +267,7 @@ export const validateProposedChangesFields = async (
  */
 export const validateNoUnreviewedOpenCRs = async (wbsElemId: number) => {
   const openCRs = await prisma.change_Request.findMany({
-    where: { wbsElementId: wbsElemId, dateReviewed: null }
+    where: { wbsElementId: wbsElemId, dateReviewed: null, dateDeleted: null }
   });
   if (openCRs.length > 1)
     throw new HttpException(400, 'There are other open unreviewed change requests for this WBS element');
@@ -229,32 +283,26 @@ export const validateNoUnreviewedOpenCRs = async (wbsElemId: number) => {
  * @param carNumber the car number of the change request's WBS element
  */
 export const applyProjectProposedChanges = async (
-  wbsProposedChanges: WbsProposedChangesArgs,
-  projectProposedChanges: ProjectProposedChangesArgs,
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
+  projectProposedChanges: Prisma.Project_Proposed_ChangesGetPayload<ProjectProposedChangesQueryArgs>,
   associatedProject: Project,
   reviewer: User,
   crId: number,
-  carNumber: number
+  carNumber: number,
+  organizationId: string
 ) => {
   if (projectProposedChanges) {
-    const links = wbsProposedChanges.links.map((link) => ({
-      linkId: link.linkId,
-      linkTypeName: link.linkTypeName,
-      url: link.url
-    }));
-    const goals = projectProposedChanges.goals.map((goal) => ({
-      id: goal.descriptionId,
-      detail: goal.detail
-    }));
-    const features = projectProposedChanges.features.map((feature) => ({
-      id: feature.descriptionId,
-      detail: feature.detail
-    }));
-    const otherConstraints = projectProposedChanges.otherConstraints.map((constraint) => ({
-      id: constraint.descriptionId,
-      detail: constraint.detail
-    }));
-    if (projectProposedChanges.carNumber !== null) {
+    const links = wbsProposedChanges.links.map((link) => {
+      return {
+        ...link,
+        linkTypeName: link.linkType.name
+      };
+    });
+    const descriptionBullets = wbsProposedChanges.proposedDescriptionBulletChanges.map(
+      descriptionBulletToDescriptionBulletPreview
+    );
+
+    if (projectProposedChanges.car?.wbsElement.carNumber !== null) {
       await ProjectsService.createProject(
         reviewer,
         crId,
@@ -264,14 +312,12 @@ export const applyProjectProposedChanges = async (
         projectProposedChanges.teams.map((team) => team.teamId),
         projectProposedChanges.budget,
         links,
-        projectProposedChanges.rules,
-        goals,
-        features,
-        otherConstraints,
+        descriptionBullets,
         wbsProposedChanges.leadId,
-        wbsProposedChanges.managerId
+        wbsProposedChanges.managerId,
+        organizationId
       );
-    } else if (associatedProject && projectProposedChanges.carNumber === null) {
+    } else if (associatedProject && projectProposedChanges.car.wbsElement.carNumber === null) {
       await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
@@ -279,13 +325,11 @@ export const applyProjectProposedChanges = async (
         wbsProposedChanges.name,
         projectProposedChanges.budget,
         projectProposedChanges.summary,
-        projectProposedChanges.rules,
-        goals,
-        features,
-        otherConstraints,
+        descriptionBullets,
         links,
         wbsProposedChanges.leadId,
-        wbsProposedChanges.managerId
+        wbsProposedChanges.managerId,
+        organizationId
       );
     }
   }
@@ -299,14 +343,16 @@ export const applyProjectProposedChanges = async (
  * @param associatedWorkPackage  the optional associated work package of the change request
  * @param reviewer  the user reviewing the change request
  * @param crId  the change request id
+ * @param organizationId the organization id of the user
  */
 export const applyWorkPackageProposedChanges = async (
-  wbsProposedChanges: WbsProposedChangesArgs,
-  workPackageProposedChanges: WorkPackageProposedChangesArgs,
+  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
+  workPackageProposedChanges: Prisma.Work_Package_Proposed_ChangesGetPayload<typeof workPackageProposedChangesQueryArgs>,
   associatedProject: Project | null,
   associatedWorkPackage: Work_Package | null,
   reviewer: User,
-  crId: number
+  crId: number,
+  organizationId: string
 ) => {
   if (associatedProject) {
     await WorkPackagesService.createWorkPackage(
@@ -317,10 +363,16 @@ export const applyWorkPackageProposedChanges = async (
       transformDate(workPackageProposedChanges.startDate),
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
-      workPackageProposedChanges.expectedActivities.map((activity) => activity.detail),
-      workPackageProposedChanges.deliverables.map((deliverable) => deliverable.detail)
+      wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
+      organizationId
     );
   } else if (associatedWorkPackage) {
+    if (wbsProposedChanges.leadId === null) {
+      throw new HttpException(400, 'Lead ID cannot be null');
+    }
+    if (wbsProposedChanges.managerId === null) {
+      throw new HttpException(400, 'Manager ID cannot be null');
+    }
     await WorkPackagesService.editWorkPackage(
       reviewer,
       associatedWorkPackage.workPackageId,
@@ -330,10 +382,10 @@ export const applyWorkPackageProposedChanges = async (
       transformDate(workPackageProposedChanges.startDate),
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
-      workPackageProposedChanges.expectedActivities.map(descBulletConverter),
-      workPackageProposedChanges.deliverables.map(descBulletConverter),
-      wbsProposedChanges.leadId!,
-      wbsProposedChanges.managerId!
+      wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
+      wbsProposedChanges.leadId,
+      wbsProposedChanges.managerId,
+      organizationId
     );
   }
 };
@@ -345,11 +397,16 @@ export const applyWorkPackageProposedChanges = async (
  * @param crId the change request id
  * @param reviewer  the user reviewing the change request
  */
-export const reviewProposedSolution = async (psId: string, foundCR: ChangeRequestWithChanges, reviewer: User) => {
+export const reviewProposedSolution = async (
+  psId: string,
+  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
+  reviewer: User,
+  organizationId: string
+) => {
   const foundPs = await prisma.proposed_Solution.findUnique({
     where: { proposedSolutionId: psId }
   });
-  if (!foundPs || foundPs.changeRequestId !== foundCR.scopeChangeRequest.scopeCrId)
+  if (!foundPs || foundPs.changeRequestId !== foundCR.scopeChangeRequest?.scopeCrId)
     throw new NotFoundException('Proposed Solution', psId);
 
   // automate the changes for the proposed solution
@@ -378,7 +435,7 @@ export const reviewProposedSolution = async (psId: string, foundCR: ChangeReques
     // get the project for the work package
     const wpProj = await prisma.project.findUnique({
       where: { projectId: foundCR.wbsElement.workPackage.projectId },
-      include: { workPackages: workPackageQueryArgs }
+      include: { workPackages: getWorkPackageQueryArgs(organizationId) }
     });
     if (!wpProj) throw new NotFoundException('Project', foundCR.wbsElement.workPackage.projectId);
 
@@ -444,7 +501,9 @@ export const reviewProposedSolution = async (psId: string, foundCR: ChangeReques
  * Sends a slack notification to the submitter of the change request that their change request has been reviewed
  * @param foundCR the change request that was reviewed
  */
-export const sendCRSubmitterReviewedNotification = async (foundCR: ChangeRequestWithChanges) => {
+export const sendCRSubmitterReviewedNotification = async (
+  foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>
+) => {
   const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
   if (creatorUserSettings && creatorUserSettings.slackId) {
     try {
@@ -456,23 +515,3 @@ export const sendCRSubmitterReviewedNotification = async (foundCR: ChangeRequest
     }
   }
 };
-
-// ---------------------------------------------- Types ----------------------------------------------
-
-export type ChangeRequestWithChanges = Change_Request & {
-  activationChangeRequest: Activation_CR;
-  scopeChangeRequest: Prisma.Scope_CRGetPayload<typeof scopeChangeRequestQueryArgs>;
-  wbsElement: WBS_Element & {
-    workPackage?: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>;
-    project?: Prisma.ProjectGetPayload<typeof projectQueryArgs>;
-    links: Prisma.LinkGetPayload<typeof linkQueryArgs>[];
-  };
-};
-
-export type WorkPackageProposedChangesArgs = Prisma.Work_Package_Proposed_ChangesGetPayload<
-  typeof workPackageProposedChangesQueryArgs
->;
-
-export type ProjectProposedChangesArgs = Prisma.Project_Proposed_ChangesGetPayload<typeof projectProposedChangesQueryArgs>;
-
-export type WbsProposedChangesArgs = Prisma.Wbs_Proposed_ChangesGetPayload<typeof wbsProposedChangeQueryArgs>;

@@ -21,6 +21,7 @@ export interface CreateTeamPayload {
   headId: number;
   slackId: string;
   description: string;
+  isFinanceTeam: boolean;
 }
 
 export const useAllTeams = () => {

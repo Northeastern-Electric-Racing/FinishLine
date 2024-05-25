@@ -4,7 +4,7 @@
  */
 
 import { User } from './user-types';
-import { ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
+import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
 import { WorkPackageStage } from './work-package-types';
 
 export interface ChangeRequest {
@@ -111,29 +111,30 @@ export interface ProposedSolutionCreateArgs {
   timelineImpact: number;
 }
 
-export interface ProjectProposedChangesCreateArgs {
+export interface DescriptionBulletPreview {
+  id: number;
+  detail: string;
+  type: string;
+}
+
+export interface WBSProposedChangesCreateArgs {
   name: string;
   leadId?: number;
   managerId?: number;
-  links: { url: string; linkTypeName: string }[];
+  descriptionBullets: DescriptionBulletPreview[];
+  links: LinkCreateArgs[];
+}
+
+export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   budget: number;
   summary: string;
-  goals: string[];
-  features: string[];
-  otherConstraints: string[];
-  rules: string[];
   teamIds: string[];
   carNumber?: number;
 }
 
-export interface WorkPackageProposedChangesCreateArgs {
-  name: string;
+export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   duration: number;
   startDate: string;
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-  expectedActivities: string[];
-  deliverables: string[];
-  leadId?: number;
-  managerId?: number;
 }

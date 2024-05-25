@@ -12,7 +12,7 @@ export interface User {
   role: Role;
 }
 
-export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'role'>;
+export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role'>;
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
@@ -43,6 +43,7 @@ export interface AuthenticatedUser {
   changeRequestsToReviewId: number[];
   isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
+  organizations: string[];
 }
 
 export interface UserSettings {

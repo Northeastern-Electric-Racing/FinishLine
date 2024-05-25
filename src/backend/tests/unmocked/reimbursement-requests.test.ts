@@ -1,13 +1,18 @@
 import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
-import { createFinanceTeamAndLead, createTestReimbursementRequest, resetUsers } from '../test-utils';
+import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
+import { Reimbursement_Request } from '@prisma/client';
 
 describe('Reimbursement Requests', () => {
+  let orgId: string;
+  let reimbursementRequest: Reimbursement_Request;
   beforeEach(async () => {
-    await createFinanceTeamAndLead();
+    const result = await createTestReimbursementRequest();
+    orgId = result.organization.organizationId;
+    reimbursementRequest = result.rr;
   });
 
   afterEach(async () => {
@@ -15,14 +20,12 @@ describe('Reimbursement Requests', () => {
   });
 
   test('Delete Reimbursement Request fails when deleter is not a finance lead', async () => {
-    const reimbursement = await createTestReimbursementRequest();
-    if (!reimbursement) {
-      console.log('Failed to create Reimbursement');
-      assert(false);
-      throw new Error('Failed to create Reimbursement');
-    }
-    await expect(() =>
-      ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, alfred)
+    await expect(async () =>
+      ReimbursementRequestService.deleteReimbursementRequest(
+        reimbursementRequest.reimbursementRequestId,
+        await createTestUser(alfred, orgId),
+        orgId
+      )
     ).rejects.toThrow(
       new AccessDeniedException(
         'You do not have access to delete this reimbursement request, reimbursement requests can only be deleted by their creator or finance leads and above'
@@ -31,15 +34,9 @@ describe('Reimbursement Requests', () => {
   });
 
   test('Delete Reimbursement Request succeeds when the deleter is a finance lead', async () => {
-    const reimbursement = await createTestReimbursementRequest();
-    if (!reimbursement) {
-      console.log('Failed to create Reimbursement');
-      assert(false);
-      throw new Error('Failed to create Reimbursement');
-    }
     const financeLead = await prisma.user.findUnique({
       where: {
-        googleAuthId: '3'
+        googleAuthId: 'financeLead'
       }
     });
 
@@ -48,19 +45,17 @@ describe('Reimbursement Requests', () => {
       assert(false);
       throw new Error('No finance lead found, please run createFinanceTeamAndLead before this function');
     }
-    await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeLead);
+    await ReimbursementRequestService.deleteReimbursementRequest(
+      reimbursementRequest.reimbursementRequestId,
+      financeLead,
+      orgId
+    );
   });
 
   test('Delete Reimbursement Request succeeds when the deleter is a head of finance', async () => {
-    const reimbursement = await createTestReimbursementRequest();
-    if (!reimbursement) {
-      console.log('Failed to create Reimbursement');
-      assert(false);
-      throw new Error('Failed to create Reimbursement');
-    }
     const financeHead = await prisma.user.findUnique({
       where: {
-        googleAuthId: '1'
+        googleAuthId: 'financeHead'
       }
     });
 
@@ -69,6 +64,10 @@ describe('Reimbursement Requests', () => {
       assert(false);
       throw new Error('No finance head found, please run createFinanceTeamAndLead before this function');
     }
-    await ReimbursementRequestService.deleteReimbursementRequest(reimbursement.reimbursementRequestId, financeHead);
+    await ReimbursementRequestService.deleteReimbursementRequest(
+      reimbursementRequest.reimbursementRequestId,
+      financeHead,
+      orgId
+    );
   });
 });

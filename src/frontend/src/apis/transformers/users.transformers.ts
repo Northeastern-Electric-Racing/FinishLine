@@ -11,7 +11,7 @@ import { AuthenticatedUser, User } from 'shared';
  * @param user Incoming user object supplied by the HTTP response.
  * @returns Properly transformed user object.
  */
-export const userTransformer = (user: User) => {
+export const userTransformer = (user: User): User => {
   return {
     ...user
   };
@@ -23,7 +23,7 @@ export const userTransformer = (user: User) => {
  * @param authUser Incoming authenticated user object supplied by the HTTP response.
  * @returns Properly transformed user object.
  */
-export const authUserTransformer = (authUser: AuthenticatedUser) => {
+export const authUserTransformer = (authUser: AuthenticatedUser): AuthenticatedUser => {
   return {
     ...authUser
   };

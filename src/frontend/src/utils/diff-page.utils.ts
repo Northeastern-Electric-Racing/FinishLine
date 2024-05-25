@@ -141,10 +141,7 @@ export const projectToProposedChangesPreview = (project: Project | undefined): P
     manager: project.manager,
     teams: project.teams,
     budget: project.budget,
-    goals: project.goals,
-    features: project.features,
-    rules: project.rules,
-    otherConstraints: project.otherConstraints,
+    descriptionBullets: project.descriptionBullets,
     links: project.links
   };
 };
@@ -162,8 +159,7 @@ export const workPackageToProposedChangesPreview = (
     startDate: workPackage.startDate,
     duration: workPackage.duration,
     blockedBy: workPackage.blockedBy,
-    expectedActivities: workPackage.expectedActivities,
-    deliverables: workPackage.deliverables
+    descriptionBullets: workPackage.descriptionBullets
   };
 };
 
