@@ -179,20 +179,80 @@ export default class ChangeRequestsService {
       // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
       await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
 
-      // must accept and review a change request before using the workpackage and project services
-      await prisma.change_Request.update({
-        where: { crId: foundCR.crId },
-        data: {
-          accepted: true,
-          dateReviewed: new Date()
-        }
-      });
-
       const associatedProject = foundCR.wbsElement.project;
       const associatedWorkPackage = foundCR.wbsElement.workPackage;
       const { wbsProposedChanges } = foundCR.scopeChangeRequest;
       const { workPackageProposedChanges } = wbsProposedChanges;
       const { projectProposedChanges } = wbsProposedChanges;
+
+      // must accept and review a change request before using the workpackage and project services
+      await prisma.scope_CR.update({
+        where: { changeRequestId: foundCR.crId },
+        data: {
+          changeRequest: {
+            update: {
+              accepted: true,
+              dateReviewed: new Date()
+            }
+          },
+          wbsOriginalData: {
+            create: {
+              name: foundCR.wbsElement.name,
+              status: foundCR.wbsElement.status,
+              lead: {
+                connect: {
+                  userId: foundCR.wbsElement.leadId ?? undefined
+                }
+              },
+              manager: {
+                connect: {
+                  userId: foundCR.wbsElement.managerId ?? undefined
+                }
+              },
+              links: {
+                connect: foundCR.wbsElement.links.map((link) => ({
+                  linkId: link.linkId
+                }))
+              },
+              proposedDescriptionBulletChanges: {
+                connect: foundCR.wbsElement.descriptionBullets.map((descriptionBullet) => ({
+                  descriptionId: descriptionBullet.descriptionId
+                }))
+              },
+              projectProposedChanges:
+                projectProposedChanges && associatedProject
+                  ? {
+                      create: {
+                        budget: associatedProject.budget,
+                        summary: associatedProject.summary,
+                        teams: {
+                          connect: associatedProject.teams.map((team) => ({ teamId: team.teamId }))
+                        },
+                        car: {
+                          connect: {
+                            carId: associatedProject.carId
+                          }
+                        }
+                      }
+                    }
+                  : undefined,
+              workPackageProposedChanges:
+                workPackageProposedChanges && associatedWorkPackage
+                  ? {
+                      create: {
+                        startDate: associatedWorkPackage.startDate,
+                        duration: associatedWorkPackage.duration,
+                        blockedBy: {
+                          connect: associatedWorkPackage.blockedBy.map((wbsNumber) => ({ wbsNumber }))
+                        },
+                        stage: associatedWorkPackage.stage
+                      }
+                    }
+                  : undefined
+            }
+          }
+        }
+      });
 
       if (workPackageProposedChanges) {
         await applyWorkPackageProposedChanges(

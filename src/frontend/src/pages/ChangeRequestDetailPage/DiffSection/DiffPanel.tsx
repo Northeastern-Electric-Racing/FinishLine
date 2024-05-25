@@ -1,11 +1,11 @@
 import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview, calculateEndDate } from 'shared';
 import { Box } from '@mui/system';
-import { Typography } from '@mui/material';
+import { Link, List, ListItem, Typography, useTheme } from '@mui/material';
 import {
   ChangeBullet,
   PotentialChangeType,
   changeBulletDetailText,
-  potentialChangeBackgroundMap
+  getPotentialChangeBackground
 } from '../../../utils/diff-page.utils';
 import { labelPipe } from '../../../utils/pipes';
 
@@ -20,6 +20,8 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
   workPackageProposedChanges,
   potentialChangeTypeMap
 }) => {
+  const theme = useTheme();
+
   const changeBullets: ChangeBullet[] = [];
   for (var projectKey in projectProposedChanges) {
     if (projectProposedChanges.hasOwnProperty(projectKey)) {
@@ -64,11 +66,25 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
       );
     } else {
       return (
-        <ul style={{ paddingLeft: '23px', marginBottom: '3px', marginTop: '0px' }}>
-          {detailText.map((bullet) => (
-            <li>{bullet}</li>
-          ))}
-        </ul>
+        <List sx={{ listStyleType: 'disc', pl: 4 }}>
+          {detailText.map((bullet) => {
+            const url = bullet.includes('http') ? bullet.split(': ')[1] : undefined;
+            return (
+              <ListItem sx={{ display: 'list-item' }}>
+                {url ? (
+                  <>
+                    {bullet.split(': ')[0]}:{' '}
+                    <Link color={'#ffff'} href={url}>
+                      {bullet.split(': ')[1]}
+                    </Link>
+                  </>
+                ) : (
+                  bullet
+                )}
+              </ListItem>
+            );
+          })}
+        </List>
       );
     }
   };
@@ -85,7 +101,11 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
           </Typography>
         ) : (
           <Box
-            sx={{ backgroundColor: potentialChangeBackgroundMap.get(potentialChangeType), borderRadius: '5px', mb: '3px' }}
+            sx={{
+              backgroundColor: getPotentialChangeBackground(potentialChangeType, theme),
+              borderRadius: '5px',
+              mb: '3px'
+            }}
           >
             <Box
               sx={{

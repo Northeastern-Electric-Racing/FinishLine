@@ -2,17 +2,20 @@ import {
   DescriptionBullet,
   Link,
   Project,
+  ProjectProposedChanges,
   ProjectProposedChangesPreview,
   TeamPreview,
   User,
   WbsElementStatus,
   WbsNumber,
   WorkPackage,
+  WorkPackageProposedChanges,
   WorkPackageProposedChangesPreview,
   WorkPackageStage,
   wbsPipe
 } from 'shared';
 import { datePipe, displayEnum, dollarsPipe, fullNamePipe } from './pipes';
+import { Theme } from '@mui/material';
 
 export type ProposedChangeValue =
   | string
@@ -72,17 +75,16 @@ export enum PotentialChangeType {
   SAME = 'SAME'
 }
 
-export const potentialChangeBackgroundMap: Map<PotentialChangeType, string> = new Map([
-  [PotentialChangeType.ADDED, '#51915c'],
-  [PotentialChangeType.REMOVED, '#8a4e4e'],
-  [PotentialChangeType.SAME, '#2C2C2C']
-]);
-
-export const potentialChangeHighlightMap: Map<PotentialChangeType, string> = new Map([
-  [PotentialChangeType.ADDED, '#43a854'],
-  [PotentialChangeType.REMOVED, '#ba5050'],
-  [PotentialChangeType.SAME, '#2C2C2C']
-]);
+export const getPotentialChangeBackground = (potentialChangeType: PotentialChangeType, theme: Theme) => {
+  switch (potentialChangeType) {
+    case PotentialChangeType.ADDED:
+      return '#51915c';
+    case PotentialChangeType.REMOVED:
+      return '#8a4e4e';
+    case PotentialChangeType.SAME:
+      return theme.palette.background.paper;
+  }
+};
 
 export const valueChanged = (original: ProposedChangeValue, proposed: ProposedChangeValue) => {
   console.log(typeof original, typeof proposed, original, proposed);
@@ -159,4 +161,38 @@ export const workPackageToProposedChangesPreview = (
     blockedBy: workPackage.blockedBy,
     descriptionBullets: workPackage.descriptionBullets
   };
+};
+
+export const projectProposedChangesToPreview = (
+  proposedChanges: ProjectProposedChanges | undefined
+): ProjectProposedChangesPreview | undefined => {
+  return (
+    proposedChanges && {
+      name: proposedChanges.name,
+      summary: proposedChanges.summary,
+      lead: proposedChanges.lead,
+      manager: proposedChanges.manager,
+      teams: proposedChanges.teams,
+      budget: proposedChanges.budget,
+      descriptionBullets: proposedChanges.descriptionBullets,
+      links: proposedChanges.links
+    }
+  );
+};
+
+export const workPackageProposedChangesToPreview = (
+  proposedChanges: WorkPackageProposedChanges | undefined
+): WorkPackageProposedChangesPreview | undefined => {
+  return (
+    proposedChanges && {
+      name: proposedChanges.name,
+      stage: proposedChanges.stage,
+      lead: proposedChanges.lead,
+      manager: proposedChanges.manager,
+      startDate: proposedChanges.startDate,
+      duration: proposedChanges.duration,
+      blockedBy: proposedChanges.blockedBy,
+      descriptionBullets: proposedChanges.descriptionBullets
+    }
+  );
 };

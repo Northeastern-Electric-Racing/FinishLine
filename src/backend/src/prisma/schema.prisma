@@ -258,17 +258,17 @@ model Message_Info {
 }
 
 model Scope_CR {
-  scopeCrId            Int                   @id @default(autoincrement())
-  changeRequestId      Int                   @unique
-  changeRequest        Change_Request        @relation(fields: [changeRequestId], references: [crId])
-  what                 String
-  why                  Scope_CR_Why[]
-  scopeImpact          String
-  timelineImpact       Int
-  budgetImpact         Int
-  proposedSolutions    Proposed_Solution[]
-  wbsProposedChangesId String?
-  wbsProposedChanges   Wbs_Proposed_Changes?
+  scopeCrId          Int                   @id @default(autoincrement())
+  changeRequestId    Int                   @unique
+  changeRequest      Change_Request        @relation(fields: [changeRequestId], references: [crId])
+  what               String
+  why                Scope_CR_Why[]
+  scopeImpact        String
+  timelineImpact     Int
+  budgetImpact       Int
+  proposedSolutions  Proposed_Solution[]
+  wbsProposedChanges Wbs_Proposed_Changes? @relation(name: "wbsProposedChanges")
+  wbsOriginalData    Wbs_Proposed_Changes? @relation(name: "wbsOriginalData")
 }
 
 model Proposed_Solution {
@@ -748,19 +748,20 @@ model Wbs_Proposed_Changes {
   managerId                        Int?
   manager                          User?                          @relation(name: "wbsmanager", fields: [managerId], references: [userId])
   links                            Link[]                         @relation(name: "proposedChangeLinks")
-  changeRequest                    Scope_CR                       @relation(fields: [changeRequestId], references: [scopeCrId])
-  changeRequestId                  Int                            @unique
+  changeRequest                    Scope_CR?                      @relation(name: "wbsProposedChanges", fields: [changeRequestId], references: [scopeCrId])
+  changeRequestId                  Int?                           @unique
   projectProposedChanges           Project_Proposed_Changes?      @relation(name: "projectProposedChanges")
   workPackageProposedChanges       Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
   proposedDescriptionBulletChanges Description_Bullet[]           @relation(name: "proposedDescriptionBulletChanges")
   dateDeleted                      DateTime?
+  changeRequestAsOriginalData      Scope_CR?                      @relation(name: "wbsOriginalData", fields: [changeRequestAsOriginalDataId], references: [scopeCrId])
+  changeRequestAsOriginalDataId    Int?                           @unique
 }
 
 model Project_Proposed_Changes {
   projectProposedChangesId String               @id @default(uuid())
   budget                   Int
   summary                  String
-  rules                    String[]
   teams                    Team[]               @relation(name: "proposedProjectTeams")
   wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique

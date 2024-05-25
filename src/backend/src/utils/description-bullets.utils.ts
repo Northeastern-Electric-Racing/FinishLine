@@ -66,7 +66,7 @@ export const descriptionBulletToChangeListValue = (
 ): ChangeListValue<DescriptionBulletPreview> => {
   return {
     element: descriptionBullet,
-    comparator: `${descriptionBullet.id}`,
+    comparator: `${descriptionBullet.detail}`,
     displayValue: descriptionBullet.detail
   };
 };

@@ -43,6 +43,8 @@ export interface StandardChangeRequest extends ChangeRequest {
   proposedSolutions: ProposedSolution[];
   projectProposedChanges?: ProjectProposedChanges;
   workPackageProposedChanges?: WorkPackageProposedChanges;
+  originalProjectData?: ProjectProposedChanges;
+  originalWorkPackageData?: WorkPackageProposedChanges;
 }
 
 export interface ProposedSolution {
