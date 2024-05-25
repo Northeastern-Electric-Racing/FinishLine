@@ -24,7 +24,8 @@ const closedMixin = (theme: Theme): CSSObject => ({
   }),
   overflowX: 'hidden',
   width: 0,
-  backgroundColor: '#ef4345'
+  backgroundColor: '#ef4345',
+  visibility: 'hidden'
 });
 
 const NERCollapsingDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
