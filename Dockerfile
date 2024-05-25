@@ -6,7 +6,7 @@ COPY yarn.lock .
 COPY tsconfig.build.json .
 COPY ./src/backend/package.json src/backend/
 COPY ./src/shared/package.json src/shared/
-RUN yarn install
+RUN yarn install --production && yarn cache clean
 COPY ./src/backend src/backend
 COPY ./src/shared src/shared
 RUN yarn prisma:generate
