@@ -89,6 +89,11 @@ export const descriptionBulletsToChangeListValues = (
     .map((bullet) => descriptionBulletToChangeListValue(descBulletConverter(bullet)));
 };
 
+/**
+ * Converts a DescriptionBulletWithType to a DescriptionBullet
+ * @param descBullet the DescriptionBulletWithType to convert
+ * @returns the converted DescriptionBullet
+ */
 export const descBulletConverter = (descBullet: DescriptionBulletWithType): DescriptionBullet => {
   return {
     id: descBullet.descriptionId,
