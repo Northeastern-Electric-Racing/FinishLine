@@ -20,6 +20,7 @@ import {
   workPackageToProposedChangesPreview
 } from '../../../utils/diff-page.utils';
 import DiffPanel from './DiffPanel';
+import { useTheme } from '@mui/material';
 
 interface DiffSectionEditProps {
   projectProposedChanges?: ProjectProposedChangesPreview;
@@ -43,6 +44,8 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
     isError: workPackagesIsError,
     error: workPackagesError
   } = useAllWorkPackages();
+
+  const theme = useTheme();
 
   if (projectsIsLoading || workPackagesIsLoading || !projects || !workPackages) return <LoadingIndicator />;
   if (projectsIsError) return <ErrorPage message={projectsError.message} />;
@@ -111,7 +114,7 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
   return (
     <Grid container columnSpacing={4}>
       <Grid item xs={6}>
-        <Box borderRadius="10px" p={1.4} mb={3} sx={{ backgroundColor: '#2C2C2C' }}>
+        <Box borderRadius="10px" p={1.4} mb={3} sx={{ backgroundColor: theme.palette.background.paper }}>
           <DiffPanel
             projectProposedChanges={projectAsChanges}
             workPackageProposedChanges={workPackageAsChanges}
@@ -120,7 +123,7 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
         </Box>
       </Grid>
       <Grid item xs={6}>
-        <Box borderRadius="10px" p={1.4} mb={3} sx={{ backgroundColor: '#2C2C2C' }}>
+        <Box borderRadius="10px" p={1.4} mb={3} sx={{ backgroundColor: theme.palette.background.paper }}>
           <DiffPanel
             projectProposedChanges={projectProposedChanges}
             workPackageProposedChanges={workPackageProposedChanges}
