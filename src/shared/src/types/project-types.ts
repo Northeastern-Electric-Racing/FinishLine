@@ -59,7 +59,7 @@ export interface WorkPackage extends WbsElement {
   blockedBy: WbsNumber[];
   projectName: string;
   stage?: WorkPackageStage;
-  teamTypeId: string;
+  teams: TeamPreview[];
 }
 
 export interface DescriptionBullet {
