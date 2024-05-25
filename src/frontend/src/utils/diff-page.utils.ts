@@ -174,10 +174,7 @@ export const projectProposedChangesToPreview = (
       manager: proposedChanges.manager,
       teams: proposedChanges.teams,
       budget: proposedChanges.budget,
-      goals: proposedChanges.goals,
-      features: proposedChanges.features,
-      rules: proposedChanges.rules,
-      otherConstraints: proposedChanges.otherConstraints,
+      descriptionBullets: proposedChanges.descriptionBullets,
       links: proposedChanges.links
     }
   );
@@ -195,8 +192,7 @@ export const workPackageProposedChangesToPreview = (
       startDate: proposedChanges.startDate,
       duration: proposedChanges.duration,
       blockedBy: proposedChanges.blockedBy,
-      expectedActivities: proposedChanges.expectedActivities,
-      deliverables: proposedChanges.deliverables
+      descriptionBullets: proposedChanges.descriptionBullets
     }
   );
 };
