@@ -4,7 +4,7 @@
  */
 
 import axios from '../utils/axios';
-import { BlockedByInfo, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
@@ -16,8 +16,7 @@ export interface WorkPackageApiInputs {
   crId: number | undefined;
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-  deliverables: string[] | { id: number; detail: string }[];
-  expectedActivities: string[] | { id: number; detail: string }[];
+  descriptionBullets: DescriptionBulletPreview[];
 }
 
 export interface WorkPackageTemplateApiInputs {
@@ -25,9 +24,8 @@ export interface WorkPackageTemplateApiInputs {
   templateNotes: string;
   duration: number | undefined;
   stage?: WorkPackageStage;
-  blockedBy: BlockedByInfo[];
-  expectedActivities: string[];
-  deliverables: string[];
+  blockedBy: string[];
+  descriptionBullets: DescriptionBulletPreview[];
   workPackageName?: string;
 }
 

@@ -67,7 +67,9 @@ app.use(errorHandler);
 
 // start the server
 app.listen(port, () => {
-  console.log(`FinishLine listening at http://localhost:${port}`);
+  console.log(
+    `FinishLine listening at http://localhost:${port}. Currently running in ${isProd ? 'production' : 'development'} mode.`
+  );
   console.log(`\n
   ███████╗██╗███╗   ██╗██╗███████╗██╗  ██╗██╗     ██╗███╗   ██╗███████╗
   ██╔════╝██║████╗  ██║██║██╔════╝██║  ██║██║     ██║████╗  ██║██╔════╝

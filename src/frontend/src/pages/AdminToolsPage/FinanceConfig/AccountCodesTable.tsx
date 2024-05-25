@@ -1,10 +1,10 @@
 import { TableRow, TableCell, Typography, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useGetAllExpenseTypes } from '../../../hooks/finance.hooks';
+import { useGetAllAccountCodes } from '../../../hooks/finance.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
-import { ExpenseType } from 'shared';
+import { AccountCode } from 'shared';
 import CreateAccountCodeModal from './CreateAccountCodeModal';
 import EditAccountCodeModal from './EditAccountCodeModal';
 import AdminToolTable from '../AdminToolTable';
@@ -12,39 +12,39 @@ import { codeAndRefundSourceName } from '../../../utils/pipes';
 
 const AccountCodesTable = () => {
   const {
-    data: expenseTypes,
-    isLoading: expenseTypesIsLoading,
-    isError: expenseTypesIsError,
-    error: expenseTypesError
-  } = useGetAllExpenseTypes();
+    data: accountCodes,
+    isLoading: accountCodesIsLoading,
+    isError: accountCodesIsError,
+    error: accountCodesError
+  } = useGetAllAccountCodes();
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  const [clickedAccountCode, setClickedAccountCode] = useState<ExpenseType>();
+  const [clickedAccountCode, setClickedAccountCode] = useState<AccountCode>();
 
-  if (!expenseTypes || expenseTypesIsLoading) {
+  if (!accountCodes || accountCodesIsLoading) {
     return <LoadingIndicator />;
   }
 
-  if (expenseTypesIsError) {
-    return <ErrorPage message={expenseTypesError.message} />;
+  if (accountCodesIsError) {
+    return <ErrorPage message={accountCodesError.message} />;
   }
 
-  const accountCodesTableRows = expenseTypes.map((expenseType, index) => (
+  const accountCodesTableRows = accountCodes.map((accountCode, index) => (
     <TableRow
       onClick={() => {
-        setClickedAccountCode(expenseType);
+        setClickedAccountCode(accountCode);
         setShowEditModal(true);
       }}
       key={`account-code-${index}`}
       sx={{ cursor: 'pointer' }}
     >
-      <TableCell sx={{ border: '2px solid black' }}>{expenseType.name}</TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{expenseType.code}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>{accountCode.name}</TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>{accountCode.code}</TableCell>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        <Typography>{expenseType.allowed ? 'Yes' : 'No'}</Typography>
+        <Typography>{accountCode.allowed ? 'Yes' : 'No'}</Typography>
       </TableCell>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {expenseType.allowedRefundSources.map((refundSource, idx) => (
+        {accountCode.allowedRefundSources.map((refundSource, idx) => (
           <Typography key={`account-code-refund-source-${index}-${idx}`}>{codeAndRefundSourceName(refundSource)}</Typography>
         ))}
       </TableCell>

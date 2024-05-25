@@ -28,8 +28,8 @@ export interface GanttTaskData {
   };
   project?: string;
   onClick?: () => void;
-  projectLead?: User;
-  projectManager?: User;
+  lead?: User;
+  manager?: User;
 }
 
 export type Date_Event = { id: string; start: Date; end: Date; title: string };
@@ -160,8 +160,8 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     onClick: () => {
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
     },
-    projectLead: workPackage.lead,
-    projectManager: workPackage.manager
+    lead: workPackage.lead,
+    manager: workPackage.manager
   };
 };
 
@@ -171,7 +171,6 @@ export const getProjectTeamsName = (project: Project): string => {
 
 export const transformProjectToGanttTask = (project: Project): GanttTask[] => {
   const teamName = getProjectTeamsName(project);
-
   const projectTask: GanttTask = {
     id: wbsPipe(project.wbsNum),
     name: wbsPipe(project.wbsNum) + ' - ' + project.name,
@@ -179,12 +178,13 @@ export const transformProjectToGanttTask = (project: Project): GanttTask[] => {
     end: project.endDate || new Date(),
     type: 'project',
     teamName,
+    lead: project.lead,
+    manager: project.manager,
     workPackages: project.workPackages.map((wp) => transformWorkPackageToGanttTask(wp, teamName)),
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
     }
   };
-
   return [projectTask];
 };
 

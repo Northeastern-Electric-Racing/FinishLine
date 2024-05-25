@@ -71,6 +71,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const [requiredMembers, setRequiredMembers] = useState([].map(userToAutocompleteOption));
   const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+
   const {
     isLoading: allWorkPackagesIsLoading,
     isError: allWorkPackagesIsError,
@@ -123,7 +124,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
   if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
   if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
-  if (allUsersIsLoading || !users || allWorkPackagesIsLoading || !allWorkPackages || isLoading) return <LoadingIndicator />;
+  if (allUsersIsLoading || allWorkPackagesIsLoading || !allWorkPackages || !users || isLoading) return <LoadingIndicator />;
 
   const memberOptions = users.map(userToAutocompleteOption);
 
@@ -158,13 +159,25 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             const onClear = () => {
               setValue('wbsNum', '');
               onChange('');
+              setValue('teamTypeId', '');
             };
+
+            const handleWorkPackageSelect = async (selectedValue: string) => {
+              onChange(selectedValue);
+              setValue('wbsNum', selectedValue);
+              const defaultTeamTypeId = allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === selectedValue)?.teamTypeId;
+
+              if (defaultTeamTypeId) {
+                setValue('teamTypeId', defaultTeamTypeId);
+              }
+            };
+
             return (
               <NERAutocomplete
                 id="wbs-autocomplete"
                 sx={{ bgcolor: 'inherit' }}
                 onChange={(_event, newValue) => {
-                  newValue ? onChange(newValue.id) : onClear();
+                  newValue ? handleWorkPackageSelect(newValue.id) : onClear();
                 }}
                 options={wbsDropdownOptions}
                 size="medium"

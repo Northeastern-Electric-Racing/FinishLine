@@ -47,7 +47,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [requiredUsers, setRequiredUsers] = useState(designReview.requiredMembers.map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState(designReview.optionalMembers.map(userToAutocompleteOption));
   const [date, setDate] = useState(
-    new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
+    new Date(designReview.dateScheduled?.getTime() - designReview.dateScheduled?.getTimezoneOffset() * -60000)
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [startTime, setStateTime] = useState(designReview.meetingTimes[0] % 12);
@@ -105,6 +105,34 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     );
   };
 
+  const DateField = () => {
+    return <DatePicker value={date} onChange={handleDateChange} sx={EditableFieldStyle} />;
+  };
+
+  // styling for the editable fields at the top of the page with light grey backgrounds
+  const EditableFieldStyle = {
+    fontSize: '16px',
+    backgroundColor: 'grey',
+    borderRadius: 3,
+    textAlign: 'left',
+    border: '2px solid',
+    width: '100%'
+  };
+
+  // styling for the non-editable fields at the top of the page with dark backgrounds
+  const NonEditableFieldStyle = {
+    padding: 1.5,
+    paddingTop: 1.5,
+    paddingBottom: 1.5,
+    fontSize: '1.2em',
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: 3,
+    textAlign: 'center',
+    textDecoration: 'underline',
+    width: '100%',
+    border: 'none'
+  };
+
   const hasDeletePerms = user.userId === designReview.userCreated.userId || isAdmin(user.role);
 
   return (
@@ -121,35 +149,13 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       <DeleteModal />
       <Grid container spacing={3} display={'flex'} paddingBottom={2}>
         <Grid item xs={1}>
-          <Box
-            sx={{
-              padding: 1.5,
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 3,
-              textAlign: 'center',
-              textDecoration: 'underline',
-              fontSize: '1.2em'
-            }}
-          >
-            Name
-          </Box>
+          <Box sx={NonEditableFieldStyle}>Name</Box>
         </Grid>
         <Grid item xs={6}>
-          <Box
-            sx={{
-              padding: 1.5,
-              fontSize: '1.2em',
-              backgroundColor: 'grey',
-              borderRadius: 3,
-              textAlign: 'center',
-              width: '100%'
-            }}
-          >
-            {designReviewNamePipe(designReview)}
-          </Box>
+          <Box sx={{ ...NonEditableFieldStyle, textDecoration: 'none' }}>{designReviewNamePipe(designReview)}</Box>
         </Grid>
         <Grid item xs={2}>
-          <DatePicker value={date} onChange={handleDateChange} />
+          <DateField />
         </Grid>
         <Grid item xs={3} display="flex" gap={3}>
           <Select
@@ -160,7 +166,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setStateTime(Number(event.target.value))}
             size={'small'}
             placeholder={'Start Time'}
-            sx={{ height: 56, width: '100%', textAlign: 'left' }}
+            sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {
               return (
@@ -181,7 +187,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
             placeholder={'End Time'}
-            sx={{ height: 56, width: '100%', textAlign: 'left' }}
+            sx={EditableFieldStyle}
           >
             {HOURS.map((hour) => {
               return (
@@ -195,23 +201,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         <Grid item xs={12}>
           <Grid container spacing={2}>
             <Grid item xs={2}>
-              <Box
-                sx={{
-                  padding: 1,
-                  paddingTop: 1.5,
-                  paddingBottom: 1.5,
-                  fontSize: '1.2em',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 3,
-                  textAlign: 'center',
-                  textDecoration: 'underline'
-                }}
-              >
-                Required
-              </Box>
+              <Box sx={NonEditableFieldStyle}>Required</Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ padding: 1, border: 1, borderColors: 'grey', borderRadius: 3, textAlign: 'center' }}>
+              <Box sx={{ ...EditableFieldStyle, padding: 1 }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple
@@ -246,23 +239,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
               </Box>
             </Grid>
             <Grid item xs={2}>
-              <Box
-                sx={{
-                  padding: 1,
-                  paddingTop: 1.5,
-                  paddingBottom: 1.5,
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 3,
-                  textAlign: 'center',
-                  textDecoration: 'underline',
-                  fontSize: '1.2em'
-                }}
-              >
-                Optional
-              </Box>
+              <Box sx={NonEditableFieldStyle}>Optional</Box>
             </Grid>
             <Grid item xs={4}>
-              <Box sx={{ padding: 1, border: 1, borderColors: 'grey', borderRadius: 3, textAlign: 'center' }}>
+              <Box sx={{ ...EditableFieldStyle, padding: 1 }}>
                 <Autocomplete
                   isOptionEqualToValue={(option, value) => option.id === value.id}
                   multiple

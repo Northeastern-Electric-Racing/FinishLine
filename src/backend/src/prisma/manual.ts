@@ -4,7 +4,7 @@
  */
 
 import prisma from './prisma';
-import { Role, WBS_Element_Status } from '@prisma/client';
+import { WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -16,14 +16,6 @@ import { calculateEndDate } from 'shared';
 
 /** Execute all given prisma database interaction scripts written in this function */
 const executeScripts = async () => {};
-
-/**
- * Update user's role given userId and new role
- * Example: await setUserRole(8, Role.MEMBER);
- */
-const setUserRole = async (id: number, role: Role) => {
-  await prisma.user.update({ where: { userId: id }, data: { role } });
-};
 
 /**
  * Print metrics on accepted Change Requests with timeline impact
@@ -156,12 +148,7 @@ const migrateToCheckableDescBullets = async () => {
     const projectLeadId = wp.wbsElement.leadId || 1;
 
     await prisma.description_Bullet.updateMany({
-      where: { workPackageIdExpectedActivities: wp.workPackageId },
-      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
-    });
-
-    await prisma.description_Bullet.updateMany({
-      where: { workPackageIdDeliverables: wp.workPackageId },
+      where: { wbsElement: { project: null } },
       data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
     });
   });

@@ -11,7 +11,7 @@ import {
   isProject,
   WorkPackage,
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   DesignReview
 } from 'shared';
 
@@ -95,8 +95,8 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
-export const expenseTypePipe = (expenseType: ExpenseType) => {
-  return `${expenseType.code} - ${expenseType.name}`;
+export const accountCodePipe = (accountCode: AccountCode) => {
+  return `${accountCode.code} - ${accountCode.name}`;
 };
 
 /** Display timeline status in readable form
