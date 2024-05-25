@@ -18,7 +18,6 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import NavPageLink from './NavPageLink';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import NERDrawer from '../../components/NERDrawer';
 import { GridMenuIcon } from '@mui/x-data-grid';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import NERCollapsingDrawer from '../../components/NERCollapsingDrawer';
