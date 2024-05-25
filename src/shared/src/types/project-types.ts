@@ -6,8 +6,8 @@
 import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { WorkPackageStage } from './work-package-types';
-import { Team, TeamPreview } from './team-types';
-import { Assembly, Material, Task, TeamType } from 'shared';
+import { TeamPreview } from './team-types';
+import { Assembly, Material, Task } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
