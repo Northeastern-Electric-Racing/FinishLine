@@ -1,4 +1,4 @@
-import { ClubAccount, ExpenseType } from 'shared';
+import { ClubAccount, AccountCode } from 'shared';
 import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
@@ -19,7 +19,7 @@ const schema = yup.object().shape({
 interface AccountCodeFormModalProps {
   showModal: boolean;
   handleClose: () => void;
-  defaultValues?: ExpenseType;
+  defaultValues?: AccountCode;
   onSubmit: (data: ExpenseTypePayload) => void;
 }
 

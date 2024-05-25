@@ -3,6 +3,7 @@ import NERFailButton from './NERFailButton';
 import NERSuccessButton from './NERSuccessButton';
 import { ReactNode } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
+import { CancelText, SubmitText } from '../utils/teams.utils';
 
 const background = '#ef4345';
 
@@ -13,8 +14,8 @@ export interface NERModalProps {
   onSubmit?: () => void;
   onHide: () => void;
   children?: ReactNode;
-  cancelText?: string;
-  submitText?: string;
+  cancelText?: CancelText;
+  submitText?: SubmitText;
   disabled?: boolean;
   showCloseButton?: boolean;
   hideFormButtons?: boolean;
