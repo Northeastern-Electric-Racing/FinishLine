@@ -131,7 +131,6 @@ CREATE TABLE "Scope_CR" (
     "scopeImpact" TEXT NOT NULL,
     "timelineImpact" INTEGER NOT NULL,
     "budgetImpact" INTEGER NOT NULL,
-    "wbsProposedChangesId" TEXT,
 
     CONSTRAINT "Scope_CR_pkey" PRIMARY KEY ("scopeCrId")
 );
@@ -559,8 +558,9 @@ CREATE TABLE "Wbs_Proposed_Changes" (
     "status" "WBS_Element_Status" NOT NULL,
     "leadId" INTEGER,
     "managerId" INTEGER,
-    "changeRequestId" INTEGER NOT NULL,
+    "changeRequestId" INTEGER,
     "dateDeleted" TIMESTAMP(3),
+    "changeRequestAsOriginalDataId" INTEGER,
 
     CONSTRAINT "Wbs_Proposed_Changes_pkey" PRIMARY KEY ("wbsProposedChangesId")
 );
@@ -570,7 +570,6 @@ CREATE TABLE "Project_Proposed_Changes" (
     "projectProposedChangesId" TEXT NOT NULL,
     "budget" INTEGER NOT NULL,
     "summary" TEXT NOT NULL,
-    "rules" TEXT[],
     "wbsProposedChangesId" TEXT NOT NULL,
     "carId" TEXT,
 
@@ -805,6 +804,9 @@ CREATE UNIQUE INDEX "Schedule_Settings_userId_key" ON "Schedule_Settings"("userI
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Wbs_Proposed_Changes_changeRequestId_key" ON "Wbs_Proposed_Changes"("changeRequestId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Wbs_Proposed_Changes_changeRequestAsOriginalDataId_key" ON "Wbs_Proposed_Changes"("changeRequestAsOriginalDataId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Project_Proposed_Changes_wbsProposedChangesId_key" ON "Project_Proposed_Changes"("wbsProposedChangesId");
@@ -1188,7 +1190,10 @@ ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_leadId_f
 ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_managerId_fkey" FOREIGN KEY ("managerId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changeRequestAsOriginalDataId_fkey" FOREIGN KEY ("changeRequestAsOriginalDataId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project_Proposed_Changes" ADD CONSTRAINT "Project_Proposed_Changes_wbsProposedChangesId_fkey" FOREIGN KEY ("wbsProposedChangesId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE RESTRICT ON UPDATE CASCADE;

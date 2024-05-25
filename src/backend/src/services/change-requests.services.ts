@@ -199,11 +199,24 @@ export default class ChangeRequestsService {
             create: {
               name: foundCR.wbsElement.name,
               status: foundCR.wbsElement.status,
-              leadId: foundCR.wbsElement.leadId,
-              managerId: foundCR.wbsElement.managerId,
+              lead: {
+                connect: {
+                  userId: foundCR.wbsElement.leadId ?? undefined
+                }
+              },
+              manager: {
+                connect: {
+                  userId: foundCR.wbsElement.managerId ?? undefined
+                }
+              },
               links: {
                 connect: foundCR.wbsElement.links.map((link) => ({
                   linkId: link.linkId
+                }))
+              },
+              proposedDescriptionBulletChanges: {
+                connect: foundCR.wbsElement.descriptionBullets.map((descriptionBullet) => ({
+                  descriptionId: descriptionBullet.descriptionId
                 }))
               },
               projectProposedChanges:
@@ -212,20 +225,14 @@ export default class ChangeRequestsService {
                       create: {
                         budget: associatedProject.budget,
                         summary: associatedProject.summary,
-                        rules: associatedProject.rules,
-                        goals: { connect: associatedProject.goals.map((goal) => ({ descriptionId: goal.descriptionId })) },
-                        features: {
-                          connect: associatedProject.features.map((feature) => ({ descriptionId: feature.descriptionId }))
-                        },
-                        otherConstraints: {
-                          connect: associatedProject.otherConstraints.map((constraint) => ({
-                            descriptionId: constraint.descriptionId
-                          }))
-                        },
                         teams: {
                           connect: associatedProject.teams.map((team) => ({ teamId: team.teamId }))
                         },
-                        carNumber: associatedProject.wbsElement.carNumber
+                        car: {
+                          connect: {
+                            carId: associatedProject.carId
+                          }
+                        }
                       }
                     }
                   : undefined,
@@ -237,16 +244,6 @@ export default class ChangeRequestsService {
                         duration: associatedWorkPackage.duration,
                         blockedBy: {
                           connect: associatedWorkPackage.blockedBy.map((wbsNumber) => ({ wbsNumber }))
-                        },
-                        expectedActivities: {
-                          connect: associatedWorkPackage.expectedActivities.map((activity) => ({
-                            descriptionId: activity.descriptionId
-                          }))
-                        },
-                        deliverables: {
-                          connect: associatedWorkPackage.deliverables.map((deliverable) => ({
-                            descriptionId: deliverable.descriptionId
-                          }))
                         },
                         stage: associatedWorkPackage.stage
                       }

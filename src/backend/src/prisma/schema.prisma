@@ -749,7 +749,7 @@ model Wbs_Proposed_Changes {
   manager                          User?                          @relation(name: "wbsmanager", fields: [managerId], references: [userId])
   links                            Link[]                         @relation(name: "proposedChangeLinks")
   changeRequest                    Scope_CR?                      @relation(name: "wbsProposedChanges", fields: [changeRequestId], references: [scopeCrId])
-  changeRequestId                  Int                            @unique
+  changeRequestId                  Int?                           @unique
   projectProposedChanges           Project_Proposed_Changes?      @relation(name: "projectProposedChanges")
   workPackageProposedChanges       Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
   proposedDescriptionBulletChanges Description_Bullet[]           @relation(name: "proposedDescriptionBulletChanges")
@@ -762,7 +762,6 @@ model Project_Proposed_Changes {
   projectProposedChangesId String               @id @default(uuid())
   budget                   Int
   summary                  String
-  rules                    String[]
   teams                    Team[]               @relation(name: "proposedProjectTeams")
   wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique

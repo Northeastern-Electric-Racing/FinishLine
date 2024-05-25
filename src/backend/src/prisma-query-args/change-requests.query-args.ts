@@ -12,8 +12,13 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
       wbsElement: {
         include: {
           workPackage: getWorkPackageQueryArgs(organizationId),
-          project: true,
-          descriptionBullets: true
+          project: {
+            include: {
+              teams: true
+            }
+          },
+          descriptionBullets: true,
+          links: true
         }
       },
       reviewer: getUserQueryArgs(organizationId),

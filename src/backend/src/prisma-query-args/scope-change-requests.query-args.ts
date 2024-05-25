@@ -48,6 +48,7 @@ export const getScopeChangeRequestQueryArgs = (organizationId: string) =>
     include: {
       why: true,
       proposedSolutions: getProposedSolutionQueryArgs(organizationId),
-      wbsProposedChanges: getWbsProposedChangeQueryArgs(organizationId)
+      wbsProposedChanges: getWbsProposedChangeQueryArgs(organizationId),
+      wbsOriginalData: getWbsProposedChangeQueryArgs(organizationId)
     }
   });
