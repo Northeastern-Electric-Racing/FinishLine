@@ -132,7 +132,8 @@
       "public",
       "lib",
       "dist",
-      "system-tests/**"
+      "system-tests/**",
+      "scripts"
     ]
   },
   "jest": {
