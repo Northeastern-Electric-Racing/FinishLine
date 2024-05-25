@@ -1,6 +1,6 @@
 import { TableCell } from '@mui/material';
 import { Dispatch, SetStateAction } from 'react';
-import { ReimbursementRequestRow } from '../../../../../shared/src/types/reimbursement-requests-types';
+import { ReimbursementRequestRow } from 'shared/src/types/reimbursement-requests-types';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
 const ColumnHeader = ({

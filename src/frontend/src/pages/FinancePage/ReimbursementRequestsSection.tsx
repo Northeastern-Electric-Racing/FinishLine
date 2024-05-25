@@ -21,7 +21,7 @@ import {
   cleanReimbursementRequestStatus,
   createReimbursementRequestRowData
 } from '../../utils/reimbursement-request.utils';
-import { ReimbursementRequestRow } from '../../../../shared/src/types/reimbursement-requests-types';
+import { ReimbursementRequestRow } from 'shared/src/types/reimbursement-requests-types';
 // import TableSortLabel from '@mui/material/TableSortLabel';
 import ColumnHeader from './FinanceComponents/ColumnHeader';
 

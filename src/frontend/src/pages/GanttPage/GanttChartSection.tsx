@@ -33,14 +33,12 @@ const GanttChartSection = ({
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
-  const [cursorX, setCursorX] = useState(0);
-  const [cursorY, setCursorY] = useState(0);
+  const [cursorY, setCursorY] = useState<number>(0);
 
   const handleOnMouseOver = (e: React.MouseEvent, event: GanttTaskData) => {
     if (!isEditMode) {
-      setCursorX(e.clientX);
-      setCursorY(e.clientY);
       setCurrentTask(event);
+      setCursorY(e.clientY);
     }
   };
 
@@ -95,14 +93,13 @@ const GanttChartSection = ({
       </Box>
       {currentTask && (
         <GanttToolTip
-          xCoordinate={cursorX}
           yCoordinate={cursorY}
           title={!currentTask.project ? currentTask.name.substring(8) : currentTask.name.substring(6)}
           startDate={currentTask.start}
           endDate={currentTask.end}
           color={currentTask.styles?.backgroundColor}
-          projectLead={currentTask.projectLead}
-          projectManager={currentTask.projectManager}
+          lead={currentTask.lead}
+          manager={currentTask.manager}
         />
       )}
     </Box>

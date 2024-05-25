@@ -1,8 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import TasksController from '../controllers/tasks.controllers';
-import { validateInputs } from '../utils/utils';
-import { nonEmptyString, intMinZero, isTaskPriority, isTaskStatus } from '../utils/validation.utils';
+import { nonEmptyString, intMinZero, isTaskPriority, isTaskStatus, validateInputs } from '../utils/validation.utils';
 
 const tasksRouter = express.Router();
 
