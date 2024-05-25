@@ -23,7 +23,7 @@
     "prisma:generate": "cd src/backend; npx prisma generate",
     "prisma:manual": "yarn workspace backend prisma:manual",
     "prisma:studio": "cd src/backend; npx prisma studio",
-    "containerize": "docker-compose down && docker-compose build && docker-compose up -d && sleep 5 && docker exec database psql -U postgres -c \"CREATE DATABASE nerpm;\" && node scripts/database-setup.js && yarn prisma:reset:force",
+    "containerize": "cd docker-tests; docker-compose down && docker-compose build && docker-compose up -d && sleep 5 && docker exec database psql -U postgres -c \"CREATE DATABASE nerpm;\" && node scripts/database-setup.js && yarn prisma:reset:force cd ../",
     "containerize:teste2e": "yarn containerize && yarn test:e2e",
     "lint": "npx eslint .",
     "test:e2e": "./system-tests/run.sh",
