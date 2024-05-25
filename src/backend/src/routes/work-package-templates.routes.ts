@@ -28,4 +28,18 @@ workPackageTemplatesRouter.post(
   WorkPackagesController.editWorkPackageTemplate
 );
 
+workPackageTemplatesRouter.post(
+  '/create',
+  nonEmptyString(body('templateName')),
+  nonEmptyString(body('templateNotes')),
+  nonEmptyString(body('workPackageName').optional()),
+  isWorkPackageStageOrNone(body('stage').optional()),
+  intMinZero(body('duration').optional()),
+  body('blockedBy').isArray(),
+  nonEmptyString(body('blockedBy.*')),
+  ...descriptionBulletsValidators,
+  validateInputs,
+  WorkPackagesController.createWorkPackageTemplate
+);
+
 export default workPackageTemplatesRouter;
