@@ -22,7 +22,7 @@ export const workPackageTemplateTransformer = (
     dateCreated: wptInput.dateCreated,
     userCreated: userTransformer(wptInput.userCreated),
     dateDeleted: wptInput.dateDeleted ?? undefined,
-    userDeleted: wptInput.userDeleted ? userTransformer(wptInput.userDeleted) : undefined,
+    userDeleted: wptInput.userDeleted ? userTransformer(wptInput.userDeleted) : undefined
   };
 };
 

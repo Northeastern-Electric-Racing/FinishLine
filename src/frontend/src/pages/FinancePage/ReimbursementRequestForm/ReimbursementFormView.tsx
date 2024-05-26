@@ -91,7 +91,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const theme = useTheme();
   const products = watch(`reimbursementProducts`);
   const accountCodeId = watch('accountCodeId');
-  const selectedAccountCode= allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
+  const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
   const refundSources = selectedAccountCode?.allowedRefundSources || [];
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);

@@ -109,17 +109,7 @@ export default class WorkPackagesController {
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        workPackageId,
-        name,
-        crId,
-        startDate,
-        duration,
-        blockedBy,
-        descriptionBullets,
-        leadId,
-        managerId
-      } = req.body;
+      const { workPackageId, name, crId, startDate, duration, blockedBy, descriptionBullets, leadId, managerId } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;

@@ -23,8 +23,8 @@ import {
 } from './wbs-numbers.stub';
 
 export const exampleResearchWorkPackage: WorkPackage = {
-  id: "1",
-  wbsElementId: "1",
+  id: '1',
+  wbsElementId: '1',
   wbsNum: exampleWbsWorkPackage1,
   dateCreated: new Date('11/15/20'),
   name: 'Bodywork Concept of Design',
@@ -40,8 +40,8 @@ export const exampleResearchWorkPackage: WorkPackage = {
   descriptionBullets: [],
   changes: [
     {
-      changeId: "1",
-      changeRequestId: "33",
+      changeId: '1',
+      changeRequestId: '33',
       wbsNum: exampleWbsWorkPackage3,
       implementer: exampleGuestUser,
       detail: 'Increased funding by $500.',
@@ -55,8 +55,8 @@ export const exampleResearchWorkPackage: WorkPackage = {
 };
 
 export const exampleDesignWorkPackage: WorkPackage = {
-  id: "2",
-  wbsElementId: "2",
+  id: '2',
+  wbsElementId: '2',
   wbsNum: exampleWbsWorkPackage2,
   dateCreated: new Date('10/02/20'),
   name: 'Adhesive Shear Strength Test',
@@ -72,8 +72,8 @@ export const exampleDesignWorkPackage: WorkPackage = {
   descriptionBullets: [],
   changes: [
     {
-      changeId: "2",
-      changeRequestId: "1",
+      changeId: '2',
+      changeRequestId: '1',
       wbsNum: exampleWbsWorkPackage3,
       implementer: exampleAppAdminUser,
       detail: 'Decreased duration from 10 weeks to 7 weeks.',
@@ -81,8 +81,8 @@ export const exampleDesignWorkPackage: WorkPackage = {
     },
 
     {
-      changeId: "13",
-      changeRequestId: "54",
+      changeId: '13',
+      changeRequestId: '54',
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleLeadUser,
       detail: 'Added "jet fuel burns hot" bullet.',
@@ -96,8 +96,8 @@ export const exampleDesignWorkPackage: WorkPackage = {
 };
 
 export const exampleManufacturingWorkPackage: WorkPackage = {
-  id: "3",
-  wbsElementId: "3",
+  id: '3',
+  wbsElementId: '3',
   wbsNum: exampleWbsWorkPackage3,
   dateCreated: new Date('09/27/20'),
   name: 'Manufacture Wiring Harness',
@@ -113,8 +113,8 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   descriptionBullets: [],
   changes: [
     {
-      changeId: "7",
-      changeRequestId: "14",
+      changeId: '7',
+      changeRequestId: '14',
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleAdminUser,
       detail: 'Increased budget from $10 to $200.',
@@ -128,8 +128,8 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
 };
 
 export const exampleInstallWorkPackage: WorkPackage = {
-  id: "4",
-  wbsElementId: "4",
+  id: '4',
+  wbsElementId: '4',
   wbsNum: exampleWbsWorkPackage4,
   dateCreated: new Date('2022-02-20'),
   name: 'Install Wiring Harness',
@@ -145,8 +145,8 @@ export const exampleInstallWorkPackage: WorkPackage = {
   descriptionBullets: [],
   changes: [
     {
-      changeId: "8",
-      changeRequestId: "15",
+      changeId: '8',
+      changeRequestId: '15',
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleAdminUser,
       detail: 'New Work Package Created',
@@ -160,8 +160,8 @@ export const exampleInstallWorkPackage: WorkPackage = {
 };
 
 export const exampleWorkPackage5: WorkPackage = {
-  id: "5",
-  wbsElementId: "5",
+  id: '5',
+  wbsElementId: '5',
   wbsNum: exampleWbsWorkPackage5,
   dateCreated: new Date('2022-02-20'),
   name: 'Party In Celebration',
@@ -177,8 +177,8 @@ export const exampleWorkPackage5: WorkPackage = {
   descriptionBullets: [],
   changes: [
     {
-      changeId: "9",
-      changeRequestId: "16",
+      changeId: '9',
+      changeRequestId: '16',
       wbsNum: exampleWbsWorkPackage1,
       implementer: exampleAdminUser,
       detail: 'New Work Package Created',

@@ -33,8 +33,7 @@ export default class ProjectsController {
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);
-      const { name, crId, carNumber, teamIds, budget, summary, leadId, managerId, links, descriptionBullets } =
-        req.body;
+      const { name, crId, carNumber, teamIds, budget, summary, leadId, managerId, links, descriptionBullets } = req.body;
       const organizationId = getOrganizationId(req.headers);
 
       const createdProject = await ProjectsService.createProject(
@@ -61,8 +60,7 @@ export default class ProjectsController {
   static async editProject(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } =
-        req.body;
+      const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
       const organizationId = getOrganizationId(req.headers);
 
       const editedProject: Project = await ProjectsService.editProject(

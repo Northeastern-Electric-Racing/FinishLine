@@ -31,7 +31,7 @@ export const supermanAdmin: CreateTestUserParams = {
 
 export const supermanSettings: User_Settings = {
   id: 'sm',
-  userId: "2",
+  userId: '2',
   defaultTheme: Theme.LIGHT,
   slackId: 'slackSM'
 };
@@ -47,7 +47,7 @@ export const wonderwomanGuest: CreateTestUserParams = {
 
 export const wonderwomanSettings: User_Settings = {
   id: 'ww',
-  userId: "4",
+  userId: '4',
   defaultTheme: Theme.LIGHT,
   slackId: 'slackWW'
 };
@@ -99,13 +99,13 @@ export const member: CreateTestUserParams = {
 
 export const batmanSettings: User_Settings = {
   id: 'bm',
-  userId: "1",
+  userId: '1',
   defaultTheme: Theme.DARK,
   slackId: 'slack'
 };
 
 export const sharedBatman: SharedUser = {
-  userId: "1",
+  userId: '1',
   firstName: 'Bruce',
   lastName: 'Wayne',
   email: 'notbatman@gmail.com',
@@ -115,7 +115,7 @@ export const sharedBatman: SharedUser = {
 
 export const batmanSecureSettings: User_Secure_Settings = {
   userSecureSettingsId: 'bm',
-  userId: "1",
+  userId: '1',
   nuid: '001234567',
   phoneNumber: '1234567890',
   street: '123 Gotham St.',
@@ -156,7 +156,7 @@ export const batmanScheduleSettings: Schedule_Settings = {
   personalGmail: 'brucewayne@gmail.com',
   personalZoomLink: 'https://zoom.us/j/gotham',
   availability: [],
-  userId: "69"
+  userId: '69'
 };
 
 export const batmanWithScheduleSettings: CreateTestUserParams & { scheduleSettings: Schedule_Settings } = {
@@ -178,7 +178,7 @@ export const wonderwomanScheduleSettings: Schedule_Settings = {
   personalGmail: 'diana@gmail.com',
   personalZoomLink: 'https://zoom.us/jk/athens',
   availability: [3],
-  userId: "72"
+  userId: '72'
 };
 
 export const wonderwomanMarkedScheduleSettings: Schedule_Settings = {
@@ -186,7 +186,7 @@ export const wonderwomanMarkedScheduleSettings: Schedule_Settings = {
   personalGmail: 'diana@gmail.com',
   personalZoomLink: 'https://zoom.us/jk/athens',
   availability: [1, 2],
-  userId: "72"
+  userId: '72'
 };
 
 export const wonderwomanWithScheduleSettings: CreateTestUserParams & { scheduleSettings: Schedule_Settings } = {
