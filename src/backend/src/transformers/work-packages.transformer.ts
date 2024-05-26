@@ -34,7 +34,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
-    teams: wpInput.project.teams.map(teamTransformer),
+    teamTypes: wpInput.project.teams.map(teamTransformer).map((team) => team.teamType!),
     projectName: wpInput.project.wbsElement.name,
     stage: (wpInput.stage as WorkPackageStage) || undefined
   };

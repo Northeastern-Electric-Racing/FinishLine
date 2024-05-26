@@ -168,9 +168,10 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
               const workPackage = allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === selectedValue);
               if (workPackage) {
-                const teamType = workPackage.teams.find((team) => team.teamType !== undefined);
+                console.log(workPackage);
+                const teamType = workPackage.teamTypes[0];
                 if (teamType) {
-                  setValue('teamTypeId', teamType.teamType!.teamTypeId);
+                  setValue('teamTypeId', teamType.teamTypeId);
                 } else {
                   setValue('teamTypeId', '');
                 }
