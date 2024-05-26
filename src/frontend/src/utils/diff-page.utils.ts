@@ -85,8 +85,6 @@ export const getPotentialChangeBackground = (potentialChangeType: PotentialChang
 };
 
 export const valueChanged = (original: ProposedChangeValue, proposed: ProposedChangeValue) => {
-  console.log(typeof original, typeof proposed, original, proposed);
-
   if (typeof original === 'string' || typeof original === 'number') return original !== proposed;
 
   if (original === undefined) return proposed !== undefined;

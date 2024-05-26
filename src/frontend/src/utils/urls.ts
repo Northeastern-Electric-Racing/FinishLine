@@ -152,13 +152,17 @@ const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
-/******************* Work Package Template Endpoints********************/
+/******************* Work Package Template Endpoints ********************/
 
 const workPackageTemplates = () => `${API_URL}/templates`;
 const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPackageTemplates()}/${workPackageTemplateId}`;
 const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
 const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
+
+/******************* Car Endpoints ********************/
+const cars = () => `${API_URL}/cars`;
+const carsCreate = () => `${cars()}/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -288,6 +292,9 @@ export const apiUrls = {
   workPackageTemplatesById,
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
+
+  cars,
+  carsCreate,
 
   version
 };

@@ -139,3 +139,5 @@ export interface DescriptionBulletTypeCreatePayload {
   workPackageRequired: boolean;
   projectRequired: boolean;
 }
+
+export interface Car extends WbsElement {}
