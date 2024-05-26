@@ -33,24 +33,23 @@ const ColumnHeader = ({
         {title}
       </TableCell>
     );
-  } else {
-    return (
-      <TableCell
-        align={leftAlign ? 'left' : 'center'}
-        sx={{ fontSize: '16px', fontWeight: 600 }}
-        sortDirection={orderBy === id ? (isAscendingOrder ? 'asc' : 'desc') : false}
-        style={{ paddingLeft: '24px', paddingRight: '0px' }}
-      >
-        <TableSortLabel
-          active={orderBy === id}
-          direction={orderBy === id ? (isAscendingOrder ? 'asc' : 'desc') : 'asc'}
-          onClick={() => handleRequestSort(id)}
-        >
-          {title}
-        </TableSortLabel>
-      </TableCell>
-    );
   }
+  return (
+    <TableCell
+      align={leftAlign ? 'left' : 'center'}
+      sx={{ fontSize: '16px', fontWeight: 600 }}
+      sortDirection={orderBy === id ? (isAscendingOrder ? 'asc' : 'desc') : false}
+      style={{ paddingLeft: '24px', paddingRight: '0px' }}
+    >
+      <TableSortLabel
+        active={orderBy === id}
+        direction={orderBy === id ? (isAscendingOrder ? 'asc' : 'desc') : 'asc'}
+        onClick={() => handleRequestSort(id)}
+      >
+        {title}
+      </TableSortLabel>
+    </TableCell>
+  );
 };
 
 export default ColumnHeader;

@@ -17,8 +17,8 @@ export const updateLinks = async (
     editedElements: LinkCreateArgs[];
     changes: ChangeCreateArgs[];
   },
-  wbsElementId: number,
-  userId: number,
+  wbsElementId: string,
+  userId: string,
   organizationId: string
 ) => {
   const promises = linkChanges.addedElements.map(async (link) => {

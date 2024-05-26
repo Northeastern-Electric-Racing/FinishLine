@@ -60,10 +60,10 @@ const GanttTaskBarEdit = ({
     }
   };
 
-  const onDragStart = (e: DragEvent<HTMLDivElement>) => {
+  const onDragStart = () => {
     setShowDropPoints(true);
   };
-  const onDragEnd = (e: DragEvent<HTMLDivElement>) => {
+  const onDragEnd = () => {
     setShowDropPoints(false);
   };
 
@@ -106,7 +106,7 @@ const GanttTaskBarEdit = ({
             <Box
               key={index}
               onDragOver={onDragOver}
-              onDrop={(e) => onDrop(day)}
+              onDrop={() => onDrop(day)}
               sx={{
                 borderRadius: '0.25rem',
                 height: '2rem',

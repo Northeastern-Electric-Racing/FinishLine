@@ -13,11 +13,12 @@ import {
   StageGateChangeRequest,
   StandardChangeRequest
 } from 'shared';
-import { exampleAdminUser, exampleAppAdminUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
+import { exampleAdminUser, exampleAppAdminUser, exampleLeadUser, exampleManagerUser } from './users.stub';
 import { exampleWbsProject1, exampleWbsWorkPackage1 } from './wbs-numbers.stub';
 
 export const exampleStandardChangeRequest: StandardChangeRequest = {
-  crId: 37,
+  crId: '37',
+  identifier: 37,
   wbsNum: exampleWbsProject1,
   wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
@@ -64,14 +65,15 @@ export const exampleStandardChangeRequest: StandardChangeRequest = {
 };
 
 export const exampleActivationChangeRequest: ActivationChangeRequest = {
-  crId: 69,
+  crId: '69',
+  identifier: 69,
   wbsNum: exampleWbsWorkPackage1,
   wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
   dateSubmitted: new Date('02/25/21'),
   type: ChangeRequestType.Activation,
-  projectLead: exampleProjectLeadUser,
-  projectManager: exampleProjectManagerUser,
+  lead: exampleLeadUser,
+  manager: exampleManagerUser,
   startDate: new Date('03/01/21'),
   confirmDetails: true,
   status: ChangeRequestStatus.Accepted,
@@ -79,7 +81,8 @@ export const exampleActivationChangeRequest: ActivationChangeRequest = {
 };
 
 export const exampleStageGateChangeRequest: StageGateChangeRequest = {
-  crId: 93,
+  crId: '93',
+  identifier: 93,
   wbsNum: exampleWbsWorkPackage1,
   wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
@@ -92,7 +95,8 @@ export const exampleStageGateChangeRequest: StageGateChangeRequest = {
 };
 
 export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
-  crId: 37,
+  crId: '37',
+  identifier: 37,
   wbsNum: exampleWbsWorkPackage1,
   wbsName: 'Example Work Package 1',
   submitter: exampleAdminUser,
@@ -135,15 +139,15 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
   timelineImpact: 2,
   implementedChanges: [
     {
-      changeId: 1,
-      changeRequestId: 37,
+      changeId: '1',
+      changeRequestId: '37',
       wbsNum: {
         carNumber: 1,
         projectNumber: 23,
         workPackageNumber: 3
       },
       implementer: {
-        userId: 22,
+        userId: '22',
         firstName: 'Joe',
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
@@ -154,15 +158,15 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       dateImplemented: new Date('02/25/21')
     },
     {
-      changeId: 1,
-      changeRequestId: 37,
+      changeId: '1',
+      changeRequestId: '37',
       wbsNum: {
         carNumber: 1,
         projectNumber: 23,
         workPackageNumber: 4
       },
       implementer: {
-        userId: 22,
+        userId: '22',
         firstName: 'Joe',
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',
@@ -173,15 +177,15 @@ export const exampleStandardImplementedChangeRequest: StandardChangeRequest = {
       dateImplemented: new Date('02/25/21')
     },
     {
-      changeId: 1,
-      changeRequestId: 37,
+      changeId: '1',
+      changeRequestId: '37',
       wbsNum: {
         carNumber: 1,
         projectNumber: 23,
         workPackageNumber: 5
       },
       implementer: {
-        userId: 22,
+        userId: '22',
         firstName: 'Joe',
         lastName: 'Schmoe',
         email: 'j.schmoe@northeastern.edu',

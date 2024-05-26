@@ -49,9 +49,9 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
   const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
 
   if (storedHideColumn === 'false') {
-    hideColumn = new Array(12).fill(false);
+    setHideColumn(new Array(12).fill(false));
   } else {
-    hideColumn = storedHideColumn;
+    setHideColumn(storedHideColumn);
   }
 
   if (isLoading) return <LoadingIndicator />;
@@ -239,9 +239,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
       colSpan: ({ row }) => {
         if (row.id.includes('assembly')) {
           return 2;
-        } else {
-          return 1;
         }
+        return 1;
       },
       hide: hideColumn[4]
     },
@@ -320,7 +319,6 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
       )}
 
       <BOMTable
-        hideColumn={hideColumn}
         setHideColumn={setHideColumn}
         columns={columns}
         assemblies={project.assemblies}

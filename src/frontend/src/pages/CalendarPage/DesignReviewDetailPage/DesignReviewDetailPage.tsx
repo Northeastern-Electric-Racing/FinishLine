@@ -32,8 +32,8 @@ import NERModal from '../../../components/NERModal';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export interface DesignReviewEditData {
-  requiredUserIds: number[];
-  optionalUserIds: number[];
+  requiredUserIds: string[];
+  optionalUserIds: string[];
   selectedDate: Date;
   startTime: number;
   endTime: number;
@@ -47,7 +47,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [requiredUsers, setRequiredUsers] = useState(designReview.requiredMembers.map(userToAutocompleteOption));
   const [optionalUsers, setOptionalUsers] = useState(designReview.optionalMembers.map(userToAutocompleteOption));
   const [date, setDate] = useState(
-    new Date(designReview.dateScheduled?.getTime() - designReview.dateScheduled?.getTimezoneOffset() * -60000)
+    new Date(designReview.dateScheduled.getTime() - designReview.dateScheduled.getTimezoneOffset() * -60000)
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [startTime, setStateTime] = useState(designReview.meetingTimes[0] % 12);
@@ -281,8 +281,8 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       </Grid>
       <AvailabilityView
         editPayload={{
-          requiredUserIds: requiredUsers.map((option) => Number(option.id)),
-          optionalUserIds: optionalUsers.map((option) => Number(option.id)),
+          requiredUserIds: requiredUsers.map((option) => option.id),
+          optionalUserIds: optionalUsers.map((option) => option.id),
           selectedDate: date,
           startTime,
           endTime

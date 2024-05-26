@@ -15,9 +15,9 @@ export enum ChangeType {
 }
 
 export interface ChangeCreateArgs {
-  changeRequestId: number;
-  implementerId: number;
-  wbsElementId: number;
+  changeRequestId: string;
+  implementerId: string;
+  wbsElementId: string;
   detail: string;
 }
 
@@ -53,9 +53,9 @@ export const createChange = (
   nameOfField: string,
   oldValue: string | number | null,
   newValue: string | number | null,
-  crId: number,
-  implementerId: number,
-  wbsElementId: number
+  crId: string,
+  implementerId: string,
+  wbsElementId: string
 ): ChangeCreateArgs | undefined => {
   if (oldValue == null && newValue !== null) {
     return {
@@ -96,9 +96,9 @@ export const createListChanges = <T>(
   nameOfField: string,
   oldArray: ChangeListValue<T>[],
   newArray: ChangeListValue<T>[],
-  crId: number,
-  implementerId: number,
-  wbsElementId: number
+  crId: string,
+  implementerId: string,
+  wbsElementId: string
 ): {
   deletedElements: T[];
   addedElements: T[];
@@ -163,15 +163,15 @@ export const getWorkPackageChanges = async (
   newDuration: number,
   oldBlockedBy: WBS_Element[],
   newBlockedBy: WBS_Element[],
-  oldManagerId: number | null,
-  newManagerId: number | null,
-  oldLeadId: number | null,
-  newLeadId: number | null,
+  oldManagerId: string | null,
+  newManagerId: string | null,
+  oldLeadId: string | null,
+  newLeadId: string | null,
   oldDescriptionBullets: DescriptionBulletWithType[],
   newDescriptionBullets: DescriptionBulletPreview[],
-  crId: number,
-  wbsElementId: number,
-  submitterId: number
+  crId: string,
+  wbsElementId: string,
+  submitterId: string
 ) => {
   let changes: ChangeCreateArgs[] = [];
   const nameChangeJson = createChange('name', oldName, newName, crId, submitterId, wbsElementId);
@@ -245,9 +245,9 @@ export const getWorkPackageChanges = async (
 export const getDescriptionBulletChanges = async (
   oldDescriptionBullets: DescriptionBulletWithType[],
   newDescriptionBullets: DescriptionBulletPreview[],
-  crId: number,
-  wbsElementId: number,
-  submitterId: number
+  crId: string,
+  wbsElementId: string,
+  submitterId: string
 ) => {
   const descriptionBulletsSeparatedByType = separateDescriptionBulletsByType(newDescriptionBullets);
   let descriptionBulletChanges: ChangeCreateArgs[] = [];

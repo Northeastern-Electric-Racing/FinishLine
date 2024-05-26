@@ -1,6 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
-import { WbsElement } from 'shared';
 import * as yup from 'yup';
 import AssemblyFormView from './AssemblyFormView';
 
@@ -18,12 +17,11 @@ export interface AssemblyFormProps {
   submitText: 'Add' | 'Edit';
   onSubmit: (payload: AssemblyFormInput) => void;
   defaultValues?: AssemblyFormInput;
-  wbsElement: WbsElement;
   onHide: () => void;
   open: boolean;
 }
 
-const AssemblyForm: React.FC<AssemblyFormProps> = ({ submitText, onSubmit, defaultValues, wbsElement, onHide, open }) => {
+const AssemblyForm: React.FC<AssemblyFormProps> = ({ submitText, onSubmit, defaultValues, onHide, open }) => {
   const {
     handleSubmit,
     control,

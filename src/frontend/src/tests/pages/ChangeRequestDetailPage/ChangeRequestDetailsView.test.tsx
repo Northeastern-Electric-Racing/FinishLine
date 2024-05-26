@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { routerWrapperBuilder, fireEvent, render, screen, act } from '../../test-support/test-utils';
+import { routerWrapperBuilder, fireEvent, render, screen } from '../../test-support/test-utils';
 import { ChangeRequest, Project, User } from 'shared';
 import { exampleStandardChangeRequest } from '../../test-support/test-data/change-requests.stub';
 import ChangeRequestDetailsView from '../../../pages/ChangeRequestDetailPage/ChangeRequestDetailsView';
@@ -75,9 +75,7 @@ describe('Implement change request permission tests', () => {
     mockAllUsersHook(false, false, []);
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest);
-    act(() => {
-      fireEvent.click(screen.getByText(actionBtnText));
-    });
+    fireEvent.click(screen.getByText(actionBtnText));
     expect(screen.getByText(newPrjBtnText)).toHaveAttribute('aria-disabled');
     expect(screen.getByText(newWPBtnText)).toHaveAttribute('aria-disabled');
   });
@@ -87,9 +85,7 @@ describe('Implement change request permission tests', () => {
     mockAllUsersHook(false, false, []);
     mockUseLogUserInHook(false, false);
     renderComponent(exampleStandardChangeRequest, true);
-    act(() => {
-      fireEvent.click(screen.getByText(actionBtnText));
-    });
+    fireEvent.click(screen.getByText(actionBtnText));
     expect(screen.getByText(newPrjBtnText)).not.toHaveAttribute('aria-disabled');
     expect(screen.getByText(newWPBtnText)).not.toHaveAttribute('aria-disabled');
   });

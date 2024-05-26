@@ -18,8 +18,8 @@ interface DesignReviewEditAttendeesProps {
 
 const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttendeesProps> = ({ designReview }) => {
   const toast = useToast();
-  const requiredMembers = designReview.requiredMembers;
-  const optionalMembers = designReview.optionalMembers;
+  const { requiredMembers } = designReview;
+  const { optionalMembers } = designReview;
   const currentUser = useCurrentUser();
 
   const { isLoading: editDesignReviewIsLoading, mutateAsync: editDesignReview } = useEditDesignReview(

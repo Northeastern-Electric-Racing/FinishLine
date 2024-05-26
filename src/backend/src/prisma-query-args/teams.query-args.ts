@@ -4,7 +4,7 @@ import { getUserQueryArgs } from './user.query-args';
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 
 export const getTeamQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.TeamArgs>()({
+  Prisma.validator<Prisma.TeamDefaultArgs>()({
     include: {
       members: getUserQueryArgs(organizationId),
       head: getUserQueryArgs(organizationId),

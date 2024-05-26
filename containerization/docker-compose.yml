@@ -11,7 +11,7 @@ services:
   frontend:
     container_name: frontend
     build:
-      context: .
+      context: ../
       dockerfile: src/frontend/Dockerfile
     ports:
       - "3000:3000"
@@ -21,7 +21,7 @@ services:
   backend:
     container_name: backend
     build:
-      context: .
+      context: ../
       dockerfile: src/backend/Dockerfile
     ports:
       - "3001:3001"

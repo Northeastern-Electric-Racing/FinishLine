@@ -10,7 +10,7 @@ import { apiUrls } from '../utils/urls';
 /**
  * Check a single description bullet.
  */
-export const checkDescriptionBullet = (userId: number, descriptionId: number) => {
+export const checkDescriptionBullet = (userId: string, descriptionId: string) => {
   return axios.post<DescriptionBullet>(apiUrls.descriptionBulletsCheck(), {
     userId,
     descriptionId

@@ -7,7 +7,7 @@ import { AuthenticatedUser, DescriptionBulletPreview, LinkCreateArgs } from 'sha
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
-  devSignin: (userId: number) => Promise<AuthenticatedUser>;
+  devSignin: (userId: string) => Promise<AuthenticatedUser>;
   signin: (token: string) => Promise<AuthenticatedUser>;
   signout: () => void;
   isLoading: boolean;
@@ -26,19 +26,19 @@ export interface VersionObject {
 }
 
 export interface EditSingleProjectPayload {
-  projectId: number;
-  crId: number;
+  projectId: string;
+  crId: string;
   name: string;
   budget: number;
   summary: string;
   descriptionBullets: DescriptionBulletPreview[];
   links: LinkCreateArgs[];
-  leadId?: number;
-  managerId?: number;
+  leadId?: string;
+  managerId?: string;
 }
 
 export interface CreateSingleProjectPayload {
-  crId: number;
+  crId: string;
   name: string;
   carNumber: number;
   summary: string;
@@ -46,6 +46,6 @@ export interface CreateSingleProjectPayload {
   budget: number;
   descriptionBullets: DescriptionBulletPreview[];
   links?: LinkCreateArgs[];
-  leadId?: number;
-  managerId?: number;
+  leadId?: string;
+  managerId?: string;
 }

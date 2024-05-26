@@ -71,6 +71,7 @@ const changeRequestTransformer = (
   return {
     // all cr fields
     crId: changeRequest.crId,
+    identifier: changeRequest.identifier,
     wbsNum: wbsNumOf(changeRequest.wbsElement),
     wbsName: changeRequest.wbsElement.name,
     submitter: userTransformer(changeRequest.submitter),
@@ -108,11 +109,17 @@ const changeRequestTransformer = (
     proposedSolutions: changeRequest.scopeChangeRequest
       ? changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? []
       : undefined,
+    originalProjectData: changeRequest.scopeChangeRequest?.wbsOriginalData?.projectProposedChanges
+      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsOriginalData)
+      : undefined,
+    originalWorkPackageData: changeRequest.scopeChangeRequest?.wbsOriginalData?.workPackageProposedChanges
+      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsOriginalData)
+      : undefined,
     // activation cr fields
-    projectLead: changeRequest.activationChangeRequest?.lead
+    lead: changeRequest.activationChangeRequest?.lead
       ? userTransformer(changeRequest.activationChangeRequest.lead)
       : undefined,
-    projectManager: changeRequest.activationChangeRequest?.manager
+    manager: changeRequest.activationChangeRequest?.manager
       ? userTransformer(changeRequest.activationChangeRequest.manager)
       : undefined,
     startDate: changeRequest.activationChangeRequest?.startDate ?? undefined,

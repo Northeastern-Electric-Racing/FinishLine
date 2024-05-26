@@ -35,3 +35,4 @@ yarn-error.log*
 system-tests/*
 docker-compose.yml
 .github/*
+tsconfig.build.json

@@ -18,7 +18,7 @@ export default class DescriptionBulletsService {
    */
   static async checkDescriptionBullet(
     user: User,
-    descriptionId: number,
+    descriptionId: string,
     organizationId: string
   ): Promise<DescriptionBullet> {
     const originalDB = await prisma.description_Bullet.findUnique({

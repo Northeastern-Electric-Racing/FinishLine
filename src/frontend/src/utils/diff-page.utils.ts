@@ -2,17 +2,20 @@ import {
   DescriptionBullet,
   Link,
   Project,
+  ProjectProposedChanges,
   ProjectProposedChangesPreview,
   TeamPreview,
   User,
   WbsElementStatus,
   WbsNumber,
   WorkPackage,
+  WorkPackageProposedChanges,
   WorkPackageProposedChangesPreview,
   WorkPackageStage,
   wbsPipe
 } from 'shared';
 import { datePipe, displayEnum, dollarsPipe, fullNamePipe } from './pipes';
+import { Theme } from '@mui/material';
 
 export type ProposedChangeValue =
   | string
@@ -48,22 +51,20 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     return fullNamePipe(detail);
   } else if (detail.length === 0) {
     return 'None';
-  } else {
-    // detail is a non-empty array
-    const testVal = detail[0];
-
-    if (typeof testVal === 'string') {
-      return detail as string[];
-    } else if ('teamName' in testVal) {
-      return (detail as TeamPreview[]).map((team) => team.teamName);
-    } else if ('id' in testVal) {
-      return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
-    } else if ('carNumber' in testVal) {
-      return (detail as WbsNumber[]).map(wbsPipe);
-    } else {
-      return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
-    }
   }
+  // detail is a non-empty array
+  const [testVal] = detail;
+
+  if (typeof testVal === 'string') {
+    return detail as string[];
+  } else if ('teamName' in testVal) {
+    return (detail as TeamPreview[]).map((team) => team.teamName);
+  } else if ('id' in testVal) {
+    return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
+  } else if ('carNumber' in testVal) {
+    return (detail as WbsNumber[]).map(wbsPipe);
+  }
+  return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
 };
 
 export enum PotentialChangeType {
@@ -72,17 +73,16 @@ export enum PotentialChangeType {
   SAME = 'SAME'
 }
 
-export const potentialChangeBackgroundMap: Map<PotentialChangeType, string> = new Map([
-  [PotentialChangeType.ADDED, '#51915c'],
-  [PotentialChangeType.REMOVED, '#8a4e4e'],
-  [PotentialChangeType.SAME, '#2C2C2C']
-]);
-
-export const potentialChangeHighlightMap: Map<PotentialChangeType, string> = new Map([
-  [PotentialChangeType.ADDED, '#43a854'],
-  [PotentialChangeType.REMOVED, '#ba5050'],
-  [PotentialChangeType.SAME, '#2C2C2C']
-]);
+export const getPotentialChangeBackground = (potentialChangeType: PotentialChangeType, theme: Theme) => {
+  switch (potentialChangeType) {
+    case PotentialChangeType.ADDED:
+      return '#51915c';
+    case PotentialChangeType.REMOVED:
+      return '#8a4e4e';
+    case PotentialChangeType.SAME:
+      return theme.palette.background.paper;
+  }
+};
 
 export const valueChanged = (original: ProposedChangeValue, proposed: ProposedChangeValue) => {
   console.log(typeof original, typeof proposed, original, proposed);
@@ -107,7 +107,7 @@ export const valueChanged = (original: ProposedChangeValue, proposed: ProposedCh
   if (original.length === 0) return proposed.length !== 0;
   if (proposed.length === 0) return original.length !== 0;
 
-  const testVal = original[0];
+  const [testVal] = original;
 
   if (testVal === undefined) return proposed[0] !== undefined;
   if (proposed[0] === undefined) return testVal !== undefined;
@@ -124,9 +124,8 @@ export const valueChanged = (original: ProposedChangeValue, proposed: ProposedCh
       (original as DescriptionBullet[]).map((bullet) => bullet.detail).join() !==
       (proposed as DescriptionBullet[]).map((bullet) => bullet.detail).join()
     );
-  } else {
-    return (original as Link[]).map((link) => link.url).join() !== (proposed as Link[]).map((link) => link.url).join();
   }
+  return (original as Link[]).map((link) => link.url).join() !== (proposed as Link[]).map((link) => link.url).join();
 };
 
 export const projectToProposedChangesPreview = (project: Project | undefined): ProjectProposedChangesPreview | undefined => {
@@ -159,4 +158,38 @@ export const workPackageToProposedChangesPreview = (
     blockedBy: workPackage.blockedBy,
     descriptionBullets: workPackage.descriptionBullets
   };
+};
+
+export const projectProposedChangesToPreview = (
+  proposedChanges: ProjectProposedChanges | undefined
+): ProjectProposedChangesPreview | undefined => {
+  return (
+    proposedChanges && {
+      name: proposedChanges.name,
+      summary: proposedChanges.summary,
+      lead: proposedChanges.lead,
+      manager: proposedChanges.manager,
+      teams: proposedChanges.teams,
+      budget: proposedChanges.budget,
+      descriptionBullets: proposedChanges.descriptionBullets,
+      links: proposedChanges.links
+    }
+  );
+};
+
+export const workPackageProposedChangesToPreview = (
+  proposedChanges: WorkPackageProposedChanges | undefined
+): WorkPackageProposedChangesPreview | undefined => {
+  return (
+    proposedChanges && {
+      name: proposedChanges.name,
+      stage: proposedChanges.stage,
+      lead: proposedChanges.lead,
+      manager: proposedChanges.manager,
+      startDate: proposedChanges.startDate,
+      duration: proposedChanges.duration,
+      blockedBy: proposedChanges.blockedBy,
+      descriptionBullets: proposedChanges.descriptionBullets
+    }
+  );
 };

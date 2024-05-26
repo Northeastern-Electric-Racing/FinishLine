@@ -3,18 +3,12 @@ FROM node:18 AS builder
 
 WORKDIR /base
 
-COPY ./package.json .
-
-COPY ./.yarn .
-COPY ./yarn.lock .
-COPY ./tsconfig.build.json .
-COPY ./src/frontend/package.json src/frontend/
-COPY ./src/shared/package.json src/shared/
-
-RUN yarn install
-
+COPY package.json .yarn tsconfig.build.json ./
 COPY ./src/frontend src/frontend
 COPY ./src/shared src/shared
+
+RUN yarn install;
+
 RUN yarn build:shared
 RUN yarn build:frontend:dev
 

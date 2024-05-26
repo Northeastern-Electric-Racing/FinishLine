@@ -17,9 +17,10 @@ const renderComponent = (modalShow: boolean, route: string) => {
         cr={{
           // SKIPPING BECAUSE WE CAST IT TO THIS BUT CANT ADD IT TO THE TEST
           // proposedSolutions: [],
-          crId: 1,
+          crId: '1',
+          identifier: 1,
           submitter: {
-            userId: 1,
+            userId: '1',
             firstName: 'a',
             lastName: 'b',
             email: 'c',
