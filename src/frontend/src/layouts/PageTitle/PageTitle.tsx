@@ -4,7 +4,6 @@
  */
 
 import { Typography, Box, Grid } from '@mui/material';
-import { textAlign } from '@mui/system';
 import { ReactElement, ReactNode } from 'react';
 
 interface PageTitleProps {
