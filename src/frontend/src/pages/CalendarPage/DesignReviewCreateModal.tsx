@@ -165,11 +165,10 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             const handleWorkPackageSelect = async (selectedValue: string) => {
               onChange(selectedValue);
               setValue('wbsNum', selectedValue);
-
+            
               const workPackage = allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === selectedValue);
               if (workPackage) {
-                console.log(workPackage);
-                const teamType = workPackage.teamTypes[0];
+                const teamType = workPackage.teamTypes.find((type) => type !== undefined);
                 if (teamType) {
                   setValue('teamTypeId', teamType.teamTypeId);
                 } else {
@@ -177,6 +176,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                 }
               }
             };
+            
 
             return (
               <NERAutocomplete
