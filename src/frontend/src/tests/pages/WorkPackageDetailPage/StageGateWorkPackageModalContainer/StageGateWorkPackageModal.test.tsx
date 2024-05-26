@@ -38,7 +38,7 @@ describe('stage gate work package modal test suite', () => {
   it('renders the info if the modal is shown', () => {
     renderComponent(true);
 
-    expect(screen.queryByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
+    expect(screen.getByText(`Stage Gate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
     expect(screen.getByText(/done/)).toBeInTheDocument();
     expect(screen.getAllByRole('radio').length).toBe(2);
     expect(screen.getByText('Cancel')).toBeInTheDocument();

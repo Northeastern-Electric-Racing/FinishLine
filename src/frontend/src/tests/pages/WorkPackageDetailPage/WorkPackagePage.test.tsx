@@ -5,7 +5,7 @@
 
 import { UseQueryResult } from 'react-query';
 import { AuthenticatedUser, WorkPackage } from 'shared';
-import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, fireEvent } from '../../test-support/test-utils';
 import { Auth } from '../../../utils/types';
 import { useGetManyWorkPackages, useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -110,9 +110,7 @@ describe('work package container', () => {
     mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
-    act(() => {
-      fireEvent.click(screen.getByText('Actions'));
-    });
+    fireEvent.click(screen.getByText('Actions'));
     expect(screen.getByText('Edit')).toBeEnabled();
   });
 
@@ -123,9 +121,8 @@ describe('work package container', () => {
     mockGetBlockingWorkPackagesHook(false, false, [exampleDesignWorkPackage]);
     renderComponent();
 
-    act(() => {
-      fireEvent.click(screen.getByText('Actions'));
-    });
+    fireEvent.click(screen.getByText('Actions'));
+
     expect(screen.getByText('Edit')).toHaveAttribute('aria-disabled');
   });
 });

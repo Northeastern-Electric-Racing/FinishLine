@@ -33,7 +33,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
       sx={{
         height: small ? '25px' : '4.7vh',
         width: small ? '81px' : '12.2%',
-        backgroundColor: backgroundColor,
+        backgroundColor,
         cursor: onMouseEnter ? 'pointer' : undefined,
         borderStyle: 'solid',
         borderColor: selected ? '#ffff8c' : 'gray',

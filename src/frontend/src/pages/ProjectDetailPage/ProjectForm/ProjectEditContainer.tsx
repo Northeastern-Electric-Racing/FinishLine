@@ -118,7 +118,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: project.wbsNum,
-        type: type,
+        type,
         what,
         why,
         proposedSolutions: [],
@@ -135,7 +135,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links, descriptionBullets } = data;
-    const crId = data.crId;
+    const { crId } = data;
 
     try {
       const payload: EditSingleProjectPayload = {

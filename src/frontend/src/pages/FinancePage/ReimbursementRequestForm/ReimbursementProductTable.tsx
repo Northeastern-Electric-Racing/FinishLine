@@ -74,9 +74,9 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
     const productReason = hasWbsNum ? wbsPipe(product.reason as WbsNumber) : (product.reason as string);
     if (uniqueWbsElementsWithProducts.has(productReason)) {
       const products = uniqueWbsElementsWithProducts.get(productReason);
-      products?.push({ ...product, index: index });
+      products?.push({ ...product, index });
     } else {
-      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index: index }]);
+      uniqueWbsElementsWithProducts.set(productReason, [{ ...product, index }]);
     }
   });
 

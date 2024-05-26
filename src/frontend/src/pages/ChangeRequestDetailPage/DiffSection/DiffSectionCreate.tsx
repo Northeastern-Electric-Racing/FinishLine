@@ -18,13 +18,13 @@ const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({ projectProposedCh
   delete workPackageProposedChanges?.manager;
 
   if (isCreateProject) {
-    for (var projectKey in projectProposedChanges) {
+    for (const projectKey in projectProposedChanges) {
       if (projectProposedChanges.hasOwnProperty(projectKey)) {
         potentialChangeTypeMap.set(projectKey, PotentialChangeType.ADDED);
       }
     }
   } else {
-    for (var workPackageKey in workPackageProposedChanges) {
+    for (const workPackageKey in workPackageProposedChanges) {
       if (workPackageProposedChanges.hasOwnProperty(workPackageKey)) {
         potentialChangeTypeMap.set(workPackageKey, PotentialChangeType.ADDED);
       }

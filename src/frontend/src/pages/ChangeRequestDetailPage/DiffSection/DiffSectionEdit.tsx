@@ -63,7 +63,7 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
   const workPackageAsChanges = originalWorkPackageData ?? workPackageToProposedChangesPreview(workPackage);
 
   if (isOnProject) {
-    for (var projectKey in projectProposedChanges) {
+    for (const projectKey in projectProposedChanges) {
       if (projectProposedChanges.hasOwnProperty(projectKey)) {
         const originalValue = projectAsChanges![projectKey as keyof ProjectProposedChangesPreview]!;
         const proposedValue = projectProposedChanges[projectKey as keyof ProjectProposedChangesPreview]!;
@@ -78,7 +78,7 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
       }
     }
   } else {
-    for (var workPackageKey in workPackageProposedChanges) {
+    for (let workPackageKey in workPackageProposedChanges) {
       if (workPackageProposedChanges.hasOwnProperty(workPackageKey)) {
         let originalValue = workPackageAsChanges![workPackageKey as keyof WorkPackageProposedChangesPreview]!;
         let proposedValue = workPackageProposedChanges[workPackageKey as keyof WorkPackageProposedChangesPreview]!;

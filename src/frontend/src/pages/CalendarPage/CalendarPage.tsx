@@ -44,9 +44,8 @@ const CalendarPage = () => {
   confirmedDesignReviews.sort((designReview1, designReview2) => {
     if (designReview1.dateScheduled.getTime() === designReview2.dateScheduled.getTime()) {
       return designReview1.meetingTimes[0] - designReview2.meetingTimes[0];
-    } else {
-      return designReview1.dateScheduled.getTime() - designReview2.dateScheduled.getTime();
     }
+    return designReview1.dateScheduled.getTime() - designReview2.dateScheduled.getTime();
   });
 
   confirmedDesignReviews.forEach((designReview) => {

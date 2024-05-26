@@ -23,7 +23,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
   const theme = useTheme();
 
   const changeBullets: ChangeBullet[] = [];
-  for (var projectKey in projectProposedChanges) {
+  for (const projectKey in projectProposedChanges) {
     if (projectProposedChanges.hasOwnProperty(projectKey)) {
       changeBullets.push({
         label: projectKey,
@@ -32,7 +32,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
     }
   }
 
-  for (var workPackageKey in workPackageProposedChanges) {
+  for (let workPackageKey in workPackageProposedChanges) {
     if (workPackageProposedChanges.hasOwnProperty(workPackageKey)) {
       if (workPackageKey === 'duration') {
         workPackageKey = 'endDate';
@@ -42,7 +42,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
             new Date(workPackageProposedChanges!.startDate).getTimezoneOffset() * -6000
         );
 
-        const duration = workPackageProposedChanges.duration;
+        const { duration } = workPackageProposedChanges;
         const endDate = calculateEndDate(startDate, duration);
         changeBullets.push({
           label: 'endDate',
@@ -64,29 +64,28 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
           {detailText}
         </Typography>
       );
-    } else {
-      return (
-        <List sx={{ listStyleType: 'disc', pl: 4 }}>
-          {detailText.map((bullet) => {
-            const url = bullet.includes('http') ? bullet.split(': ')[1] : undefined;
-            return (
-              <ListItem sx={{ display: 'list-item' }}>
-                {url ? (
-                  <>
-                    {bullet.split(': ')[0]}:{' '}
-                    <Link color={'#ffff'} href={url}>
-                      {bullet.split(': ')[1]}
-                    </Link>
-                  </>
-                ) : (
-                  bullet
-                )}
-              </ListItem>
-            );
-          })}
-        </List>
-      );
     }
+    return (
+      <List sx={{ listStyleType: 'disc', pl: 4 }}>
+        {detailText.map((bullet) => {
+          const url = bullet.includes('http') ? bullet.split(': ')[1] : undefined;
+          return (
+            <ListItem sx={{ display: 'list-item' }}>
+              {url ? (
+                <>
+                  {bullet.split(': ')[0]}:{' '}
+                  <Link color={'#ffff'} href={url}>
+                    {bullet.split(': ')[1]}
+                  </Link>
+                </>
+              ) : (
+                bullet
+              )}
+            </ListItem>
+          );
+        })}
+      </List>
+    );
   };
 
   return (
