@@ -145,7 +145,7 @@ const migrateToCheckableDescBullets = async () => {
 
   wps.forEach(async (wp) => {
     // 1 is James' id
-    const leadId = wp.wbsElement.leadId;
+    const { leadId } = wp.wbsElement;
 
     await prisma.description_Bullet.updateMany({
       where: { wbsElement: { project: null } },
