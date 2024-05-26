@@ -144,10 +144,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         summary,
         links,
         projectId: project.id,
-        crId: Number(crId),
+        crId,
         descriptionBullets,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined
+        leadId,
+        managerId
       };
       await mutateAsync(payload);
       exitEditMode();

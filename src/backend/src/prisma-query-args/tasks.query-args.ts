@@ -4,7 +4,7 @@ import { getUserQueryArgs } from './user.query-args';
 export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 
 export const getTaskQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.TaskArgs>()({
+  Prisma.validator<Prisma.TaskDefaultArgs>()({
     include: {
       wbsElement: true,
       createdBy: getUserQueryArgs(organizationId),

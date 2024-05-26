@@ -167,7 +167,7 @@ export default class UsersController {
         availability
       );
 
-      return res.status(200).json(updatedScheduleSettings);
+      res.status(200).json(updatedScheduleSettings);
     } catch (error: unknown) {
       next(error);
     }

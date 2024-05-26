@@ -14,8 +14,8 @@ import { mockCheckDescBulletReturnValue } from '../test-support/mock-hooks';
 import { ToastProvider } from '../../components/Toast/ToastProvider';
 
 const testItems: CheckListItem[] = [
-  { id: 1, detail: 'testItem1', resolved: false },
-  { id: 2, detail: 'testItem2', resolved: true }
+  { id: '1', detail: 'testItem1', resolved: false },
+  { id: '2', detail: 'testItem2', resolved: true }
 ];
 
 /**

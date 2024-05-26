@@ -111,7 +111,7 @@ const ReimbursementProductTable: React.FC<ReimbursementProductTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', listStyle: 'none', p: 0.5, m: 0 }} component={'ul'}>
-                    {uniqueWbsElementsWithProducts.get(key)?.map((product, index) => (
+                    {uniqueWbsElementsWithProducts.get(key)?.map((product) => (
                       <ListItem key={product.index}>
                         <Box
                           sx={{

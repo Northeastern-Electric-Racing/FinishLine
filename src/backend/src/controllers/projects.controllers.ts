@@ -11,7 +11,7 @@ export default class ProjectsController {
     try {
       const organizationId = getOrganizationId(req.headers);
       const projects: Project[] = await ProjectsService.getAllProjects(organizationId);
-      return res.status(200).json(projects);
+      res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);
     }
@@ -24,7 +24,7 @@ export default class ProjectsController {
 
       const project: Project = await ProjectsService.getSingleProject(wbsNumber, organizationId);
 
-      return res.status(200).json(project);
+      res.status(200).json(project);
     } catch (error: unknown) {
       next(error);
     }
@@ -51,7 +51,7 @@ export default class ProjectsController {
         organizationId
       );
 
-      return res.status(200).json(createdProject);
+      res.status(200).json(createdProject);
     } catch (error: unknown) {
       next(error);
     }
@@ -77,7 +77,7 @@ export default class ProjectsController {
         organizationId
       );
 
-      return res.status(200).json(editedProject);
+      res.status(200).json(editedProject);
     } catch (error: unknown) {
       next(error);
     }
@@ -92,7 +92,7 @@ export default class ProjectsController {
 
       await ProjectsService.setProjectTeam(user, wbsNumber, teamId, organizationId);
 
-      return res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
+      res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
     } catch (error: unknown) {
       next(error);
     }
@@ -202,7 +202,7 @@ export default class ProjectsController {
         pdmFileName,
         unitName
       );
-      return res.status(200).json(material);
+      res.status(200).json(material);
     } catch (error: unknown) {
       next(error);
     }
@@ -253,7 +253,7 @@ export default class ProjectsController {
       const organizationId = getOrganizationId(req.headers);
 
       const manufacturers: Manufacturer[] = await BillOfMaterialsService.getAllManufacturers(user, organizationId);
-      return res.status(200).json(manufacturers);
+      res.status(200).json(manufacturers);
     } catch (error: unknown) {
       next(error);
     }
@@ -265,7 +265,7 @@ export default class ProjectsController {
       const organizationId = getOrganizationId(req.headers);
 
       const materialTypes: MaterialType[] = await BillOfMaterialsService.getAllMaterialTypes(user, organizationId);
-      return res.status(200).json(materialTypes);
+      res.status(200).json(materialTypes);
     } catch (error: unknown) {
       next(error);
     }

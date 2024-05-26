@@ -44,7 +44,7 @@ const renderComponent = (proposedSolutions: ProposedSolution[] = [], crReviewed:
     <AppContextUser>
       <RouterWrapper>
         <ToastProvider>
-          <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={0} />{' '}
+          <ProposedSolutionsList proposedSolutions={proposedSolutions} crReviewed={crReviewed} crId={"0"} />{' '}
         </ToastProvider>
       </RouterWrapper>
     </AppContextUser>

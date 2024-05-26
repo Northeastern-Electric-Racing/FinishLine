@@ -79,7 +79,7 @@ const TeamsTools = () => {
   if (allUsersIsError) return <ErrorPage message={allUsersError.message} />;
   const onFormSubmit = async (data: CreateTeamFormInput) => {
     try {
-      await mutateAsync({ ...data, headId: Number(data.headId) });
+      await mutateAsync({ ...data });
       reset(defaultValues);
     } catch (error: unknown) {
       if (error instanceof Error) {

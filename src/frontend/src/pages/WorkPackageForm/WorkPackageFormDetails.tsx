@@ -89,7 +89,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
           <StageSelect />
         </Grid>
         <Grid item xs={12} md={4}>
-          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+          <ChangeRequestDropdown control={control} name="crId" />
         </Grid>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>

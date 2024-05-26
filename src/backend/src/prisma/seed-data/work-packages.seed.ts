@@ -24,7 +24,7 @@ export const seedWorkPackage = async (
   blockedBy: WbsNumber[],
   descriptionBullets: DescriptionBulletPreview[],
   editor: User,
-  status: WbsElementStatus,
+  _status: WbsElementStatus,
   lead: string,
   manager: string,
   organizationId: string

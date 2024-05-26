@@ -10,7 +10,7 @@ import { getMaterialPreviewQueryArgs } from './bom.query-args';
 export type ManufacturerQueryArgs = ReturnType<typeof getManufacturerQueryArgs>;
 
 export const getManufacturerQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.ManufacturerArgs>()({
+  Prisma.validator<Prisma.ManufacturerDefaultArgs>()({
     include: {
       materials: getMaterialPreviewQueryArgs(organizationId),
       userCreated: getUserQueryArgs(organizationId)

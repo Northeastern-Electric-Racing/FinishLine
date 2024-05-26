@@ -45,7 +45,7 @@ const ProjectsTable: React.FC = () => {
     valueFormatter: (params) => wbsPipe(params.value),
     maxWidth: 100,
     filterable: false,
-    sortComparator: (v1, v2, param1, param2) => {
+    sortComparator: (_v1, _v2, param1, param2) => {
       if (param1.value.carNumber !== param2.value.carNumber) {
         return param1.value.carNumber - param2.value.carNumber;
       } else if (param1.value.projectNumber !== param2.value.projectNumber) {

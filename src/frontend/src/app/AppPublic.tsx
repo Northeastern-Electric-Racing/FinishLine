@@ -41,7 +41,7 @@ const AppPublic: React.FC = () => {
     // if we're on development and the userId is stored in localStorage,
     // then dev login right away (no login page redirect needed!)
     if (import.meta.env.MODE === 'development' && devUserId) {
-      auth.devSignin(parseInt(devUserId));
+      auth.devSignin(devUserId);
       return <LoadingIndicator />;
     }
 

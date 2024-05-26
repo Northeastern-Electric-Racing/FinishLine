@@ -5,7 +5,7 @@
 
 import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
-import { DatePicker, DateValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import { UserPreview } from 'shared';
 import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
@@ -69,7 +69,7 @@ export const DeadlineEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setDeadline } = params;
   const apiRef = useGridApiContext();
 
-  const handleValueChange = (value: unknown, keyboardInputValue?: PickerChangeHandlerContext<DateValidationError>) => {
+  const handleValueChange = (value: unknown) => {
     const newValue = value; // The new value entered by the user
     apiRef.current.setEditCellValue({ id, field, value: newValue });
     setDeadline(newValue);
@@ -104,7 +104,7 @@ export const AssigneeEdit = (params: GridRenderEditCellParams) => {
   const handleValueChange = (
     newValue: {
       label: string;
-      id: number;
+      id: string;
     }[]
   ) => {
     const users = newValue.map((user) => teamMembers.find((o) => o.userId === user.id)!);

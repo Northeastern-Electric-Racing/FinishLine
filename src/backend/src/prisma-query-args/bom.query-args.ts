@@ -5,7 +5,7 @@ import { getTeamQueryArgs } from './teams.query-args';
 export type AssemblyQueryArgs = ReturnType<typeof getAssemblyQueryArgs>;
 
 export const getAssemblyQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.AssemblyArgs>()({
+  Prisma.validator<Prisma.AssemblyDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
@@ -34,7 +34,7 @@ export const getAssemblyQueryArgs = (organizationId: string) =>
 export type MaterialQueryArgs = ReturnType<typeof getMaterialQueryArgs>;
 
 export const getMaterialQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.MaterialArgs>()({
+  Prisma.validator<Prisma.MaterialDefaultArgs>()({
     include: {
       assembly: getAssemblyQueryArgs(organizationId),
       wbsElement: true,
@@ -48,8 +48,8 @@ export const getMaterialQueryArgs = (organizationId: string) =>
 
 export type MaterialPreviewQueryArgs = ReturnType<typeof getMaterialPreviewQueryArgs>;
 
-export const getMaterialPreviewQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.MaterialArgs>()({
+export const getMaterialPreviewQueryArgs = (_organizationId: string) =>
+  Prisma.validator<Prisma.MaterialDefaultArgs>()({
     include: {
       unit: true,
       manufacturer: true,

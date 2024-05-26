@@ -39,6 +39,8 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
     .sort((a, b) => a.lastName.localeCompare(b.lastName))
     .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role));
 
+  devSetUser(sortedUsers[0].userId);
+
   return (
     <form onSubmit={devFormSubmit}>
       <FormControl fullWidth sx={{ marginTop: 2 }}>

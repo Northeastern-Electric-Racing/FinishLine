@@ -117,7 +117,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        crId: parseInt(crId),
+        crId,
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,

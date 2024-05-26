@@ -18,8 +18,8 @@ import { useCurrentUser } from './users.hooks';
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
   teamTypeId: string;
-  requiredMemberIds: number[];
-  optionalMemberIds: number[];
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
   wbsNum: WbsNumber;
   meetingTimes: number[];
 }

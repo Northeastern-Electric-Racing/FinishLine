@@ -20,7 +20,7 @@ const executeScripts = async () => {};
 /**
  * Print metrics on accepted Change Requests with timeline impact
  */
-const checkTimelineImpact = async () => {
+export const checkTimelineImpact = async () => {
   const res = await prisma.change_Request.findMany({
     where: {
       accepted: true,
@@ -44,7 +44,7 @@ const checkTimelineImpact = async () => {
 /**
  * Print count of total work packages
  */
-const countWorkPackages = async () => {
+export const countWorkPackages = async () => {
   const res = await prisma.work_Package.count();
   console.log('total work packages:', res);
 };
@@ -52,7 +52,7 @@ const countWorkPackages = async () => {
 /**
  * Calculate active users by week
  */
-const activeUserMetrics = async () => {
+export const activeUserMetrics = async () => {
   // sad dev doesn't feel like converting SQL to Prisma
   // select extract(week from "created") as wk, count(distinct "userId") as "# users", count(distinct "sessionId") as "# sessions" from "Session" group by wk order by wk;
 };
@@ -60,7 +60,7 @@ const activeUserMetrics = async () => {
 /**
  * Calculate, pull, and print various metrics per request from Anushka.
  */
-const pullNumbersForPM = async () => {
+export const pullNumbersForPM = async () => {
   const nums = await Promise.all([
     '# of CRs',
     prisma.change_Request.count(),
@@ -110,7 +110,7 @@ const pullNumbersForPM = async () => {
 /**
  * migrate all Change Requests to use Proposed Solutions
  */
-const migrateToProposedSolutions = async () => {
+export const migrateToProposedSolutions = async () => {
   const crs = await prisma.scope_CR.findMany({ include: { changeRequest: true } });
   crs.forEach(async (cr) => {
     const alreadyHasSolution = await prisma.proposed_Solution.findFirst({
@@ -137,7 +137,7 @@ const migrateToProposedSolutions = async () => {
 /**
  * Migrate all complete wps to have checked description bullets
  */
-const migrateToCheckableDescBullets = async () => {
+export const migrateToCheckableDescBullets = async () => {
   const wps = await prisma.work_Package.findMany({
     where: { wbsElement: { status: WBS_Element_Status.COMPLETE } },
     include: { wbsElement: true }

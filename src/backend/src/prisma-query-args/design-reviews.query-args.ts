@@ -4,7 +4,7 @@ import { getUserQueryArgs, getUserWithSettingsQueryArgs } from './user.query-arg
 export type DesignReviewQueryArgs = ReturnType<typeof getDesignReviewQueryArgs>;
 
 export const getDesignReviewQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Design_ReviewArgs>()({
+  Prisma.validator<Prisma.Design_ReviewDefaultArgs>()({
     include: {
       userCreated: getUserWithSettingsQueryArgs(organizationId),
       teamType: true,

@@ -248,7 +248,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       textField: {
                         error: !!errors.dateOfExpense,
                         helperText: errors.dateOfExpense?.message,
-                        onClick: (e) => setDatePickerOpen(true),
+                        onClick: () => setDatePickerOpen(true),
                         inputProps: { readOnly: true }
                       }
                     }}

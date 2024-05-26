@@ -6,7 +6,7 @@ export type UserWithSettingsQueryArgs = ReturnType<typeof getUserWithSettingsQue
 
 // DO NOT CALL ANY OTHER QUERY ARGS FROM HERE TO AVOID CIRCULAR DEPENDENCIES
 export const getUserQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.UserArgs>()({
+  Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
       roles: {
         where: {
@@ -18,7 +18,7 @@ export const getUserQueryArgs = (organizationId: string) =>
   });
 
 export const getUserWithSettingsQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.UserArgs>()({
+  Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
       roles: {
         where: {

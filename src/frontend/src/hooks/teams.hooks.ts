@@ -18,7 +18,7 @@ import {
 
 export interface CreateTeamPayload {
   teamName: string;
-  headId: number;
+  headId: string;
   slackId: string;
   description: string;
   isFinanceTeam: boolean;

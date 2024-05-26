@@ -41,7 +41,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
             name: product.name,
             cost: Number(centsToDollar(product.cost))
           })),
-          receiptFiles: reimbursementRequest.receiptPictures.map((receipt, index) => ({
+          receiptFiles: reimbursementRequest.receiptPictures.map((receipt) => ({
             name: receipt.name,
             googleFileId: receipt.googleFileId
           }))

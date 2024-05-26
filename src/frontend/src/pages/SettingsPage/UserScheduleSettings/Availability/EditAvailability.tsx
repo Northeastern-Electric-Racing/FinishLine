@@ -23,7 +23,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({ selectedTimes, setS
     setIsDragging(true);
   };
 
-  const handleMouseEnter = (event: any, selectedTime: number) => {
+  const handleMouseEnter = (_event: any, selectedTime: number) => {
     if (!isDragging) return;
     toggleTimeSlot(selectedTime);
   };

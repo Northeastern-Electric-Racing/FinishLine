@@ -7,7 +7,7 @@ import { getReimbursementProductQueryArgs } from './reimbursement-products.query
 export type ReimbursementRequestQueryArgs = ReturnType<typeof getReimbursementRequestQueryArgs>;
 
 export const getReimbursementRequestQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Reimbursement_RequestArgs>()({
+  Prisma.validator<Prisma.Reimbursement_RequestDefaultArgs>()({
     include: {
       recipient: getUserQueryArgs(organizationId),
       vendor: true,

@@ -53,7 +53,7 @@ export default class ReimbursementRequestsController {
       const organizationId = getOrganizationId(req.headers);
 
       const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors(organizationId);
-      return res.status(200).json(vendors);
+      res.status(200).json(vendors);
     } catch (error: unknown) {
       next(error);
     }
@@ -184,7 +184,7 @@ export default class ReimbursementRequestsController {
         user,
         organizationId
       );
-      return res.status(200).json(requestsPendingAdvisors);
+      res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
       next(error);
     }

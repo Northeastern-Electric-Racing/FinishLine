@@ -118,7 +118,7 @@ const ProjectCreateContainer: React.FC = () => {
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId: Number(crId),
+        crId,
         name,
         carNumber,
         summary,
@@ -126,8 +126,8 @@ const ProjectCreateContainer: React.FC = () => {
         budget,
         descriptionBullets,
         links,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined
+        leadId,
+        managerId
       };
       await mutateAsync(payload);
       history.push(routes.PROJECTS_ALL);

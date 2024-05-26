@@ -27,18 +27,18 @@ export interface VersionObject {
 
 export interface EditSingleProjectPayload {
   projectId: string;
-  crId: number;
+  crId: string;
   name: string;
   budget: number;
   summary: string;
   descriptionBullets: DescriptionBulletPreview[];
   links: LinkCreateArgs[];
-  leadId?: number;
-  managerId?: number;
+  leadId?: string;
+  managerId?: string;
 }
 
 export interface CreateSingleProjectPayload {
-  crId: number;
+  crId: string;
   name: string;
   carNumber: number;
   summary: string;
@@ -46,6 +46,6 @@ export interface CreateSingleProjectPayload {
   budget: number;
   descriptionBullets: DescriptionBulletPreview[];
   links?: LinkCreateArgs[];
-  leadId?: number;
-  managerId?: number;
+  leadId?: string;
+  managerId?: string;
 }

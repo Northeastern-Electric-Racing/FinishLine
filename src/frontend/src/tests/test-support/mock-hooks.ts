@@ -18,7 +18,7 @@ export const mockLogUserInDevReturnValue = mockUseMutationResult<AuthenticatedUs
   false,
   exampleAdminUser as AuthenticatedUser,
   new Error()
-) as UseMutationResult<AuthenticatedUser, Error, number, unknown>;
+) as UseMutationResult<AuthenticatedUser, Error, string, unknown>;
 
 export const mockUseAllUsersReturnValue = (users: User[]) => mockUseQueryResult<User[]>(false, false, users, new Error());
 
@@ -59,7 +59,7 @@ export const mockEditTaskAssigneesReturnValue = mockUseMutationResult<{ message:
   false,
   { message: 'hi' },
   new Error()
-) as UseMutationResult<{ message: string }, Error, { taskId: string; assignees: number[] }, unknown>;
+) as UseMutationResult<{ message: string }, Error, { taskId: string; assignees: string[] }, unknown>;
 
 export const mockDeleteTaskReturnValue = mockUseMutationResult<{ message: string }>(
   false,
