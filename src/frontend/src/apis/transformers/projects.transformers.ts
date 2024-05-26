@@ -56,16 +56,14 @@ export const linkTypeTransformer = (linkType: LinkType) => {
  * @param project Incoming project object supplied by the HTTP response.
  * @returns Properly transformed project object.
  */
-export const projectTransformer = (project: Project) => {
+export const projectTransformer = (project: Project): Project => {
   return {
     ...project,
     dateCreated: new Date(project.dateCreated),
     startDate: project.startDate ? new Date(project.startDate) : undefined,
     endDate: project.endDate ? new Date(project.endDate) : undefined,
     workPackages: project.workPackages.map(workPackageTransformer),
-    goals: project.goals.map(descriptionBulletTransformer),
-    features: project.features.map(descriptionBulletTransformer),
-    otherConstraints: project.otherConstraints.map(descriptionBulletTransformer),
+    descriptionBullets: project.descriptionBullets.map(descriptionBulletTransformer),
     changes: project.changes.map(implementedChangeTransformer),
     tasks: project.tasks.map(taskTransformer),
     links: project.links.map(linkTransformer)

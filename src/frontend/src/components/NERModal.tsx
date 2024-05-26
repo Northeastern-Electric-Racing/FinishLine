@@ -3,6 +3,7 @@ import NERFailButton from './NERFailButton';
 import NERSuccessButton from './NERSuccessButton';
 import { ReactNode } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
+import { CancelText, SubmitText } from '../utils/teams.utils';
 
 const background = '#ef4345';
 
@@ -13,12 +14,14 @@ export interface NERModalProps {
   onSubmit?: () => void;
   onHide: () => void;
   children?: ReactNode;
-  cancelText?: string;
-  submitText?: string;
+  cancelText?: CancelText;
+  submitText?: SubmitText;
   disabled?: boolean;
   showCloseButton?: boolean;
   hideFormButtons?: boolean;
+  hideBackDrop?: boolean;
   icon?: JSX.Element | null;
+  paperProps?: any;
 }
 
 const NERModal = ({
@@ -33,10 +36,21 @@ const NERModal = ({
   disabled = false,
   showCloseButton = false,
   hideFormButtons = false,
-  icon
+  hideBackDrop = false,
+  icon,
+  paperProps
 }: NERModalProps) => {
   return (
-    <Dialog open={open} onClose={onHide} PaperProps={{ style: { borderRadius: '10px', maxWidth: '700px' } }}>
+    <Dialog
+      hideBackdrop={hideBackDrop}
+      open={open}
+      onClose={onHide}
+      PaperProps={{
+        style: paperProps
+          ? { ...paperProps, borderRadius: '10px', maxWidth: '700px' }
+          : { borderRadius: '10px', maxWidth: '700px' }
+      }}
+    >
       <DialogTitle sx={{ backgroundColor: background, minHeight: '64px' }}>
         {icon ? (
           <Box display="flex" justifyContent="left" alignItems="center">

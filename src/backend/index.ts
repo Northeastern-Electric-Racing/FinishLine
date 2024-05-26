@@ -13,6 +13,7 @@ import tasksRouter from './src/routes/tasks.routes';
 import reimbursementRequestsRouter from './src/routes/reimbursement-requests.routes';
 import notificationsRouter from './src/routes/notifications.routes';
 import designReviewsRouter from './src/routes/design-reviews.routes';
+import workPackageTemplatesRouter from './src/routes/work-package-templates.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -56,6 +57,7 @@ app.use('/tasks', tasksRouter);
 app.use('/reimbursement-requests', reimbursementRequestsRouter);
 app.use('/design-reviews', designReviewsRouter);
 app.use('/notifications', notificationsRouter);
+app.use('/templates', workPackageTemplatesRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });
@@ -65,7 +67,9 @@ app.use(errorHandler);
 
 // start the server
 app.listen(port, () => {
-  console.log(`FinishLine listening at http://localhost:${port}`);
+  console.log(
+    `FinishLine listening at http://localhost:${port}. Currently running in ${isProd ? 'production' : 'development'} mode.`
+  );
   console.log(`\n
   ███████╗██╗███╗   ██╗██╗███████╗██╗  ██╗██╗     ██╗███╗   ██╗███████╗
   ██╔════╝██║████╗  ██║██║██╔════╝██║  ██║██║     ██║████╗  ██║██╔════╝

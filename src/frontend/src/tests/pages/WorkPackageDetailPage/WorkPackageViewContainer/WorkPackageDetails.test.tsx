@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-container */
 /*
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
@@ -5,7 +6,7 @@
 
 import { render, routerWrapperBuilder, screen } from '../../../test-support/test-utils';
 import { WorkPackage } from 'shared';
-import { datePipe, fullNamePipe, weeksPipe, percentPipe, timelinePipe } from '../../../../utils/pipes';
+import { datePipe, fullNamePipe, weeksPipe } from '../../../../utils/pipes';
 import {
   exampleResearchWorkPackage,
   exampleDesignWorkPackage,
@@ -98,9 +99,6 @@ describe('Work Package Details Component', () => {
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${wp.progress}%`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${timelinePipe(wp.timelineStatus)}`, { exact: false })).toBeInTheDocument();
-      expect(screen.getByText(`${percentPipe(wp.expectedProgress)}`, { exact: false })).toBeInTheDocument();
     });
 
     it('renders all the fields, example 2', () => {
@@ -115,9 +113,6 @@ describe('Work Package Details Component', () => {
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
-      const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
-      expect(progresses.length).toBe(2);
-      expect(screen.getByText(`${timelinePipe(wp.timelineStatus)}`, { exact: false })).toBeInTheDocument();
     });
 
     it('renders all the fields, example 3', () => {
@@ -131,9 +126,6 @@ describe('Work Package Details Component', () => {
       expect(screen.getByText(`${weeksPipe(wp.duration)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.startDate)}`, { exact: false })).toBeInTheDocument();
       expect(screen.getByText(`${datePipe(wp.endDate)}`, { exact: false })).toBeInTheDocument();
-      const progresses = screen.getAllByText(`${percentPipe(wp.progress)}`); // progress and expectedProgress should be equal and return 2 results
-      expect(progresses.length).toBe(2);
-      expect(screen.getByText(`${timelinePipe(wp.timelineStatus)}`, { exact: false })).toBeInTheDocument();
     });
   });
 });

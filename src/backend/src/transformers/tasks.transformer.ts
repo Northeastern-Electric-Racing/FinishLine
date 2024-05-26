@@ -1,11 +1,11 @@
 import { Prisma } from '@prisma/client';
 import { Task } from 'shared';
 import { wbsNumOf } from '../utils/utils';
-import taskQueryArgs from '../prisma-query-args/tasks.query-args';
 import { convertTaskPriority, convertTaskStatus } from '../utils/tasks.utils';
 import { userTransformer } from './user.transformer';
+import { TaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 
-const taskTransformer = (task: Prisma.TaskGetPayload<typeof taskQueryArgs>): Task => {
+const taskTransformer = (task: Prisma.TaskGetPayload<TaskQueryArgs>): Task => {
   const wbsNum = wbsNumOf(task.wbsElement);
   return {
     taskId: task.taskId,
@@ -16,7 +16,7 @@ const taskTransformer = (task: Prisma.TaskGetPayload<typeof taskQueryArgs>): Tas
     priority: convertTaskPriority(task.priority),
     status: convertTaskStatus(task.status),
     createdBy: userTransformer(task.createdBy),
-    assignees: task.assignees,
+    assignees: task.assignees.map(userTransformer),
     dateDeleted: task.dateDeleted ?? undefined,
     dateCreated: task.dateCreated,
     deletedBy: task.deletedBy ? userTransformer(task.deletedBy) : undefined

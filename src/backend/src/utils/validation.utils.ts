@@ -1,5 +1,6 @@
 import { Design_Review_Status } from '@prisma/client';
-import { body, ValidationChain } from 'express-validator';
+import { Request, Response } from 'express';
+import { body, ValidationChain, validationResult } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
 
 export const intMinZero = (validationObject: ValidationChain): ValidationChain => {
@@ -82,8 +83,8 @@ export const projectProposedChangesValidators = [
   projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
   nonEmptyString(body('projectProposedChanges.links.*.url')),
   nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
-  intMinZero(body('projectProposedChanges.projectLeadId').optional()),
-  intMinZero(body('projectProposedChanges.projectManagerId').optional()),
+  intMinZero(body('projectProposedChanges.leadId').optional()),
+  intMinZero(body('projectProposedChanges.managerId').optional()),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
   intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
   projectProposedChangesExists(body('projectProposedChanges.rules')).isArray(),
@@ -106,8 +107,8 @@ const workPackageProposedChangesExists = (validationObject: ValidationChain): Va
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
   nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
-  intMinZero(body('workPackageProposedChanges.projectLeadId').optional()),
-  intMinZero(body('workPackageProposedChanges.projectManagerId').optional()),
+  intMinZero(body('workPackageProposedChanges.leadId').optional()),
+  intMinZero(body('workPackageProposedChanges.managerId').optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage').optional())),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
@@ -154,4 +155,42 @@ export const isDesignReviewStatus = (validationObject: ValidationChain): Validat
       Design_Review_Status.SCHEDULED,
       Design_Review_Status.UNCONFIRMED
     ]);
+};
+
+export const descriptionBulletsValidators = [
+  body('descriptionBullets').isArray(),
+  nonEmptyString(body('descriptionBullets.*.detail')),
+  nonEmptyString(body('descriptionBullets.*.type')),
+  body('descriptionBullets.*.id').isInt({ min: -1 }).not().isString()
+];
+
+export const blockedByValidators = [
+  body('blockedBy').isArray(),
+  intMinZero(body('blockedBy.*.carNumber')),
+  intMinZero(body('blockedBy.*.projectNumber')),
+  intMinZero(body('blockedBy.*.workPackageNumber'))
+];
+
+export const linkValidators = [
+  body('links').isArray(),
+  nonEmptyString(body('links.*.url')),
+  nonEmptyString(body('links.*.linkTypeName'))
+];
+
+export const projectValidators = [
+  intMinZero(body('crId')),
+  nonEmptyString(body('name')),
+  nonEmptyString(body('summary')),
+  ...descriptionBulletsValidators,
+  ...linkValidators,
+  intMinZero(body('projectLeadId').optional()),
+  intMinZero(body('projectManagerId').optional())
+];
+
+export const validateInputs = (req: Request, res: Response, next: Function): Response | void => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
 };

@@ -10,6 +10,7 @@ import { useState } from 'react';
 import DRCSummaryModal from '../DesignReviewSummaryModal';
 import { DesignReviewCreateModal } from '../DesignReviewCreateModal';
 import DynamicTooltip from '../../../components/DynamicTooltip';
+import { designReviewStatusColor } from '../../../utils/design-review.utils';
 
 export const getTeamTypeIcon = (teamTypeName: string, isLarge?: boolean) => {
   const teamIcons: Map<string, JSX.Element> = new Map([
@@ -38,7 +39,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         </IconButton>
       </Grid>
       <Grid item xs display="flex" justifyContent="flex-end">
-        <Typography variant="h6" marginRight={1}>
+        <Typography variant="h6" marginRight={1} noWrap>
           {cardDate.getDate()}
         </Typography>
       </Grid>
@@ -48,21 +49,32 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   const EventCard = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const name = event.wbsName;
+
     return (
       <>
-        <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
+        <DRCSummaryModal
+          open={isSummaryModalOpen}
+          onHide={() => setIsSummaryModalOpen(false)}
+          designReview={event}
+          teamTypes={teamTypes}
+        />
         <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)} sx={{ cursor: 'pointer' }}>
-          <Card sx={{ backgroundColor: 'red', borderRadius: 1, minWidth: 140, maxWidth: 140, minHeight: 20, maxHeight: 20 }}>
-            <Stack direction="row">
-              {getTeamTypeIcon(event.teamType.name)}
-              <DynamicTooltip
-                title={name + (event.meetingTimes.length > 0 ? ' - ' + meetingStartTimePipe(event.meetingTimes) : '')}
-              >
-                <Typography marginLeft={0.5} marginBottom={0.3} fontSize={14} noWrap>
-                  {name + (event.meetingTimes.length > 0 ? ' ' + meetingStartTimePipe(event.meetingTimes) : '')}
-                </Typography>
-              </DynamicTooltip>
-            </Stack>
+          <Card
+            sx={{
+              backgroundColor: designReviewStatusColor(event.status),
+              borderRadius: 1,
+              width: '100%',
+              minHeight: 20,
+              maxHeight: 20
+            }}
+          >
+            <DynamicTooltip
+              title={name + (event.meetingTimes.length > 0 ? ' - ' + meetingStartTimePipe(event.meetingTimes) : '')}
+            >
+              <Typography marginX={0.5} marginY={0.2} lineHeight={'120%'} fontSize={14} fontWeight="bold" noWrap>
+                {name}
+              </Typography>
+            </DynamicTooltip>
           </Card>
         </Box>
       </>
@@ -74,7 +86,12 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
     return (
       <>
-        <DRCSummaryModal open={isSummaryModalOpen} onHide={() => setIsSummaryModalOpen(false)} designReview={event} />
+        <DRCSummaryModal
+          open={isSummaryModalOpen}
+          onHide={() => setIsSummaryModalOpen(false)}
+          designReview={event}
+          teamTypes={teamTypes}
+        />
         <Link
           style={{ cursor: 'pointer' }}
           fontSize={15}
@@ -148,7 +165,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   };
 
   return (
-    <Card sx={{ borderRadius: 2, minWidth: 150, maxWidth: 150, minHeight: 90, maxHeight: 90 }}>
+    <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
       <DesignReviewCreateModal
         showModal={isCreateModalOpen}
         handleClose={() => {

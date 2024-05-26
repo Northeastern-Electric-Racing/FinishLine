@@ -11,6 +11,8 @@ interface TimeSlotProps {
   onMouseEnter?: (e: any) => void;
   onMouseUp?: (e: any) => void;
   onMouseOver?: () => void;
+  onClick?: () => void;
+  selected?: boolean;
 }
 
 const TimeSlot: React.FC<TimeSlotProps> = ({
@@ -22,7 +24,9 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   onMouseDown,
   onMouseEnter,
   onMouseUp,
-  onMouseOver
+  onMouseOver,
+  onClick,
+  selected = false
 }) => {
   return (
     <Box
@@ -32,8 +36,8 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
         backgroundColor,
         cursor: onMouseEnter ? 'pointer' : undefined,
         borderStyle: 'solid',
-        borderColor: 'gray',
-        borderWidth: '0.1px',
+        borderColor: selected ? '#ffff8c' : 'gray',
+        borderWidth: selected ? '2px' : '0.1px',
         color: 'black',
         textAlign: 'center',
         fontSize,
@@ -47,6 +51,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
       onMouseEnter={onMouseEnter}
       onMouseUp={onMouseUp}
       onMouseOver={onMouseOver}
+      onClick={onClick}
     >
       {icon && <Icon>{icon}</Icon>}
       {text}

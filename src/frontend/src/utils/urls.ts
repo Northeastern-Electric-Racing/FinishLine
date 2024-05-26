@@ -57,8 +57,6 @@ const workPackages = (queryParams?: { [field: string]: string }) => {
 const workPackagesByWbsNum = (wbsNum: string) => `${workPackages()}/${wbsNum}`;
 const workPackagesCreate = () => `${workPackages()}/create`;
 const workPackagesEdit = () => `${workPackages()}/edit`;
-const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
-  `${workPackages()}/template/${workPackageTemplateId}/edit`;
 const workPackagesDelete = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/delete`;
 const workPackagesBlocking = (wbsNum: string) => `${workPackagesByWbsNum(wbsNum)}/blocking`;
 const workPackagesSlackUpcomingDeadlines = () => `${workPackages()}/slack-upcoming-deadlines`;
@@ -81,6 +79,7 @@ const teams = () => `${API_URL}/teams`;
 const teamsById = (id: string) => `${teams()}/${id}`;
 const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
+const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
@@ -90,6 +89,9 @@ const teamTypes = () => `${teams()}/teamType/all`;
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
 const descriptionBulletsCheck = () => `${descriptionBullets()}/check`;
+const descriptionBulletTypes = () => `${descriptionBullets()}/types`;
+const editDescriptionBulletType = () => `${descriptionBullets()}/types/edit`;
+const createDescriptionBulletType = () => `${descriptionBullets()}/types/create`;
 
 /**************** Finance Endpoints **************************/
 const financeEndpoints = () => `${API_URL}/reimbursement-requests`;
@@ -98,7 +100,7 @@ const financeCreateReimbursementRequest = () => `${financeEndpoints()}/create`;
 const financeReimbursementRequestById = (id: string) => `${financeEndpoints()}/${id}`;
 const financeImageById = (fileId: string) => `${financeEndpoints()}/receipt-image/${fileId}`;
 const financeEditReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/edit`;
-const getAllExpenseTypes = () => `${financeEndpoints()}/expense-types`;
+const getAllAccountCodes = () => `${financeEndpoints()}/account-codes`;
 const getAllVendors = () => `${financeEndpoints()}/vendors`;
 const financeUploadReceipt = (id: string) => `${financeEndpoints()}/${id}/upload-receipt`;
 const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-user`;
@@ -113,8 +115,8 @@ const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
-const financeEditExpenseType = (expenseId: string) => `${financeEndpoints()}/${expenseId}/expense-types/edit`;
-const financeCreateExpenseType = () => `${financeEndpoints()}/expense-types/create`;
+const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
+const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
 
@@ -147,6 +149,14 @@ const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${desi
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
+
+/******************* Work Package Template Endpoints********************/
+
+const workPackageTemplates = () => `${API_URL}/templates`;
+const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPackageTemplates()}/${workPackageTemplateId}`;
+const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
+  `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
+const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -187,7 +197,6 @@ export const apiUrls = {
   workPackagesByWbsNum,
   workPackagesCreate,
   workPackagesEdit,
-  workPackageTemplatesEdit,
   workPackagesDelete,
   workPackagesBlocking,
   workPackagesSlackUpcomingDeadlines,
@@ -212,14 +221,19 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
+  teamTypes,
+  teamsSetTeamType,
 
   descriptionBulletsCheck,
+  descriptionBulletTypes,
+  editDescriptionBulletType,
+  createDescriptionBulletType,
 
   financeUploadRceipt,
   financeCreateReimbursementRequest,
   financeEditReimbursementRequest,
   financeReimbursementRequestById,
-  getAllExpenseTypes,
+  getAllAccountCodes,
   getAllVendors,
   financeEndpoints,
   financeUploadReceipt,
@@ -236,8 +250,8 @@ export const apiUrls = {
   financeDenyReimbursementRequest,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
-  financeEditExpenseType,
-  financeCreateExpenseType,
+  financeEditAccountCode,
+  financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
 
@@ -265,8 +279,12 @@ export const apiUrls = {
   designReviewById,
   designReviewsEdit,
   designReviewMarkUserConfirmed,
-  teamTypes,
   designReviewDelete,
+
+  workPackageTemplates,
+  workPackageTemplatesById,
+  workPackageTemplatesEdit,
+  workPackageTemplatesCreate,
 
   version
 };

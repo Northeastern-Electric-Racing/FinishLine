@@ -11,7 +11,7 @@ import {
   isProject,
   WorkPackage,
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   DesignReview
 } from 'shared';
 
@@ -71,7 +71,7 @@ export const emDashPipe = (str: string) => {
  */
 export const datePipe = (date?: Date) => {
   if (!date) return '';
-  date = new Date(date.toDateString());
+  date = typeof date == 'string' ? new Date(date) : new Date(date.toDateString());
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
@@ -95,8 +95,8 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
-export const expenseTypePipe = (expenseType: ExpenseType) => {
-  return `${expenseType.code} - ${expenseType.name}`;
+export const accountCodePipe = (accountCode: AccountCode) => {
+  return `${accountCode.code} - ${accountCode.name}`;
 };
 
 /** Display timeline status in readable form
@@ -199,4 +199,20 @@ export const meetingDatePipe = (date?: Date) => {
     year: '2-digit',
     timeZone: 'UTC'
   });
+};
+
+export const labelPipe = (label: string) => {
+  let result = '';
+
+  if (label.length === 0) return result;
+
+  result = label.charAt(0).toUpperCase() + label.slice(1);
+
+  for (let i = 1; i < label.length; i++) {
+    if (label.charAt(i) === label.charAt(i).toUpperCase()) {
+      result = result.slice(0, i) + ' ' + result.charAt(i) + result.slice(i + 1);
+    }
+  }
+
+  return result;
 };

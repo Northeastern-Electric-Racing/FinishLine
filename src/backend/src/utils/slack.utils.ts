@@ -1,11 +1,13 @@
-import { ChangeRequest, daysBetween, Task, User, wbsPipe, WorkPackage } from 'shared';
-import { reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
-import { getUserSlackId } from './users.utils';
+import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, WorkPackage } from 'shared';
+import { User } from '@prisma/client';
+import { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
+import { getUserFullName, getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
-import { Change_Request, Team, WBS_Element } from '@prisma/client';
+import { Change_Request, Design_Review, Team, WBS_Element } from '@prisma/client';
 import { UserWithSettings } from './auth.utils';
-import { usersToSlackPings } from './notifications.utils';
+import { usersToSlackPings, userToSlackPing } from './notifications.utils';
+import { addHours, meetingStartTimePipe } from './design-reviews.utils';
 
 // build the "due" string for the upcoming deadlines slack message
 const buildDueString = (daysUntilDeadline: number): string => {
@@ -15,7 +17,7 @@ const buildDueString = (daysUntilDeadline: number): string => {
 };
 
 // build the "user" string for the upcoming deadlines slack message
-const buildUserString = (lead?: User, slackId?: string): string => {
+const buildUserString = (lead?: UserPreview, slackId?: string): string => {
   if (lead && slackId) return `<@${slackId}>`;
   if (lead && !slackId)
     return `${lead.firstName} ${lead.lastName} (<https://finishlinebyner.com/settings|set your slack id here>)`;
@@ -70,15 +72,51 @@ export const sendSlackRequestedReviewNotification = async (
  * Send Task assigned notification to assignee on Slack
  * @param slackId the slack id of the assignee
  * @param task the task they were assigned to
+ * @param organizationId the organization id of the current user
  */
-export const sendSlackTaskAssignedNotification = async (slackId: string, task: Task): Promise<void> => {
+export const sendSlackTaskAssignedNotification = async (
+  slackId: string,
+  task: Task,
+  organizationId: string
+): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
-  const project = await prisma.wBS_Element.findUnique({ where: { wbsNumber: task.wbsNum } });
+  const project = await prisma.wBS_Element.findUnique({ where: { wbsNumber: { ...task.wbsNum, organizationId } } });
   const msg = `You have been assigned to a task: ${task.title} on project ${wbsPipe(task.wbsNum)} - ${project?.name}`;
   const link = `https://finishlinebyner.com/projects/${wbsPipe(task.wbsNum)}/tasks`;
   const linkButtonText = 'View Task';
   await sendMessage(slackId, msg, link, linkButtonText);
+};
+
+/**
+ * Send a notification to users that a reimbursement request is created on Slack
+ * @param requestId the id if the reimbursement request
+ * @param submitterId the id of the user who created the reimbursement request
+ */
+export const sendReimbursementRequestCreatedNotification = async (requestId: string, submitterId: number): Promise<void> => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
+  const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
+  const linkButtonText = 'View Reimbursement Request';
+
+  if (!process.env.FINANCE_TEAM_ID) {
+    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
+  }
+
+  const financeTeam = await prisma.team.findUnique({
+    where: { teamId: process.env.FINANCE_TEAM_ID }
+  });
+
+  if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
+
+  try {
+    await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
+    }
+  }
 };
 
 /**
@@ -102,14 +140,17 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
   }
 };
 
-export const sendSlackDesignReviewNotification = async (
+export const sendSlackDesignReviewConfirmNotification = async (
   slackId: string,
   designReviewId: string,
   designReviewName: string
 ) => {
-  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction) return; // don't send msgs unless in prod
   const msg = `You have been invited to the ${designReviewName} Design Review!`;
-  const fullLink = `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`;
+  const fullLink = isProduction
+    ? `https://finishlinebyner.com/settings/preferences?drId=${designReviewId}`
+    : `http://localhost:3000/settings/preferences?drId=${designReviewId}`;
   const linkButtonText = 'Confirm Availability';
 
   try {
@@ -190,6 +231,142 @@ export const sendAndGetSlackCRNotifications = async (
   return notifications;
 };
 
+export const sendSlackDesignReviewNotification = async (
+  team: Team,
+  message: string
+): Promise<{ channelId: string; ts: string }[]> => {
+  if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
+  const msgs: { channelId: string; ts: string }[] = [];
+  const fullMsg = `${message}`;
+  const fullLink = `https://finishlinebyner.com/design-review-calendar`;
+  const btnText = `View Calendar`;
+  const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
+  if (notification) msgs.push(notification);
+
+  return msgs;
+};
+
+export const sendSlackDRNotifications = async (
+  teams: Team[],
+  designReview: Design_Review,
+  submitter: User,
+  workPackageName: string
+) => {
+  const notifications: { channelId: string; ts: string }[] = [];
+  const message = `:spiral_calendar_pad: Design Review for *${workPackageName}* is being scheduled by ${submitter.firstName} ${submitter.lastName}`;
+
+  const completion: Promise<void>[] = teams.map(async (team) => {
+    const sentNotifications: { channelId: string; ts: string }[] = await sendSlackDesignReviewNotification(team, message);
+    if (sentNotifications) notifications.push(...sentNotifications);
+  });
+  await Promise.all(completion);
+
+  const promises = notifications.map((notification) =>
+    prisma.message_Info.create({
+      data: {
+        designReviewId: designReview.designReviewId,
+        channelId: notification.channelId,
+        timestamp: notification.ts
+      },
+      include: {
+        designReview: true
+      }
+    })
+  );
+  await Promise.all(promises);
+
+  return notifications;
+};
+
+export const sendDRUserConfirmationToThread = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number | null;
+  }[],
+  submitter: UserWithSettings
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const slackPing = userToSlackPing(submitter);
+  const fullMsg = `${slackPing} confirmed their availability!`;
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
+      await Promise.all(msgs);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
+};
+
+export const sendDRConfirmationToThread = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number | null;
+  }[],
+  submitter: UserWithSettings
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const slackPing = userToSlackPing(submitter);
+  const fullMsg = `${slackPing} All of the required attendees have confirmed their availability!`;
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, fullMsg));
+      await Promise.all(msgs);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
+};
+
+export const sendDRScheduledSlackNotif = async (
+  threads: {
+    messageInfoId: string;
+    channelId: string;
+    timestamp: string;
+    changeRequestId: number | null;
+  }[],
+  designReview: Design_Review & { wbsElement: WBS_Element; userCreated: User }
+) => {
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+
+  const drName = designReview.wbsElement.name;
+  const { dateScheduled } = designReview;
+  const drTime = `${addHours(dateScheduled, 12).toLocaleDateString()} at ${meetingStartTimePipe(designReview.meetingTimes)}`;
+  const drSubmitter = `${designReview.userCreated.firstName} ${designReview.userCreated.lastName}`;
+  const zoomLink = designReview.isOnline && `on <${designReview.zoomLink}|Zoom>`;
+  const location =
+    zoomLink && designReview.isInPerson
+      ? `in ${designReview.location} and ${zoomLink}`
+      : designReview.isInPerson
+      ? `in ${designReview.location}`
+      : zoomLink;
+
+  const msg = `:spiral_calendar_pad: Design Review for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
+  const threadMsg = `The Design Review has been Scheduled! \n <${designReview.docTemplateLink}|Doc Link>`;
+  try {
+    if (threads && threads.length !== 0) {
+      const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
+      await Promise.all(msgs);
+      const threadMsgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, threadMsg));
+      await Promise.all(threadMsgs);
+      const reactions = threads.map((thread) => reactToMessage(thread.channelId, thread.timestamp, 'calendar'));
+      await Promise.all(reactions);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
+    }
+  }
+};
+
 export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
@@ -213,7 +390,7 @@ export const sendSlackCRStatusToThread = async (
     messageInfoId: string;
     channelId: string;
     timestamp: string;
-    changeRequestId: number;
+    changeRequestId: number | null;
   }[],
   crId: number,
   approved: boolean

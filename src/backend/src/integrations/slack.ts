@@ -66,6 +66,39 @@ export const replyToMessageInThread = async (
 };
 
 /**
+ * Edits an existing slack message
+ * @param slackId - the channel id of the channel of the message to edit
+ * @param timestamp - the timestamp of the message to edit
+ * @param message - the text content of the message being sent
+ * @param link - the link for the button on the message
+ * @param linkButtonText - the text for the button on the message
+ */
+export const editMessage = async (
+  slackId: string,
+  timestamp: string,
+  message: string,
+  link?: string,
+  linkButtonText?: string
+) => {
+  const { SLACK_BOT_TOKEN } = process.env;
+  if (!SLACK_BOT_TOKEN) return;
+
+  const block = generateSlackTextBlock(message, link, linkButtonText);
+
+  try {
+    await slack.chat.update({
+      token: SLACK_BOT_TOKEN,
+      channel: slackId,
+      ts: timestamp,
+      text: message,
+      blocks: [block]
+    });
+  } catch (error) {
+    throw new HttpException(500, 'Error sending slack reply to thread, reason: ' + (error as any).data.error);
+  }
+};
+
+/**
  * Reacts to a slack message
  * @param slackId - the channel id of the channel of the message to reply to
  * @param parentTimestamp - the timestamp of the message to reply to in a thread

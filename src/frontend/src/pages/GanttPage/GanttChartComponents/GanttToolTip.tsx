@@ -3,33 +3,26 @@ import { User } from 'shared';
 import { fullNamePipe } from '../../../utils/pipes';
 
 interface GanttToolTipProps {
-  xCoordinate: number;
   yCoordinate: number;
   title: string;
   startDate: Date;
   endDate: Date;
   color?: string;
-  projectLead?: User;
-  projectManager?: User;
+  lead?: User;
+  manager?: User;
 }
 
-const GanttToolTip: React.FC<GanttToolTipProps> = ({
-  xCoordinate,
-  yCoordinate,
-  title,
-  startDate,
-  endDate,
-  projectLead,
-  projectManager
-}) => {
+const GanttToolTip: React.FC<GanttToolTipProps> = ({ yCoordinate, title, startDate, endDate, lead, manager }) => {
   const theme = useTheme();
+  const xCoordinate = window.innerWidth - 375 - 35;
   return (
     <Box
       style={{
         position: 'fixed',
         left: `${xCoordinate}px`,
         top: `${yCoordinate + 20}px`,
-        zIndex: 4
+        zIndex: 4,
+        width: 375
       }}
     >
       <Box color={'white'}>
@@ -38,12 +31,16 @@ const GanttToolTip: React.FC<GanttToolTipProps> = ({
         </Box>
         <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: '0 0 5px 5px', padding: '5px 10px' }}>
           <Box display={'flex'} flexDirection={'row'}>
-            <Typography marginRight={'10px'}>Start: {startDate.toLocaleDateString()}</Typography>
-            <Typography>Project Lead: {fullNamePipe(projectLead)}</Typography>
+            <Typography color={theme.palette.text.primary} marginRight={'10px'}>
+              Start: {startDate.toLocaleDateString()}
+            </Typography>
+            <Typography color={theme.palette.text.primary}>Lead: {fullNamePipe(lead)}</Typography>
           </Box>
           <Box display={'flex'} flexDirection={'row'}>
-            <Typography marginRight={'10px'}>End: {endDate.toLocaleDateString()}</Typography>
-            <Typography>Project Manager: {fullNamePipe(projectManager)}</Typography>
+            <Typography color={theme.palette.text.primary} marginRight={'10px'}>
+              End: {endDate.toLocaleDateString()}
+            </Typography>
+            <Typography color={theme.palette.text.primary}>Manager: {fullNamePipe(manager)}</Typography>
           </Box>
         </Box>
       </Box>

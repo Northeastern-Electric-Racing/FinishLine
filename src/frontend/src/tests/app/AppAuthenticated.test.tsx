@@ -46,9 +46,9 @@ describe.skip('App Authenticated', () => {
 
   it('renders nav links', () => {
     renderComponent();
-    expect(screen.getByText('Home')).not.toBeInTheDocument();
-    expect(screen.getByText('Projects')).not.toBeInTheDocument();
-    expect(screen.getByText('Change Requests')).not.toBeInTheDocument();
+    expect(screen.queryByText('Home')).not.toBeInTheDocument();
+    expect(screen.queryByText('Projects')).not.toBeInTheDocument();
+    expect(screen.queryByText('Change Requests')).not.toBeInTheDocument();
   });
 
   it('can navigate to projects page', () => {

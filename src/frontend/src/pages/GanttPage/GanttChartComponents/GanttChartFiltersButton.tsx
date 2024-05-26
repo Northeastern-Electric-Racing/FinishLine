@@ -18,6 +18,7 @@ interface GanttChartFiltersButtonProps {
   }[];
   resetHandler: () => void;
   collapseHandler: () => void;
+  expandHandler: () => void;
 }
 
 const GanttChartFiltersButton = ({
@@ -26,7 +27,8 @@ const GanttChartFiltersButton = ({
   teamHandlers,
   overdueHandler,
   resetHandler,
-  collapseHandler
+  collapseHandler,
+  expandHandler
 }: GanttChartFiltersButtonProps) => {
   const [anchorFilterEl, setAnchorFilterEl] = useState<HTMLButtonElement | null>(null);
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,14 +50,14 @@ const GanttChartFiltersButton = ({
         anchorEl={anchorFilterEl}
         onClose={handleFilterClose}
         anchorOrigin={{
-          vertical: 'bottom',
+          vertical: 'top',
           horizontal: 'right'
         }}
         transformOrigin={{
           vertical: 'top',
           horizontal: 'right'
         }}
-        sx={{ dispaly: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        sx={{ maxWidth: '100rem' }}
       >
         <GanttChartFilters
           carHandlers={carHandlers}
@@ -64,6 +66,7 @@ const GanttChartFiltersButton = ({
           overdueHandler={overdueHandler}
           resetHandler={resetHandler}
           collapseHandler={collapseHandler}
+          expandHandler={expandHandler}
         />
       </Popover>
     </>

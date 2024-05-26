@@ -18,8 +18,8 @@ interface DesignReviewEditAttendeesProps {
 
 const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttendeesProps> = ({ designReview }) => {
   const toast = useToast();
-  const requiredMembers = designReview.requiredMembers;
-  const optionalMembers = designReview.optionalMembers;
+  const { requiredMembers } = designReview;
+  const { optionalMembers } = designReview;
   const currentUser = useCurrentUser();
 
   const { isLoading: editDesignReviewIsLoading, mutateAsync: editDesignReview } = useEditDesignReview(
@@ -66,19 +66,24 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
   if (editDesignReviewIsLoading) return <LoadingIndicator />;
 
   return (
-    <Box marginLeft="15px" paddingY="6px">
+    <Box paddingY="20px">
       <Grid container>
-        <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '7px' }}>
+        <Grid item sx={{ display: 'flex', alignItems: 'start', marginTop: '12px' }}>
           <Typography>Required: </Typography>
         </Grid>
         <Grid item xs={10} container>
+          <MemberPill user={designReview.userCreated} />
           {requiredMembers.map((member, index) => (
             <Grid item key={index}>
               <MemberPill
                 user={member}
-                handleClick={() => {
-                  handleRemoveRequiredMember(member);
-                }}
+                handleClick={
+                  currentUser.userId === designReview.userCreated.userId
+                    ? () => {
+                        handleRemoveRequiredMember(member);
+                      }
+                    : undefined
+                }
               />
             </Grid>
           ))}
@@ -92,9 +97,13 @@ const DesignReviewSummaryModalAttendees: React.FC<DesignReviewSummaryModalAttend
               <Grid item key={index}>
                 <MemberPill
                   user={member}
-                  handleClick={() => {
-                    handleRemoveOptionalMember(member);
-                  }}
+                  handleClick={
+                    currentUser.userId === designReview.userCreated.userId
+                      ? () => {
+                          handleRemoveOptionalMember(member);
+                        }
+                      : undefined
+                  }
                 />
               </Grid>
             ))}

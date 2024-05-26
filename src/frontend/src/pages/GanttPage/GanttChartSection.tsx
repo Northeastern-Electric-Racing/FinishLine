@@ -4,65 +4,55 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { useEffect, useState } from 'react';
-import { applyChangesToEvents, EventChange, GanttTaskData } from '../../utils/gantt.utils';
+import { EventChange, GanttTaskData, RequestEventChange } from '../../utils/gantt.utils';
 import { Box, Typography, Collapse } from '@mui/material';
-import GanttTaskBar from './GanttChartComponents/GanttTaskBar';
+import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
+import { useState } from 'react';
+import GanttToolTip from './GanttChartComponents/GanttToolTip';
 
 interface GanttChartSectionProps {
   start: Date;
   end: Date;
-  tasks: GanttTaskData[];
+  projects: GanttTaskData[];
   isEditMode: boolean;
-  saveChanges: (eventChanges: EventChange[]) => void;
-  onExpanderClick: (ganttTasks: GanttTaskData, teamName: string) => void;
-  showWorkPackagesList: { [projectId: string]: boolean };
-  setShowWorkPackagesList: React.Dispatch<
-    React.SetStateAction<{
-      [projectId: string]: boolean;
-    }>
-  >;
+  createChange: (change: EventChange) => void;
+  showWorkPackagesMap: Map<string, boolean>;
+  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  highlightedChange?: RequestEventChange;
 }
 
 const GanttChartSection = ({
   start,
   end,
-  tasks,
+  projects,
   isEditMode,
-  saveChanges,
-  showWorkPackagesList,
-  setShowWorkPackagesList
+  createChange,
+  showWorkPackagesMap,
+  setShowWorkPackagesMap,
+  highlightedChange
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
-  const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
+  const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
+  const [cursorY, setCursorY] = useState<number>(0);
 
-  const createChange = (change: EventChange) => {
-    setEventChanges([...eventChanges, change]);
-  };
-
-  useEffect(() => {
-    // only try to save changes when we're going from non-editing to editing mode
+  const handleOnMouseOver = (e: React.MouseEvent, event: GanttTaskData) => {
     if (!isEditMode) {
-      saveChanges(eventChanges);
-      setEventChanges([]); // reset the changes after sending them
+      setCurrentTask(event);
+      setCursorY(e.clientY);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode]);
-
-  const displayEvents = applyChangesToEvents(tasks, eventChanges);
-  const projects = displayEvents.filter((event) => !event.project);
-
-  const toggleWorkPackages = (projectId: string) => {
-    setShowWorkPackagesList((prevState) => ({
-      ...prevState,
-      [projectId]: !prevState[projectId]
-    }));
   };
 
-  return tasks.length > 0 ? (
+  const handleOnMouseLeave = () => {
+    setCurrentTask(undefined);
+  };
+
+  const toggleWorkPackages = (projectTask: GanttTaskData) => {
+    setShowWorkPackagesMap((prev) => new Map(prev.set(projectTask.id, !prev.get(projectTask.id))));
+  };
+
+  return projects.length > 0 ? (
     <Box sx={{ width: 'fit-content' }}>
-      {/* Data display: reset list of events every time eventChanges list changes using key */}
-      <Box sx={{ mt: '1rem', width: 'fit-content' }} key={eventChanges.length}>
+      <Box sx={{ mt: '1rem', width: 'fit-content' }}>
         {projects.map((project) => {
           return (
             <>
@@ -73,12 +63,14 @@ const GanttChartSection = ({
                   event={project}
                   isEditMode={isEditMode}
                   createChange={createChange}
-                  onWorkPackageToggle={() => toggleWorkPackages(project.id)}
-                  showWorkPackages={showWorkPackagesList[project.id]}
+                  handleOnMouseOver={handleOnMouseOver}
+                  handleOnMouseLeave={handleOnMouseLeave}
+                  onWorkPackageToggle={() => toggleWorkPackages(project)}
+                  showWorkPackages={showWorkPackagesMap.get(project.id)}
                 />
               </Box>
-              <Collapse in={showWorkPackagesList[project.id]}>
-                {project.children.map((workPackage) => {
+              <Collapse in={showWorkPackagesMap.get(project.id)}>
+                {project.workPackages.map((workPackage) => {
                   return (
                     <GanttTaskBar
                       key={workPackage.id}
@@ -86,6 +78,11 @@ const GanttChartSection = ({
                       event={workPackage}
                       isEditMode={isEditMode}
                       createChange={createChange}
+                      handleOnMouseOver={handleOnMouseOver}
+                      handleOnMouseLeave={handleOnMouseLeave}
+                      highlightedChange={
+                        highlightedChange && workPackage.id === highlightedChange.eventId ? highlightedChange : undefined
+                      }
                     />
                   );
                 })}
@@ -94,6 +91,17 @@ const GanttChartSection = ({
           );
         })}
       </Box>
+      {currentTask && (
+        <GanttToolTip
+          yCoordinate={cursorY}
+          title={!currentTask.project ? currentTask.name.substring(8) : currentTask.name.substring(6)}
+          startDate={currentTask.start}
+          endDate={currentTask.end}
+          color={currentTask.styles?.backgroundColor}
+          lead={currentTask.lead}
+          manager={currentTask.manager}
+        />
+      )}
     </Box>
   ) : (
     <Typography sx={{ mx: 1 }}>No items to display</Typography>
