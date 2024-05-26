@@ -91,7 +91,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
             ))}
             {<NavUserMenu open={drawerOpen} />}
           </Box>
-          <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
+          <Box justifyContent={'flex-start'}>
             <Box marginLeft={1.1}>
               <Typography marginLeft={1.1}>Sponsored By:</Typography>
               <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
