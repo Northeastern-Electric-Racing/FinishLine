@@ -64,9 +64,6 @@
     "build:dev": "vite build --mode development",
     "test": "vitest"
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
