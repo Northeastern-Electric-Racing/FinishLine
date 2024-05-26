@@ -8988,6 +8988,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-config-react@npm:^1.1.7":
+  version: 1.1.7
+  resolution: "eslint-config-react@npm:1.1.7"
+  checksum: 15d3d7f78e720c225ac983fb6985825b561941f1c930116c96f8ab8600eb65db603f5ef200a10fabd51f8ef564c107e8eb0d3f69609bfdedfb50290227249a70
+  languageName: node
+  linkType: hard
+
 "eslint-import-resolver-node@npm:^0.3.9":
   version: 0.3.9
   resolution: "eslint-import-resolver-node@npm:0.3.9"
@@ -9910,6 +9917,7 @@ __metadata:
     concurrently: ^5.2.0
     eslint: ^7.0.0
     eslint-config-prettier: ^8.5.0
+    eslint-config-react: ^1.1.7
     eslint-plugin-prettier: ^4.2.1
     prettier: ^2.0.5
     rimraf: ^3.0.2
