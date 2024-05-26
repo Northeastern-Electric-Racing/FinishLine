@@ -39,7 +39,7 @@
     "build:frontend": "yarn workspace frontend build",
     "build:frontend:dev": "yarn workspace frontend build:dev",
     "i": "yarn install && yarn prisma:generate",
-    "database:setup": "yarn databse:setup:script && docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres && sleep 5 && docker exec finishline psql -U postgres -c \"CREATE DATABASE nerpm;\" && yarn prisma:reset",
+    "database:setup": "yarn database:setup:script && docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres && sleep 5 && docker exec finishline psql -U postgres -c \"CREATE DATABASE nerpm;\" && yarn prisma:reset",
     "database:setup:script": "node scripts/database-setup.js",
     "istart": "yarn i && yarn start",
     "reset": "rimraf yarn.lock; rimraf src/frontend/node_modules; rimraf src/backend/node_modules; rimraf src/shared/node_modules; rimraf ./node_modules; ",

@@ -27,7 +27,7 @@ import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 export interface ReimbursementRequestInformation {
   vendorId: string;
   dateOfExpense: Date;
-  expenseTypeId: string;
+  accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
   account: ClubAccount | undefined;
 }
@@ -54,7 +54,7 @@ const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
   dateOfExpense: yup.date().required('Date of Expense is required'),
-  expenseTypeId: yup.string().required('Expense Type is required'),
+  accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup
     .array()
     .of(
@@ -100,7 +100,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
       vendorId: defaultValues?.vendorId ?? '',
       account: defaultValues?.account,
       dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
-      expenseTypeId: defaultValues?.expenseTypeId ?? '',
+      accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])
     }
