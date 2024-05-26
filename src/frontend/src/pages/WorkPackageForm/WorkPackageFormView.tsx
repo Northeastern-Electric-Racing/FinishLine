@@ -9,7 +9,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
-import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -198,9 +197,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
               </Box>
             )}
             <Box>
-              <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+              <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
                 Cancel
-              </NERFailButton>
+              </NERButton>
               <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} disabled={!changeRequestInputExists}>
                 Submit
               </NERSuccessButton>
