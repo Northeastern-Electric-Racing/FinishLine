@@ -4,6 +4,7 @@
  */
 
 import { Typography, Box, Grid } from '@mui/material';
+import { textAlign } from '@mui/system';
 import { ReactElement, ReactNode } from 'react';
 
 interface PageTitleProps {
@@ -35,15 +36,15 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
         marginTop={2}
       >
         <Grid container>
-          <Grid container item md={12} display="flex" alignItems={'center'}>
-            <Grid md={7} xs={12} display="flex">
-              <Typography flexGrow={1} variant="h4" fontSize={30}>
+          <Grid container item md={12} display="flex">
+            <Grid md={3} xs={12} display="flex">
+              <Typography flexGrow={1} variant="h4" fontSize={30} textAlign={'center'}>
                 {title}
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }} flexGrow={4}>
-                {chips}
-              </Box>
             </Grid>
+            <Box sx={{ display: 'flex', alignItems: 'center' }} flexGrow={4}>
+              {chips}
+            </Box>
             <Grid item md={5} xs={12}>
               <Box textAlign={['left', 'right']}>{headerRight}</Box>
             </Grid>

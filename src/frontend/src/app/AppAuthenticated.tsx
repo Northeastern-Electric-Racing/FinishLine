@@ -57,14 +57,15 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
         aria-label="open drawer"
         onClick={() => setDrawerOpen(true)}
         sx={{
-          position: 'fixed'
+          position: 'fixed',
+          margin: 1.5
         }}
       >
         <GridMenuIcon />
       </IconButton>
       <Box display={'flex'}>
         <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container sx={{ marginTop: 2 }}>
+        <Container>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
