@@ -17,7 +17,7 @@ import { WorkPackageQueryArgs } from '../../prisma-query-args/work-packages.quer
 export const seedWorkPackage = async (
   creator: User,
   name: string,
-  changeRequestId: number,
+  changeRequestId: string,
   stage: WorkPackageStage | null,
   startDate: string,
   duration: number,
@@ -25,8 +25,8 @@ export const seedWorkPackage = async (
   descriptionBullets: DescriptionBulletPreview[],
   editor: User,
   status: WbsElementStatus,
-  lead: number,
-  manager: number,
+  lead: string,
+  manager: string,
   organizationId: string
 ): Promise<{
   workPackageWbsNumber: WbsNumber;

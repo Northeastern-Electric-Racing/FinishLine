@@ -13,7 +13,6 @@ const manufacturerTransformer = (manufacturer: Prisma.ManufacturerGetPayload<Man
   return {
     name: manufacturer.name,
     dateCreated: manufacturer.dateCreated,
-    userCreatedId: manufacturer.userCreatedId,
     userCreated: userTransformer(manufacturer.userCreated),
     dateDeleted: manufacturer.dateDeleted ?? undefined,
     materials: manufacturer.materials.map(materialPreviewTransformer)

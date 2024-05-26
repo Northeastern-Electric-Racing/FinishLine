@@ -117,8 +117,8 @@ export default class WorkPackagesController {
         duration,
         blockedBy,
         descriptionBullets,
-        projectLeadId,
-        projectManagerId
+        leadId,
+        managerId
       } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
@@ -137,8 +137,8 @@ export default class WorkPackagesController {
         duration,
         blockedBy,
         descriptionBullets,
-        projectLeadId,
-        projectManagerId,
+        leadId,
+        managerId,
         organizationId
       );
       return res.status(200).json({ message: 'Work package updated successfully' });

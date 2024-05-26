@@ -21,10 +21,8 @@ export const workPackageTemplateTransformer = (
     descriptionBullets: wptInput.descriptionBullets.map(descriptionBulletTransformer),
     dateCreated: wptInput.dateCreated,
     userCreated: userTransformer(wptInput.userCreated),
-    userCreatedId: wptInput.userCreatedId,
     dateDeleted: wptInput.dateDeleted ?? undefined,
     userDeleted: wptInput.userDeleted ? userTransformer(wptInput.userDeleted) : undefined,
-    userDeletedId: wptInput.userDeletedId ?? undefined
   };
 };
 

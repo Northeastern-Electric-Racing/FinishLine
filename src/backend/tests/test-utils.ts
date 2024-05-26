@@ -17,7 +17,6 @@ import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSet
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 
 export interface CreateTestUserParams {
-  userId?: number;
   firstName: string;
   lastName: string;
   email: string;

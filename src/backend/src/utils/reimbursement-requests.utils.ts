@@ -47,14 +47,16 @@ export const removeDeletedReceiptPictures = async (
 
 /**
  * Validates that the wbs elements exist and are not deleted for each reimbursement product
- * @param reimbursementProductCreateArgs the reimbursement products to add to the data base
- * @param reimbursementRequestId the id of the reimbursement request that the products belogn to
+ * @param ortherReimbursementCreateArgs Reimbursement products with an other reason for the product
+ * @param wbsReimbursementProductsCreateArgs Reimbursement products with a wbs element reason for the product
+ * @param organizationId the organization id that the reimbursement request belongs to
  * @returns the reimbursement products with the wbs element id added
  * @throws if any of the wbs elements are deleted or dont exist
  */
 export const validateReimbursementProducts = async (
   otherReimbursementProductCreateArgs: OtherReimbursementProductCreateArgs[],
-  wbsReimbursementProductsCreateArgs: WbsReimbursementProductCreateArgs[]
+  wbsReimbursementProductsCreateArgs: WbsReimbursementProductCreateArgs[],
+  organizationId: string
 ): Promise<{
   validatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   validatedWbsReimbursementProducts: ValidatedWbsReimbursementProductCreateArgs[];
@@ -71,11 +73,12 @@ export const validateReimbursementProducts = async (
     wbsReimbursementProductsCreateArgs.map(async (product) => {
       //check whether the reason is a WBS Number
       const wbsNum = product.reason;
-      const wbsElement = await prisma.wBS_Element.findFirst({
+      const wbsElement = await prisma.wBS_Element.findUnique({
         where: {
-          carNumber: wbsNum.carNumber,
-          projectNumber: wbsNum.projectNumber,
-          workPackageNumber: wbsNum.workPackageNumber
+          wbsNumber: {
+            organizationId,
+            ...wbsNum
+          }
         }
       });
       if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe(wbsNum));
@@ -105,12 +108,14 @@ export const validateReimbursementProducts = async (
  * @param currentReimbursementProducts the current reimbursement products of a reimbursement request
  * @param updatedReimbursementProducts the new reimbursement products to compare
  * @param reimbursementRequestId the reimbursement request that is being changed id
+ * @param organizationId the organization id that the reimbursement request belongs to
  */
 export const updateReimbursementProducts = async (
   currentReimbursementProducts: Reimbursement_Product[],
   updatedOtherReimbursementProducts: OtherReimbursementProductCreateArgs[],
   updatedWbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
-  reimbursementRequestId: string
+  reimbursementRequestId: string,
+  organizationId: string
 ) => {
   if (updatedOtherReimbursementProducts.length + updatedWbsReimbursementProducts.length === 0) {
     throw new HttpException(400, 'A reimbursement request must have at least one reimbursement product!');
@@ -141,7 +146,7 @@ export const updateReimbursementProducts = async (
 
   await updateDeletedProducts(deletedProducts);
 
-  await createNewProducts(newOtherProducts, newWbsProducts, reimbursementRequestId);
+  await createNewProducts(newOtherProducts, newWbsProducts, reimbursementRequestId, organizationId);
 
   await updateExistingProducts(updatedExistingProducts);
 };
@@ -206,15 +211,18 @@ const updateDeletedProducts = async (products: Reimbursement_Product[]) => {
  * Validates and Creates the new products in the database
  * @param otherProducts the other reimbursement products to create
  * @param wbsProducts the wbs reimbursement products to create
+ * @param reimbursementRequestId the id of the reimbursement request to associate the products with
+ * @param organizationId the organization id that the reimbursement request belongs to
  */
 const createNewProducts = async (
   otherProducts: OtherReimbursementProductCreateArgs[],
   wbsProducts: WbsReimbursementProductCreateArgs[],
-  reimbursementRequestId: string
+  reimbursementRequestId: string,
+  organizationId: string
 ) => {
   //create the new reimbursement products
   if (otherProducts.length + wbsProducts.length !== 0) {
-    const validatedReimbursementProducts = await validateReimbursementProducts(otherProducts, wbsProducts);
+    const validatedReimbursementProducts = await validateReimbursementProducts(otherProducts, wbsProducts, organizationId);
     await createReimbursementProducts(
       validatedReimbursementProducts.validatedOtherReimbursementProducts,
       validatedReimbursementProducts.validatedWbsReimbursementProducts,

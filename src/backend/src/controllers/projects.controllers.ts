@@ -33,7 +33,7 @@ export default class ProjectsController {
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = await getCurrentUser(res);
-      const { name, crId, carNumber, teamIds, budget, summary, projectLeadId, projectManagerId, links, descriptionBullets } =
+      const { name, crId, carNumber, teamIds, budget, summary, leadId, managerId, links, descriptionBullets } =
         req.body;
       const organizationId = getOrganizationId(req.headers);
 
@@ -47,8 +47,8 @@ export default class ProjectsController {
         budget,
         links,
         descriptionBullets,
-        projectLeadId,
-        projectManagerId,
+        leadId,
+        managerId,
         organizationId
       );
 
@@ -61,7 +61,7 @@ export default class ProjectsController {
   static async editProject(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const { projectId, crId, name, budget, summary, descriptionBullets, links, projectLeadId, projectManagerId } =
+      const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } =
         req.body;
       const organizationId = getOrganizationId(req.headers);
 
@@ -74,8 +74,8 @@ export default class ProjectsController {
         summary,
         descriptionBullets,
         links,
-        projectLeadId || null,
-        projectManagerId || null,
+        leadId || null,
+        managerId || null,
         organizationId
       );
 

@@ -17,7 +17,7 @@ import { FormEvent } from 'react';
 import { Typography } from '@mui/material';
 
 interface LoginDevProps {
-  devSetUser: (userId: number) => void;
+  devSetUser: (userId: string) => void;
   devFormSubmit: (e: FormEvent) => void;
 }
 

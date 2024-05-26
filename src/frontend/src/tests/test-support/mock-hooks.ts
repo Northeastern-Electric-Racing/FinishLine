@@ -71,7 +71,7 @@ export const mockDeleteTaskReturnValue = mockUseMutationResult<{ message: string
 export const mockCheckDescBulletReturnValue = mockUseMutationResult<DescriptionBullet>(
   false,
   false,
-  { id: 1, detail: 'detail', dateAdded: new Date(), type: 'your mom' },
+  { id: "1", detail: 'detail', dateAdded: new Date(), type: 'your mom' },
   undefined
 ) as UseMutationResult<DescriptionBullet, Error, CheckDescriptionBulletRequestPayload, unknown>;
 

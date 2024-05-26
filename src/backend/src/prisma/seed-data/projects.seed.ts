@@ -14,7 +14,7 @@ import ProjectsService from '../../services/projects.services';
  */
 export const seedProject = async (
   creator: User,
-  changeRequestId: number,
+  changeRequestId: string,
   carNumber: number,
   name: string,
   summary: string,
@@ -23,10 +23,10 @@ export const seedProject = async (
   budget: number,
   links: LinkCreateArgs[],
   descriptionBullets: DescriptionBulletPreview[],
-  projectLeadId: number | null,
-  projectManagerId: number | null,
+  leadId: string | null,
+  managerId: string | null,
   organizationId: string
-): Promise<{ projectWbsNumber: WbsNumber; projectId: number }> => {
+): Promise<{ projectWbsNumber: WbsNumber; projectId: string }> => {
   const project = await ProjectsService.createProject(
     creator,
     changeRequestId,
@@ -37,8 +37,8 @@ export const seedProject = async (
     budget,
     links,
     descriptionBullets,
-    projectLeadId,
-    projectManagerId,
+    leadId,
+    managerId,
     organizationId
   );
 
@@ -51,8 +51,8 @@ export const seedProject = async (
     summary,
     [],
     links,
-    projectLeadId,
-    projectManagerId,
+    leadId,
+    managerId,
     organizationId
   );
 

@@ -128,7 +128,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography>Brody Pearlman</Typography>
+              <Typography>Alex Leblang</Typography>
               <CopyToClipboardButton msg={'Brody Pearlman'} />
             </Box>
             <Box display="flex" alignItems="center">

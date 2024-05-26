@@ -7,7 +7,7 @@ import { AuthenticatedUser, DescriptionBulletPreview, LinkCreateArgs } from 'sha
 
 export interface Auth {
   user: AuthenticatedUser | undefined;
-  devSignin: (userId: number) => Promise<AuthenticatedUser>;
+  devSignin: (userId: string) => Promise<AuthenticatedUser>;
   signin: (token: string) => Promise<AuthenticatedUser>;
   signout: () => void;
   isLoading: boolean;
@@ -26,7 +26,7 @@ export interface VersionObject {
 }
 
 export interface EditSingleProjectPayload {
-  projectId: number;
+  projectId: string;
   crId: number;
   name: string;
   budget: number;

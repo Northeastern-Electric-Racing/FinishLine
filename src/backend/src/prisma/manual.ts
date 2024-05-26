@@ -114,7 +114,7 @@ const migrateToProposedSolutions = async () => {
   const crs = await prisma.scope_CR.findMany({ include: { changeRequest: true } });
   crs.forEach(async (cr) => {
     const alreadyHasSolution = await prisma.proposed_Solution.findFirst({
-      where: { changeRequestId: cr.scopeCrId }
+      where: { scopeChangeRequestId: cr.scopeCrId }
     });
 
     if (!alreadyHasSolution) {
@@ -124,7 +124,7 @@ const migrateToProposedSolutions = async () => {
           timelineImpact: cr.timelineImpact,
           scopeImpact: cr.scopeImpact,
           budgetImpact: cr.budgetImpact,
-          changeRequestId: cr.scopeCrId,
+          scopeChangeRequestId: cr.scopeCrId,
           createdByUserId: cr.changeRequest.submitterId,
           dateCreated: cr.changeRequest.dateSubmitted,
           approved: cr.changeRequest.accepted ?? false
@@ -145,11 +145,11 @@ const migrateToCheckableDescBullets = async () => {
 
   wps.forEach(async (wp) => {
     // 1 is James' id
-    const projectLeadId = wp.wbsElement.leadId || 1;
+    const leadId = wp.wbsElement.leadId;
 
     await prisma.description_Bullet.updateMany({
       where: { wbsElement: { project: null } },
-      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: leadId }
     });
   });
 };

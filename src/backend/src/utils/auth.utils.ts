@@ -8,7 +8,7 @@ import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 // generate a jwt using the user's first and last name
-export const generateAccessToken = (user: { userId: number; firstName: string; lastName: string }) => {
+export const generateAccessToken = (user: { userId: string; firstName: string; lastName: string }) => {
   return jwt.sign(user, TOKEN_SECRET, { expiresIn: '12h' });
 };
 

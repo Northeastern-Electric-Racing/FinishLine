@@ -28,7 +28,7 @@ export enum ReimbursementStatusType {
 }
 
 export interface ReimbursementStatus {
-  reimbursementStatusId: number;
+  reimbursementStatusId: string;
   type: ReimbursementStatusType;
   user: User;
   dateCreated: Date;
@@ -114,7 +114,7 @@ export interface WbsReimbursementProductCreateArgs extends ReimbursementProductC
 }
 
 export interface ValidatedWbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
-  wbsElementId: number;
+  wbsElementId: string;
   wbsNum: WbsNumber;
 }
 

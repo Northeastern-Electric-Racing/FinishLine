@@ -7,7 +7,7 @@ import { getOrganizationId } from '../utils/utils';
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
-      const crId: number = parseInt(req.params.crId);
+      const { crId } = req.params;
       const organizationId = getOrganizationId(req.headers);
 
       const cr = await ChangeRequestsService.getChangeRequestByID(crId, organizationId);
@@ -49,7 +49,7 @@ export default class ChangeRequestsController {
 
   static async createActivationChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const { wbsNum, type, projectLeadId, projectManagerId, startDate, confirmDetails } = req.body;
+      const { wbsNum, type, leadId, managerId, startDate, confirmDetails } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
@@ -59,8 +59,8 @@ export default class ChangeRequestsController {
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
         type,
-        projectLeadId,
-        projectManagerId,
+        leadId,
+        managerId,
         startDate,
         confirmDetails,
         organizationId
@@ -141,7 +141,7 @@ export default class ChangeRequestsController {
 
   static async deleteChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const crId: number = parseInt(req.params.crId);
+      const { crId } = req.params;
       const user: User = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
@@ -155,7 +155,7 @@ export default class ChangeRequestsController {
   static async requestCRReview(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
-      const crId = parseInt(req.params.crId);
+      const { crId } = req.params;
       const submitter: User = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 

@@ -91,8 +91,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     name: yup.string().required('Name is required!'),
     budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
     summary: yup.string().required('Summary is required!'),
-    leadId: yup.number().optional(),
-    managerId: yup.number().optional(),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
     links: yup.array().of(
       yup.object().shape({
         linkTypeName: yup.string().required('Link Type is required!'),
@@ -113,8 +113,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         descriptionBullets,
         links,
         carNumber,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined
+        leadId,
+        managerId
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: project.wbsNum,

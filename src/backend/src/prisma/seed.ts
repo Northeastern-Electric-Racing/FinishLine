@@ -273,22 +273,6 @@ const performSeed: () => Promise<void> = async () => {
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
   const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
 
-  /** Gets the current content of the .env file */
-  const currentEnv = require('dotenv').config().parsed;
-
-  /** If the .env file exists, set the FINANCE_TEAM_ID */
-  if (currentEnv) {
-    currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
-    currentEnv.DEV_ORGANIZATION_ID = organizationId;
-
-    /** Write the new .env file */
-    let stringifiedEnv = '';
-    Object.keys(currentEnv).forEach((key) => {
-      stringifiedEnv += `${key}=${currentEnv[key]}\n`;
-    });
-    writeFileSync('.env', stringifiedEnv);
-  }
-
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
     batman,
@@ -1826,8 +1810,8 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     nextDay.toDateString(),
     teamType1.teamTypeId,
-    [1, 2],
-    [3, 4],
+    [thomasEmrax.userId, batman.userId],
+    [superman.userId, wonderwoman.userId],
     {
       carNumber: 0,
       projectNumber: 1,
@@ -1842,15 +1826,15 @@ const performSeed: () => Promise<void> = async () => {
     designReview1.designReviewId,
     nextDay,
     teamType1.teamTypeId,
-    [1, 2, 3, 4],
-    [5, 6, 7],
+    [thomasEmrax.userId, batman.userId, superman.userId, wonderwoman.userId],
+    [joeBlow.userId, joeShmoe.userId, aang.userId],
     false,
     true,
     null,
     'The Bay',
     null,
     DesignReviewStatus.CONFIRMED,
-    [1, 2],
+    [thomasEmrax.userId, batman.userId],
     [1, 2, 3, 4, 5, 6, 7],
     organizationId
   );
