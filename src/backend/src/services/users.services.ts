@@ -204,6 +204,15 @@ export default class UsersService {
     // if not in database, create user in database
     if (!user) {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
+      const organization = await prisma.organization.findFirst();
+
+      let role = undefined;
+      if (organization) {
+        role = {
+          organizationId: organization.organizationId,
+          roleType: RoleEnum.GUEST
+        };
+      }
       const createdUser = await prisma.user.create({
         data: {
           firstName: payload['given_name'],
@@ -211,7 +220,15 @@ export default class UsersService {
           googleAuthId: userId,
           email: payload['email'],
           emailId,
-          userSettings: { create: {} }
+          userSettings: { create: {} },
+          organizations: {
+            connect: {
+              organizationId: organization?.organizationId
+            }
+          },
+          roles: {
+            create: role
+          }
         },
         include: {
           organizations: true,
