@@ -4,12 +4,10 @@
  */
 
 import { Prisma, User } from '@prisma/client';
-import { validateWBS, WbsElementStatus, WbsNumber } from 'shared';
+import { DescriptionBulletPreview, WbsElementStatus, WbsNumber } from 'shared';
 import { WorkPackageStage } from 'shared';
-import workPackageQueryArgs from '../../prisma-query-args/work-packages.query-args';
 import WorkPackagesService from '../../services/work-packages.services';
-import prisma from '../prisma';
-import { descBulletConverter } from '../../utils/description-bullets.utils';
+import { WorkPackageQueryArgs } from '../../prisma-query-args/work-packages.query-args';
 
 /**
  * Creates a work package with the given data using service functions. This has to be done by:
@@ -24,17 +22,17 @@ export const seedWorkPackage = async (
   startDate: string,
   duration: number,
   blockedBy: WbsNumber[],
-  expectedActivities: string[],
-  deliverables: string[],
+  descriptionBullets: DescriptionBulletPreview[],
   editor: User,
   status: WbsElementStatus,
-  projectLead: number,
-  projectManager: number
+  lead: number,
+  manager: number,
+  organizationId: string
 ): Promise<{
   workPackageWbsNumber: WbsNumber;
-  workPackage: Prisma.Work_PackageGetPayload<typeof workPackageQueryArgs>;
+  workPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>;
 }> => {
-  const workPackage1WbsString = await WorkPackagesService.createWorkPackage(
+  const workPackage = await WorkPackagesService.createWorkPackage(
     creator,
     name,
     changeRequestId,
@@ -42,22 +40,9 @@ export const seedWorkPackage = async (
     startDate,
     duration,
     blockedBy,
-    expectedActivities,
-    deliverables
+    descriptionBullets,
+    organizationId
   );
-
-  const workPackageWbsNumber = validateWBS(workPackage1WbsString);
-
-  const workPackage = await prisma.work_Package.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: workPackageWbsNumber.carNumber,
-        projectNumber: workPackageWbsNumber.projectNumber,
-        workPackageNumber: workPackageWbsNumber.workPackageNumber
-      }
-    },
-    ...workPackageQueryArgs
-  });
 
   await WorkPackagesService.editWorkPackage(
     editor,
@@ -68,11 +53,11 @@ export const seedWorkPackage = async (
     workPackage.startDate.toString(),
     workPackage.duration,
     workPackage.blockedBy,
-    workPackage.expectedActivities.map(descBulletConverter),
-    workPackage.deliverables.map(descBulletConverter),
-    projectLead,
-    projectManager
+    descriptionBullets,
+    lead,
+    manager,
+    organizationId
   );
 
-  return { workPackageWbsNumber, workPackage };
+  return { workPackageWbsNumber: { ...workPackage.wbsElement }, workPackage };
 };

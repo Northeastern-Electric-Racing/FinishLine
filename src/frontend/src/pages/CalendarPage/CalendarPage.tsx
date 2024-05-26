@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useState } from 'react';
-import { Box, Grid, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { DesignReview, DesignReviewStatus } from 'shared';
 import MonthSelector from './CalendarComponents/MonthSelector';
@@ -32,6 +32,8 @@ const CalendarPage = () => {
   const { isLoading, isError, error, data: allDesignReviews } = useAllDesignReviews();
   const user = useCurrentUser();
   const [unconfirmedDesignReview, setUnconfirmedDesignReview] = useState<DesignReview>();
+  const isLargerView = useMediaQuery(theme.breakpoints.up('md'));
+  const isExtraSmallView = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (isLoading || !allDesignReviews) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
@@ -143,7 +145,10 @@ const CalendarPage = () => {
           {EnumToArray(DAY_NAMES).map((day) => (
             <Grid item xs={12 / 7}>
               <Typography align={'center'} sx={{ fontWeight: 'bold', fontSize: 18 }}>
-                {day}
+                {
+                  // Day of the week display based on current breakpoint
+                  isLargerView ? day : isExtraSmallView ? day.charAt(0) : day.substring(0, 3)
+                }
               </Typography>
             </Grid>
           ))}
@@ -156,7 +161,7 @@ const CalendarPage = () => {
                   const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
                   return (
                     <Grid item xs={12 / 7}>
-                      <Box marginLeft={1.5} marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
+                      <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
                         {isDayInDifferentMonth(day, week) ? (
                           <FillerCalendarDayCard day={day} />
                         ) : (

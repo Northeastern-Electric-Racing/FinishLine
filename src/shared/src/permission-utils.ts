@@ -27,23 +27,25 @@ const isAtMostRank = (atMostRole: Role, currentRole?: Role) => {
   return rankUserRole(currentRole) <= rankUserRole(atMostRole);
 };
 
-export const isAdmin = (role?: Role) => {
+export const isAdmin: PermissionCheck = (role?: Role) => {
   return isAtLeastRank(RoleEnum.ADMIN, role);
 };
 
-export const isHead = (role?: Role) => {
+export const isHead: PermissionCheck = (role?: Role) => {
   return isAtLeastRank(RoleEnum.HEAD, role);
 };
 
-export const isLeadership = (role?: Role) => {
+export const isLeadership: PermissionCheck = (role?: Role) => {
   return isAtLeastRank(RoleEnum.LEADERSHIP, role);
 };
 
-export const isNotLeadership = (role?: Role) => {
+export const isNotLeadership: PermissionCheck = (role?: Role) => {
   return isAtMostRank(RoleEnum.MEMBER, role);
 };
 
-export const isGuest = (role?: Role) => {
+export const isGuest: PermissionCheck = (role?: Role) => {
   if (!role) return true;
   return role === RoleEnum.GUEST;
 };
+
+export type PermissionCheck = (role: Role | undefined) => boolean;

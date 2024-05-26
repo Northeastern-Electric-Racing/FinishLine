@@ -4,18 +4,19 @@
  */
 
 import { Prisma } from '@prisma/client';
-import materialTypeQueryArgs from '../prisma-query-args/material-type.query-args';
 import { MaterialType } from 'shared';
 import { materialPreviewTransformer } from './material.transformer';
+import { MaterialTypeQueryArgs } from '../prisma-query-args/material-type.query-args';
+import { userTransformer } from './user.transformer';
 
 export const materialTypeTransformer = (
-  materialType: Prisma.Material_TypeGetPayload<typeof materialTypeQueryArgs>
+  materialType: Prisma.Material_TypeGetPayload<MaterialTypeQueryArgs>
 ): MaterialType => {
   return {
     name: materialType.name,
     dateCreated: materialType.dateCreated,
     userCreatedId: materialType.userCreatedId,
-    userCreated: materialType.userCreated,
+    userCreated: userTransformer(materialType.userCreated),
     dateDeleted: materialType.dateDeleted ?? undefined,
     materials: materialType.materials.map(materialPreviewTransformer)
   };
