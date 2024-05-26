@@ -20,7 +20,7 @@ export const getSingleTeam = (id: string) => {
   });
 };
 
-export const setTeamMembers = (id: string, userIds: number[]) => {
+export const setTeamMembers = (id: string, userIds: string[]) => {
   return axios.post<{ message: string }>(apiUrls.teamsSetMembers(id), {
     userIds
   });
@@ -32,7 +32,7 @@ export const setTeamDescription = (id: string, description: string) => {
   });
 };
 
-export const setTeamHead = (id: string, userId: number) => {
+export const setTeamHead = (id: string, userId: string) => {
   return axios.post<Team>(apiUrls.teamsSetHead(id), {
     userId
   });
@@ -46,7 +46,7 @@ export const createTeam = (payload: CreateTeamPayload) => {
   return axios.post<Team>(apiUrls.teamsCreate(), payload);
 };
 
-export const setTeamLeads = (id: string, userIds: number[]) => {
+export const setTeamLeads = (id: string, userIds: string[]) => {
   return axios.post<Team>(apiUrls.teamsSetLeads(id), {
     userIds
   });

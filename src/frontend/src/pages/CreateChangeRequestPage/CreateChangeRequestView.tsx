@@ -177,7 +177,7 @@ const CreateChangeRequestsView: React.FC<CreateChangeRequestViewProps> = ({
             value={projectOptions.find((element) => element.id === value)}
             sx={{ mx: 1, flex: 1, '.MuiInputBase-input': { height: '39px' } }}
             renderInput={(params: AutocompleteRenderInputParams) => <TextField {...params} placeholder="Select a Project" />}
-            onChange={(event, value) => (value ? onChange(value?.id) : null)}
+            onChange={(_event, value) => (value ? onChange(value?.id) : null)}
           />
         )}
       />

@@ -5,7 +5,7 @@ import { getDescriptionBulletQueryArgs } from './description-bullets.query-args'
 export type WorkPackageTemplateQueryArgs = ReturnType<typeof getWorkPackageTemplateQueryArgs>;
 
 export const getWorkPackageTemplateQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Work_Package_TemplateArgs>()({
+  Prisma.validator<Prisma.Work_Package_TemplateDefaultArgs>()({
     include: {
       userCreated: getUserQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
@@ -16,7 +16,7 @@ export const getWorkPackageTemplateQueryArgs = (organizationId: string) =>
 
 export type WorkPackageTemplatePreviewQueryArgs = ReturnType<typeof getWorkPackageTemplatePreviewQueryArgs>;
 
-export const getWorkPackageTemplatePreviewQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Work_Package_TemplateArgs>()({
+export const getWorkPackageTemplatePreviewQueryArgs = (_organizationId: string) =>
+  Prisma.validator<Prisma.Work_Package_TemplateDefaultArgs>()({
     include: {}
   });

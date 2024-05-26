@@ -74,7 +74,7 @@ export const validateReimbursementProducts = () => {
 };
 
 const projectProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.if((value: any, { req }: any) => req.body.projectProposedChanges);
+  return validationObject.if((_value: any, { req }: any) => req.body.projectProposedChanges);
 };
 
 export const projectProposedChangesValidators = [
@@ -83,43 +83,31 @@ export const projectProposedChangesValidators = [
   projectProposedChangesExists(body('projectProposedChanges.links')).isArray(),
   nonEmptyString(body('projectProposedChanges.links.*.url')),
   nonEmptyString(body('projectProposedChanges.links.*.linkTypeName')),
-  intMinZero(body('projectProposedChanges.leadId').optional()),
-  intMinZero(body('projectProposedChanges.managerId').optional()),
+  nonEmptyString(body('projectProposedChanges.leadId').optional()),
+  nonEmptyString(body('projectProposedChanges.managerId').optional()),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.summary'))),
   intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
-  projectProposedChangesExists(body('projectProposedChanges.rules')).isArray(),
-  nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.rules.*'))),
-  projectProposedChangesExists(body('projectProposedChanges.goals')).isArray(),
-  nonEmptyString(body('projectProposedChanges.goals.*')),
-  projectProposedChangesExists(body('projectProposedChanges.features')).isArray(),
-  nonEmptyString(body('projectProposedChanges.features.*')),
-  projectProposedChangesExists(body('projectProposedChanges.otherConstraints')).isArray(),
-  nonEmptyString(body('projectProposedChanges.otherConstraints.*')),
   projectProposedChangesExists(body('projectProposedChanges.teamIds')).isArray(),
   nonEmptyString(body('projectProposedChanges.teamIds.*')),
   projectProposedChangesExists(body('projectProposedChanges.carNumber')).optional().isInt()
 ];
 
 const workPackageProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.if((value: any, { req }: any) => req.body.workPackageProposedChanges);
+  return validationObject.if((_value: any, { req }: any) => req.body.workPackageProposedChanges);
 };
 
 export const workPackageProposedChangesValidators = [
   body('workPackageProposedChanges').optional(),
   nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
-  intMinZero(body('workPackageProposedChanges.leadId').optional()),
-  intMinZero(body('workPackageProposedChanges.managerId').optional()),
+  nonEmptyString(body('workPackageProposedChanges.leadId').optional()),
+  nonEmptyString(body('workPackageProposedChanges.managerId').optional()),
   isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage').optional())),
   isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
   intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
   workPackageProposedChangesExists(body('workPackageProposedChanges.blockedBy')).isArray(),
   intMinZero(body('workPackageProposedChanges.blockedBy.*.carNumber')),
   intMinZero(body('workPackageProposedChanges.blockedBy.*.projectNumber')),
-  intMinZero(body('workPackageProposedChanges.blockedBy.*.workPackageNumber')),
-  workPackageProposedChangesExists(body('workPackageProposedChanges.expectedActivities')).isArray(),
-  nonEmptyString(body('workPackageProposedChanges.expectedActivities.*')),
-  workPackageProposedChangesExists(body('workPackageProposedChanges.deliverables')).isArray(),
-  nonEmptyString(body('workPackageProposedChanges.deliverables.*'))
+  intMinZero(body('workPackageProposedChanges.blockedBy.*.workPackageNumber'))
 ];
 
 export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {
@@ -161,7 +149,7 @@ export const descriptionBulletsValidators = [
   body('descriptionBullets').isArray(),
   nonEmptyString(body('descriptionBullets.*.detail')),
   nonEmptyString(body('descriptionBullets.*.type')),
-  body('descriptionBullets.*.id').isInt({ min: -1 }).not().isString()
+  nonEmptyString(body('descriptionBullets.*.id'))
 ];
 
 export const blockedByValidators = [
@@ -178,13 +166,13 @@ export const linkValidators = [
 ];
 
 export const projectValidators = [
-  intMinZero(body('crId')),
+  nonEmptyString(body('crId')),
   nonEmptyString(body('name')),
   nonEmptyString(body('summary')),
   ...descriptionBulletsValidators,
   ...linkValidators,
-  intMinZero(body('projectLeadId').optional()),
-  intMinZero(body('projectManagerId').optional())
+  nonEmptyString(body('leadId').optional()),
+  nonEmptyString(body('managerId').optional())
 ];
 
 export const validateInputs = (req: Request, res: Response, next: Function): Response | void => {

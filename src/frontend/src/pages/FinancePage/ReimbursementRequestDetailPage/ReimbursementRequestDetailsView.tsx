@@ -77,9 +77,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   );
   const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      deleteReimbursementRequest();
+      await deleteReimbursementRequest();
       history.push(routes.FINANCE);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -88,9 +88,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleDeny = () => {
+  const handleDeny = async () => {
     try {
-      denyReimbursementRequest();
+      await denyReimbursementRequest();
       setShowDenyModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -99,9 +99,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleMarkDelivered = () => {
+  const handleMarkDelivered = async () => {
     try {
-      markDelivered();
+      await markDelivered();
       setShowMarkDelivered(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -110,9 +110,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
-  const handleMarkReimbursed = () => {
+  const handleMarkReimbursed = async () => {
     try {
-      markReimbursed();
+      await markReimbursed();
       setShowMarkReimbursed(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -280,7 +280,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Mark Delivered',
       onClick: () => setShowMarkDelivered(true),
       icon: <LocalShippingIcon />,
-      disabled: !!reimbursementRequest.dateDelivered
+      disabled: !!reimbursementRequest.dateDelivered || user.userId !== reimbursementRequest.recipient.userId
     },
     {
       title: 'Add SABO #',

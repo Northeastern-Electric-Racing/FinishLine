@@ -335,7 +335,7 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
         title: '',
         notes: '',
         dateCreated: new Date(),
-        createdBy: { userId: 0, firstName: '', lastName: '', email: '', emailId: '', role: 'GUEST' },
+        createdBy: { userId: '', firstName: '', lastName: '', email: '', emailId: '', role: 'GUEST' },
         assignees: [],
         deadline: new Date(),
         priority: TaskPriority.High,

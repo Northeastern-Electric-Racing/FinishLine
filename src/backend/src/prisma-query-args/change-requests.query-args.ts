@@ -6,7 +6,7 @@ import { getWorkPackageQueryArgs } from './work-packages.query-args';
 export type ChangeRequestQueryArgs = ReturnType<typeof getChangeRequestQueryArgs>;
 
 export const getChangeRequestQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Change_RequestArgs>()({
+  Prisma.validator<Prisma.Change_RequestDefaultArgs>()({
     include: {
       submitter: getUserQueryArgs(organizationId),
       wbsElement: {

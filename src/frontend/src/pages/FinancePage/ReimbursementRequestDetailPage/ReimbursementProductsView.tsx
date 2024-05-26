@@ -10,7 +10,7 @@ interface ReimbursementRequestProductsViewProps {
 const ReimbursementProductsView: React.FC<ReimbursementRequestProductsViewProps> = ({ reimbursementRequest }) => {
   const uniqueWbsElementsWithProducts = getUniqueWbsElementsWithProductsFromReimbursementRequest(reimbursementRequest);
 
-  const keys = [];
+  const keys: string[] = [];
   for (const key of uniqueWbsElementsWithProducts.keys()) {
     keys.push(key);
   }

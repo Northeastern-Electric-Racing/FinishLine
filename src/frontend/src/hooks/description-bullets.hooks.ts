@@ -13,8 +13,8 @@ import {
 import { DescriptionBullet, DescriptionBulletType, DescriptionBulletTypeCreatePayload } from 'shared';
 
 export interface CheckDescriptionBulletRequestPayload {
-  userId: number;
-  descriptionId: number;
+  userId: string;
+  descriptionId: string;
 }
 
 /**

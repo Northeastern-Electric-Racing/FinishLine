@@ -44,7 +44,7 @@ interface WorkPackageFormViewProps {
 
 export interface WorkPackageFormViewPayload {
   name: string;
-  workPackageId: number;
+  workPackageId: string;
   startDate: Date;
   duration: number;
   crId: string;
@@ -77,7 +77,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',
-      workPackageId: defaultValues?.workPackageId ?? 0,
+      workPackageId: defaultValues?.workPackageId ?? '',
       startDate: defaultValues?.startDate ?? getMonday(new Date()),
       duration: defaultValues?.duration ?? 0,
       crId: crId ?? defaultValues?.crId ?? '',
@@ -111,13 +111,13 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined,
+        leadId,
+        managerId,
         projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        crId: parseInt(crId),
+        crId,
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
@@ -211,8 +211,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         <WorkPackageFormDetails
           control={control}
           errors={errors}
-          usersForProjectLead={leadOrManagerOptions}
-          usersForProjectManager={leadOrManagerOptions}
+          usersForLead={leadOrManagerOptions}
+          usersForManager={leadOrManagerOptions}
           lead={leadId}
           manager={managerId}
           setLead={setLeadId}

@@ -2,11 +2,32 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "tsc watch",
+      "label": "tsc watch backend",
       "type": "shell",
       "command": "./node_modules/.bin/tsc",
       "isBackground": true,
-      "args": ["--watch", "--noEmit", "--project", "./tsconfig.build.json"],
+      "args": ["--watch", "--noEmit", "--project", "./src/backend/tsconfig.json"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "never",
+        "echo": false,
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "problemMatcher": "$tsc-watch",
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    },
+    {
+      "label": "tsc watch frontend",
+      "type": "shell",
+      "command": "./node_modules/.bin/tsc",
+      "isBackground": true,
+      "args": ["--watch", "--noEmit", "--project", "./src/frontend/tsconfig.json"],
       "group": {
         "kind": "build",
         "isDefault": true

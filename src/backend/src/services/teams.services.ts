@@ -58,7 +58,7 @@ export default class TeamsService {
    * @returns a updated team
    * @throws if the team is not found, the submitter has no priviledge, the team is archived, or any user from the given userIds does not exist
    */
-  static async setTeamMembers(submitter: User, teamId: string, userIds: number[], organizationId: string): Promise<Team> {
+  static async setTeamMembers(submitter: User, teamId: string, userIds: string[], organizationId: string): Promise<Team> {
     // find and verify the given teamId exist
     const team = await TeamsService.getSingleTeam(teamId, organizationId);
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the members of an archived team');
@@ -136,7 +136,7 @@ export default class TeamsService {
    * @returns The team with the new head
    * @throws if the team is not found, the submitter has no privilege, the team is archived, or any user from the given userIds does not exist
    */
-  static async setTeamHead(submitter: User, teamId: string, userId: number, organizationId: string): Promise<Team> {
+  static async setTeamHead(submitter: User, teamId: string, userId: string, organizationId: string): Promise<Team> {
     const team = await TeamsService.getSingleTeam(teamId, organizationId);
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the head of an archived team');
 
@@ -224,7 +224,7 @@ export default class TeamsService {
   static async createTeam(
     submitter: User,
     teamName: string,
-    headId: number,
+    headId: string,
     slackId: string,
     description: string,
     isFinanceTeam: boolean,
@@ -288,7 +288,7 @@ export default class TeamsService {
    * @returns an updated team
    * @throws if the team is not found, the submitter has no privilege, the team is archived, or any user from the given userIds does not exist
    */
-  static async setTeamLeads(submitter: User, teamId: string, userIds: number[], organizationId: string): Promise<Team> {
+  static async setTeamLeads(submitter: User, teamId: string, userIds: string[], organizationId: string): Promise<Team> {
     const team = await TeamsService.getSingleTeam(teamId, organizationId);
     if (team.dateArchived) throw new HttpException(400, 'Cannot edit the leads of an archived team');
 

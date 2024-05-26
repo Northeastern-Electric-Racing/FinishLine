@@ -37,8 +37,6 @@ export interface WorkPackageTemplate {
   descriptionBullets: DescriptionBullet[];
   dateCreated: Date;
   userCreated: User;
-  userCreatedId: Number;
   dateDeleted?: Date;
   userDeleted?: User;
-  userDeletedId?: Number;
 }

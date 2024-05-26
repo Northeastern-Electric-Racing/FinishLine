@@ -4,7 +4,7 @@
  */
 
 export interface User {
-  userId: number;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -30,7 +30,7 @@ export type ThemeName = 'DARK' | 'LIGHT';
  * User object used purely for authentication purposes.
  */
 export interface AuthenticatedUser {
-  userId: number;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -39,8 +39,8 @@ export interface AuthenticatedUser {
   defaultTheme?: ThemeName;
   isFinance?: boolean;
   teamAsHeadId?: string;
-  favoritedProjectsId: number[];
-  changeRequestsToReviewId: number[];
+  favoritedProjectsId: string[];
+  changeRequestsToReviewId: string[];
   isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
@@ -63,7 +63,7 @@ export interface UserSecureSettings {
 }
 
 export interface UpdateUserRolePayload {
-  userId: number;
+  userId: string;
   role: string;
 }
 
@@ -75,7 +75,7 @@ export interface UserScheduleSettings {
 }
 
 export interface UserWithScheduleSettings {
-  userId: number;
+  userId: string;
   firstName: string;
   lastName: string;
   email: string;

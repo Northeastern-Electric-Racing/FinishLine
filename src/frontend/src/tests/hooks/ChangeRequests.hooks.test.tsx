@@ -28,7 +28,7 @@ describe('change request hooks', () => {
     const mockedGetSingleChangeRequest = getSingleChangeRequest as jest.Mock<Promise<AxiosResponse<ChangeRequest>>>;
     mockedGetSingleChangeRequest.mockReturnValue(mockPromiseAxiosResponse<ChangeRequest>(exampleStageGateChangeRequest));
 
-    const { result, waitFor } = renderHook(() => useSingleChangeRequest(1), { wrapper });
+    const { result, waitFor } = renderHook(() => useSingleChangeRequest('1'), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleStageGateChangeRequest);
   });

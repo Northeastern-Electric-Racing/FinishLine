@@ -8,14 +8,13 @@ import { useTheme } from '@mui/material';
 import { useState } from 'react';
 
 interface BOMTableProps {
-  hideColumn: boolean[];
   setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
   columns: GridColumns<BomRow>;
   materials: Material[];
   assemblies: Assembly[];
 }
 
-const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns, materials, assemblies }) => {
+const BOMTable: React.FC<BOMTableProps> = ({ setHideColumn, columns, materials, assemblies }) => {
   const [openRows, setOpenRows] = useState<String[]>([]);
 
   const arrowSymbol = (rowId: string) => {
@@ -90,6 +89,7 @@ const BOMTable: React.FC<BOMTableProps> = ({ hideColumn, setHideColumn, columns,
           Object.keys(model).forEach((toDelete) => {
             tempColumns.push(!model[toDelete]);
           });
+          setHideColumn(tempColumns);
           localStorage.setItem('hideColumn', JSON.stringify(tempColumns));
         }}
         columns={columns as GridColumns<GridValidRowModel>}

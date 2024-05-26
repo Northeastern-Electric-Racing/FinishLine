@@ -45,7 +45,7 @@ import {
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense: Date;
-  expenseTypeId: string;
+  accountCodeId: string;
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
@@ -63,7 +63,7 @@ export interface DownloadReceiptsFormInput {
   refundSource: string;
 }
 
-export interface ExpenseTypePayload {
+export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
@@ -406,7 +406,7 @@ export const useReportRefund = () => {
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, { saboNumber: number }>(
-    ['reimbursement-requests', 'edit'],
+    ['reimbursement-requests', reimbursementRequestId],
     async (formData: { saboNumber: number }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
     },
@@ -423,12 +423,12 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
  *
  * @param expenseId The id of the expense type
  */
-export const useEditAccountCode = (expenseTypeId: string) => {
+export const useEditAccountCode = (accountCodeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'edit'],
-    async (accountCodeData: ExpenseTypePayload) => {
-      const { data } = await editAccountCode(expenseTypeId, accountCodeData);
+    async (accountCodeData: AccountCodePayload) => {
+      const { data } = await editAccountCode(accountCodeId, accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;
     }
@@ -440,9 +440,9 @@ export const useEditAccountCode = (expenseTypeId: string) => {
  */
 export const useCreateAccountCode = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'create'],
-    async (accountCodeData: ExpenseTypePayload) => {
+    async (accountCodeData: AccountCodePayload) => {
       const { data } = await createAccountCode(accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;
