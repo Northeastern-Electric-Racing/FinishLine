@@ -206,13 +206,6 @@ export default class UsersService {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
       const organization = await prisma.organization.findFirst();
 
-      let role = undefined;
-      if (organization) {
-        role = {
-          organizationId: organization.organizationId,
-          roleType: RoleEnum.GUEST
-        };
-      }
       const createdUser = await prisma.user.create({
         data: {
           firstName: payload['given_name'],
@@ -220,15 +213,7 @@ export default class UsersService {
           googleAuthId: userId,
           email: payload['email'],
           emailId,
-          userSettings: { create: {} },
-          organizations: {
-            connect: {
-              organizationId: organization?.organizationId
-            }
-          },
-          roles: {
-            create: role
-          }
+          userSettings: { create: {} }
         },
         include: {
           organizations: true,
@@ -236,6 +221,26 @@ export default class UsersService {
         }
       });
       user = createdUser;
+
+      if (organization) {
+        await prisma.organization.update({
+          where: { organizationId: organization.organizationId },
+          data: {
+            users: {
+              connect: {
+                userId: createdUser.userId
+              }
+            }
+          }
+        });
+        await prisma.role.create({
+          data: {
+            userId: createdUser.userId,
+            organizationId: organization!.organizationId,
+            roleType: RoleEnum.GUEST
+          }
+        });
+      }
     }
 
     // register a login
