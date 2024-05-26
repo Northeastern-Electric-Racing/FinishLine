@@ -79,7 +79,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   return (
     <PageLayout
-      title={`Change Request #${changeRequest.crId}`}
+      title={`Change Request #${changeRequest.identifier}`}
       chips={
         <Box display="flex" gap="20px">
           <ChangeRequestTypePill type={changeRequest.type} />

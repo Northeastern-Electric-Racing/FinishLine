@@ -77,10 +77,10 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
               underline={'none'}
               color={'inherit'}
               component={RouterLink}
-              to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`}
+              to={`${routes.CHANGE_REQUESTS}/${changeRequest.identifier}`}
             >
               <Typography variant="h6" sx={{ mb: 0.5 }}>
-                {'Change Request #' + changeRequest.crId}
+                {'Change Request #' + changeRequest.identifier}
               </Typography>
             </Link>
             <Stack direction={'column'} maxWidth={'195px'}>
