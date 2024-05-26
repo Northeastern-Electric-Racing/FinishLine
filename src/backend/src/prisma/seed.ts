@@ -39,11 +39,6 @@ const performSeed: () => Promise<void> = async () => {
     include: { userSettings: true, userSecureSettings: true }
   });
 
-  const regina = await prisma.user.create({
-    data: dbSeedAllUsers.regina,
-    include: { userSettings: true, userSecureSettings: true }
-  });
-
   const ner = await prisma.organization.create({
     data: {
       name: 'NER',
@@ -180,6 +175,7 @@ const performSeed: () => Promise<void> = async () => {
   const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.LEADERSHIP, organizationId);
   const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
+  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', organizationId);
 
