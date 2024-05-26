@@ -62,7 +62,7 @@ const Login = () => {
       theme.toggleTheme();
     }
     if (authedUser.organizations.length > 0) {
-      const defaultOrganization = authedUser.organizations[0];
+      const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
     redirectAfterLogin();
@@ -79,7 +79,7 @@ const Login = () => {
       theme.toggleTheme();
     }
     if (authedUser.organizations.length > 0) {
-      const defaultOrganization = authedUser.organizations[0];
+      const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
     redirectAfterLogin();

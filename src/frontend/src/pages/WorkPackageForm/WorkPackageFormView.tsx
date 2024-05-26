@@ -121,7 +121,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        descriptionBullets: descriptionBullets,
+        descriptionBullets,
         stage: stage as WorkPackageStage,
         links: []
       };

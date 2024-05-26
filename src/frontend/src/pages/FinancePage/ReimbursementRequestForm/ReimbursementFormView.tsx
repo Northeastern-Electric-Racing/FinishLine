@@ -310,7 +310,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       [...e.target.files].forEach((file) => {
                         if (file.size < 1000000) {
                           receiptPrepend({
-                            file: file,
+                            file,
                             name: file.name,
                             googleFileId: ''
                           });

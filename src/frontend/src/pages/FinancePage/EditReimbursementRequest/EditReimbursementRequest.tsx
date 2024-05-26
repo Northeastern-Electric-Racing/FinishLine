@@ -14,7 +14,7 @@ import ErrorPage from '../../ErrorPage';
 import EditReimbursementRequestRenderedDefaultValues from './EditReimbursementRequestRenderedDefaultValues';
 
 const EditReimbursementRequestPage: React.FC = () => {
-  const id = useParams<{ id: string }>().id;
+  const { id } = useParams<{ id: string }>();
 
   const { isLoading: editReimbursementRequestIsLoading, mutateAsync: editReimbursementRequest } =
     useEditReimbursementRequest(id);

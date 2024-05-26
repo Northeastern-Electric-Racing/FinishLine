@@ -87,9 +87,8 @@ const ChangeRequestsTable: React.FC = () => {
         return wbs1.projectNumber - wbs2.projectNumber;
       } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
         return wbs1.workPackageNumber - wbs2.workPackageNumber;
-      } else {
-        return 0;
       }
+      return 0;
     }
   };
 

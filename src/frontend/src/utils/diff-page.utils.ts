@@ -51,22 +51,20 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     return fullNamePipe(detail);
   } else if (detail.length === 0) {
     return 'None';
-  } else {
-    // detail is a non-empty array
-    const testVal = detail[0];
-
-    if (typeof testVal === 'string') {
-      return detail as string[];
-    } else if ('teamName' in testVal) {
-      return (detail as TeamPreview[]).map((team) => team.teamName);
-    } else if ('id' in testVal) {
-      return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
-    } else if ('carNumber' in testVal) {
-      return (detail as WbsNumber[]).map(wbsPipe);
-    } else {
-      return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
-    }
   }
+  // detail is a non-empty array
+  const [testVal] = detail;
+
+  if (typeof testVal === 'string') {
+    return detail as string[];
+  } else if ('teamName' in testVal) {
+    return (detail as TeamPreview[]).map((team) => team.teamName);
+  } else if ('id' in testVal) {
+    return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
+  } else if ('carNumber' in testVal) {
+    return (detail as WbsNumber[]).map(wbsPipe);
+  }
+  return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
 };
 
 export enum PotentialChangeType {
@@ -109,7 +107,7 @@ export const valueChanged = (original: ProposedChangeValue, proposed: ProposedCh
   if (original.length === 0) return proposed.length !== 0;
   if (proposed.length === 0) return original.length !== 0;
 
-  const testVal = original[0];
+  const [testVal] = original;
 
   if (testVal === undefined) return proposed[0] !== undefined;
   if (proposed[0] === undefined) return testVal !== undefined;
@@ -126,9 +124,8 @@ export const valueChanged = (original: ProposedChangeValue, proposed: ProposedCh
       (original as DescriptionBullet[]).map((bullet) => bullet.detail).join() !==
       (proposed as DescriptionBullet[]).map((bullet) => bullet.detail).join()
     );
-  } else {
-    return (original as Link[]).map((link) => link.url).join() !== (proposed as Link[]).map((link) => link.url).join();
   }
+  return (original as Link[]).map((link) => link.url).join() !== (proposed as Link[]).map((link) => link.url).join();
 };
 
 export const projectToProposedChangesPreview = (project: Project | undefined): ProjectProposedChangesPreview | undefined => {

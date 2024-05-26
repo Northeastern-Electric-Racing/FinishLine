@@ -239,9 +239,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
       colSpan: ({ row }) => {
         if (row.id.includes('assembly')) {
           return 2;
-        } else {
-          return 1;
         }
+        return 1;
       },
       hide: hideColumn[4]
     },

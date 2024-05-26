@@ -147,7 +147,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
   const { data: userSecureSettings, isLoading: checkSecureSettingsIsLoading } = useCurrentUserSecureSettings();
 
   // checks to make sure none of the secure settings fields are empty, indicating not properly set
-  const hasSecureSettingsSet = Object.values(userSecureSettings ?? {}).every((x) => x !== '') ? true : false;
+  const hasSecureSettingsSet = Object.values(userSecureSettings ?? {}).every((x) => x !== '');
 
   const toast = useToast();
   const history = useHistory();

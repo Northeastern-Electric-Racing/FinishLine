@@ -14,7 +14,7 @@ const ChangeRequestTab = ({ project }: { project: Project }) => {
   if (crIsLoading || !changeRequests) return <LoadingIndicator />;
   if (crIsError) return <ErrorPage message={crError?.message} />;
 
-  const wbsNum = project.wbsNum;
+  const { wbsNum } = project;
 
   const unReviewedChangeRequests = changeRequests
     .filter((cr: ChangeRequest) => !cr.dateReviewed && equalsWbsNumber(wbsNum, cr.wbsNum))

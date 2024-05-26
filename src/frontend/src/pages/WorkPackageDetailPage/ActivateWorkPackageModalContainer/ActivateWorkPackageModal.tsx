@@ -52,7 +52,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   }
 
   const defaultValues: FormInput = {
-    startDate: startDate,
+    startDate,
     confirmDetails: false
   };
 

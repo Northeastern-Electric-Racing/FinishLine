@@ -52,9 +52,8 @@ const ProjectsTable: React.FC = () => {
         return param1.value.projectNumber - param2.value.projectNumber;
       } else if (param1.value.workPackageNumber !== param2.value.workPackageNumber) {
         return param1.value.workPackageNumber - param2.value.workPackageNumber;
-      } else {
-        return 0;
       }
+      return 0;
     }
   };
 
@@ -203,7 +202,7 @@ const ProjectsTable: React.FC = () => {
         components={{
           Toolbar: TableCustomToolbar,
           Row: (props: GridRowProps & { row: Project }) => {
-            const wbsNum = props.row.wbsNum;
+            const { wbsNum } = props.row;
             return (
               <Link
                 component={RouterLink}
@@ -222,7 +221,7 @@ const ProjectsTable: React.FC = () => {
           }
         }}
         onFilterModelChange={(filterModel: GridFilterModel) => {
-          const filterItems = filterModel.items[0];
+          const [filterItems] = filterModel.items;
           if (filterItems) localStorage.setItem('projectsTableFilter', JSON.stringify(filterItems));
         }}
         initialState={{

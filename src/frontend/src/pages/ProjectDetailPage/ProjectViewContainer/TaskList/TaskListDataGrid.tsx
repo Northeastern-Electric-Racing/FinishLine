@@ -142,113 +142,111 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
         />
       );
       actions.push(<GridActionsCellItem icon={<DeleteIcon fontSize="small" />} label="Delete" onClick={deleteCreateTask} />);
+    } else if (params.id === currentlyEditingId) {
+      actions.push(
+        <GridActionsCellItem
+          icon={<SaveIcon fontSize="small" />}
+          label="Save"
+          onClick={() => {
+            editTask({
+              taskId: params.row.taskId,
+              notes: params.row.notes,
+              title,
+              deadline,
+              assignees: assignees.map((assignee: UserPreview) => assignee.userId),
+              priority
+            });
+            setDisabled(false);
+            setTitle('');
+            setDeadline(new Date());
+            setPriority(TaskPriority.High);
+            setAssignees([]);
+          }}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          icon={<Cancel fontSize="small" />}
+          label="cancel"
+          onClick={() => {
+            setDisabled(false);
+            setCurrentlyEditingId(undefined);
+            setTitle('');
+            setDeadline(new Date());
+            setPriority(TaskPriority.High);
+            setAssignees([]);
+          }}
+        />
+      );
     } else {
-      if (params.id === currentlyEditingId) {
+      if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
         actions.push(
           <GridActionsCellItem
-            icon={<SaveIcon fontSize="small" />}
-            label="Save"
-            onClick={() => {
-              editTask({
-                taskId: params.row.taskId,
-                notes: params.row.notes,
-                title: title,
-                deadline: deadline,
-                assignees: assignees.map((assignee: UserPreview) => assignee.userId),
-                priority: priority
-              });
-              setDisabled(false);
-              setTitle('');
-              setDeadline(new Date());
-              setPriority(TaskPriority.High);
-              setAssignees([]);
-            }}
-          />
-        );
-        actions.push(
-          <GridActionsCellItem
-            icon={<Cancel fontSize="small" />}
-            label="cancel"
-            onClick={() => {
-              setDisabled(false);
-              setCurrentlyEditingId(undefined);
-              setTitle('');
-              setDeadline(new Date());
-              setPriority(TaskPriority.High);
-              setAssignees([]);
-            }}
-          />
-        );
-      } else {
-        if (status === TaskStatus.DONE || status === TaskStatus.IN_BACKLOG) {
-          actions.push(
-            <GridActionsCellItem
-              icon={<PlayArrowIcon fontSize="small" />}
-              label="Move to In Progress"
-              onClick={moveToInProgress(params.row.taskId)}
-              showInMenu
-              disabled={!editTaskPermissions(params.row.task)}
-            />
-          );
-        } else if (status === TaskStatus.IN_PROGRESS) {
-          actions.push(
-            <GridActionsCellItem
-              icon={<PauseIcon fontSize="small" />}
-              label="Move to Backlog"
-              onClick={moveToBacklog(params.row.taskId)}
-              showInMenu
-              disabled={!editTaskPermissions(params.row.task)}
-            />
-          );
-          actions.push(
-            <GridActionsCellItem
-              icon={<CheckIcon fontSize="small" />}
-              label="Move to Done"
-              onClick={moveToDone(params.row.taskId)}
-              showInMenu
-              disabled={!editTaskPermissions(params.row.task)}
-            />
-          );
-        }
-        actions.push(
-          <GridActionsCellItem
-            icon={<EditIcon fontSize="small" />}
-            label="Edit"
+            icon={<PlayArrowIcon fontSize="small" />}
+            label="Move to In Progress"
+            onClick={moveToInProgress(params.row.taskId)}
             showInMenu
-            disabled={!editTaskPermissions(params.row.task) || addTask}
-            onClick={() => {
-              setTitle(params.row.title);
-              setDeadline(params.row.deadline);
-              setPriority(params.row.priority);
-              setAssignees(params.row.assignees);
-              setCurrentlyEditingId(params.id);
-              setDisabled(true);
-            }}
+            disabled={!editTaskPermissions(params.row.task)}
           />
         );
+      } else if (status === TaskStatus.IN_PROGRESS) {
         actions.push(
           <GridActionsCellItem
-            sx={{
-              borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
-            }}
-            icon={<DeleteIcon fontSize="small" />}
-            label="Delete"
-            onClick={deleteRow(params.row.taskId)}
+            icon={<PauseIcon fontSize="small" />}
+            label="Move to Backlog"
+            onClick={moveToBacklog(params.row.taskId)}
             showInMenu
             disabled={!editTaskPermissions(params.row.task)}
           />
         );
         actions.push(
           <GridActionsCellItem
-            icon={<DescriptionIcon fontSize="small" />}
-            label="notes"
-            onClick={() => {
-              setSelectedTask(params.row.task);
-              setModalShow(true);
-            }}
+            icon={<CheckIcon fontSize="small" />}
+            label="Move to Done"
+            onClick={moveToDone(params.row.taskId)}
+            showInMenu
+            disabled={!editTaskPermissions(params.row.task)}
           />
         );
       }
+      actions.push(
+        <GridActionsCellItem
+          icon={<EditIcon fontSize="small" />}
+          label="Edit"
+          showInMenu
+          disabled={!editTaskPermissions(params.row.task) || addTask}
+          onClick={() => {
+            setTitle(params.row.title);
+            setDeadline(params.row.deadline);
+            setPriority(params.row.priority);
+            setAssignees(params.row.assignees);
+            setCurrentlyEditingId(params.id);
+            setDisabled(true);
+          }}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          sx={{
+            borderTop: theme.palette.mode === 'light' ? '1px solid rgba(0, 0, 0, .2)' : '1px solid rgba(255, 255, 255, .2)'
+          }}
+          icon={<DeleteIcon fontSize="small" />}
+          label="Delete"
+          onClick={deleteRow(params.row.taskId)}
+          showInMenu
+          disabled={!editTaskPermissions(params.row.task)}
+        />
+      );
+      actions.push(
+        <GridActionsCellItem
+          icon={<DescriptionIcon fontSize="small" />}
+          label="notes"
+          onClick={() => {
+            setSelectedTask(params.row.task);
+            setModalShow(true);
+          }}
+        />
+      );
     }
     return actions;
   };
@@ -318,17 +316,17 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       assignees: task.assignees,
       notes: task.notes,
       taskId: task.taskId,
-      task: task
+      task
     };
   });
 
   if (addTask && currentlyEditingId === undefined) {
     rows.unshift({
       id: -1,
-      title: title,
-      deadline: deadline,
-      priority: priority,
-      assignees: assignees,
+      title,
+      deadline,
+      priority,
+      assignees,
       taskId: '-1',
       notes: '',
       task: {
@@ -350,17 +348,16 @@ const TaskListDataGrid: React.FC<TaskListDataGridProps> = ({
       if (row.id === currentlyEditingId) {
         return {
           id: row.id,
-          title: title,
-          deadline: deadline,
-          priority: priority,
-          assignees: assignees,
+          title,
+          deadline,
+          priority,
+          assignees,
           taskId: row.taskId,
           notes: row.notes,
           task: row.task
         };
-      } else {
-        return row;
       }
+      return row;
     });
   }
 
