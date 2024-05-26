@@ -10,7 +10,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin, isHead } from 'shared';
 import PageLayout from '../../components/PageLayout';
 import AdminToolsFinanceConfig from './AdminToolsFinanceConfig';
-import TeamsTools from './TeamsTools';
+import TeamsTools from './TeamConfig/TeamsTools';
 import AdminToolsBOMConfig from './AdminToolsBOMConfig';
 import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
 import { useState } from 'react';
