@@ -23,11 +23,12 @@ import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import { Container } from '@mui/material';
+import { Container, IconButton } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
+import { GridMenuIcon } from '@mui/x-data-grid';
 
 interface AppAuthenticatedProps {
   userId: number;
@@ -51,9 +52,19 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        onClick={() => setDrawerOpen(true)}
+        sx={{
+          position: 'fixed'
+        }}
+      >
+        <GridMenuIcon />
+      </IconButton>
       <Box display={'flex'}>
         <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 90px)' }}>
+        <Container sx={{ marginTop: 2 }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />

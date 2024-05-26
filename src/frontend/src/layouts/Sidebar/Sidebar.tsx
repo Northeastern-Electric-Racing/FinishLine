@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, useTheme, IconButton, Divider, Stack } from '@mui/material';
+import { Typography, Box, IconButton, Drawer } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -16,11 +16,8 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import NavPageLink from './NavPageLink';
-import DrawerHeader from '../../components/DrawerHeader';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { GridMenuIcon } from '@mui/x-data-grid';
 import NavUserMenu from '../PageTitle/NavUserMenu';
-import NERCollapsingDrawer from '../../components/NERCollapsingDrawer';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -28,8 +25,6 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
-  const theme = useTheme();
-
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -75,55 +70,36 @@ const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
 
   return (
     <Box>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        onClick={() => setDrawerOpen(true)}
-        sx={{
-          position: 'fixed',
-          margin: 0.5
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
         }}
       >
-        <GridMenuIcon />
-      </IconButton>
-      <NERCollapsingDrawer open={drawerOpen} variant="permanent">
-        <DrawerHeader>
-          {drawerOpen && (
-            <IconButton onClick={() => setDrawerOpen(false)}>
-              {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
-            </IconButton>
-          )}{' '}
-        </DrawerHeader>
-        <Divider />
         <Box
           overflow={'auto'}
-          sx={{ overflowX: 'hidden' }}
+          sx={{ overflowX: 'hidden', backgroundColor: '#ef4345', width: 200 }}
           display="flex"
           flexDirection={'column'}
           flex={1}
-          justifyContent={'space-between'}
+          justifyContent={'space-evenly'}
         >
           <Box>
             {linkItems.map((linkItem) => (
-              <NavPageLink {...linkItem} open={drawerOpen} />
+              <NavPageLink {...linkItem} />
             ))}
             {<NavUserMenu open={drawerOpen} />}
           </Box>
           <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
-            {drawerOpen ? (
-              <Box marginLeft={1.1}>
-                <Typography marginLeft={1.1}>Sponsored By:</Typography>
-                <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
-              </Box>
-            ) : (
-              <Stack direction={'row'} justifyContent={'center'}>
-                <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo.svg" />
-              </Stack>
-            )}
+            <Box marginLeft={1.1}>
+              <Typography marginLeft={1.1}>Sponsored By:</Typography>
+              <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
+            </Box>
             <Typography className={styles.versionNumber}>v4.3.5</Typography>
           </Box>
         </Box>
-      </NERCollapsingDrawer>
+      </Drawer>
     </Box>
   );
 };
