@@ -63,8 +63,8 @@ export const updateProjectAndCreateChanges = async (
     include: {
       wbsElement: {
         include: {
-          links: getLinkQueryArgs(organizationId),
-          descriptionBullets: getDescriptionBulletQueryArgs(organizationId)
+          links: { where: { dateDeleted: null }, ...getLinkQueryArgs(organizationId) },
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }
       }
     }
@@ -75,8 +75,6 @@ export const updateProjectAndCreateChanges = async (
   if (originalProject.wbsElement.dateDeleted) throw new DeletedException('Project', projectId);
 
   const { wbsElementId } = originalProject;
-
-  console.log('originalProject', originalProject);
 
   const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, implementerId, wbsElementId);
   const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId);
