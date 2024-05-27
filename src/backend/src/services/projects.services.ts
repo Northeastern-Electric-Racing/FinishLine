@@ -406,8 +406,12 @@ export default class ProjectsService {
     await Promise.all(
       workPackages.map(
         async (workPackage) =>
-         
-          await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement), workPackage.workPackageId, organizationId)
+          await WorkPackagesService.deleteWorkPackage(
+            user,
+            wbsNumOf(workPackage.wbsElement),
+            workPackage.workPackageId,
+            organizationId
+          )
       )
     );
 
