@@ -99,6 +99,7 @@ export const sendReimbursementRequestCreatedNotification = async (requestId: str
   const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
+  let sentMessage: { channelId: string; ts: string } = { channelId: '', ts: '' };
 
   if (!process.env.FINANCE_TEAM_ID) {
     throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
@@ -111,12 +112,30 @@ export const sendReimbursementRequestCreatedNotification = async (requestId: str
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
   try {
-    await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
+    const response = await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
+    if (!response) {
+      throw new HttpException(500, 'Failed to send message or invalid response');
+    }
+    sentMessage = response;
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new HttpException(500, `Failed to send slack notification: ${error.message}`);
     }
   }
+  if (sentMessage.channelId === '' && sentMessage.ts === '') {
+    throw new HttpException(500, 'Sent message is not available');
+  }
+
+  await prisma.message_Info.create({
+    data: {
+      reimbursementRequestId: requestId,
+      channelId: sentMessage.channelId,
+      timestamp: sentMessage.ts
+    },
+    include: {
+      reimbursementRequest: true
+    }
+  });
 };
 
 /**

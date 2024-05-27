@@ -259,11 +259,12 @@ model Message_Info {
   messageInfoId String @id @default(uuid())
   channelId     String
   timestamp     String
-
-  changeRequestId String?
-  changeRequest   Change_Request? @relation(fields: [changeRequestId], references: [crId])
-  designReviewId  String?
-  designReview    Design_Review?  @relation(fields: [designReviewId], references: [designReviewId])
+  changeRequestId        String?
+  changeRequest          Change_Request?        @relation(fields: [changeRequestId], references: [crId])
+  designReviewId         String?
+  designReview           Design_Review?         @relation(fields: [designReviewId], references: [designReviewId])
+  reimbursementRequestId String?
+  reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }
 
 model Scope_CR {
@@ -532,6 +533,7 @@ model Reimbursement_Request {
   accountCode            Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
   organizationId         String
   organization           Organization            @relation(fields: [organizationId], references: [organizationId])
+  notificationSlackThreads           Message_Info[]
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
 }
