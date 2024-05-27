@@ -32,7 +32,7 @@ import {
   reviewProposedSolution,
   sendCRSubmitterReviewedNotification
 } from '../utils/change-requests.utils';
-import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Project, Work_Package, Prisma } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import { buildChangeDetail } from '../utils/changes.utils';
@@ -258,8 +258,8 @@ export default class ChangeRequestsService {
         await applyWorkPackageProposedChanges(
           wbsProposedChanges,
           workPackageProposedChanges,
-          associatedProject as Project,
-          associatedWorkPackage as Work_Package,
+          associatedProject,
+          associatedWorkPackage,
           reviewer,
           foundCR.crId,
           organizationId
@@ -268,7 +268,7 @@ export default class ChangeRequestsService {
         await applyProjectProposedChanges(
           wbsProposedChanges,
           projectProposedChanges,
-          associatedProject as Project,
+          associatedProject,
           reviewer,
           foundCR.crId,
           foundCR.wbsElement.carNumber,
@@ -670,6 +670,7 @@ export default class ChangeRequestsService {
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    if (wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('WBS Element');
 
     const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId }
@@ -846,7 +847,9 @@ export default class ChangeRequestsService {
       ...getChangeRequestQueryArgs(organizationId)
     });
 
-    return changeRequestTransformer(finishedCR!) as StandardChangeRequest;
+    if (!finishedCR) throw new NotFoundException('Change Request', createdCR.crId);
+
+    return changeRequestTransformer(finishedCR) as StandardChangeRequest;
   }
 
   /**

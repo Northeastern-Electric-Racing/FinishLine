@@ -76,6 +76,8 @@ export const updateProjectAndCreateChanges = async (
 
   const { wbsElementId } = originalProject;
 
+  console.log('originalProject', originalProject);
+
   const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, implementerId, wbsElementId);
   const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId);
   const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);

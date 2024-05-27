@@ -285,7 +285,7 @@ export const validateNoUnreviewedOpenCRs = async (wbsElemId: string) => {
 export const applyProjectProposedChanges = async (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
   projectProposedChanges: Prisma.Project_Proposed_ChangesGetPayload<ProjectProposedChangesQueryArgs>,
-  associatedProject: Project,
+  associatedProject: Project | null,
   reviewer: User,
   crId: string,
   carNumber: number,
@@ -302,7 +302,7 @@ export const applyProjectProposedChanges = async (
       descriptionBulletToDescriptionBulletPreview
     );
 
-    if (projectProposedChanges.car?.wbsElement.carNumber !== null) {
+    if (!associatedProject) {
       await ProjectsService.createProject(
         reviewer,
         crId,
@@ -317,7 +317,7 @@ export const applyProjectProposedChanges = async (
         wbsProposedChanges.managerId,
         organizationId
       );
-    } else if (associatedProject && projectProposedChanges.car.wbsElement.carNumber === null) {
+    } else if (associatedProject) {
       await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,

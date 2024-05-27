@@ -57,6 +57,7 @@ const Login = () => {
 
   const devFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log(devUserId);
     const authedUser = await auth.devSignin(devUserId);
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
       theme.toggleTheme();
