@@ -4,7 +4,6 @@ import descriptionBulletTransformer from '../transformers/description-bullets.tr
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
-import teamTransformer from './teams.transformer';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
