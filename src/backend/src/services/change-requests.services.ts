@@ -176,9 +176,6 @@ export default class ChangeRequestsService {
       // reviews a proposed solution applying certain changes based on the content of the proposed solution
       await reviewProposedSolution(psId, foundCR, reviewer, organizationId);
     } else if (foundCR.scopeChangeRequest?.wbsProposedChanges && !psId) {
-      // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
-      await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
-
       const associatedProject = foundCR.wbsElement.project;
       const associatedWorkPackage = foundCR.wbsElement.workPackage;
       const { wbsProposedChanges } = foundCR.scopeChangeRequest;
@@ -444,6 +441,8 @@ export default class ChangeRequestsService {
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
     const { changeRequests } = wbsElement;
     const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
@@ -545,9 +544,10 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
     if (wbsElement.workPackage) {
       throwIfUncheckedDescriptionBullets(wbsElement.descriptionBullets);
@@ -671,6 +671,8 @@ export default class ChangeRequestsService {
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('WBS Element');
+    // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
     const numChangeRequests = await prisma.change_Request.count({
       where: { organizationId }

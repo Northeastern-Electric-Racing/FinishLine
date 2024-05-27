@@ -102,7 +102,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, carNumber, type, what, why } = data;
+    const { name, budget, summary, links, carNumber, type, what, why, descriptionBullets } = data;
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {

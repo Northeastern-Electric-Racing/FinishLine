@@ -68,6 +68,7 @@ export const deleteChangeRequest = (crId: string) => {
  * @param payload The standard change request payload.
  */
 export const createStandardChangeRequest = (payload: CreateStandardChangeRequestPayload) => {
+  console.log(payload.projectProposedChanges?.descriptionBullets);
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStandard(), payload);
 };
 
