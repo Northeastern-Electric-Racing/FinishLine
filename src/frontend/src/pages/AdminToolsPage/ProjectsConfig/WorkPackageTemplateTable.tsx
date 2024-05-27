@@ -6,9 +6,12 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useAllWorkPackageTemplates } from '../../../hooks/work-packages.hooks';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
+  const history = useHistory();
   const {
     data: workPackageTemplates,
     isLoading: workPackageTemplatesIsLoading,
@@ -34,7 +37,15 @@ const WorkPackageTemplateTable = () => {
     <Box>
       <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={workPackageTemplateRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        {isAdmin(currentUser.role) && <NERButton variant="contained">New Work Package Template</NERButton>}
+        {isAdmin(currentUser.role) && (
+          <NERButton
+            variant="contained"
+            size="small"
+            onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}
+          >
+            New Work Package Template
+          </NERButton>
+        )}
       </Box>
     </Box>
   );
