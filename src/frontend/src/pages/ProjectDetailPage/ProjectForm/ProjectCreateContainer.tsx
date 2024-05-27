@@ -63,8 +63,8 @@ const ProjectCreateContainer: React.FC = () => {
     teamIds: yup.array().of(yup.string()).required('Teams are required'),
     budget: yup.number().optional(),
     summary: yup.string().required('Summary is required!'),
-    projectLeadId: yup.number().optional(),
-    projectManagerId: yup.number().optional(),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
     links: yup
       .array()
       .optional()
@@ -87,18 +87,18 @@ const ProjectCreateContainer: React.FC = () => {
         budget,
         descriptionBullets,
         links,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined,
-        carNumber: carNumber
+        leadId,
+        managerId,
+        carNumber
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
           // TODO change this to use the car model when we add it to the schema
-          carNumber: carNumber,
+          carNumber,
           projectNumber: 0,
           workPackageNumber: 0
         },
-        type: type,
+        type,
         what,
         why,
         proposedSolutions: [],
@@ -118,7 +118,7 @@ const ProjectCreateContainer: React.FC = () => {
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId: Number(crId),
+        crId,
         name,
         carNumber,
         summary,
@@ -126,8 +126,8 @@ const ProjectCreateContainer: React.FC = () => {
         budget,
         descriptionBullets,
         links,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined
+        leadId,
+        managerId
       };
       await mutateAsync(payload);
       history.push(routes.PROJECTS_ALL);

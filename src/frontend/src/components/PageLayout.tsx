@@ -10,6 +10,7 @@ import { LinkItem } from '../utils/types';
 import { Box } from '@mui/system';
 
 interface PageLayoutProps {
+  children: ReactNode;
   title?: string;
   chips?: ReactNode;
   hidePageTitle?: boolean;

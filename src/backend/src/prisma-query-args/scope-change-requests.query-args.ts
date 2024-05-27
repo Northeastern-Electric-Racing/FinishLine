@@ -14,7 +14,7 @@ export type WbsProposedChangeQueryArgs = ReturnType<typeof getWbsProposedChangeQ
 export type ScopeChangeRequestQueryArgs = ReturnType<typeof getScopeChangeRequestQueryArgs>;
 
 const getProjectProposedChangesQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Project_Proposed_ChangesArgs>()({
+  Prisma.validator<Prisma.Project_Proposed_ChangesDefaultArgs>()({
     include: {
       teams: getTeamQueryArgs(organizationId),
       car: {
@@ -25,14 +25,14 @@ const getProjectProposedChangesQueryArgs = (organizationId: string) =>
     }
   });
 
-export const workPackageProposedChangesQueryArgs = Prisma.validator<Prisma.Work_Package_Proposed_ChangesArgs>()({
+export const workPackageProposedChangesQueryArgs = Prisma.validator<Prisma.Work_Package_Proposed_ChangesDefaultArgs>()({
   include: {
     blockedBy: true
   }
 });
 
 export const getWbsProposedChangeQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Wbs_Proposed_ChangesArgs>()({
+  Prisma.validator<Prisma.Wbs_Proposed_ChangesDefaultArgs>()({
     include: {
       projectProposedChanges: getProjectProposedChangesQueryArgs(organizationId),
       workPackageProposedChanges: workPackageProposedChangesQueryArgs,
@@ -44,10 +44,11 @@ export const getWbsProposedChangeQueryArgs = (organizationId: string) =>
   });
 
 export const getScopeChangeRequestQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Scope_CRArgs>()({
+  Prisma.validator<Prisma.Scope_CRDefaultArgs>()({
     include: {
       why: true,
       proposedSolutions: getProposedSolutionQueryArgs(organizationId),
-      wbsProposedChanges: getWbsProposedChangeQueryArgs(organizationId)
+      wbsProposedChanges: getWbsProposedChangeQueryArgs(organizationId),
+      wbsOriginalData: getWbsProposedChangeQueryArgs(organizationId)
     }
   });

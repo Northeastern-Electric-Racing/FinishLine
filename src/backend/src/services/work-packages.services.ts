@@ -32,9 +32,10 @@ import {
   descriptionBulletToChangeListValue,
   descriptionBulletsToChangeListValues,
   editDescriptionBullets,
-  markDescriptionBulletsAsDeleted
+  markDescriptionBulletsAsDeleted,
+  validateDescriptionBullets
 } from '../utils/description-bullets.utils';
-import { getBlockingWorkPackages, validateBlockedByTemplates, validateBlockedBys } from '../utils/work-packages.utils';
+import { getBlockingWorkPackages, validateBlockedBys, validateBlockedByTemplates } from '../utils/work-packages.utils';
 import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 import { getWorkPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
@@ -155,7 +156,7 @@ export default class WorkPackagesService {
   static async createWorkPackage(
     user: User,
     name: string,
-    crId: number,
+    crId: string,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
@@ -166,7 +167,6 @@ export default class WorkPackagesService {
     if (await userHasPermission(user.userId, organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
-    console.log(descriptionBullets);
     const changeRequest = await validateChangeRequestAccepted(crId);
 
     const wbsElem = await prisma.wBS_Element.findUnique({
@@ -292,22 +292,22 @@ export default class WorkPackagesService {
    * @param duration the new duration of this work package, in weeks
    * @param blockedBy the new WBS elements to be completed before this WP
    * @param descriptionBullets the new description bullets associated with this WP
-   * @param projectLeadId the new lead for this work package
-   * @param projectManagerId the new manager for this work package
+   * @param leadId the new lead for this work package
+   * @param managerId the new manager for this work package
    * @param organizationId the id of the organization that the user is currently in
    */
   static async editWorkPackage(
     user: User,
-    workPackageId: number,
+    workPackageId: string,
     name: string,
-    crId: number,
+    crId: string,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
-    projectLeadId: number,
-    projectManagerId: number,
+    leadId: string,
+    managerId: string,
     organizationId: string
   ): Promise<WorkPackage> {
     const { userId } = user;
@@ -351,9 +351,9 @@ export default class WorkPackagesService {
       originalWorkPackage.blockedBy,
       blockedByElems,
       originalWorkPackage.wbsElement.managerId,
-      projectManagerId,
+      leadId,
       originalWorkPackage.wbsElement.leadId,
-      projectLeadId,
+      managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
       crId,
@@ -380,8 +380,8 @@ export default class WorkPackagesService {
         wbsElement: {
           update: {
             name,
-            leadId: projectLeadId,
-            managerId: projectManagerId,
+            leadId,
+            managerId,
             status
           }
         },
@@ -401,8 +401,6 @@ export default class WorkPackagesService {
         data: { dateDeleted: new Date() }
       });
     }
-
-    console.log(changes.addedDescriptionBullets);
 
     // Add the new description bullets to the workpackage
     await addRawDescriptionBullets(
@@ -609,6 +607,81 @@ export default class WorkPackagesService {
   }
 
   /**
+   * Creates a Work_Package_Template in the database
+   *
+   * @param user the user creating the work package template
+   * @param templateName the template name
+   * @param templateNotes the template notes
+   * @param workPackageName the name of the work packge
+   * @param stage the stage
+   * @param duration the duration of the work package template in weeks
+   * @param expectedActivities the expected activities descriptions for this WPT
+   * @param deliverables the expected deliverables descriptions for this WPT
+   * @param blockedByIds the WBS elements that need to be completed before this WPT
+   * @param organizationId the id of the organization that the user is currently in
+   * @returns the created work package template
+   * @throws if the work package template could not be created
+   */
+  static async createWorkPackageTemplate(
+    user: User,
+    templateName: string,
+    templateNotes: string,
+    workPackageName: string | null,
+    stage: WorkPackageStage | null,
+    duration: number,
+    descriptionBullets: DescriptionBulletPreview[],
+    blockedByIds: string[],
+    organizationId: string
+  ): Promise<WorkPackageTemplate> {
+    if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('create work package templates');
+
+    // get the corresponding IDs of all work package templates in BlockedBy,
+    // and throw an errror if the template doesn't exist
+    await Promise.all(
+      blockedByIds.map(async (workPackageTemplateId) => {
+        const template = await prisma.work_Package_Template.findFirst({
+          where: { workPackageTemplateId }
+        });
+
+        if (!template) {
+          throw new NotFoundException('Work Package Template', workPackageTemplateId);
+        }
+        return template.workPackageTemplateId;
+      })
+    );
+
+    await validateDescriptionBullets(descriptionBullets, organizationId);
+
+    // add to the db
+    const created = await prisma.work_Package_Template.create({
+      data: {
+        templateName,
+        templateNotes,
+        workPackageName,
+        stage,
+        duration,
+        userCreatedId: user.userId,
+        organizationId,
+        blockedBy: {
+          connect: blockedByIds.map((blockedById) => ({ workPackageTemplateId: blockedById }))
+        }
+      },
+
+      ...getWorkPackageTemplateQueryArgs(organizationId)
+    });
+
+    await addRawDescriptionBullets(
+      descriptionBullets,
+      DescriptionBulletDestination.TEMPLATE,
+      created.workPackageTemplateId,
+      created.organizationId
+    );
+
+    return workPackageTemplateTransformer(created);
+  }
+
+  /**
    * Edits a work package template given the specified parameters
    * @param submitter user who is submitting the edit
    * @param workPackageTemplateId id of the work package template being edited
@@ -616,12 +689,12 @@ export default class WorkPackagesService {
    * @param templateNotes notes about the work package template
    * @param duration duration value on the template
    * @param stage stage value on the template
-   * @param blockedByInfo array of templates blocking this
+   * @param blockedByIds array of templates blocking this
    * @param expectedActivities array of expected activity values on the template
    * @param deliverables array of deliverable values on the template
    * @param workPackageName name value on the template
    * @param organizationId id of the organization that the user is currently in
-   * @returns
+   * @returns the updated work package template
    */
   static async editWorkPackageTemplate(
     submitter: User,
@@ -655,9 +728,9 @@ export default class WorkPackagesService {
       '',
       descriptionBulletsToChangeListValues(originalWorkPackageTemplate.descriptionBullets),
       descriptionBullets.map(descriptionBulletToChangeListValue),
-      0,
-      0,
-      0
+      '',
+      '',
+      ''
     );
 
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({

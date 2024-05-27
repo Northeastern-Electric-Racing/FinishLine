@@ -66,7 +66,7 @@ export default class ReimbursementRequestService {
    */
   static async getUserReimbursementRequests(recipient: User, organizationId: string): Promise<ReimbursementRequest[]> {
     const userReimbursementRequests = await prisma.reimbursement_Request.findMany({
-      where: { dateDeleted: null, recipientId: recipient.userId, accountCode: { organizationId } },
+      where: { dateDeleted: null, recipientId: recipient.userId, organizationId },
       ...getReimbursementRequestQueryArgs(organizationId)
     });
     return userReimbursementRequests.map(reimbursementRequestTransformer);
@@ -147,30 +147,36 @@ export default class ReimbursementRequestService {
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(acccountCodeId, organizationId);
 
     if (!accountCode.allowed) throw new HttpException(400, `The Account Code ${accountCode.name} is not allowed!`);
-
     if (!accountCode.allowedRefundSources.includes(account)) {
       throw new HttpException(400, 'The submitted refund source is not allowed to be used with the submitted Account Code');
     }
 
     const validatedReimbursementProducts = await validateReimbursementProducts(
       otherReimbursementProducts,
-      wbsReimbursementProducts
+      wbsReimbursementProducts,
+      organizationId
     );
+
+    const numReimbursementRequests = await prisma.reimbursement_Request.count({
+      where: { organizationId }
+    });
 
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
-        recipientId: recipient.userId,
+        recipient: { connect: { userId: recipient.userId } },
         dateOfExpense,
-        vendorId: vendor.vendorId,
+        vendor: { connect: { vendorId: vendor.vendorId } },
         account,
-        accountCodeId: accountCode.accountCodeId,
+        accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
         totalCost,
         reimbursementStatuses: {
           create: {
             type: ReimbursementStatusType.PENDING_FINANCE,
             userId: recipient.userId
           }
-        }
+        },
+        identifier: numReimbursementRequests + 1,
+        organization: { connect: { organizationId } }
       }
     });
 
@@ -283,13 +289,12 @@ export default class ReimbursementRequestService {
 
     if (!oldReimbursementRequest) throw new NotFoundException('Reimbursement Request', requestId);
     if (oldReimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
-    if (oldReimbursementRequest.accountCode.organizationId !== organizationId)
+    if (oldReimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
     await validateUserEditRRPermissions(submitter, oldReimbursementRequest, organizationId);
 
     const vendor = await ReimbursementRequestService.getSingleVendor(vendorId, organizationId);
-
     const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organizationId);
 
     if (!accountCode.allowed) throw new HttpException(400, 'Account Code Not Allowed');
@@ -301,7 +306,8 @@ export default class ReimbursementRequestService {
       oldReimbursementRequest.reimbursementProducts,
       otherReimbursementProducts,
       wbsReimbursementProducts,
-      oldReimbursementRequest.reimbursementRequestId
+      oldReimbursementRequest.reimbursementRequestId,
+      organizationId
     );
 
     const updatedReimbursementRequest = await prisma.reimbursement_Request.update({
@@ -371,14 +377,12 @@ export default class ReimbursementRequestService {
     const request = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
       include: {
-        reimbursementStatuses: true,
-        accountCode: true
+        reimbursementStatuses: true
       }
     });
 
     if (!request) throw new NotFoundException('Reimbursement Request', requestId);
-    if (request.accountCode.organizationId !== organizationId)
-      throw new InvalidOrganizationException('Reimbursement Request');
+    if (request.organizationId !== organizationId) throw new InvalidOrganizationException('Reimbursement Request');
     if (request.dateDeleted) throw new DeletedException('Reimbursement Request', requestId);
     if (
       request.reimbursementStatuses.some(
@@ -444,9 +448,6 @@ export default class ReimbursementRequestService {
         saboId: {
           in: saboNumbers
         }
-      },
-      include: {
-        accountCode: true
       }
     });
 
@@ -470,7 +471,7 @@ export default class ReimbursementRequestService {
     }
 
     const reimbursementRequestsNotInOrganization = reimbursementRequests.filter(
-      (reimbursementRequest) => reimbursementRequest.accountCode.organizationId !== organizationId
+      (reimbursementRequest) => reimbursementRequest.organizationId !== organizationId
     );
     if (reimbursementRequestsNotInOrganization.length > 0) throw new InvalidOrganizationException('Reimbursement Request');
 
@@ -505,17 +506,14 @@ export default class ReimbursementRequestService {
     await validateUserIsPartOfFinanceTeam(submitter, organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId },
-      include: {
-        accountCode: true
-      }
+      where: { reimbursementRequestId }
     });
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
-    if (reimbursementRequest.accountCode.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
     const reimbursementRequestWithSaboNumber = await prisma.reimbursement_Request.update({
@@ -653,17 +651,14 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedGuestException('Guests cannot upload receipts');
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId },
-      include: {
-        accountCode: true
-      }
+      where: { reimbursementRequestId }
     });
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
-    if (reimbursementRequest.accountCode.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
     if (reimbursementRequest.recipientId !== submitter.userId) {
       throw new AccessDeniedException(
@@ -733,10 +728,7 @@ export default class ReimbursementRequestService {
    */
   static async markReimbursementRequestAsDelivered(submitter: User, reimbursementRequestId: string, organizationId: string) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
-      where: { reimbursementRequestId },
-      include: {
-        accountCode: true
-      }
+      where: { reimbursementRequestId }
     });
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
@@ -744,7 +736,7 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDelivered) throw new AccessDeniedException('Can only be marked as delivered once');
     if (submitter.userId !== reimbursementRequest.recipientId)
       throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
-    if (reimbursementRequest.accountCode.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
@@ -779,8 +771,7 @@ export default class ReimbursementRequestService {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
-        reimbursementStatuses: true,
-        accountCode: true
+        reimbursementStatuses: true
       }
     });
 
@@ -788,7 +779,7 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
-    if (reimbursementRequest.accountCode.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been marked as reimbursed');
@@ -828,7 +819,7 @@ export default class ReimbursementRequestService {
 
     if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
     if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
-    if (reimbursementRequest.accountCode.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
     try {
@@ -855,8 +846,7 @@ export default class ReimbursementRequestService {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
-        reimbursementStatuses: true,
-        accountCode: true
+        reimbursementStatuses: true
       }
     });
 
@@ -864,7 +854,7 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
-    if (reimbursementRequest.accountCode.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
     if (
@@ -903,8 +893,7 @@ export default class ReimbursementRequestService {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
-        reimbursementStatuses: true,
-        accountCode: true
+        reimbursementStatuses: true
       }
     });
 
@@ -912,7 +901,7 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
-    if (reimbursementRequest.accountCode.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
       throw new HttpException(400, 'This reimbursement request has already been denied');

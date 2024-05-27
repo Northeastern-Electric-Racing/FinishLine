@@ -15,7 +15,6 @@ export const materialTypeTransformer = (
   return {
     name: materialType.name,
     dateCreated: materialType.dateCreated,
-    userCreatedId: materialType.userCreatedId,
     userCreated: userTransformer(materialType.userCreated),
     dateDeleted: materialType.dateDeleted ?? undefined,
     materials: materialType.materials.map(materialPreviewTransformer)

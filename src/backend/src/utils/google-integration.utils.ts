@@ -26,7 +26,7 @@ const createTransporter = async () => {
 
     let accessToken: string | null | undefined;
 
-    await oauth2Client.getAccessToken((err, token) => {
+    oauth2Client.getAccessToken((_err, token) => {
       accessToken = token;
     });
 
@@ -45,6 +45,7 @@ const createTransporter = async () => {
   } catch (err) {
     console.log('ERROR: ' + err);
     if (err instanceof Error) throw new HttpException(500, 'Failed to Create Transporter ' + err.message);
+    throw err;
   }
 };
 
@@ -128,6 +129,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
     }
     console.log('error' + error);
+    throw error;
   }
 };
 
@@ -163,5 +165,6 @@ export const downloadImageFile = async (fileId: string) => {
     if (error instanceof Error) {
       throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
     }
+    throw error;
   }
 };

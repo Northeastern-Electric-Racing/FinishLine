@@ -9,7 +9,7 @@ export default class DesignReviewsController {
     try {
       const organizationId = getOrganizationId(req.headers);
       const designReviews = await DesignReviewsService.getAllDesignReviews(organizationId);
-      return res.status(200).json(designReviews);
+      res.status(200).json(designReviews);
     } catch (error: unknown) {
       next(error);
     }
@@ -21,7 +21,7 @@ export default class DesignReviewsController {
       const user: User = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
       const deletedDesignReview = await DesignReviewsService.deleteDesignReview(user, drId, organizationId);
-      return res.status(200).json(deletedDesignReview);
+      res.status(200).json(deletedDesignReview);
     } catch (error: unknown) {
       next(error);
     }
@@ -43,7 +43,7 @@ export default class DesignReviewsController {
         meetingTimes,
         organizationId
       );
-      return res.status(200).json(createdDesignReview);
+      res.status(200).json(createdDesignReview);
     } catch (error: unknown) {
       next(error);
     }
@@ -56,7 +56,7 @@ export default class DesignReviewsController {
       const organizationId = getOrganizationId(req.headers);
 
       const designReview = await DesignReviewsService.getSingleDesignReview(user, drId, organizationId);
-      return res.status(200).json(designReview);
+      res.status(200).json(designReview);
     } catch (error: unknown) {
       next(error);
     }
@@ -103,7 +103,7 @@ export default class DesignReviewsController {
         meetingTimes,
         organizationId
       );
-      return res.status(200).json({ message: 'Design Review updated successfully' });
+      res.status(200).json({ message: 'Design Review updated successfully' });
     } catch (error: unknown) {
       next(error);
     }
@@ -123,7 +123,7 @@ export default class DesignReviewsController {
         user,
         organizationId
       );
-      return res.status(200).json(updatedDesignReview);
+      res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
       next(error);
     }

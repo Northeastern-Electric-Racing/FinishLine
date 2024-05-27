@@ -19,8 +19,8 @@ interface Props {
   manager?: string;
   setManager: (manager?: string) => void;
   setLead: (lead?: string) => void;
-  usersForProjectLead: User[];
-  usersForProjectManager: User[];
+  usersForLead: User[];
+  usersForManager: User[];
   control: Control<WorkPackageFormViewPayload>;
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
   createForm?: boolean;
@@ -33,8 +33,8 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   manager,
   setManager,
   setLead,
-  usersForProjectLead,
-  usersForProjectManager,
+  usersForLead,
+  usersForManager,
   control,
   errors,
   createForm = false,
@@ -97,7 +97,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
           <StageSelect />
         </Grid>
         <Grid item xs={12} md={4}>
-          <ChangeRequestDropdown control={control} name="crId" errors={errors} />
+          <ChangeRequestDropdown control={control} name="crId" />
         </Grid>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth sx={{ overflow: 'hidden' }}>
@@ -147,24 +147,24 @@ const WorkPackageFormDetails: React.FC<Props> = ({
               <FormLabel> Project Lead</FormLabel>
               <NERAutocomplete
                 sx={{ width: '100%' }}
-                id="project-lead-autocomplete"
+                id="lead-autocomplete"
                 onChange={(_event, value) => setLead(value?.id)}
-                options={usersForProjectLead.map(userToOption)}
+                options={usersForLead.map(userToOption)}
                 size="small"
                 placeholder="Select a Project Lead"
-                value={userToOption(usersForProjectLead.find((user) => user.userId.toString() === lead))}
+                value={userToOption(usersForLead.find((user) => user.userId.toString() === lead))}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <FormLabel>Project Manager</FormLabel>
               <NERAutocomplete
                 sx={{ width: '100%' }}
-                id="project-manager-autocomplete"
+                id="manager-autocomplete"
                 onChange={(_event, value) => setManager(value?.id)}
-                options={usersForProjectManager.map(userToOption)}
+                options={usersForManager.map(userToOption)}
                 size="small"
                 placeholder="Select a Project Manager"
-                value={userToOption(usersForProjectManager.find((user) => user.userId.toString() === manager))}
+                value={userToOption(usersForManager.find((user) => user.userId.toString() === manager))}
               />
             </Grid>
           </>

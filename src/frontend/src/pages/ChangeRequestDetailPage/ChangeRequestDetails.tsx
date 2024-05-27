@@ -16,7 +16,7 @@ const ChangeRequestDetails: React.FC = () => {
     id: string;
   }
   const { id } = useParams<ParamTypes>();
-  const { isLoading, isError, data, error } = useSingleChangeRequest(parseInt(id));
+  const { isLoading, isError, data, error } = useSingleChangeRequest(id);
   const auth = useAuth();
 
   if (isLoading) return <LoadingIndicator />;

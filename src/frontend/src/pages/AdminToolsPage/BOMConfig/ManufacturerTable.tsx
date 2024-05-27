@@ -36,7 +36,7 @@ const ManufacturerTable: React.FC = () => {
 
   const handleDeleteManufacturer = async (manufacturerName: string) => {
     try {
-      await mutateAsync({ manufacturerName: manufacturerName });
+      await mutateAsync({ manufacturerName });
       toast.success(`Manufacturer: ${manufacturerName} Deleted Successfully!`);
     } catch (error: unknown) {
       if (error instanceof Error) {

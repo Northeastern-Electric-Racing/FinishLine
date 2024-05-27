@@ -23,8 +23,8 @@ export const getAllChangeRequests = () => {
  *
  * @param id Change request ID of the requested change request.
  */
-export const getSingleChangeRequest = (id: number) => {
-  return axios.get<ChangeRequest>(apiUrls.changeRequestsById(`${id}`), {
+export const getSingleChangeRequest = (id: string) => {
+  return axios.get<ChangeRequest>(apiUrls.changeRequestsById(id), {
     transformResponse: (data) => changeRequestTransformer(JSON.parse(data))
   });
 };
@@ -38,8 +38,8 @@ export const getSingleChangeRequest = (id: number) => {
  * @param reviewNotes The notes attached to reviewing the change request.
  */
 export const reviewChangeRequest = (
-  reviewerId: number,
-  crId: number,
+  reviewerId: string,
+  crId: string,
   accepted: boolean,
   reviewNotes: string,
   psId: string
@@ -58,8 +58,8 @@ export const reviewChangeRequest = (
  *
  * @param crId The ID of the change request being deleted.
  */
-export const deleteChangeRequest = (crId: number) => {
-  return axios.delete<{ message: string }>(apiUrls.changeRequestDelete(`${crId}`));
+export const deleteChangeRequest = (crId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.changeRequestDelete(crId));
 };
 
 /**
@@ -75,16 +75,16 @@ export const createStandardChangeRequest = (payload: CreateStandardChangeRequest
  * Create an activation change request.
  * @param submitterId The ID of the user creating the change request.
  * @param wbsNumber the wbsNumber of the WBS element the change request is for.
- * @param projectLeadId the ID of the project lead intended to be assigned to the WBS element being activated.
- * @param projectManagerId the ID of the project manager intended to be assigned to the WBS element being activated.
+ * @param leadId the ID of the lead intended to be assigned to the WBS element being activated.
+ * @param managerId the ID of the manager intended to be assigned to the WBS element being activated.
  * @param startDate the intended start date of the WBS element being activated.
  * @param confirmDetails are the details of the WBS element being activated fully confirmed?
  */
 export const createActivationChangeRequest = (
-  submitterId: number,
+  submitterId: string,
   wbsNum: WbsNumber,
-  projectLeadId: number,
-  projectManagerId: number,
+  leadId: string,
+  managerId: string,
   startDate: string,
   confirmDetails: boolean
 ) => {
@@ -92,8 +92,8 @@ export const createActivationChangeRequest = (
     submitterId,
     wbsNum,
     type: ChangeRequestType.Activation,
-    projectLeadId,
-    projectManagerId,
+    leadId,
+    managerId,
     startDate,
     confirmDetails
   });
@@ -105,7 +105,7 @@ export const createActivationChangeRequest = (
  * @param wbsNumber the wbsNumber of the WBS element the change request is for.
  * @param confirmDone are all details of the WBS element being stage gated fully completed?
  */
-export const createStageGateChangeRequest = (submitterId: number, wbsNum: WbsNumber, confirmDone: boolean) => {
+export const createStageGateChangeRequest = (submitterId: string, wbsNum: WbsNumber, confirmDone: boolean) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestsCreateStageGate(), {
     submitterId,
     wbsNum,
@@ -125,8 +125,8 @@ export const createStageGateChangeRequest = (submitterId: number, wbsNum: WbsNum
  */
 
 export const addProposedSolution = (
-  submitterId: number,
-  crId: number,
+  submitterId: string,
+  crId: string,
   description: string,
   scopeImpact: string,
   timelineImpact: number,
@@ -147,6 +147,6 @@ export const addProposedSolution = (
  * @param crId The ID of the associated change request.
  * @param crReviewData The data to request reviewers
  */
-export const requestCRReview = (crId: string, crReviewData: { userIds: number[] }) => {
+export const requestCRReview = (crId: string, crReviewData: { userIds: string[] }) => {
   return axios.post<{ message: string }>(apiUrls.changeRequestRequestReviewer(crId), crReviewData);
 };

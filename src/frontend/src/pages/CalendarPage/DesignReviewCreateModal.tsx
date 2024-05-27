@@ -83,7 +83,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     const day = data.date.getDay();
     const adjustedDay = day === 0 ? 6 : day - 1;
-    const times = [];
+    const times: number[] = [];
     for (let i = adjustedDay * 12; i < adjustedDay * 12 + 1; i++) {
       times.push(i);
     }
@@ -91,8 +91,8 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       await mutateAsync({
         dateScheduled: data.date,
         teamTypeId: data.teamTypeId,
-        requiredMemberIds: requiredMembers.map((member) => parseInt(member.id)),
-        optionalMemberIds: optionalMembers.map((member) => parseInt(member.id)),
+        requiredMemberIds: requiredMembers.map((member) => member.id),
+        optionalMemberIds: optionalMembers.map((member) => member.id),
         wbsNum: validateWBS(data.wbsNum),
         meetingTimes: times
       });
@@ -195,7 +195,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                   textField: {
                     error: !!errors.date,
                     helperText: errors.date?.message,
-                    onClick: (e) => setDatePickerOpen(true),
+                    onClick: () => setDatePickerOpen(true),
                     inputProps: { readOnly: true },
                     fullWidth: true
                   }

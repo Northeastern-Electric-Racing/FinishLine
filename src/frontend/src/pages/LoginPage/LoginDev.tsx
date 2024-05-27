@@ -14,9 +14,10 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { fullNamePipe } from '../../utils/pipes';
 import { rankUserRole } from 'shared';
 import { FormEvent } from 'react';
+import { Typography } from '@mui/material';
 
 interface LoginDevProps {
-  devSetUser: (userId: number) => void;
+  devSetUser: (userId: string) => void;
   devFormSubmit: (e: FormEvent) => void;
 }
 
@@ -31,10 +32,14 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
 
   if (!usersList || isLoading) return <LoadingIndicator />;
 
+  if (usersList.length === 0) return <Typography>No Users Available</Typography>;
+
   const sortedUsers = usersList
     .sort((a, b) => a.firstName.localeCompare(b.firstName))
     .sort((a, b) => a.lastName.localeCompare(b.lastName))
     .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role));
+
+  devSetUser(sortedUsers[0].userId);
 
   return (
     <form onSubmit={devFormSubmit}>

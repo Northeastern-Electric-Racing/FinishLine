@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 interface ProjectsOverviewCardsProps {
   projects: Project[];
   title: string;
-  favoriteProjectsSet: Set<number>;
+  favoriteProjectsSet: Set<string>;
   emptyMessage?: string;
 }
 

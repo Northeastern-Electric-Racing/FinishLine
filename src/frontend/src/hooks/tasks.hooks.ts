@@ -12,7 +12,7 @@ export interface CreateTaskPayload {
   deadline: string;
   priority: TaskPriority;
   status: TaskStatus;
-  assignees: number[];
+  assignees: string[];
 }
 
 export const useCreateTask = (wbsNum: WbsNumber) => {
@@ -79,9 +79,9 @@ export const useEditTask = () => {
  */
 export const useEditTaskAssignees = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, { taskId: string; assignees: number[] }>(
+  return useMutation<{ message: string }, Error, { taskId: string; assignees: string[] }>(
     ['tasks', 'edit-assignees'],
-    async (editAssigneesTaskPayload: { taskId: string; assignees: number[] }) => {
+    async (editAssigneesTaskPayload: { taskId: string; assignees: string[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
       return data;
     },

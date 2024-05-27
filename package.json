@@ -1,6 +1,6 @@
 {
   "name": "finishline-express",
-  "version": "1.0.0",
+  "version": "5.0.0",
   "description": "",
   "private": true,
   "workspaces": [
@@ -12,8 +12,10 @@
     "prettier-check": "yarn prettier --check .",
     "frontend": "yarn workspace frontend start",
     "backend": "yarn workspace backend start",
-    "start": "yarn workspace shared build; concurrently --kill-others-on-fail \"yarn workspace backend dev\"  \"yarn frontend\"",
+    "backend:dev": "yarn workspace backend dev",
+    "start": "yarn workspace shared build; concurrently --kill-others-on-fail \"yarn backend:dev\"  \"yarn frontend\"",
     "prisma:seed": "cd src/backend; npx prisma db seed",
+    "prisma:reset:force": "yarn workspace shared build; cd src/backend; npx prisma migrate reset --force",
     "prisma:reset": "yarn workspace shared build; cd src/backend; npx prisma migrate reset",
     "prisma:migrate": "yarn prisma:migrate:dev",
     "prisma:migrate:dev": "cd src/backend; npx prisma migrate dev",
@@ -21,7 +23,11 @@
     "prisma:generate": "cd src/backend; npx prisma generate",
     "prisma:manual": "yarn workspace backend prisma:manual",
     "prisma:studio": "cd src/backend; npx prisma studio",
+    "containerize": "cd containerization; docker-compose down && docker-compose build && docker-compose up -d && sleep 5 && cd ../ && yarn containerize:psql:init && yarn prisma:migrate",
+    "containerize:psql:init": "docker exec database psql -U postgres -c \"CREATE DATABASE nerpm;\" && yarn database:setup:script",
+    "containerize:teste2e": "yarn containerize && yarn test:e2e",
     "lint": "npx eslint .",
+    "test:e2e": "./system-tests/run.sh",
     "test:frontend": "yarn workspace shared build; yarn workspace frontend test",
     "test:backend": "yarn workspace shared build; yarn workspace backend test",
     "test": "yarn test:backend && yarn test:frontend",
@@ -31,37 +37,39 @@
     "build:backend": "yarn workspace backend build",
     "build:shared": "yarn workspace shared build",
     "build:frontend": "yarn workspace frontend build",
+    "build:frontend:dev": "yarn workspace frontend build:dev",
     "i": "yarn install && yarn prisma:generate",
-    "database:setup": "node scripts/database-setup.js && docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres && sleep 5 && docker exec finishline psql -U postgres -c \"CREATE DATABASE nerpm;\" && yarn prisma:migrate",
+    "database:setup": "yarn database:setup:script && docker run --name finishline -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres && sleep 5 && docker exec finishline psql -U postgres -c \"CREATE DATABASE nerpm;\" && yarn prisma:reset",
+    "database:setup:script": "node scripts/database-setup.js",
     "istart": "yarn i && yarn start",
     "reset": "rimraf yarn.lock; rimraf src/frontend/node_modules; rimraf src/backend/node_modules; rimraf src/shared/node_modules; rimraf ./node_modules; ",
     "install:hard": "yarn reset; yarn install; yarn prisma:generate",
-    "tsc-check": "tsc --noEmit --project tsconfig.build.json"
+    "tsc-check": "tsc --noEmit --project src/backend/tsconfig.json && tsc --noEmit --project src/frontend/tsconfig.json"
   },
   "resolutions": {
     "@types/react": "17.0.1",
     "@types/react-dom": "17.0.1"
+  },
+  "dependencies": {
+    "typescript": "^4.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",
     "@babel/plugin-transform-object-assign": "^7.18.6",
     "@babel/preset-react": "^7.18.6",
     "@babel/preset-typescript": "^7.18.6",
-    "@testing-library/jest-dom": "^5.16.4",
     "@types/jest": "^28.1.6",
     "@types/node": "18.17.1",
-    "@types/nodemailer": "^6.4.7",
-    "@types/react-query": "^1.2.9",
-    "@typescript-eslint/eslint-plugin": "^4.18.0",
-    "@typescript-eslint/parser": "^4.18.0",
+    "@typescript-eslint/eslint-plugin": "4.18.0",
+    "@typescript-eslint/parser": "4.18.0",
     "concurrently": "^5.2.0",
     "eslint": "^7.0.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.1.5"
+    "ts-node": "^10.9.1"
   },
   "eslintConfig": {
     "extends": [
@@ -125,7 +133,9 @@
       "node_modules",
       "public",
       "lib",
-      "dist"
+      "dist",
+      "system-tests/**",
+      "scripts"
     ]
   },
   "jest": {

@@ -23,7 +23,7 @@ export const createSingleTask = (
   deadline: string,
   priority: TaskPriority,
   status: TaskStatus,
-  assignees: number[]
+  assignees: string[]
 ) => {
   return axios.post<{ message: string }>(apiUrls.tasksCreate(wbsPipe(wbsNum)), {
     title,
@@ -59,7 +59,7 @@ export const editTask = (taskId: string, title: string, notes: string, priority:
  * @param assignees the ids of the users to assign to the task
  * @returns the edited task
  */
-export const editTaskAssignees = (taskId: string, assignees: number[]) => {
+export const editTaskAssignees = (taskId: string, assignees: string[]) => {
   return axios.post<{ message: string }>(apiUrls.editTaskAssignees(taskId), {
     assignees
   });

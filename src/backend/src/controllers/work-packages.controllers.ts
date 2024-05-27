@@ -75,20 +75,41 @@ export default class WorkPackagesController {
     }
   }
 
+  // Create a work package template with the given details
+  static async createWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { templateName, templateNotes, workPackageName, duration, descriptionBullets, blockedBy } = req.body;
+
+      let { stage } = req.body;
+      if (stage === 'NONE') {
+        stage = null;
+      }
+
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.createWorkPackageTemplate(
+        user,
+        templateName,
+        templateNotes,
+        workPackageName,
+        stage,
+        duration,
+        descriptionBullets,
+        blockedBy,
+        organizationId
+      );
+
+      res.status(200).json(workPackageTemplate);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        workPackageId,
-        name,
-        crId,
-        startDate,
-        duration,
-        blockedBy,
-        descriptionBullets,
-        projectLeadId,
-        projectManagerId
-      } = req.body;
+      const { workPackageId, name, crId, startDate, duration, blockedBy, descriptionBullets, leadId, managerId } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
@@ -106,11 +127,11 @@ export default class WorkPackagesController {
         duration,
         blockedBy,
         descriptionBullets,
-        projectLeadId,
-        projectManagerId,
+        leadId,
+        managerId,
         organizationId
       );
-      return res.status(200).json({ message: 'Work package updated successfully' });
+      res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
       next(error);
     }
@@ -124,7 +145,7 @@ export default class WorkPackagesController {
       const organizationId = getOrganizationId(req.headers);
 
       await WorkPackagesService.deleteWorkPackage(user, wbsNum, organizationId);
-      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -138,7 +159,7 @@ export default class WorkPackagesController {
 
       const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum, organizationId);
 
-      return res.status(200).json(blockingWorkPackages);
+      res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {
       next(error);
     }
@@ -215,7 +236,7 @@ export default class WorkPackagesController {
         organizationId
       );
 
-      return res.status(200).json(updatedWorkPackageTemplate);
+      res.status(200).json(updatedWorkPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }

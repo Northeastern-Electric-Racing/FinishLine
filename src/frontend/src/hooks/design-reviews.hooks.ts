@@ -18,8 +18,8 @@ import { useCurrentUser } from './users.hooks';
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
   teamTypeId: string;
-  requiredMemberIds: number[];
-  optionalMemberIds: number[];
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
   wbsNum: WbsNumber;
   meetingTimes: number[];
 }
@@ -55,15 +55,15 @@ export const useAllDesignReviews = () => {
 export interface EditDesignReviewPayload {
   dateScheduled: Date;
   teamTypeId: string;
-  requiredMembersIds: number[];
-  optionalMembersIds: number[];
+  requiredMembersIds: string[];
+  optionalMembersIds: string[];
   isOnline: boolean;
   isInPerson: boolean;
   zoomLink?: string;
   location?: string;
   docTemplateLink?: string;
   status: DesignReviewStatus;
-  attendees: number[];
+  attendees: string[];
   meetingTimes: number[];
 }
 

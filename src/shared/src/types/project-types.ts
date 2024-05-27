@@ -16,8 +16,8 @@ export interface WbsNumber {
 }
 
 export interface WbsElement {
-  wbsElementId: number; // wbs element id
-  id: number; // project/ work package id
+  wbsElementId: string; // wbs element id
+  id: string; // project/ work package id
   wbsNum: WbsNumber;
   dateCreated: Date;
   name: string;
@@ -62,7 +62,7 @@ export interface WorkPackage extends WbsElement {
 }
 
 export interface DescriptionBullet {
-  id: number;
+  id: string;
   detail: string;
   dateAdded: Date;
   type: string;

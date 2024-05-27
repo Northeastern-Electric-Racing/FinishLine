@@ -13,7 +13,7 @@ export interface WorkPackageApiInputs {
   name: string;
   startDate: string;
   duration: number;
-  crId: number | undefined;
+  crId: string | undefined;
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
   descriptionBullets: DescriptionBulletPreview[];
@@ -67,7 +67,6 @@ export const createSingleWorkPackage = (payload: WorkPackageApiInputs) => {
  * @returns Promise that will resolve to either a success status code or a fail status code.
  */
 export const editWorkPackage = (payload: WorkPackageApiInputs) => {
-  console.log(payload);
   return axios.post<{ message: string }>(apiUrls.workPackagesEdit(), {
     ...payload
   });

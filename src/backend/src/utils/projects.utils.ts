@@ -33,7 +33,7 @@ export const getHighestProjectNumber = async (carNumber: number) => {
 };
 
 // Given a user's id, this method returns the user's full name
-export const getUserFullName = async (userId: number | null): Promise<string | null> => {
+export const getUserFullName = async (userId: string | null): Promise<string | null> => {
   if (!userId) return null;
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) throw new NotFoundException('User', userId);
@@ -42,16 +42,16 @@ export const getUserFullName = async (userId: number | null): Promise<string | n
 
 // Update a project and create changes together
 export const updateProjectAndCreateChanges = async (
-  projectId: number,
-  crId: number,
-  implementerId: number,
+  projectId: string,
+  crId: string,
+  implementerId: string,
   name: string,
   budget: number | null,
   summary: string,
   newDescriptionBullets: DescriptionBulletPreview[],
   newLinkCreateArgs: LinkCreateArgs[] | null,
-  projectLeadId: number | null,
-  projectManagerId: number | null,
+  leadId: string | null,
+  managerId: string | null,
   organizationId: string
 ) => {
   let changesJson: ChangeCreateArgs[] = [];
@@ -79,18 +79,18 @@ export const updateProjectAndCreateChanges = async (
   const nameChangeJson = createChange('name', originalProject.wbsElement.name, name, crId, implementerId, wbsElementId);
   const budgetChangeJson = createChange('budget', originalProject.budget, budget, crId, implementerId, wbsElementId);
   const summaryChangeJson = createChange('summary', originalProject.summary, summary, crId, implementerId, wbsElementId);
-  const projectManagerChangeJson = createChange(
-    'project manager',
+  const managerChangeJson = createChange(
+    'manager',
     await getUserFullName(originalProject.wbsElement.managerId),
-    await getUserFullName(projectManagerId),
+    await getUserFullName(managerId),
     crId,
     implementerId,
     wbsElementId
   );
-  const projectLeadChangeJson = createChange(
-    'project lead',
+  const leadChangeJson = createChange(
+    'lead',
     await getUserFullName(originalProject.wbsElement.leadId),
-    await getUserFullName(projectLeadId),
+    await getUserFullName(leadId),
     crId,
     implementerId,
     wbsElementId
@@ -100,8 +100,8 @@ export const updateProjectAndCreateChanges = async (
   if (nameChangeJson) changesJson.push(nameChangeJson);
   if (budgetChangeJson) changesJson.push(budgetChangeJson);
   if (summaryChangeJson) changesJson.push(summaryChangeJson);
-  if (projectManagerChangeJson) changesJson.push(projectManagerChangeJson);
-  if (projectLeadChangeJson) changesJson.push(projectLeadChangeJson);
+  if (managerChangeJson) changesJson.push(managerChangeJson);
+  if (leadChangeJson) changesJson.push(leadChangeJson);
 
   const descriptionBulletChanges = await getDescriptionBulletChanges(
     originalProject.wbsElement.descriptionBullets,
@@ -133,8 +133,8 @@ export const updateProjectAndCreateChanges = async (
       wbsElement: {
         update: {
           name,
-          leadId: projectLeadId,
-          managerId: projectManagerId
+          leadId,
+          managerId
         }
       }
     },

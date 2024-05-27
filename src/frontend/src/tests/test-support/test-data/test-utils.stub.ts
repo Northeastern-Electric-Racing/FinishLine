@@ -25,7 +25,7 @@ export const mockContext = {
 };
 
 export const mockPromiseAxiosResponse = <Return>(data: Return) => {
-  return new Promise((res, rej) => res({ status: 0, statusText: '', headers: {}, config: {}, data })) as Promise<
+  return new Promise((res, _rej) => res({ status: 0, statusText: '', headers: {}, config: {}, data })) as Promise<
     AxiosResponse<Return>
   >;
 };
@@ -59,7 +59,7 @@ export const mockUseQueryResult = <Return>(isLoading: boolean, isError: boolean,
   } as UseQueryResult<Return, Error>;
 };
 
-export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolean, input: Input, err?: Error) => {
+export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolean, _input: Input, err?: Error) => {
   return {
     error: err ?? null,
     isError,
@@ -83,8 +83,8 @@ export const mockUseMutationResult = <Input>(isLoading: boolean, isError: boolea
 export const mockAuth = (isLoading: boolean, user?: User) => {
   return {
     user,
-    devSignin: (u) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
-    signin: (t) => new Promise((res, rej) => res(exampleAuthenticatedAdminUser)),
+    devSignin: () => new Promise((res) => res(exampleAuthenticatedAdminUser)),
+    signin: () => new Promise((res) => res(exampleAuthenticatedAdminUser)),
     signout: () => {},
     isLoading
   } as Auth;

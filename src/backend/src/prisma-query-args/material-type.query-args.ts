@@ -10,7 +10,7 @@ import { getMaterialPreviewQueryArgs } from './bom.query-args';
 export type MaterialTypeQueryArgs = ReturnType<typeof getMaterialTypeQueryArgs>;
 
 export const getMaterialTypeQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Material_TypeArgs>()({
+  Prisma.validator<Prisma.Material_TypeDefaultArgs>()({
     include: {
       materials: getMaterialPreviewQueryArgs(organizationId),
       userCreated: getUserQueryArgs(organizationId)

@@ -30,7 +30,7 @@ import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
 
 interface AppAuthenticatedProps {
-  userId: number;
+  userId: string;
   userRole: Role;
 }
 
@@ -44,9 +44,8 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   if (isError) {
     if ((error as Error).message === 'Authentication Failed: Invalid JWT!') {
       return <SessionTimeoutAlert />;
-    } else {
-      return <ErrorPage error={error as Error} message={(error as Error).message} />;
     }
+    return <ErrorPage error={error as Error} message={(error as Error).message} />;
   }
 
   return userSettingsData.slackId || isGuest(userRole) ? (

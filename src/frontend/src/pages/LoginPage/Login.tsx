@@ -18,7 +18,7 @@ import { useOrganization } from '../../hooks/organization.hooks';
  * Page for unauthenticated users to do login.
  */
 const Login = () => {
-  const [devUserId, setDevUserId] = useState(1);
+  const [devUserId, setDevUserId] = useState('');
   const history = useHistory();
   const query = useQuery();
   const theme = useToggleTheme();
@@ -62,8 +62,7 @@ const Login = () => {
       theme.toggleTheme();
     }
     if (authedUser.organizations.length > 0) {
-      const defaultOrganization = authedUser.organizations[0];
-      console.log(defaultOrganization);
+      const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
     redirectAfterLogin();
@@ -80,7 +79,7 @@ const Login = () => {
       theme.toggleTheme();
     }
     if (authedUser.organizations.length > 0) {
-      const defaultOrganization = authedUser.organizations[0];
+      const [defaultOrganization] = authedUser.organizations;
       organizationContext.selectOrganization(defaultOrganization);
     }
     redirectAfterLogin();

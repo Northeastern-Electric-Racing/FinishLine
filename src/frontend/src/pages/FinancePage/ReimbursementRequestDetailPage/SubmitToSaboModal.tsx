@@ -59,7 +59,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       open={open}
       onHide={() => setOpen(false)}
       title="Input these fields into the SABO Form"
-      submitText={isSaboSubmitted ? '' : 'Submit to SABO'}
+      submitText={isSaboSubmitted ? undefined : 'Submit to SABO'}
       showCloseButton={isSaboSubmitted}
       hideFormButtons={isSaboSubmitted}
       onSubmit={() => handleSubmitToSabo()}
@@ -128,7 +128,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography>Brody Pearlman</Typography>
+              <Typography>Alex Leblang</Typography>
               <CopyToClipboardButton msg={'Brody Pearlman'} />
             </Box>
             <Box display="flex" alignItems="center">

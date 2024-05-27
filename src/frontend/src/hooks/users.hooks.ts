@@ -57,7 +57,7 @@ export const useAllUsers = () => {
  *
  * @param id User ID of the requested user.
  */
-export const useSingleUser = (id: number) => {
+export const useSingleUser = (id: string) => {
   return useQuery<User, Error>(['users', id], async () => {
     const { data } = await getSingleUser(id);
     return data;
@@ -70,7 +70,6 @@ export const useSingleUser = (id: number) => {
 export const useLogUserIn = () => {
   return useMutation<AuthenticatedUser, Error, string>(['users', 'login'], async (id_token: string) => {
     const { data } = await logUserIn(id_token);
-    console.log(data);
     return data;
   });
 };
@@ -79,7 +78,7 @@ export const useLogUserIn = () => {
  * Custom React Hook to log a dev user in.
  */
 export const useLogUserInDev = () => {
-  return useMutation<AuthenticatedUser, Error, number>(['users', 'login'], async (userId: number) => {
+  return useMutation<AuthenticatedUser, Error, string>(['users', 'login'], async (userId: string) => {
     const { data } = await logUserInDev(userId);
     return data;
   });
@@ -90,7 +89,7 @@ export const useLogUserInDev = () => {
  *
  * @param id User ID of the requested user's settings.
  */
-export const useSingleUserSettings = (id: number) => {
+export const useSingleUserSettings = (id: string) => {
   return useQuery<UserSettings, Error>(['users', id, 'settings'], async () => {
     const { data } = await getSingleUserSettings(id);
     return data;
@@ -117,7 +116,7 @@ export const useCurrentUserSecureSettings = () => {
  * @param id User ID of the requested user's secure settings
  * @returns the user's secure settings
  */
-export const useUserSecureSettings = (id: number) => {
+export const useUserSecureSettings = (id: string) => {
   return useQuery<UserSecureSettings, Error>(['users', id, 'secure-settings'], async () => {
     const { data } = await getUserSecureSettings(id);
     return data;
@@ -130,7 +129,7 @@ export const useUserSecureSettings = (id: number) => {
  * @param id User ID of the requested user's schedule settings
  * @returns the user's schedule settings
  */
-export const useUserScheduleSettings = (id: number) => {
+export const useUserScheduleSettings = (id: string) => {
   return useQuery<UserScheduleSettings, Error>(['users', id, 'schedule-settings'], async () => {
     try {
       const { data } = await getUserScheduleSettings(id);
@@ -146,7 +145,7 @@ export const useUserScheduleSettings = (id: number) => {
  *
  * @param id User ID of the requested user's settings.
  */
-export const useUsersFavoriteProjects = (id: number) => {
+export const useUsersFavoriteProjects = (id: string) => {
   return useQuery<Project[], Error>(['users', id, 'favorite projects'], async () => {
     const { data } = await getUsersFavoriteProjects(id);
     return data;

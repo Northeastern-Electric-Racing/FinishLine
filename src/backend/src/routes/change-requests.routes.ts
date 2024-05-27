@@ -18,8 +18,8 @@ changeRequestsRouter.get('/:crId', ChangeRequestsController.getChangeRequestByID
 
 changeRequestsRouter.post(
   '/review',
-  intMinZero(body('reviewerId')),
-  intMinZero(body('crId')),
+  nonEmptyString(body('reviewerId')),
+  nonEmptyString(body('crId')),
   body('reviewNotes').isString(),
   body('accepted').isBoolean(),
   body('psId').optional().isString().not().isEmpty(),
@@ -29,14 +29,14 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/activation',
-  intMinZero(body('submitterId')),
+  nonEmptyString(body('submitterId')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
   body('type').custom((value) => value === ChangeRequestType.Activation),
   body('startDate').custom((value) => !isNaN(Date.parse(value))),
-  intMinZero(body('projectLeadId')),
-  intMinZero(body('projectManagerId')),
+  nonEmptyString(body('leadId')),
+  nonEmptyString(body('managerId')),
   body('confirmDetails').isBoolean(),
   validateInputs,
   ChangeRequestsController.createActivationChangeRequest
@@ -44,7 +44,7 @@ changeRequestsRouter.post(
 
 changeRequestsRouter.post(
   '/new/stage-gate',
-  intMinZero(body('submitterId')),
+  nonEmptyString(body('submitterId')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
@@ -82,8 +82,8 @@ changeRequestsRouter.delete('/:crId/delete', ChangeRequestsController.deleteChan
 
 changeRequestsRouter.post(
   '/new/proposed-solution',
-  intMinZero(body('submitterId')),
-  intMinZero(body('crId')),
+  nonEmptyString(body('submitterId')),
+  nonEmptyString(body('crId')),
   nonEmptyString(body('description')),
   nonEmptyString(body('scopeImpact')),
   body('timelineImpact').isInt(),
@@ -95,7 +95,7 @@ changeRequestsRouter.post(
 changeRequestsRouter.post(
   '/:crId/request-review',
   body('userIds').isArray(),
-  intMinZero(body('userIds.*')),
+  nonEmptyString(body('userIds.*')),
   validateInputs,
   ChangeRequestsController.requestCRReview
 );

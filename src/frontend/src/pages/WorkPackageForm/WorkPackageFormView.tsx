@@ -9,7 +9,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
-import NERFailButton from '../../components/NERFailButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -48,7 +47,7 @@ interface WorkPackageFormViewProps {
 
 export interface WorkPackageFormViewPayload {
   name: string;
-  workPackageId: number;
+  workPackageId: string;
   startDate: Date;
   duration: number;
   crId: string;
@@ -81,7 +80,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaultValues?.name ?? '',
-      workPackageId: defaultValues?.workPackageId ?? 0,
+      workPackageId: defaultValues?.workPackageId ?? '',
       startDate: defaultValues?.startDate ?? getMonday(new Date()),
       duration: defaultValues?.duration ?? 0,
       crId: crId ?? defaultValues?.crId ?? '',
@@ -182,17 +181,17 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     const blockedByWbsNums = blockedBy.map((blocker) => validateWBS(blocker));
     try {
       const payload = {
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined,
+        leadId,
+        managerId,
         projectWbsNum: wbsElement.wbsNum,
         workPackageId: defaultValues?.workPackageId,
         userId,
         name,
-        crId: parseInt(crId),
+        crId,
         startDate: transformDate(startDate),
         duration,
         blockedBy: blockedByWbsNums,
-        descriptionBullets: descriptionBullets,
+        descriptionBullets,
         stage: stage as WorkPackageStage,
         links: []
       };
@@ -269,9 +268,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
               </Box>
             )}
             <Box>
-              <NERFailButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+              <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
                 Cancel
-              </NERFailButton>
+              </NERButton>
               <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} disabled={!changeRequestInputExists}>
                 Submit
               </NERSuccessButton>
@@ -289,8 +288,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
         <WorkPackageFormDetails
           control={control}
           errors={errors}
-          usersForProjectLead={leadOrManagerOptions}
-          usersForProjectManager={leadOrManagerOptions}
+          usersForLead={leadOrManagerOptions}
+          usersForManager={leadOrManagerOptions}
           lead={leadId}
           manager={managerId}
           setLead={setLeadId}
