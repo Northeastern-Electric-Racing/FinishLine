@@ -135,3 +135,14 @@ export const getAllWorkPackageTemplates = () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Create a single work package template.
+ *
+ * @param payload Payload containing all the necessary data to create a work package template.
+ */
+export const createSingleWorkPackageTemplate = (payload: WorkPackageTemplateApiInputs) => {
+  return axios.post<{ message: string }>(apiUrls.workPackageTemplatesCreate(), {
+    ...payload
+  });
+};

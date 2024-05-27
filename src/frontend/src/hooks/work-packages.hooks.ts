@@ -17,7 +17,8 @@ import {
   WorkPackageApiInputs,
   WorkPackageTemplateApiInputs,
   editWorkPackageTemplate,
-  getAllWorkPackageTemplates
+  getAllWorkPackageTemplates,
+  createSingleWorkPackageTemplate
 } from '../apis/work-packages.api';
 
 /**
@@ -156,4 +157,17 @@ export const useAllWorkPackageTemplates = () => {
     const { data } = await getAllWorkPackageTemplates();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to create a workpackage template
+ */
+export const useCreateSingleWorkPackageTemplate = () => {
+  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
+    ['work package template', 'create'],
+    async (wptPayload: WorkPackageTemplateApiInputs) => {
+      const { data } = await createSingleWorkPackageTemplate(wptPayload);
+      return data;
+    }
+  );
 };
