@@ -135,3 +135,13 @@ export const getAllWorkPackageTemplates = () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Gets a single work package template from the database
+ * @returns a single work package template
+ */
+export const getSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
+  return axios.get<WorkPackageTemplate>(apiUrls.workPackageTemplatesById(workPackageTemplateId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
