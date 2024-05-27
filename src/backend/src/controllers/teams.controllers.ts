@@ -137,7 +137,6 @@ export default class TeamsController {
       const { name, iconName } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
-      console.log('organizationId', organizationId);
 
       const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, organizationId);
       res.status(200).json(createdTeamType);

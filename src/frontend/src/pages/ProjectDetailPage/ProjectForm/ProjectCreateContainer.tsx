@@ -92,7 +92,8 @@ const ProjectCreateContainer: React.FC = () => {
         links,
         leadId,
         managerId,
-        carNumber
+        carNumber,
+        workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {

@@ -399,11 +399,11 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Link Types */
-  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'doc', true, organizationId);
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, organizationId);
 
-  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'doc', true, organizationId);
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, organizationId);
 
-  await ProjectsService.createLinkType(batman, 'Google Drive', 'doc', true, organizationId);
+  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, organizationId);
 
   /**
    * Projects

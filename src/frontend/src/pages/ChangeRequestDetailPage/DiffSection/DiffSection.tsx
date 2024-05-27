@@ -21,8 +21,6 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
   const { wbsNum, projectProposedChanges, workPackageProposedChanges } = changeRequest;
   const isOnProject = isProject(wbsNum);
 
-  console.log('test: ', projectProposedChanges?.carNumber);
-
   const changeRequestAction: ChangeRequestAction =
     projectProposedChanges && projectProposedChanges.carNumber !== undefined
       ? ChangeRequestAction.CREATE_PROJECT

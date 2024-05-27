@@ -26,7 +26,6 @@ const CreateTeamTypeModal: React.FC<CreateTeamTypeModalProps> = ({ showModal, ha
 
   const onSubmit = async (data: CreateTeamTypePayload) => {
     try {
-      console.log(data);
       await mutateAsync(data);
     } catch (error: unknown) {
       if (error instanceof Error) {

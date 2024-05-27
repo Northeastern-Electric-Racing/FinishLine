@@ -113,7 +113,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         descriptionBullets,
         links,
         leadId,
-        managerId
+        managerId,
+        workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: project.wbsNum,
