@@ -11,8 +11,8 @@ import {
   MaterialType,
   Project,
   Unit,
-  WbsNumber,
-  wbsPipe
+  wbsPipe,
+  WbsNumber
 } from 'shared';
 import projectQueryArgs from '../prisma-query-args/projects.query-args';
 import prisma from '../prisma/prisma';
