@@ -195,16 +195,8 @@ export default class ChangeRequestsService {
             create: {
               name: foundCR.wbsElement.name,
               status: foundCR.wbsElement.status,
-              lead: {
-                connect: {
-                  userId: foundCR.wbsElement.leadId ?? undefined
-                }
-              },
-              manager: {
-                connect: {
-                  userId: foundCR.wbsElement.managerId ?? undefined
-                }
-              },
+              leadId: foundCR.wbsElement.leadId,
+              managerId: foundCR.wbsElement.managerId,
               links: {
                 connect: foundCR.wbsElement.links.map((link) => ({
                   linkId: link.linkId
@@ -254,7 +246,7 @@ export default class ChangeRequestsService {
         await applyWorkPackageProposedChanges(
           wbsProposedChanges,
           workPackageProposedChanges,
-          associatedProject,
+          associatedProject?.wbsElementId ?? null,
           associatedWorkPackage,
           reviewer,
           foundCR.crId,
@@ -777,11 +769,6 @@ export default class ChangeRequestsService {
                 create: validationResult.workPackageProposedChanges.map((workPackage) => ({
                   wbsProposedChanges: {
                     create: {
-                      scopeChangeRequest: {
-                        connect: {
-                          scopeCrId: createdCR.scopeChangeRequest!.scopeCrId
-                        }
-                      },
                       name: workPackage.originalElement.name,
                       status: WBS_Element_Status.INACTIVE,
                       proposedDescriptionBulletChanges: {

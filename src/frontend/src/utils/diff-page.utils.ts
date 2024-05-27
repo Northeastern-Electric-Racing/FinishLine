@@ -26,8 +26,7 @@ export type ProposedChangeValue =
   | DescriptionBullet[]
   | Link[]
   | Date
-  | WbsNumber[]
-  | WorkPackageProposedChanges[];
+  | WbsNumber[];
 
 export interface ChangeBullet {
   label: string;
@@ -60,7 +59,7 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     return detail as string[];
   } else if ('teamName' in testVal) {
     return (detail as TeamPreview[]).map((team) => team.teamName);
-  } else if ('id' in testVal) {
+  } else if ('userChecked' in testVal) {
     return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
   } else if ('carNumber' in testVal) {
     return (detail as WbsNumber[]).map(wbsPipe);

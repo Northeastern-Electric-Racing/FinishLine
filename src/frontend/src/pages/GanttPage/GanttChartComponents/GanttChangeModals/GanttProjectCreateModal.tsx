@@ -7,6 +7,7 @@ import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } fr
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
+import { useAllTeams } from '../../../../hooks/teams.hooks';
 
 interface GanttProjectCreateModalProps {
   change: RequestEventChange;
@@ -19,8 +20,9 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Initialization);
   const [explanationForChange, setExplanationForChange] = useState('');
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
+  const { isLoading: teamsLoading, data } = useAllTeams();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || teamsLoading || !data) return <LoadingIndicator />;
 
   const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
     setReasonForChange(event.target.value as ChangeRequestReason);
@@ -38,6 +40,10 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
     if (!reasonForChange) {
       return;
     }
+
+    const selectedTeam = data.find((team) => team.teamName === change.name);
+
+    const teamIds = selectedTeam ? [selectedTeam.teamId] : [];
 
     const payload: CreateStandardChangeRequestPayload = {
       wbsNum: change.baseWbs,
@@ -58,7 +64,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
         leadId: undefined,
         managerId: undefined,
         links: [],
-        teamIds: [],
+        teamIds,
         carNumber: change.baseWbs.carNumber,
         workPackageProposedChanges: change.workPackageChanges.map((workPackage) => ({
           name: workPackage.name,
@@ -66,7 +72,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
           leadId: undefined,
           managerId: undefined,
           startDate: workPackage.newStart.toLocaleString(),
-          duration: workPackage.duration,
+          duration: workPackage.duration / 1000 / 60 / 60 / 24 / 7,
           blockedBy: [],
           descriptionBullets: [],
           links: []

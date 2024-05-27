@@ -69,6 +69,10 @@ export const isProject = (wbsNum: WbsNumber) => {
   return wbsNum.workPackageNumber === 0 && wbsNum.projectNumber !== 0;
 };
 
+export const isWorkPackage = (wbsNum: WbsNumber) => {
+  return wbsNum.workPackageNumber !== 0;
+};
+
 /**
  * Are the two given WbsNumber equal?
  *
