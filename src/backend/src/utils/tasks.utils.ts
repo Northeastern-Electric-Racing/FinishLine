@@ -61,7 +61,7 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
   // Check if the user created the task
   if (task.createdByUserId === user.userId) return true;
 
-  // Check if the task's wbsElement's projectLead or projectManager created the task
+  // Check if the task's wbsElement's lead or manager created the task
   if (task.wbsElement.leadId === user.userId) return true;
   if (task.wbsElement.managerId === user.userId) return true;
 
@@ -93,7 +93,7 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
  */
 export const sendSlackTaskAssignedNotificationToUsers = async (
   task: Task,
-  assigneeIds: number[],
+  assigneeIds: string[],
   orgainzationId: string
 ) => {
   const assigneeSettings = await prisma.user_Settings.findMany({ where: { userId: { in: assigneeIds } } });

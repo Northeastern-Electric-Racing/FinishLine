@@ -6,7 +6,7 @@ import { fullNamePipe } from './pipes';
  * @param user the user info to be displayed in autocomplte option
  * @returns the autocomplete option with label and id
  */
-export const userToAutocompleteOption = (user: User): { label: string; id: number } => {
+export const userToAutocompleteOption = (user: User): { label: string; id: string } => {
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
 };
 

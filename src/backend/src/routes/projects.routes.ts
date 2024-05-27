@@ -44,7 +44,7 @@ projectRouter.post(
 );
 projectRouter.post(
   '/edit',
-  intMinZero(body('projectId')),
+  nonEmptyString(body('projectId')),
   intMinZero(body('budget')),
   ...projectValidators,
   validateInputs,
@@ -66,11 +66,17 @@ projectRouter.post(
 projectRouter.delete('/bom/manufacturer/:manufacturerName/delete', ProjectsController.deleteManufacturer);
 projectRouter.get('/bom/manufacturer', ProjectsController.getAllManufacturers);
 projectRouter.get('/bom/material-type', ProjectsController.getAllMaterialTypes);
-projectRouter.post('/bom/material-type/create', nonEmptyString(body('name')), ProjectsController.createMaterialType);
+projectRouter.post(
+  '/bom/material-type/create',
+  nonEmptyString(body('name')),
+  validateInputs,
+  ProjectsController.createMaterialType
+);
 projectRouter.post(
   '/bom/assembly/:wbsNum/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('pdmFileName').optional()),
+  validateInputs,
   ProjectsController.createAssembly
 );
 projectRouter.post(
@@ -129,7 +135,7 @@ projectRouter.delete('/bom/material-type/:materialTypeId/delete', ProjectsContro
 projectRouter.delete('/bom/assembly/:assemblyId/delete', ProjectsController.deleteAssembly);
 projectRouter.post('/bom/material/:materialId/delete', ProjectsController.deleteMaterial);
 
-projectRouter.post('/bom/units/create', nonEmptyString(body('name')), ProjectsController.createUnit);
+projectRouter.post('/bom/units/create', nonEmptyString(body('name')), validateInputs, ProjectsController.createUnit);
 projectRouter.get('/bom/units', ProjectsController.getAllUnits);
 
 projectRouter.delete('/bom/units/:unitId/delete', ProjectsController.deleteUnit);

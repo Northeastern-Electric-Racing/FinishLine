@@ -156,7 +156,7 @@ export default class WorkPackagesService {
   static async createWorkPackage(
     user: User,
     name: string,
-    crId: number,
+    crId: string,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
@@ -292,22 +292,22 @@ export default class WorkPackagesService {
    * @param duration the new duration of this work package, in weeks
    * @param blockedBy the new WBS elements to be completed before this WP
    * @param descriptionBullets the new description bullets associated with this WP
-   * @param projectLeadId the new lead for this work package
-   * @param projectManagerId the new manager for this work package
+   * @param leadId the new lead for this work package
+   * @param managerId the new manager for this work package
    * @param organizationId the id of the organization that the user is currently in
    */
   static async editWorkPackage(
     user: User,
-    workPackageId: number,
+    workPackageId: string,
     name: string,
-    crId: number,
+    crId: string,
     stage: WorkPackageStage | null,
     startDate: string,
     duration: number,
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
-    projectLeadId: number,
-    projectManagerId: number,
+    leadId: string,
+    managerId: string,
     organizationId: string
   ): Promise<WorkPackage> {
     const { userId } = user;
@@ -351,9 +351,9 @@ export default class WorkPackagesService {
       originalWorkPackage.blockedBy,
       blockedByElems,
       originalWorkPackage.wbsElement.managerId,
-      projectManagerId,
+      leadId,
       originalWorkPackage.wbsElement.leadId,
-      projectLeadId,
+      managerId,
       originalWorkPackage.wbsElement.descriptionBullets,
       descriptionBullets,
       crId,
@@ -380,8 +380,8 @@ export default class WorkPackagesService {
         wbsElement: {
           update: {
             name,
-            leadId: projectLeadId,
-            managerId: projectManagerId,
+            leadId,
+            managerId,
             status
           }
         },
@@ -740,9 +740,9 @@ export default class WorkPackagesService {
       '',
       descriptionBulletsToChangeListValues(originalWorkPackageTemplate.descriptionBullets),
       descriptionBullets.map(descriptionBulletToChangeListValue),
-      0,
-      0,
-      0
+      '',
+      '',
+      ''
     );
 
     const updatedWorkPackageTemplate = await prisma.work_Package_Template.update({

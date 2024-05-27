@@ -34,7 +34,7 @@ export default class TasksService {
     deadline: Date,
     priority: Task_Priority,
     status: Task_Status,
-    assignees: number[],
+    assignees: string[],
     organizationId: string
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
@@ -63,7 +63,7 @@ export default class TasksService {
     if (!teams || teams.length === 0)
       throw new HttpException(400, 'This project needs to be assigned to a team to create a task!');
 
-    const isProjectLeadOrManager =
+    const isLeadOrManager =
       createdBy.userId === requestedWbsElement.leadId || createdBy.userId === requestedWbsElement.managerId;
 
     const curWorkPackages = project.workPackages;
@@ -74,7 +74,7 @@ export default class TasksService {
 
     if (
       !(await userHasPermission(createdBy.userId, organizationId, isLeadership)) &&
-      !isProjectLeadOrManager &&
+      !isLeadOrManager &&
       !isWorkPackageLeadOrManager &&
       !teams.some((team) => isUserOnTeam(team, createdBy))
     ) {
@@ -192,7 +192,7 @@ export default class TasksService {
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, any of the assignees don't exist, or if the user does not have permissions
    */
-  static async editTaskAssignees(user: User, taskId: string, assignees: number[], organizationId: string): Promise<Task> {
+  static async editTaskAssignees(user: User, taskId: string, assignees: string[], organizationId: string): Promise<Task> {
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({
       where: { taskId },

@@ -19,7 +19,7 @@ The Ravens played the Super Bowl XLVII against the San Francisco 49ers. Baltimor
 const meanGirlsDescription = `
 Mean Girls is a 2004 American teen comedy film. This team helps test slackbot stuff through the #slackbot_land channel.`;
 
-const ravens = (headId: number, organizationId: string): Prisma.TeamCreateArgs => {
+const ravens = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Ravens',
@@ -31,7 +31,7 @@ const ravens = (headId: number, organizationId: string): Prisma.TeamCreateArgs =
   };
 };
 
-const orioles = (headId: number, organizationId: string): Prisma.TeamCreateArgs => {
+const orioles = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Orioles',
@@ -43,7 +43,7 @@ const orioles = (headId: number, organizationId: string): Prisma.TeamCreateArgs 
   };
 };
 
-const justiceLeague = (headId: number, organizationId: string): Prisma.TeamCreateArgs => {
+const justiceLeague = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Justice League',
@@ -54,7 +54,7 @@ const justiceLeague = (headId: number, organizationId: string): Prisma.TeamCreat
   };
 };
 
-const avatarBenders = (headId: number, teamTypeId: string, organizationId: string): Prisma.TeamCreateArgs => {
+const avatarBenders = (headId: string, teamTypeId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Avatar: The Last Airbender',
@@ -66,7 +66,7 @@ const avatarBenders = (headId: number, teamTypeId: string, organizationId: strin
   };
 };
 
-const plLegends = (headId: number, organizationId: string): Prisma.TeamCreateArgs => {
+const plLegends = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'PlTeams',
@@ -77,7 +77,7 @@ const plLegends = (headId: number, organizationId: string): Prisma.TeamCreateArg
   };
 };
 
-const huskies = (headId: number, teamTypeId: string, organizationId: string): Prisma.TeamCreateArgs => {
+const huskies = (headId: string, teamTypeId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Huskies',
@@ -91,18 +91,19 @@ const huskies = (headId: number, teamTypeId: string, organizationId: string): Pr
   };
 };
 
-const financeTeam = (headId: number, organizationId: string): Prisma.TeamCreateArgs => {
+const financeTeam = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'financeTeam',
       slackId: 'finance',
       headId,
-      organizationId
+      organizationId,
+      financeTeam: true
     }
   };
 };
 
-const meanGirls = (headId: number, organizationId: string): Prisma.TeamCreateArgs => {
+const meanGirls = (headId: string, organizationId: string): Prisma.TeamCreateArgs => {
   return {
     data: {
       teamName: 'Slack Bot Testing',

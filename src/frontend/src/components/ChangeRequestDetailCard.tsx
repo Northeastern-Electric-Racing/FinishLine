@@ -47,10 +47,10 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
         ) : isActivation ? (
           <div>
             <Typography variant="body1" fontSize={14}>
-              Lead: {fullNamePipe((cr as ActivationChangeRequest).projectLead)}
+              Lead: {fullNamePipe((cr as ActivationChangeRequest).lead)}
             </Typography>
             <Typography variant="body1" fontSize={14}>
-              Manager: {fullNamePipe((cr as ActivationChangeRequest).projectManager)}
+              Manager: {fullNamePipe((cr as ActivationChangeRequest).manager)}
             </Typography>
           </div>
         ) : isStageGate ? (

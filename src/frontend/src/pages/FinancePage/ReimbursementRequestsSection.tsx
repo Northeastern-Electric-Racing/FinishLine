@@ -122,7 +122,7 @@ const ReimbursementRequestTable = ({
           <TableHead>
             <TableRow>
               {headCells.map(
-                (headCell, i) =>
+                (headCell) =>
                   (tabValue === 1 || (headCell.id !== 'submitter' && headCell.id !== 'refundSource')) && (
                     <ColumnHeader
                       id={headCell.id}

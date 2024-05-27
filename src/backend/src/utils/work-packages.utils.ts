@@ -19,10 +19,10 @@ export const calculateWorkPackageProgress = (
  */
 export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>) => {
   // track the wbs element ids we've seen so far so we don't update the same one multiple times
-  const seenWbsElementIds: Set<number> = new Set<number>([initialWorkPackage.wbsElement.wbsElementId]);
+  const seenWbsElementIds: Set<string> = new Set<string>([initialWorkPackage.wbsElement.wbsElementId]);
 
   // blocking ids that still need to be updated
-  const blockingUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
+  const blockingUpdateQueue: string[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
   const blockingWorkPackages: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>[] = [];
   while (blockingUpdateQueue.length > 0) {
     const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
@@ -49,7 +49,7 @@ export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_Pa
     if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
 
     // get all the blockings of the current wbs and add them to the queue to update
-    const newBlocking: number[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
+    const newBlocking: string[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
     blockingUpdateQueue.push(...newBlocking);
     blockingWorkPackages.push(currWbs.workPackage);
   }

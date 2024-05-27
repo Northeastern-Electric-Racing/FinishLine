@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 export type AuthUserQueryArgs = ReturnType<typeof getAuthUserQueryArgs>;
 
 export const getAuthUserQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.UserArgs>()({
+  Prisma.validator<Prisma.UserDefaultArgs>()({
     include: {
       userSettings: true,
       teamsAsHead: {

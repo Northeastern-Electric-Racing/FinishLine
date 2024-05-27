@@ -27,7 +27,7 @@ export const rulesToObject = (rules: string[]) =>
 
 // transforms the bullets made by react-hook-forms to the objects needed for the payload to the backend
 export const mapBulletsToPayload = (
-  ls: { bulletId: number; detail: string; type: string }[]
+  ls: { bulletId: string; detail: string; type: string }[]
 ): DescriptionBulletPreview[] => {
   return ls.map((ele) => {
     return { id: ele.bulletId, detail: ele.detail, type: ele.type };

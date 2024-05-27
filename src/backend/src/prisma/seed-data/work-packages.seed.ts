@@ -17,16 +17,16 @@ import { WorkPackageQueryArgs } from '../../prisma-query-args/work-packages.quer
 export const seedWorkPackage = async (
   creator: User,
   name: string,
-  changeRequestId: number,
+  changeRequestId: string,
   stage: WorkPackageStage | null,
   startDate: string,
   duration: number,
   blockedBy: WbsNumber[],
   descriptionBullets: DescriptionBulletPreview[],
   editor: User,
-  status: WbsElementStatus,
-  lead: number,
-  manager: number,
+  _status: WbsElementStatus,
+  lead: string,
+  manager: string,
   organizationId: string
 ): Promise<{
   workPackageWbsNumber: WbsNumber;

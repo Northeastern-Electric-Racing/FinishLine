@@ -30,7 +30,7 @@ import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
 
 interface AppAuthenticatedProps {
-  userId: number;
+  userId: string;
   userRole: Role;
 }
 
