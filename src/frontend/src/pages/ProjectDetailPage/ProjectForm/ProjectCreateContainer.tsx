@@ -59,7 +59,7 @@ const ProjectCreateContainer: React.FC = () => {
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
     // TODO update upper bound here once new car model is made
-    carNumber: yup.number().min(0).max(3).required('A car number is required!'),
+    carNumber: yup.number().min(0).required('A car number is required!'),
     teamIds: yup.array().of(yup.string()).required('Teams are required'),
     budget: yup.number().optional(),
     summary: yup.string().required('Summary is required!'),
@@ -79,6 +79,9 @@ const ProjectCreateContainer: React.FC = () => {
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
     const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, type, what, why } = data;
 
+    // Car number could be zero and a truthy check would fail
+    if (carNumber === undefined) throw new Error('Car number is required!');
+
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
         name,
@@ -93,7 +96,6 @@ const ProjectCreateContainer: React.FC = () => {
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
-          // TODO change this to use the car model when we add it to the schema
           carNumber,
           projectNumber: 0,
           workPackageNumber: 0
@@ -116,13 +118,16 @@ const ProjectCreateContainer: React.FC = () => {
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links, crId, teamIds, carNumber, descriptionBullets } = data;
 
+    // Car number could be zero and a truthy check would fail
+    if (carNumber === undefined) throw new Error('Car number is required!');
+
     try {
       const payload: CreateSingleProjectPayload = {
         crId,
         name,
         carNumber,
         summary,
-        teamIds: teamIds.map((number) => '' + number),
+        teamIds,
         budget,
         descriptionBullets,
         links,

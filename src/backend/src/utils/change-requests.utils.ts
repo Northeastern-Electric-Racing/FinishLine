@@ -234,7 +234,8 @@ export const validateProposedChangesFields = async (
   });
 
   let foundCarId = undefined;
-  if (carNumber) {
+  // Car number could be zero and a truthy check would fail
+  if (carNumber !== undefined) {
     const carWbs = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {

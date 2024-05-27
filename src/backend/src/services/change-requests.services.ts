@@ -716,6 +716,8 @@ export default class ChangeRequestsService {
       const { name, leadId, managerId, links, budget, summary, teamIds, descriptionBullets, carNumber } =
         projectProposedChanges;
 
+      console.log(carNumber);
+
       const validationResult = await validateProposedChangesFields(
         links,
         descriptionBullets,
@@ -732,7 +734,9 @@ export default class ChangeRequestsService {
         }
       }
 
-      await prisma.wbs_Proposed_Changes.create({
+      console.log('validationResult', validationResult);
+
+      const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: {
             connect: {
@@ -741,8 +745,6 @@ export default class ChangeRequestsService {
           },
           name,
           status: WBS_Element_Status.ACTIVE,
-          lead: { connect: { userId: leadId } },
-          manager: { connect: { userId: managerId } },
           links: {
             create: validationResult.links.map((linkInfo) => ({
               url: linkInfo.url,
@@ -766,6 +768,14 @@ export default class ChangeRequestsService {
           }
         }
       });
+
+      await prisma.wbs_Proposed_Changes.update({
+        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+        data: {
+          leadId,
+          managerId
+        }
+      });
     } else if (workPackageProposedChanges) {
       const { name, leadId, managerId, duration, startDate, stage, descriptionBullets, blockedBy } =
         workPackageProposedChanges;
@@ -781,13 +791,11 @@ export default class ChangeRequestsService {
 
       await validateBlockedBys(blockedBy, organizationId);
 
-      await prisma.wbs_Proposed_Changes.create({
+      const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
           scopeChangeRequest: { connect: { scopeCrId: createdCR.scopeChangeRequest!.scopeCrId } },
           name,
           status: WBS_Element_Status.INACTIVE,
-          lead: { connect: { userId: leadId } },
-          manager: { connect: { userId: managerId } },
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
@@ -811,6 +819,14 @@ export default class ChangeRequestsService {
               }
             }
           }
+        }
+      });
+
+      await prisma.wbs_Proposed_Changes.update({
+        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+        data: {
+          leadId,
+          managerId
         }
       });
     }

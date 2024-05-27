@@ -66,7 +66,7 @@ export const validateWBS = (wbsNum: string): WbsNumber => {
  * @param wbsNum WBS number to check
  */
 export const isProject = (wbsNum: WbsNumber) => {
-  return wbsNum.workPackageNumber === 0;
+  return wbsNum.workPackageNumber === 0 && wbsNum.projectNumber !== 0;
 };
 
 /**
