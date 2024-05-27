@@ -41,7 +41,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       return;
     }
 
-    const selectedTeam = data.find((team) => team.teamName === change.name);
+    const selectedTeam = data.find((team) => team.teamName === change.teamName);
 
     const teamIds = selectedTeam ? [selectedTeam.teamId] : [];
 
