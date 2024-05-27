@@ -63,8 +63,10 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
   } else if ('carNumber' in testVal) {
     return (detail as WbsNumber[]).map(wbsPipe);
+  } else if ('linkType' in testVal) {
+    return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
   }
-  return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
+  return '';
 };
 
 export enum PotentialChangeType {
