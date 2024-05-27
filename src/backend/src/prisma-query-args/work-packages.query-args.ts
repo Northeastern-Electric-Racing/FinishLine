@@ -12,7 +12,11 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
       project: {
         include: {
           wbsElement: true,
-          teams: getTeamQueryArgs(organizationId)
+          teams: {
+            include: {
+              teamType: true
+            }
+          }
         }
       },
       wbsElement: {
