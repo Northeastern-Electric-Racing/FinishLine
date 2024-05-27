@@ -73,7 +73,7 @@ changeRequestsRouter.post(
   body('proposedSolutions.*.timelineImpact').isInt(),
   body('proposedSolutions.*.budgetImpact').isInt(),
   ...projectProposedChangesValidators,
-  ...workPackageProposedChangesValidators,
+  ...workPackageProposedChangesValidators('workPackageProposedChanges'),
   validateInputs,
   ChangeRequestsController.createStandardChangeRequest
 );

@@ -14,7 +14,10 @@ import WorkPackageSummary from './WorkPackageSummary';
 import DetailDisplay from '../../../components/DetailDisplay';
 import LinkView from '../../../components/Link/LinkView';
 import GroupIcon from '@mui/icons-material/Group';
-import { getProjectTeamsName } from '../../../utils/gantt.utils';
+
+export const getProjectTeamsName = (project: Project): string => {
+  return project.teams.map((team) => team.teamName).join(', ');
+};
 
 interface ProjectDetailsProps {
   project: Project;
