@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
 import { getTaskQueryArgs } from './tasks.query-args';
 import { getDescriptionBulletQueryArgs } from './description-bullets.query-args';
-import { getTeamQueryArgs } from './teams.query-args';
 
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 
