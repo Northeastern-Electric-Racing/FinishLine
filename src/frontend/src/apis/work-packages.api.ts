@@ -135,3 +135,12 @@ export const getAllWorkPackageTemplates = () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Delete a work package template.
+ *
+ * @param workPackageTemplateId The work package template id to be deleted.
+ */
+export const deleteWorkPackageTemplate = (workPackageTemplateId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.workPackageTemplateDelete(workPackageTemplateId));
+};

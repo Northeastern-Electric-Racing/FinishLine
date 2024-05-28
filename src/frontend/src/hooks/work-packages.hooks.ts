@@ -17,7 +17,8 @@ import {
   WorkPackageApiInputs,
   WorkPackageTemplateApiInputs,
   editWorkPackageTemplate,
-  getAllWorkPackageTemplates
+  getAllWorkPackageTemplates,
+  deleteWorkPackageTemplate
 } from '../apis/work-packages.api';
 
 /**
@@ -156,4 +157,23 @@ export const useAllWorkPackageTemplates = () => {
     const { data } = await getAllWorkPackageTemplates();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to delete a work package template.
+ */
+export const useDeleteWorkPackageTemplate = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string>(
+    ['work package template', 'delete'],
+    async (workPackageTemplateId: string) => {
+      const { data } = await deleteWorkPackageTemplate(workPackageTemplateId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work package template']);
+      }
+    }
+  );
 };

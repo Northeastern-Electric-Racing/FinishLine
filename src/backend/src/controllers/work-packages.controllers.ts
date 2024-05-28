@@ -241,4 +241,18 @@ export default class WorkPackagesController {
       next(error);
     }
   }
+
+  // Delete a work package template that corresponds to the given workPackageTemplateId
+  static async deleteWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const { workPackageTemplateId } = req.params;
+      const organizationId = getOrganizationId(req.headers);
+
+      await WorkPackagesService.deleteWorkPackageTemplate(user, workPackageTemplateId, organizationId);
+      res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

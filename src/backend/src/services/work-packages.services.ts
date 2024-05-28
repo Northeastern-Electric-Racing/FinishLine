@@ -765,4 +765,65 @@ export default class WorkPackagesService {
 
     return workPackageTemplateTransformer(updatedWorkPackageTemplate);
   }
+
+  /**
+   * Deletes the Work Package
+   * @param submitter The user who deleted the work package
+   * @param wbsNum The work package number to be deleted
+   * @param organizationId The organization id that the user is in
+   */
+  static async deleteWorkPackageTemplate(
+    submitter: User,
+    workPackageTemplateId: string,
+    organizationId: string
+  ): Promise<void> {
+    // Verify submitter is allowed to delete work packages
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete work package template');
+
+    const workPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
+      submitter,
+      workPackageTemplateId,
+      organizationId
+    );
+
+    if (!workPackageTemplate) {
+      throw new NotFoundException('Work Package Template', workPackageTemplateId);
+    }
+
+    // const workPackageBlockedBy = await prisma.work_Package_Template.findFirst({
+    //   where: {
+    //     blockedBy: {
+    //       some: {
+    //         blockedBy: workPackageTemplate
+    //       }
+    //     }
+    //   }
+    // });
+
+    // if (workPackageBlockedBy) {
+    //   throw new HttpException(
+    //     400,
+    //     'cannot delete a work package template that referenced as a blocked by in another template'
+    //   );
+    // }
+
+    const dateDeleted = new Date();
+
+    // Soft delete the work package template by updating its related "deleted" fields
+    await prisma.work_Package_Template.update({
+      where: {
+        workPackageTemplateId
+      },
+      data: {
+        dateDeleted,
+        userDeleted: {
+          connect: {
+            userId: submitter.userId
+          }
+        }
+      },
+      ...getWorkPackageTemplateQueryArgs(organizationId)
+    });
+  }
 }

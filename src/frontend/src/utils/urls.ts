@@ -157,6 +157,8 @@ const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPacka
 const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
 const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
+const workPackageTemplateDelete = (workPackageTemplateId: string) =>
+  `${workPackageTemplatesById(workPackageTemplateId)}/delete}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -285,6 +287,6 @@ export const apiUrls = {
   workPackageTemplatesById,
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
-
+  workPackageTemplateDelete,
   version
 };

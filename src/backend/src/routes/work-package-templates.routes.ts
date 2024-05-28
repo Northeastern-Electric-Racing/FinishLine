@@ -42,4 +42,6 @@ workPackageTemplatesRouter.post(
   WorkPackagesController.createWorkPackageTemplate
 );
 
+workPackageTemplatesRouter.delete('/:workPackageTemplateId/delete', WorkPackagesController.deleteWorkPackageTemplate);
+
 export default workPackageTemplatesRouter;
