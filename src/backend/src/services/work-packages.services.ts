@@ -402,8 +402,6 @@ export default class WorkPackagesService {
       updatedWorkPackage.duration -
       originalWorkPackage.duration;
 
-    console.log('timelineImpact', timelineImpact);
-
     await updateBlocking(updatedWorkPackage, timelineImpact, crId, user);
 
     // Update any deleted description bullets to have their date deleted as right now
