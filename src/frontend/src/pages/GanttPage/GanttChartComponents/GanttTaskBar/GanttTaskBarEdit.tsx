@@ -11,7 +11,7 @@ import { addDays, differenceInDays } from 'date-fns';
 import { DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useId from '@mui/material/utils/useId';
 import useMeasure from 'react-use-measure';
-import AddWorkPackageModal from '../../AddWorkPackageModal';
+import AddWorkPackageModal from '../AddWorkPackageModal';
 import { WbsElementStatus } from 'shared';
 
 const GanttTaskBarEdit = ({

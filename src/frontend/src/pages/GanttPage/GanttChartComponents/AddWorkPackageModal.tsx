@@ -3,8 +3,8 @@ import { FormControl, FormHelperText, FormLabel, MenuItem, TextField } from '@mu
 import { Controller, useForm } from 'react-hook-form';
 import { WorkPackageStage } from 'shared';
 import * as yup from 'yup';
-import NERFormModal from '../../components/NERFormModal';
-import ReactHookTextField from '../../components/ReactHookTextField';
+import NERFormModal from '../../../components/NERFormModal';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 
 const schema = yup.object().shape({
   name: yup.string().required('Work Package name is Required')

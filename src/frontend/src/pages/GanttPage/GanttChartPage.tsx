@@ -33,6 +33,7 @@ import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { GanttRequestChangeModal } from './GanttChartComponents/GanttChangeModals/GanttRequestChangeModal';
+import { useGetAllCars } from '../../hooks/cars.hooks';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -48,6 +49,7 @@ const GanttChartPage: FC = () => {
     data: teamTypes,
     error: teamTypesError
   } = useAllTeamTypes();
+  const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
@@ -85,11 +87,21 @@ const GanttChartPage: FC = () => {
     teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
   });
 
-  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
+  if (
+    projectsIsLoading ||
+    teamTypesIsLoading ||
+    teamsIsLoading ||
+    !teams ||
+    !projects ||
+    !teamTypes ||
+    carsIsLoading ||
+    !cars
+  )
     return <LoadingIndicator />;
   if (projectsIsError) return <ErrorPage message={projectsError.message} />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
+  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
   const carHandlerFn = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -125,11 +137,14 @@ const GanttChartPage: FC = () => {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked: boolean;
-  }[] = [
-    { filterLabel: 'None', handler: carHandlerFn(0), defaultChecked: defaultGanttFilters.showCars.includes(0) },
-    { filterLabel: 'Car 1', handler: carHandlerFn(1), defaultChecked: defaultGanttFilters.showCars.includes(1) },
-    { filterLabel: 'Car 2', handler: carHandlerFn(2), defaultChecked: defaultGanttFilters.showCars.includes(2) }
-  ];
+  }[] = cars.map((car) => {
+    const carNum = car.wbsNum.carNumber;
+    return {
+      filterLabel: carNum === 0 ? 'None' : `Car ${carNum}`,
+      handler: carHandlerFn(carNum),
+      defaultChecked: defaultGanttFilters.showCars.includes(carNum)
+    };
+  });
 
   const teamTypeHandlers: {
     filterLabel: string;
