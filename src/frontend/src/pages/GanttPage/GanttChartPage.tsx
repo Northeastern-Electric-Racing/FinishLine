@@ -20,7 +20,6 @@ import {
   EventChange,
   RequestEventChange,
   aggregateGanttChanges,
-  getProjectsTeamNames
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -225,7 +224,7 @@ const GanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const teamList = Array.from(getProjectsTeamNames(projects));
+  const teamList = Array.from(teams.map((team) => team.teamName));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   const saveChanges = (eventChanges: EventChange[]) => {
