@@ -116,6 +116,7 @@ const GanttTaskBarEdit = ({
             projectId: event.id,
             projectNumber: event.projectNumber,
             carNumber: event.carNumber,
+            stage: workPackage.stage,
             styles: {
               color: GanttWorkPackageTextColorPipe(workPackage.stage),
               backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, WbsElementStatus.Inactive)
