@@ -769,9 +769,9 @@ export default class WorkPackagesService {
   }
 
   /**
-   * Deletes the Work Package
+   * Deletes the Work Package template
    * @param submitter The user who deleted the work package
-   * @param wbsNum The work package number to be deleted
+   * @param workPackageTemplateId The id of the work package template to be deleted
    * @param organizationId The organization id that the user is in
    */
   static async deleteWorkPackageTemplate(
@@ -800,14 +800,29 @@ export default class WorkPackagesService {
       throw new DeletedException('Work Package Template', workPackageTemplateId);
     }
 
-    if (workPackageTemplate.blocking.length > 0) {
-      throw new HttpException(
-        400,
-        'Cannot delete a work package template that referenced as a blocked by in another template'
-      );
+    if (workPackageTemplate.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Work Package Template');
     }
 
     const dateDeleted = new Date();
+
+    if (workPackageTemplate.blocking.length > 0) {
+      for (const template of workPackageTemplate.blocking) {
+        await prisma.work_Package_Template.update({
+          where: {
+            workPackageTemplateId: template.workPackageTemplateId
+          },
+          data: {
+            dateDeleted,
+            userDeleted: {
+              connect: {
+                userId: submitter.userId
+              }
+            }
+          }
+        });
+      }
+    }
 
     // Soft delete the work package template by updating its related "deleted" fields
     await prisma.work_Package_Template.update({
@@ -821,8 +836,7 @@ export default class WorkPackagesService {
             userId: submitter.userId
           }
         }
-      },
-      ...getWorkPackageTemplateQueryArgs(organizationId)
+      }
     });
   }
 }

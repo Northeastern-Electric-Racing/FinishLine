@@ -261,18 +261,14 @@ const performSeed: () => Promise<void> = async () => {
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
 
-  /** If the .env file exists, set the FINANCE_TEAM_ID */
-  if (currentEnv) {
-    currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
-    currentEnv.DEV_ORGANIZATION_ID = organizationId;
+  currentEnv.DEV_ORGANIZATION_ID = organizationId;
 
-    /** Write the new .env file */
-    let stringifiedEnv = '';
-    Object.keys(currentEnv).forEach((key) => {
-      stringifiedEnv += `${key}=${currentEnv[key]}\n`;
-    });
-    writeFileSync('.env', stringifiedEnv);
-  }
+  /** Write the new .env file with the organization ID */
+  let stringifiedEnv = '';
+  Object.keys(currentEnv).forEach((key) => {
+    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  });
+  writeFileSync('.env', stringifiedEnv);
 
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
