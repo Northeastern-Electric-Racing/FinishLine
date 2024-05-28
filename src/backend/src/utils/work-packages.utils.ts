@@ -58,20 +58,22 @@ export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_Pa
 };
 
 // TODO: I can't find the proper prisma type for this like you did above
-interface WorkPackageTemplateWithBlocking extends Work_Package_Template{
-  blocking: Work_Package_Template[]
+interface WorkPackageTemplateWithBlocking extends Work_Package_Template {
+  blocking: Work_Package_Template[];
 }
 
 export const deleteBlockingTemplates = async (workPackageTemplate: WorkPackageTemplateWithBlocking, submitter: User) => {
   const seenWorkPackageTemplateIds: Set<string> = new Set<string>(workPackageTemplate.workPackageTemplateId);
 
   // blocking ids that still need to be updated
-  const blockingIdUpdateQueue: string[] = workPackageTemplate.blocking.map((blocking: Work_Package_Template) => blocking.workPackageTemplateId);
+  const blockingIdUpdateQueue: string[] = workPackageTemplate.blocking.map(
+    (blocking: Work_Package_Template) => blocking.workPackageTemplateId
+  );
 
   while (blockingIdUpdateQueue.length > 0) {
     const currentBlockingId = blockingIdUpdateQueue.pop();
 
-    if (!currentBlockingId) break; 
+    if (!currentBlockingId) break;
     if (seenWorkPackageTemplateIds.has(currentBlockingId)) continue; // if we've already seen it we skip it
 
     seenWorkPackageTemplateIds.add(currentBlockingId);
