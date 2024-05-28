@@ -1012,9 +1012,11 @@ export default class ChangeRequestsService {
     const reviewers = await getUsersWithSettings(userIds);
 
     // check if any reviewers' role is below leadership
-    const underLeads = reviewers.filter(
-      async (user) => !(await userHasPermission(user.userId, organizationId, isLeadership))
-    );
+    const underLeadsPromises = reviewers.map(async (user) => {
+      return { ...user, underLead: !(await userHasPermission(user.userId, organizationId, isLeadership)) };
+    });
+
+    const underLeads = (await Promise.all(underLeadsPromises)).filter((reviewer) => reviewer.underLead);
 
     if (underLeads.length > 0) {
       const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);
