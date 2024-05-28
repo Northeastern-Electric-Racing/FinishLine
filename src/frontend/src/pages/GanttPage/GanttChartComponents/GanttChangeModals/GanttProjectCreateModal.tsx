@@ -22,8 +22,6 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
   const { isLoading: teamsLoading, data } = useAllTeams();
 
-  console.log(change);
-
   const startDate = change.workPackageChanges.reduce((earliest, current) => {
     return current.newStart < earliest ? current.newStart : earliest;
   }, change.workPackageChanges[0].newStart);
