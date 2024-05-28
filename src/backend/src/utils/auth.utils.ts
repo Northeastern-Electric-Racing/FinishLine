@@ -101,7 +101,6 @@ const notificationEndpointAuth = (req: Request, res: Response, next: NextFunctio
  */
 export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
-  console.log(userId);
 
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) throw new NotFoundException('User', userId);

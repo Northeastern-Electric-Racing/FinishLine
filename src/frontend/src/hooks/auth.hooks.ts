@@ -16,7 +16,6 @@ export const useProvideAuth = () => {
   const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
 
   const devSignin = async (userId: string) => {
-    console.log('devSignin', userId);
     const user = await mutateAsyncDev(userId);
     setUser(user);
     localStorage.setItem('devUserId', userId.toString());
