@@ -428,13 +428,12 @@ export default class ProjectsController {
 
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { linkId } = req.params;
-      const { iconName, required, linkTypeName } = req.body;
+      const { linkTypeName } = req.params;
+      const { iconName, required } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
       const linkTypeUpdated = await ProjectsService.editLinkType(
-        linkId,
         linkTypeName,
         iconName,
         required,

@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { EditDesignReviewPayload } from '../hooks/design-reviews.hooks';
+import { CreateTeamTypePayload, EditDesignReviewPayload } from '../hooks/design-reviews.hooks';
 import axios from '../utils/axios';
 import { DesignReview } from 'shared';
 import { apiUrls } from '../utils/urls';
@@ -30,9 +30,13 @@ export const getAllDesignReviews = () => {
  * Gets all the team types
  */
 export const getAllTeamTypes = () => {
-  return axios.get(apiUrls.teamTypes(), {
+  return axios.get(apiUrls.allTeamTypes(), {
     transformResponse: (data) => JSON.parse(data)
   });
+};
+
+export const createTeamType = async (payload: CreateTeamTypePayload) => {
+  return axios.post(apiUrls.teamTypesCreate(), payload);
 };
 
 /**
