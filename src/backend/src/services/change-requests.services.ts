@@ -231,14 +231,7 @@ export default class ChangeRequestsService {
                         startDate: associatedWorkPackage.startDate,
                         duration: associatedWorkPackage.duration,
                         blockedBy: {
-                          connect: associatedWorkPackage.blockedBy.map((wbsElement) => ({
-                            wbsNumber: {
-                              carNumber: wbsElement.carNumber,
-                              projectNumber: wbsElement.projectNumber,
-                              workPackageNumber: wbsElement.workPackageNumber,
-                              organizationId: wbsElement.organizationId
-                            }
-                          }))
+                          connect: associatedWorkPackage.blockedBy.map((wbsNumber) => ({ wbsNumber }))
                         },
                         stage: associatedWorkPackage.stage
                       }
@@ -792,9 +785,7 @@ export default class ChangeRequestsService {
                   blockedBy: {
                     connect: workPackage.validatedBlockedBys.map((wbsElement) => ({
                       wbsNumber: {
-                        carNumber: wbsElement.carNumber,
-                        projectNumber: wbsElement.projectNumber,
-                        workPackageNumber: wbsElement.workPackageNumber,
+                        ...wbsElement,
                         organizationId
                       }
                     }))
