@@ -19,7 +19,7 @@ import {
   transformProjectToGanttTask,
   EventChange,
   RequestEventChange,
-  aggregateGanttChanges,
+  aggregateGanttChanges
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
