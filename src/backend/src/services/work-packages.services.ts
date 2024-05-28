@@ -308,8 +308,8 @@ export default class WorkPackagesService {
     duration: number,
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
-    leadId: string,
-    managerId: string,
+    leadId: string | null,
+    managerId: string | null,
     organizationId: string
   ): Promise<WorkPackage> {
     const { userId } = user;

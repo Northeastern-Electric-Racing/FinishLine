@@ -53,7 +53,7 @@ export const GanttWorkPackageCreateModal = ({ change, handleClose, open }: Gantt
       workPackageProposedChanges: {
         name: change.name,
         stage: change.stage,
-        duration: change.duration / 1000 / 60 / 60 / 24 / 7,
+        duration: change.duration,
         startDate: change.newStart.toLocaleDateString(),
         blockedBy: [],
         descriptionBullets: [],

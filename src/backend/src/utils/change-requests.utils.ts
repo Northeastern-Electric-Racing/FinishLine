@@ -429,12 +429,6 @@ export const applyWorkPackageProposedChanges = async (
       existingWbsElementId
     );
   } else if (associatedWorkPackage) {
-    if (wbsProposedChanges.leadId === null) {
-      throw new HttpException(400, 'Lead ID cannot be null');
-    }
-    if (wbsProposedChanges.managerId === null) {
-      throw new HttpException(400, 'Manager ID cannot be null');
-    }
     await WorkPackagesService.editWorkPackage(
       reviewer,
       associatedWorkPackage.workPackageId,
