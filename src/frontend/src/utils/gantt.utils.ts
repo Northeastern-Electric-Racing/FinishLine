@@ -118,8 +118,8 @@ export const filterGanttProjects = (projects: Project[], ganttFilters: GanttFilt
       ganttFilters.showTeams.some((team) => project.teams.some((t) => t.teamName === team))
     );
 
-  // shows only active projects
-  projects = projects.filter((project) => project.status === WbsElementStatus.Active);
+  // shows only active and inactive projects
+  projects = projects.filter((project) => project.status !== WbsElementStatus.Complete);
 
   if (ganttFilters.showOnlyOverdue) {
     projects = projects.filter((project) => project.endDate && project.endDate < new Date());
