@@ -22,16 +22,20 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
   const { isLoading: teamsLoading, data } = useAllTeams();
 
-  const startDate = change.workPackageChanges.reduce((earliest, current) => {
-    return current.newStart < earliest ? current.newStart : earliest;
-  }, change.workPackageChanges[0].newStart);
+  let startDate: Date | undefined = undefined;
+  let latestEndDate: Date | undefined = undefined;
+  if (change.workPackageChanges.length > 0) {
+    startDate = change.workPackageChanges.reduce((earliest, current) => {
+      return current.newStart < earliest ? current.newStart : earliest;
+    }, change.workPackageChanges[0].newStart);
 
-  const latestEndDate = change.workPackageChanges
-    .reduce((latest, current) => {
-      const currentEndDate = dayjs(current.newStart).add(current.duration / 1000 / 60 / 60 / 24 / 7, 'week'); // Convert duration from weeks to days
-      return currentEndDate.isAfter(latest) ? currentEndDate : latest;
-    }, dayjs(change.workPackageChanges[0].newStart).add(change.workPackageChanges[0].duration / 1000 / 60 / 60 / 24 / 7, 'week'))
-    .toDate();
+    latestEndDate = change.workPackageChanges
+      .reduce((latest, current) => {
+        const currentEndDate = dayjs(current.newStart).add(current.duration / 1000 / 60 / 60 / 24 / 7, 'week'); // Convert duration from miliseconds to weeks
+        return currentEndDate.isAfter(latest) ? currentEndDate : latest;
+      }, dayjs(change.workPackageChanges[0].newStart).add(change.workPackageChanges[0].duration / 1000 / 60 / 60 / 24 / 7, 'week'))
+      .toDate();
+  }
 
   if (isLoading || teamsLoading || !data) return <LoadingIndicator />;
 

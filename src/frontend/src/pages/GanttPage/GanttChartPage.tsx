@@ -19,7 +19,8 @@ import {
   transformProjectToGanttTask,
   EventChange,
   RequestEventChange,
-  aggregateGanttChanges
+  aggregateGanttChanges,
+  GanttTaskData
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -244,14 +245,62 @@ const GanttChartPage: FC = () => {
 
   const saveChanges = (eventChanges: EventChange[]) => {
     //get wps out of each project
-    const updatedGanttTasks = aggregateGanttChanges(eventChanges, allGanttTasks);
-    setGanttTaskChanges(updatedGanttTasks);
-    setAddedProjects([]);
-    setAddedWorkPackages([]);
+    const updatedGanttChanges = aggregateGanttChanges(eventChanges, allGanttTasks);
+    for (const change of updatedGanttChanges) {
+      const project = addedProjects.find((project) => project.id === change.eventId);
+      if (project) {
+        setAddedWorkPackages(addedWorkPackages.filter((wp) => wp.projectId !== project.id));
+
+        console.log('changes', change.workPackageChanges, change.workPackageChanges.length);
+        const newWps: Map<string, GanttTaskData> = new Map();
+        change.workPackageChanges.forEach((wpChange) => {
+          console.log('wpChange', wpChange);
+          newWps.set(wpChange.eventId, {
+            id: wpChange.eventId,
+            type: 'task',
+            stage: wpChange.stage,
+            name: wpChange.name,
+            start: wpChange.newStart,
+            end: wpChange.newEnd,
+            workPackages: [],
+            projectNumber: project.projectNumber,
+            carNumber: project.carNumber,
+            projectId: project.id
+          });
+        });
+
+        console.log('work packages', newWps);
+
+        console.log('wtf', Array.from(newWps.values()));
+
+        const newProject = {
+          id: project.id,
+          name: project.name,
+          teamName: project.teamName,
+          carNumber: project.carNumber,
+          projectNumber: project.projectNumber,
+          start: project.start,
+          end: project.end,
+          workPackages: Array.from(newWps.values()),
+          type: project.type
+        };
+
+        console.log(newProject.workPackages);
+
+        setAddedProjects(addedProjects.filter((project) => project.id !== newProject.id));
+        setAddedProjects((prev) => [...prev, newProject]);
+      }
+    }
+
+    setGanttTaskChanges(updatedGanttChanges);
   };
 
   const removeActiveModal = (changeId: string) => {
     setGanttTaskChanges(ganttTaskChanges.filter((change) => change.eventId !== changeId));
+    if (ganttTaskChanges.length === 1) {
+      setAddedProjects([]);
+      setAddedWorkPackages([]);
+    }
   };
 
   const collapseHandler = () => {

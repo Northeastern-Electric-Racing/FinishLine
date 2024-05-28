@@ -93,6 +93,9 @@ const GanttChartSection = ({
                   onWorkPackageToggle={() => toggleWorkPackages(project)}
                   showWorkPackages={showWorkPackagesMap.get(project.id)}
                   addWorkPackage={addWorkPackage}
+                  highlightedChange={
+                    highlightedChange && project.id === highlightedChange.eventId ? highlightedChange : undefined
+                  }
                 />
               </Box>
               <Collapse in={showWorkPackagesMap.get(project.id)}>
@@ -107,7 +110,11 @@ const GanttChartSection = ({
                       handleOnMouseOver={handleOnMouseOver}
                       handleOnMouseLeave={handleOnMouseLeave}
                       highlightedChange={
-                        highlightedChange && workPackage.id === highlightedChange.eventId ? highlightedChange : undefined
+                        highlightedChange &&
+                        (workPackage.id === highlightedChange.eventId ||
+                          highlightedChange?.eventId === workPackage.projectId)
+                          ? highlightedChange
+                          : undefined
                       }
                     />
                   );

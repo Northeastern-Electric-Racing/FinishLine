@@ -401,6 +401,8 @@ export const aggregateGanttChanges = (eventChanges: EventChange[], ganttTasks: G
       });
     }
 
+    console.log(workPackageChanges);
+
     const change: RequestEventChange = {
       eventId: updatedEvent.id,
       stage: task.stage,

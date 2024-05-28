@@ -39,7 +39,6 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
                 );
 
                 const { duration } = workPackage;
-                console.log(duration);
                 const endDate = calculateEndDate(startDate, duration);
                 wpChangeBullets.push({
                   label: 'endDate',
