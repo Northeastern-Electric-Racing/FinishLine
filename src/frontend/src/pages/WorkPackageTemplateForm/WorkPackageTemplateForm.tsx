@@ -16,7 +16,6 @@ import WorkPackageTemplateFormView from './WorkPackageTemplateFormView';
 interface WorkPackageFormProps {
   workPackageTemplateId?: string; 
   exitActiveMode: () => void;
-  crId?: string;
   workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
   createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
   schema: ObjectSchema<any>;
@@ -26,9 +25,7 @@ interface WorkPackageFormProps {
 const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   workPackageTemplateId,
   workPackageMutateAsync,
-  createWorkPackageScopeCR,
   exitActiveMode,
-  crId,
   schema,
   breadcrumbs
 }) => {
@@ -78,7 +75,6 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
     <WorkPackageTemplateFormView
       exitActiveMode={exitActiveMode}
       workPackageTemplateMutateAsync={workPackageMutateAsync}
-      createWorkPackageTemplateScopeCR={createWorkPackageScopeCR}
       defaultValues={defaultValues}
       blockedByOptions={blockedByOptions}
       schema={schema}

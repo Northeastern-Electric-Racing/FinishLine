@@ -3,13 +3,12 @@ import { Controller, useFieldArray, useForm, Control, UseFormReset } from 'react
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
 import { useState } from 'react';
-import WorkPackageTemplateFormDetails from './WorkPackageTemplateFormDetails';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
-import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageApiInputs, WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import { WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
 import { getMonday, transformDate } from '../../utils/datetime.utils';
@@ -26,8 +25,7 @@ import WorkPackageTemplateFormDetails from './WorkPackageTemplateFormDetails';
 
 interface WorkPackageTemplateFormViewProps {
   exitActiveMode: () => void;
-  workPackageTemplateMutateAsync: (data: WorkPackageApiInputs) => void;
-  createWorkPackageTemplateScopeCR: (data: CreateStandardChangeRequestPayload) => void;
+  workPackageTemplateMutateAsync: (data: WorkPackageTemplateApiInputs) => void;
   defaultValues?: WorkPackageTemplateFormViewPayload;
   blockedByOptions: { id: string; label: string }[];
   schema: ObjectSchema<any>;
@@ -45,7 +43,6 @@ export interface WorkPackageTemplateFormViewPayload {
 const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = ({
   exitActiveMode,
   workPackageTemplateMutateAsync,
-  createWorkPackageTemplateScopeCR,
   defaultValues,
   blockedByOptions,
   schema,
@@ -83,7 +80,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
     const { name, duration, blockedBy, stage } = data;
     
     // Transform blockedBy into an array of strings
-    const blockedByWbsNums = blockedBy.map((blocker) => blocker.id); // Use the id property
+    const blockedByWbsNums = blockedBy.map((blocker) => blocker.workPackageTemplateId); // Use the id property
     
     try {
       const payload = {

@@ -16,8 +16,7 @@ import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 const CreateWorkPackageTemplate: React.FC = () => {
   const history = useHistory()
 
-  const { mutateAsync: createWorkPackageTemplateScopeCR } = useCreateSingleWorkPackage();
-  const { mutateAsync: createWorkPackageScopeCR } = useCreateStandardChangeRequest();
+  const { mutateAsync: createWorkPackageTemplateScopeCR } = useCreateSingleWorkPackageTemplate();
 
 
   const schema = yup.object().shape({
@@ -31,7 +30,6 @@ const CreateWorkPackageTemplate: React.FC = () => {
   return (
     <WorkPackageTemplateForm
       workPackageMutateAsync={createWorkPackageTemplateScopeCR}
-      createWorkPackageScopeCR={createWorkPackageScopeCR}
       exitActiveMode={() => history.push(routes.ADMIN_TOOLS)}
       schema={schema} breadcrumbs={[]}    />
   );
