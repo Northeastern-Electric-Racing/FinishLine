@@ -84,7 +84,9 @@ const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
-const teamTypes = () => `${teams()}/teamType/all`;
+const teamTypes = () => `${teams()}/teamType`;
+const allTeamTypes = () => `${teamTypes()}/all`;
+const teamTypesCreate = () => `${teamTypes()}/create`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -150,7 +152,7 @@ const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
 
-/******************* Work Package Template Endpoints********************/
+/******************* Work Package Template Endpoints ********************/
 
 const workPackageTemplates = () => `${API_URL}/templates`;
 const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPackageTemplates()}/${workPackageTemplateId}`;
@@ -159,6 +161,10 @@ const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
 const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
 const workPackageTemplateDelete = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/delete`;
+
+/******************* Car Endpoints ********************/
+const cars = () => `${API_URL}/cars`;
+const carsCreate = () => `${cars()}/create`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -223,8 +229,9 @@ export const apiUrls = {
   teamsSetDescription,
   teamsCreate,
   teamsSetLeads,
-  teamTypes,
+  allTeamTypes,
   teamsSetTeamType,
+  teamTypesCreate,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -288,5 +295,8 @@ export const apiUrls = {
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
+
+  cars,
+  carsCreate,
   version
 };

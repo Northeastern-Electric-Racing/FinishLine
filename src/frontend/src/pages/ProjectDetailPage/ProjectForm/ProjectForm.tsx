@@ -32,8 +32,8 @@ export interface ProjectFormInput {
   summary: string;
   links: LinkCreateArgs[];
   crId: string;
-  carNumber: number;
-  teamIds: number[];
+  carNumber: number | undefined;
+  teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
 }
 

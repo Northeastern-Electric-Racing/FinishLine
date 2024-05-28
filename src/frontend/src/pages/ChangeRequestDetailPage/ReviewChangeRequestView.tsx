@@ -132,7 +132,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
         >
           <CloseIcon />
         </IconButton>
-        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
+        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.identifier}`}</DialogTitle>
         <DialogContent
           sx={{
             '&::-webkit-scrollbar': {
@@ -239,7 +239,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
         >
           <CloseIcon />
         </IconButton>
-        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.crId}`}</DialogTitle>
+        <DialogTitle className={'font-weight-bold'}>{`Review Change Request #${cr.identifier}`}</DialogTitle>
         <DialogContent>
           <form id={'review-notes-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
             <Controller

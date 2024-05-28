@@ -39,8 +39,6 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
     .sort((a, b) => a.lastName.localeCompare(b.lastName))
     .sort((a, b) => rankUserRole(b.role) - rankUserRole(a.role));
 
-  devSetUser(sortedUsers[0].userId);
-
   return (
     <form onSubmit={devFormSubmit}>
       <FormControl fullWidth sx={{ marginTop: 2 }}>
@@ -49,7 +47,7 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
           label="Local Dev User"
           labelId="localDevUser"
           onChange={(e: any) => devSetUser(e.target.value)}
-          defaultValue={sortedUsers[0].userId}
+          defaultValue={''}
           endAdornment={
             <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
               <LoginIcon />

@@ -59,12 +59,14 @@ export const changeBulletDetailText = (changeBullet: ChangeBullet): string | str
     return detail as string[];
   } else if ('teamName' in testVal) {
     return (detail as TeamPreview[]).map((team) => team.teamName);
-  } else if ('id' in testVal) {
+  } else if ('userChecked' in testVal) {
     return (detail as DescriptionBullet[]).map((bullet) => bullet.detail);
   } else if ('carNumber' in testVal) {
     return (detail as WbsNumber[]).map(wbsPipe);
+  } else if ('linkType' in testVal) {
+    return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
   }
-  return (detail as Link[]).map((link) => `${link.linkType.name}: ${link.url}`);
+  return '';
 };
 
 export enum PotentialChangeType {
@@ -137,7 +139,8 @@ export const projectToProposedChangesPreview = (project: Project | undefined): P
     teams: project.teams,
     budget: project.budget,
     descriptionBullets: project.descriptionBullets,
-    links: project.links
+    links: project.links,
+    workPackageProposedChanges: project.workPackages
   };
 };
 
@@ -170,7 +173,8 @@ export const projectProposedChangesToPreview = (
       teams: proposedChanges.teams,
       budget: proposedChanges.budget,
       descriptionBullets: proposedChanges.descriptionBullets,
-      links: proposedChanges.links
+      links: proposedChanges.links,
+      workPackageProposedChanges: proposedChanges.workPackageProposedChanges
     }
   );
 };

@@ -17,10 +17,10 @@ import {
   sortTeamNames,
   GanttTask,
   transformProjectToGanttTask,
-  getProjectTeamsName,
   EventChange,
   RequestEventChange,
-  aggregateGanttChanges
+  aggregateGanttChanges,
+  getProjectsTeamNames
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -33,7 +33,7 @@ import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
-import { GanttRequestChangeModal } from './GanttChartComponents/GanttRequestChangeModal';
+import { GanttRequestChangeModal } from './GanttChartComponents/GanttChangeModals/GanttRequestChangeModal';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -49,10 +49,13 @@ const GanttChartPage: FC = () => {
     data: teamTypes,
     error: teamTypesError
   } = useAllTeamTypes();
+
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
   const [ganttTaskChanges, setGanttTaskChanges] = useState<RequestEventChange[]>([]);
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
+  const [addedProjects, setAddedProjects] = useState<GanttTask[]>([]);
+  const [addedWorkPackages, setAddedWorkPackages] = useState<GanttTask[]>([]);
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -74,7 +77,14 @@ const GanttChartPage: FC = () => {
   const sortedProjects = filteredProjects.sort(
     (a, b) => (a.startDate || new Date()).getTime() - (b.startDate || new Date()).getTime()
   );
-  const ganttProjectTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project));
+  const ganttProjectTasks = sortedProjects.flatMap((project) => transformProjectToGanttTask(project)).concat(addedProjects);
+  const teamNameToGanttTasksMap = new Map<string, GanttTask[]>();
+
+  ganttProjectTasks.forEach((ganttTask) => {
+    const tasks: GanttTask[] = teamNameToGanttTasksMap.get(ganttTask.teamName) || [];
+    tasks.push(ganttTask);
+    teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
+  });
 
   if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
     return <LoadingIndicator />;
@@ -165,13 +175,21 @@ const GanttChartPage: FC = () => {
 
   /***************************************************** */
 
-  const teamNameToGanttTasksMap = new Map<string, GanttTask[]>();
+  const addProjectHandler = (project: GanttTask) => {
+    setAddedProjects((prev) => [...prev, project]);
+  };
 
-  ganttProjectTasks.forEach((ganttTask) => {
-    const tasks: GanttTask[] = teamNameToGanttTasksMap.get(ganttTask.teamName) || [];
-    tasks.push(ganttTask);
-    teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
-  });
+  const addWorkPackageHandler = (workPackage: GanttTask) => {
+    setAddedWorkPackages((prev) => [...prev, workPackage]);
+  };
+
+  for (const project of ganttProjectTasks) {
+    const workPackagesToAdd = addedWorkPackages.filter(
+      (wp) => wp.projectId === project.id && project.workPackages.indexOf(wp) === -1
+    );
+    if (workPackagesToAdd.length === 0) continue;
+    project.workPackages.push(...workPackagesToAdd);
+  }
 
   const allGanttTasks = ganttProjectTasks
     .flatMap((projectTask) =>
@@ -207,7 +225,7 @@ const GanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const teamList = Array.from(new Set(projects.map(getProjectTeamsName)));
+  const teamList = Array.from(getProjectsTeamNames(projects));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   const saveChanges = (eventChanges: EventChange[]) => {
@@ -230,6 +248,13 @@ const GanttChartPage: FC = () => {
     ganttProjectTasks.forEach((task) => {
       setShowWorkPackagesMap((prev) => new Map(prev.set(task.id, true)));
     });
+  };
+
+  const getNewProjectNumber = (carNumber: number) => {
+    const existingCarProjects = projects.filter((project) => project.wbsNum.carNumber === carNumber).length;
+    const newCarProjects = addedProjects.filter((project) => project.carNumber === carNumber).length;
+
+    return existingCarProjects + newCarProjects + 1;
   };
 
   const headerRight = (
@@ -275,6 +300,9 @@ const GanttChartPage: FC = () => {
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
           highlightedChange={ganttTaskChanges[ganttTaskChanges.length - 1]}
+          addProject={addProjectHandler}
+          addWorkPackage={addWorkPackageHandler}
+          getNewProjectNumber={getNewProjectNumber}
         />
         {ganttTaskChanges.map((change) => (
           <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.eventId)} />
