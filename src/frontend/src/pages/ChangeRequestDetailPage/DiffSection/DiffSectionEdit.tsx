@@ -67,8 +67,42 @@ const DiffSectionEdit: React.FC<DiffSectionEditProps> = ({
       if (projectProposedChanges.hasOwnProperty(projectKey)) {
         const originalValue = projectAsChanges![projectKey as keyof ProjectProposedChangesPreview]!;
         const proposedValue = projectProposedChanges[projectKey as keyof ProjectProposedChangesPreview]!;
+        if (projectKey === 'workPackageProposedChanges') {
+          for (const workPackage of projectProposedChanges.workPackageProposedChanges) {
+            for (let workPackageKey in workPackage) {
+              if (workPackage.hasOwnProperty(workPackageKey)) {
+                if (workPackageKey === 'duration') {
+                  workPackageKey = 'endDate';
 
-        if (valueChanged(originalValue as ProposedChangeValue, proposedValue)) {
+                  const startDate = new Date(
+                    new Date(workPackage.startDate).getTime() - new Date(workPackage.startDate).getTimezoneOffset() * -6000
+                  );
+
+                  const { duration } = workPackage;
+                  const endDate = calculateEndDate(startDate, duration);
+                  if (valueChanged(originalValue as ProposedChangeValue, endDate)) {
+                    originalMap.set(workPackageKey, PotentialChangeType.REMOVED);
+                    proposedMap.set(workPackageKey, PotentialChangeType.ADDED);
+                  } else {
+                    originalMap.set(workPackageKey, PotentialChangeType.SAME);
+                    proposedMap.set(workPackageKey, PotentialChangeType.SAME);
+                  }
+                } else if (
+                  valueChanged(
+                    originalValue as ProposedChangeValue,
+                    workPackage[workPackageKey as keyof WorkPackageProposedChangesPreview]!
+                  )
+                ) {
+                  originalMap.set(workPackageKey, PotentialChangeType.REMOVED);
+                  proposedMap.set(workPackageKey, PotentialChangeType.ADDED);
+                } else {
+                  originalMap.set(workPackageKey, PotentialChangeType.SAME);
+                  proposedMap.set(workPackageKey, PotentialChangeType.SAME);
+                }
+              }
+            }
+          }
+        } else if (valueChanged(originalValue as ProposedChangeValue, proposedValue as ProposedChangeValue)) {
           originalMap.set(projectKey, PotentialChangeType.REMOVED);
           proposedMap.set(projectKey, PotentialChangeType.ADDED);
         } else {
