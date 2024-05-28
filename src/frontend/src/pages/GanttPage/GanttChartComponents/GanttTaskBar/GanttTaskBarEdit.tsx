@@ -26,8 +26,8 @@ const GanttTaskBarEdit = ({
   days: Date[];
   event: GanttTaskData;
   createChange: (change: EventChange) => void;
-  getStartCol: (event: GanttTaskData) => number;
-  getEndCol: (event: GanttTaskData) => number;
+  getStartCol: (start: Date) => number;
+  getEndCol: (end: Date) => number;
   isProject: boolean;
   addWorkPackage: (task: GanttTaskData) => void;
 }) => {
@@ -36,11 +36,9 @@ const GanttTaskBarEdit = ({
   const [startX, setStartX] = useState<number | null>(null);
   const [showDropPoints, setShowDropPoints] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [initialWidth, setInitialWidth] = useState(0); // original width of the component, should not change on resize
+  const widthPerDay = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
   const [width, setWidth] = useState(0); // current width of component, will change on resize
   const [measureRef, bounds] = useMeasure();
-
-  const lengthInDays = differenceInDays(event.end, event.start);
 
   // used to make sure that any changes to the start and end dates are made in multiples of 7
   const roundToMultipleOf7 = (num: number) => {
@@ -65,8 +63,13 @@ const GanttTaskBarEdit = ({
     if (isResizing) {
       setIsResizing(false);
       // Use change in width to calculate new length
-      const newEventLengthInDays = roundToMultipleOf7(Math.round((lengthInDays / initialWidth) * width));
+      const newEventLengthInDays = roundToMultipleOf7(width / widthPerDay);
+      // The gantt chart tasks are inclusive (their width includes the full width of their start and end date)
+      const displayWeeks = newEventLengthInDays / 7 + 1;
+      // We need these magic pixel numbers to dynamically calculate the correct width of the task to keep it in sync with the stored end date
+      const correctWidth = displayWeeks * 38 + (displayWeeks - 1) * 10;
       const newEndDate = addDays(event.start, newEventLengthInDays);
+      setWidth(correctWidth);
       createChange({ id, eventId: event.id, type: 'change-end-date', originalEnd: event.end, newEnd: newEndDate });
     }
   };
@@ -88,10 +91,9 @@ const GanttTaskBarEdit = ({
 
   useEffect(() => {
     if (bounds.width !== 0 && width === 0) {
-      setInitialWidth(bounds.width);
       setWidth(bounds.width);
     }
-  }, [bounds, width]);
+  }, [bounds, event.end, event.start, width]);
 
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
 
@@ -175,8 +177,8 @@ const GanttTaskBarEdit = ({
         <div
           ref={measureRef}
           style={{
-            gridColumnStart: getStartCol(event),
-            gridColumnEnd: getEndCol(event),
+            gridColumnStart: getStartCol(event.start),
+            gridColumnEnd: getEndCol(event.end),
             height: '2rem',
             width: width === 0 ? `unset` : `${width}px`,
             border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,

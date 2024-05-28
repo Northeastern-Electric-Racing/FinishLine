@@ -26,8 +26,8 @@ const GanttTaskBarView = ({
 }: {
   days: Date[];
   event: GanttTaskData;
-  getStartCol: (event: GanttTaskData) => number;
-  getEndCol: (event: GanttTaskData) => number;
+  getStartCol: (start: Date) => number;
+  getEndCol: (end: Date) => number;
   isProject: boolean;
   handleOnMouseOver: (e: React.MouseEvent) => void;
   handleOnMouseLeave: () => void;
@@ -51,8 +51,8 @@ const GanttTaskBarView = ({
       >
         <div
           style={{
-            gridColumnStart: getStartCol(event),
-            gridColumnEnd: getEndCol(event),
+            gridColumnStart: getStartCol(event.start),
+            gridColumnEnd: getEndCol(event.end),
             height: '2rem',
             border: highlightedChange ? `1px solid ${theme.palette.text.primary}` : `1px solid ${theme.palette.divider}`,
             borderRadius: '0.25rem',
@@ -91,8 +91,8 @@ const GanttTaskBarView = ({
           style={{
             gridRow: 1,
             zIndex: 3,
-            gridColumnStart: getStartCol(event),
-            gridColumnEnd: getEndCol(event),
+            gridColumnStart: getStartCol(event.start),
+            gridColumnEnd: getEndCol(event.end),
             display: 'flex',
             alignItems: 'center',
             marginTop: isProject ? '-10px' : undefined,
@@ -127,8 +127,8 @@ const GanttTaskBarView = ({
           return (
             <div
               style={{
-                gridColumnStart: getStartCol(child),
-                gridColumnEnd: getEndCol(child),
+                gridColumnStart: getStartCol(child.start),
+                gridColumnEnd: getEndCol(child.end),
                 height: '2rem',
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: '0.25rem',
