@@ -1,13 +1,14 @@
-import { TableRow, TableCell, Box } from '@mui/material';
+import { TableRow, TableCell, Box, MenuItem, ListItemIcon } from '@mui/material';
 import AdminToolTable from '../AdminToolTable';
 import { NERButton } from '../../../components/NERButton';
-import { isAdmin } from 'shared/src/permission-utils';
+import { isAdmin, isGuest } from 'shared/src/permission-utils';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useAllWorkPackageTemplates } from '../../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
+import { projectWbsPipe } from '../../../utils/pipes';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
@@ -32,6 +33,12 @@ const WorkPackageTemplateTable = () => {
       </TableCell>
     </TableRow>
   ));
+
+  /*
+  const buildURLForCreateWorkPackageTemplate = () => {
+    return `${routes.WORK_PACKAGE_TEMPLATE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`;
+  };
+  */
 
   return (
     <Box>

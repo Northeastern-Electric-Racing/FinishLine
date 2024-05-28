@@ -12,36 +12,22 @@ import ChangeRequestDropdown from '../../components/ChangeRequestDropdown';
 import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
-import { WorkPackageFormViewPayload } from './WorkPackageTemplateFormView';
+import { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 
 interface Props {
-  lead?: string;
-  manager?: string;
-  setManager: (manager?: string) => void;
-  setLead: (lead?: string) => void;
-  usersForLead: User[];
-  usersForManager: User[];
-  control: Control<WorkPackageFormViewPayload>;
-  errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
-  createForm?: boolean;
+  control: Control<WorkPackageTemplateFormViewPayload>;
+  errors: Partial<FieldErrorsImpl<WorkPackageTemplateFormViewPayload>>;
 }
 
-const WorkPackageFormDetails: React.FC<Props> = ({
-  lead,
-  manager,
-  setManager,
-  setLead,
-  usersForLead,
-  usersForManager,
+const WorkPackageTemplateFormDetails: React.FC<Props> = ({
   control,
   errors,
-  createForm = false,
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
-  
+
   const StageSelect = () => (
     <FormControl fullWidth>
       <FormLabel>Work Package Stage</FormLabel>
@@ -97,37 +83,9 @@ const WorkPackageFormDetails: React.FC<Props> = ({
             />
           </FormControl>
         </Grid>
-        {!createForm && (
-          <>
-            <Grid item xs={12} md={6}>
-              <FormLabel> Project Lead</FormLabel>
-              <NERAutocomplete
-                sx={{ width: '100%' }}
-                id="lead-autocomplete"
-                onChange={(_event, value) => setLead(value?.id)}
-                options={usersForLead.map(userToOption)}
-                size="small"
-                placeholder="Select a Project Lead"
-                value={userToOption(usersForLead.find((user) => user.userId.toString() === lead))}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormLabel>Project Manager</FormLabel>
-              <NERAutocomplete
-                sx={{ width: '100%' }}
-                id="manager-autocomplete"
-                onChange={(_event, value) => setManager(value?.id)}
-                options={usersForManager.map(userToOption)}
-                size="small"
-                placeholder="Select a Project Manager"
-                value={userToOption(usersForManager.find((user) => user.userId.toString() === manager))}
-              />
-            </Grid>
-          </>
-        )}
       </Grid>
     </Box>
   );
 };
 
-export default WorkPackageFormDetails;
+export default WorkPackageTemplateFormDetails;
