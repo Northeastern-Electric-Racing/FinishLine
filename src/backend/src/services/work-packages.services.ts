@@ -35,7 +35,12 @@ import {
   markDescriptionBulletsAsDeleted,
   validateDescriptionBullets
 } from '../utils/description-bullets.utils';
-import { getBlockingWorkPackages, validateBlockedBys, validateBlockedByTemplates } from '../utils/work-packages.utils';
+import {
+  deleteBlockingTemplates,
+  getBlockingWorkPackages,
+  validateBlockedBys,
+  validateBlockedByTemplates
+} from '../utils/work-packages.utils';
 import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 import { getWorkPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
@@ -807,21 +812,7 @@ export default class WorkPackagesService {
     const dateDeleted = new Date();
 
     if (workPackageTemplate.blocking.length > 0) {
-      for (const template of workPackageTemplate.blocking) {
-        await prisma.work_Package_Template.update({
-          where: {
-            workPackageTemplateId: template.workPackageTemplateId
-          },
-          data: {
-            dateDeleted,
-            userDeleted: {
-              connect: {
-                userId: submitter.userId
-              }
-            }
-          }
-        });
-      }
+      deleteBlockingTemplates(workPackageTemplate, submitter);
     }
 
     // Soft delete the work package template by updating its related "deleted" fields
