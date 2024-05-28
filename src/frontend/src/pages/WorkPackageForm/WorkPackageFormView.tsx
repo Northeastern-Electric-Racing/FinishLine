@@ -97,7 +97,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   );
   const [leadId, setLeadId] = useState<string | undefined>(defaultValues ? wbsElement.lead?.userId.toString() : undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate | undefined>(undefined);
   let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
 
@@ -115,66 +114,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     isError: workPackageTemplateisError,
     error: workPackageTemplateError
   } = useAllWorkPackageTemplates();
+  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate>();
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
-
-  const testWorkPackageTemplate: WorkPackageTemplate[] = [
-    {
-      workPackageTemplateId: '1',
-      templateName: 'Test Template',
-      templateNotes: 'This is a test template',
-      workPackageName: 'Test Package',
-      stage: WorkPackageStage.Design,
-      duration: 10,
-      blockedBy: [],
-      descriptionBullets: [],
-      dateCreated: new Date(),
-      userCreated: user,
-      userCreatedId: userId
-    },
-
-    {
-      workPackageTemplateId: '2',
-      templateName: 'Test Template',
-      templateNotes: 'This is a test template',
-      workPackageName: 'Test Package',
-      stage: WorkPackageStage.Design,
-      duration: 10,
-      blockedBy: [],
-      descriptionBullets: [],
-      dateCreated: new Date(),
-      userCreated: user,
-      userCreatedId: userId
-    },
-
-    {
-      workPackageTemplateId: '3',
-      templateName: 'Test Template',
-      templateNotes: 'This is a test template',
-      workPackageName: 'Test Package',
-      stage: WorkPackageStage.Design,
-      duration: 10,
-      blockedBy: [],
-      descriptionBullets: [],
-      dateCreated: new Date(),
-      userCreated: user,
-      userCreatedId: userId
-    },
-
-    {
-      workPackageTemplateId: '4',
-      templateName: 'Test Template',
-      templateNotes: 'This is a test template',
-      workPackageName: 'Test Package',
-      stage: WorkPackageStage.Design,
-      duration: 10,
-      blockedBy: [],
-      descriptionBullets: [],
-      dateCreated: new Date(),
-      userCreated: user,
-      userCreatedId: userId
-    }
-  ];
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
@@ -280,7 +222,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
       >
         {
           <WorkPackageTemplateSection
-            workPackageTemplates={testWorkPackageTemplate}
+            workPackageTemplates={workPackageTemplates}
             currentWorkPackageTemplate={currentWorkPackageTemplate}
             setCurrentWorkPackageTemplate={setCurrentWorkPackageTemplate}
           />

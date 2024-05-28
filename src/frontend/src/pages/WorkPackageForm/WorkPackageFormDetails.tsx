@@ -89,7 +89,6 @@ const WorkPackageFormDetails: React.FC<Props> = ({
               control={control}
               placeholder="Enter work package name..."
               errorMessage={errors.name}
-              defaultValue= {currentWorkPackageTemplate ? currentWorkPackageTemplate.workPackageName : ""}
             />
           </FormControl>
         </Grid>
