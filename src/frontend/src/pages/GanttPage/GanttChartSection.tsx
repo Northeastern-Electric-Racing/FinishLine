@@ -9,6 +9,7 @@ import { Box, Typography, Collapse } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import { useState } from 'react';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
+import { validateWBS } from 'shared';
 
 interface GanttChartSectionProps {
   start: Date;
@@ -56,6 +57,23 @@ const GanttChartSection = ({
   const toggleWorkPackages = (projectTask: GanttTaskData) => {
     setShowWorkPackagesMap((prev) => new Map(prev.set(projectTask.id, !prev.get(projectTask.id))));
   };
+
+  if (highlightedChange && highlightedChange.createProject) {
+    if (highlightedChange.createProject) {
+      //TODO: add new project as highlighted change
+      //console.log('New Project: ');
+      //console.log(highlightedChange);
+    } else {
+      try {
+        validateWBS(highlightedChange.eventId);
+        //do nothing this case is already handled
+      } catch {
+        //console.log('New Work Package: ');
+        //console.log(highlightedChange);
+        //TODO: add new work package as highlighted change
+      }
+    }
+  }
 
   return projects.length > 0 ? (
     <Box sx={{ width: 'fit-content' }}>

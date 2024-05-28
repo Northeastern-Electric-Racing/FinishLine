@@ -246,6 +246,8 @@ const GanttChartPage: FC = () => {
     //get wps out of each project
     const updatedGanttTasks = aggregateGanttChanges(eventChanges, allGanttTasks);
     setGanttTaskChanges(updatedGanttTasks);
+    setAddedProjects([]);
+    setAddedWorkPackages([]);
   };
 
   const removeActiveModal = (changeId: string) => {
