@@ -92,6 +92,18 @@ const UsefulLinks: React.FC = () => {
       >
         Confluence
       </Link>
+    </>,
+    <>
+      <AttachMoney sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://docs.google.com/forms/d/e/1FAIpQLSfLu2tRjlolDEYbVtClJspnSjbHcQt59f3bUZIRnky_uOL9HA/viewform"
+        target="_blank"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
+      >
+        Sponsership Form
+      </Link>
     </>
   ];
 

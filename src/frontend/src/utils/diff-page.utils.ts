@@ -26,7 +26,8 @@ export type ProposedChangeValue =
   | DescriptionBullet[]
   | Link[]
   | Date
-  | WbsNumber[];
+  | WbsNumber[]
+  | WorkPackageProposedChanges[];
 
 export interface ChangeBullet {
   label: string;
@@ -85,8 +86,6 @@ export const getPotentialChangeBackground = (potentialChangeType: PotentialChang
 };
 
 export const valueChanged = (original: ProposedChangeValue, proposed: ProposedChangeValue) => {
-  console.log(typeof original, typeof proposed, original, proposed);
-
   if (typeof original === 'string' || typeof original === 'number') return original !== proposed;
 
   if (original === undefined) return proposed !== undefined;
@@ -139,7 +138,8 @@ export const projectToProposedChangesPreview = (project: Project | undefined): P
     teams: project.teams,
     budget: project.budget,
     descriptionBullets: project.descriptionBullets,
-    links: project.links
+    links: project.links,
+    workPackageProposedChanges: project.workPackages
   };
 };
 
@@ -172,7 +172,8 @@ export const projectProposedChangesToPreview = (
       teams: proposedChanges.teams,
       budget: proposedChanges.budget,
       descriptionBullets: proposedChanges.descriptionBullets,
-      links: proposedChanges.links
+      links: proposedChanges.links,
+      workPackageProposedChanges: proposedChanges.workPackageProposedChanges
     }
   );
 };

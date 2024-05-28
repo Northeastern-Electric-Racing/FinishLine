@@ -14,6 +14,7 @@ import reimbursementRequestsRouter from './src/routes/reimbursement-requests.rou
 import notificationsRouter from './src/routes/notifications.routes';
 import designReviewsRouter from './src/routes/design-reviews.routes';
 import workPackageTemplatesRouter from './src/routes/work-package-templates.routes';
+import carsRouter from './src/routes/cars.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -58,6 +59,7 @@ app.use('/reimbursement-requests', reimbursementRequestsRouter);
 app.use('/design-reviews', designReviewsRouter);
 app.use('/notifications', notificationsRouter);
 app.use('/templates', workPackageTemplatesRouter);
+app.use('/cars', carsRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });
