@@ -156,7 +156,7 @@ export default class ProjectsController {
       const { name, pdmFileName } = req.body;
       const organizationId = getOrganizationId(req.headers);
 
-      const createAssembly = await BillOfMaterialsService.createAssembly(name, user, wbsNum, pdmFileName, organizationId);
+      const createAssembly = await BillOfMaterialsService.createAssembly(name, user, wbsNum, organizationId, pdmFileName);
       res.status(200).json(createAssembly);
     } catch (error: unknown) {
       next(error);
