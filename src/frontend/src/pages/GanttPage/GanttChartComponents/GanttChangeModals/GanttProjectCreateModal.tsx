@@ -22,6 +22,19 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
   const { isLoading: teamsLoading, data } = useAllTeams();
 
+  console.log(change);
+
+  const startDate = change.workPackageChanges.reduce((earliest, current) => {
+    return current.newStart < earliest ? current.newStart : earliest;
+  }, change.workPackageChanges[0].newStart);
+
+  const latestEndDate = change.workPackageChanges
+    .reduce((latest, current) => {
+      const currentEndDate = dayjs(current.newStart).add(current.duration / 1000 / 60 / 60 / 24 / 7, 'week'); // Convert duration from weeks to days
+      return currentEndDate.isAfter(latest) ? currentEndDate : latest;
+    }, dayjs(change.workPackageChanges[0].newStart).add(change.workPackageChanges[0].duration / 1000 / 60 / 60 / 24 / 7, 'week'))
+    .toDate();
+
   if (isLoading || teamsLoading || !data) return <LoadingIndicator />;
 
   const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
@@ -32,10 +45,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
     setExplanationForChange(event.target.value);
   };
 
-  const changeInTimeline = (startDate: Date, endDate: Date) => {
-    return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
-  };
-
+  const changeInTimeline = `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(latestEndDate).format('MMMM D, YYYY')}`;
   const handleSubmit = async () => {
     if (!reasonForChange) {
       return;
@@ -48,7 +58,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
     const payload: CreateStandardChangeRequestPayload = {
       wbsNum: change.baseWbs,
       type: ChangeRequestType.Issue,
-      what: `Create New Project with timeline of: ${changeInTimeline(change.newStart, change.newEnd)}`,
+      what: `Create New Project with timeline of: ${changeInTimeline}`,
       why: [
         {
           explain: explanationForChange,
@@ -99,7 +109,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       onHide={handleClose}
     >
       <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
-        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
+        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline}`}</Typography>
         <Box sx={{ mt: 2 }}>
           <FormControl fullWidth>
             <InputLabel>Reason for Initialization</InputLabel>

@@ -360,7 +360,15 @@ export const aggregateGanttChanges = (eventChanges: EventChange[], ganttTasks: G
       throw new Error('Task not found');
     }
 
-    const updatedEvent = applyChangeToEvent(changeEvents, task);
+    let workPackageEventChanges: any[] = [];
+
+    if (!task.projectId) {
+      workPackageEventChanges = task.workPackages.flatMap((workPackage) =>
+        eventChanges.filter((change) => change.eventId === workPackage.id && change.type !== 'create-work-package')
+      );
+    }
+
+    const updatedEvent = applyChangeToEvent(changeEvents.concat(workPackageEventChanges), task);
 
     const start = dayjs(updatedEvent.start);
     const end = dayjs(updatedEvent.end);
