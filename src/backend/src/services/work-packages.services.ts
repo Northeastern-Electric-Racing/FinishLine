@@ -781,32 +781,29 @@ export default class WorkPackagesService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work package template');
 
-    const workPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
-      submitter,
-      workPackageTemplateId,
-      organizationId
-    );
+    const workPackageTemplate = await prisma.work_Package_Template.findUnique({
+      where: {
+        workPackageTemplateId
+      },
+      include: {
+        blocking: true
+      }
+    });
 
     if (!workPackageTemplate) {
       throw new NotFoundException('Work Package Template', workPackageTemplateId);
     }
 
-    // const workPackageBlockedBy = await prisma.work_Package_Template.findFirst({
-    //   where: {
-    //     blockedBy: {
-    //       some: {
-    //         blockedBy: workPackageTemplate
-    //       }
-    //     }
-    //   }
-    // });
+    if (workPackageTemplate.dateDeleted) {
+      throw new DeletedException('Work Package Template', workPackageTemplateId);
+    }
 
-    // if (workPackageBlockedBy) {
-    //   throw new HttpException(
-    //     400,
-    //     'cannot delete a work package template that referenced as a blocked by in another template'
-    //   );
-    // }
+    if (workPackageTemplate.blocking.length > 0) {
+      throw new HttpException(
+        400,
+        'Cannot delete a work package template that referenced as a blocked by in another template'
+      );
+    }
 
     const dateDeleted = new Date();
 
