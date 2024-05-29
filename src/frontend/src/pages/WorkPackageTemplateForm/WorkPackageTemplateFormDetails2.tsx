@@ -19,7 +19,7 @@ interface Props {
   errors: Partial<FieldErrorsImpl<WorkPackageTemplateFormViewPayload>>;
 }
 
-const WorkPackageTemplateFormDetails: React.FC<Props> = ({
+const WorkPackageTemplateFormDetails2: React.FC<Props> = ({
   control,
   errors,
 }) => {
@@ -28,35 +28,15 @@ const WorkPackageTemplateFormDetails: React.FC<Props> = ({
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
   };
 
-  const StageSelect = () => (
-    <FormControl fullWidth>
-      <FormLabel>Work Package Stage</FormLabel>
-      <Controller
-        name="stage"
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <TextField select onChange={onChange} value={value} fullWidth>
-            <MenuItem value={'NONE'}>NONE</MenuItem>
-            {Object.values(WorkPackageStage).map((stage) => (
-              <MenuItem key={stage} value={stage}>
-                {stage}
-              </MenuItem>
-            ))}
-          </TextField>
-        )}
-      />
-    </FormControl>
-  );
-
   return (
     <Box>
       <Typography variant="h5" sx={{ marginBottom: '10px', color: 'white' }}>
-        Work Package Details
+        Work Package Template Details
       </Typography>
       <Grid container rowSpacing={2} spacing={1} xs={12}>
         <Grid item xs={12} md={4}>
           <FormControl fullWidth>
-            <FormLabel>Work Package Name</FormLabel>
+            <FormLabel>Template Name</FormLabel>
             <ReactHookTextField
               name="name"
               control={control}
@@ -66,15 +46,11 @@ const WorkPackageTemplateFormDetails: React.FC<Props> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} md={4}>
-          <StageSelect />
-        </Grid>
-        <Grid item xs={12} md={4}>
           <FormControl fullWidth>
-            <FormLabel>Duration</FormLabel>
+            <FormLabel>Template Notes</FormLabel>
             <ReactHookTextField
-              name="duration"
+              name="notes"
               control={control}
-              type="number"
               placeholder="Enter duration..."
               errorMessage={errors.duration}
             />
@@ -85,4 +61,4 @@ const WorkPackageTemplateFormDetails: React.FC<Props> = ({
   );
 };
 
-export default WorkPackageTemplateFormDetails;
+export default WorkPackageTemplateFormDetails2;

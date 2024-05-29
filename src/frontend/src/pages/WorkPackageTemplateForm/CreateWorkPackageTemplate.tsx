@@ -1,7 +1,7 @@
 import { validateWBS } from 'shared';
 import { useQuery } from '../../hooks/utils.hooks';
 import WorkPackageForm from './WorkPackageTemplateForm';
-import { useCreateSingleWorkPackage } from '../../hooks/work-packages.hooks';
+import { useCreateSingleWorkPackage, useCreateSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { projectWbsNamePipe, projectWbsPipe } from '../../utils/pipes';
@@ -29,7 +29,7 @@ const CreateWorkPackageTemplate: React.FC = () => {
   });
   return (
     <WorkPackageTemplateForm
-      workPackageMutateAsync={createWorkPackageTemplateScopeCR}
+      workPackageTemplateMutateAsync={createWorkPackageTemplateScopeCR}
       exitActiveMode={() => history.push(routes.ADMIN_TOOLS)}
       schema={schema} breadcrumbs={[]}    />
   );

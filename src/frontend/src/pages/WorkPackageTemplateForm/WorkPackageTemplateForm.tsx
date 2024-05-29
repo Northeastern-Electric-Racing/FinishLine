@@ -8,7 +8,7 @@ import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useAllWorkPackageTemplates, useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
-import { WorkPackageApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageApiInputs, WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 import WorkPackageTemplateFormView from './WorkPackageTemplateFormView';
@@ -16,15 +16,14 @@ import WorkPackageTemplateFormView from './WorkPackageTemplateFormView';
 interface WorkPackageFormProps {
   workPackageTemplateId?: string; 
   exitActiveMode: () => void;
-  workPackageMutateAsync: (data: WorkPackageApiInputs) => void;
-  createWorkPackageScopeCR: (data: CreateStandardChangeRequestPayload) => void;
+  workPackageTemplateMutateAsync: (data: WorkPackageTemplateApiInputs) => void;
   schema: ObjectSchema<any>;
   breadcrumbs: { name: string; route: string }[];
 }
 
-const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
+const WorkPackageTemplateForm: React.FC<WorkPackageFormProps> = ({
   workPackageTemplateId,
-  workPackageMutateAsync,
+  workPackageTemplateMutateAsync,
   exitActiveMode,
   schema,
   breadcrumbs
@@ -55,8 +54,10 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
       defaultValues = {
         ...workPackageTemplate,
         name: workPackageTemplate.workPackageName,
+        templateName: workPackageTemplate.templateName,
         workPackageTemplateId: workPackageTemplate.workPackageTemplateId,
         duration: workPackageTemplate.duration,
+        expectedActivities: workPackageTemplate.descriptionBullets,
         stage: workPackageTemplate!.stage ?? 'NONE',
         blockedBy: workPackageTemplate.blockedBy.map((workPackageId) => workPackageId)
       };
@@ -74,7 +75,7 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   return (
     <WorkPackageTemplateFormView
       exitActiveMode={exitActiveMode}
-      workPackageTemplateMutateAsync={workPackageMutateAsync}
+      workPackageTemplateMutateAsync={workPackageTemplateMutateAsync}
       defaultValues={defaultValues}
       blockedByOptions={blockedByOptions}
       schema={schema}
@@ -82,4 +83,4 @@ const WorkPackageForm: React.FC<WorkPackageFormProps> = ({
   );
 };
 
-export default WorkPackageForm;
+export default WorkPackageTemplateForm;

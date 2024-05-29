@@ -1,7 +1,34 @@
-import { DescriptionBulletPreview, User, validateWBS, WbsElement, wbsPipe, WorkPackageTemplatePreview } from 'shared';
+import {
+  DescriptionBulletPreview,
+  OtherProductReason,
+  User,
+  validateWBS,
+  WbsElement,
+  wbsPipe,
+  WorkPackageTemplatePreview
+} from 'shared';
 import { Controller, useFieldArray, useForm, Control, UseFormReset } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Autocomplete,
+  FormControl,
+  Typography,
+  Tooltip,
+  TableRow,
+  Button,
+  FormHelperText,
+  FormLabel,
+  IconButton,
+  InputAdornment,
+  ListItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead
+} from '@mui/material';
 import { useState } from 'react';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
@@ -22,6 +49,8 @@ import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
 import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
 import WorkPackageTemplateFormDetails from './WorkPackageTemplateFormDetails';
+import { Delete, Add } from '@mui/icons-material';
+import WorkPackageTemplateFormDetails2 from './WorkPackageTemplateFormDetails2';
 
 interface WorkPackageTemplateFormViewProps {
   exitActiveMode: () => void;
@@ -34,10 +63,13 @@ interface WorkPackageTemplateFormViewProps {
 
 export interface WorkPackageTemplateFormViewPayload {
   name?: string;
+  templateName: string,
+  templateNotes: string,
   workPackageTemplateId: string;
   duration?: number;
   stage: string;
-  blockedBy: WorkPackageTemplatePreview[];
+  blockedBy: WorkPackageTemplatePreview[],
+  expectedActivities: DescriptionBulletPreview[]
 }
 
 const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = ({
@@ -71,31 +103,33 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   let changeRequestFormInput: FormInput | undefined = undefined;
-  const pageTitle = defaultValues ? 'Edit Work Package' : 'Create Work Package';
+  const pageTitle = defaultValues ? 'Edit Work Package Template' : 'Create Work Package Template';
 
   const { userId } = user;
 
   const onSubmit = async (data: WorkPackageTemplateFormViewPayload) => {
     // Destructure the required fields from the data object
-    const { name, duration, blockedBy, stage } = data;
-    
+    const { name, workPackageTemplateId, templateName, templateNotes, duration, blockedBy, stage, expectedActivities } = data;
+
     // Transform blockedBy into an array of strings
     const blockedByWbsNums = blockedBy.map((blocker) => blocker.workPackageTemplateId); // Use the id property
-    
+
     try {
       const payload = {
-        workPackageTemplateId: defaultValues?.workPackageTemplateId,
+        workPackageTemplateId,
+        templateName,
+        templateNotes,
         userId,
         name,
-        duration, 
+        duration,
         blockedBy: blockedByWbsNums,
+        descriptionBullets: expectedActivities,
         stage: stage as WorkPackageStage,
         links: []
       };
 
       // Call your mutation function
       await workPackageTemplateMutateAsync(payload);
-
     } catch (error) {
       console.error('Error submitting work package template:', error);
     }
@@ -116,14 +150,11 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       <Box mb={-1}>
         <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={breadcrumbs} />
       </Box>
-      <PageLayout
-        stickyHeader
-        title={pageTitle}
-      >
-        <WorkPackageTemplateFormDetails
-          control={control}
-          errors={errors}
-        />
+      <PageLayout stickyHeader title={pageTitle}>
+      <WorkPackageTemplateFormDetails2 control={control} errors={errors} />
+      <Box my={2}>
+      <WorkPackageTemplateFormDetails control={control} errors={errors} />
+      </Box>
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>
           <FormControl fullWidth>
