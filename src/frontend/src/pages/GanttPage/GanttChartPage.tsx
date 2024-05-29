@@ -251,10 +251,8 @@ const GanttChartPage: FC = () => {
       if (project) {
         setAddedWorkPackages(addedWorkPackages.filter((wp) => wp.projectId !== project.id));
 
-        console.log('changes', change.workPackageChanges, change.workPackageChanges.length);
         const newWps: Map<string, GanttTaskData> = new Map();
         change.workPackageChanges.forEach((wpChange) => {
-          console.log('wpChange', wpChange);
           newWps.set(wpChange.eventId, {
             id: wpChange.eventId,
             type: 'task',
@@ -269,10 +267,6 @@ const GanttChartPage: FC = () => {
           });
         });
 
-        console.log('work packages', newWps);
-
-        console.log('wtf', Array.from(newWps.values()));
-
         const newProject = {
           id: project.id,
           name: project.name,
@@ -284,8 +278,6 @@ const GanttChartPage: FC = () => {
           workPackages: Array.from(newWps.values()),
           type: project.type
         };
-
-        console.log(newProject.workPackages);
 
         setAddedProjects(addedProjects.filter((project) => project.id !== newProject.id));
         setAddedProjects((prev) => [...prev, newProject]);
