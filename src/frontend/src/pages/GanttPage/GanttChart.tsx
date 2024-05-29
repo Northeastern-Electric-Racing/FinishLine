@@ -11,6 +11,9 @@ interface GanttChartProps {
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
   highlightedChange?: RequestEventChange;
+  addProject: (project: GanttTask) => void;
+  getNewProjectNumber: (carNumber: number) => number;
+  addWorkPackage: (workPackage: GanttTask) => void;
 }
 
 const GanttChart = ({
@@ -21,7 +24,10 @@ const GanttChart = ({
   saveChanges,
   showWorkPackagesMap,
   setShowWorkPackagesMap,
-  highlightedChange
+  highlightedChange,
+  addProject,
+  addWorkPackage,
+  getNewProjectNumber
 }: GanttChartProps) => {
   return (
     <Box>
@@ -38,6 +44,9 @@ const GanttChart = ({
             teamName={teamName}
             projectTasks={projectTasks}
             highlightedChange={highlightedChange}
+            addProject={addProject}
+            addWorkPackage={addWorkPackage}
+            getNewProjectNumber={getNewProjectNumber}
           />
         ) : (
           <></>

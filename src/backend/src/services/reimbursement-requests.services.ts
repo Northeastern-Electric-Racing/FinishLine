@@ -582,6 +582,18 @@ export default class ReimbursementRequestService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create Account Codes');
 
+    const existingAccount = await prisma.account_Code.findUnique({
+      where: { uniqueExpenseType: { name, organizationId } }
+    });
+
+    if (existingAccount && existingAccount.dateDeleted) {
+      await prisma.account_Code.update({
+        where: { accountCodeId: existingAccount.accountCodeId },
+        data: { dateDeleted: null }
+      });
+      return existingAccount;
+    } else if (existingAccount) throw new HttpException(400, 'This Account Code already exists');
+
     const expense = await prisma.account_Code.create({
       data: {
         name,

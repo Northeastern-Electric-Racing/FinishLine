@@ -38,7 +38,7 @@ interface AppAuthenticatedProps {
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(true);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -57,14 +57,14 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
         onClick={() => setDrawerOpen(true)}
         sx={{
           position: 'fixed',
-          margin: 1.5
+          margin: 0.5
         }}
       >
         <GridMenuIcon />
       </IconButton>
       <Box display={'flex'}>
         <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container>
+        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 30px)' }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />

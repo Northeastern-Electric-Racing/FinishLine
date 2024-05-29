@@ -7,7 +7,7 @@ import { getOrganizationId } from '../utils/utils';
 export default class UsersController {
   static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const { organizationId } = req.headers as { organizationId?: string };
+      const organizationId = getOrganizationId(req.headers);
 
       const users = await UsersService.getAllUsers(organizationId);
 

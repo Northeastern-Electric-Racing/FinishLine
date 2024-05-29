@@ -108,6 +108,7 @@ export interface ProjectProposedChanges extends WbsProposedChanges {
   budget: number;
   teams: TeamPreview[];
   carNumber?: number;
+  workPackageProposedChanges: WorkPackageProposedChanges[];
 }
 
 export interface WorkPackageProposedChanges extends WbsProposedChanges {
@@ -139,3 +140,5 @@ export interface DescriptionBulletTypeCreatePayload {
   workPackageRequired: boolean;
   projectRequired: boolean;
 }
+
+export interface Car extends WbsElement {}

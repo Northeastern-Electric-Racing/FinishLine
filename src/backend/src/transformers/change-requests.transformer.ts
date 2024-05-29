@@ -17,7 +17,10 @@ import { userTransformer } from './user.transformer';
 import { descBulletConverter } from '../utils/description-bullets.utils';
 import { linkTransformer } from './links.transformer';
 import teamTransformer from './teams.transformer';
-import { WbsProposedChangeQueryArgs } from '../prisma-query-args/scope-change-requests.query-args';
+import {
+  WbsProposedChangeQueryArgs,
+  WorkPackageProposedChangesQueryArgs
+} from '../prisma-query-args/scope-change-requests.query-args';
 import { HttpException } from '../utils/errors.utils';
 import { ChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
 
@@ -38,27 +41,30 @@ const projectProposedChangesTransformer = (
     budget: projectProposedChanges.budget,
     descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
     teams: projectProposedChanges.teams.map(teamTransformer),
-    carNumber: projectProposedChanges.car?.wbsElement.carNumber ?? undefined
+    carNumber: projectProposedChanges.car?.wbsElement.carNumber ?? undefined,
+    workPackageProposedChanges: projectProposedChanges.workPackageProposedChanges.map(workPackageProposedChangesTransformer)
   };
 };
 
 const workPackageProposedChangesTransformer = (
-  wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>
+  workPackageProposedChanges: Prisma.Work_Package_Proposed_ChangesGetPayload<WorkPackageProposedChangesQueryArgs>
 ): WorkPackageProposedChanges => {
-  const { workPackageProposedChanges } = wbsProposedChanges;
-  if (!workPackageProposedChanges) throw new HttpException(404, 'Work Package Proposed Changes not found');
-
   return {
-    id: wbsProposedChanges.wbsProposedChangesId,
-    name: wbsProposedChanges.name,
-    status: wbsProposedChanges.status as WbsElementStatus,
-    links: wbsProposedChanges.links.map(linkTransformer),
-    lead: wbsProposedChanges.lead ? userTransformer(wbsProposedChanges.lead) : undefined,
-    manager: wbsProposedChanges.manager ? userTransformer(wbsProposedChanges.manager) : undefined,
+    id: workPackageProposedChanges.wbsProposedChangesId,
+    name: workPackageProposedChanges.wbsProposedChanges.name,
+    status: workPackageProposedChanges.wbsProposedChanges.status as WbsElementStatus,
+    links: workPackageProposedChanges.wbsProposedChanges.links.map(linkTransformer),
+    lead: workPackageProposedChanges.wbsProposedChanges.lead
+      ? userTransformer(workPackageProposedChanges.wbsProposedChanges.lead)
+      : undefined,
+    manager: workPackageProposedChanges.wbsProposedChanges.manager
+      ? userTransformer(workPackageProposedChanges.wbsProposedChanges.manager)
+      : undefined,
     startDate: workPackageProposedChanges.startDate,
     duration: workPackageProposedChanges.duration,
     blockedBy: workPackageProposedChanges.blockedBy.map(wbsNumOf),
-    descriptionBullets: wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
+    descriptionBullets:
+      workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(descBulletConverter),
     stage: (workPackageProposedChanges.stage as WorkPackageStage) || undefined
   };
 };
@@ -93,10 +99,10 @@ const changeRequestTransformer = (
     status,
     // scope cr fields
     projectProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.projectProposedChanges
-      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsProposedChanges)
+      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsProposedChanges)
       : undefined,
     workPackageProposedChanges: changeRequest.scopeChangeRequest?.wbsProposedChanges?.workPackageProposedChanges
-      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsProposedChanges)
+      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsProposedChanges.workPackageProposedChanges)
       : undefined,
     what: changeRequest.scopeChangeRequest?.what ?? undefined,
     why: changeRequest.scopeChangeRequest?.why.map((why) => ({
@@ -110,10 +116,10 @@ const changeRequestTransformer = (
       ? changeRequest.scopeChangeRequest?.proposedSolutions.map(proposedSolutionTransformer) ?? []
       : undefined,
     originalProjectData: changeRequest.scopeChangeRequest?.wbsOriginalData?.projectProposedChanges
-      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsOriginalData)
+      ? projectProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsOriginalData)
       : undefined,
     originalWorkPackageData: changeRequest.scopeChangeRequest?.wbsOriginalData?.workPackageProposedChanges
-      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest?.wbsOriginalData)
+      ? workPackageProposedChangesTransformer(changeRequest.scopeChangeRequest.wbsOriginalData.workPackageProposedChanges)
       : undefined,
     // activation cr fields
     lead: changeRequest.activationChangeRequest?.lead
