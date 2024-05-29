@@ -41,7 +41,7 @@ export type EventChange = { id: string; eventId: string } & (
   | { type: 'change-end-date'; originalEnd: Date; newEnd: Date }
   | { type: 'shift-by-days'; days: number }
   | { type: 'create-project' }
-  | { type: 'create-work-package'; name: string; stage: WorkPackageStage; start: Date; end: Date }
+  | { type: 'create-work-package'; name: string; stage?: WorkPackageStage; start: Date; end: Date }
 );
 
 export type RequestEventChange = {

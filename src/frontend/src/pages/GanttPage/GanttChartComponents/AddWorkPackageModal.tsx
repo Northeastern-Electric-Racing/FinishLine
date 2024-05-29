@@ -13,12 +13,15 @@ const schema = yup.object().shape({
 interface AddWorkPackageModalProps {
   showModal: boolean;
   handleClose: () => void;
-  addWorkPackage: (workPackge: { name: string; stage: WorkPackageStage }) => void;
+  addWorkPackage: (workPackge: { name: string; stage?: WorkPackageStage }) => void;
 }
 
 const AddWorkPackageModal: React.FC<AddWorkPackageModalProps> = ({ showModal, handleClose, addWorkPackage }) => {
-  const onSubmit = async (data: { name: string; stage: WorkPackageStage }) => {
-    addWorkPackage(data);
+  const onSubmit = async (data: { name: string; stage: WorkPackageStage | 'NONE' }) => {
+    addWorkPackage({
+      ...data,
+      stage: data.stage === 'NONE' ? undefined : data.stage
+    });
     handleClose();
   };
 
