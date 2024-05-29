@@ -2,8 +2,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl, FormHelperText, FormLabel } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import NERFormModal from '../../components/NERFormModal';
-import ReactHookTextField from '../../components/ReactHookTextField';
+import NERFormModal from '../../../components/NERFormModal';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 
 const schema = yup.object().shape({
   name: yup.string().required('Project name is Required'),

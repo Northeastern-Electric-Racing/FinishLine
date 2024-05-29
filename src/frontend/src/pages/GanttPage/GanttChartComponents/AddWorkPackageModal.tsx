@@ -3,8 +3,8 @@ import { FormControl, FormHelperText, FormLabel, MenuItem, TextField } from '@mu
 import { Controller, useForm } from 'react-hook-form';
 import { WorkPackageStage } from 'shared';
 import * as yup from 'yup';
-import NERFormModal from '../../components/NERFormModal';
-import ReactHookTextField from '../../components/ReactHookTextField';
+import NERFormModal from '../../../components/NERFormModal';
+import ReactHookTextField from '../../../components/ReactHookTextField';
 
 const schema = yup.object().shape({
   name: yup.string().required('Work Package name is Required')
@@ -13,12 +13,15 @@ const schema = yup.object().shape({
 interface AddWorkPackageModalProps {
   showModal: boolean;
   handleClose: () => void;
-  addWorkPackage: (workPackge: { name: string; stage: WorkPackageStage }) => void;
+  addWorkPackage: (workPackge: { name: string; stage?: WorkPackageStage }) => void;
 }
 
 const AddWorkPackageModal: React.FC<AddWorkPackageModalProps> = ({ showModal, handleClose, addWorkPackage }) => {
-  const onSubmit = async (data: { name: string; stage: WorkPackageStage }) => {
-    addWorkPackage(data);
+  const onSubmit = async (data: { name: string; stage: WorkPackageStage | 'NONE' }) => {
+    addWorkPackage({
+      ...data,
+      stage: data.stage === 'NONE' ? undefined : data.stage
+    });
     handleClose();
   };
 

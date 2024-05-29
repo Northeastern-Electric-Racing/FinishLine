@@ -41,7 +41,7 @@ export type EventChange = { id: string; eventId: string } & (
   | { type: 'change-end-date'; originalEnd: Date; newEnd: Date }
   | { type: 'shift-by-days'; days: number }
   | { type: 'create-project' }
-  | { type: 'create-work-package'; name: string; stage: WorkPackageStage; start: Date; end: Date }
+  | { type: 'create-work-package'; name: string; stage?: WorkPackageStage; start: Date; end: Date }
 );
 
 export type RequestEventChange = {
@@ -243,30 +243,6 @@ export const sortTeamNames = (a: string, b: string): number => {
   if (a === NO_TEAM) return Number.MAX_SAFE_INTEGER;
   if (b === NO_TEAM) return Number.MIN_SAFE_INTEGER;
 
-  if (a.includes('Software')) return Number.MAX_SAFE_INTEGER - 1;
-  if (b.includes('Software')) return Number.MIN_SAFE_INTEGER + 1;
-
-  if (a.includes('Handling')) return Number.MAX_SAFE_INTEGER - 2;
-  if (b.includes('Handling')) return Number.MIN_SAFE_INTEGER + 2;
-
-  if (a.includes('Drivetrain')) return Number.MAX_SAFE_INTEGER - 3;
-  if (b.includes('Drivetrain')) return Number.MIN_SAFE_INTEGER + 3;
-
-  if (a.includes('Structural')) return Number.MAX_SAFE_INTEGER - 4;
-  if (b.includes('Structural')) return Number.MIN_SAFE_INTEGER + 4;
-
-  if (a.includes('Ergonomics')) return Number.MAX_SAFE_INTEGER - 5;
-  if (b.includes('Ergonomics')) return Number.MIN_SAFE_INTEGER + 5;
-
-  if (a.includes('Tractive')) return Number.MAX_SAFE_INTEGER - 6;
-  if (b.includes('Tractive')) return Number.MIN_SAFE_INTEGER + 6;
-
-  if (a.includes('Low Voltage')) return Number.MAX_SAFE_INTEGER - 7;
-  if (b.includes('Low Voltage')) return Number.MIN_SAFE_INTEGER + 7;
-
-  if (a.includes('Data & Controls')) return Number.MAX_SAFE_INTEGER - 8;
-  if (b.includes('Data & Controls')) return Number.MIN_SAFE_INTEGER + 8;
-
   return a.localeCompare(b);
 };
 
@@ -384,7 +360,15 @@ export const aggregateGanttChanges = (eventChanges: EventChange[], ganttTasks: G
       throw new Error('Task not found');
     }
 
-    const updatedEvent = applyChangeToEvent(changeEvents, task);
+    let workPackageEventChanges: any[] = [];
+
+    if (!task.projectId) {
+      workPackageEventChanges = task.workPackages.flatMap((workPackage) =>
+        eventChanges.filter((change) => change.eventId === workPackage.id && change.type !== 'create-work-package')
+      );
+    }
+
+    const updatedEvent = applyChangeToEvent(changeEvents.concat(workPackageEventChanges), task);
 
     const start = dayjs(updatedEvent.start);
     const end = dayjs(updatedEvent.end);
@@ -416,6 +400,8 @@ export const aggregateGanttChanges = (eventChanges: EventChange[], ganttTasks: G
         });
       });
     }
+
+    console.log(workPackageChanges);
 
     const change: RequestEventChange = {
       eventId: updatedEvent.id,
