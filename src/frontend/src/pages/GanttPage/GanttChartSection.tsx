@@ -19,6 +19,7 @@ interface GanttChartSectionProps {
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
   highlightedChange?: RequestEventChange;
+  addWorkPackage: (task: GanttTaskData) => void;
 }
 
 const GanttChartSection = ({
@@ -29,7 +30,8 @@ const GanttChartSection = ({
   createChange,
   showWorkPackagesMap,
   setShowWorkPackagesMap,
-  highlightedChange
+  highlightedChange,
+  addWorkPackage
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
@@ -40,6 +42,11 @@ const GanttChartSection = ({
       setCurrentTask(event);
       setCursorY(e.clientY);
     }
+  };
+
+  const handleCreateProjectChange = (change: EventChange) => {
+    createChange(change);
+    setCurrentTask(undefined);
   };
 
   const handleOnMouseLeave = () => {
@@ -56,17 +63,21 @@ const GanttChartSection = ({
         {projects.map((project) => {
           return (
             <>
-              <Box display="flex" alignItems="flex-start">
+              <Box display="flex" alignItems="center">
                 <GanttTaskBar
                   key={project.id}
                   days={days}
                   event={project}
                   isEditMode={isEditMode}
-                  createChange={createChange}
+                  createChange={handleCreateProjectChange}
                   handleOnMouseOver={handleOnMouseOver}
                   handleOnMouseLeave={handleOnMouseLeave}
                   onWorkPackageToggle={() => toggleWorkPackages(project)}
                   showWorkPackages={showWorkPackagesMap.get(project.id)}
+                  addWorkPackage={addWorkPackage}
+                  highlightedChange={
+                    highlightedChange && project.id === highlightedChange.eventId ? highlightedChange : undefined
+                  }
                 />
               </Box>
               <Collapse in={showWorkPackagesMap.get(project.id)}>
@@ -81,7 +92,11 @@ const GanttChartSection = ({
                       handleOnMouseOver={handleOnMouseOver}
                       handleOnMouseLeave={handleOnMouseLeave}
                       highlightedChange={
-                        highlightedChange && workPackage.id === highlightedChange.eventId ? highlightedChange : undefined
+                        highlightedChange &&
+                        (workPackage.id === highlightedChange.eventId ||
+                          highlightedChange?.eventId === workPackage.projectId)
+                          ? highlightedChange
+                          : undefined
                       }
                     />
                   );
@@ -94,7 +109,7 @@ const GanttChartSection = ({
       {currentTask && (
         <GanttToolTip
           yCoordinate={cursorY}
-          title={!currentTask.project ? currentTask.name.substring(8) : currentTask.name.substring(6)}
+          title={!currentTask.projectId ? currentTask.name.substring(8) : currentTask.name.substring(6)}
           startDate={currentTask.start}
           endDate={currentTask.end}
           color={currentTask.styles?.backgroundColor}

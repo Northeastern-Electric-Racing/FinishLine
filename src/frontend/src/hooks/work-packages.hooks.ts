@@ -18,7 +18,11 @@ import {
   WorkPackageTemplateApiInputs,
   editWorkPackageTemplate,
   getAllWorkPackageTemplates,
+<<<<<<< #2262-single-work-package-template-hook
   getSingleWorkPackageTemplate
+=======
+  createSingleWorkPackageTemplate
+>>>>>>> develop
 } from '../apis/work-packages.api';
 
 /**
@@ -160,6 +164,7 @@ export const useAllWorkPackageTemplates = () => {
 };
 
 /**
+<<<<<<< #2262-single-work-package-template-hook
  * Custom React Hook to get a single workpackage template
  */
 export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
@@ -167,4 +172,16 @@ export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
     const { data } = await getSingleWorkPackageTemplate(workPackageTemplateId);
     return data;
   });
+=======
+ * Custom React Hook to create a workpackage template
+ */
+export const useCreateSingleWorkPackageTemplate = () => {
+  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
+    ['work package template', 'create'],
+    async (wptPayload: WorkPackageTemplateApiInputs) => {
+      const { data } = await createSingleWorkPackageTemplate(wptPayload);
+      return data;
+    }
+  );
+>>>>>>> develop
 };

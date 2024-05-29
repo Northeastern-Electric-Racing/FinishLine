@@ -26,8 +26,8 @@ const GanttTaskBarView = ({
 }: {
   days: Date[];
   event: GanttTaskData;
-  getStartCol: (event: GanttTaskData) => number;
-  getEndCol: (event: GanttTaskData) => number;
+  getStartCol: (start: Date) => number;
+  getEndCol: (end: Date) => number;
   isProject: boolean;
   handleOnMouseOver: (e: React.MouseEvent) => void;
   handleOnMouseLeave: () => void;
@@ -51,8 +51,8 @@ const GanttTaskBarView = ({
       >
         <div
           style={{
-            gridColumnStart: getStartCol(event),
-            gridColumnEnd: getEndCol(event),
+            gridColumnStart: getStartCol(event.start),
+            gridColumnEnd: getEndCol(event.end),
             height: '2rem',
             border: highlightedChange ? `1px solid ${theme.palette.text.primary}` : `1px solid ${theme.palette.divider}`,
             borderRadius: '0.25rem',
@@ -91,8 +91,8 @@ const GanttTaskBarView = ({
           style={{
             gridRow: 1,
             zIndex: 3,
-            gridColumnStart: getStartCol(event),
-            gridColumnEnd: getEndCol(event),
+            gridColumnStart: getStartCol(event.start),
+            gridColumnEnd: getEndCol(event.end),
             display: 'flex',
             alignItems: 'center',
             marginTop: isProject ? '-10px' : undefined,
@@ -123,37 +123,43 @@ const GanttTaskBarView = ({
             {event.name}
           </Typography>
         </div>
-        {event.workPackages.map((child) => {
-          return (
-            <div
-              style={{
-                gridColumnStart: getStartCol(child),
-                gridColumnEnd: getEndCol(child),
-                height: '2rem',
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: '0.25rem',
-                backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
-                cursor: 'pointer',
-                gridRow: 1,
-                zIndex: 2
-              }}
-              onMouseOver={handleOnMouseOver}
-              onMouseLeave={handleOnMouseLeave}
-              onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
-            />
-          );
-        })}
+        {!highlightedChange &&
+          event.workPackages.map((child) => {
+            return (
+              <div
+                style={{
+                  gridColumnStart: getStartCol(child.start),
+                  gridColumnEnd: getEndCol(child.end),
+                  height: '2rem',
+                  border: `1px solid ${theme.palette.divider}`,
+                  borderRadius: '0.25rem',
+                  backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
+                  cursor: 'pointer',
+                  gridRow: 1,
+                  zIndex: 2
+                }}
+                onMouseOver={handleOnMouseOver}
+                onMouseLeave={handleOnMouseLeave}
+                onClick={() => history.push(`${`${routes.PROJECTS}/${event.id}`}`)}
+              />
+            );
+          })}
         {highlightedChange && (
           <div
             id="proposedChange"
             style={{
               paddingTop: '2px',
               paddingLeft: '5px',
-              gridColumnStart: days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1,
+              gridColumnStart:
+                highlightedChange.eventId === event.id
+                  ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1
+                  : getStartCol(event.start),
               gridColumnEnd:
-                days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
-                  ? days.length + 1
-                  : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2,
+                highlightedChange.eventId === event.id
+                  ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
+                    ? days.length + 1
+                    : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2
+                  : getEndCol(event.end),
               height: '2rem',
               border: `1px solid ${theme.palette.text.primary}`,
               borderRadius: '0.25rem',
@@ -172,7 +178,7 @@ const GanttTaskBarView = ({
                 whiteSpace: 'nowrap'
               }}
             >
-              {highlightedChange.name}
+              {event.name}
             </Typography>
           </div>
         )}

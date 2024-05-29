@@ -130,6 +130,7 @@ export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCrea
   budget: number;
   summary: string;
   teamIds: string[];
+  workPackageProposedChanges: WorkPackageProposedChangesCreateArgs[];
   carNumber?: number;
 }
 

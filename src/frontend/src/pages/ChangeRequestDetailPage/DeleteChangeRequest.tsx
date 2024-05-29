@@ -30,16 +30,15 @@ const DeleteChangeRequest: React.FC<DeleteChangeRequestProps> = ({
   const toast = useToast();
   const { isLoading, isError, error, mutateAsync } = useDeleteChangeRequest();
 
-  const handleConfirm = async ({ crId }: DeleteChangeRequestInputs) => {
+  const handleConfirm = async () => {
     handleClose();
-    const numCrId = crId;
-    await mutateAsync(numCrId).catch((error) => {
+    await mutateAsync(cr.crId).catch((error) => {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     });
     history.goBack();
-    toast.success(`Change Request #${crId} Deleted Successfully!`);
+    toast.success(`Change Request #${cr.identifier} Deleted Successfully!`);
   };
 
   if (isLoading) return <LoadingIndicator />;

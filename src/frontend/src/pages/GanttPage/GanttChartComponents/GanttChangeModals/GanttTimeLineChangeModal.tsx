@@ -1,22 +1,22 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { RequestEventChange } from '../../../utils/gantt.utils';
+import { RequestEventChange } from '../../../../utils/gantt.utils';
 import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
-import { useCreateStandardChangeRequest } from '../../../hooks/change-requests.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
-import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
-import { useToast } from '../../../hooks/toasts.hooks';
-import { NERDraggableFormModal } from '../../../components/NERDraggableFormModal';
+import { useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
+import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
+import { useToast } from '../../../../hooks/toasts.hooks';
+import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
 
-interface GanttRequestChangeModalProps {
+interface GanttTimeLineChangeModalProps {
   change: RequestEventChange;
   handleClose: () => void;
   open: boolean;
 }
 
-export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequestChangeModalProps) => {
+export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTimeLineChangeModalProps) => {
   const toast = useToast();
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Estimation);
   const [explanationForChange, setExplanationForChange] = useState('');
@@ -74,6 +74,7 @@ export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequ
         links: []
       }
     };
+
     try {
       await mutateAsync(payload);
       toast.success('Change Request Created Successfully!');

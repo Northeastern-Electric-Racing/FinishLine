@@ -17,8 +17,8 @@ export const getChangeRequestQueryArgs = (organizationId: string) =>
               teams: true
             }
           },
-          descriptionBullets: true,
-          links: true
+          descriptionBullets: { where: { dateDeleted: null } },
+          links: { where: { dateDeleted: null } }
         }
       },
       reviewer: getUserQueryArgs(organizationId),

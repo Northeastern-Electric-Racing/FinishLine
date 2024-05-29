@@ -1,8 +1,10 @@
 import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
-import { EventChange, GanttTask, RequestEventChange, applyChangesToEvents } from '../../utils/gantt.utils';
+import { EventChange, GanttTask, RequestEventChange, applyChangesToEvents, GanttTaskData } from '../../utils/gantt.utils';
 import { useState } from 'react';
+import AddProjectModal from './GanttChartComponents/AddProjectModal';
+import useId from '@mui/material/utils/useId';
 
 interface GanttChartTeamSectionProps {
   startDate: Date;
@@ -13,6 +15,9 @@ interface GanttChartTeamSectionProps {
   teamName: string;
   projectTasks: GanttTask[];
   highlightedChange?: RequestEventChange;
+  getNewProjectNumber: (carNumber: number) => number;
+  addProject: (project: GanttTask) => void;
+  addWorkPackage: (workPackage: GanttTask) => void;
 }
 
 const GanttChartTeamSection = ({
@@ -23,11 +28,16 @@ const GanttChartTeamSection = ({
   setShowWorkPackagesMap,
   teamName,
   projectTasks,
-  highlightedChange
+  getNewProjectNumber,
+  highlightedChange,
+  addProject,
+  addWorkPackage
 }: GanttChartTeamSectionProps) => {
   const theme = useTheme();
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const id = useId() || 'id';
 
   const createChange = (change: EventChange) => {
     setEventChanges([...eventChanges, change]);
@@ -51,6 +61,10 @@ const GanttChartTeamSection = ({
   projectTasks.forEach((task) => {
     task.workPackages.sort((a, b) => a.start.getTime() - b.start.getTime());
   });
+
+  const handleAddWorkPackage = (workPackage: GanttTaskData) => {
+    addWorkPackage({ ...workPackage, teamName });
+  };
 
   const displayedProjects = isEditMode ? applyChangesToEvents(projectTasks, eventChanges) : projectTasks;
 
@@ -77,12 +91,52 @@ const GanttChartTeamSection = ({
           height: '30px'
         }}
       >
+        <AddProjectModal
+          showModal={showAddProjectModal}
+          handleClose={() => setShowAddProjectModal(false)}
+          addProject={(project) => {
+            const newProject: GanttTask = {
+              id: id + projectTasks.length + 1,
+              name: project.name,
+              start: new Date(),
+              carNumber: project.carNumber,
+              projectNumber: getNewProjectNumber(project.carNumber),
+              end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+              workPackages: [],
+              teamName,
+              type: 'project'
+            };
+
+            addProject(newProject);
+
+            projectTasks.push(newProject);
+
+            handleEdit();
+
+            createChange({
+              id,
+              eventId: newProject.id,
+              type: 'create-project'
+            });
+          }}
+        />
         <Typography variant="h6" fontWeight={400}>
           {teamName}
         </Typography>
 
         {isEditMode ? (
-          <Chip label="Save" onClick={handleSave} />
+          <Box display={'flex'} alignItems="center">
+            <Chip label="Save" onClick={handleSave} sx={{ marginRight: '10px' }} />
+            <Chip
+              label="Cancel"
+              onClick={() => {
+                setIsEditMode(false);
+                setEventChanges([]);
+              }}
+              sx={{ marginRight: '10px' }}
+            />
+            <Chip label="Create Project" onClick={() => setShowAddProjectModal(true)} />
+          </Box>
         ) : (
           <IconButton onClick={handleEdit}>
             <Edit />
@@ -99,6 +153,7 @@ const GanttChartTeamSection = ({
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
           highlightedChange={highlightedChange}
+          addWorkPackage={handleAddWorkPackage}
         />
       </Box>
     </Box>

@@ -15,9 +15,9 @@ export const getProjectQueryArgs = (organizationId: string) =>
         include: {
           lead: getUserQueryArgs(organizationId),
           manager: getUserQueryArgs(organizationId),
-          descriptionBullets: getDescriptionBulletQueryArgs(organizationId),
+          descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
           tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) },
-          links: getLinkQueryArgs(organizationId),
+          links: { where: { dateDeleted: null }, ...getLinkQueryArgs(organizationId) },
           changes: {
             where: { changeRequest: { dateDeleted: null } },
             include: { implementer: getUserQueryArgs(organizationId) }
@@ -43,15 +43,21 @@ export const getProjectQueryArgs = (organizationId: string) =>
           wbsElement: {
             include: {
               lead: getUserQueryArgs(organizationId),
-              descriptionBullets: getDescriptionBulletQueryArgs(organizationId),
+              descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) },
               manager: getUserQueryArgs(organizationId),
-              links: getLinkQueryArgs(organizationId),
+              links: { where: { dateDeleted: null }, ...getLinkQueryArgs(organizationId) },
               changes: {
                 where: { changeRequest: { dateDeleted: null } },
                 include: { implementer: getUserQueryArgs(organizationId) }
               },
-              materials: getMaterialQueryArgs(organizationId),
-              assemblies: getAssemblyQueryArgs(organizationId)
+              materials: {
+                where: { dateDeleted: null },
+                ...getMaterialQueryArgs(organizationId)
+              },
+              assemblies: {
+                where: { dateDeleted: null },
+                ...getAssemblyQueryArgs(organizationId)
+              }
             }
           },
           blockedBy: { where: { dateDeleted: null } }

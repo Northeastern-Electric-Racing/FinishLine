@@ -17,7 +17,8 @@ const GanttTaskBar = ({
   onWorkPackageToggle,
   handleOnMouseLeave,
   showWorkPackages = false,
-  highlightedChange
+  highlightedChange,
+  addWorkPackage = () => {}
 }: {
   days: Date[];
   event: GanttTaskData;
@@ -28,20 +29,21 @@ const GanttTaskBar = ({
   onWorkPackageToggle?: () => void;
   showWorkPackages?: boolean;
   highlightedChange?: RequestEventChange;
+  addWorkPackage?: (task: GanttTaskData) => void;
 }) => {
-  const isProject = !event.project;
+  const isProject = !event.projectId;
 
-  const getStartCol = (event: GanttTaskData) => {
-    const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(event.start))) + 1;
+  const getStartCol = (start: Date) => {
+    const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
     return startCol;
   };
 
   // if the end date doesn't exist within the timeframe, have it span to the end
-  const getEndCol = (event: GanttTaskData) => {
+  const getEndCol = (end: Date) => {
     const endCol =
-      days.findIndex((day) => dateToString(day) === dateToString(getMonday(event.end))) === -1
+      days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) === -1
         ? days.length + 1
-        : days.findIndex((day) => dateToString(day) === dateToString(getMonday(event.end))) + 2;
+        : days.findIndex((day) => dateToString(day) === dateToString(getMonday(end))) + 2;
     return endCol;
   };
 
@@ -57,6 +59,7 @@ const GanttTaskBar = ({
       getStartCol={getStartCol}
       getEndCol={getEndCol}
       isProject={isProject}
+      addWorkPackage={addWorkPackage}
     />
   ) : (
     <GanttTaskBarView
