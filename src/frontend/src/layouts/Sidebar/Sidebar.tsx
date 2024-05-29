@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, useTheme, IconButton, Divider, Stack } from '@mui/material';
+import { Typography, Box, useTheme, IconButton, Divider, Stack, Drawer, Container } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -76,22 +76,9 @@ const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
   return (
     <NERDrawer open={drawerOpen} variant="permanent">
       <DrawerHeader>
-        {drawerOpen ? (
-          <IconButton onClick={() => setDrawerOpen(false)}>
-            {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
-          </IconButton>
-        ) : (
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={() => setDrawerOpen(true)}
-            sx={{
-              marginRight: 0.5
-            }}
-          >
-            <GridMenuIcon />
-          </IconButton>
-        )}
+        <IconButton onClick={() => setDrawerOpen(false)}>
+          {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
+        </IconButton>
       </DrawerHeader>
       <Divider />
       <Box
@@ -109,16 +96,10 @@ const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
           {<NavUserMenu open={drawerOpen} />}
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
-          {drawerOpen ? (
-            <Box marginLeft={1.1}>
-              <Typography marginLeft={1.1}>Sponsored By:</Typography>
-              <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
-            </Box>
-          ) : (
-            <Stack direction={'row'} justifyContent={'center'}>
-              <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo.svg" />
-            </Stack>
-          )}
+          <Box marginLeft={1.1}>
+            <Typography marginLeft={1.1}>Sponsored By:</Typography>
+            <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
+          </Box>
           <Typography className={styles.versionNumber}>v4.3.5</Typography>
         </Box>
       </Box>
