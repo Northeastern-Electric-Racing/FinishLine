@@ -90,7 +90,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
       >
         <Box>
           {linkItems.map((linkItem) => (
-            <NavPageLink {...linkItem} open={drawerOpen} />
+            <NavPageLink {...linkItem} />
           ))}
           {<NavUserMenu open={drawerOpen} />}
         </Box>

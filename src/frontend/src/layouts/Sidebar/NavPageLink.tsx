@@ -12,7 +12,7 @@ export interface NavPageLinkItemProps extends LinkItem {
   open?: boolean;
 }
 
-const NavPageLink: React.FC<NavPageLinkItemProps> = ({ open, name, route, icon }) => {
+const NavPageLink: React.FC<NavPageLinkItemProps> = ({ name, route, icon }) => {
   const theme = useTheme();
   return (
     <NavLink
