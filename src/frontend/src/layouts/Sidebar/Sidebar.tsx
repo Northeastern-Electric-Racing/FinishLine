@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, useTheme, IconButton, Divider, Stack, Drawer, Container } from '@mui/material';
+import { Typography, Box, useTheme, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -19,7 +19,6 @@ import NavPageLink from './NavPageLink';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import NERDrawer from '../../components/NERDrawer';
-import { GridMenuIcon } from '@mui/x-data-grid';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 
 interface SidebarProps {
