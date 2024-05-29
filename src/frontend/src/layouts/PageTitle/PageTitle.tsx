@@ -36,8 +36,18 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, headerRight, tabs, sticky,
       >
         <Grid container>
           <Grid container item md={12} display="flex" alignItems={'center'}>
-            <Grid md={3} xs={12} display="flex">
-              <Typography flexGrow={1} variant="h4" fontSize={30} textAlign={'center'}>
+            <Grid md={4} xs={12} display="flex">
+              <Typography
+                flexGrow={1}
+                variant="h4"
+                fontSize={30}
+                sx={{
+                  textAlign: {
+                    xs: 'center',
+                    md: 'left'
+                  }
+                }}
+              >
                 {title}
               </Typography>
             </Grid>

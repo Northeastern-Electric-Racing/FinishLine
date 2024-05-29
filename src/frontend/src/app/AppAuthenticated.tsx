@@ -56,15 +56,14 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
         aria-label="open drawer"
         onClick={() => setDrawerOpen(true)}
         sx={{
-          position: 'fixed',
-          margin: 0.5
+          position: 'fixed'
         }}
       >
         <GridMenuIcon />
       </IconButton>
       <Box display={'flex'}>
         <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 30px)' }}>
+        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 50px)' }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
