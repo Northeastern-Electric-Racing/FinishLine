@@ -4,8 +4,9 @@
  */
 
 import prisma from './prisma';
-import { WBS_Element_Status } from '@prisma/client';
+import { Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
+import { writeFileSync } from 'fs';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -152,6 +153,82 @@ export const migrateToCheckableDescBullets = async () => {
       data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: leadId }
     });
   });
+};
+
+/**
+ * Download All Reimbursement Requests with reimbursement status to csv
+ */
+const downloadReimbursementRequests = async () => {
+  const rrs = await prisma.reimbursement_Request.findMany({
+    where: {
+      dateDeleted: null
+    },
+    include: { reimbursementStatuses: true }
+  });
+
+  const csv = rrs
+    .map(
+      (rr) =>
+        `${rr.saboId},${rr.totalCost},${rr.reimbursementStatuses
+          .map((reimbursementStatus) => reimbursementStatus.type)
+          .join(',')}`
+    )
+    .join('\n');
+
+  // if file doesnt exist create it
+  writeFileSync('./reimbursements.csv', csv, 'utf-8');
+};
+
+const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam = async () => {
+  const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+    where: {
+      dateDeleted: null
+    },
+    include: {
+      reimbursementStatuses: true
+    }
+  });
+
+  const submittedToSabo = reimbursementRequests.filter(
+    (rr) => rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.SABO_SUBMITTED
+  );
+
+  const pendingFinance = reimbursementRequests.filter(
+    (rr) => rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.PENDING_FINANCE
+  );
+
+  const totalAmountOwedForCashSabo = submittedToSabo.reduce((acc, curr) => {
+    if (curr.account === 'CASH') {
+      return acc + curr.totalCost / 100;
+    }
+    return 0;
+  }, 0);
+
+  const totalAmountOwedForBudgetSabo = submittedToSabo.reduce((acc, curr) => {
+    if (curr.account === 'BUDGET') {
+      return acc + curr.totalCost / 100;
+    }
+    return 0;
+  }, 0);
+
+  const totalAmountOwedForCashFinance = pendingFinance.reduce((acc, curr) => {
+    if (curr.account === 'CASH') {
+      return acc + curr.totalCost / 100;
+    }
+    return 0;
+  }, 0);
+
+  const totalAmountOwedForBudgetFinance = pendingFinance.reduce((acc, curr) => {
+    if (curr.account === 'BUDGET') {
+      return acc + curr.totalCost / 100;
+    }
+    return 0;
+  }, 0);
+
+  console.log('Total amount owed for cash submitted to SABO:', totalAmountOwedForCashSabo);
+  console.log('Total amount owed for budget submitted to SABO:', totalAmountOwedForBudgetSabo);
+  console.log('Total amount owed for cash pending finance team:', totalAmountOwedForCashFinance);
+  console.log('Total amount owed for budget pending finance team:', totalAmountOwedForBudgetFinance);
 };
 
 executeScripts()
