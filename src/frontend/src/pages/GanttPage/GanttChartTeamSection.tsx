@@ -103,6 +103,7 @@ const GanttChartTeamSection = ({
               projectNumber: getNewProjectNumber(project.carNumber),
               end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
               workPackages: [],
+              blockedByIds: [],
               teamName,
               type: 'project'
             };

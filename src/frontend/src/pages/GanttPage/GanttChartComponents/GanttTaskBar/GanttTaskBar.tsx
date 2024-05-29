@@ -51,29 +51,33 @@ const GanttTaskBar = ({
     handleOnMouseOver(e, event);
   };
 
-  return isEditMode ? (
-    <GanttTaskBarEdit
-      days={days}
-      event={event}
-      createChange={createChange}
-      getStartCol={getStartCol}
-      getEndCol={getEndCol}
-      isProject={isProject}
-      addWorkPackage={addWorkPackage}
-    />
-  ) : (
-    <GanttTaskBarView
-      days={days}
-      event={event}
-      getStartCol={getStartCol}
-      getEndCol={getEndCol}
-      isProject={isProject}
-      handleOnMouseOver={onMouseOver}
-      handleOnMouseLeave={handleOnMouseLeave}
-      onWorkPackageToggle={onWorkPackageToggle}
-      showWorkPackages={showWorkPackages}
-      highlightedChange={highlightedChange}
-    />
+  return (
+    <div id={`gantt-task-${event.id}`}>
+      {isEditMode ? (
+        <GanttTaskBarEdit
+          days={days}
+          event={event}
+          createChange={createChange}
+          getStartCol={getStartCol}
+          getEndCol={getEndCol}
+          isProject={isProject}
+          addWorkPackage={addWorkPackage}
+        />
+      ) : (
+        <GanttTaskBarView
+          days={days}
+          event={event}
+          getStartCol={getStartCol}
+          getEndCol={getEndCol}
+          isProject={isProject}
+          handleOnMouseOver={onMouseOver}
+          handleOnMouseLeave={handleOnMouseLeave}
+          onWorkPackageToggle={onWorkPackageToggle}
+          showWorkPackages={showWorkPackages}
+          highlightedChange={highlightedChange}
+        />
+      )}{' '}
+    </div>
   );
 };
 

@@ -115,6 +115,7 @@ const GanttTaskBarEdit = ({
             end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
             type: 'task',
             workPackages: [],
+            blockedByIds: [],
             projectId: event.id,
             projectNumber: event.projectNumber,
             carNumber: event.carNumber,

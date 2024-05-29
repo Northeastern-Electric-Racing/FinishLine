@@ -23,6 +23,7 @@ export interface GanttTaskData {
   workPackages: GanttTaskData[];
   projectNumber: number;
   carNumber: number;
+  blockedByIds: string[];
   styles?: {
     color?: string;
     backgroundColor?: string;
@@ -66,6 +67,7 @@ export const applyChangeToEvent = (eventChanges: EventChange[], task: GanttTaskD
   }
 
   const currentEventChanges = eventChanges.filter((ec) => ec.eventId === task.id);
+  const blockedByEventChanges = eventChanges.filter((ec) => task.blockedByIds.includes(ec.eventId));
 
   const changedEvent = { ...task };
   for (const eventChange of currentEventChanges) {
@@ -81,6 +83,25 @@ export const applyChangeToEvent = (eventChanges: EventChange[], task: GanttTaskD
       }
     }
   }
+  const totalTimelineImpact = blockedByEventChanges.reduce((acc, currentEventChange) => {
+    switch (currentEventChange.type) {
+      case 'change-end-date': {
+        const timelineImpact = dayjs(currentEventChange.newEnd).diff(dayjs(currentEventChange.originalEnd), 'days');
+        return acc + timelineImpact;
+      }
+      case 'shift-by-days': {
+        return acc + currentEventChange.days;
+      }
+      default:
+        return acc;
+    }
+  }, 0);
+
+  if (totalTimelineImpact > 0) {
+    changedEvent.start = dayjs(changedEvent.start).add(totalTimelineImpact, 'days').toDate();
+    changedEvent.end = dayjs(changedEvent.end).add(totalTimelineImpact, 'days').toDate();
+  }
+
   return { ...changedEvent, workPackages };
 };
 
@@ -165,6 +186,7 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     projectId: projectWbsPipe(workPackage.wbsNum),
     projectNumber: workPackage.wbsNum.projectNumber,
     carNumber: workPackage.wbsNum.carNumber,
+    blockedByIds: workPackage.blockedBy.map(wbsPipe),
     type: 'task',
     teamName,
     stage: workPackage.stage,
@@ -203,6 +225,7 @@ export const transformProjectToGanttTask = (project: Project): GanttTask[] => {
       type: 'project',
       projectNumber: project.wbsNum.projectNumber,
       carNumber: project.wbsNum.carNumber,
+      blockedByIds: [],
       teamName,
       lead: project.lead,
       manager: project.manager,
