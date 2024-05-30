@@ -50,6 +50,7 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
       onHide={onHide}
       title={`Delete Work Package #${wbsPipe(workPackage)}`}
       reset={() => reset({ wbsNum: '' })}
+      submitText="Delete"
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmitWrapper}
       formId="delete-wp-form"
@@ -58,7 +59,7 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
       <Typography sx={{ marginBottom: '1rem' }}>
         Are you sure you want to delete Work Package #{wbsPipe(workPackage)}?
       </Typography>
-      <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
+      <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!!!</Typography>
       <FormControl>
         <FormLabel sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
           To confirm deletion, please type in the WBS number of this Work Package.
