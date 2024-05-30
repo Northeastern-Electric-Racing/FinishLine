@@ -20,7 +20,7 @@ import {
   EventChange,
   RequestEventChange,
   aggregateGanttChanges,
-  getProjectsTeamNames
+  GanttTaskData
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -34,6 +34,7 @@ import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Team, TeamType } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { GanttRequestChangeModal } from './GanttChartComponents/GanttChangeModals/GanttRequestChangeModal';
+import { useGetAllCars } from '../../hooks/cars.hooks';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -49,6 +50,7 @@ const GanttChartPage: FC = () => {
     data: teamTypes,
     error: teamTypesError
   } = useAllTeamTypes();
+  const { isLoading: carsIsLoading, isError: carsIsError, data: cars, error: carsError } = useGetAllCars();
 
   const { isLoading: teamsIsLoading, isError: teamsIsError, data: teams, error: teamsError } = useAllTeams();
   const [searchText, setSearchText] = useState<string>('');
@@ -86,11 +88,21 @@ const GanttChartPage: FC = () => {
     teamNameToGanttTasksMap.set(ganttTask.teamName, tasks);
   });
 
-  if (projectsIsLoading || teamTypesIsLoading || teamsIsLoading || !teams || !projects || !teamTypes)
+  if (
+    projectsIsLoading ||
+    teamTypesIsLoading ||
+    teamsIsLoading ||
+    !teams ||
+    !projects ||
+    !teamTypes ||
+    carsIsLoading ||
+    !cars
+  )
     return <LoadingIndicator />;
   if (projectsIsError) return <ErrorPage message={projectsError.message} />;
   if (teamTypesIsError) return <ErrorPage message={teamTypesError.message} />;
   if (teamsIsError) return <ErrorPage message={teamsError.message} />;
+  if (carsIsError) return <ErrorPage message={carsError.message} />;
 
   const carHandlerFn = (car: number) => {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -126,11 +138,14 @@ const GanttChartPage: FC = () => {
     filterLabel: string;
     handler: (event: ChangeEvent<HTMLInputElement>) => void;
     defaultChecked: boolean;
-  }[] = [
-    { filterLabel: 'None', handler: carHandlerFn(0), defaultChecked: defaultGanttFilters.showCars.includes(0) },
-    { filterLabel: 'Car 1', handler: carHandlerFn(1), defaultChecked: defaultGanttFilters.showCars.includes(1) },
-    { filterLabel: 'Car 2', handler: carHandlerFn(2), defaultChecked: defaultGanttFilters.showCars.includes(2) }
-  ];
+  }[] = cars.map((car) => {
+    const carNum = car.wbsNum.carNumber;
+    return {
+      filterLabel: carNum === 0 ? 'None' : `Car ${carNum}`,
+      handler: carHandlerFn(carNum),
+      defaultChecked: defaultGanttFilters.showCars.includes(carNum)
+    };
+  });
 
   const teamTypeHandlers: {
     filterLabel: string;
@@ -225,17 +240,59 @@ const GanttChartPage: FC = () => {
         )
       : add(Date.now(), { weeks: 15 });
 
-  const teamList = Array.from(getProjectsTeamNames(projects));
+  const teamList = Array.from(teams.map((team) => team.teamName));
   const sortedTeamList: string[] = teamList.sort(sortTeamNames);
 
   const saveChanges = (eventChanges: EventChange[]) => {
     //get wps out of each project
-    const updatedGanttTasks = aggregateGanttChanges(eventChanges, allGanttTasks);
-    setGanttTaskChanges(updatedGanttTasks);
+    const updatedGanttChanges = aggregateGanttChanges(eventChanges, allGanttTasks);
+    for (const change of updatedGanttChanges) {
+      const project = addedProjects.find((project) => project.id === change.eventId);
+      if (project) {
+        setAddedWorkPackages(addedWorkPackages.filter((wp) => wp.projectId !== project.id));
+
+        const newWps: Map<string, GanttTaskData> = new Map();
+        change.workPackageChanges.forEach((wpChange) => {
+          newWps.set(wpChange.eventId, {
+            id: wpChange.eventId,
+            type: 'task',
+            stage: wpChange.stage,
+            name: wpChange.name,
+            start: wpChange.newStart,
+            end: wpChange.newEnd,
+            workPackages: [],
+            projectNumber: project.projectNumber,
+            carNumber: project.carNumber,
+            projectId: project.id
+          });
+        });
+
+        const newProject = {
+          id: project.id,
+          name: project.name,
+          teamName: project.teamName,
+          carNumber: project.carNumber,
+          projectNumber: project.projectNumber,
+          start: project.start,
+          end: project.end,
+          workPackages: Array.from(newWps.values()),
+          type: project.type
+        };
+
+        setAddedProjects(addedProjects.filter((project) => project.id !== newProject.id));
+        setAddedProjects((prev) => [...prev, newProject]);
+      }
+    }
+
+    setGanttTaskChanges(updatedGanttChanges);
   };
 
   const removeActiveModal = (changeId: string) => {
     setGanttTaskChanges(ganttTaskChanges.filter((change) => change.eventId !== changeId));
+    if (ganttTaskChanges.length === 1) {
+      setAddedProjects([]);
+      setAddedWorkPackages([]);
+    }
   };
 
   const collapseHandler = () => {

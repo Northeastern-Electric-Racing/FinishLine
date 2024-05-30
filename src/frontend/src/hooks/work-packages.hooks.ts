@@ -18,7 +18,9 @@ import {
   WorkPackageTemplateApiInputs,
   editWorkPackageTemplate,
   getAllWorkPackageTemplates,
-  deleteWorkPackageTemplate
+  deleteWorkPackageTemplate,
+  getSingleWorkPackageTemplate,
+  createSingleWorkPackageTemplate
 } from '../apis/work-packages.api';
 
 /**
@@ -174,6 +176,29 @@ export const useDeleteWorkPackageTemplate = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(['work package template']);
       }
+    }
+  );
+};
+
+/*
+ * Custom React Hook to get a single workpackage template
+ */
+export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
+  return useQuery<WorkPackageTemplate, Error>(['work package templates'], async () => {
+    const { data } = await getSingleWorkPackageTemplate(workPackageTemplateId);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to create a workpackage template
+ */
+export const useCreateSingleWorkPackageTemplate = () => {
+  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
+    ['work package template', 'create'],
+    async (wptPayload: WorkPackageTemplateApiInputs) => {
+      const { data } = await createSingleWorkPackageTemplate(wptPayload);
+      return data;
     }
   );
 };

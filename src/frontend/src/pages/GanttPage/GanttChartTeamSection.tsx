@@ -3,7 +3,7 @@ import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
 import { EventChange, GanttTask, RequestEventChange, applyChangesToEvents, GanttTaskData } from '../../utils/gantt.utils';
 import { useState } from 'react';
-import AddProjectModal from './AddProjectModal';
+import AddProjectModal from './GanttChartComponents/AddProjectModal';
 import useId from '@mui/material/utils/useId';
 
 interface GanttChartTeamSectionProps {
