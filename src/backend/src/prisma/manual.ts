@@ -163,20 +163,22 @@ const downloadReimbursementRequests = async () => {
     where: {
       dateDeleted: null
     },
-    include: { reimbursementStatuses: true }
+    include: { reimbursementStatuses: true, vendor: true }
   });
 
-  const csv = rrs
-    .map(
-      (rr) =>
-        `${rr.saboId},${rr.totalCost},${rr.reimbursementStatuses
-          .map((reimbursementStatus) => reimbursementStatus.type)
-          .join(',')}`
-    )
-    .join('\n');
+  const promises = rrs.map(
+    async (rr) =>
+      await `${rr.saboId},${await getUserFullName(rr.recipientId)},${rr.totalCost},${
+        rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
+      },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+        rr.reimbursementStatuses.find((rs) => rs.type === Reimbursement_Status_Type.SABO_SUBMITTED)?.dateCreated ?? ''
+      },${rr.vendor.name}`
+  );
+
+  const csv = await Promise.all(promises);
 
   // if file doesnt exist create it
-  writeFileSync('./reimbursements.csv', csv, 'utf-8');
+  writeFileSync('./reimbursements.csv', csv.join('\n'), 'utf-8');
 };
 
 const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam = async () => {
