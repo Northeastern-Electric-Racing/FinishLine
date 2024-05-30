@@ -15,7 +15,7 @@ export const GanttRequestChangeModal = ({ change, handleClose, open }: GanttRequ
     return <GanttProjectCreateModal change={change} handleClose={handleClose} open={open} />;
   }
   try {
-    validateWBS(change.eventId);
+    validateWBS(change.taskId);
     return <GanttTimeLineChangeModal change={change} handleClose={handleClose} open={open} />;
   } catch {
     return <GanttWorkPackageCreateModal change={change} handleClose={handleClose} open={open} />;

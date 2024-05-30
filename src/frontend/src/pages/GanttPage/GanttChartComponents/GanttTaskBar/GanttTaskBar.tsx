@@ -3,14 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { EventChange, GanttTaskData, RequestEventChange } from '../../../../utils/gantt.utils';
+import { EventChange, GanttTask, GanttTaskData, RequestEventChange } from '../../../../utils/gantt.utils';
 import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
+import { WorkPackage } from 'shared';
 
 const GanttTaskBar = ({
   days,
-  event,
+  task,
   createChange,
   isEditMode,
   handleOnMouseOver,
@@ -18,10 +19,11 @@ const GanttTaskBar = ({
   handleOnMouseLeave,
   showWorkPackages = false,
   highlightedChange,
-  addWorkPackage = () => {}
+  addWorkPackage = () => {},
+  getNewWorkPackageNumber
 }: {
   days: Date[];
-  event: GanttTaskData;
+  task: GanttTask;
   createChange: (change: EventChange) => void;
   isEditMode: boolean;
   handleOnMouseOver: (e: React.MouseEvent, event: GanttTaskData) => void;
@@ -29,9 +31,10 @@ const GanttTaskBar = ({
   onWorkPackageToggle?: () => void;
   showWorkPackages?: boolean;
   highlightedChange?: RequestEventChange;
-  addWorkPackage?: (task: GanttTaskData) => void;
+  addWorkPackage?: (task: WorkPackage) => void;
+  getNewWorkPackageNumber: (projectId: string) => number;
 }) => {
-  const isProject = !event.projectId;
+  const isProject = !task.projectId;
 
   const getStartCol = (start: Date) => {
     const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
@@ -48,25 +51,26 @@ const GanttTaskBar = ({
   };
 
   const onMouseOver = (e: React.MouseEvent) => {
-    handleOnMouseOver(e, event);
+    handleOnMouseOver(e, task);
   };
 
   return (
-    <div id={`gantt-task-${event.id}`}>
+    <div id={`gantt-task-${task.id}`}>
       {isEditMode ? (
         <GanttTaskBarEdit
           days={days}
-          event={event}
+          task={task}
           createChange={createChange}
           getStartCol={getStartCol}
           getEndCol={getEndCol}
           isProject={isProject}
           addWorkPackage={addWorkPackage}
+          getNewWorkPackageNumber={getNewWorkPackageNumber}
         />
       ) : (
         <GanttTaskBarView
           days={days}
-          event={event}
+          task={task}
           getStartCol={getStartCol}
           getEndCol={getEndCol}
           isProject={isProject}
@@ -75,6 +79,7 @@ const GanttTaskBar = ({
           onWorkPackageToggle={onWorkPackageToggle}
           showWorkPackages={showWorkPackages}
           highlightedChange={highlightedChange}
+          getNewWorkPackageNumber={getNewWorkPackageNumber}
         />
       )}{' '}
     </div>

@@ -57,7 +57,8 @@ export const getProjectQueryArgs = (organizationId: string) =>
               assemblies: {
                 where: { dateDeleted: null },
                 ...getAssemblyQueryArgs(organizationId)
-              }
+              },
+              blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } }
             }
           },
           blockedBy: { where: { dateDeleted: null } }

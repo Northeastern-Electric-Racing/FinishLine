@@ -49,7 +49,7 @@ export interface Project extends WbsElement {
   favoritedBy: UserPreview[];
 }
 
-export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
+export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status' | 'workPackages' | 'lead' | 'manager'>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
@@ -57,6 +57,7 @@ export interface WorkPackage extends WbsElement {
   endDate: Date;
   duration: number;
   blockedBy: WbsNumber[];
+  immediatelyBlocking: WbsNumber[];
   projectName: string;
   stage?: WorkPackageStage;
 }

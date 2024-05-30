@@ -4,22 +4,25 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { EventChange, GanttTaskData, RequestEventChange } from '../../utils/gantt.utils';
-import { Box, Typography, Collapse } from '@mui/material';
+import { EventChange, GanttTaskData, RequestEventChange, transformProjectToGanttTask } from '../../utils/gantt.utils';
+import { Box, Typography } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import { useState } from 'react';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
+import { ProjectPreview, WorkPackage } from 'shared';
 
 interface GanttChartSectionProps {
   start: Date;
   end: Date;
-  projects: GanttTaskData[];
+  projects: ProjectPreview[];
   isEditMode: boolean;
   createChange: (change: EventChange) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
   highlightedChange?: RequestEventChange;
-  addWorkPackage: (task: GanttTaskData) => void;
+  addWorkPackage: (task: WorkPackage) => void;
+  teamName: string;
+  getNewWorkPackageNumber: (projectId: string) => number;
 }
 
 const GanttChartSection = ({
@@ -31,7 +34,9 @@ const GanttChartSection = ({
   showWorkPackagesMap,
   setShowWorkPackagesMap,
   highlightedChange,
-  addWorkPackage
+  addWorkPackage,
+  teamName,
+  getNewWorkPackageNumber
 }: GanttChartSectionProps) => {
   const days = eachDayOfInterval({ start, end }).filter((day) => isMonday(day));
   const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
@@ -53,7 +58,7 @@ const GanttChartSection = ({
     setCurrentTask(undefined);
   };
 
-  const toggleWorkPackages = (projectTask: GanttTaskData) => {
+  const toggleWorkPackages = (projectTask: ProjectPreview) => {
     setShowWorkPackagesMap((prev) => new Map(prev.set(projectTask.id, !prev.get(projectTask.id))));
   };
 
@@ -62,47 +67,24 @@ const GanttChartSection = ({
       <Box sx={{ mt: '1rem', width: 'fit-content' }}>
         {projects.map((project) => {
           return (
-            <>
-              <Box display="flex" alignItems="center">
-                <GanttTaskBar
-                  key={project.id}
-                  days={days}
-                  event={project}
-                  isEditMode={isEditMode}
-                  createChange={handleCreateProjectChange}
-                  handleOnMouseOver={handleOnMouseOver}
-                  handleOnMouseLeave={handleOnMouseLeave}
-                  onWorkPackageToggle={() => toggleWorkPackages(project)}
-                  showWorkPackages={showWorkPackagesMap.get(project.id)}
-                  addWorkPackage={addWorkPackage}
-                  highlightedChange={
-                    highlightedChange && project.id === highlightedChange.eventId ? highlightedChange : undefined
-                  }
-                />
-              </Box>
-              <Collapse in={showWorkPackagesMap.get(project.id)}>
-                {project.workPackages.map((workPackage) => {
-                  return (
-                    <GanttTaskBar
-                      key={workPackage.id}
-                      days={days}
-                      event={workPackage}
-                      isEditMode={isEditMode}
-                      createChange={createChange}
-                      handleOnMouseOver={handleOnMouseOver}
-                      handleOnMouseLeave={handleOnMouseLeave}
-                      highlightedChange={
-                        highlightedChange &&
-                        (workPackage.id === highlightedChange.eventId ||
-                          highlightedChange?.eventId === workPackage.projectId)
-                          ? highlightedChange
-                          : undefined
-                      }
-                    />
-                  );
-                })}
-              </Collapse>
-            </>
+            <Box display="flex" alignItems="center">
+              <GanttTaskBar
+                key={project.id}
+                days={days}
+                task={transformProjectToGanttTask(project, teamName)}
+                isEditMode={isEditMode}
+                createChange={handleCreateProjectChange}
+                handleOnMouseOver={handleOnMouseOver}
+                handleOnMouseLeave={handleOnMouseLeave}
+                onWorkPackageToggle={() => toggleWorkPackages(project)}
+                showWorkPackages={showWorkPackagesMap.get(project.id)}
+                addWorkPackage={addWorkPackage}
+                getNewWorkPackageNumber={getNewWorkPackageNumber}
+                highlightedChange={
+                  highlightedChange && project.id === highlightedChange.taskId ? highlightedChange : undefined
+                }
+              />
+            </Box>
           );
         })}
       </Box>
@@ -119,7 +101,7 @@ const GanttChartSection = ({
       )}
     </Box>
   ) : (
-    <Typography sx={{ mx: 1 }}>No items to display</Typography>
+    <Typography sx={{ marginTop: 5 }}>No Projects to Display</Typography>
   );
 };
 

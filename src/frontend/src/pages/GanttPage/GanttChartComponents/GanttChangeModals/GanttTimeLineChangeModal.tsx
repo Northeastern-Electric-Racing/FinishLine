@@ -25,7 +25,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     isLoading: wpIsLoading,
     isError: wpIsError,
     error: wpError
-  } = useSingleWorkPackage(validateWBS(change.eventId));
+  } = useSingleWorkPackage(validateWBS(change.taskId));
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
 
   if (!workPackage || wpIsLoading || isLoading) return <LoadingIndicator />;
@@ -49,7 +49,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     }
 
     const payload = {
-      wbsNum: validateWBS(change.eventId),
+      wbsNum: validateWBS(change.taskId),
       type: ChangeRequestType.Issue,
       what: `Move timeline From: ${changeInTimeline(change.prevStart, change.prevEnd)} To: ${changeInTimeline(
         change.newStart,

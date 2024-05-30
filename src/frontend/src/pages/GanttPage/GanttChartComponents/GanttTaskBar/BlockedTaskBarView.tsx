@@ -2,46 +2,48 @@ import {
   GANTT_CHART_GAP_SIZE,
   GANTT_CHART_CELL_SIZE,
   RequestEventChange,
-  transformWorkPackageToGanttTask,
-  GanttTask
+  transformWorkPackageToGanttTask
 } from '../../../../utils/gantt.utils';
-import { Box, Collapse, IconButton, Typography, useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { dateToString } from '../../../../utils/datetime.utils';
 import { routes } from '../../../../utils/routes';
 import { useHistory } from 'react-router-dom';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import GanttTaskBar from './GanttTaskBar';
-import BlockedGanttTaskView from './BlockedTaskBarView';
-import { wbsPipe } from 'shared';
+import { WbsNumber, wbsPipe } from 'shared';
+import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
 
-const GanttTaskBarView = ({
+const BlockedGanttTaskView = ({
   days,
-  task,
+  teamName,
   getStartCol,
   getEndCol,
-  isProject,
+  wbsNumber,
   handleOnMouseOver,
   handleOnMouseLeave,
   onWorkPackageToggle,
-  showWorkPackages,
   highlightedChange,
   getNewWorkPackageNumber
 }: {
   days: Date[];
-  task: GanttTask;
+  wbsNumber: WbsNumber;
+  teamName: string;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
-  isProject: boolean;
   handleOnMouseOver: (e: React.MouseEvent) => void;
   handleOnMouseLeave: () => void;
   onWorkPackageToggle?: () => void;
-  showWorkPackages?: boolean;
   highlightedChange?: RequestEventChange;
   getNewWorkPackageNumber: (projectId: string) => number;
 }) => {
+  const { isLoading, data, isError, error } = useSingleWorkPackage(wbsNumber);
   const theme = useTheme();
   const history = useHistory();
+
+  if (isLoading || !data) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} />;
+
+  const task = transformWorkPackageToGanttTask(data, teamName);
 
   return (
     <>
@@ -101,20 +103,14 @@ const GanttTaskBarView = ({
               gridColumnEnd: getEndCol(task.end),
               display: 'flex',
               alignItems: 'center',
-              marginTop: isProject ? '-10px' : undefined,
-              marginBottom: isProject ? '-10px' : undefined,
+              marginTop: undefined,
+              marginBottom: undefined,
               cursor: 'pointer',
-              width: isProject ? 'fit-content' : '100%'
+              width: '100%'
             }}
             onMouseOver={handleOnMouseOver}
             onMouseLeave={handleOnMouseLeave}
-            onClick={!isProject ? () => history.push(`${`${routes.PROJECTS}/${task.id}`}`) : undefined}
           >
-            {isProject && (
-              <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-15px', marginLeft: '-5px' }}>
-                {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
-              </IconButton>
-            )}
             <Typography
               variant="body1"
               sx={{
@@ -169,34 +165,13 @@ const GanttTaskBarView = ({
           )}
         </Box>
       </Box>
-      <Collapse in={showWorkPackages}>
-        {task.unblockedWorkPackages.map((workPackage) => {
-          return (
-            <GanttTaskBar
-              key={workPackage.id}
-              days={days}
-              task={transformWorkPackageToGanttTask(workPackage, task.teamName)}
-              isEditMode={false}
-              createChange={() => {}}
-              handleOnMouseOver={handleOnMouseOver}
-              handleOnMouseLeave={handleOnMouseLeave}
-              highlightedChange={
-                highlightedChange && (highlightedChange.taskId === workPackage.id || highlightedChange?.taskId === task.id)
-                  ? highlightedChange
-                  : undefined
-              }
-              getNewWorkPackageNumber={getNewWorkPackageNumber}
-            />
-          );
-        })}
-      </Collapse>
       {task.blocking.map((wbsNum) => {
         return (
           <BlockedGanttTaskView
             key={wbsPipe(wbsNum)}
             days={days}
             wbsNumber={wbsNum}
-            teamName={task.teamName}
+            teamName={teamName}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
             handleOnMouseOver={handleOnMouseOver}
@@ -214,4 +189,4 @@ const GanttTaskBarView = ({
   );
 };
 
-export default GanttTaskBarView;
+export default BlockedGanttTaskView;

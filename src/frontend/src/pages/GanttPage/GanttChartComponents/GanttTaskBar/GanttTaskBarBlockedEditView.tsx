@@ -1,37 +1,38 @@
-import { Box, Chip, Typography, useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import {
   EventChange,
   GANTT_CHART_CELL_SIZE,
   GANTT_CHART_GAP_SIZE,
-  transformWorkPackageToGanttTask,
-  GanttTask
+  transformWorkPackageToGanttTask
 } from '../../../../utils/gantt.utils';
 import { addDays, differenceInDays } from 'date-fns';
 import { DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useId from '@mui/material/utils/useId';
 import useMeasure from 'react-use-measure';
-import AddWorkPackageModal from '../AddWorkPackageModal';
-import { WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
-import GanttTaskBarBlockedEdit from './GanttTaskBarBlockedEditView';
+import { WbsNumber, wbsPipe, WorkPackage } from 'shared';
+import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
+import GanttTaskBarEdit from './GanttTaskBarEdit';
 
-const GanttTaskBarEdit = ({
+const GanttTaskBarBlockedEdit = ({
   days,
-  task,
+  wbsNum,
   createChange,
   getStartCol,
   getEndCol,
-  isProject,
   addWorkPackage,
-  getNewWorkPackageNumber
+  getNewWorkPackageNumber,
+  teamName
 }: {
   days: Date[];
-  task: GanttTask;
+  wbsNum: WbsNumber;
   createChange: (change: EventChange) => void;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
-  isProject: boolean;
   addWorkPackage: (workPackage: WorkPackage) => void;
   getNewWorkPackageNumber: (projectId: string) => number;
+  teamName: string;
 }) => {
   const theme = useTheme();
   const id = useId() || 'id'; // id for creating event changes
@@ -41,6 +42,18 @@ const GanttTaskBarEdit = ({
   const widthPerDay = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
   const [width, setWidth] = useState(0); // current width of component, will change on resize
   const [measureRef, bounds] = useMeasure();
+  const { isLoading, data, isError, error } = useSingleWorkPackage(wbsNum);
+
+  useEffect(() => {
+    if (bounds.width !== 0 && width === 0) {
+      setWidth(bounds.width);
+    }
+  }, [bounds, width]);
+
+  if (isLoading || !data) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} />;
+
+  const task = transformWorkPackageToGanttTask(data, teamName);
 
   // used to make sure that any changes to the start and end dates are made in multiples of 7
   const roundToMultipleOf7 = (num: number) => {
@@ -91,14 +104,6 @@ const GanttTaskBarEdit = ({
     createChange({ id, eventId: task.id, type: 'shift-by-days', days });
   };
 
-  useEffect(() => {
-    if (bounds.width !== 0 && width === 0) {
-      setWidth(bounds.width);
-    }
-  }, [bounds, task.end, task.start, width]);
-
-  const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
-
   return (
     <>
       <div
@@ -106,51 +111,6 @@ const GanttTaskBarEdit = ({
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
       >
-        <AddWorkPackageModal
-          showModal={showAddWorkPackageModal}
-          handleClose={() => setShowAddWorkPackageModal(false)}
-          addWorkPackage={(workPackageInfo) => {
-            const dup = id + task.unblockedWorkPackages.length + 1;
-            const newWorkPackageNumber = getNewWorkPackageNumber(task.projectId ?? '');
-            addWorkPackage({
-              id: dup,
-              name: workPackageInfo.name,
-              startDate: new Date(),
-              endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-              blockedBy: [],
-              wbsNum: {
-                carNumber: task.carNumber,
-                projectNumber: task.projectNumber,
-                workPackageNumber: newWorkPackageNumber
-              },
-              stage: workPackageInfo.stage,
-              projectName: task.name,
-              status: WbsElementStatus.Inactive,
-              orderInProject: newWorkPackageNumber,
-              duration: 1,
-              immediatelyBlocking: [],
-              descriptionBullets: [],
-              links: [],
-              wbsElementId: '-1',
-              dateCreated: new Date(),
-              lead: undefined,
-              manager: undefined,
-              changes: [],
-              materials: [],
-              assemblies: []
-            });
-
-            createChange({
-              id,
-              eventId: dup,
-              type: 'create-work-package',
-              name: workPackageInfo.name,
-              stage: workPackageInfo.stage,
-              start: new Date(),
-              end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
-            });
-          }}
-        />
         <Box
           sx={{
             width: '100%',
@@ -199,7 +159,7 @@ const GanttTaskBarEdit = ({
               border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
               borderRadius: '0.25rem',
               backgroundColor: task.styles ? task.styles.backgroundColor : theme.palette.background.paper,
-              cursor: isProject ? 'default' : 'move'
+              cursor: 'move'
             }}
           >
             <Box
@@ -213,7 +173,7 @@ const GanttTaskBarEdit = ({
               }}
             >
               <Box
-                draggable={!isProject}
+                draggable={true}
                 onDrag={onDragStart}
                 onDragEnd={onDragEnd}
                 style={{
@@ -243,24 +203,16 @@ const GanttTaskBarEdit = ({
 
               <Box
                 sx={{
-                  cursor: isProject ? 'default' : 'ew-resize',
+                  cursor: 'ew-resize',
                   height: '100%',
                   width: '5rem',
                   position: 'relative',
                   right: '-10'
                 }}
-                onMouseDown={isProject ? undefined : handleMouseDown}
+                onMouseDown={handleMouseDown}
               />
             </Box>
           </div>
-          {isProject && (
-            <Chip
-              label={'+'}
-              onClick={() => {
-                setShowAddWorkPackageModal(true);
-              }}
-            />
-          )}
         </Box>
       </div>
       {task.unblockedWorkPackages.map((workPackage) => {
@@ -297,4 +249,4 @@ const GanttTaskBarEdit = ({
   );
 };
 
-export default GanttTaskBarEdit;
+export default GanttTaskBarBlockedEdit;

@@ -1,10 +1,11 @@
 import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
-import { EventChange, GanttTask, RequestEventChange, applyChangesToEvents, GanttTaskData } from '../../utils/gantt.utils';
+import { EventChange, RequestEventChange } from '../../utils/gantt.utils';
 import { useState } from 'react';
 import AddProjectModal from './GanttChartComponents/AddProjectModal';
 import useId from '@mui/material/utils/useId';
+import { ProjectPreview, WbsElementStatus, WorkPackage } from 'shared';
 
 interface GanttChartTeamSectionProps {
   startDate: Date;
@@ -13,11 +14,12 @@ interface GanttChartTeamSectionProps {
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
   teamName: string;
-  projectTasks: GanttTask[];
+  projects: ProjectPreview[];
   highlightedChange?: RequestEventChange;
   getNewProjectNumber: (carNumber: number) => number;
-  addProject: (project: GanttTask) => void;
-  addWorkPackage: (workPackage: GanttTask) => void;
+  addProject: (project: ProjectPreview) => void;
+  addWorkPackage: (workPackage: WorkPackage) => void;
+  getNewWorkPackageNumber: (projectId: string) => number;
 }
 
 const GanttChartTeamSection = ({
@@ -27,11 +29,12 @@ const GanttChartTeamSection = ({
   showWorkPackagesMap,
   setShowWorkPackagesMap,
   teamName,
-  projectTasks,
+  projects,
   getNewProjectNumber,
   highlightedChange,
   addProject,
-  addWorkPackage
+  addWorkPackage,
+  getNewWorkPackageNumber
 }: GanttChartTeamSectionProps) => {
   const theme = useTheme();
   const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
@@ -50,7 +53,7 @@ const GanttChartTeamSection = ({
   };
 
   const handleEdit = () => {
-    projectTasks.forEach((project) => {
+    projects.forEach((project) => {
       setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
     });
 
@@ -58,15 +61,13 @@ const GanttChartTeamSection = ({
   };
 
   // Sorting the work packages of each project based on their start date
-  projectTasks.forEach((task) => {
-    task.workPackages.sort((a, b) => a.start.getTime() - b.start.getTime());
+  projects.forEach((project) => {
+    project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   });
 
-  const handleAddWorkPackage = (workPackage: GanttTaskData) => {
-    addWorkPackage({ ...workPackage, teamName });
+  const handleAddWorkPackage = (workPackage: WorkPackage) => {
+    addWorkPackage({ ...workPackage });
   };
-
-  const displayedProjects = isEditMode ? applyChangesToEvents(projectTasks, eventChanges) : projectTasks;
 
   return (
     <Box
@@ -95,22 +96,21 @@ const GanttChartTeamSection = ({
           showModal={showAddProjectModal}
           handleClose={() => setShowAddProjectModal(false)}
           addProject={(project) => {
-            const newProject: GanttTask = {
-              id: id + projectTasks.length + 1,
+            const newProject: ProjectPreview = {
+              id: id + projects.length + 1,
               name: project.name,
-              start: new Date(),
-              carNumber: project.carNumber,
-              projectNumber: getNewProjectNumber(project.carNumber),
-              end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-              workPackages: [],
-              blockedByIds: [],
-              teamName,
-              type: 'project'
+              wbsNum: {
+                carNumber: project.carNumber,
+                projectNumber: getNewProjectNumber(project.carNumber),
+                workPackageNumber: 0
+              },
+              status: WbsElementStatus.Inactive,
+              workPackages: []
             };
 
             addProject(newProject);
 
-            projectTasks.push(newProject);
+            projects.push(newProject);
 
             handleEdit();
 
@@ -149,12 +149,14 @@ const GanttChartTeamSection = ({
           start={startDate}
           end={endDate}
           isEditMode={isEditMode}
-          projects={displayedProjects}
+          projects={projects}
           createChange={createChange}
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
           highlightedChange={highlightedChange}
           addWorkPackage={handleAddWorkPackage}
+          teamName={teamName}
+          getNewWorkPackageNumber={getNewWorkPackageNumber}
         />
       </Box>
     </Box>
