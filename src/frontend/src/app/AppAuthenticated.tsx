@@ -28,7 +28,7 @@ import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
-import { GridMenuIcon } from '@mui/x-data-grid';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -59,11 +59,20 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           position: 'fixed'
         }}
       >
-        <GridMenuIcon />
+        <ArrowForwardIosSharpIcon
+          sx={{
+            marginRight: -0.5,
+            color: '#ffffff',
+            transition: 'transform 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateX(3px)'
+            }
+          }}
+        />
       </IconButton>
       <Box display={'flex'}>
         <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 50px)' }}>
+        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 40px)' }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
