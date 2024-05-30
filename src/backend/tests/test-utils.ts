@@ -173,11 +173,9 @@ export const createTestOrganization = async () => {
   });
 };
 
-export const createTestWorkPackageTemplate = async (organizationId?: string) => {
+export const createTestWorkPackageTemplate = async (user: User, organizationId?: string) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
   if (!organizationId) throw new Error('Failed to create organization');
-
-  const user = await createTestUser(batmanAppAdmin, organizationId);
 
   const workPackageTemplate = await prisma.work_Package_Template.create({
     data: {
