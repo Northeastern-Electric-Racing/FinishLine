@@ -30,7 +30,7 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
     handleSubmit,
     control,
     reset,
-    formState: { errors, isValid }
+    formState: { errors }
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
