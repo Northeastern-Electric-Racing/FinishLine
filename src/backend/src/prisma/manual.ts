@@ -4,7 +4,7 @@
  */
 
 import prisma from './prisma';
-import { Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
+import { Club_Accounts, Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
 import { writeFileSync } from 'fs';
 
@@ -203,32 +203,30 @@ const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam 
     }
     return 0;
   }, 0);
-
   const totalAmountOwedForBudgetSabo = submittedToSabo.reduce((acc, curr) => {
-    if (curr.account === 'BUDGET') {
+    if (curr.account === Club_Accounts.BUDGET) {
       return acc + curr.totalCost / 100;
     }
-    return 0;
+    return acc + 0;
   }, 0);
 
   const totalAmountOwedForCashFinance = pendingFinance.reduce((acc, curr) => {
-    if (curr.account === 'CASH') {
+    if (curr.account === Club_Accounts.CASH) {
       return acc + curr.totalCost / 100;
     }
-    return 0;
+    return acc + 0;
   }, 0);
 
   const totalAmountOwedForBudgetFinance = pendingFinance.reduce((acc, curr) => {
-    if (curr.account === 'BUDGET') {
+    if (curr.account === Club_Accounts.BUDGET) {
       return acc + curr.totalCost / 100;
     }
-    return 0;
+    return acc + 0;
   }, 0);
 
   console.log('Total amount owed for cash submitted to SABO:', totalAmountOwedForCashSabo);
   console.log('Total amount owed for budget submitted to SABO:', totalAmountOwedForBudgetSabo);
   console.log('Total amount owed for cash pending finance team:', totalAmountOwedForCashFinance);
-  console.log('Total amount owed for budget pending finance team:', totalAmountOwedForBudgetFinance);
 };
 
 executeScripts()
