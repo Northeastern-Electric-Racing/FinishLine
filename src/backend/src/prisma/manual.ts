@@ -7,6 +7,7 @@ import prisma from './prisma';
 import { Club_Accounts, Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
 import { writeFileSync } from 'fs';
+import { getUserFullName } from '../utils/users.utils';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
