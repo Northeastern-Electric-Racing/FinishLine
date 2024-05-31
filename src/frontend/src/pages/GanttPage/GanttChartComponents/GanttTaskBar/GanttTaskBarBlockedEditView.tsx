@@ -1,8 +1,9 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import {
-  EventChange,
+  GanttChange,
   GANTT_CHART_CELL_SIZE,
   GANTT_CHART_GAP_SIZE,
+  transformGanttTaskToWorkPackage,
   transformWorkPackageToGanttTask
 } from '../../../../utils/gantt.utils';
 import { addDays, differenceInDays } from 'date-fns';
@@ -27,7 +28,7 @@ const GanttTaskBarBlockedEdit = ({
 }: {
   days: Date[];
   wbsNum: WbsNumber;
-  createChange: (change: EventChange) => void;
+  createChange: (change: GanttChange) => void;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
   addWorkPackage: (workPackage: WorkPackage) => void;
@@ -85,7 +86,13 @@ const GanttTaskBarBlockedEdit = ({
       const correctWidth = displayWeeks * 38 + (displayWeeks - 1) * 10;
       const newEndDate = addDays(task.start, newEventLengthInDays);
       setWidth(correctWidth);
-      createChange({ id, eventId: task.id, type: 'change-end-date', originalEnd: task.end, newEnd: newEndDate });
+      createChange({
+        id,
+        element: transformGanttTaskToWorkPackage(task),
+        type: 'change-end-date',
+        originalEnd: task.end,
+        newEnd: newEndDate
+      });
     }
   };
 
@@ -101,7 +108,7 @@ const GanttTaskBarBlockedEdit = ({
   };
   const onDrop = (day: Date) => {
     const days = roundToMultipleOf7(differenceInDays(day, task.start));
-    createChange({ id, eventId: task.id, type: 'shift-by-days', days });
+    createChange({ id, element: transformGanttTaskToWorkPackage(task), type: 'shift-by-days', days });
   };
 
   return (

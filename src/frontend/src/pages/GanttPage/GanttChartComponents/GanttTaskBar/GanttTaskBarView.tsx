@@ -14,6 +14,7 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import GanttTaskBar from './GanttTaskBar';
 import BlockedGanttTaskView from './BlockedTaskBarView';
 import { wbsPipe } from 'shared';
+import { grey } from '@mui/material/colors';
 
 const GanttTaskBarView = ({
   days,
@@ -129,6 +130,28 @@ const GanttTaskBarView = ({
               {task.name}
             </Typography>
           </div>
+          {!highlightedChange &&
+            task.totalWorkPackages.map((workPackage) => {
+              const child = transformWorkPackageToGanttTask(workPackage, task.teamName);
+              return (
+                <div
+                  style={{
+                    gridColumnStart: getStartCol(child.start),
+                    gridColumnEnd: getEndCol(child.end),
+                    height: '2rem',
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: '0.25rem',
+                    backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
+                    cursor: 'pointer',
+                    gridRow: 1,
+                    zIndex: 2
+                  }}
+                  onMouseOver={handleOnMouseOver}
+                  onMouseLeave={handleOnMouseLeave}
+                  onClick={() => history.push(`${`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}`)}
+                />
+              );
+            })}
           {highlightedChange && (
             <div
               id="proposedChange"
@@ -136,11 +159,13 @@ const GanttTaskBarView = ({
                 paddingTop: '2px',
                 paddingLeft: '5px',
                 gridColumnStart:
-                  highlightedChange.taskId === task.id
+                  wbsPipe(highlightedChange.element.wbsNum) ===
+                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
                     ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1
                     : getStartCol(task.start),
                 gridColumnEnd:
-                  highlightedChange.taskId === task.id
+                  wbsPipe(highlightedChange.element.wbsNum) ===
+                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
                     ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
                       ? days.length + 1
                       : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2
@@ -181,7 +206,10 @@ const GanttTaskBarView = ({
               handleOnMouseOver={handleOnMouseOver}
               handleOnMouseLeave={handleOnMouseLeave}
               highlightedChange={
-                highlightedChange && (highlightedChange.taskId === workPackage.id || highlightedChange?.taskId === task.id)
+                highlightedChange &&
+                (wbsPipe(highlightedChange.element.wbsNum) === wbsPipe(workPackage.wbsNum) ||
+                  wbsPipe(highlightedChange.element.wbsNum) ===
+                    wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 }))
                   ? highlightedChange
                   : undefined
               }
@@ -202,7 +230,10 @@ const GanttTaskBarView = ({
             handleOnMouseOver={handleOnMouseOver}
             handleOnMouseLeave={handleOnMouseLeave}
             highlightedChange={
-              highlightedChange && (highlightedChange.taskId === wbsPipe(wbsNum) || highlightedChange?.taskId === task.id)
+              highlightedChange &&
+              (wbsPipe(highlightedChange.element.wbsNum) === wbsPipe(wbsNum) ||
+                wbsPipe(highlightedChange.element.wbsNum) ===
+                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 }))
                 ? highlightedChange
                 : undefined
             }

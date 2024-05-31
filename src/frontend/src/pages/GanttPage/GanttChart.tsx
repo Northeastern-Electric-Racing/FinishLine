@@ -1,17 +1,17 @@
 import { Box } from '@mui/material';
 import { ProjectPreview, Team, WorkPackage } from 'shared';
-import { EventChange, filterGanttProjects, GanttFilters, RequestEventChange } from '../../utils/gantt.utils';
+import { filterGanttProjects, GanttChange, GanttFilters, RequestEventChange } from '../../utils/gantt.utils';
 import GanttChartTeamSection from './GanttChartTeamSection';
 
 interface GanttChartProps {
   startDate: Date;
   endDate: Date;
   teamsList: Team[];
-  saveChanges: (eventChanges: EventChange[]) => void;
+  saveChanges: (eventChanges: GanttChange[]) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
   highlightedChange?: RequestEventChange;
-  addProject: (project: ProjectPreview) => void;
+  addProject: (project: ProjectPreview, team: Team) => void;
   getNewProjectNumber: (carNumber: number) => number;
   addWorkPackage: (workPackage: WorkPackage) => void;
   getNewWorkPackageNumber: (projectId: string) => number;
@@ -37,9 +37,13 @@ const GanttChart = ({
   return (
     <Box>
       {teamsList.map((team: Team) => {
-        const { teamName, projects } = team;
+        const { projects } = team;
 
         const filteredProjects = filterGanttProjects(projects, defaultGanttFilters, searchText, team);
+
+        const addProjectHandler = (project: ProjectPreview) => {
+          addProject(project, team);
+        };
 
         return filteredProjects ? (
           <GanttChartTeamSection
@@ -48,10 +52,10 @@ const GanttChart = ({
             saveChanges={saveChanges}
             showWorkPackagesMap={showWorkPackagesMap}
             setShowWorkPackagesMap={setShowWorkPackagesMap}
-            teamName={teamName}
+            team={team}
             projects={filteredProjects}
             highlightedChange={highlightedChange}
-            addProject={addProject}
+            addProject={addProjectHandler}
             addWorkPackage={addWorkPackage}
             getNewProjectNumber={getNewProjectNumber}
             getNewWorkPackageNumber={getNewWorkPackageNumber}

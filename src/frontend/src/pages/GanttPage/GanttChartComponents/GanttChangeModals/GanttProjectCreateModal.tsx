@@ -1,43 +1,29 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { RequestEventChange } from '../../../../utils/gantt.utils';
-import { ChangeRequestReason, ChangeRequestType } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Project } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
-import { useAllTeams } from '../../../../hooks/teams.hooks';
+import { getProjectStartDate, getProjectEndDate } from '../../../../utils/gantt.utils';
 
 interface GanttProjectCreateModalProps {
-  change: RequestEventChange;
+  project: Project;
   handleClose: () => void;
   open: boolean;
 }
 
-export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProjectCreateModalProps) => {
+export const GanttProjectCreateModal = ({ project, handleClose, open }: GanttProjectCreateModalProps) => {
   const toast = useToast();
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Initialization);
   const [explanationForChange, setExplanationForChange] = useState('');
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
-  const { isLoading: teamsLoading, data } = useAllTeams();
 
-  let startDate: Date | undefined = undefined;
-  let latestEndDate: Date | undefined = undefined;
-  if (change.workPackageChanges.length > 0) {
-    startDate = change.workPackageChanges.reduce((earliest, current) => {
-      return current.newStart < earliest ? current.newStart : earliest;
-    }, change.workPackageChanges[0].newStart);
+  const startDate = getProjectStartDate(project);
+  const latestEndDate = getProjectEndDate(project);
 
-    latestEndDate = change.workPackageChanges
-      .reduce((latest, current) => {
-        const currentEndDate = dayjs(current.newStart).add(current.duration / 1000 / 60 / 60 / 24 / 7, 'week'); // Convert duration from miliseconds to weeks
-        return currentEndDate.isAfter(latest) ? currentEndDate : latest;
-      }, dayjs(change.workPackageChanges[0].newStart).add(change.workPackageChanges[0].duration / 1000 / 60 / 60 / 24 / 7, 'week'))
-      .toDate();
-  }
-
-  if (isLoading || teamsLoading || !data) return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
 
   const handleReasonChange = (event: SelectChangeEvent<ChangeRequestReason>) => {
     setReasonForChange(event.target.value as ChangeRequestReason);
@@ -53,12 +39,16 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       return;
     }
 
-    const selectedTeam = data.find((team) => team.teamName === change.teamName);
+    const [selectedTeam] = project.teams;
 
     const teamIds = selectedTeam ? [selectedTeam.teamId] : [];
 
     const payload: CreateStandardChangeRequestPayload = {
-      wbsNum: change.baseWbs,
+      wbsNum: {
+        carNumber: project.wbsNum.carNumber,
+        projectNumber: 0,
+        workPackageNumber: 0
+      },
       type: ChangeRequestType.Issue,
       what: `Create New Project with timeline of: ${changeInTimeline}`,
       why: [
@@ -69,22 +59,22 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       ],
       proposedSolutions: [],
       projectProposedChanges: {
-        name: change.name,
+        name: project.name,
         budget: 0,
-        summary: `New Project for ${change.name}`,
+        summary: `New Project for ${project.name}`,
         descriptionBullets: [],
         leadId: undefined,
         managerId: undefined,
         links: [],
         teamIds,
-        carNumber: change.baseWbs.carNumber,
-        workPackageProposedChanges: change.workPackageChanges.map((workPackage) => ({
+        carNumber: project.wbsNum.carNumber,
+        workPackageProposedChanges: project.workPackages.map((workPackage) => ({
           name: workPackage.name,
           stage: workPackage.stage,
           leadId: undefined,
           managerId: undefined,
-          startDate: workPackage.newStart.toLocaleString(),
-          duration: workPackage.duration / 1000 / 60 / 60 / 24 / 7,
+          startDate: workPackage.startDate.toLocaleString(),
+          duration: workPackage.duration,
           blockedBy: [],
           descriptionBullets: [],
           links: []
@@ -105,7 +95,7 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   return (
     <NERDraggableFormModal
       open={open}
-      title={'New Project: ' + change.name}
+      title={'New Project: ' + project.name}
       disableSuccessButton={!reasonForChange || !explanationForChange}
       handleSubmit={handleSubmit}
       onHide={handleClose}

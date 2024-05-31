@@ -4,19 +4,19 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { EventChange, GanttTaskData, RequestEventChange, transformProjectToGanttTask } from '../../utils/gantt.utils';
+import { GanttChange, GanttTaskData, RequestEventChange, transformProjectToGanttTask } from '../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import { useState } from 'react';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
-import { ProjectPreview, WorkPackage } from 'shared';
+import { ProjectPreview, wbsPipe, WorkPackage } from 'shared';
 
 interface GanttChartSectionProps {
   start: Date;
   end: Date;
   projects: ProjectPreview[];
   isEditMode: boolean;
-  createChange: (change: EventChange) => void;
+  createChange: (change: GanttChange) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
   highlightedChange?: RequestEventChange;
@@ -49,7 +49,7 @@ const GanttChartSection = ({
     }
   };
 
-  const handleCreateProjectChange = (change: EventChange) => {
+  const handleCreateProjectChange = (change: GanttChange) => {
     createChange(change);
     setCurrentTask(undefined);
   };
@@ -81,7 +81,9 @@ const GanttChartSection = ({
                 addWorkPackage={addWorkPackage}
                 getNewWorkPackageNumber={getNewWorkPackageNumber}
                 highlightedChange={
-                  highlightedChange && project.id === highlightedChange.taskId ? highlightedChange : undefined
+                  highlightedChange && wbsPipe(project.wbsNum) === wbsPipe(highlightedChange.element.wbsNum)
+                    ? highlightedChange
+                    : undefined
                 }
               />
             </Box>

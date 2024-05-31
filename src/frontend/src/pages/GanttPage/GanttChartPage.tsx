@@ -13,10 +13,11 @@ import { useHistory } from 'react-router-dom';
 import {
   buildGanttSearchParams,
   GanttFilters,
-  EventChange,
   RequestEventChange,
   aggregateGanttChanges,
-  sortTeamList
+  sortTeamList,
+  GanttChange,
+  transformProjectPreviewToProject
 } from '../../utils/gantt.utils';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/material';
@@ -27,11 +28,10 @@ import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend'
 import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersButton';
 import GanttChart from './GanttChart';
 import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
-import { Project, ProjectPreview, Team, TeamType, WbsElement, WbsElementStatus, WorkPackage } from 'shared';
+import { Project, ProjectPreview, Team, TeamType, WbsElement, WorkPackage } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { GanttRequestChangeModal } from './GanttChartComponents/GanttChangeModals/GanttRequestChangeModal';
 import { useGetAllCars } from '../../hooks/cars.hooks';
-import { projectWbsPipe } from '../../utils/pipes';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
@@ -174,37 +174,19 @@ const GanttChartPage: FC = () => {
 
   /***************************************************** */
 
-  const addProjectHandler = (project: ProjectPreview) => {
-    const newProject: Project = {
-      ...project,
-      summary: 'New Project For ' + project.name,
-      status: WbsElementStatus.Inactive,
-      budget: 0,
-      duration: 1,
-      workPackages: [],
-      teams: [],
-      tasks: [],
-      favoritedBy: [],
-      wbsElementId: '-1',
-      dateCreated: new Date(),
-      links: [],
-      changes: [],
-      materials: [],
-      assemblies: [],
-      descriptionBullets: []
-    };
+  const addProjectHandler = (project: ProjectPreview, team: Team) => {
+    const newProject: Project = transformProjectPreviewToProject(project, team);
 
     setAddedProjects((prev) => [...prev, newProject]);
   };
 
   const addWorkPackageHandler = (workPackage: WorkPackage) => {
-    console.log(workPackage);
     setAddedWorkPackages((prev) => [...prev, workPackage]);
   };
 
   const allWorkPackages = projects.flatMap((project) => project.workPackages).concat(addedWorkPackages);
   const allProjects = projects.concat(addedProjects);
-  const allWbsElements: WbsElement[] = allProjects;
+  const allWbsElements: WbsElement[] = [...allProjects];
   allWbsElements.push(...allWorkPackages);
 
   // find the earliest start date and subtract 2 weeks to use as the first date on calendar
@@ -244,58 +226,14 @@ const GanttChartPage: FC = () => {
     return project.workPackages.length + 1;
   };
 
-  const saveChanges = (eventChanges: EventChange[]) => {
-    //get wps out of each project
+  const saveChanges = (eventChanges: GanttChange[]) => {
     const updatedGanttChanges = aggregateGanttChanges(eventChanges, allWbsElements);
-    for (const change of updatedGanttChanges) {
-      const project = addedProjects.find((project) => project.id === change.taskId);
-      if (project) {
-        setAddedWorkPackages(addedWorkPackages.filter((wp) => projectWbsPipe(wp.wbsNum) !== projectWbsPipe(project.wbsNum)));
-
-        const newWps: Map<string, WorkPackage> = new Map();
-        change.workPackageChanges.forEach((wpChange) => {
-          newWps.set(wpChange.taskId, {
-            id: wpChange.taskId,
-            stage: wpChange.stage,
-            name: wpChange.name,
-            startDate: wpChange.newStart,
-            endDate: wpChange.newEnd,
-            blockedBy: [],
-            immediatelyBlocking: [],
-            wbsNum: {
-              carNumber: project.wbsNum.carNumber,
-              projectNumber: project.wbsNum.projectNumber,
-              workPackageNumber: getNewWorkPackageNumber(project.id)
-            },
-            projectName: project.name,
-            duration: wpChange.duration,
-            orderInProject: getNewWorkPackageNumber(project.id),
-            status: WbsElementStatus.Inactive,
-            wbsElementId: '-1',
-            dateCreated: new Date(),
-            changes: [],
-            links: [],
-            materials: [],
-            assemblies: [],
-            descriptionBullets: []
-          });
-        });
-
-        const newProject = {
-          ...project,
-          workPackages: Array.from(newWps.values())
-        };
-
-        setAddedProjects(addedProjects.filter((project) => project.id !== newProject.id));
-        setAddedProjects((prev) => [...prev, newProject]);
-      }
-    }
 
     setGanttTaskChanges(updatedGanttChanges);
   };
 
   const removeActiveModal = (changeId: string) => {
-    setGanttTaskChanges(ganttTaskChanges.filter((change) => change.taskId !== changeId));
+    setGanttTaskChanges(ganttTaskChanges.filter((change) => change.changeId !== changeId));
     if (ganttTaskChanges.length === 1) {
       setAddedProjects([]);
       setAddedWorkPackages([]);
@@ -319,23 +257,6 @@ const GanttChartPage: FC = () => {
 
     return existingCarProjects + 1;
   };
-
-  console.log('work packages: ', addedWorkPackages);
-
-  for (const workPackage of addedWorkPackages) {
-    const project = allProjects.find((project) => projectWbsPipe(project.wbsNum) === projectWbsPipe(workPackage.wbsNum));
-    console.log(project);
-    if (project) {
-      project.workPackages.push(workPackage);
-    }
-  }
-
-  for (const project of addedProjects) {
-    const teamToAddProjectTo = teamList.find((team) => team.teamName === project.name);
-    if (teamToAddProjectTo) {
-      teamToAddProjectTo.projects.push(project);
-    }
-  }
 
   const headerRight = (
     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -387,7 +308,7 @@ const GanttChartPage: FC = () => {
           searchText={searchText}
         />
         {ganttTaskChanges.map((change) => (
-          <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.taskId)} />
+          <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.changeId)} />
         ))}
       </Box>
     </PageLayout>

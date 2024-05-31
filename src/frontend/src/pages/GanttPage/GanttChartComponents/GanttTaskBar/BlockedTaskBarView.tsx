@@ -132,11 +132,13 @@ const BlockedGanttTaskView = ({
                 paddingTop: '2px',
                 paddingLeft: '5px',
                 gridColumnStart:
-                  highlightedChange.taskId === task.id
+                  wbsPipe(highlightedChange.element.wbsNum) ===
+                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
                     ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1
                     : getStartCol(task.start),
                 gridColumnEnd:
-                  highlightedChange.taskId === task.id
+                  wbsPipe(highlightedChange.element.wbsNum) ===
+                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
                     ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
                       ? days.length + 1
                       : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2
@@ -177,7 +179,9 @@ const BlockedGanttTaskView = ({
             handleOnMouseOver={handleOnMouseOver}
             handleOnMouseLeave={handleOnMouseLeave}
             highlightedChange={
-              highlightedChange && (highlightedChange.taskId === wbsPipe(wbsNum) || highlightedChange?.taskId === task.id)
+              highlightedChange &&
+              wbsPipe(highlightedChange.element.wbsNum) ===
+                wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
                 ? highlightedChange
                 : undefined
             }

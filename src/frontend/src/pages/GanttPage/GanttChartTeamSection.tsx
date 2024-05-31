@@ -1,19 +1,25 @@
 import { Edit } from '@mui/icons-material';
 import { Box, Chip, IconButton, Typography, useTheme } from '@mui/material';
 import GanttChartSection from './GanttChartSection';
-import { EventChange, RequestEventChange } from '../../utils/gantt.utils';
+import {
+  applyChangesToEvent,
+  GanttChange,
+  RequestEventChange,
+  transformProjectPreviewToProject
+} from '../../utils/gantt.utils';
 import { useState } from 'react';
 import AddProjectModal from './GanttChartComponents/AddProjectModal';
 import useId from '@mui/material/utils/useId';
-import { ProjectPreview, WbsElementStatus, WorkPackage } from 'shared';
+import { Project, ProjectPreview, Team, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
+import { projectWbsPipe } from '../../utils/pipes';
 
 interface GanttChartTeamSectionProps {
   startDate: Date;
   endDate: Date;
-  saveChanges: (eventChanges: EventChange[]) => void;
+  saveChanges: (eventChanges: GanttChange[]) => void;
   showWorkPackagesMap: Map<string, boolean>;
   setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
-  teamName: string;
+  team: Team;
   projects: ProjectPreview[];
   highlightedChange?: RequestEventChange;
   getNewProjectNumber: (carNumber: number) => number;
@@ -28,7 +34,7 @@ const GanttChartTeamSection = ({
   saveChanges,
   showWorkPackagesMap,
   setShowWorkPackagesMap,
-  teamName,
+  team,
   projects,
   getNewProjectNumber,
   highlightedChange,
@@ -37,23 +43,24 @@ const GanttChartTeamSection = ({
   getNewWorkPackageNumber
 }: GanttChartTeamSectionProps) => {
   const theme = useTheme();
-  const [eventChanges, setEventChanges] = useState<EventChange[]>([]);
+  const [ganttChanges, setGanttChanges] = useState<GanttChange[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const id = useId() || 'id';
+  const [projectsState, setProjectsState] = useState<ProjectPreview[]>(projects);
 
-  const createChange = (change: EventChange) => {
-    setEventChanges([...eventChanges, change]);
+  const createChange = (change: GanttChange) => {
+    setGanttChanges([...ganttChanges, change]);
   };
 
   const handleSave = () => {
-    saveChanges(eventChanges);
-    setEventChanges([]);
+    saveChanges(ganttChanges);
+    setGanttChanges([]);
     setIsEditMode(false);
   };
 
   const handleEdit = () => {
-    projects.forEach((project) => {
+    projectsState.forEach((project) => {
       setShowWorkPackagesMap((prev) => new Map(prev.set(project.id, true)));
     });
 
@@ -61,12 +68,38 @@ const GanttChartTeamSection = ({
   };
 
   // Sorting the work packages of each project based on their start date
-  projects.forEach((project) => {
+  projectsState.forEach((project) => {
     project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   });
 
   const handleAddWorkPackage = (workPackage: WorkPackage) => {
+    const project = projectsState.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(workPackage.wbsNum));
+    if (!project) return;
+    workPackage.wbsNum.workPackageNumber = project.workPackages.length + 1;
+    project.workPackages = [...project.workPackages, workPackage];
+    setProjectsState([...projectsState]);
     addWorkPackage({ ...workPackage });
+  };
+
+  const handleAddProject = (project: ProjectPreview) => {
+    setProjectsState([...projectsState, project]);
+    addProject(project);
+  };
+
+  const createChangeHandler = (change: GanttChange) => {
+    const parentProject = projectsState.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum));
+    if (!parentProject) return;
+
+    const newProject: Project = applyChangesToEvent(
+      [change],
+      transformProjectPreviewToProject(parentProject, team),
+      parentProject
+    ) as Project;
+
+    const index = projectsState.findIndex((project) => wbsPipe(project.wbsNum) === projectWbsPipe(newProject.wbsNum));
+    projectsState[index] = newProject;
+    setProjectsState([...projectsState]);
+    createChange(change);
   };
 
   return (
@@ -108,7 +141,7 @@ const GanttChartTeamSection = ({
               workPackages: []
             };
 
-            addProject(newProject);
+            handleAddProject(newProject);
 
             projects.push(newProject);
 
@@ -116,13 +149,13 @@ const GanttChartTeamSection = ({
 
             createChange({
               id,
-              eventId: newProject.id,
-              type: 'create-project'
+              type: 'create-project',
+              element: transformProjectPreviewToProject(newProject, team)
             });
           }}
         />
         <Typography variant="h6" fontWeight={400}>
-          {teamName}
+          {team.teamName}
         </Typography>
 
         {isEditMode ? (
@@ -132,7 +165,7 @@ const GanttChartTeamSection = ({
               label="Cancel"
               onClick={() => {
                 setIsEditMode(false);
-                setEventChanges([]);
+                setGanttChanges([]);
               }}
               sx={{ marginRight: '10px' }}
             />
@@ -144,18 +177,18 @@ const GanttChartTeamSection = ({
           </IconButton>
         )}
       </Box>
-      <Box key={teamName} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
+      <Box key={team.teamId} sx={{ my: 0, width: 'fit-content', pl: 2 }}>
         <GanttChartSection
           start={startDate}
           end={endDate}
           isEditMode={isEditMode}
-          projects={projects}
-          createChange={createChange}
+          projects={projectsState}
+          createChange={createChangeHandler}
           showWorkPackagesMap={showWorkPackagesMap}
           setShowWorkPackagesMap={setShowWorkPackagesMap}
           highlightedChange={highlightedChange}
           addWorkPackage={handleAddWorkPackage}
-          teamName={teamName}
+          teamName={team.teamName}
           getNewWorkPackageNumber={getNewWorkPackageNumber}
         />
       </Box>

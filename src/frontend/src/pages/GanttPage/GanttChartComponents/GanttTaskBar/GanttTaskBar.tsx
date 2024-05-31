@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { EventChange, GanttTask, GanttTaskData, RequestEventChange } from '../../../../utils/gantt.utils';
+import { GanttChange, GanttTask, GanttTaskData, RequestEventChange } from '../../../../utils/gantt.utils';
 import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
@@ -24,7 +24,7 @@ const GanttTaskBar = ({
 }: {
   days: Date[];
   task: GanttTask;
-  createChange: (change: EventChange) => void;
+  createChange: (change: GanttChange) => void;
   isEditMode: boolean;
   handleOnMouseOver: (e: React.MouseEvent, event: GanttTaskData) => void;
   handleOnMouseLeave: () => void;

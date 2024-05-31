@@ -1,10 +1,11 @@
 import { Box, Chip, Typography, useTheme } from '@mui/material';
 import {
-  EventChange,
   GANTT_CHART_CELL_SIZE,
   GANTT_CHART_GAP_SIZE,
   transformWorkPackageToGanttTask,
-  GanttTask
+  GanttTask,
+  GanttChange,
+  transformGanttTaskToWorkPackage
 } from '../../../../utils/gantt.utils';
 import { addDays, differenceInDays } from 'date-fns';
 import { DragEvent, MouseEvent, useEffect, useState } from 'react';
@@ -26,7 +27,7 @@ const GanttTaskBarEdit = ({
 }: {
   days: Date[];
   task: GanttTask;
-  createChange: (change: EventChange) => void;
+  createChange: (change: GanttChange) => void;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
   isProject: boolean;
@@ -72,7 +73,13 @@ const GanttTaskBarEdit = ({
       const correctWidth = displayWeeks * 38 + (displayWeeks - 1) * 10;
       const newEndDate = addDays(task.start, newEventLengthInDays);
       setWidth(correctWidth);
-      createChange({ id, eventId: task.id, type: 'change-end-date', originalEnd: task.end, newEnd: newEndDate });
+      createChange({
+        id,
+        element: transformGanttTaskToWorkPackage(task),
+        type: 'change-end-date',
+        originalEnd: task.end,
+        newEnd: newEndDate
+      });
     }
   };
 
@@ -88,7 +95,7 @@ const GanttTaskBarEdit = ({
   };
   const onDrop = (day: Date) => {
     const days = roundToMultipleOf7(differenceInDays(day, task.start));
-    createChange({ id, eventId: task.id, type: 'shift-by-days', days });
+    createChange({ id, element: transformGanttTaskToWorkPackage(task), type: 'shift-by-days', days });
   };
 
   useEffect(() => {
@@ -112,7 +119,7 @@ const GanttTaskBarEdit = ({
           addWorkPackage={(workPackageInfo) => {
             const dup = id + task.unblockedWorkPackages.length + 1;
             const newWorkPackageNumber = getNewWorkPackageNumber(task.projectId ?? '');
-            addWorkPackage({
+            const workPackage = {
               id: dup,
               name: workPackageInfo.name,
               startDate: new Date(),
@@ -138,16 +145,13 @@ const GanttTaskBarEdit = ({
               changes: [],
               materials: [],
               assemblies: []
-            });
+            };
+            addWorkPackage(workPackage);
 
             createChange({
               id,
-              eventId: dup,
               type: 'create-work-package',
-              name: workPackageInfo.name,
-              stage: workPackageInfo.stage,
-              start: new Date(),
-              end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
+              element: workPackage
             });
           }}
         />
