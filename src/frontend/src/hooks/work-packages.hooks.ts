@@ -18,6 +18,7 @@ import {
   WorkPackageTemplateApiInputs,
   editWorkPackageTemplate,
   getAllWorkPackageTemplates,
+  getSingleWorkPackageTemplate,
   createSingleWorkPackageTemplate
 } from '../apis/work-packages.api';
 
@@ -155,6 +156,16 @@ export const useSlackUpcomingDeadlines = () => {
 export const useAllWorkPackageTemplates = () => {
   return useQuery<WorkPackageTemplate[], Error>(['work package templates'], async () => {
     const { data } = await getAllWorkPackageTemplates();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to get a single workpackage template
+ */
+export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
+  return useQuery<WorkPackageTemplate, Error>(['work package templates'], async () => {
+    const { data } = await getSingleWorkPackageTemplate(workPackageTemplateId);
     return data;
   });
 };

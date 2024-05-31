@@ -137,6 +137,16 @@ export const getAllWorkPackageTemplates = () => {
 };
 
 /**
+ * Gets a single work package template from the database
+ * @returns a single work package template
+ */
+export const getSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
+  return axios.get<WorkPackageTemplate>(apiUrls.workPackageTemplatesById(workPackageTemplateId), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
  * Create a single work package template.
  *
  * @param payload Payload containing all the necessary data to create a work package template.
