@@ -165,6 +165,7 @@ const applyChangesToBlockedBy = (
     } else if (changeToApply.type === 'shift-by-days') {
       const newStartDate = dayjs(currWbs.startDate).add(changeToApply.days, 'day').toDate();
       currWbs.startDate = newStartDate;
+      currWbs.endDate = dayjs(currWbs.endDate).add(changeToApply.days, 'day').toDate();
     }
 
     // get all the blockings of the current wbs and add them to the queue to update
@@ -189,6 +190,7 @@ export const applyChangesToEvent = (
         } else if (change.type === 'shift-by-days') {
           const newStartDate = dayjs(workPackage.startDate).add(change.days, 'day').toDate();
           workPackage.startDate = newStartDate;
+          workPackage.endDate = dayjs(workPackage.endDate).add(change.days, 'day').toDate();
         }
 
         applyChangesToBlockedBy(workPackage, parentProject.workPackages, change);
@@ -201,6 +203,7 @@ export const applyChangesToEvent = (
     project.workPackages = project.workPackages.map((workPackage) =>
       applyChangesToEvent(ganttChanges, workPackage, parentProject)
     ) as WorkPackage[];
+    console.log('Project', wbsElement);
   }
 
   return updatedElement;
