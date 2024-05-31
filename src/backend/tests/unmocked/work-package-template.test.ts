@@ -82,10 +82,12 @@ describe('Work Package Template Tests', () => {
 
     it('succeeds and deletes all blocking templates', async () => {
       const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const testWorkPackageTemplate1 = await createTestWorkPackageTemplate(testSuperman, orgId);
-      const testWorkPackageTemplate2 = await createTestWorkPackageTemplate(testSuperman, orgId);
-      const testWorkPackageTemplate3 = await createTestWorkPackageTemplate(testSuperman, orgId);
-
+      const [testWorkPackageTemplate1, testWorkPackageTemplate2, testWorkPackageTemplate3] = await Promise.all([
+        createTestWorkPackageTemplate(testSuperman, orgId),
+        createTestWorkPackageTemplate(testSuperman, orgId),
+        createTestWorkPackageTemplate(testSuperman, orgId)
+      ]);
+      
       await prisma.work_Package_Template.update({
         where: {
           workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
@@ -118,35 +120,26 @@ describe('Work Package Template Tests', () => {
         orgId
       );
 
-      const updatedTestWorkPackageTemplate1 = await prisma.work_Package_Template.findFirst({
-        where: {
-          workPackageTemplateId: testWorkPackageTemplate1.workPackageTemplateId
-        },
-        include: {
-          blocking: true
-        }
-      });
+      const updatedTestWorkPackageTemplate1 = await WorkPackageService.getSingleWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate1.workPackageTemplateId,
+        orgId
+      );
 
-      const updatedTestWorkPackageTemplate2 = await prisma.work_Package_Template.findFirst({
-        where: {
-          workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
-        },
-        include: {
-          blocking: true
-        }
-      });
+      const updatedTestWorkPackageTemplate2 = await WorkPackageService.getSingleWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate2.workPackageTemplateId,
+        orgId
+      );
+      const updatedTestWorkPackageTemplate3 = await WorkPackageService.getSingleWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate3.workPackageTemplateId,
+        orgId
+      );
 
-      const updatedTestWorkPackageTemplate3 = await prisma.work_Package_Template.findFirst({
-        where: {
-          workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
-        },
-        include: {
-          blocking: true
-        }
-      });
-      expect(updatedTestWorkPackageTemplate1?.dateDeleted).not.toBe(null);
-      expect(updatedTestWorkPackageTemplate2?.dateDeleted).not.toBe(null);
-      expect(updatedTestWorkPackageTemplate3?.dateDeleted).not.toBe(null);
+      expect(updatedTestWorkPackageTemplate1.dateDeleted).not.toBe(null);
+      expect(updatedTestWorkPackageTemplate2.dateDeleted).not.toBe(null);
+      expect(updatedTestWorkPackageTemplate3.dateDeleted).not.toBe(null);
     });
   });
 });

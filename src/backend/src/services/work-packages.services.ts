@@ -589,7 +589,6 @@ export default class WorkPackagesService {
 
     const template = await prisma.work_Package_Template.findFirst({
       where: {
-        dateDeleted: null,
         workPackageTemplateId
       },
       ...getWorkPackageTemplateQueryArgs(organizationId)
