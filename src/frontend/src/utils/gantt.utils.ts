@@ -471,14 +471,16 @@ export const aggregateGanttChanges = (ganttChanges: GanttChange[], allWbsElement
 
   // We want to ignore any work packages that were created on a new project as we will add them in the project creation
   const filteredEvents = Array.from(aggregatedMap.entries()).filter(([wbsNum, _changeEvents]) => {
-    const wbsElement = allWbsElements.find((wbsElement) => wbsPipe(wbsElement.wbsNum) === wbsNum);
+    const wbsElement: WbsElement | undefined = allWbsElements.find((wbsElement) => wbsPipe(wbsElement.wbsNum) === wbsNum);
     if (!wbsElement) {
       throw new Error('Task not found when filtering events for: ' + wbsNum);
     }
 
     if (isProject(wbsElement.wbsNum)) return true;
 
-    const parentProject = allWbsElements.find((e) => wbsPipe(e.wbsNum) === projectWbsPipe(wbsElement.wbsNum));
+    const parentProject: WbsElement | undefined = allWbsElements.find(
+      (e) => wbsPipe(e.wbsNum) === projectWbsPipe(wbsElement.wbsNum)
+    );
     if (!parentProject) {
       throw new Error('Parent project not found when filtering events for: ' + wbsElement.wbsNum);
     }
