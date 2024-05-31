@@ -81,7 +81,6 @@ export const createTestUser = async (
 export const resetUsers = async () => {
   await prisma.project.deleteMany();
   await prisma.work_Package.deleteMany();
-
   await prisma.team_Type.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();

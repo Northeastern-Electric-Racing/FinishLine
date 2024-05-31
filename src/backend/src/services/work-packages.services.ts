@@ -820,7 +820,7 @@ export default class WorkPackagesService {
     const dateDeleted = new Date();
 
     if (workPackageTemplate.blocking.length > 0) {
-      deleteBlockingTemplates(workPackageTemplate, submitter);
+      await deleteBlockingTemplates(workPackageTemplate, submitter);
     }
 
     // Soft delete the work package template by updating its related "deleted" fields

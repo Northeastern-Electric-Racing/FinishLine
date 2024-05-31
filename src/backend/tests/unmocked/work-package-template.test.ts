@@ -144,9 +144,6 @@ describe('Work Package Template Tests', () => {
           blocking: true,
         }
       });
-      console.log(updatedTestWorkPackageTemplate1);
-      console.log(updatedTestWorkPackageTemplate2);
-      console.log(updatedTestWorkPackageTemplate3);
       expect(updatedTestWorkPackageTemplate1?.dateDeleted).not.toBe(null);
       expect(updatedTestWorkPackageTemplate2?.dateDeleted).not.toBe(null);
       expect(updatedTestWorkPackageTemplate3?.dateDeleted).not.toBe(null);
