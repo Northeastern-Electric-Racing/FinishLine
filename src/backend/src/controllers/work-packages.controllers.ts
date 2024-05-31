@@ -156,7 +156,7 @@ export default class WorkPackagesController {
       const organizationId = getOrganizationId(req.headers);
 
       await WorkPackagesService.deleteWorkPackage(user, wbsNum, crId, organizationId);
-      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
       next(error);
     }
