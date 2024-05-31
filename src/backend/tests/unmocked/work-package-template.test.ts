@@ -8,6 +8,7 @@ import {
 import { createTestOrganization, createTestUser, createTestWorkPackageTemplate, resetUsers } from '../test-utils';
 import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
 import { workPackageTemplateTransformer } from '../../src/transformers/work-package-template.transformer';
+import prisma from '../../src/prisma/prisma';
 
 describe('Work Package Template Tests', () => {
   let orgId: string;
@@ -84,17 +85,71 @@ describe('Work Package Template Tests', () => {
       const testWorkPackageTemplate1 = await createTestWorkPackageTemplate(testSuperman, orgId);
       const testWorkPackageTemplate2 = await createTestWorkPackageTemplate(testSuperman, orgId);
       const testWorkPackageTemplate3 = await createTestWorkPackageTemplate(testSuperman, orgId);
-      testWorkPackageTemplate3.blockedBy = [testWorkPackageTemplate2];
-      testWorkPackageTemplate2.blockedBy = [testWorkPackageTemplate1];
+
+      await prisma.work_Package_Template.update({
+        where: {
+          workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
+        },
+        data: {
+          blockedBy: {
+            connect: {
+              workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
+            }
+          }
+        }
+      });
+
+      await prisma.work_Package_Template.update({
+        where: {
+          workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
+        },
+        data: {
+          blockedBy: {
+            connect: {
+              workPackageTemplateId: testWorkPackageTemplate1.workPackageTemplateId
+            }
+          }
+        }
+      });
 
       await WorkPackageService.deleteWorkPackageTemplate(
         testSuperman,
         testWorkPackageTemplate1.workPackageTemplateId,
         orgId
       );
-      expect(testWorkPackageTemplate1.dateDeleted).not.toBe(null);
-      expect(testWorkPackageTemplate2.dateDeleted).not.toBe(null);
-      expect(testWorkPackageTemplate3.dateDeleted).not.toBe(null);
+
+      const updatedTestWorkPackageTemplate1 = await prisma.work_Package_Template.findFirst({
+        where: {
+          workPackageTemplateId: testWorkPackageTemplate1.workPackageTemplateId
+        },
+        include: {
+          blocking: true
+        }
+      });
+
+      const updatedTestWorkPackageTemplate2 = await prisma.work_Package_Template.findFirst({
+        where: {
+          workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
+        },
+        include: {
+          blocking: true
+        }
+      });
+
+      const updatedTestWorkPackageTemplate3 = await prisma.work_Package_Template.findFirst({
+        where: {
+          workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
+        },
+        include: {
+          blocking: true,
+        }
+      });
+      console.log(updatedTestWorkPackageTemplate1);
+      console.log(updatedTestWorkPackageTemplate2);
+      console.log(updatedTestWorkPackageTemplate3);
+      expect(updatedTestWorkPackageTemplate1?.dateDeleted).not.toBe(null);
+      expect(updatedTestWorkPackageTemplate2?.dateDeleted).not.toBe(null);
+      expect(updatedTestWorkPackageTemplate3?.dateDeleted).not.toBe(null);
     });
   });
 });
