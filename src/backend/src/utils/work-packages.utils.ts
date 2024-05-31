@@ -57,7 +57,6 @@ export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_Pa
   return blockingWorkPackages;
 };
 
-// TODO: I can't find the proper prisma type for this like you did above
 interface WorkPackageTemplateWithBlocking extends Work_Package_Template {
   blocking: Work_Package_Template[];
 }
