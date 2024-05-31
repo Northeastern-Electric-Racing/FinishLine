@@ -154,14 +154,16 @@ export const applyChangesToEvent = (
   });
 
   if (isWorkPackage(wbsElement.wbsNum)) {
-    const blockedByChanges = ganttChanges.filter((change) =>
+    const blockedByChanges: GanttChange[] = ganttChanges.filter((change) =>
       updatedElement.blockedBy.map(wbsPipe).includes(wbsPipe(change.element.wbsNum))
     );
     blockedByChanges.forEach((change) => {
       if (change.type === 'change-end-date') {
-        updatedElement.startDate = updatedElement.startDate + change.newEnd.getTime() - change.originalEnd.getTime();
+        updatedElement.startDate = new Date(
+          updatedElement.startDate.getTime() + change.newEnd.getTime() - change.originalEnd.getTime()
+        );
       } else if (change.type === 'shift-by-days') {
-        updatedElement.startDate = updatedElement.startDate + change.days;
+        updatedElement.startDate = dayjs(updatedElement.startDate).add(change.days, 'day').toDate();
       }
     });
   }
@@ -258,7 +260,11 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
   return newParams;
 };
 
-export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamName: string): GanttTask => {
+export const transformWorkPackageToGanttTask = (
+  workPackage: WorkPackage,
+  teamName: string,
+  totalWorkPackages: WorkPackage[]
+): GanttTask => {
   return {
     id: wbsPipe(workPackage.wbsNum),
     name: wbsPipe(workPackage.wbsNum) + ' ' + workPackage.name,
@@ -272,7 +278,7 @@ export const transformWorkPackageToGanttTask = (workPackage: WorkPackage, teamNa
     teamName,
     stage: workPackage.stage,
     unblockedWorkPackages: [],
-    totalWorkPackages: [],
+    totalWorkPackages,
     blocking: workPackage.immediatelyBlocking,
     styles: {
       color: GanttWorkPackageTextColorPipe(workPackage.stage),

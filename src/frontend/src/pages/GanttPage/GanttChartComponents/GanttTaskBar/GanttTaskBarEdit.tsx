@@ -272,7 +272,7 @@ const GanttTaskBarEdit = ({
           <GanttTaskBarEdit
             key={workPackage.id}
             days={days}
-            task={transformWorkPackageToGanttTask(workPackage, task.teamName)}
+            task={transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages)}
             createChange={createChange}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
@@ -283,12 +283,14 @@ const GanttTaskBarEdit = ({
         );
       })}
       {task.blocking.map((wbsNum) => {
+        const workPackage = task.totalWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === wbsPipe(wbsNum));
+        if (!workPackage) return <></>;
+
         return (
           <GanttTaskBarBlockedEdit
             key={wbsPipe(wbsNum)}
             days={days}
-            wbsNum={wbsNum}
-            teamName={task.teamName}
+            task={transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages)}
             createChange={createChange}
             getStartCol={getStartCol}
             getEndCol={getEndCol}

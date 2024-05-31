@@ -43,7 +43,7 @@ const BlockedGanttTaskView = ({
   if (isLoading || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} />;
 
-  const task = transformWorkPackageToGanttTask(data, teamName);
+  const task = transformWorkPackageToGanttTask(data, teamName, []);
 
   return (
     <>

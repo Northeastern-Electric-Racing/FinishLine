@@ -69,7 +69,7 @@ const GanttChartTeamSection = ({
 
   // Sorting the work packages of each project based on their start date
   projectsState.forEach((project) => {
-    project.workPackages.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+    project.workPackages.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
   });
 
   const handleAddWorkPackage = (workPackage: WorkPackage) => {

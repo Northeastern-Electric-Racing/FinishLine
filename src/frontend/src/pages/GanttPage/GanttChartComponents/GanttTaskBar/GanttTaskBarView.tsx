@@ -132,7 +132,7 @@ const GanttTaskBarView = ({
           </div>
           {!highlightedChange &&
             task.totalWorkPackages.map((workPackage) => {
-              const child = transformWorkPackageToGanttTask(workPackage, task.teamName);
+              const child = transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages);
               return (
                 <div
                   style={{
@@ -200,7 +200,7 @@ const GanttTaskBarView = ({
             <GanttTaskBar
               key={workPackage.id}
               days={days}
-              task={transformWorkPackageToGanttTask(workPackage, task.teamName)}
+              task={transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages)}
               isEditMode={false}
               createChange={() => {}}
               handleOnMouseOver={handleOnMouseOver}

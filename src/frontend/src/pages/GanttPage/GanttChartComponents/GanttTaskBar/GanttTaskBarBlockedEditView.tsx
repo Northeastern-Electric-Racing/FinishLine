@@ -1,6 +1,7 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import {
   GanttChange,
+  GanttTask,
   GANTT_CHART_CELL_SIZE,
   GANTT_CHART_GAP_SIZE,
   transformGanttTaskToWorkPackage,
@@ -10,30 +11,25 @@ import { addDays, differenceInDays } from 'date-fns';
 import { DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useId from '@mui/material/utils/useId';
 import useMeasure from 'react-use-measure';
-import { WbsNumber, wbsPipe, WorkPackage } from 'shared';
-import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
-import ErrorPage from '../../../ErrorPage';
+import { wbsPipe, WorkPackage } from 'shared';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 
 const GanttTaskBarBlockedEdit = ({
   days,
-  wbsNum,
+  task,
   createChange,
   getStartCol,
   getEndCol,
   addWorkPackage,
-  getNewWorkPackageNumber,
-  teamName
+  getNewWorkPackageNumber
 }: {
   days: Date[];
-  wbsNum: WbsNumber;
+  task: GanttTask;
   createChange: (change: GanttChange) => void;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
   addWorkPackage: (workPackage: WorkPackage) => void;
   getNewWorkPackageNumber: (projectId: string) => number;
-  teamName: string;
 }) => {
   const theme = useTheme();
   const id = useId() || 'id'; // id for creating event changes
@@ -43,18 +39,12 @@ const GanttTaskBarBlockedEdit = ({
   const widthPerDay = 7.2; //width per day to use for resizing calculations, kind of arbitrary,
   const [width, setWidth] = useState(0); // current width of component, will change on resize
   const [measureRef, bounds] = useMeasure();
-  const { isLoading, data, isError, error } = useSingleWorkPackage(wbsNum);
 
   useEffect(() => {
     if (bounds.width !== 0 && width === 0) {
       setWidth(bounds.width);
     }
   }, [bounds, width]);
-
-  if (isLoading || !data) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} />;
-
-  const task = transformWorkPackageToGanttTask(data, teamName);
 
   // used to make sure that any changes to the start and end dates are made in multiples of 7
   const roundToMultipleOf7 = (num: number) => {
@@ -227,7 +217,7 @@ const GanttTaskBarBlockedEdit = ({
           <GanttTaskBarEdit
             key={workPackage.id}
             days={days}
-            task={transformWorkPackageToGanttTask(workPackage, task.teamName)}
+            task={transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages)}
             createChange={createChange}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
@@ -238,12 +228,14 @@ const GanttTaskBarBlockedEdit = ({
         );
       })}
       {task.blocking.map((wbsNum) => {
+        const workPackage = task.totalWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === wbsPipe(wbsNum));
+        if (!workPackage) return <></>;
+
         return (
           <GanttTaskBarBlockedEdit
             key={wbsPipe(wbsNum)}
             days={days}
-            wbsNum={wbsNum}
-            teamName={task.teamName}
+            task={transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages)}
             createChange={createChange}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
