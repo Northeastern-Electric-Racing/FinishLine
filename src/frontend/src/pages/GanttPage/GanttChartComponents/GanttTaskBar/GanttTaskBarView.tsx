@@ -131,6 +131,7 @@ const GanttTaskBarView = ({
             </Typography>
           </div>
           {!highlightedChange &&
+            isProject &&
             task.totalWorkPackages.map((workPackage) => {
               const child = transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages);
               return (
