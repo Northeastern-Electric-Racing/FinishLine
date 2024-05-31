@@ -167,17 +167,11 @@ const GanttTaskBarView = ({
                   paddingTop: '2px',
                   paddingLeft: '5px',
                   gridColumnStart:
-                    wbsPipe(highlightedChange.element.wbsNum) ===
-                    wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
-                      ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1
-                      : getStartCol(task.start),
+                    days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1,
                   gridColumnEnd:
-                    wbsPipe(highlightedChange.element.wbsNum) ===
-                    wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
-                      ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
-                        ? days.length + 1
-                        : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2
-                      : getEndCol(task.end),
+                    days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
+                      ? days.length + 1
+                      : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2,
                   height: '2rem',
                   border: `1px solid ${theme.palette.text.primary}`,
                   borderRadius: '0.25rem',
