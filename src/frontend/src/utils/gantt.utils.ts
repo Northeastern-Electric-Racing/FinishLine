@@ -203,7 +203,6 @@ export const applyChangesToEvent = (
     project.workPackages = project.workPackages.map((workPackage) =>
       applyChangesToEvent(ganttChanges, workPackage, parentProject)
     ) as WorkPackage[];
-    console.log('Project', wbsElement);
   }
 
   return updatedElement;
@@ -518,8 +517,6 @@ export const aggregateGanttChanges = (ganttChanges: GanttChange[], allWbsElement
       parentProject as Project
     );
 
-    console.log('Updated Event: ', updatedEvent);
-
     const start = isProject(updatedEvent.wbsNum)
       ? getProjectStartDate(updatedEvent as Project)
       : (updatedEvent as WorkPackage).startDate;
@@ -527,12 +524,7 @@ export const aggregateGanttChanges = (ganttChanges: GanttChange[], allWbsElement
       ? getProjectEndDate(updatedEvent as Project)
       : (updatedEvent as WorkPackage).endDate;
 
-    let newWorkPackage = false;
-    try {
-      validateWBS(updatedEvent.id);
-    } catch {
-      newWorkPackage = true;
-    }
+    const newWorkPackage = changeEvents.some((change) => change.type === 'create-work-package');
 
     const change: RequestEventChange = {
       changeId: updatedEvent.id,
