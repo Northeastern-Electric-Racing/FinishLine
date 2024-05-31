@@ -141,7 +141,7 @@ describe('Work Package Template Tests', () => {
           workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
         },
         include: {
-          blocking: true,
+          blocking: true
         }
       });
       expect(updatedTestWorkPackageTemplate1?.dateDeleted).not.toBe(null);
