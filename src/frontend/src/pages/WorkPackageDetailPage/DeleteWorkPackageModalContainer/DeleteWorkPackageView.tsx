@@ -34,7 +34,8 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      wbsNum: ''
+      wbsNum: '',
+      name: ''
     },
     mode: 'onChange'
   });
