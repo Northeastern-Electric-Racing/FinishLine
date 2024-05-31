@@ -39,8 +39,10 @@ import {
   Vendor,
   ReimbursementStatus,
   OtherReimbursementProductCreateArgs,
-  WbsReimbursementProductCreateArgs
+  WbsReimbursementProductCreateArgs,
+  ReimbursementStatusType
 } from 'shared';
+import { fullNamePipe } from '../utils/pipes';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
@@ -353,6 +355,31 @@ export const useDownloadPDFOfImages = () => {
       formData.refundSource !== 'BOTH' ? `receipts-${formData.refundSource}-${pdfName}` : `receipts-${pdfName}`;
 
     await downloadBlobsToPdf(blobs, pdfFileName);
+  });
+};
+
+export const useDownloadCSVFileOfReimbursementRequests = () => {
+  return useMutation(['reimbursement-requests'], async () => {
+    const { data } = await getAllReimbursementRequests();
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      'SABO ID,Recipient,Total Cost,Status,Account,Date Created,Date Delivered,Date Submitted,Vendor\n' +
+      data
+        .map(
+          (rr) =>
+            `${rr.saboId},${fullNamePipe(rr.recipient)},${rr.totalCost},${
+              rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
+            },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+              rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
+            },${rr.vendor.name}`
+        )
+        .join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'reimbursement-requests.csv');
+    document.body.appendChild(link);
+    link.click();
   });
 };
 
