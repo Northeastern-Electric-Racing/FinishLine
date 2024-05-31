@@ -87,7 +87,7 @@ describe('Work Package Template Tests', () => {
         createTestWorkPackageTemplate(testSuperman, orgId),
         createTestWorkPackageTemplate(testSuperman, orgId)
       ]);
-      
+
       await prisma.work_Package_Template.update({
         where: {
           workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
