@@ -13,7 +13,7 @@ import { ObjectSchema } from 'yup';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 import WorkPackageTemplateFormView from './WorkPackageTemplateFormView';
 
-interface WorkPackageFormProps {
+interface WorkPackageTemplateFormProps {
   workPackageTemplateId?: string; 
   exitActiveMode: () => void;
   workPackageTemplateMutateAsync: (data: WorkPackageTemplateApiInputs) => void;
@@ -21,7 +21,7 @@ interface WorkPackageFormProps {
   breadcrumbs: { name: string; route: string }[];
 }
 
-const WorkPackageTemplateForm: React.FC<WorkPackageFormProps> = ({
+const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   workPackageTemplateId,
   workPackageTemplateMutateAsync,
   exitActiveMode,
