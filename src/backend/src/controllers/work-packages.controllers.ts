@@ -109,17 +109,7 @@ export default class WorkPackagesController {
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        workPackageId,
-        name,
-        crId,
-        startDate,
-        duration,
-        blockedBy,
-        descriptionBullets,
-        projectLeadId,
-        projectManagerId
-      } = req.body;
+      const { workPackageId, name, crId, startDate, duration, blockedBy, descriptionBullets, leadId, managerId } = req.body;
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
@@ -137,11 +127,11 @@ export default class WorkPackagesController {
         duration,
         blockedBy,
         descriptionBullets,
-        projectLeadId,
-        projectManagerId,
+        leadId,
+        managerId,
         organizationId
       );
-      return res.status(200).json({ message: 'Work package updated successfully' });
+      res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
       next(error);
     }
@@ -170,7 +160,7 @@ export default class WorkPackagesController {
 
       const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum, organizationId);
 
-      return res.status(200).json(blockingWorkPackages);
+      res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {
       next(error);
     }
@@ -247,7 +237,7 @@ export default class WorkPackagesController {
         organizationId
       );
 
-      return res.status(200).json(updatedWorkPackageTemplate);
+      res.status(200).json(updatedWorkPackageTemplate);
     } catch (error: unknown) {
       next(error);
     }

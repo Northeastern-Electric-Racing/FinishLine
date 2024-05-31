@@ -9,7 +9,7 @@ import { getTaskQueryArgs } from './tasks.query-args';
 export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
 
 export const getProjectQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.ProjectArgs>()({
+  Prisma.validator<Prisma.ProjectDefaultArgs>()({
     include: {
       wbsElement: {
         include: {

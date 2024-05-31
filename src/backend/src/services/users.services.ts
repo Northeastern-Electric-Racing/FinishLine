@@ -74,7 +74,7 @@ export default class UsersService {
    * @returns the user with the specified id
    * @throws if the given user doesn't exist
    */
-  static async getSingleUser(userId: number, organizationId: string): Promise<SharedUser> {
+  static async getSingleUser(userId: string, organizationId: string): Promise<SharedUser> {
     const requestedUser = await prisma.user.findUnique({ where: { userId }, ...getUserQueryArgs(organizationId) });
     if (!requestedUser) throw new NotFoundException('User', userId);
     if (!requestedUser.organizations.map((org) => org.organizationId).includes(organizationId))
@@ -89,7 +89,7 @@ export default class UsersService {
    * @returns the user settings object
    * @throws if the given user doesn't exist, or the given user's settings don't exist
    */
-  static async getUserSettings(userId: number): Promise<User_Settings> {
+  static async getUserSettings(userId: string): Promise<User_Settings> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
 
     if (!requestedUser) throw new NotFoundException('User', userId);
@@ -122,7 +122,7 @@ export default class UsersService {
    * @param organizationId the id of the organization the user is in
    * @returns the user's favorite projects
    */
-  static async getUsersFavoriteProjects(userId: number, organizationId: string): Promise<Project[]> {
+  static async getUsersFavoriteProjects(userId: string, organizationId: string): Promise<Project[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -204,6 +204,8 @@ export default class UsersService {
     // if not in database, create user in database
     if (!user) {
       const emailId = payload['email']!.includes('@husky.neu.edu') ? payload['email']!.split('@')[0] : null;
+      const organization = await prisma.organization.findFirst();
+
       const createdUser = await prisma.user.create({
         data: {
           firstName: payload['given_name'],
@@ -219,6 +221,26 @@ export default class UsersService {
         }
       });
       user = createdUser;
+
+      if (organization) {
+        await prisma.organization.update({
+          where: { organizationId: organization.organizationId },
+          data: {
+            users: {
+              connect: {
+                userId: createdUser.userId
+              }
+            }
+          }
+        });
+        await prisma.role.create({
+          data: {
+            userId: createdUser.userId,
+            organizationId: organization!.organizationId,
+            roleType: RoleEnum.GUEST
+          }
+        });
+      }
     }
 
     // register a login
@@ -265,7 +287,7 @@ export default class UsersService {
    * @returns the user that has been logged in
    * @throws if the user with the specified id doesn't exist in the database
    */
-  static async logUserInDev(userId: number, header: string): Promise<AuthenticatedUser> {
+  static async logUserInDev(userId: string, header: string): Promise<AuthenticatedUser> {
     const user = await prisma.user.findUnique({
       where: { userId },
       include: {
@@ -320,7 +342,7 @@ export default class UsersService {
    *         promote a user to higher role than themself
    */
   static async updateUserRole(
-    targetUserId: number,
+    targetUserId: string,
     user: PrismaUser,
     role: Role,
     organizationId: string
@@ -371,7 +393,7 @@ export default class UsersService {
    * @param organizationId the id of the organization the user is in
    */
   static async getUserSecureSetting(
-    userId: number,
+    userId: string,
     submitter: PrismaUser,
     organizationId: string
   ): Promise<UserSecureSettings> {
@@ -455,7 +477,7 @@ export default class UsersService {
    * @returns the user's schedule settings
    * @throws if the user doesn't have schedule settings
    */
-  static async getUserScheduleSettings(userId: number, submitter: PrismaUser): Promise<UserScheduleSettings> {
+  static async getUserScheduleSettings(userId: string, submitter: PrismaUser): Promise<UserScheduleSettings> {
     if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
     const scheduleSettings = await prisma.schedule_Settings.findUnique({
       where: { userId }

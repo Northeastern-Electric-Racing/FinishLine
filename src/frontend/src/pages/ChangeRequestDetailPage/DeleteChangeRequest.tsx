@@ -32,7 +32,7 @@ const DeleteChangeRequest: React.FC<DeleteChangeRequestProps> = ({
 
   const handleConfirm = async ({ crId }: DeleteChangeRequestInputs) => {
     handleClose();
-    const numCrId = parseInt(crId);
+    const numCrId = crId;
     await mutateAsync(numCrId).catch((error) => {
       if (error instanceof Error) {
         toast.error(error.message);

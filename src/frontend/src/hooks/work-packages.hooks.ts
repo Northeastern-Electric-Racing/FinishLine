@@ -62,7 +62,7 @@ export const useCreateSingleWorkPackage = () => {
  *
  * @returns React-query utility functions exposed by the useMutation hook
  */
-export const useEditWorkPackage = (wbsNum: WbsNumber) => {
+export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
     ['work packages', 'edit'],

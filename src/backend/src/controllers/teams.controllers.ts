@@ -9,7 +9,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
       const teams = await TeamsService.getAllTeams(organizationId);
 
-      return res.status(200).json(teams);
+      res.status(200).json(teams);
     } catch (error: unknown) {
       next(error);
     }
@@ -22,7 +22,7 @@ export default class TeamsController {
 
       const team = await TeamsService.getSingleTeam(teamId, organizationId);
 
-      return res.status(200).json(team);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -37,8 +37,8 @@ export default class TeamsController {
       // update the team with the input fields
       const updateTeam = await TeamsService.setTeamMembers(submitter, req.params.teamId, userIds, organizationId);
 
-      // return the updated team
-      return res.status(200).json(updateTeam);
+      //  the updated team
+      res.status(200).json(updateTeam);
     } catch (error: unknown) {
       next(error);
     }
@@ -51,7 +51,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
 
       const team = await TeamsService.editDescription(user, req.params.teamId, newDescription, organizationId);
-      return res.status(200).json(team);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -65,7 +65,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
 
       const team = await TeamsService.setTeamHead(submitter, teamId, userId, organizationId);
-      return res.status(200).json(team);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -86,7 +86,7 @@ export default class TeamsController {
         isFinanceTeam,
         organizationId
       );
-      return res.status(200).json(team);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -100,7 +100,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
 
       const team = await TeamsService.setTeamLeads(submitter, teamId, userIds, organizationId);
-      return res.status(200).json(team);
+      res.status(200).json(team);
     } catch (error: unknown) {
       next(error);
     }
@@ -113,7 +113,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
 
       await TeamsService.deleteTeam(deleter, teamId, organizationId);
-      return res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
+      res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -126,7 +126,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
 
       const archivedTeam = await TeamsService.archiveTeam(user, teamId, organizationId);
-      return res.status(200).json(archivedTeam);
+      res.status(200).json(archivedTeam);
     } catch (error: unknown) {
       next(error);
     }
@@ -139,7 +139,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
 
       const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, organizationId);
-      return res.status(200).json(createdTeamType);
+      res.status(200).json(createdTeamType);
     } catch (error: unknown) {
       next(error);
     }
@@ -152,7 +152,7 @@ export default class TeamsController {
 
       const teamType = await TeamsService.getSingleTeamType(teamTypeId, organizationId);
 
-      return res.status(200).json(teamType);
+      res.status(200).json(teamType);
     } catch (error: unknown) {
       next(error);
     }
@@ -163,7 +163,7 @@ export default class TeamsController {
       const organizationId = getOrganizationId(req.headers);
 
       const teamTypes = await TeamsService.getAllTeamTypes(organizationId);
-      return res.status(200).json(teamTypes);
+      res.status(200).json(teamTypes);
     } catch (error: unknown) {
       next(error);
     }
@@ -178,7 +178,7 @@ export default class TeamsController {
 
       const updatedTeam = await TeamsService.setTeamType(submitter, teamId, teamTypeId, organizationId);
 
-      return res.status(200).json(updatedTeam);
+      res.status(200).json(updatedTeam);
     } catch (error: unknown) {
       next(error);
     }

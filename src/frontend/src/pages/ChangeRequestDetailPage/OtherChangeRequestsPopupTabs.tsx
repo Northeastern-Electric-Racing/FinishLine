@@ -90,7 +90,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
     >
       <Tabs
         value={tab}
-        onChange={(e, newValue: number) => setTab(newValue)}
+        onChange={(_e, newValue: number) => setTab(newValue)}
         sx={{
           '.MuiTabs-indicator': {
             background: 'transparent'

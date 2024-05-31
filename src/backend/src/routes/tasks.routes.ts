@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import TasksController from '../controllers/tasks.controllers';
-import { nonEmptyString, intMinZero, isTaskPriority, isTaskStatus, validateInputs } from '../utils/validation.utils';
+import { nonEmptyString, isTaskPriority, isTaskStatus, validateInputs } from '../utils/validation.utils';
 
 const tasksRouter = express.Router();
 
@@ -12,7 +12,7 @@ tasksRouter.post(
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
   body('assignees').isArray(),
-  intMinZero(body('assignees.*')),
+  nonEmptyString(body('assignees.*')),
   validateInputs,
   TasksController.createTask
 );
@@ -31,7 +31,7 @@ tasksRouter.post('/:taskId/edit-status', isTaskStatus(body('status')), TasksCont
 tasksRouter.post(
   '/:taskId/edit-assignees',
   body('assignees').isArray(),
-  intMinZero(body('assignees.*')),
+  nonEmptyString(body('assignees.*')),
   TasksController.editTaskAssignees
 );
 

@@ -8,21 +8,21 @@ type UserWithSettings = {
   userSettings: User_Settings | null;
 } & User;
 
-export const getUserFullName = async (userId: number | null) => {
+export const getUserFullName = async (userId: string | null) => {
   if (!userId) return 'no one';
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) return 'no one';
   return `${user.firstName} ${user.lastName}`;
 };
 
-export const getUserSlackId = async (userId?: number): Promise<string | undefined> => {
+export const getUserSlackId = async (userId?: string): Promise<string | undefined> => {
   if (!userId) return undefined;
   const user = await prisma.user.findUnique({ where: { userId }, include: { userSettings: true } });
   if (!user) throw new NotFoundException('User', userId);
   return user.userSettings?.slackId;
 };
 
-export const getUserRole = async (userId: number, organizationId: string): Promise<Role> => {
+export const getUserRole = async (userId: string, organizationId: string): Promise<Role> => {
   const user = await prisma.user.findUnique({ where: { userId }, include: { roles: true } });
   if (!user) throw new NotFoundException('User', userId);
   return user.roles.find((role) => role.organizationId === organizationId)?.roleType ?? RoleEnum.GUEST;
@@ -34,7 +34,7 @@ export const getUserRole = async (userId: number, organizationId: string): Promi
  * @returns array of User
  * @throws if any user does not exist
  */
-export const getUsers = async (userIds: number[]): Promise<User[]> => {
+export const getUsers = async (userIds: string[]): Promise<User[]> => {
   const users = await prisma.user.findMany({
     where: { userId: { in: userIds } }
   });
@@ -64,7 +64,7 @@ export const getPrismaQueryUserIds = (users: UserWithId[]) => {
  * @returns the found users with their user settings
  * @throws if any user does not exist
  */
-export const getUsersWithSettings = async (userIds: number[]): Promise<UserWithSettings[]> => {
+export const getUsersWithSettings = async (userIds: string[]): Promise<UserWithSettings[]> => {
   const users = await prisma.user.findMany({
     where: { userId: { in: userIds } },
     include: {
@@ -82,7 +82,7 @@ export const getUsersWithSettings = async (userIds: number[]): Promise<UserWithS
  * @param users the users found in the database
  * @param userIds the requested usersIds to retrieve
  */
-const validateFoundUsers = (users: User[], userIds: number[]) => {
+const validateFoundUsers = (users: User[], userIds: string[]) => {
   if (users.length !== userIds.length) {
     const prismaUserIds = users.map((user) => user.userId);
     const missingUserIds = userIds.filter((id) => !prismaUserIds.includes(id));
@@ -91,7 +91,7 @@ const validateFoundUsers = (users: User[], userIds: number[]) => {
 };
 
 export const userHasPermission = async (
-  userId: number,
+  userId: string,
   organizationId: string,
   permissionCheck: PermissionCheck
 ): Promise<boolean> => {

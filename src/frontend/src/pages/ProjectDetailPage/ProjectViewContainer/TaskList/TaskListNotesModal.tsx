@@ -48,7 +48,7 @@ export interface FormInput {
   taskId: string;
   title: string;
   notes: string;
-  assignees: number[];
+  assignees: string[];
   deadline: Date;
   priority: TaskPriority;
 }
@@ -89,7 +89,7 @@ const TaskListNotesModal: React.FC<TaskListNotesModalProps> = ({
   });
   if (!auth.user) return <LoadingIndicator />;
 
-  const options: { label: string; id: number }[] = getTaskAssigneeOptions(teams).map(taskUserToAutocompleteOption);
+  const options: { label: string; id: string }[] = getTaskAssigneeOptions(teams).map(taskUserToAutocompleteOption);
 
   const dialogWidth: Breakpoint = 'md';
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';

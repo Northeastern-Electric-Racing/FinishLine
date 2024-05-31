@@ -20,7 +20,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 interface ProposedSolutionsListProps {
   proposedSolutions: ProposedSolution[];
   crReviewed?: boolean;
-  crId: number;
+  crId: string;
 }
 
 const ProposedSolutionsList: React.FC<ProposedSolutionsListProps> = ({ proposedSolutions, crReviewed, crId }) => {

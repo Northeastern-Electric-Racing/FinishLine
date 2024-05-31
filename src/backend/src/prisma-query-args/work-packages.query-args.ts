@@ -6,7 +6,7 @@ import { getDescriptionBulletQueryArgs } from './description-bullets.query-args'
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 
 export const getWorkPackageQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Work_PackageArgs>()({
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     include: {
       project: {
         include: {

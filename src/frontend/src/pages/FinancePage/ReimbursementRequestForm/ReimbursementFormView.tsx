@@ -90,9 +90,9 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const toast = useToast();
   const theme = useTheme();
   const products = watch(`reimbursementProducts`);
-  const expenseTypeId = watch('expenseTypeId');
-  const selectedExpenseType = allAccountCodes.find((accountCode) => accountCode.accountCodeId === expenseTypeId);
-  const refundSources = selectedExpenseType?.allowedRefundSources || [];
+  const accountCodeId = watch('accountCodeId');
+  const selectedAccountCode = allAccountCodes.find((accountCode) => accountCode.accountCodeId === accountCodeId);
+  const refundSources = selectedAccountCode?.allowedRefundSources || [];
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
 
@@ -120,7 +120,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
     </FormControl>
   );
 
-  const expenseTypesToAutocomplete = (accountCode: AccountCode): { label: string; id: string } => {
+  const accountCodesToAutocomplete = (accountCode: AccountCode): { label: string; id: string } => {
     return {
       label: accountCodePipe(accountCode),
       id: accountCode.accountCodeId
@@ -192,12 +192,12 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
             <FormControl fullWidth>
               <FormLabel>Account Code</FormLabel>
               <Controller
-                name="expenseTypeId"
+                name="accountCodeId"
                 control={control}
                 render={({ field: { onChange, value } }) => {
-                  const mappedExpenseTypes = allAccountCodes
+                  const mappedAccountCodes = allAccountCodes
                     .filter((accountCode) => accountCode.allowed)
-                    .map(expenseTypesToAutocomplete);
+                    .map(accountCodesToAutocomplete);
 
                   const onClear = () => {
                     setValue('account', undefined);
@@ -206,10 +206,10 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
 
                   return (
                     <NERAutocomplete
-                      id={'expenseType'}
+                      id={'accountCode'}
                       size="medium"
-                      options={mappedExpenseTypes}
-                      value={mappedExpenseTypes.find((expenseType) => expenseType.id === value) || null}
+                      options={mappedAccountCodes}
+                      value={mappedAccountCodes.find((accountCode) => accountCode.id === value) || null}
                       placeholder="Select Account Code"
                       onChange={(_event, newValue) => {
                         newValue ? onChange(newValue.id) : onClear();
@@ -218,7 +218,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   );
                 }}
               />
-              <FormHelperText error>{errors.expenseTypeId?.message}</FormHelperText>
+              <FormHelperText error>{errors.accountCodeId?.message}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={6}>
@@ -248,7 +248,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                       textField: {
                         error: !!errors.dateOfExpense,
                         helperText: errors.dateOfExpense?.message,
-                        onClick: (e) => setDatePickerOpen(true),
+                        onClick: () => setDatePickerOpen(true),
                         inputProps: { readOnly: true }
                       }
                     }}
@@ -267,7 +267,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   <Select
                     onChange={(newValue) => onChange(newValue.target.value as ClubAccount)}
                     value={value}
-                    disabled={!selectedExpenseType}
+                    disabled={!selectedAccountCode}
                     error={!!errors.account}
                     displayEmpty
                     renderValue={() => {

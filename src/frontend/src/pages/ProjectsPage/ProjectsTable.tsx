@@ -45,7 +45,7 @@ const ProjectsTable: React.FC = () => {
     valueFormatter: (params) => wbsPipe(params.value),
     maxWidth: 100,
     filterable: false,
-    sortComparator: (v1, v2, param1, param2) => {
+    sortComparator: (_v1, _v2, param1, param2) => {
       if (param1.value.carNumber !== param2.value.carNumber) {
         return param1.value.carNumber - param2.value.carNumber;
       } else if (param1.value.projectNumber !== param2.value.projectNumber) {
@@ -98,14 +98,14 @@ const ProjectsTable: React.FC = () => {
     projectNameColumn,
     {
       ...baseColDef,
-      field: 'projectLead',
-      headerName: 'Project Lead',
+      field: 'lead',
+      headerName: 'Lead',
       maxWidth: 250
     },
     {
       ...baseColDef,
-      field: 'projectManager',
-      headerName: 'Project Manager',
+      field: 'manager',
+      headerName: 'Manager',
       maxWidth: 250
     },
     {
@@ -176,8 +176,8 @@ const ProjectsTable: React.FC = () => {
           data?.map((v) => ({
             ...v,
             carNumber: v.wbsNum.carNumber,
-            projectLead: fullNamePipe(v.lead),
-            projectManager: fullNamePipe(v.manager),
+            lead: fullNamePipe(v.lead),
+            manager: fullNamePipe(v.manager),
             team: getProjectTeamsName(v)
           })) || []
         }

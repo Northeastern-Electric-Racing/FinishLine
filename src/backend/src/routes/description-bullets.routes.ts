@@ -7,7 +7,7 @@ const descriptionBulletsRouter = express.Router();
 
 descriptionBulletsRouter.post(
   '/check',
-  body('descriptionId').isInt({ min: 0 }).not().isString(),
+  nonEmptyString(body('descriptionId')),
   validateInputs,
   DescriptionBulletsController.checkDescriptionBullet
 );

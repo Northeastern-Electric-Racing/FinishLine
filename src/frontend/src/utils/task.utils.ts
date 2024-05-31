@@ -61,7 +61,7 @@ export interface TaskListDataGridProps {
   setDisabled: Dispatch<SetStateAction<boolean>>;
 }
 
-export const taskUserToAutocompleteOption = (user: User): { label: string; id: number } => {
+export const taskUserToAutocompleteOption = (user: User): { label: string; id: string } => {
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
 };
 
