@@ -135,46 +135,72 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
   };
 };
 
+const applyChangesToBlockedBy = (
+  initialWorkPackage: WorkPackage,
+  totalWorkPackages: WorkPackage[],
+  changeToApply: GanttChange
+) => {
+  const updatedBlockingWbsNums: Set<String> = new Set();
+
+  const blockingUpdateQueue: string[] = initialWorkPackage.immediatelyBlocking.map(wbsPipe);
+  while (blockingUpdateQueue.length > 0) {
+    const currWbsNum = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
+
+    if (!currWbsNum) break; // this is more of a type check for pop becuase the while loop prevents this from not existing
+    if (updatedBlockingWbsNums.has(currWbsNum)) continue; // if we've already seen it we skip it
+
+    updatedBlockingWbsNums.add(currWbsNum);
+
+    // get the current wbs object from prisma
+    const currWbs = totalWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === currWbsNum);
+
+    if (currWbs?.wbsElementId === initialWorkPackage.wbsElementId) throw new Error('Circular dependency detected');
+
+    if (!currWbs) throw new Error('Work package not found: ' + currWbsNum);
+
+    if (changeToApply.type === 'change-end-date') {
+      currWbs.startDate = new Date(
+        currWbs.startDate.getTime() + (changeToApply.newEnd.getTime() - changeToApply.originalEnd.getTime())
+      );
+    } else if (changeToApply.type === 'shift-by-days') {
+      const newStartDate = dayjs(currWbs.startDate).add(changeToApply.days, 'day').toDate();
+      currWbs.startDate = newStartDate;
+    }
+
+    // get all the blockings of the current wbs and add them to the queue to update
+    const newBlocking: string[] = currWbs.immediatelyBlocking.map(wbsPipe);
+    blockingUpdateQueue.push(...newBlocking);
+  }
+};
+
 export const applyChangesToEvent = (
   ganttChanges: GanttChange[],
   wbsElement: WbsElement,
   parentProject: ProjectPreview
 ): WbsElement => {
-  const updatedElement: any = wbsElement;
-
-  ganttChanges.forEach((change) => {
-    if (isWorkPackage(wbsElement.wbsNum) && wbsPipe(change.element.wbsNum) === wbsPipe(wbsElement.wbsNum)) {
-      if (change.type === 'change-end-date') {
-        updatedElement.endDate = change.newEnd;
-      } else if (change.type === 'shift-by-days') {
-        const newStartDate = dayjs(updatedElement.startDate).add(change.days, 'day').toDate();
-        updatedElement.startDate = newStartDate;
-      }
-    }
-  });
+  const updatedElement = wbsElement;
 
   if (isWorkPackage(wbsElement.wbsNum)) {
-    const blockedByChanges: GanttChange[] = ganttChanges.filter((change) =>
-      updatedElement.blockedBy.map(wbsPipe).includes(wbsPipe(change.element.wbsNum))
-    );
-    blockedByChanges.forEach((change) => {
-      if (change.type === 'change-end-date') {
-        updatedElement.startDate = new Date(
-          updatedElement.startDate.getTime() + change.newEnd.getTime() - change.originalEnd.getTime()
-        );
-      } else if (change.type === 'shift-by-days') {
-        updatedElement.startDate = dayjs(updatedElement.startDate).add(change.days, 'day').toDate();
+    const workPackage = wbsElement as WorkPackage;
+    ganttChanges.forEach((change) => {
+      if (wbsPipe(change.element.wbsNum) === wbsPipe(wbsElement.wbsNum)) {
+        if (change.type === 'change-end-date') {
+          workPackage.endDate = change.newEnd;
+        } else if (change.type === 'shift-by-days') {
+          const newStartDate = dayjs(workPackage.startDate).add(change.days, 'day').toDate();
+          workPackage.startDate = newStartDate;
+        }
+
+        applyChangesToBlockedBy(workPackage, parentProject.workPackages, change);
       }
     });
   }
 
   if (isProject(wbsElement.wbsNum)) {
     const project = wbsElement as Project;
-    const updatedWorkPackages = project.workPackages.map((workPackage) =>
+    project.workPackages = project.workPackages.map((workPackage) =>
       applyChangesToEvent(ganttChanges, workPackage, parentProject)
-    );
-
-    updatedElement.workPackages = updatedWorkPackages;
+    ) as WorkPackage[];
   }
 
   return updatedElement;
