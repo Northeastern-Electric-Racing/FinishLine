@@ -10,6 +10,7 @@ import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import { useState } from 'react';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
 import { ProjectPreview, wbsPipe, WorkPackage } from 'shared';
+import { projectWbsPipe } from '../../utils/pipes';
 
 interface GanttChartSectionProps {
   start: Date;
@@ -81,7 +82,7 @@ const GanttChartSection = ({
                 addWorkPackage={addWorkPackage}
                 getNewWorkPackageNumber={getNewWorkPackageNumber}
                 highlightedChange={
-                  highlightedChange && wbsPipe(project.wbsNum) === wbsPipe(highlightedChange.element.wbsNum)
+                  highlightedChange && wbsPipe(project.wbsNum) === projectWbsPipe(highlightedChange.element.wbsNum)
                     ? highlightedChange
                     : undefined
                 }

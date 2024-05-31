@@ -12,6 +12,7 @@ import { WbsNumber, wbsPipe } from 'shared';
 import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
+import { projectWbsPipe } from '../../../../utils/pipes';
 
 const BlockedGanttTaskView = ({
   days,
@@ -125,7 +126,7 @@ const BlockedGanttTaskView = ({
               {task.name}
             </Typography>
           </div>
-          {highlightedChange && (
+          {highlightedChange && wbsPipe(highlightedChange.element.wbsNum) === wbsPipe(data.wbsNum) && (
             <div
               id="proposedChange"
               style={{
@@ -179,9 +180,7 @@ const BlockedGanttTaskView = ({
             handleOnMouseOver={handleOnMouseOver}
             handleOnMouseLeave={handleOnMouseLeave}
             highlightedChange={
-              highlightedChange &&
-              wbsPipe(highlightedChange.element.wbsNum) ===
-                wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
+              highlightedChange && projectWbsPipe(highlightedChange.element.wbsNum) === projectWbsPipe(data.wbsNum)
                 ? highlightedChange
                 : undefined
             }

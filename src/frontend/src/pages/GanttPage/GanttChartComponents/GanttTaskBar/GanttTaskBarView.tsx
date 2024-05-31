@@ -15,6 +15,7 @@ import GanttTaskBar from './GanttTaskBar';
 import BlockedGanttTaskView from './BlockedTaskBarView';
 import { wbsPipe } from 'shared';
 import { grey } from '@mui/material/colors';
+import { projectWbsPipe } from '../../../../utils/pipes';
 
 const GanttTaskBarView = ({
   days,
@@ -153,46 +154,52 @@ const GanttTaskBarView = ({
                 />
               );
             })}
-          {highlightedChange && (
-            <div
-              id="proposedChange"
-              style={{
-                paddingTop: '2px',
-                paddingLeft: '5px',
-                gridColumnStart:
-                  wbsPipe(highlightedChange.element.wbsNum) ===
-                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
-                    ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1
-                    : getStartCol(task.start),
-                gridColumnEnd:
-                  wbsPipe(highlightedChange.element.wbsNum) ===
-                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
-                    ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
-                      ? days.length + 1
-                      : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2
-                    : getEndCol(task.end),
-                height: '2rem',
-                border: `1px solid ${theme.palette.text.primary}`,
-                borderRadius: '0.25rem',
-                backgroundColor: '#ef4345',
-                cursor: 'pointer',
-                gridRow: 1,
-                zIndex: 6
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{
-                  color: task.styles ? task.styles.color : '#ffffff',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+          {highlightedChange &&
+            wbsPipe(highlightedChange.element.wbsNum) ===
+              wbsPipe({
+                carNumber: task.carNumber,
+                projectNumber: task.projectNumber,
+                workPackageNumber: task.workPackageNumber
+              }) && (
+              <div
+                id="proposedChange"
+                style={{
+                  paddingTop: '2px',
+                  paddingLeft: '5px',
+                  gridColumnStart:
+                    wbsPipe(highlightedChange.element.wbsNum) ===
+                    wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
+                      ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1
+                      : getStartCol(task.start),
+                  gridColumnEnd:
+                    wbsPipe(highlightedChange.element.wbsNum) ===
+                    wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 })
+                      ? days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
+                        ? days.length + 1
+                        : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2
+                      : getEndCol(task.end),
+                  height: '2rem',
+                  border: `1px solid ${theme.palette.text.primary}`,
+                  borderRadius: '0.25rem',
+                  backgroundColor: '#ef4345',
+                  cursor: 'pointer',
+                  gridRow: 1,
+                  zIndex: 6
                 }}
               >
-                {task.name}
-              </Typography>
-            </div>
-          )}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: task.styles ? task.styles.color : '#ffffff',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {task.name}
+                </Typography>
+              </div>
+            )}
         </Box>
       </Box>
       <Collapse in={showWorkPackages}>
@@ -206,14 +213,7 @@ const GanttTaskBarView = ({
               createChange={() => {}}
               handleOnMouseOver={handleOnMouseOver}
               handleOnMouseLeave={handleOnMouseLeave}
-              highlightedChange={
-                highlightedChange &&
-                (wbsPipe(highlightedChange.element.wbsNum) === wbsPipe(workPackage.wbsNum) ||
-                  wbsPipe(highlightedChange.element.wbsNum) ===
-                    wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 }))
-                  ? highlightedChange
-                  : undefined
-              }
+              highlightedChange={highlightedChange}
               getNewWorkPackageNumber={getNewWorkPackageNumber}
             />
           );
@@ -231,10 +231,7 @@ const GanttTaskBarView = ({
             handleOnMouseOver={handleOnMouseOver}
             handleOnMouseLeave={handleOnMouseLeave}
             highlightedChange={
-              highlightedChange &&
-              (wbsPipe(highlightedChange.element.wbsNum) === wbsPipe(wbsNum) ||
-                wbsPipe(highlightedChange.element.wbsNum) ===
-                  wbsPipe({ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: 0 }))
+              highlightedChange && projectWbsPipe(highlightedChange.element.wbsNum) === projectWbsPipe(wbsNum)
                 ? highlightedChange
                 : undefined
             }

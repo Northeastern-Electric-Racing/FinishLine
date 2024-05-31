@@ -98,7 +98,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     >
       <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
         <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
-          {`Old: ${changeInTimeline(change.prevStart, change.prevEnd)}`}
+          {`Old: ${changeInTimeline(workPackage.startDate, workPackage.endDate)}`}
         </Typography>
         <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
         <Box sx={{ mt: 2 }}>
