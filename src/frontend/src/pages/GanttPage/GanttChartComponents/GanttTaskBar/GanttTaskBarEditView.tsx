@@ -110,6 +110,7 @@ export const GanttTaskBarEditView = ({
       dateCreated: new Date(),
       lead: undefined,
       manager: undefined,
+      teamTypes: [],
       changes: [],
       materials: [],
       assemblies: []

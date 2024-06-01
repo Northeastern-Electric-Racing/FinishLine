@@ -126,6 +126,7 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
     links: [],
     materials: [],
     assemblies: [],
+    teamTypes: [],
     changes: [],
     blocking: task.blocking,
     projectName: '',
