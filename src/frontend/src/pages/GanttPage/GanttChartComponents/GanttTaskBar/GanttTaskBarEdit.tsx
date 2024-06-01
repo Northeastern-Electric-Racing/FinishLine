@@ -99,15 +99,16 @@ const GanttTaskBarEdit = ({
   };
 
   useEffect(() => {
-    if (isProject) {
-      setWidth(0);
-    }
     if (bounds.width !== 0 && width === 0) {
       setWidth(bounds.width);
     }
-  }, [bounds, task.end, task.start, width, isProject]);
+  }, [bounds, width]);
 
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
+
+  const createChangeHandler = (change: GanttChange) => {
+    createChange(change);
+  };
 
   return (
     <>
@@ -202,7 +203,6 @@ const GanttTaskBarEdit = ({
               gridColumnStart: getStartCol(task.start),
               gridColumnEnd: getEndCol(task.end),
               height: '2rem',
-              width: width === 0 ? `unset` : `${width}px`,
               border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
               borderRadius: '0.25rem',
               backgroundColor: task.styles ? task.styles.backgroundColor : theme.palette.background.paper,
@@ -276,7 +276,7 @@ const GanttTaskBarEdit = ({
             key={workPackage.id}
             days={days}
             task={transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages)}
-            createChange={createChange}
+            createChange={createChangeHandler}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
             isProject={false}
@@ -294,7 +294,7 @@ const GanttTaskBarEdit = ({
             key={wbsPipe(wbsNum)}
             days={days}
             task={transformWorkPackageToGanttTask(workPackage, task.teamName, task.totalWorkPackages)}
-            createChange={createChange}
+            createChange={createChangeHandler}
             getStartCol={getStartCol}
             getEndCol={getEndCol}
             addWorkPackage={addWorkPackage}
