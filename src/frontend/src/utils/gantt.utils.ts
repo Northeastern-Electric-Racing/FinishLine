@@ -159,9 +159,9 @@ const applyChangesToBlockedBy = (
     if (!currWbs) throw new Error('Work package not found: ' + currWbsNum);
 
     if (changeToApply.type === 'change-end-date') {
-      currWbs.startDate = new Date(
-        currWbs.startDate.getTime() + (changeToApply.newEnd.getTime() - changeToApply.originalEnd.getTime())
-      );
+      const timelineImpact = changeToApply.newEnd.getTime() - changeToApply.originalEnd.getTime();
+      currWbs.startDate = new Date(currWbs.startDate.getTime() + timelineImpact);
+      currWbs.endDate = new Date(currWbs.endDate.getTime() + timelineImpact);
     } else if (changeToApply.type === 'shift-by-days') {
       const newStartDate = dayjs(currWbs.startDate).add(changeToApply.days, 'day').toDate();
       currWbs.startDate = newStartDate;
