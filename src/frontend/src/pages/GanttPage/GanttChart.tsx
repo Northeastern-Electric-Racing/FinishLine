@@ -17,6 +17,8 @@ interface GanttChartProps {
   getNewWorkPackageNumber: (projectId: string) => number;
   defaultGanttFilters: GanttFilters;
   searchText: string;
+  clearEdits: boolean;
+  setClearEdits: (clearEdits: boolean) => void;
 }
 
 const GanttChart = ({
@@ -32,7 +34,9 @@ const GanttChart = ({
   getNewProjectNumber,
   getNewWorkPackageNumber,
   defaultGanttFilters,
-  searchText
+  searchText,
+  clearEdits,
+  setClearEdits
 }: GanttChartProps) => {
   return (
     <Box>
@@ -59,6 +63,8 @@ const GanttChart = ({
             addWorkPackage={addWorkPackage}
             getNewProjectNumber={getNewProjectNumber}
             getNewWorkPackageNumber={getNewWorkPackageNumber}
+            clearEdits={clearEdits}
+            setClearEdits={setClearEdits}
           />
         ) : (
           <></>

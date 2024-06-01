@@ -8,7 +8,6 @@ import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
 import { WorkPackage } from 'shared';
-import GanttTaskBarProjectView from './GanttTaskBarProjectView';
 
 const GanttTaskBar = ({
   days,
@@ -67,20 +66,6 @@ const GanttTaskBar = ({
           isProject={isProject}
           addWorkPackage={addWorkPackage}
           getNewWorkPackageNumber={getNewWorkPackageNumber}
-        />
-      ) : isProject ? (
-        <GanttTaskBarProjectView
-          days={days}
-          wbsNum={{ carNumber: task.carNumber, projectNumber: task.projectNumber, workPackageNumber: task.workPackageNumber }}
-          getStartCol={getStartCol}
-          getEndCol={getEndCol}
-          handleOnMouseOver={onMouseOver}
-          handleOnMouseLeave={handleOnMouseLeave}
-          onWorkPackageToggle={onWorkPackageToggle}
-          showWorkPackages={showWorkPackages}
-          highlightedChange={highlightedChange}
-          getNewWorkPackageNumber={getNewWorkPackageNumber}
-          teamName={task.teamName}
         />
       ) : (
         <GanttTaskBarView

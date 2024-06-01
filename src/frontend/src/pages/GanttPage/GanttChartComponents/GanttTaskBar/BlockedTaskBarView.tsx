@@ -41,8 +41,8 @@ const BlockedGanttTaskView = ({
   const theme = useTheme();
   const history = useHistory();
 
-  if (isLoading || !data) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} />;
+  if (isLoading || !data) return <LoadingIndicator />;
 
   const task = transformWorkPackageToGanttTask(data, teamName, []);
 

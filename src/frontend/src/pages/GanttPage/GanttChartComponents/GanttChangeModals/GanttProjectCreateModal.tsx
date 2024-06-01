@@ -74,7 +74,7 @@ export const GanttProjectCreateModal = ({ project, handleClose, open }: GanttPro
           leadId: undefined,
           managerId: undefined,
           startDate: workPackage.startDate.toLocaleString(),
-          duration: workPackage.duration,
+          duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
           blockedBy: [],
           descriptionBullets: [],
           links: []

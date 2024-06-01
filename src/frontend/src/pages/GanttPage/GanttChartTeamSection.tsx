@@ -7,7 +7,7 @@ import {
   RequestEventChange,
   transformProjectPreviewToProject
 } from '../../utils/gantt.utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddProjectModal from './GanttChartComponents/AddProjectModal';
 import useId from '@mui/material/utils/useId';
 import { Project, ProjectPreview, Team, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
@@ -26,6 +26,8 @@ interface GanttChartTeamSectionProps {
   addProject: (project: ProjectPreview) => void;
   addWorkPackage: (workPackage: WorkPackage) => void;
   getNewWorkPackageNumber: (projectId: string) => number;
+  clearEdits: boolean;
+  setClearEdits: (clearEdits: boolean) => void;
 }
 
 const GanttChartTeamSection = ({
@@ -40,15 +42,24 @@ const GanttChartTeamSection = ({
   highlightedChange,
   addProject,
   addWorkPackage,
-  getNewWorkPackageNumber
+  getNewWorkPackageNumber,
+  clearEdits,
+  setClearEdits
 }: GanttChartTeamSectionProps) => {
-  const oldProjects = projects;
   const theme = useTheme();
   const [ganttChanges, setGanttChanges] = useState<GanttChange[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const id = useId() || 'id';
   const [projectsState, setProjectsState] = useState<ProjectPreview[]>([...projects]);
+
+  useEffect(() => {
+    if (clearEdits) {
+      console.log('clearing edits', projects);
+      setProjectsState([...projects]);
+      setClearEdits(false);
+    }
+  }, [clearEdits, projects, setClearEdits]);
 
   const createChange = (change: GanttChange) => {
     setGanttChanges([...ganttChanges, change]);
@@ -58,6 +69,7 @@ const GanttChartTeamSection = ({
     saveChanges(ganttChanges);
     setGanttChanges([]);
     setIsEditMode(false);
+    setClearEdits(false);
   };
 
   const handleEdit = () => {
@@ -144,8 +156,6 @@ const GanttChartTeamSection = ({
 
             handleAddProject(newProject);
 
-            projects.push(newProject);
-
             handleEdit();
 
             createChange({
@@ -167,7 +177,7 @@ const GanttChartTeamSection = ({
               onClick={() => {
                 setIsEditMode(false);
                 setGanttChanges([]);
-                setProjectsState([...oldProjects]);
+                setProjectsState([...projects]);
               }}
               sx={{ marginRight: '10px' }}
             />

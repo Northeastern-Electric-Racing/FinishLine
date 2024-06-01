@@ -50,6 +50,8 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
 
     const changeWorkPackage = change.element as WorkPackage;
 
+    const duration = dayjs(changeWorkPackage.endDate).diff(dayjs(changeWorkPackage.startDate), 'week');
+
     const payload: CreateStandardChangeRequestPayload = {
       wbsNum: change.element.wbsNum,
       type: ChangeRequestType.Issue,
@@ -67,7 +69,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       workPackageProposedChanges: {
         name: workPackage.name,
         stage: workPackage.stage,
-        duration: changeWorkPackage.duration,
+        duration,
         startDate: change.newStart.toLocaleDateString(),
         blockedBy: workPackage.blockedBy,
         descriptionBullets: workPackage.descriptionBullets,

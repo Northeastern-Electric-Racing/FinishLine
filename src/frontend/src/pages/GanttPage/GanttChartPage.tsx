@@ -55,6 +55,7 @@ const GanttChartPage: FC = () => {
   const [showWorkPackagesMap, setShowWorkPackagesMap] = useState<Map<string, boolean>>(new Map());
   const [addedProjects, setAddedProjects] = useState<Project[]>([]);
   const [addedWorkPackages, setAddedWorkPackages] = useState<WorkPackage[]>([]);
+  const [clearEdits, setClearEdits] = useState<boolean>(false);
 
   /******************** Filters ***************************/
   const showCars = query.getAll('car').map((car) => parseInt(car));
@@ -233,10 +234,13 @@ const GanttChartPage: FC = () => {
   };
 
   const removeActiveModal = (changeId: string) => {
-    setGanttTaskChanges(ganttTaskChanges.filter((change) => change.changeId !== changeId));
-    if (ganttTaskChanges.length === 1) {
+    const newChanges = ganttTaskChanges.filter((change) => change.changeId !== changeId);
+    setGanttTaskChanges(newChanges);
+    if (newChanges.length === 0) {
+      console.log('clearing edits from page');
       setAddedProjects([]);
       setAddedWorkPackages([]);
+      setClearEdits(true);
     }
   };
 
@@ -306,6 +310,8 @@ const GanttChartPage: FC = () => {
           getNewWorkPackageNumber={getNewWorkPackageNumber}
           defaultGanttFilters={defaultGanttFilters}
           searchText={searchText}
+          clearEdits={clearEdits}
+          setClearEdits={setClearEdits}
         />
         {ganttTaskChanges.map((change) => (
           <GanttRequestChangeModal change={change} open handleClose={() => removeActiveModal(change.changeId)} />

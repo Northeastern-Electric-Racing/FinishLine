@@ -33,6 +33,8 @@ export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: 
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
   };
 
+  const duration = dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week');
+
   const handleSubmit = async () => {
     if (!reasonForChange) {
       return;
@@ -56,7 +58,7 @@ export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: 
       workPackageProposedChanges: {
         name: workPackage.name,
         stage: workPackage.stage,
-        duration: workPackage.duration,
+        duration,
         startDate: workPackage.startDate.toLocaleDateString(),
         blockedBy: [],
         descriptionBullets: [],
