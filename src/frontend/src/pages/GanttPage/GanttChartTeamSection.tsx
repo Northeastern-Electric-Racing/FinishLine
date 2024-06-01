@@ -42,12 +42,13 @@ const GanttChartTeamSection = ({
   addWorkPackage,
   getNewWorkPackageNumber
 }: GanttChartTeamSectionProps) => {
+  const oldProjects = projects;
   const theme = useTheme();
   const [ganttChanges, setGanttChanges] = useState<GanttChange[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const id = useId() || 'id';
-  const [projectsState, setProjectsState] = useState<ProjectPreview[]>(projects);
+  const [projectsState, setProjectsState] = useState<ProjectPreview[]>([...projects]);
 
   const createChange = (change: GanttChange) => {
     setGanttChanges([...ganttChanges, change]);
@@ -166,6 +167,7 @@ const GanttChartTeamSection = ({
               onClick={() => {
                 setIsEditMode(false);
                 setGanttChanges([]);
+                setProjectsState([...oldProjects]);
               }}
               sx={{ marginRight: '10px' }}
             />
