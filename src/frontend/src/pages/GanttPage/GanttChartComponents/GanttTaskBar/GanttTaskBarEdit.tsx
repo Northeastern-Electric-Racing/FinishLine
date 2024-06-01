@@ -99,10 +99,13 @@ const GanttTaskBarEdit = ({
   };
 
   useEffect(() => {
+    if (isProject) {
+      setWidth(0);
+    }
     if (bounds.width !== 0 && width === 0) {
       setWidth(bounds.width);
     }
-  }, [bounds, task.end, task.start, width]);
+  }, [bounds, task.end, task.start, width, isProject]);
 
   const [showAddWorkPackageModal, setShowAddWorkPackageModal] = useState(false);
 
