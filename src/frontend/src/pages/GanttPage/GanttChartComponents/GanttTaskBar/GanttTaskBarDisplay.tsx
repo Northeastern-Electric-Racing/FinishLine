@@ -19,6 +19,7 @@ import {
   webKitBoxStyles
 } from './GanttTaskBarDisplayStyles';
 import { CSSProperties } from 'react';
+import { ArrowDropDown } from '@mui/icons-material';
 
 interface GanttTaskBarDisplayProps {
   days: Date[];
@@ -113,7 +114,7 @@ const GanttTaskBarDisplay = ({
           style={ganttTaskBarHoverDetectionBoxStyles}
           onMouseOver={(e) => handleOnMouseOver(e, task)}
           onMouseLeave={handleOnMouseLeave}
-          onClick={() => history.push(`${`${routes.PROJECTS}/${task.id}`}`)}
+          onClick={() => history.push(`${routes.PROJECTS}/${task.id}`)}
         >
           <Box sx={webKitBoxContainerStyles()}>
             <Box sx={webKitBoxStyles()} />
@@ -123,11 +124,15 @@ const GanttTaskBarDisplay = ({
           style={ganttTaskBarDetailsBoxStyles}
           onMouseOver={(e) => handleOnMouseOver(e, task)}
           onMouseLeave={handleOnMouseLeave}
-          onClick={!isProject ? () => history.push(`${`${routes.PROJECTS}/${task.id}`}`) : undefined}
+          onClick={!isProject ? () => history.push(`${routes.PROJECTS}/${task.id}`) : undefined}
         >
           {isProject && (
             <IconButton onClick={onWorkPackageToggle} sx={{ marginRight: '-15px', marginLeft: '-5px' }}>
-              {showWorkPackages ? <ArrowDropDownIcon fontSize="large" /> : <ArrowRightIcon fontSize="large" />}
+              {showWorkPackages ? (
+                <ArrowDropDownIcon fontSize="large" />
+              ) : (
+                <ArrowDropDownIcon fontSize="large" sx={{ transform: `rotate(270deg)` }} />
+              )}
             </IconButton>
           )}
           <Typography variant="body1" sx={taskNameContainerStyles(task)} onClick={onWorkPackageToggle}>
@@ -142,7 +147,7 @@ const GanttTaskBarDisplay = ({
                 style={ganttTaskBarWorkPackageOverlayStyles(child)}
                 onMouseOver={(e) => handleOnMouseOver(e, child)}
                 onMouseLeave={handleOnMouseLeave}
-                onClick={() => history.push(`${`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}`)}
+                onClick={() => history.push(`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`)}
               />
             );
           })}

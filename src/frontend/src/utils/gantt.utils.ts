@@ -248,12 +248,9 @@ export const filterGanttProjects = (
       ? projects
       : [];
 
-  console.log(ganttFilters.showTeams, team.teamName);
-
   if (ganttFilters.showTeams.length > 0)
     projects = ganttFilters.showTeams.some((teamName) => teamName === team.teamName) ? projects : [];
 
-  console.log(projects);
   // shows only active and inactive projects
   projects = projects.filter((project) => project.status !== WbsElementStatus.Complete);
 
