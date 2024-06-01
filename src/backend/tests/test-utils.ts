@@ -191,6 +191,47 @@ export const createTestWorkPackageTemplate = async (user: User, organizationId?:
   return workPackageTemplate;
 };
 
+export const createTestLinkType = async (user: User, organizationId?: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const linkType = await prisma.link_Type.create({
+    data: {
+      name: 'link type 1',
+      dateCreated: new Date('03/25/2024'),
+      iconName: 'youtube icon',
+      required: true,
+      creatorId: user.userId,
+      organizationId
+    }
+  });
+
+  return linkType;
+};
+
+export const createTestLink = async (user: User, organizationId?: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const linkType = await createTestLinkType(user, organizationId);
+
+  const link = await prisma.link.create({
+    data: {
+      linkId: 'tester',
+      linkTypeId: linkType.id,
+      dateCreated: new Date('03/25/2024'),
+      creatorId: user.userId,
+      url: 'https://example.com/link1'
+    },
+    include: {
+      linkType: true,
+      creator: true,
+    }
+  });
+
+  return link;
+};
+
 export const createTestProject = async (user: User, organizationId?: string): Promise<Project> => {
   if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
   const car = await prisma.car.create({

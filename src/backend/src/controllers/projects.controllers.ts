@@ -445,4 +445,17 @@ export default class ProjectsController {
       next(error);
     }
   }
+
+  static async setUsefulLinks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { links } = req.body;
+      const submitter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      await ProjectsService.setUsefulLinks(submitter, organizationId, links);
+      res.status(200).json({ message: `Successfully set useful links for organization with id#: ${organizationId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

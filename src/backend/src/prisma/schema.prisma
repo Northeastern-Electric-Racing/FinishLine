@@ -424,10 +424,12 @@ model Link {
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
   // Either its on a wbsElement or a wbsProposedChanges, not both and not neither
-  wbsElementId         String?
-  wbsElment            WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
-  wbsProposedChangesId String?
-  wbsProposedChanges   Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsElementId               String?
+  wbsElment                  WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  wbsProposedChangesId       String?
+  wbsProposedChanges         Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  Organization               Organization?         @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?
 }
 
 model Description_Bullet_Type {
@@ -860,4 +862,5 @@ model Organization {
   roles                  Role[]
   changeRequests         Change_Request[]
   reimbursementReqeusts  Reimbursement_Request[]
+  usefulLinks            Link[]
 }

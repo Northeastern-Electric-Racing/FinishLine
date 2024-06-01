@@ -33,6 +33,13 @@ projectRouter.post(
 );
 
 projectRouter.post(
+  '/useful-links/edit',
+  body('links').isArray(),
+  validateInputs,
+  ProjectsController.setUsefulLinks
+)
+
+projectRouter.post(
   '/create',
   intMinZero(body('carNumber')),
   body('teamIds').isArray(),
