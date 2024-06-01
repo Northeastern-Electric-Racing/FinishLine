@@ -49,6 +49,7 @@ export const taskNameContainerStyles = (task: GanttTask): CSSProperties => {
     color: task.styles ? task.styles.color : '#ffffff',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    padding: '0.25rem'
   };
 };

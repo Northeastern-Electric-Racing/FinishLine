@@ -4,13 +4,18 @@
  */
 
 import { eachDayOfInterval, isMonday } from 'date-fns';
-import { GanttChange, GanttTaskData, RequestEventChange, transformProjectToGanttTask } from '../../utils/gantt.utils';
+import {
+  GanttChange,
+  GanttTaskData,
+  isHighlightedChangeOnWbsProject,
+  RequestEventChange,
+  transformProjectToGanttTask
+} from '../../utils/gantt.utils';
 import { Box, Typography } from '@mui/material';
 import GanttTaskBar from './GanttChartComponents/GanttTaskBar/GanttTaskBar';
 import { useState } from 'react';
 import GanttToolTip from './GanttChartComponents/GanttToolTip';
-import { ProjectPreview, wbsPipe, WorkPackage } from 'shared';
-import { projectWbsPipe } from '../../utils/pipes';
+import { ProjectPreview, WorkPackage } from 'shared';
 
 interface GanttChartSectionProps {
   start: Date;
@@ -45,7 +50,6 @@ const GanttChartSection = ({
 
   const handleOnMouseOver = (e: React.MouseEvent, task: GanttTaskData) => {
     if (!isEditMode) {
-      console.log('task', task);
       setCurrentTask(task);
       setCursorY(e.clientY);
     }
@@ -83,7 +87,7 @@ const GanttChartSection = ({
                 addWorkPackage={addWorkPackage}
                 getNewWorkPackageNumber={getNewWorkPackageNumber}
                 highlightedChange={
-                  highlightedChange && wbsPipe(project.wbsNum) === projectWbsPipe(highlightedChange.element.wbsNum)
+                  highlightedChange && isHighlightedChangeOnWbsProject(highlightedChange, project.wbsNum)
                     ? highlightedChange
                     : undefined
                 }

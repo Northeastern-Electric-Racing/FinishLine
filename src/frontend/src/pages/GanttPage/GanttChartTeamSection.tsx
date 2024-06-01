@@ -49,10 +49,11 @@ const GanttChartTeamSection = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const id = useId() || 'id';
-  const [projectsState, setProjectsState] = useState<ProjectPreview[]>([...projects]);
   const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange[]>([]);
   const [addedProjects, setAddedProjects] = useState<Project[]>([]);
   const [addedWorkPackages, setAddedWorkPackages] = useState<WorkPackage[]>([]);
+
+  const projectsState = [...projects, ...addedProjects];
 
   const teamSectionBackgroundStyle = {
     mt: 1,
@@ -87,7 +88,8 @@ const GanttChartTeamSection = ({
   const handleCancel = () => {
     setIsEditMode(false);
     setGanttChanges([]);
-    setProjectsState([...projects]);
+    setAddedProjects([]);
+    setAddedWorkPackages([]);
   };
 
   const handleEdit = () => {
@@ -108,13 +110,12 @@ const GanttChartTeamSection = ({
     if (!project) return;
     workPackage.wbsNum.workPackageNumber = project.workPackages.length + 1;
     project.workPackages = [...project.workPackages, workPackage];
-    setProjectsState([...projectsState]);
     setAddedWorkPackages([...addedWorkPackages, workPackage]);
     addNewWorkPackage(workPackage);
   };
 
   const addNewProjectHandler = (project: ProjectPreview) => {
-    setProjectsState([...projectsState, project]);
+    projectsState.push(transformProjectPreviewToProject(project, team));
     const newProject: Project = transformProjectPreviewToProject(project, team);
     setAddedProjects([...addedProjects, newProject]);
     addNewProject(newProject);
@@ -124,15 +125,8 @@ const GanttChartTeamSection = ({
     const parentProject = projectsState.find((project) => wbsPipe(project.wbsNum) === projectWbsPipe(change.element.wbsNum)); // Find the project that either the change is on, or the changes work package is a part of
     if (!parentProject) return;
 
-    const newProject: Project = applyChangesToWBSElement(
-      [change],
-      transformProjectPreviewToProject(parentProject, team),
-      parentProject
-    ) as Project;
+    applyChangesToWBSElement([change], transformProjectPreviewToProject(parentProject, team), parentProject) as Project;
 
-    const index = projectsState.findIndex((project) => wbsPipe(project.wbsNum) === projectWbsPipe(newProject.wbsNum));
-    projectsState[index] = newProject; // Reset the project in the projects state, potentially unnecessary
-    setProjectsState([...projectsState]);
     createChange(change);
   };
 
@@ -159,7 +153,6 @@ const GanttChartTeamSection = ({
       removeAddedWorkPackages([...addedWorkPackages]);
       setAddedProjects([]);
       setAddedWorkPackages([]);
-      setProjectsState([...projects]);
     }
   };
 
