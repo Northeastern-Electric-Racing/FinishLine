@@ -75,37 +75,6 @@ export default class WorkPackagesController {
     }
   }
 
-  // Create a work package template with the given details
-  static async createWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { templateName, templateNotes, workPackageName, duration, descriptionBullets, blockedBy } = req.body;
-
-      let { stage } = req.body;
-      if (stage === 'NONE') {
-        stage = null;
-      }
-
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.createWorkPackageTemplate(
-        user,
-        templateName,
-        templateNotes,
-        workPackageName,
-        stage,
-        duration,
-        descriptionBullets,
-        blockedBy,
-        organizationId
-      );
-
-      res.status(200).json(workPackageTemplate);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   // Edit a work package to the given specifications
   static async editWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
@@ -173,84 +142,6 @@ export default class WorkPackagesController {
       const organizationId = getOrganizationId(req.headers);
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline), organizationId);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-  // Get a single work package template that corresponds to the given work package template id
-  static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
-    try {
-      const user = await getCurrentUser(res);
-      const { workPackageTemplateId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
-
-      const workPackageTemplate: WorkPackageTemplate = await WorkPackagesService.getSingleWorkPackageTemplate(
-        user,
-        workPackageTemplateId,
-        organizationId
-      );
-
-      res.status(200).json(workPackageTemplate);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-  // Get all work package templates
-  static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
-    try {
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const workPackageTemplates: WorkPackageTemplate[] = await WorkPackagesService.getAllWorkPackageTemplates(
-        submitter,
-        organizationId
-      );
-
-      res.status(200).json(workPackageTemplates);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async editWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { workpackageTemplateId } = req.params;
-      const { templateName, templateNotes, duration, blockedBy, descriptionBullets, workPackageName } = req.body;
-      const user = await getCurrentUser(res);
-      let { stage } = req.body;
-      if (stage === 'NONE') {
-        stage = null;
-      }
-      const organizationId = getOrganizationId(req.headers);
-
-      const updatedWorkPackageTemplate = await WorkPackagesService.editWorkPackageTemplate(
-        user,
-        workpackageTemplateId,
-        templateName,
-        templateNotes,
-        duration,
-        stage,
-        blockedBy,
-        descriptionBullets,
-        workPackageName,
-        organizationId
-      );
-
-      res.status(200).json(updatedWorkPackageTemplate);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  // Delete a work package template that corresponds to the given workPackageTemplateId
-  static async deleteWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
-    try {
-      const user = await getCurrentUser(res);
-      const { workPackageTemplateId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
-
-      await WorkPackagesService.deleteWorkPackageTemplate(user, workPackageTemplateId, organizationId);
-      res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
     } catch (error: unknown) {
       next(error);
     }

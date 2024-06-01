@@ -29,8 +29,8 @@ import DesignReviewsService from '../services/design-reviews.services';
 import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
-import WorkPackagesService from '../services/work-packages.services';
 import { writeFileSync } from 'fs';
+import WorkPackageTemplatesService from '../services/work-package-template.services';
 
 const prisma = new PrismaClient();
 
@@ -1906,7 +1906,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   );
 
-  await WorkPackagesService.createWorkPackageTemplate(
+  await WorkPackageTemplatesService.createWorkPackageTemplate(
     batman,
     'Batmobile Config 1',
     'This is the first Batmobile configuration',
@@ -1918,7 +1918,7 @@ const performSeed: () => Promise<void> = async () => {
     organizationId
   );
 
-  const schematicWpTemplate = await WorkPackagesService.createWorkPackageTemplate(
+  const schematicWpTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
     batman,
     'Schematic',
     'This is the schematic template',
@@ -1930,7 +1930,7 @@ const performSeed: () => Promise<void> = async () => {
     organizationId
   );
 
-  await WorkPackagesService.createWorkPackageTemplate(
+  await WorkPackageTemplatesService.createWorkPackageTemplate(
     batman,
     'Layout ',
     'This is the Layout  template',
