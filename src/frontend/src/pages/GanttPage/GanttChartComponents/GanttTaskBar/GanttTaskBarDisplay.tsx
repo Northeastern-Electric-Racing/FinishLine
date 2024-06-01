@@ -2,7 +2,6 @@ import { Box, IconButton, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { useHistory } from 'react-router-dom';
-import { dateToString } from '../../../../utils/datetime.utils';
 import {
   GanttTask,
   isHighlightedChangeOnGanttTask,
@@ -88,14 +87,12 @@ const GanttTaskBarDisplay = ({
   };
 
   const highlightedChangeBoxStyles = (highlightedChange: RequestEventChange): CSSProperties => {
+    console.log('highlightedChange', highlightedChange);
     return {
       paddingTop: '2px',
       paddingLeft: '5px',
-      gridColumnStart: days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newStart)) + 1,
-      gridColumnEnd:
-        days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) === -1
-          ? days.length + 1
-          : days.findIndex((day) => dateToString(day) === dateToString(highlightedChange.newEnd)) + 2,
+      gridColumnStart: getStartCol(highlightedChange.newStart),
+      gridColumnEnd: getEndCol(highlightedChange.newEnd),
       height: '2rem',
       border: `1px solid ${theme.palette.text.primary}`,
       borderRadius: '0.25rem',
