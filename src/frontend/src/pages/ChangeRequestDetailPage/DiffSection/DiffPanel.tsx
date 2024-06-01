@@ -6,7 +6,8 @@ import {
   PotentialChangeType,
   changeBulletDetailText,
   getPotentialChangeBackground,
-  ProposedChangeValue
+  ProposedChangeValue,
+  workPackageProposedChangesToPreview
 } from '../../../utils/diff-page.utils';
 import { labelPipe } from '../../../utils/pipes';
 
@@ -24,11 +25,18 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
   const theme = useTheme();
 
   const changeBullets: ChangeBullet[][] = [[{ label: 'Proposed Changes', detail: 'None' }]];
+  const workPackagePreviews =
+    projectProposedChanges?.workPackageProposedChanges.map(workPackageProposedChangesToPreview) ?? [];
   for (const projectKey in projectProposedChanges) {
     if (projectProposedChanges.hasOwnProperty(projectKey)) {
       if (projectKey === 'workPackageProposedChanges') {
-        for (const workPackage of projectProposedChanges.workPackageProposedChanges) {
-          const wpChangeBullets: ChangeBullet[] = [{ label: 'Work Package Proposed Changes', detail: 'None' }];
+        workPackagePreviews.forEach((workPackage, idx) => {
+          const wpChangeBullets: ChangeBullet[] = [
+            {
+              label: `Work Package Proposed Changes ${workPackagePreviews.length > 1 ? '#' + (idx + 1) : ''}`,
+              detail: 'None'
+            }
+          ];
           for (let workPackageKey in workPackage) {
             if (workPackage.hasOwnProperty(workPackageKey)) {
               if (workPackageKey === 'duration') {
@@ -53,7 +61,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
             }
           }
           changeBullets.push(wpChangeBullets);
-        }
+        });
       } else {
         changeBullets[0].push({
           label: projectKey,
@@ -99,7 +107,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
     } else if (Array.isArray(detailText) && detailText.length > 0) {
       if (typeof detailText[0] === 'string') {
         return (
-          <List sx={{ listStyleType: 'disc', pl: 4 }}>
+          <List sx={{ listStyleType: 'disc', pl: 6 }}>
             {(detailText as string[]).map((bullet) => {
               const url = bullet.includes('http') ? bullet.split(': ')[1] : undefined;
               return (
@@ -135,7 +143,9 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
 
               return potentialChangeType === PotentialChangeType.SAME ? (
                 <Typography>
-                  {labelPipe(changeBullet.label)}: {renderDetailText(detailText)}
+                  <Box pl={2}>
+                    {labelPipe(changeBullet.label)}: {renderDetailText(detailText)}
+                  </Box>
                 </Typography>
               ) : (
                 <Box
@@ -150,6 +160,7 @@ const DiffPanel: React.FC<ProjectDiffPanelProps> = ({
                       borderRadius: '5px',
                       width: 'fit-content'
                     }}
+                    pl={2}
                     component="span"
                     display="inline"
                   >
