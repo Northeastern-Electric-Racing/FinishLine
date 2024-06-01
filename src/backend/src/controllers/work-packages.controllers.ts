@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateWBS, WbsNumber, WorkPackage, WorkPackageTemplate } from 'shared';
+import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
 import { getCurrentUser } from '../utils/auth.utils';
 import { getOrganizationId } from '../utils/utils';
