@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import { ArrowDropDownIcon, ArrowRightIcon } from '@mui/x-date-pickers';
+import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { useHistory } from 'react-router-dom';
 import { dateToString } from '../../../../utils/datetime.utils';
 import {
@@ -19,7 +19,6 @@ import {
   webKitBoxStyles
 } from './GanttTaskBarDisplayStyles';
 import { CSSProperties } from 'react';
-import { ArrowDropDown } from '@mui/icons-material';
 
 interface GanttTaskBarDisplayProps {
   days: Date[];

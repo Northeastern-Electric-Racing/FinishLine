@@ -14,6 +14,7 @@ import { Project, ProjectPreview, Team, WbsElement, WbsElementStatus, wbsPipe, W
 import { projectWbsPipe } from '../../utils/pipes';
 import { GanttRequestChangeModal } from './GanttChartComponents/GanttChangeModals/GanttRequestChangeModal';
 import AddGanttProjectModal from './GanttChartComponents/AddGanttProjectModal';
+import { projectPreviewTranformer } from '../../apis/transformers/projects.transformers';
 
 interface GanttChartTeamSectionProps {
   startDate: Date;
@@ -44,6 +45,7 @@ const GanttChartTeamSection = ({
   removeAddedProjects,
   removeAddedWorkPackages
 }: GanttChartTeamSectionProps) => {
+  const deeplyCopiedProjects: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
   const theme = useTheme();
   const [ganttChanges, setGanttChanges] = useState<GanttChange[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -53,7 +55,7 @@ const GanttChartTeamSection = ({
   const [addedProjects, setAddedProjects] = useState<Project[]>([]);
   const [addedWorkPackages, setAddedWorkPackages] = useState<WorkPackage[]>([]);
 
-  const projectsState = [...projects, ...addedProjects];
+  const [projectsState, setProjectsState] = useState([...deeplyCopiedProjects]);
 
   const teamSectionBackgroundStyle = {
     mt: 1,
@@ -90,6 +92,8 @@ const GanttChartTeamSection = ({
     setGanttChanges([]);
     setAddedProjects([]);
     setAddedWorkPackages([]);
+    const deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
+    setProjectsState([...deepCopy]);
   };
 
   const handleEdit = () => {
@@ -118,6 +122,7 @@ const GanttChartTeamSection = ({
     projectsState.push(transformProjectPreviewToProject(project, team));
     const newProject: Project = transformProjectPreviewToProject(project, team);
     setAddedProjects([...addedProjects, newProject]);
+    setProjectsState([...projectsState, newProject]);
     addNewProject(newProject);
   };
 
@@ -153,6 +158,8 @@ const GanttChartTeamSection = ({
       removeAddedWorkPackages([...addedWorkPackages]);
       setAddedProjects([]);
       setAddedWorkPackages([]);
+      const deepCopy = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
+      setProjectsState([...deepCopy]);
     }
   };
 
