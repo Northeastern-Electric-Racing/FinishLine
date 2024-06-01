@@ -53,7 +53,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     const payload: CreateStandardChangeRequestPayload = {
       wbsNum: change.element.wbsNum,
       type: ChangeRequestType.Issue,
-      what: `Move timeline From: ${changeInTimeline(change.prevStart, change.prevEnd)} To: ${changeInTimeline(
+      what: `Move timeline From: ${changeInTimeline(workPackage.startDate, workPackage.endDate)} To: ${changeInTimeline(
         change.newStart,
         change.newEnd
       )}`,
