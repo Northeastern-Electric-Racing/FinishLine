@@ -29,7 +29,7 @@ const GanttTaskBarView = ({
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
   isProject: boolean;
-  handleOnMouseOver: (e: React.MouseEvent) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask) => void;
   handleOnMouseLeave: () => void;
   onWorkPackageToggle?: () => void;
   showWorkPackages?: boolean;

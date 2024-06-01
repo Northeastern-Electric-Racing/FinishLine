@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { GanttChange, GanttTask, GanttTaskData, RequestEventChange } from '../../../../utils/gantt.utils';
+import { GanttChange, GanttTask, RequestEventChange } from '../../../../utils/gantt.utils';
 import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
@@ -26,7 +26,7 @@ const GanttTaskBar = ({
   task: GanttTask;
   createChange: (change: GanttChange) => void;
   isEditMode: boolean;
-  handleOnMouseOver: (e: React.MouseEvent, event: GanttTaskData) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask) => void;
   handleOnMouseLeave: () => void;
   onWorkPackageToggle?: () => void;
   showWorkPackages?: boolean;
@@ -50,10 +50,6 @@ const GanttTaskBar = ({
     return endCol;
   };
 
-  const onMouseOver = (e: React.MouseEvent) => {
-    handleOnMouseOver(e, task);
-  };
-
   return (
     <div id={`gantt-task-${task.id}`}>
       {isEditMode ? (
@@ -74,7 +70,7 @@ const GanttTaskBar = ({
           getStartCol={getStartCol}
           getEndCol={getEndCol}
           isProject={isProject}
-          handleOnMouseOver={onMouseOver}
+          handleOnMouseOver={handleOnMouseOver}
           handleOnMouseLeave={handleOnMouseLeave}
           onWorkPackageToggle={onWorkPackageToggle}
           showWorkPackages={showWorkPackages}

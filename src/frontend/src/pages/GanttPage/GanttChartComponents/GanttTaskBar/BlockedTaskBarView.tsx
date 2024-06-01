@@ -1,4 +1,4 @@
-import { RequestEventChange, transformWorkPackageToGanttTask } from '../../../../utils/gantt.utils';
+import { GanttTask, RequestEventChange, transformWorkPackageToGanttTask } from '../../../../utils/gantt.utils';
 import { WbsNumber, wbsPipe } from 'shared';
 import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
@@ -23,7 +23,7 @@ const BlockedGanttTaskView = ({
   teamName: string;
   getStartCol: (start: Date) => number;
   getEndCol: (end: Date) => number;
-  handleOnMouseOver: (e: React.MouseEvent) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask) => void;
   handleOnMouseLeave: () => void;
   onWorkPackageToggle?: () => void;
   highlightedChange?: RequestEventChange;

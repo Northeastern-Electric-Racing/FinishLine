@@ -24,7 +24,7 @@ interface GanttTaskBarDisplayProps {
   days: Date[];
   task: GanttTask;
   isProject: boolean;
-  handleOnMouseOver: (e: React.MouseEvent) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask) => void;
   handleOnMouseLeave: () => void;
   onWorkPackageToggle?: () => void;
   showWorkPackages?: boolean;
@@ -111,7 +111,7 @@ const GanttTaskBarDisplay = ({
       <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
         <div
           style={ganttTaskBarHoverDetectionBoxStyles}
-          onMouseOver={handleOnMouseOver}
+          onMouseOver={(e) => handleOnMouseOver(e, task)}
           onMouseLeave={handleOnMouseLeave}
           onClick={() => history.push(`${`${routes.PROJECTS}/${task.id}`}`)}
         >
@@ -121,7 +121,7 @@ const GanttTaskBarDisplay = ({
         </div>
         <div
           style={ganttTaskBarDetailsBoxStyles}
-          onMouseOver={handleOnMouseOver}
+          onMouseOver={(e) => handleOnMouseOver(e, task)}
           onMouseLeave={handleOnMouseLeave}
           onClick={!isProject ? () => history.push(`${`${routes.PROJECTS}/${task.id}`}`) : undefined}
         >
@@ -141,7 +141,7 @@ const GanttTaskBarDisplay = ({
             return (
               <div
                 style={ganttTaskBarWorkPackageOverlayStyles(child)}
-                onMouseOver={handleOnMouseOver}
+                onMouseOver={(e) => handleOnMouseOver(e, child)}
                 onMouseLeave={handleOnMouseLeave}
                 onClick={() => history.push(`${`${routes.PROJECTS}/${wbsPipe(workPackage.wbsNum)}`}`)}
               />

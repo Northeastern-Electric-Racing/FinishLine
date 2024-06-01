@@ -43,9 +43,10 @@ const GanttChartSection = ({
   const [currentTask, setCurrentTask] = useState<GanttTaskData | undefined>(undefined);
   const [cursorY, setCursorY] = useState<number>(0);
 
-  const handleOnMouseOver = (e: React.MouseEvent, event: GanttTaskData) => {
+  const handleOnMouseOver = (e: React.MouseEvent, task: GanttTaskData) => {
     if (!isEditMode) {
-      setCurrentTask(event);
+      console.log('task', task);
+      setCurrentTask(task);
       setCursorY(e.clientY);
     }
   };
@@ -94,7 +95,7 @@ const GanttChartSection = ({
       {currentTask && (
         <GanttToolTip
           yCoordinate={cursorY}
-          title={!currentTask.projectId ? currentTask.name.substring(8) : currentTask.name.substring(6)}
+          title={currentTask.name}
           startDate={currentTask.start}
           endDate={currentTask.end}
           color={currentTask.styles?.backgroundColor}
