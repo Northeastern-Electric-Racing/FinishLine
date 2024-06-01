@@ -35,7 +35,12 @@ import {
   markDescriptionBulletsAsDeleted,
   validateDescriptionBullets
 } from '../utils/description-bullets.utils';
-import { getBlockingWorkPackages, validateBlockedBys, validateBlockedByTemplates } from '../utils/work-packages.utils';
+import {
+  deleteBlockingTemplates,
+  getBlockingWorkPackages,
+  validateBlockedBys,
+  validateBlockedByTemplates
+} from '../utils/work-packages.utils';
 import { workPackageTemplateTransformer } from '../transformers/work-package-template.transformer';
 import { getWorkPackageTemplateQueryArgs } from '../prisma-query-args/work-package-template.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
@@ -584,7 +589,6 @@ export default class WorkPackagesService {
 
     const template = await prisma.work_Package_Template.findFirst({
       where: {
-        dateDeleted: null,
         workPackageTemplateId
       },
       ...getWorkPackageTemplateQueryArgs(organizationId)
@@ -774,5 +778,63 @@ export default class WorkPackagesService {
     await markDescriptionBulletsAsDeleted(descriptionBulletsChanges.deletedElements);
 
     return workPackageTemplateTransformer(updatedWorkPackageTemplate);
+  }
+
+  /**
+   * Deletes the Work Package template
+   * @param submitter The user who deleted the work package
+   * @param workPackageTemplateId The id of the work package template to be deleted
+   * @param organizationId The organization id that the user is in
+   */
+  static async deleteWorkPackageTemplate(
+    submitter: User,
+    workPackageTemplateId: string,
+    organizationId: string
+  ): Promise<void> {
+    // Verify submitter is allowed to delete work packages
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete work package template');
+
+    const workPackageTemplate = await prisma.work_Package_Template.findUnique({
+      where: {
+        workPackageTemplateId
+      },
+      include: {
+        blocking: true
+      }
+    });
+
+    if (!workPackageTemplate) {
+      throw new NotFoundException('Work Package Template', workPackageTemplateId);
+    }
+
+    if (workPackageTemplate.dateDeleted) {
+      throw new DeletedException('Work Package Template', workPackageTemplateId);
+    }
+
+    if (workPackageTemplate.organizationId !== organizationId) {
+      throw new InvalidOrganizationException('Work Package Template');
+    }
+
+    const dateDeleted = new Date();
+
+    if (workPackageTemplate.blocking.length > 0) {
+      await deleteBlockingTemplates(workPackageTemplate, submitter);
+    }
+
+    // Soft delete the work package template by updating its related "deleted" fields
+    await prisma.work_Package_Template.update({
+      where: {
+        workPackageTemplateId
+      },
+      data: {
+        dateDeleted,
+        userDeleted: {
+          connect: {
+            userId: submitter.userId
+          }
+        }
+      }
+    });
   }
 }
