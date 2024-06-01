@@ -10,7 +10,6 @@ import {
   ProjectPreview,
   Team,
   User,
-  validateWBS,
   WbsElement,
   WbsElementStatus,
   WbsNumber,
@@ -35,10 +34,9 @@ export interface GanttTaskData {
   projectNumber: number;
   carNumber: number;
   workPackageNumber: number;
-  totalWorkPackages: WorkPackage[];
+  allWorkPackages: WorkPackage[];
   unblockedWorkPackages: WorkPackage[];
   blocking: WbsNumber[];
-  blockedByIds: string[];
 
   // Optional Values
   styles?: {
@@ -76,7 +74,7 @@ export const getProjectStartDate = (project: ProjectPreview): Date => {
   return project.workPackages.reduce((acc, current) => {
     if (current.startDate < acc) return current.startDate;
     return acc;
-  }, new Date(3000, 0, 1)); // Set Date to Year 3000
+  }, new Date(3000, 0, 1)); // Set Date to Year 3000, an arbitrary date in the future
 };
 
 export const getProjectEndDate = (project: ProjectPreview): Date => {
@@ -120,7 +118,7 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
     startDate: task.start,
     endDate: task.end,
     descriptionBullets: [],
-    blockedBy: task.blockedByIds.map(validateWBS),
+    blockedBy: [],
     manager: task.manager,
     lead: task.lead,
     status: WbsElementStatus.Active,
@@ -129,12 +127,18 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
     materials: [],
     assemblies: [],
     changes: [],
-    immediatelyBlocking: task.blocking,
+    blocking: task.blocking,
     projectName: '',
-    duration: task.end.getTime() - task.start.getTime() / 1000 / 60 / 60 / 24 / 7
+    duration: dayjs(task.end).diff(dayjs(task.start), 'week')
   };
 };
 
+/**
+ * Applies the changes to all of the blocked work packages of the initial work package
+ * @param initialWorkPackage The work package to get all of the blocked work packages for
+ * @param totalWorkPackages The total list of work packages on the the initial work packages project
+ * @param changeToApply The change to apply to all the blocked work package
+ */
 const applyChangesToBlockedBy = (
   initialWorkPackage: WorkPackage,
   totalWorkPackages: WorkPackage[],
@@ -142,7 +146,7 @@ const applyChangesToBlockedBy = (
 ) => {
   const updatedBlockingWbsNums: Set<String> = new Set();
 
-  const blockingUpdateQueue: string[] = initialWorkPackage.immediatelyBlocking.map(wbsPipe);
+  const blockingUpdateQueue: string[] = initialWorkPackage.blocking.map(wbsPipe);
   while (blockingUpdateQueue.length > 0) {
     const currWbsNum = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
 
@@ -151,7 +155,7 @@ const applyChangesToBlockedBy = (
 
     updatedBlockingWbsNums.add(currWbsNum);
 
-    // get the current wbs object from prisma
+    // get the work package object from the total work packages
     const currWbs = totalWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === currWbsNum);
 
     if (currWbs?.wbsElementId === initialWorkPackage.wbsElementId) throw new Error('Circular dependency detected');
@@ -169,12 +173,18 @@ const applyChangesToBlockedBy = (
     }
 
     // get all the blockings of the current wbs and add them to the queue to update
-    const newBlocking: string[] = currWbs.immediatelyBlocking.map(wbsPipe);
+    const newBlocking: string[] = currWbs.blocking.map(wbsPipe);
     blockingUpdateQueue.push(...newBlocking);
   }
 };
 
-export const applyChangesToEvent = (
+/**
+ * Applies the gantt changes to the wbs element and all of its children
+ * @param ganttChanges The gantt changes to apply
+ * @param wbsElement The wbs element to apply the changes to
+ * @param parentProject The parent project of the wbs element, itself if it is a project
+ */
+export const applyChangesToWBSElement = (
   ganttChanges: GanttChange[],
   wbsElement: WbsElement,
   parentProject: ProjectPreview
@@ -182,9 +192,11 @@ export const applyChangesToEvent = (
   const updatedElement = wbsElement;
 
   if (isWorkPackage(wbsElement.wbsNum)) {
+    // If its a work package were gonna loop through and see if we need to apply changes
     const workPackage = wbsElement as WorkPackage;
     ganttChanges.forEach((change) => {
       if (wbsPipe(change.element.wbsNum) === wbsPipe(wbsElement.wbsNum)) {
+        // If the change is for this work package then were gonna apply it
         if (change.type === 'change-end-date') {
           workPackage.endDate = change.newEnd;
         } else if (change.type === 'shift-by-days') {
@@ -193,31 +205,20 @@ export const applyChangesToEvent = (
           workPackage.endDate = dayjs(workPackage.endDate).add(change.days, 'day').toDate();
         }
 
-        applyChangesToBlockedBy(workPackage, parentProject.workPackages, change);
+        applyChangesToBlockedBy(workPackage, parentProject.workPackages, change); // Apply the changes to all of the blocked work packages
       }
     });
   }
 
   if (isProject(wbsElement.wbsNum)) {
+    // If its a project we need to apply the changes to all of the work packages since a project doesnt have a timeline itself, it infers it from its children
     const project = wbsElement as Project;
     project.workPackages = project.workPackages.map((workPackage) =>
-      applyChangesToEvent(ganttChanges, workPackage, parentProject)
+      applyChangesToWBSElement(ganttChanges, workPackage, parentProject)
     ) as WorkPackage[];
   }
 
   return updatedElement;
-};
-
-export const applyChangesToEvents = (
-  wbsElements: WbsElement[],
-  eventChanges: GanttChange[],
-  allProjects: Project[]
-): WbsElement[] => {
-  return wbsElements.map((wbsElement) => {
-    const parentProject = allProjects.find((e) => e.id === wbsElement.id);
-    if (!parentProject) throw new Error('Parent project not found when applying changes to events for: ' + wbsElement.id);
-    return applyChangesToEvent(eventChanges, wbsElement, parentProject);
-  });
 };
 
 export interface GanttFilters {
@@ -258,7 +259,7 @@ export const filterGanttProjects = (
   // apply the search
   projects = projects.filter((project) => project.name.toLowerCase().includes(searchText.toLowerCase()));
 
-  projects = projects.filter((project) => getProjectEndDate(project).getFullYear() !== 1969);
+  projects = projects.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
 
   return projects;
 };
@@ -291,7 +292,7 @@ export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {
 export const transformWorkPackageToGanttTask = (
   workPackage: WorkPackage,
   teamName: string,
-  totalWorkPackages: WorkPackage[]
+  allWorkPackages: WorkPackage[]
 ): GanttTask => {
   return {
     id: wbsPipe(workPackage.wbsNum),
@@ -302,12 +303,11 @@ export const transformWorkPackageToGanttTask = (
     projectNumber: workPackage.wbsNum.projectNumber,
     carNumber: workPackage.wbsNum.carNumber,
     workPackageNumber: workPackage.wbsNum.workPackageNumber,
-    blockedByIds: workPackage.blockedBy.map(wbsPipe),
     teamName,
     stage: workPackage.stage,
     unblockedWorkPackages: [],
-    totalWorkPackages,
-    blocking: workPackage.immediatelyBlocking,
+    allWorkPackages,
+    blocking: workPackage.blocking,
     styles: {
       color: GanttWorkPackageTextColorPipe(workPackage.stage),
       backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
@@ -318,17 +318,6 @@ export const transformWorkPackageToGanttTask = (
     lead: workPackage.lead,
     manager: workPackage.manager
   };
-};
-
-export const getProjectsTeamNames = (projects: Project[]): Set<string> => {
-  const teamNames: Set<string> = new Set();
-  projects.forEach((project) => {
-    project.teams.forEach((team) => {
-      teamNames.add(team.teamName);
-    });
-  });
-
-  return teamNames;
 };
 
 export const transformProjectToGanttTask = (project: ProjectPreview, teamName: string): GanttTask => {
@@ -344,8 +333,7 @@ export const transformProjectToGanttTask = (project: ProjectPreview, teamName: s
     projectNumber: project.wbsNum.projectNumber,
     carNumber: project.wbsNum.carNumber,
     workPackageNumber: 0,
-    blockedByIds: [],
-    totalWorkPackages: project.workPackages,
+    allWorkPackages: project.workPackages,
     teamName,
     lead: project.lead,
     manager: project.manager,
@@ -457,6 +445,24 @@ export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined
   }
 };
 
+/**
+ * Determines if the highlighted change is on the wbs elements project.
+ * @param highlightedChange The highlighted change
+ * @param wbsElement The wbs element to check
+ */
+export const isHighlightedChangeOnWbsProject = (highlightedChange: RequestEventChange, wbsNum: WbsNumber): boolean => {
+  return highlightedChange && projectWbsPipe(wbsNum) === projectWbsPipe(highlightedChange.element.wbsNum);
+};
+
+/**
+ * Determines if the highlighted change is on the wbs element.
+ * @param highlightedChange The highlighted change
+ * @param task The task to check
+ */
+export const isHighlightedChangeOnGanttTask = (highlightedChange: RequestEventChange, task: GanttTask): boolean => {
+  return highlightedChange && wbsPipe(task) === wbsPipe(highlightedChange.element.wbsNum);
+};
+
 export const aggregateGanttChanges = (ganttChanges: GanttChange[], allWbsElements: WbsElement[]) => {
   const aggregatedMap: Map<string, GanttChange[]> = new Map();
 
@@ -513,7 +519,7 @@ export const aggregateGanttChanges = (ganttChanges: GanttChange[], allWbsElement
       throw new Error('Parent project not found when updating events for: ' + wbsElement.wbsNum);
     }
 
-    const updatedEvent = applyChangesToEvent(
+    const updatedEvent = applyChangesToWBSElement(
       changeEvents.concat(workPackageGanttChanges),
       wbsElement,
       parentProject as Project

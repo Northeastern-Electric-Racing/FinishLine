@@ -35,7 +35,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     })),
     projectName: wpInput.project.wbsElement.name,
     stage: (wpInput.stage as WorkPackageStage) || undefined,
-    immediatelyBlocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement))
+    blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement))
   };
 };
 

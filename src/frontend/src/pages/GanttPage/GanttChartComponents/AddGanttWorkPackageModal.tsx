@@ -10,13 +10,13 @@ const schema = yup.object().shape({
   name: yup.string().required('Work Package name is Required')
 });
 
-interface AddWorkPackageModalProps {
+interface AddGanttWorkPackageModalProps {
   showModal: boolean;
   handleClose: () => void;
   addWorkPackage: (workPackge: { name: string; stage?: WorkPackageStage }) => void;
 }
 
-const AddWorkPackageModal: React.FC<AddWorkPackageModalProps> = ({ showModal, handleClose, addWorkPackage }) => {
+const AddGanttWorkPackageModal: React.FC<AddGanttWorkPackageModalProps> = ({ showModal, handleClose, addWorkPackage }) => {
   const onSubmit = async (data: { name: string; stage: WorkPackageStage | 'NONE' }) => {
     addWorkPackage({
       ...data,
@@ -75,4 +75,4 @@ const AddWorkPackageModal: React.FC<AddWorkPackageModalProps> = ({ showModal, ha
   );
 };
 
-export default AddWorkPackageModal;
+export default AddGanttWorkPackageModal;

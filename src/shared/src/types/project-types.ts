@@ -57,7 +57,7 @@ export interface WorkPackage extends WbsElement {
   endDate: Date;
   duration: number;
   blockedBy: WbsNumber[];
-  immediatelyBlocking: WbsNumber[];
+  blocking: WbsNumber[];
   projectName: string;
   stage?: WorkPackageStage;
 }

@@ -84,7 +84,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
         stage: (workPackage.stage || undefined) as WorkPackageStage,
         materials: workPackage.wbsElement?.materials.map(materialTransformer),
         assemblies: workPackage.wbsElement?.assemblies.map(assemblyTransformer),
-        immediatelyBlocking: workPackage.wbsElement.blocking.map((blocking) => wbsNumOf(blocking.wbsElement))
+        blocking: workPackage.wbsElement.blocking.map((blocking) => wbsNumOf(blocking.wbsElement))
       };
     })
   };
