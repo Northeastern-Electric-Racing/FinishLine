@@ -8,7 +8,7 @@ import {
   RequestEventChange,
   transformProjectPreviewToProject
 } from '../../utils/gantt.utils';
-import { Dispatch, useState } from 'react';
+import { Dispatch, useEffect, useState } from 'react';
 import useId from '@mui/material/utils/useId';
 import { Project, ProjectPreview, Team, WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
 import { projectWbsPipe } from '../../utils/pipes';
@@ -54,8 +54,13 @@ const GanttChartTeamSection = ({
   const [requestEventChanges, setRequestEventChanges] = useState<RequestEventChange[]>([]);
   const [addedProjects, setAddedProjects] = useState<Project[]>([]);
   const [addedWorkPackages, setAddedWorkPackages] = useState<WorkPackage[]>([]);
-
   const [projectsState, setProjectsState] = useState([...deeplyCopiedProjects]);
+
+  useEffect(() => {
+    if (projectsState.length !== deeplyCopiedProjects.length + addedProjects.length) {
+      setProjectsState([...deeplyCopiedProjects, ...addedProjects]);
+    }
+  }, [addedProjects, projectsState, deeplyCopiedProjects]);
 
   const teamSectionBackgroundStyle = {
     mt: 1,
