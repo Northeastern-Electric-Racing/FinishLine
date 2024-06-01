@@ -203,6 +203,7 @@ const GanttTaskBarEdit = ({
               gridColumnStart: getStartCol(task.start),
               gridColumnEnd: getEndCol(task.end),
               height: '2rem',
+              width: isProject ? 'unset' : width === 0 ? `unset` : `${width}px`,
               border: `1px solid ${isResizing ? theme.palette.text.primary : theme.palette.divider}`,
               borderRadius: '0.25rem',
               backgroundColor: task.styles ? task.styles.backgroundColor : theme.palette.background.paper,
