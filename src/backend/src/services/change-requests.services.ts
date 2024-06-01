@@ -4,6 +4,7 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
+  isProject,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -670,7 +671,11 @@ export default class ChangeRequestsService {
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('WBS Element');
     // we don't want to have merge conflicts on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
-    if (projectNumber !== 0 && !(projectProposedChanges && projectProposedChanges.workPackageProposedChanges.length === 0)) {
+    if (
+      projectNumber !== 0 && // Excluding Cars
+      !(projectProposedChanges && projectProposedChanges.workPackageProposedChanges.length === 0) && // Excluding new projects with work packages
+      !(isProject(wbsElement) && workPackageProposedChanges) // Excluding Creating Work Package on Project
+    ) {
       await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
     }
 
