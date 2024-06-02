@@ -20,6 +20,7 @@ import {
 import { projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
 import { deepOrange, green, grey, indigo, orange, pink, yellow } from '@mui/material/colors';
+import { projectPreviewTranformer } from '../apis/transformers/projects.transformers';
 
 export const NO_TEAM = 'No Team';
 
@@ -233,37 +234,46 @@ export interface GanttTask extends GanttTaskData {
   teamName: string;
 }
 
+/**
+ * Non mutating function that filters the projects based on the gantt filters and search text
+ * @param projects The projects to filter
+ * @param ganttFilters The filters to apply
+ * @param searchText The search text to apply
+ * @param team The team the projects are on
+ */
 export const filterGanttProjects = (
   projects: ProjectPreview[],
   ganttFilters: GanttFilters,
   searchText: string,
   team: Team
-): ProjectPreview[] => {
+) => {
+  let deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
   // inclusive filters
   if (ganttFilters.showCars.length > 0)
-    projects = projects.filter((project) => ganttFilters.showCars.some((car) => project.wbsNum.carNumber === car));
+    deepCopy = deepCopy.filter((project) => ganttFilters.showCars.some((car) => project.wbsNum.carNumber === car));
 
   if (ganttFilters.showTeamTypes.length > 0)
-    projects = ganttFilters.showTeamTypes.some((teamType) => team.teamType && team.teamType.name === teamType)
-      ? projects
+    deepCopy = ganttFilters.showTeamTypes.some((teamType) => team.teamType && team.teamType.name === teamType)
+      ? deepCopy
       : [];
 
   if (ganttFilters.showTeams.length > 0)
-    projects = ganttFilters.showTeams.some((teamName) => teamName === team.teamName) ? projects : [];
+    deepCopy = ganttFilters.showTeams.some((teamName) => teamName === team.teamName) ? deepCopy : [];
 
   // shows only active and inactive projects
-  projects = projects.filter((project) => project.status !== WbsElementStatus.Complete);
+  deepCopy = deepCopy.filter((project) => project.status !== WbsElementStatus.Complete);
 
   if (ganttFilters.showOnlyOverdue) {
-    projects = projects.filter((project) => getProjectEndDate(project) < new Date());
+    deepCopy = projects.filter((project) => getProjectEndDate(project) < new Date());
   }
 
   // apply the search
-  projects = projects.filter((project) => project.name.toLowerCase().includes(searchText.toLowerCase()));
+  deepCopy = deepCopy.filter((project) => project.name.toLowerCase().includes(searchText.toLowerCase()));
 
-  projects = projects.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
+  deepCopy = deepCopy.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
 
-  return projects;
+  console.log(deepCopy, team.teamName);
+  return deepCopy;
 };
 
 export const buildGanttSearchParams = (ganttFilters: GanttFilters): string => {

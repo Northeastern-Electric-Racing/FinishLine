@@ -57,7 +57,10 @@ const GanttChartTeamSection = ({
   const [projectsState, setProjectsState] = useState([...deeplyCopiedProjects]);
 
   useEffect(() => {
-    if (projectsState.length !== deeplyCopiedProjects.length + addedProjects.length) {
+    if (
+      projectsState.length !== deeplyCopiedProjects.length + addedProjects.length ||
+      projectsState.some((project) => !deeplyCopiedProjects.includes(project))
+    ) {
       setProjectsState([...deeplyCopiedProjects, ...addedProjects]);
     }
   }, [addedProjects, projectsState, deeplyCopiedProjects]);
