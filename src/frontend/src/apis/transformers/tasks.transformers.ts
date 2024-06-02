@@ -1,10 +1,10 @@
 import { Task } from 'shared';
 
 /**
- * Transforms a work package to ensure deep field transformation of date objects.
+ * Transforms a task to ensure deep field transformation of date objects.
  *
- * @param workPackage Incoming work package object supplied by the HTTP response.
- * @returns Properly transformed work package object.
+ * @param task Incoming task object supplied by the HTTP response.
+ * @returns Properly transformed task object.
  */
 export const taskTransformer = (task: Task): Task => {
   return {

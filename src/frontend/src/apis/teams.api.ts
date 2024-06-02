@@ -7,16 +7,17 @@ import axios from '../utils/axios';
 import { Team } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
+import { teamTransformer } from './transformers/teams.transformers';
 
 export const getAllTeams = () => {
   return axios.get<Team[]>(apiUrls.teams(), {
-    transformResponse: (data) => JSON.parse(data)
+    transformResponse: (data) => JSON.parse(data).map(teamTransformer)
   });
 };
 
 export const getSingleTeam = (id: string) => {
   return axios.get<Team>(apiUrls.teamsById(id), {
-    transformResponse: (data) => JSON.parse(data)
+    transformResponse: (data) => teamTransformer(JSON.parse(data))
   });
 };
 

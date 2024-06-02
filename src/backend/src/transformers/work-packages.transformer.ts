@@ -35,7 +35,8 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     })),
     teamTypes: wpInput.project.teams.flatMap((team) => team.teamType ?? []),
     projectName: wpInput.project.wbsElement.name,
-    stage: (wpInput.stage as WorkPackageStage) || undefined
+    stage: (wpInput.stage as WorkPackageStage) || undefined,
+    blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement))
   };
 };
 

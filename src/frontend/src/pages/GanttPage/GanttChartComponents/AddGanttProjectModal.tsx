@@ -10,13 +10,13 @@ const schema = yup.object().shape({
   carNumber: yup.number().required('Car Number is Required')
 });
 
-interface AddProjectModalProps {
+interface AddGanttProjectModalProps {
   showModal: boolean;
   handleClose: () => void;
   addProject: (project: { name: string; carNumber: number }) => void;
 }
 
-const AddProjectModal: React.FC<AddProjectModalProps> = ({ showModal, handleClose, addProject }) => {
+const AddGanttProjectModal: React.FC<AddGanttProjectModalProps> = ({ showModal, handleClose, addProject }) => {
   const onSubmit = async (data: { name: string; carNumber: number }) => {
     addProject(data);
     handleClose();
@@ -60,4 +60,4 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ showModal, handleClos
   );
 };
 
-export default AddProjectModal;
+export default AddGanttProjectModal;

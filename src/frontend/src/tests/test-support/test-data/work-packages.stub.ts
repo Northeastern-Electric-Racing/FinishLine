@@ -52,6 +52,7 @@ export const exampleResearchWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Research,
   materials: [],
   assemblies: [],
+  blocking: [],
   teamTypes: []
 };
 
@@ -94,6 +95,7 @@ export const exampleDesignWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Design,
   materials: [],
   assemblies: [],
+  blocking: [],
   teamTypes: []
 };
 
@@ -127,6 +129,7 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Manufacturing,
   materials: [],
   assemblies: [],
+  blocking: [],
   teamTypes: []
 };
 
@@ -160,6 +163,7 @@ export const exampleInstallWorkPackage: WorkPackage = {
   stage: WorkPackageStage.Install,
   materials: [],
   assemblies: [],
+  blocking: [],
   teamTypes: []
 };
 
@@ -192,6 +196,7 @@ export const exampleWorkPackage5: WorkPackage = {
   projectName: 'project3',
   materials: [],
   assemblies: [],
+  blocking: [],
   teamTypes: []
 };
 

@@ -3,14 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { EventChange, GanttTaskData, RequestEventChange } from '../../../../utils/gantt.utils';
+import { GanttChange, GanttTask, RequestEventChange } from '../../../../utils/gantt.utils';
 import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
+import { WorkPackage } from 'shared';
 
 const GanttTaskBar = ({
   days,
-  event,
+  task,
   createChange,
   isEditMode,
   handleOnMouseOver,
@@ -18,20 +19,22 @@ const GanttTaskBar = ({
   handleOnMouseLeave,
   showWorkPackages = false,
   highlightedChange,
-  addWorkPackage = () => {}
+  addWorkPackage = () => {},
+  getNewWorkPackageNumber
 }: {
   days: Date[];
-  event: GanttTaskData;
-  createChange: (change: EventChange) => void;
+  task: GanttTask;
+  createChange: (change: GanttChange) => void;
   isEditMode: boolean;
-  handleOnMouseOver: (e: React.MouseEvent, event: GanttTaskData) => void;
+  handleOnMouseOver: (e: React.MouseEvent, task: GanttTask) => void;
   handleOnMouseLeave: () => void;
   onWorkPackageToggle?: () => void;
   showWorkPackages?: boolean;
   highlightedChange?: RequestEventChange;
-  addWorkPackage?: (task: GanttTaskData) => void;
+  addWorkPackage?: (task: WorkPackage) => void;
+  getNewWorkPackageNumber: (projectId: string) => number;
 }) => {
-  const isProject = !event.projectId;
+  const isProject = !task.projectId;
 
   const getStartCol = (start: Date) => {
     const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
@@ -47,33 +50,35 @@ const GanttTaskBar = ({
     return endCol;
   };
 
-  const onMouseOver = (e: React.MouseEvent) => {
-    handleOnMouseOver(e, event);
-  };
-
-  return isEditMode ? (
-    <GanttTaskBarEdit
-      days={days}
-      event={event}
-      createChange={createChange}
-      getStartCol={getStartCol}
-      getEndCol={getEndCol}
-      isProject={isProject}
-      addWorkPackage={addWorkPackage}
-    />
-  ) : (
-    <GanttTaskBarView
-      days={days}
-      event={event}
-      getStartCol={getStartCol}
-      getEndCol={getEndCol}
-      isProject={isProject}
-      handleOnMouseOver={onMouseOver}
-      handleOnMouseLeave={handleOnMouseLeave}
-      onWorkPackageToggle={onWorkPackageToggle}
-      showWorkPackages={showWorkPackages}
-      highlightedChange={highlightedChange}
-    />
+  return (
+    <div id={`gantt-task-${task.id}`}>
+      {isEditMode ? (
+        <GanttTaskBarEdit
+          days={days}
+          task={task}
+          createChange={createChange}
+          getStartCol={getStartCol}
+          getEndCol={getEndCol}
+          isProject={isProject}
+          addWorkPackage={addWorkPackage}
+          getNewWorkPackageNumber={getNewWorkPackageNumber}
+        />
+      ) : (
+        <GanttTaskBarView
+          days={days}
+          task={task}
+          getStartCol={getStartCol}
+          getEndCol={getEndCol}
+          isProject={isProject}
+          handleOnMouseOver={handleOnMouseOver}
+          handleOnMouseLeave={handleOnMouseLeave}
+          onWorkPackageToggle={onWorkPackageToggle}
+          showWorkPackages={showWorkPackages}
+          highlightedChange={highlightedChange}
+          getNewWorkPackageNumber={getNewWorkPackageNumber}
+        />
+      )}
+    </div>
   );
 };
 
