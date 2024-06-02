@@ -5,6 +5,7 @@ import {
   aggregateGanttChanges,
   applyChangesToWBSElement,
   GanttChange,
+  IsProjectPreviewsEqual,
   RequestEventChange,
   transformProjectPreviewToProject
 } from '../../utils/gantt.utils';
@@ -20,7 +21,7 @@ interface GanttChartTeamSectionProps {
   startDate: Date;
   endDate: Date;
   team: Team;
-  projects: ProjectPreview[];
+  filteredProjects: ProjectPreview[];
   addNewWorkPackage: (workPackage: WorkPackage) => void;
   addNewProject: (project: Project) => void;
   getNewProjectNumber: (carNumber: number) => number;
@@ -35,7 +36,7 @@ const GanttChartTeamSection = ({
   startDate,
   endDate,
   team,
-  projects,
+  filteredProjects,
   addNewWorkPackage,
   addNewProject,
   getNewProjectNumber,
@@ -45,7 +46,7 @@ const GanttChartTeamSection = ({
   removeAddedProjects,
   removeAddedWorkPackages
 }: GanttChartTeamSectionProps) => {
-  const deeplyCopiedProjects: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
+  const deeplyCopiedProjects: ProjectPreview[] = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTranformer);
   const theme = useTheme();
   const [ganttChanges, setGanttChanges] = useState<GanttChange[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -57,10 +58,8 @@ const GanttChartTeamSection = ({
   const [projectsState, setProjectsState] = useState([...deeplyCopiedProjects]);
 
   useEffect(() => {
-    if (
-      projectsState.length !== deeplyCopiedProjects.length + addedProjects.length ||
-      projectsState.some((project) => !deeplyCopiedProjects.includes(project))
-    ) {
+    if (!IsProjectPreviewsEqual(projectsState, deeplyCopiedProjects.concat(addedProjects))) {
+      console.log('Projects state changed');
       setProjectsState([...deeplyCopiedProjects, ...addedProjects]);
     }
   }, [addedProjects, projectsState, deeplyCopiedProjects]);
@@ -100,7 +99,7 @@ const GanttChartTeamSection = ({
     setGanttChanges([]);
     setAddedProjects([]);
     setAddedWorkPackages([]);
-    const deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
+    const deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTranformer);
     setProjectsState([...deepCopy]);
   };
 
@@ -166,7 +165,7 @@ const GanttChartTeamSection = ({
       removeAddedWorkPackages([...addedWorkPackages]);
       setAddedProjects([]);
       setAddedWorkPackages([]);
-      const deepCopy = JSON.parse(JSON.stringify(projects)).map(projectPreviewTranformer);
+      const deepCopy = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTranformer);
       setProjectsState([...deepCopy]);
     }
   };
@@ -178,7 +177,7 @@ const GanttChartTeamSection = ({
         handleClose={() => setShowAddProjectModal(false)}
         addProject={(project) => {
           const newProject: ProjectPreview = {
-            id: id + projects.length + 1,
+            id: id + filteredProjects.length + 1,
             name: project.name,
             wbsNum: {
               carNumber: project.carNumber,

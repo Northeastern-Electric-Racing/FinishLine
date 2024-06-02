@@ -234,6 +234,16 @@ export interface GanttTask extends GanttTaskData {
   teamName: string;
 }
 
+export const IsProjectPreviewsEqual = (x: ProjectPreview[], y: ProjectPreview[]): boolean => {
+  if (x.length !== y.length) return false;
+
+  for (let i = 0; i < x.length; i++) {
+    if (wbsPipe(x[i].wbsNum) !== wbsPipe(y[i].wbsNum)) return false;
+  }
+
+  return true;
+};
+
 /**
  * Non mutating function that filters the projects based on the gantt filters and search text
  * @param projects The projects to filter
