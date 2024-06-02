@@ -198,7 +198,7 @@ export const createTestLinkType = async (user: User, organizationId?: string) =>
 
   const linkType = await prisma.link_Type.create({
     data: {
-      name: 'link type 1',
+      name: 'Link type 1',
       dateCreated: new Date('03/25/2024'),
       iconName: 'youtube icon',
       required: true,
@@ -207,29 +207,7 @@ export const createTestLinkType = async (user: User, organizationId?: string) =>
     }
   });
 
-  return linkTypeTransformer(linkType);
-};
-
-export const createTestLink = async (user: User, organizationId?: string) => {
-  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
-  if (!organizationId) throw new Error('Failed to create organization');
-
-  const linkType = await createTestLinkType(user, organizationId);
-
-  const link = await prisma.link.create({
-    data: {
-      linkTypeId: linkType.id,
-      dateCreated: new Date('03/25/2024'),
-      creatorId: user.userId,
-      url: 'https://example.com/link1'
-    },
-    include: {
-      linkType: true,
-      creator: true,
-    }
-  });
-
-  return link;
+  return linkType;
 };
 
 export const createTestProject = async (user: User, organizationId?: string): Promise<Project> => {

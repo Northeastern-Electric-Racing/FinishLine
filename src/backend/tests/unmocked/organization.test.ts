@@ -1,8 +1,9 @@
-import { Link, LinkCreateArgs } from 'shared';
+import { LinkCreateArgs } from 'shared';
 import OrganizationsService from '../../src/services/organizations.service';
 import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, sharedBatman, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import prisma from '../../src/prisma/prisma';
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -20,54 +21,41 @@ describe('Team Type Tests', () => {
         async () => await OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update useful links'));
     });
-    it("Fails if one of the links don't exist", async () => {
-      //   const link = await createTestLink(await createTestUser(batmanAppAdmin, orgId));
-
-      //     const testLink: Link = {
-      //         linkId: link.linkId,
-      //         linkType: link.linkType,
-      //         dateCreated: new Date(),
-      //         creator: link.creator,
-      //         url: ''
-      //     }
-
-      const testLink: LinkCreateArgs = {
-        linkId: '1',
-        linkTypeName: 'example link type',
-        url: 'https://example.com/link1'
-      };
+    it('Fails if a link type does not exist', async () => {
+      const testLink: LinkCreateArgs[] = [
+        {
+          linkId: '1',
+          linkTypeName: 'example link type',
+          url: 'https://example.com/link1'
+        }
+      ];
 
       await expect(
-        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, [testLink])
-      ).rejects.toThrow(new HttpException(400, `Link with ID 1 not found`));
+        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, testLink)
+      ).rejects.toThrow(new HttpException(400, `Link type with name 'example link type' not found`));
     });
 
-    // it('succeds and updates all the links', async () => {
-    //   const testLink: Link = {
-    //     linkId: '1',
-    //     linkType: {
-    //       name: 'Link Type 1',
-    //       dateCreated: new Date(),
-    //       creator: sharedBatman,
-    //       required: true,
-    //       iconName: 'icon1'
-    //     },
-    //     dateCreated: new Date(),
-    //     creator: sharedBatman,
-    //     url: 'https://example.com/link1'
-    //   };
+    it('succeds and updates all the links', async () => {
+      const testLink: LinkCreateArgs[] = [
+        {
+          linkId: '1',
+          linkTypeName: 'Link type 1',
+          url: 'https://example.com/link1'
+        }
+      ];
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestLinkType(testBatman, orgId);
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLink);
+      const organization = prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        },
+        include: {
+          usefulLinks: true
+        }
+      });
 
-    //   await ProjectsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, [testLink]);
-    //   const organization = prisma.organization.findUnique({
-    //     where: {
-    //       organizationId: orgId
-    //     },
-    //     include: {
-    //       usefulLinks: true
-    //     }
-    //   });
-
-    //   expect(organization.usefulLinks.length).toBe(1);
-    // });
+      expect(organization.usefulLinks.length).toBe(1);
+    });
   });
 });
