@@ -1,9 +1,8 @@
-import { Link } from 'shared';
-import ProjectsService from '../../src/services/projects.services';
+import { Link, LinkCreateArgs } from 'shared';
+import OrganizationsService from '../../src/services/organizations.service';
 import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, sharedBatman, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestLink, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import prisma from '../../src/prisma/prisma';
+import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -18,7 +17,7 @@ describe('Team Type Tests', () => {
   describe('Set Useful Links', () => {
     it('Fails if user is not an admin', async () => {
       await expect(
-        async () => await ProjectsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
+        async () => await OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update useful links'));
     });
     it("Fails if one of the links don't exist", async () => {
@@ -32,22 +31,14 @@ describe('Team Type Tests', () => {
       //         url: ''
       //     }
 
-      const testLink: Link = {
+      const testLink: LinkCreateArgs = {
         linkId: '1',
-        linkType: {
-          name: 'Link Type 1',
-          dateCreated: new Date(),
-          creator: sharedBatman,
-          required: true,
-          iconName: 'icon1'
-        },
-        dateCreated: new Date(),
-        creator: sharedBatman,
+        linkTypeName: 'example link type',
         url: 'https://example.com/link1'
       };
 
       await expect(
-        async () => await ProjectsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, [testLink])
+        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, [testLink])
       ).rejects.toThrow(new HttpException(400, `Link with ID 1 not found`));
     });
 

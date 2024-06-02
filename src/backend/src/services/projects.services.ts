@@ -4,7 +4,6 @@ import {
   isAdmin,
   isGuest,
   isProject,
-  Link,
   LinkCreateArgs,
   LinkType,
   Project,
@@ -560,50 +559,5 @@ export default class ProjectsService {
       ...getLinkTypeQueryArgs(organizationId)
     });
     return linkTypeTransformer(linkTypeUpdated);
-  }
-
-  static async setUsefulLinks(submitter: User, organizationId: string, links: Link[]) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('update useful links');
-
-    const newLinks = await Promise.all(
-      links.map(async (link) => {
-        const currentLink = await prisma.link.findUnique({
-          where: {
-            linkId: link.linkId
-          },
-          include: {
-            linkType: true
-          }
-        });
-
-        if (!currentLink) {
-          throw new HttpException(400, `Link with ID ${link.linkId} not found`);
-        }
-
-        return await prisma.link.create({
-          data: {
-            url: link.url,
-            creatorId: submitter.userId,
-            dateCreated: new Date(),
-            linkTypeId: currentLink.linkType.id,
-            organizationId
-          }
-        });
-      })
-    );
-
-    const newLinkIds = newLinks.map((link) => link.linkId);
-
-    await prisma.organization.update({
-      where: {
-        organizationId
-      },
-      data: {
-        usefulLinks: {
-          set: newLinkIds.map((id) => ({ linkId: id }))
-        }
-      }
-    });
   }
 }

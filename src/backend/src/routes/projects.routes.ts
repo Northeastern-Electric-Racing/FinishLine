@@ -6,7 +6,8 @@ import {
   isMaterialStatus,
   nonEmptyString,
   projectValidators,
-  validateInputs
+  validateInputs,
+  linkValidators
 } from '../utils/validation.utils';
 import ProjectsController from '../controllers/projects.controllers';
 
@@ -31,13 +32,6 @@ projectRouter.post(
   validateInputs,
   ProjectsController.editLinkType
 );
-
-projectRouter.post(
-  '/useful-links/edit',
-  body('links').isArray(),
-  validateInputs,
-  ProjectsController.setUsefulLinks
-)
 
 projectRouter.post(
   '/create',

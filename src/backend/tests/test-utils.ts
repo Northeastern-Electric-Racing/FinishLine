@@ -15,6 +15,7 @@ import ReimbursementRequestService from '../src/services/reimbursement-requests.
 import { ClubAccount, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
+import { linkTypeTransformer } from '../src/transformers/links.transformer';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -206,7 +207,7 @@ export const createTestLinkType = async (user: User, organizationId?: string) =>
     }
   });
 
-  return linkType;
+  return linkTypeTransformer(linkType);
 };
 
 export const createTestLink = async (user: User, organizationId?: string) => {
@@ -217,7 +218,6 @@ export const createTestLink = async (user: User, organizationId?: string) => {
 
   const link = await prisma.link.create({
     data: {
-      linkId: 'tester',
       linkTypeId: linkType.id,
       dateCreated: new Date('03/25/2024'),
       creatorId: user.userId,

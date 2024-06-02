@@ -423,12 +423,12 @@ model Link {
   linkTypeId  String
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
-  // Either its on a wbsElement or a wbsProposedChanges, not both and not neither
+  // Either its on a wbsElement, a wbsProposedChanges, or an organization
   wbsElementId               String?
   wbsElment                  WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
   wbsProposedChangesId       String?
   wbsProposedChanges         Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
-  Organization               Organization?         @relation(fields: [organizationId], references: [organizationId])
+  organization               Organization?         @relation(fields: [organizationId], references: [organizationId])
   organizationId String?
 }
 
