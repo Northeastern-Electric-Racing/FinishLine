@@ -15,7 +15,6 @@ import ReimbursementRequestService from '../src/services/reimbursement-requests.
 import { ClubAccount, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
-import { linkTypeTransformer } from '../src/transformers/links.transformer';
 
 export interface CreateTestUserParams {
   firstName: string;

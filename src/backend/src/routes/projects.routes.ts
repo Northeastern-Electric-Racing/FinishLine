@@ -6,8 +6,7 @@ import {
   isMaterialStatus,
   nonEmptyString,
   projectValidators,
-  validateInputs,
-  linkValidators
+  validateInputs
 } from '../utils/validation.utils';
 import ProjectsController from '../controllers/projects.controllers';
 
