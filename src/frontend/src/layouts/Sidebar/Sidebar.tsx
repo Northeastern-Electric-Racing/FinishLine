@@ -25,7 +25,6 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
-  const theme = useTheme();
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
