@@ -30,9 +30,11 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
     return <EditWorkPackageForm wbsNum={wbsNum} workPackageName={data?.name} setPageMode={setEditMode} />;
   }
 
+  console.log(data.startDate);
+
   return (
     <WorkPackageViewContainer
-      workPackage={data!}
+      workPackage={data}
       enterEditMode={() => setEditMode(true)}
       allowEdit={!isGuest(auth.user.role)}
       allowActivate={!isGuest(auth.user.role)}

@@ -378,7 +378,7 @@ export const applyProjectProposedChanges = async (
       projectWbsElmeId = proj.wbsElementId;
     }
 
-    const promises = projectProposedChanges.workPackageProposedChanges.map(async (proposedChange) => {
+    for (const proposedChange of projectProposedChanges.workPackageProposedChanges) {
       await applyWorkPackageProposedChanges(
         wbsProposedChanges,
         proposedChange,
@@ -388,9 +388,7 @@ export const applyProjectProposedChanges = async (
         crId,
         organizationId
       );
-    });
-
-    await Promise.all(promises);
+    }
   }
 };
 

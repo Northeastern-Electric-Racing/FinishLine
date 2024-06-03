@@ -7,7 +7,8 @@ import dayjs from 'dayjs';
 export const getMonday = (date: Date) => {
   const day = date.getDay();
   const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-  return new Date(date.setDate(diff));
+  const newDate = new Date(date.getTime());
+  return new Date(newDate.setDate(diff));
 };
 
 export const dateToString = (date: Date) => {

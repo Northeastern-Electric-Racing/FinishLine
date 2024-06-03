@@ -1,6 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { RequestEventChange } from '../../../../utils/gantt.utils';
-import { ChangeRequestReason, ChangeRequestType } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, WorkPackage } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
@@ -9,12 +8,12 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
 
 interface GanttWorkPackageCreateModalProps {
-  change: RequestEventChange;
+  workPackage: WorkPackage;
   handleClose: () => void;
   open: boolean;
 }
 
-export const GanttWorkPackageCreateModal = ({ change, handleClose, open }: GanttWorkPackageCreateModalProps) => {
+export const GanttWorkPackageCreateModal = ({ workPackage, handleClose, open }: GanttWorkPackageCreateModalProps) => {
   const toast = useToast();
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Initialization);
   const [explanationForChange, setExplanationForChange] = useState('');
@@ -34,15 +33,21 @@ export const GanttWorkPackageCreateModal = ({ change, handleClose, open }: Gantt
     return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
   };
 
+  const duration = dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week');
+
   const handleSubmit = async () => {
     if (!reasonForChange) {
       return;
     }
 
     const payload = {
-      wbsNum: change.baseWbs,
+      wbsNum: {
+        carNumber: workPackage.wbsNum.carNumber,
+        projectNumber: workPackage.wbsNum.projectNumber,
+        workPackageNumber: 0
+      },
       type: ChangeRequestType.Issue,
-      what: `Create New Work Package with timeline of: ${changeInTimeline(change.newStart, change.newEnd)}`,
+      what: `Create New Work Package with timeline of: ${changeInTimeline(workPackage.startDate, workPackage.endDate)}`,
       why: [
         {
           explain: explanationForChange,
@@ -51,10 +56,10 @@ export const GanttWorkPackageCreateModal = ({ change, handleClose, open }: Gantt
       ],
       proposedSolutions: [],
       workPackageProposedChanges: {
-        name: change.name,
-        stage: change.stage,
-        duration: change.duration,
-        startDate: change.newStart.toLocaleDateString(),
+        name: workPackage.name,
+        stage: workPackage.stage,
+        duration,
+        startDate: workPackage.startDate.toLocaleDateString(),
         blockedBy: [],
         descriptionBullets: [],
         leadId: undefined,
@@ -76,13 +81,16 @@ export const GanttWorkPackageCreateModal = ({ change, handleClose, open }: Gantt
   return (
     <NERDraggableFormModal
       open={open}
-      title={'New Workpackage: ' + change.name}
+      title={'New Workpackage: ' + workPackage.name}
       disableSuccessButton={!reasonForChange || !explanationForChange}
       handleSubmit={handleSubmit}
       onHide={handleClose}
     >
       <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
-        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
+        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(
+          workPackage.startDate,
+          workPackage.endDate
+        )}`}</Typography>
         <Box sx={{ mt: 2 }}>
           <FormControl fullWidth>
             <InputLabel>Reason for Initialization</InputLabel>

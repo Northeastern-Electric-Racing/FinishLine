@@ -80,10 +80,12 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
         duration: workPackage.duration,
         blockedBy: workPackage.blockedBy.map(wbsNumOf),
         descriptionBullets: workPackage.wbsElement.descriptionBullets.map(descBulletConverter),
+        teamTypes: project.teams.flatMap((team) => team.teamType ?? []),
         projectName: wbsElement.name,
         stage: (workPackage.stage || undefined) as WorkPackageStage,
         materials: workPackage.wbsElement?.materials.map(materialTransformer),
-        assemblies: workPackage.wbsElement?.assemblies.map(assemblyTransformer)
+        assemblies: workPackage.wbsElement?.assemblies.map(assemblyTransformer),
+        blocking: workPackage.wbsElement.blocking.map((blocking) => wbsNumOf(blocking.wbsElement))
       };
     })
   };

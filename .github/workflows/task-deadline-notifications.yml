@@ -2,13 +2,13 @@ name: Send Task Deadline Notifications
 
 on:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '0 14 * * *'
 
 jobs:
   send_notifications:
     runs-on: ubuntu-latest
+    environment: notifications
     steps:
       - name: Send notifications
         run: |
-          curl -X POST https://api.finishlinebyner.com/notifications/task-deadlines \
-          -H 'Authorization: ${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}'
+          curl -H "Authorization: ${{ secrets.NOTIFICATION_ENDPOINT_SECRET }}" -X POST "https://api.finishlinebyner.com/notifications/task-deadlines"
