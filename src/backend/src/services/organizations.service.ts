@@ -71,14 +71,5 @@ export default class OrganizationsService {
         }
       });
     }
-
-    const organiztion = await prisma.organization.findUnique({
-      where: { organizationId },
-      include: {
-        usefulLinks: true
-      }
-    });
-
-    console.log(organiztion);
   }
 }
