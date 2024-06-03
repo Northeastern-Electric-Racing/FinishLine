@@ -23,12 +23,12 @@ import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import { Container, IconButton } from '@mui/material';
+import { Container } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -51,28 +51,32 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        onClick={() => setDrawerOpen(true)}
+      <Box
+        onMouseEnter={() => {
+          setDrawerOpen(true);
+        }}
         sx={{
-          position: 'fixed'
+          height: '100vh',
+          position: 'fixed',
+          width: 15,
+          borderRight: 2,
+          borderRightColor: '#ef4345'
         }}
       >
-        <ArrowForwardIosSharpIcon
+        <ArrowCircleRightTwoToneIcon
           sx={{
-            marginRight: -0.5,
-            color: '#ffffff',
-            transition: 'transform 0.2s ease-in-out',
-            '&:hover': {
-              transform: 'translateX(3px)'
-            }
+            position: 'absolute',
+            zIndex: 1,
+            top: '3%',
+            left: '3px',
+            '& path:first-of-type': { color: '#000000' },
+            '& path:last-of-type': { color: '#ef4345' }
           }}
         />
-      </IconButton>
+      </Box>
       <Box display={'flex'}>
         <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 40px)' }}>
+        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />

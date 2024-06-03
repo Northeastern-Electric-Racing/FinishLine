@@ -73,19 +73,16 @@ const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
 
   return (
     <NERDrawer open={drawerOpen} variant="permanent">
-      <DrawerHeader>
-        <IconButton onClick={() => setDrawerOpen(false)}>
-          {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
-        </IconButton>
-      </DrawerHeader>
-      <Divider />
       <Box
         overflow={'auto'}
         sx={{ overflowX: 'hidden' }}
         display="flex"
         flexDirection={'column'}
         flex={1}
-        justifyContent={'space-between'}
+        justifyContent={'space-evenly'}
+        onMouseLeave={() => {
+          setDrawerOpen(false);
+        }}
       >
         <Box>
           {linkItems.map((linkItem) => (
