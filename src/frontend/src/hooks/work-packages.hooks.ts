@@ -195,7 +195,7 @@ export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
  */
 export const useCreateSingleWorkPackageTemplate = () => {
   return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
-    ['work package template', 'create'],
+    ['work package templates', 'create'],
     async (wptPayload: WorkPackageTemplateApiInputs) => {
       const { data } = await createSingleWorkPackageTemplate(wptPayload);
       return data;
