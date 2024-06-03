@@ -167,14 +167,14 @@ export const useAllWorkPackageTemplates = () => {
 export const useDeleteWorkPackageTemplate = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, string>(
-    ['work package template', 'delete'],
+    ['work package templates', 'delete'],
     async (workPackageTemplateId: string) => {
       const { data } = await deleteWorkPackageTemplate(workPackageTemplateId);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['work package template']);
+        queryClient.invalidateQueries(['work package templates']);
       }
     }
   );
