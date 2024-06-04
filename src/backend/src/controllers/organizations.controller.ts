@@ -10,8 +10,8 @@ export default class OrganizationsController {
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
-      await OrganizationsService.setUsefulLinks(submitter, organizationId, links);
-      res.status(200).json({ message: `Successfully set useful links for organization with id#: ${organizationId}` });
+      const newLinks = await OrganizationsService.setUsefulLinks(submitter, organizationId, links);
+      res.status(200).json(newLinks);
     } catch (error: unknown) {
       next(error);
     }

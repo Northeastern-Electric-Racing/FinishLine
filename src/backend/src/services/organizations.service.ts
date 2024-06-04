@@ -3,6 +3,7 @@ import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, HttpException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
+import { createUsefulLinks } from '../utils/organizations.utils';
 
 export default class OrganizationsService {
   /**
@@ -15,61 +16,41 @@ export default class OrganizationsService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update useful links');
 
-    const currentLinks = await prisma.organization.findUnique({
+    const organization = await prisma.organization.findUnique({
       where: { organizationId },
       select: { usefulLinks: { select: { linkId: true } } }
     });
 
-    const currentLinkIds = currentLinks?.usefulLinks.map((link) => link.linkId);
+    if (!organization) {
+      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+    }
+    const currentLinkIds = organization?.usefulLinks.map((link) => link.linkId);
 
+    // deleting all current useful links so they are empty before repopulating
     await prisma.link.deleteMany({
       where: {
         linkId: { in: currentLinkIds }
       }
     });
 
-    for (const link of links) {
-      const linkType = await prisma.link_Type.findUnique({
-        where: {
-          uniqueLinkType: {
-            name: link.linkTypeName,
-            organizationId
-          }
-        }
-      });
+    const newLinks = await createUsefulLinks(links, organizationId, submitter);
 
-      if (!linkType) {
-        throw new HttpException(400, `Link type with name '${link.linkTypeName}' not found`);
+    const newLinkIds = newLinks.map((link) => {
+      return { linkId: link.linkId };
+    });
+
+    // setting the useful links to the newly created ones
+    await prisma.organization.update({
+      where: {
+        organizationId
+      },
+      data: {
+        usefulLinks: {
+          connect: newLinkIds
+        }
       }
+    });
 
-      const currentLink = await prisma.link.create({
-        data: {
-          linkType: {
-            connect: {
-              id: linkType.id
-            }
-          },
-          url: link.url,
-          creator: {
-            connect: {
-              userId: submitter.userId
-            }
-          }
-        }
-      });
-
-      await prisma.organization.update({
-        where: {
-          organizationId
-        },
-        data: {
-          usefulLinks: {
-            connect: {
-              linkId: currentLink.linkId
-            }
-          }
-        }
-      });
-    }
+    return newLinks;
   }
 }

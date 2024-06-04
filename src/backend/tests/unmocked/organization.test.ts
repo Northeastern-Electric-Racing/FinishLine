@@ -21,6 +21,21 @@ describe('Team Type Tests', () => {
         async () => await OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update useful links'));
     });
+
+    it('Fails if a organization does not exist', async () => {
+      const testLink: LinkCreateArgs[] = [
+        {
+          linkId: '1',
+          linkTypeName: 'example link type',
+          url: 'https://example.com/link1'
+        }
+      ];
+
+      await expect(
+        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1', testLink)
+      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
+    });
+
     it('Fails if a link type does not exist', async () => {
       const testLink: LinkCreateArgs[] = [
         {
@@ -36,17 +51,23 @@ describe('Team Type Tests', () => {
     });
 
     it('succeds and updates all the links', async () => {
-      const testLink: LinkCreateArgs[] = [
+      const testLinks1: LinkCreateArgs[] = [
         {
           linkId: '1',
           linkTypeName: 'Link type 1',
-          url: 'https://example.com/link1'
+          url: 'link 1'
+        },
+        {
+          linkId: '2',
+          linkTypeName: 'Link type 1',
+          url: 'link 2'
         }
       ];
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await createTestLinkType(testBatman, orgId);
-      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLink);
-      const organization = prisma.organization.findUnique({
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks1);
+
+      const organization = await prisma.organization.findUnique({
         where: {
           organizationId: orgId
         },
@@ -55,7 +76,39 @@ describe('Team Type Tests', () => {
         }
       });
 
-      expect(organization.usefulLinks.length).toBe(1);
+      expect(organization).not.toBeNull();
+      expect(organization!.usefulLinks.length).toBe(2);
+      expect(organization!.usefulLinks[0].url).toBe('link 1');
+      expect(organization!.usefulLinks[1].url).toBe('link 2');
+
+      // ensuring previous links are deleted and only these ones remain
+      const testLinks2: LinkCreateArgs[] = [
+        {
+          linkId: '1',
+          linkTypeName: 'Link type 1',
+          url: 'link 3'
+        },
+        {
+          linkId: '2',
+          linkTypeName: 'Link type 1',
+          url: 'link 4'
+        }
+      ];
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks2);
+
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        },
+        include: {
+          usefulLinks: true
+        }
+      });
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization!.usefulLinks.length).toBe(2);
+      expect(updatedOrganization!.usefulLinks[0].url).toBe('link 3');
+      expect(updatedOrganization!.usefulLinks[1].url).toBe('link 4');
     });
   });
 });
