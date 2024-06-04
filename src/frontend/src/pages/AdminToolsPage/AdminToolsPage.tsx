@@ -13,12 +13,10 @@ import AdminToolsFinanceConfig from './AdminToolsFinanceConfig';
 import TeamsTools from './TeamConfig/TeamsTools';
 import AdminToolsBOMConfig from './AdminToolsBOMConfig';
 import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
-import CreateWorkPackageForm from '../WorkPackageForm/CreateWorkPackageForm';
-import CreateWorkPackageTemplate from '../WorkPackageTemplateForm/CreateWorkPackageTemplate';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -87,8 +85,6 @@ const AdminToolsPage: React.FC = () => {
         <UserManagementTab />
       ) : tabIndex === 1 ? (
         <ProjectConfigurationTab />
-      ) : tabIndex === -1 ? (
-        <CreateWorkPackageTemplate />
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : (

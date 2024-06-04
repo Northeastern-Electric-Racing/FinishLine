@@ -1,9 +1,9 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { RequestEventChange } from '../../../../utils/gantt.utils';
-import { ChangeRequestReason, ChangeRequestType, validateWBS } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, WorkPackage } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
-import { useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
+import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import ErrorPage from '../../../ErrorPage';
 import { useSingleWorkPackage } from '../../../../hooks/work-packages.hooks';
@@ -25,7 +25,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
     isLoading: wpIsLoading,
     isError: wpIsError,
     error: wpError
-  } = useSingleWorkPackage(validateWBS(change.eventId));
+  } = useSingleWorkPackage(change.element.wbsNum);
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
 
   if (!workPackage || wpIsLoading || isLoading) return <LoadingIndicator />;
@@ -48,10 +48,14 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       return;
     }
 
-    const payload = {
-      wbsNum: validateWBS(change.eventId),
+    const changeWorkPackage = change.element as WorkPackage;
+
+    const duration = dayjs(changeWorkPackage.endDate).diff(dayjs(changeWorkPackage.startDate), 'week');
+
+    const payload: CreateStandardChangeRequestPayload = {
+      wbsNum: change.element.wbsNum,
       type: ChangeRequestType.Issue,
-      what: `Move timeline From: ${changeInTimeline(change.prevStart, change.prevEnd)} To: ${changeInTimeline(
+      what: `Move timeline From: ${changeInTimeline(workPackage.startDate, workPackage.endDate)} To: ${changeInTimeline(
         change.newStart,
         change.newEnd
       )}`,
@@ -65,7 +69,7 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
       workPackageProposedChanges: {
         name: workPackage.name,
         stage: workPackage.stage,
-        duration: change.duration,
+        duration,
         startDate: change.newStart.toLocaleDateString(),
         blockedBy: workPackage.blockedBy,
         descriptionBullets: workPackage.descriptionBullets,
@@ -89,14 +93,14 @@ export const GanttTimeLineChangeModal = ({ change, handleClose, open }: GanttTim
   return (
     <NERDraggableFormModal
       open={open}
-      title={change.name}
+      title={change.element.name}
       disableSuccessButton={!reasonForChange || !explanationForChange}
       handleSubmit={handleSubmit}
       onHide={handleClose}
     >
       <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
         <Typography sx={{ fontSize: '1em', mb: 0.5 }}>
-          {`Old: ${changeInTimeline(change.prevStart, change.prevEnd)}`}
+          {`Old: ${changeInTimeline(workPackage.startDate, workPackage.endDate)}`}
         </Typography>
         <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
         <Box sx={{ mt: 2 }}>

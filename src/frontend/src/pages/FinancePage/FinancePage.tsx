@@ -16,6 +16,7 @@ import ReimbursementRequestTable from './ReimbursementRequestsSection';
 import {
   useAllReimbursementRequests,
   useCurrentUserReimbursementRequests,
+  useDownloadCSVFileOfReimbursementRequests,
   useGetPendingAdvisorList
 } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
@@ -26,9 +27,10 @@ import { routes } from '../../utils/routes';
 import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
-import { isGuest } from 'shared';
+import { isAdmin, isGuest } from 'shared';
 import WorkIcon from '@mui/icons-material/Work';
 import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
+import { useToast } from '../../hooks/toasts.hooks';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -53,6 +55,8 @@ const FinancePage = () => {
     isError: allPendingAdvisorListIsError,
     error: allPendingAdvisorListError
   } = useGetPendingAdvisorList();
+  const { mutateAsync: downloadCSVFileOfReimbursementRequests } = useDownloadCSVFileOfReimbursementRequests();
+  const toast = useToast();
 
   const { isFinance } = user;
 
@@ -81,6 +85,16 @@ const FinancePage = () => {
 
   const handleDropdownClose = () => {
     setAnchorEl(null);
+  };
+
+  const downloadReimbursementRequests = async () => {
+    try {
+      await downloadCSVFileOfReimbursementRequests();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   const financeActionsDropdown = (
@@ -135,6 +149,12 @@ const FinancePage = () => {
             <WorkIcon fontSize="small" />
           </ListItemIcon>
           Total Amount Spent
+        </MenuItem>
+        <MenuItem onClick={async () => await downloadReimbursementRequests()} disabled={!isFinance && !isAdmin(user.role)}>
+          <ListItemIcon>
+            <WorkIcon fontSize="small" />
+          </ListItemIcon>
+          Download Reimbursement Requests To CSV
         </MenuItem>
       </Menu>
     </>

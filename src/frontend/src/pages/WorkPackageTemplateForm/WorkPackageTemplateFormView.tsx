@@ -167,7 +167,20 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       <Box mb={-1}>
         <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={breadcrumbs} />
       </Box>
-      <PageLayout stickyHeader title={pageTitle}>
+      <PageLayout stickyHeader title={pageTitle}
+        headerRight=
+        {
+          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
+            <Box>
+              <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
+                Cancel
+              </NERButton>
+              <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+                Submit
+              </NERSuccessButton>
+            </Box>
+          </Box>
+        }>
         <WorkPackageTemplateFormDetails2 control={control} errors={errors} />
         <Box my={2}>
           <WorkPackageTemplateFormDetails control={control} errors={errors} />
@@ -195,7 +208,6 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
             />
           </FormControl>
         </Box>
-
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
@@ -211,7 +223,6 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
             />
           </Box>
         </Stack>
-
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>

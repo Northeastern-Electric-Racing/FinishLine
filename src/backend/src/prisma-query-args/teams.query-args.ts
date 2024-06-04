@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { getUserQueryArgs } from './user.query-args';
+import { getWorkPackageQueryArgs } from './work-packages.query-args';
 
 export type TeamQueryArgs = ReturnType<typeof getTeamQueryArgs>;
 
@@ -19,11 +20,7 @@ export const getTeamQueryArgs = (organizationId: string) =>
         },
         include: {
           wbsElement: true,
-          workPackages: {
-            include: {
-              wbsElement: true
-            }
-          }
+          workPackages: getWorkPackageQueryArgs(organizationId)
         }
       }
     }

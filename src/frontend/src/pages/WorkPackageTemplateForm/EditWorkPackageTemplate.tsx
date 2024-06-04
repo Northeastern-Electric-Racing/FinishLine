@@ -10,11 +10,10 @@ import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 
 interface EditWorkPackageTemplateProps {
   workPackageTemplateId: string;
-  templateName: string;
   setPageMode: (value: React.SetStateAction<boolean>) => void;
 }
 
-const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ workPackageTemplateId, templateName, setPageMode }) => {
+const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ workPackageTemplateId, setPageMode }) => {
   const history = useHistory();
 
   const { mutateAsync: editWorkPackageTemplate, isLoading } = useEditWorkPackageTemplate(workPackageTemplateId);
@@ -27,7 +26,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ workPacka
       .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
     duration: yup.number().required()
   });
-
+  
   return (
     <WorkPackageTemplateForm
       workPackageTemplateMutateAsync={editWorkPackageTemplate}

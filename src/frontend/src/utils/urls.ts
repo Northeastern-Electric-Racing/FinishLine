@@ -159,6 +159,8 @@ const workPackageTemplatesById = (workPackageTemplateId: string) => `${workPacka
 const workPackageTemplatesEdit = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/edit`;
 const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
+const workPackageTemplateDelete = (workPackageTemplateId: string) =>
+  `${workPackageTemplatesById(workPackageTemplateId)}/delete`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -292,9 +294,9 @@ export const apiUrls = {
   workPackageTemplatesById,
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
+  workPackageTemplateDelete,
 
   cars,
   carsCreate,
-
   version
 };
