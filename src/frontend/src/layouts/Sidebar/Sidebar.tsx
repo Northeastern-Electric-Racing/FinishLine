@@ -14,7 +14,7 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import CalendarTodayIcon from '@mui/icons-material/CalendarTodaWy';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
