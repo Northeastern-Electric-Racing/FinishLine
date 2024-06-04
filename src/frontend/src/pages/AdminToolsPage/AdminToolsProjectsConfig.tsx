@@ -2,7 +2,7 @@ import { Box } from '@mui/system';
 import { Typography } from '@mui/material';
 import WorkPackageTemplateTable from './ProjectsConfig/WorkPackageTemplateTable';
 import LinkTypeTable from './ProjectsConfig/LinkTypeTable';
-import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTpeTable';
+import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypeTable';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
