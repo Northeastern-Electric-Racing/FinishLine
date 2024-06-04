@@ -4,6 +4,7 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
+  isProject,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -32,7 +33,7 @@ import {
   reviewProposedSolution,
   sendCRSubmitterReviewedNotification
 } from '../utils/change-requests.utils';
-import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma, Work_Package_Stage } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import { buildChangeDetail } from '../utils/changes.utils';
@@ -669,8 +670,12 @@ export default class ChangeRequestsService {
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('WBS Element');
-    // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
-    if (projectNumber !== 0) {
+    // we don't want to have merge conflicts on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+    if (
+      projectNumber !== 0 && // Excluding Cars
+      !(projectProposedChanges && projectProposedChanges.workPackageProposedChanges.length === 0) && // Excluding new projects with work packages
+      !(isProject(wbsElement) && workPackageProposedChanges) // Excluding Creating Work Package on Project
+    ) {
       await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
     }
 
@@ -788,7 +793,7 @@ export default class ChangeRequestsService {
                   },
                   duration: workPackage.originalElement.duration,
                   startDate: new Date(workPackage.originalElement.startDate),
-                  stage: (workPackage.originalElement.stage as Work_Package_Stage) ?? undefined,
+                  stage: workPackage.originalElement.stage,
                   blockedBy: {
                     connect: workPackage.validatedBlockedBys.map((wbsElement) => ({
                       wbsNumber: {
@@ -1012,9 +1017,11 @@ export default class ChangeRequestsService {
     const reviewers = await getUsersWithSettings(userIds);
 
     // check if any reviewers' role is below leadership
-    const underLeads = reviewers.filter(
-      async (user) => !(await userHasPermission(user.userId, organizationId, isLeadership))
-    );
+    const underLeadsPromises = reviewers.map(async (user) => {
+      return { ...user, underLead: !(await userHasPermission(user.userId, organizationId, isLeadership)) };
+    });
+
+    const underLeads = (await Promise.all(underLeadsPromises)).filter((reviewer) => reviewer.underLead);
 
     if (underLeads.length > 0) {
       const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);

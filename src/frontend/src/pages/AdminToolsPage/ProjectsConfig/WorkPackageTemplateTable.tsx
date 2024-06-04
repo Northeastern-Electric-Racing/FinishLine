@@ -1,15 +1,11 @@
-import { TableRow, TableCell, Box, MenuItem, ListItemIcon } from '@mui/material';
+
+import { TableRow, TableCell, Box, IconButton, Typography } from '@mui/material';
 import AdminToolTable from '../AdminToolTable';
 import { NERButton } from '../../../components/NERButton';
 import { isAdmin, isGuest } from 'shared/src/permission-utils';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { useAllWorkPackageTemplates } from '../../../hooks/work-packages.hooks';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../../utils/routes';
-import { projectWbsPipe } from '../../../utils/pipes';
-import { useState } from 'react';
 import { WorkPackageTemplate } from 'shared';
 
 const WorkPackageTemplateTable = () => {
@@ -25,6 +21,10 @@ const WorkPackageTemplateTable = () => {
     error: workPackageTemplatesError
   } = useAllWorkPackageTemplates();
 
+  const [templateToDelete, setTemplateToDelete] = useState<WorkPackageTemplate>();
+
+  const { mutateAsync } = useDeleteWorkPackageTemplate();
+
   if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
@@ -32,10 +32,13 @@ const WorkPackageTemplateTable = () => {
     <TableRow onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplateId}`)}
     sx={{ cursor: 'pointer' }}>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {workPackageTemplateId.templateName}
+        {workPackageTemplate.templateName}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        {workPackageTemplateId.templateNotes}
+      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{workPackageTemplate.templateNotes}</TableCell>
+      <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+        <IconButton onClick={() => setTemplateToDelete(workPackageTemplate)}>
+          <Delete />
+        </IconButton>
       </TableCell>
     </TableRow>
   ));
@@ -60,7 +63,26 @@ const WorkPackageTemplateTable = () => {
           </NERButton>
         )}
       </Box>
-    </Box>
+      <NERModal
+        open={!!templateToDelete}
+        title="Warning!"
+        onHide={() => setTemplateToDelete(undefined)}
+        submitText="Delete"
+        onSubmit={() => {
+          mutateAsync(templateToDelete!.workPackageTemplateId);
+          setTemplateToDelete(undefined);
+        }}
+      >
+        <Typography gutterBottom>
+          Are you sure you want to delete the work package template <i>{templateToDelete?.templateName}</i>?
+        </Typography>
+        <Typography gutterBottom>
+          This will also delete all templates blocked by this one. If you would like to delete this template only, first
+          remove all references to it from all other templates' "Blocked By" sections.
+        </Typography>
+        <Typography fontWeight="bold">This action cannot be undone!</Typography>
+      </NERModal>
+    </>
   );
 };
 
