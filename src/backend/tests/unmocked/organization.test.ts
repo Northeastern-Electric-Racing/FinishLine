@@ -4,6 +4,7 @@ import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/e
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
+import { testLink1 } from '../test-data/organizations.test-data';
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -23,42 +24,26 @@ describe('Team Type Tests', () => {
     });
 
     it('Fails if a organization does not exist', async () => {
-      const testLink: LinkCreateArgs[] = [
-        {
-          linkId: '1',
-          linkTypeName: 'example link type',
-          url: 'https://example.com/link1'
-        }
-      ];
-
       await expect(
-        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1', testLink)
+        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1', testLink1)
       ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
     it('Fails if a link type does not exist', async () => {
-      const testLink: LinkCreateArgs[] = [
-        {
-          linkId: '1',
-          linkTypeName: 'example link type',
-          url: 'https://example.com/link1'
-        }
-      ];
-
       await expect(
-        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, testLink)
+        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, testLink1)
       ).rejects.toThrow(new HttpException(400, `Link type with name 'example link type' not found`));
     });
 
     it('succeds and updates all the links', async () => {
       const testLinks1: LinkCreateArgs[] = [
         {
-          linkId: '1',
+          linkId: '-1',
           linkTypeName: 'Link type 1',
           url: 'link 1'
         },
         {
-          linkId: '2',
+          linkId: '-1',
           linkTypeName: 'Link type 1',
           url: 'link 2'
         }
@@ -84,12 +69,12 @@ describe('Team Type Tests', () => {
       // ensuring previous links are deleted and only these ones remain
       const testLinks2: LinkCreateArgs[] = [
         {
-          linkId: '1',
+          linkId: '-1',
           linkTypeName: 'Link type 1',
           url: 'link 3'
         },
         {
-          linkId: '2',
+          linkId: '-1',
           linkTypeName: 'Link type 1',
           url: 'link 4'
         }
