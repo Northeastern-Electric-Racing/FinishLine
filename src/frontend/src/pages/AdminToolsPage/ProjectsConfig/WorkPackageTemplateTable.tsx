@@ -9,10 +9,15 @@ import { useAllWorkPackageTemplates } from '../../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { projectWbsPipe } from '../../../utils/pipes';
+import { useState } from 'react';
+import { WorkPackageTemplate } from 'shared';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
   const history = useHistory();
+
+  const [clickedWorkPackageTemplate, setClickedWorkPackageTemplate] = useState<WorkPackageTemplate>();
+  
   const {
     data: workPackageTemplates,
     isLoading: workPackageTemplatesIsLoading,
@@ -24,7 +29,8 @@ const WorkPackageTemplateTable = () => {
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
   const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplateId) => (
-    <TableRow>
+    <TableRow onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplateId}`)}
+    sx={{ cursor: 'pointer' }}>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {workPackageTemplateId.templateName}
       </TableCell>

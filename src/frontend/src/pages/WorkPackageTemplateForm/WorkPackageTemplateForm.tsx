@@ -1,6 +1,5 @@
 import React from 'react';
 import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
-import WorkPackageFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 import { bulletsToObject } from '../../utils/form';
 import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -11,7 +10,7 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { WorkPackageApiInputs, WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
 import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import WorkPackageTemplateFormView from './WorkPackageTemplateFormView';
+import WorkPackageTemplateFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 
 interface WorkPackageTemplateFormProps {
   workPackageTemplateId?: string; 
@@ -69,7 +68,7 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   const blockedByOptions =
     (workPackageTemplates?.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId).map((wp) => ({
       id: wp.workPackageTemplateId,
-      label: `${(wp.workPackageTemplateId)} - ${wp.workPackageName}`
+      label: `${wp.templateName}`
     })) || []);
 
   return (

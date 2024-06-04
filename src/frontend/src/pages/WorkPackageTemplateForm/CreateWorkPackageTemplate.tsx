@@ -1,6 +1,5 @@
 import { validateWBS } from 'shared';
 import { useQuery } from '../../hooks/utils.hooks';
-import WorkPackageForm from './WorkPackageTemplateForm';
 import { useCreateSingleWorkPackage, useCreateSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';

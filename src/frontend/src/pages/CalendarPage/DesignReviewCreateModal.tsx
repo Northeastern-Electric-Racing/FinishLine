@@ -178,6 +178,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                 }
               }
             };
+            
 
             return (
               <NERAutocomplete

@@ -38,7 +38,7 @@ const WorkPackageTemplateFormDetails2: React.FC<Props> = ({
           <FormControl fullWidth>
             <FormLabel>Template Name</FormLabel>
             <ReactHookTextField
-              name="name"
+              name="templateName"
               control={control}
               placeholder="Enter work package name..."
               errorMessage={errors.name}

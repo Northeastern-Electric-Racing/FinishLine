@@ -27,7 +27,8 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead
+  TableHead,
+  Stack
 } from '@mui/material';
 import { useState } from 'react';
 import NERSuccessButton from '../../components/NERSuccessButton';
@@ -48,8 +49,8 @@ import HelpIcon from '@mui/icons-material/Help';
 import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
 import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
-import WorkPackageTemplateFormDetails from './WorkPackageTemplateFormDetails';
 import { Delete, Add } from '@mui/icons-material';
+import WorkPackageTemplateFormDetails from './WorkPackageTemplateFormDetails';
 import WorkPackageTemplateFormDetails2 from './WorkPackageTemplateFormDetails2';
 
 interface WorkPackageTemplateFormViewProps {
@@ -63,13 +64,14 @@ interface WorkPackageTemplateFormViewProps {
 
 export interface WorkPackageTemplateFormViewPayload {
   name?: string;
-  templateName: string,
-  templateNotes: string,
+  templateName: string;
+  templateNotes: string;
   workPackageTemplateId: string;
   duration?: number;
   stage: string;
-  blockedBy: WorkPackageTemplatePreview[],
-  expectedActivities: DescriptionBulletPreview[]
+  blockedBy: { id: string; label: string }[];
+  descriptionBullets: DescriptionBulletPreview[];
+  deliverables: DescriptionBulletPreview[];
 }
 
 const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = ({
@@ -94,8 +96,10 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       name: defaultValues?.name ?? '',
       workPackageTemplateId: defaultValues?.workPackageTemplateId ?? '',
       duration: defaultValues?.duration ?? 0,
-      blockedBy: defaultValues?.blockedBy ?? [],
-      stage: defaultValues?.stage ?? 'NONE'
+      blockedBy: defaultValues?.blockedBy.map((blocker) => ({ id: blocker.id, label: blocker.label })) ?? [],
+      stage: defaultValues?.stage ?? 'NONE',
+      descriptionBullets: defaultValues?.descriptionBullets,
+      deliverables: defaultValues?.deliverables
     }
   });
 
@@ -107,12 +111,25 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
 
   const { userId } = user;
 
+  const {
+    fields: descriptionBullets,
+    append: appendDescriptionBullet,
+    remove: removeDescriptionBullet
+  } = useFieldArray({ control, name: 'descriptionBullets' });
+
+  const {
+    fields: deliverables,
+    append: appendDeliverable,
+    remove: removeDeliverable
+  } = useFieldArray({ control, name: 'descriptionBullets' });
+
   const onSubmit = async (data: WorkPackageTemplateFormViewPayload) => {
     // Destructure the required fields from the data object
-    const { name, workPackageTemplateId, templateName, templateNotes, duration, blockedBy, stage, expectedActivities } = data;
+    const { name, workPackageTemplateId, templateName, templateNotes, duration, blockedBy, stage, descriptionBullets } =
+      data;
 
     // Transform blockedBy into an array of strings
-    const blockedByWbsNums = blockedBy.map((blocker) => blocker.workPackageTemplateId); // Use the id property
+    const blockedByWbsNums = blockedBy.map((blocker) => blocker.id); // Use the id property
 
     try {
       const payload = {
@@ -123,7 +140,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
         name,
         duration,
         blockedBy: blockedByWbsNums,
-        descriptionBullets: expectedActivities,
+        descriptionBullets: descriptionBullets,
         stage: stage as WorkPackageStage,
         links: []
       };
@@ -151,10 +168,10 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
         <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={breadcrumbs} />
       </Box>
       <PageLayout stickyHeader title={pageTitle}>
-      <WorkPackageTemplateFormDetails2 control={control} errors={errors} />
-      <Box my={2}>
-      <WorkPackageTemplateFormDetails control={control} errors={errors} />
-      </Box>
+        <WorkPackageTemplateFormDetails2 control={control} errors={errors} />
+        <Box my={2}>
+          <WorkPackageTemplateFormDetails control={control} errors={errors} />
+        </Box>
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>
           <FormControl fullWidth>
@@ -178,6 +195,38 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
             />
           </FormControl>
         </Box>
+
+        <Stack spacing={4}>
+          <Box>
+            <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
+              {'Expected Activities'}
+            </Typography>
+            <DescriptionBulletsEditView
+              type="workPackage"
+              watch={watch}
+              ls={descriptionBullets}
+              register={register}
+              append={appendDescriptionBullet}
+              remove={removeDescriptionBullet}
+            />
+          </Box>
+        </Stack>
+
+        <Stack spacing={4}>
+          <Box>
+            <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
+              {'Deliverables'}
+            </Typography>
+            <DescriptionBulletsEditView
+              type="workPackage"
+              watch={watch}
+              ls={deliverables}
+              register={register}
+              append={appendDeliverable}
+              remove={removeDeliverable}
+            />
+          </Box>
+        </Stack>
       </PageLayout>
     </form>
   );

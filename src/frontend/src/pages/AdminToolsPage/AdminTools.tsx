@@ -5,6 +5,7 @@ import { routes } from '../../utils/routes';
 import AdminToolsPage from './AdminToolsPage';
 import { canAccessAdminTools } from '../../utils/users';
 import CreateWorkPackageTemplate from '../WorkPackageTemplateForm/CreateWorkPackageTemplate';
+import EditWorkPackageTemplate from '../WorkPackageTemplateForm/EditWorkPackageTemplate';
 
 const AdminTools: React.FC = () => {
   const auth = useAuth();
@@ -25,6 +26,7 @@ const AdminTools: React.FC = () => {
     <Switch>
       <Route path={routes.ADMIN_TOOLS} component={AdminToolsPage} />
       <Route path={routes.WORK_PACKAGE_TEMPLATE_NEW} component={CreateWorkPackageTemplate} />
+      <Route path={routes.WORK_PACKAGE_TEMPLATE_EDIT} component={EditWorkPackageTemplate} />
     </Switch>
   );
 };
