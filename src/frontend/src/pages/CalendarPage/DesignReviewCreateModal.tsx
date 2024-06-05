@@ -179,10 +179,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                 }
               }
             };
-<<<<<<<<< Temporary merge branch 1
-=========
-            
->>>>>>>>> Temporary merge branch 2
 
             return (
               <NERAutocomplete

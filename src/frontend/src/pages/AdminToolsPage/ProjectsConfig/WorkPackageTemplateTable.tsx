@@ -12,6 +12,7 @@ import { Delete } from '@mui/icons-material';
 import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
+import NERModal from '../../../components/NERModal';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
@@ -85,7 +86,7 @@ const WorkPackageTemplateTable = () => {
         </Typography>
         <Typography fontWeight="bold">This action cannot be undone!</Typography>
       </NERModal>
-    </>
+    </Box>
   );
 };
 
