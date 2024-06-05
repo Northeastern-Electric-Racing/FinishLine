@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import { DesignReview, DesignReviewStatus, User, UserWithScheduleSettings } from 'shared';
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
 import { getWeekDateRange } from '../../../utils/design-review.utils';
