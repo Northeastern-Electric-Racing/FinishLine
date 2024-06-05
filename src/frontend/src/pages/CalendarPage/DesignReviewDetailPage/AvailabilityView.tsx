@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import { DesignReview, DesignReviewStatus, User, UserWithScheduleSettings } from 'shared';
-import { useState } from 'react';
+import { SetStateAction, useState } from 'react';
 import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
 import { getWeekDateRange } from '../../../utils/design-review.utils';
@@ -12,9 +12,20 @@ interface AvailabilityViewProps {
   allDesignReviews: DesignReview[];
   allUsers: UserWithScheduleSettings[];
   editPayload: DesignReviewEditData;
+  handleDateChange: (val: Date) => void;
+  setStateTime: (val: number) => void;
+  setEndTime: (val: number) => void;
 }
 
-const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDesignReviews, allUsers, editPayload }) => {
+const AvailabilityView: React.FC<AvailabilityViewProps> = ({
+  designReview,
+  allDesignReviews,
+  allUsers,
+  editPayload,
+  handleDateChange,
+  setStateTime,
+  setEndTime
+}) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const existingMeetingData = new Map<number, string>();
@@ -74,6 +85,10 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDe
           setCurrentAvailableUsers={setCurrentAvailableUsers}
           setCurrentUnavailableUsers={setCurrentUnavailableUsers}
           dateRangeTitle={dateRangePipe(startDateRange, endDateRange)}
+          handleDateChange={handleDateChange}
+          setStateTime={setStateTime}
+          setEndTime={setEndTime}
+          startDateRange={startDateRange}
         />
       </Grid>
       <Grid item xs={3}>

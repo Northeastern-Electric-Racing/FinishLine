@@ -19,6 +19,10 @@ interface AvailabilityScheduleViewProps {
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
   dateRangeTitle: string;
+  handleDateChange: (val: Date) => void;
+  setStateTime: (val: number) => void;
+  setEndTime: (val: number) => void;
+  startDateRange: Date;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
@@ -28,7 +32,11 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   existingMeetingData,
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
-  dateRangeTitle
+  dateRangeTitle,
+  handleDateChange,
+  setStateTime,
+  setEndTime,
+  startDateRange
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
@@ -40,6 +48,14 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
       setCurrentUnavailableUsers([]);
     } else {
       setSelectedTimeslot(index); // select
+      const dayIndex = Math.floor(index / EnumToArray(REVIEW_TIMES).length);
+      const selectedDate = new Date();
+      selectedDate.setDate(startDateRange.getDate() + dayIndex);
+      selectedDate.setMonth(startDateRange.getMonth());
+      selectedDate.setFullYear(startDateRange.getFullYear());
+      handleDateChange(selectedDate);
+      setStateTime(index);
+      setEndTime(index + 1);
       setCurrentAvailableUsers(availableUsers.get(index) || []);
       setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
     }

@@ -290,6 +290,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         designReview={designReview}
         allDesignReviews={allDesignReviews}
         allUsers={allUsers}
+        setStateTime={setStateTime}
+        setEndTime={setEndTime}
+        handleDateChange={handleDateChange}
       />
     </PageLayout>
   );
