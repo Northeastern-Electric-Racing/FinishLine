@@ -426,7 +426,7 @@ export default class WorkPackagesService {
    * Deletes the Work Package
    * @param submitter The user who deleted the work package
    * @param wbsNum The work package number to be deleted
-   * @param crId The id of the change request to be implemented by this deletion
+   * @param crId The id of the change request whose change is to be implemented by this deletion
    * @param organizationId The organization id that the user is in
    */
   static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, crId: string, organizationId: string): Promise<void> {
