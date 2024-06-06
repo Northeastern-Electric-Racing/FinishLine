@@ -227,10 +227,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           setCurrentWorkPackageTemplate={(WorkPackageTemplate) => {
             setValue('name', WorkPackageTemplate.workPackageName ?? '');
             setValue('stage', WorkPackageTemplate.stage ?? 'NONE');
-            setValue('duration', WorkPackageTemplate.duration ?? 0);  
+            setValue('duration', WorkPackageTemplate.duration ?? 0);
             setValue('descriptionBullets', WorkPackageTemplate.descriptionBullets ?? []);
-          }
-        }
+          }}
         />
 
         <WorkPackageFormDetails
