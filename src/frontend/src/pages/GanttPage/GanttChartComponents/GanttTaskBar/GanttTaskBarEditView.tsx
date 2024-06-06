@@ -215,7 +215,7 @@ export const GanttTaskBarEditView = ({
               targetId: task.teamName + wbsPipe(blocking),
               targetAnchor: 'left',
               sourceAnchor: 'right',
-              style: { strokeDasharray: '5,5', noCurves: true, endMarker: false}
+              style: { strokeDasharray: '5,5', noCurves: true, endMarker: false }
             };
           })}
         >

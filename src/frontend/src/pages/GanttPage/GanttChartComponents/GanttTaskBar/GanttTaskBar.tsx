@@ -8,7 +8,7 @@ import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
 import { WorkPackage } from 'shared';
-import { ArcherContainer, ArcherContainerRef } from 'react-archer';
+import { ArcherContainer } from 'react-archer';
 import { useRef } from 'react';
 import { ArcherContainerHandle } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
 
