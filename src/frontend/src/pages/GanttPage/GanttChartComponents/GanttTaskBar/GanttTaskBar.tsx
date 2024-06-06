@@ -8,6 +8,9 @@ import { dateToString, getMonday } from '../../../../utils/datetime.utils';
 import GanttTaskBarEdit from './GanttTaskBarEdit';
 import GanttTaskBarView from './GanttTaskBarView';
 import { WorkPackage } from 'shared';
+import { ArcherContainer, ArcherContainerRef } from 'react-archer';
+import { useRef } from 'react';
+import { ArcherContainerHandle } from 'react-archer/lib/ArcherContainer/ArcherContainer.types';
 
 const GanttTaskBar = ({
   days,
@@ -35,6 +38,7 @@ const GanttTaskBar = ({
   getNewWorkPackageNumber: (projectId: string) => number;
 }) => {
   const isProject = !task.projectId;
+  const archerRef = useRef<ArcherContainerHandle>(null);
 
   const getStartCol = (start: Date) => {
     const startCol = days.findIndex((day) => dateToString(day) === dateToString(getMonday(start))) + 1;
@@ -50,35 +54,46 @@ const GanttTaskBar = ({
     return endCol;
   };
 
+  const handleChange = (change: GanttChange) => {
+    createChange(change);
+    setTimeout(() => {
+      if (archerRef.current) {
+        archerRef.current?.refreshScreen();
+      }
+    }, 100); // wait for the change to be added to the state and the DOM to update
+  };
+
   return (
-    <div id={`gantt-task-${task.id}`}>
-      {isEditMode ? (
-        <GanttTaskBarEdit
-          days={days}
-          task={task}
-          createChange={createChange}
-          getStartCol={getStartCol}
-          getEndCol={getEndCol}
-          isProject={isProject}
-          addWorkPackage={addWorkPackage}
-          getNewWorkPackageNumber={getNewWorkPackageNumber}
-        />
-      ) : (
-        <GanttTaskBarView
-          days={days}
-          task={task}
-          getStartCol={getStartCol}
-          getEndCol={getEndCol}
-          isProject={isProject}
-          handleOnMouseOver={handleOnMouseOver}
-          handleOnMouseLeave={handleOnMouseLeave}
-          onWorkPackageToggle={onWorkPackageToggle}
-          showWorkPackages={showWorkPackages}
-          highlightedChange={highlightedChange}
-          getNewWorkPackageNumber={getNewWorkPackageNumber}
-        />
-      )}
-    </div>
+    <ArcherContainer ref={archerRef} strokeColor="#ef4545">
+      <div id={`gantt-task-${task.id}`}>
+        {isEditMode ? (
+          <GanttTaskBarEdit
+            days={days}
+            task={task}
+            createChange={handleChange}
+            getStartCol={getStartCol}
+            getEndCol={getEndCol}
+            isProject={isProject}
+            addWorkPackage={addWorkPackage}
+            getNewWorkPackageNumber={getNewWorkPackageNumber}
+          />
+        ) : (
+          <GanttTaskBarView
+            days={days}
+            task={task}
+            getStartCol={getStartCol}
+            getEndCol={getEndCol}
+            isProject={isProject}
+            handleOnMouseOver={handleOnMouseOver}
+            handleOnMouseLeave={handleOnMouseLeave}
+            onWorkPackageToggle={onWorkPackageToggle}
+            showWorkPackages={showWorkPackages}
+            highlightedChange={highlightedChange}
+            getNewWorkPackageNumber={getNewWorkPackageNumber}
+          />
+        )}
+      </div>
+    </ArcherContainer>
   );
 };
 
