@@ -58,7 +58,7 @@ const GanttTaskBar = ({
     createChange(change);
     setTimeout(() => {
       if (archerRef.current) {
-        archerRef.current?.refreshScreen();
+        archerRef.current.refreshScreen();
       }
     }, 100); // wait for the change to be added to the state and the DOM to update
   };
