@@ -23,12 +23,13 @@ import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import { Container } from '@mui/material';
+import { Container, IconButton } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
+import HiddenContentMargin from '../components/HiddenContentMargin';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -38,7 +39,8 @@ interface AppAuthenticatedProps {
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [moveContent, setMoveContent] = useState(false);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -62,21 +64,32 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           borderRight: 2,
           borderRightColor: '#ef4345'
         }}
+      />
+      <IconButton
+        onClick={() => {
+          setDrawerOpen(true);
+          setMoveContent(true);
+        }}
+        sx={{ position: 'fixed', left: -10, top: '3%' }}
       >
         <ArrowCircleRightTwoToneIcon
           sx={{
-            position: 'absolute',
+            fontSize: '35px',
             zIndex: 1,
-            top: '3%',
-            left: '3px',
             '& path:first-of-type': { color: '#000000' },
             '& path:last-of-type': { color: '#ef4345' }
           }}
         />
-      </Box>
+      </IconButton>
+      <Sidebar
+        drawerOpen={drawerOpen}
+        setDrawerOpen={setDrawerOpen}
+        moveContent={moveContent}
+        setMoveContent={setMoveContent}
+      />
       <Box display={'flex'}>
-        <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
+        <HiddenContentMargin open={moveContent} variant="permanent" />
+        <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
