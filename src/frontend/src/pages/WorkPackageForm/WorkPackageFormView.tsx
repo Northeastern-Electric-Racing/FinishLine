@@ -75,7 +75,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     handleSubmit,
     control,
     watch,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -114,7 +115,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     isError: workPackageTemplateisError,
     error: workPackageTemplateError
   } = useAllWorkPackageTemplates();
-  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate>();
+  const [currentWorkPackageTemplate] = useState<WorkPackageTemplate>();
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
 
@@ -220,13 +221,18 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           </Box>
         }
       >
-        {
-          <WorkPackageTemplateSection
-            workPackageTemplates={workPackageTemplates}
-            currentWorkPackageTemplate={currentWorkPackageTemplate}
-            setCurrentWorkPackageTemplate={setCurrentWorkPackageTemplate}
-          />
+        <WorkPackageTemplateSection
+          workPackageTemplates={workPackageTemplates}
+          currentWorkPackageTemplate={currentWorkPackageTemplate}
+          setCurrentWorkPackageTemplate={(WorkPackageTemplate) => {
+            setValue('name', WorkPackageTemplate.workPackageName ?? '');
+            setValue('stage', WorkPackageTemplate.stage ?? 'NONE');
+            setValue('duration', WorkPackageTemplate.duration ?? 0);  
+            setValue('descriptionBullets', WorkPackageTemplate.descriptionBullets ?? []);
+          }
         }
+        />
+
         <WorkPackageFormDetails
           control={control}
           errors={errors}
