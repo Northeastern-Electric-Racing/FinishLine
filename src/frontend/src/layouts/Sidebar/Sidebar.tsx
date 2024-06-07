@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, IconButton, useTheme, Divider } from '@mui/material';
+import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -79,6 +79,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setMoveContent(!moveContent);
   };
 
+  console.log('NEW BAR-----------------');
   return (
     <NERDrawer open={drawerOpen} variant="permanent">
       <Box

@@ -23,7 +23,7 @@ import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import { Container, IconButton } from '@mui/material';
+import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
@@ -39,6 +39,7 @@ interface AppAuthenticatedProps {
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
+  const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
 
@@ -62,7 +63,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           position: 'fixed',
           width: 15,
           borderRight: 2,
-          borderRightColor: '#ef4345'
+          borderRightColor: theme.palette.background.paper
         }}
       />
       <IconButton
@@ -70,11 +71,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           setDrawerOpen(true);
           setMoveContent(true);
         }}
-        sx={{ position: 'fixed', left: -10, top: '3%' }}
+        sx={{ position: 'fixed', left: -8, top: '3%' }}
       >
         <ArrowCircleRightTwoToneIcon
           sx={{
-            fontSize: '35px',
+            fontSize: '30px',
             zIndex: 1,
             '& path:first-of-type': { color: '#000000' },
             '& path:last-of-type': { color: '#ef4345' }
