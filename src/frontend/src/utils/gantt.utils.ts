@@ -196,20 +196,21 @@ export const applyChangesToWBSElement = (
   if (isWorkPackage(wbsElement.wbsNum)) {
     // If its a work package were gonna loop through and see if we need to apply changes
     const workPackage = wbsElement as WorkPackage;
-    ganttChanges.forEach((change) => {
+    for (const change of ganttChanges) {
       if (wbsPipe(change.element.wbsNum) === wbsPipe(wbsElement.wbsNum)) {
         // If the change is for this work package then were gonna apply it
-        if (change.type === 'change-end-date') {
+        if (change.type === 'create-work-package') {
+          break; // We dont want to apply the changes to a new work package because the changes get tracked already when the user edit the created work package
+        } else if (change.type === 'change-end-date') {
           workPackage.endDate = change.newEnd;
         } else if (change.type === 'shift-by-days') {
-          const newStartDate = dayjs(workPackage.startDate).add(change.days, 'day').toDate();
-          workPackage.startDate = newStartDate;
+          workPackage.startDate = dayjs(workPackage.startDate).add(change.days, 'day').toDate();
           workPackage.endDate = dayjs(workPackage.endDate).add(change.days, 'day').toDate();
         }
 
         applyChangesToBlockedBy(workPackage, parentProject.workPackages, change); // Apply the changes to all of the blocked work packages
       }
-    });
+    }
   }
 
   if (isProject(wbsElement.wbsNum)) {
@@ -282,7 +283,6 @@ export const filterGanttProjects = (
 
   deepCopy = deepCopy.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
 
-  console.log(deepCopy, team.teamName);
   return deepCopy;
 };
 

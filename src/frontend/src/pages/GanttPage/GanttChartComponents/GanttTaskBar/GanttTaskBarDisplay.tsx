@@ -18,6 +18,7 @@ import {
   webKitBoxStyles
 } from './GanttTaskBarDisplayStyles';
 import { CSSProperties } from 'react';
+import { ArcherElement } from 'react-archer';
 
 interface GanttTaskBarDisplayProps {
   days: Date[];
@@ -87,7 +88,6 @@ const GanttTaskBarDisplay = ({
   };
 
   const highlightedChangeBoxStyles = (highlightedChange: RequestEventChange): CSSProperties => {
-    console.log('highlightedChange', highlightedChange);
     return {
       paddingTop: '2px',
       paddingLeft: '5px',
@@ -104,18 +104,30 @@ const GanttTaskBarDisplay = ({
   };
 
   return (
-    <Box style={ganttTaskBarContainerStyles()}>
+    <div id={task.teamName + wbsPipe(task)} style={ganttTaskBarContainerStyles()}>
       <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
-        <div
-          style={ganttTaskBarHoverDetectionBoxStyles}
-          onMouseOver={(e) => handleOnMouseOver(e, task)}
-          onMouseLeave={handleOnMouseLeave}
-          onClick={() => history.push(`${routes.PROJECTS}/${task.id}`)}
+        <ArcherElement
+          id={task.teamName + wbsPipe(task)}
+          relations={task.blocking.map((blocking) => {
+            return {
+              targetId: task.teamName + wbsPipe(blocking),
+              targetAnchor: 'left',
+              sourceAnchor: 'right',
+              style: { strokeDasharray: '5,5', noCurves: true, endMarker: false }
+            };
+          })}
         >
-          <Box sx={webKitBoxContainerStyles()}>
-            <Box sx={webKitBoxStyles()} />
-          </Box>
-        </div>
+          <div
+            style={ganttTaskBarHoverDetectionBoxStyles}
+            onMouseOver={(e) => handleOnMouseOver(e, task)}
+            onMouseLeave={handleOnMouseLeave}
+            onClick={() => history.push(`${routes.PROJECTS}/${task.id}`)}
+          >
+            <Box sx={webKitBoxContainerStyles()}>
+              <Box sx={webKitBoxStyles()} />
+            </Box>
+          </div>
+        </ArcherElement>
         <div
           style={ganttTaskBarDetailsBoxStyles}
           onMouseOver={(e) => handleOnMouseOver(e, task)}
@@ -163,7 +175,7 @@ const GanttTaskBarDisplay = ({
           </div>
         )}
       </Box>
-    </Box>
+    </div>
   );
 };
 
