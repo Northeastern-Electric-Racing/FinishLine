@@ -88,7 +88,6 @@ const GanttTaskBarDisplay = ({
   };
 
   const highlightedChangeBoxStyles = (highlightedChange: RequestEventChange): CSSProperties => {
-    console.log('highlightedChange', highlightedChange);
     return {
       paddingTop: '2px',
       paddingLeft: '5px',

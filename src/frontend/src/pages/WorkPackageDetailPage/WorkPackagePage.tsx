@@ -30,8 +30,6 @@ const WorkPackagePage: React.FC<WorkPackagePageProps> = ({ wbsNum }) => {
     return <EditWorkPackageForm wbsNum={wbsNum} workPackageName={data?.name} setPageMode={setEditMode} />;
   }
 
-  console.log(data.startDate);
-
   return (
     <WorkPackageViewContainer
       workPackage={data}

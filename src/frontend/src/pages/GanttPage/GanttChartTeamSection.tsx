@@ -59,7 +59,6 @@ const GanttChartTeamSection = ({
 
   useEffect(() => {
     if (!IsProjectPreviewsEqual(projectsState, deeplyCopiedProjects.concat(addedProjects))) {
-      console.log('Projects state changed');
       setProjectsState([...deeplyCopiedProjects, ...addedProjects]);
     }
   }, [addedProjects, projectsState, deeplyCopiedProjects]);
