@@ -447,7 +447,7 @@ export default class DesignReviewsService {
       !(await userHasPermission(user.userId, organizationId, isAdmin)) &&
       user.userId !== originaldesignReview.userCreatedId
     ) {
-      throw new AccessDeniedMemberException('set the status of a design review');
+      throw new AccessDeniedAdminOnlyException('set the status of a design review');
     }
 
     // actually try to update the design review

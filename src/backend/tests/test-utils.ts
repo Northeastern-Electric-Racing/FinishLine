@@ -15,6 +15,7 @@ import ReimbursementRequestService from '../src/services/reimbursement-requests.
 import { ClubAccount, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
+import DesignReviewsService from '../src/services/design-reviews.services';
 
 export interface CreateTestUserParams {
   userId?: number;
@@ -296,4 +297,51 @@ export const createTestReimbursementRequest = async () => {
   if (!rr) throw new Error('Failed to create reimbursement request');
 
   return { rr, organization };
+};
+
+// DRAFT FOR DESIGN REVIEW UNMOCKED TEST
+export const createTestDesignReview = async () => {
+  const organization = await createTestOrganization();
+  await createFinanceTeamAndLead(organization);
+  const user = await prisma.user.findUnique({
+    where: {
+      userId: 1
+    },
+    include: {
+      userSettings: true,
+      userSecureSettings: true
+    }
+  });
+
+  // create a lead, just matters that they are not admin
+  const creatorLead = await prisma.user.findFirst({
+    where: {},
+    include: {
+      userSettings: true,
+      userSecureSettings: true
+    }
+  });
+
+  if (!user || !user.userSecureSettings || !user.userSettings) throw new Error('Failed to find user');
+  if (!creatorLead || !creatorLead.userSecureSettings || !creatorLead.userSettings) throw new Error('Failed to find lead');
+
+  const teamType = await TeamsService.createTeamType(user, 'Team1', 'Software', 'Software Team');
+  const dr = await DesignReviewsService.createDesignReview(
+    creatorLead,
+    '03/25/2024',
+    teamType.teamTypeId,
+    [user.userId],
+    [],
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    [],
+    organization.organizationId
+  );
+
+  if (!dr) throw new Error('Failed to create design review');
+
+  return { dr, organization };
 };
