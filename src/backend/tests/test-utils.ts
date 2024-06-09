@@ -13,7 +13,13 @@ import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import { ClubAccount, RoleEnum } from 'shared';
-import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
+import {
+  aquamanLeadership,
+  batmanAppAdmin,
+  batmanScheduleSettings,
+  batmanSecureSettings,
+  batmanSettings
+} from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
 
@@ -299,10 +305,7 @@ export const createTestReimbursementRequest = async () => {
 export const createTestDesignReview = async () => {
   const organization = await createTestOrganization();
   await createFinanceTeamAndLead(organization);
-  const lead = await createTestUser(
-    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
-    organization.organizationId
-  );
+  const lead = await createTestUser(aquamanLeadership, organization.organizationId);
 
   if (!lead) throw new Error('Failed to find user');
 
@@ -311,7 +314,7 @@ export const createTestDesignReview = async () => {
     lead,
     '03/25/2024',
     teamType.teamTypeId,
-    [lead.userId], // this must be the ID of a member with the lead role
+    [lead.userId],
     [],
     {
       carNumber: 0,

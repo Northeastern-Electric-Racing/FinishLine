@@ -1,4 +1,4 @@
-import { alfred, batmanAppAdmin } from '../test-data/users.test-data';
+import { alfred, batmanAppAdmin, aquamanLeadership } from '../test-data/users.test-data';
 import DesignReviewsService from '../../src/services/design-reviews.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
@@ -51,16 +51,10 @@ describe('Design Reviews', () => {
 
   // set status works when creator is not admin
   test('Set status works when creator is not admin', async () => {
-    const lead = await prisma.user.findUnique({
-      where: {
-        userId: 6
-      },
-      include: {
-        roles: true
-      }
-    });
+    // ensure that creator of the dr is the same as this user
+    const drCreator = await createTestUser(aquamanLeadership, orgId);
 
-    if (!lead) {
+    if (!drCreator) {
       console.log('No user lead found, please check that the creator of the DR exists and is not an admin');
       assert(false);
       throw new Error('No user lead found, please check that the creator of the DR exists and is not an admin');
@@ -73,7 +67,7 @@ describe('Design Reviews', () => {
 
     expect(ogDR?.status).toBe(DesignReviewStatus.UNCONFIRMED);
 
-    await DesignReviewsService.setStatus(lead, designReview.designReviewId, DesignReviewStatus.CONFIRMED, orgId);
+    await DesignReviewsService.setStatus(drCreator, designReview.designReviewId, DesignReviewStatus.CONFIRMED, orgId);
 
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
