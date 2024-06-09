@@ -33,7 +33,7 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -56,8 +56,8 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmitWrapper}
       formId="delete-wp-form"
+      disabled={!isValid}
       showCloseButton
-      disabled={errors.wbsNum !== undefined}
     >
       <Typography sx={{ marginBottom: '1rem' }}>
         Are you sure you want to delete work package #{wbsPipe(workPackage)}?
