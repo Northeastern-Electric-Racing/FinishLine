@@ -23,7 +23,10 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
   const workPackageWbsTester = (wbsNum: string | undefined) => wbsNum !== undefined && wbsNum === wbsPipe(workPackage);
 
   const schema = yup.object().shape({
-    wbsNum: yup.string().required().test('wp-wbs-test', 'Work Package WBS Number does not match', workPackageWbsTester)
+    wbsNum: yup
+      .string()
+      .required('WBS number is required')
+      .test('wp-wbs-test', 'Work Package WBS Number does not match', workPackageWbsTester)
   });
 
   const {
@@ -54,20 +57,21 @@ const DeleteWorkPackageView: React.FC<DeleteWorkPackageViewProps> = ({ workPacka
       onFormSubmit={onSubmitWrapper}
       formId="delete-wp-form"
       showCloseButton
+      disabled={errors.wbsNum !== undefined}
     >
       <Typography sx={{ marginBottom: '1rem' }}>
-        Are you sure you want to delete Work Package #{wbsPipe(workPackage)}?
+        Are you sure you want to delete work package #{wbsPipe(workPackage)}?
       </Typography>
-      <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!!</Typography>
+      <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
       <FormControl>
         <FormLabel sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-          To confirm deletion, please type in the WBS number of this Work Package.
+          To confirm deletion, please type in the WBS number of this work package.
         </FormLabel>
         <ReactHookTextField
           control={control}
           name="wbsNum"
           errorMessage={errors.wbsNum}
-          placeholder="Enter Work Package WBS # here"
+          placeholder="Enter work package WBS # here"
           sx={{ width: 1 }}
           type="string"
         />
