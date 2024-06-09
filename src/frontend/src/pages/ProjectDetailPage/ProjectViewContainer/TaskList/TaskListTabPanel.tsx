@@ -20,8 +20,9 @@ import { useToast } from '../../../../hooks/toasts.hooks';
 import { TaskListTabPanelProps } from '../../../../utils/task.utils';
 import ErrorPage from '../../../ErrorPage';
 import TaskListDataGrid from './TaskListDataGrid';
-import TaskListNotesModal, { FormInput } from './TaskListNotesModal';
 import { transformDate } from '../../../../utils/datetime.utils';
+import { EditTaskFormInput } from './TaskFormModal';
+import TaskListNotesModal from './TaskModal';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { tasks, status, addTask, onAddCancel, project, setDisabled } = props;
@@ -103,7 +104,8 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
         deadline: transformDate(deadline),
         priority,
         status,
-        assignees: assignees.map((user) => user.userId)
+        assignees: assignees.map((user) => user.userId),
+        notes: ''
       });
       toast.success('Task Successfully Created!');
     } catch (e: unknown) {
@@ -134,7 +136,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
     setSelectedTask(undefined);
   };
 
-  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: FormInput) => {
+  const handleEditTask = async ({ taskId, notes, title, deadline, assignees, priority }: EditTaskFormInput) => {
     try {
       await editTaskMutateAsync({
         taskId,

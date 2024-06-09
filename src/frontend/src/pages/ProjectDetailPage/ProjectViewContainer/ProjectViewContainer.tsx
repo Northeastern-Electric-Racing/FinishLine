@@ -23,7 +23,6 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ScopeTab } from './ScopeTab';
 import ProjectGantt from './ProjectGantt';
-import TaskList from './TaskList/TaskList';
 import { useCurrentUser, useUsersFavoriteProjects } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -34,6 +33,7 @@ import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
 import ChangeRequestTab from './ChangeRequestTab';
+import { TaskList } from './TaskList/tasks';
 
 interface ProjectViewContainerProps {
   project: Project;

@@ -12,6 +12,7 @@ export interface CreateTaskPayload {
   deadline: string;
   priority: TaskPriority;
   status: TaskStatus;
+  notes: string;
   assignees: string[];
 }
 
@@ -26,7 +27,8 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
         createTaskPayload.deadline,
         createTaskPayload.priority,
         createTaskPayload.status,
-        createTaskPayload.assignees
+        createTaskPayload.assignees,
+        createTaskPayload.notes
       );
       return data;
     },
@@ -98,18 +100,18 @@ export const useEditTaskAssignees = () => {
  * @returns the edit task status mutation
  */
 export const useSetTaskStatus = () => {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, { taskId: string; status: TaskStatus }>(
     ['tasks', 'edit-status'],
     async (editStatusTaskPayload: { taskId: string; status: TaskStatus }) => {
       const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
-      }
     }
+    // {
+    //   onSuccess: () => {
+    //     queryClient.invalidateQueries(['projects']);
+    //   }
+    // }
   );
 };
 
