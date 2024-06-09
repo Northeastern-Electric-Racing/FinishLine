@@ -303,37 +303,16 @@ export const createTestReimbursementRequest = async () => {
 export const createTestDesignReview = async () => {
   const organization = await createTestOrganization();
   await createFinanceTeamAndLead(organization);
-  const user = await prisma.user.findUnique({
-    where: {
-      userId: 1
-    },
-    include: {
-      userSettings: true,
-      userSecureSettings: true
-    }
-  });
+  const lead = await createTestUser(
+    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
+    organization.organizationId
+  );
 
-  // create a lead, just matters that they are not admin
-  const creatorLead = await prisma.user.findFirst({
-    where: {
-      roles: {
-        some: {
-          roleType: RoleEnum.LEADERSHIP
-        }
-      }
-    },
-    include: {
-      userSettings: true,
-      userSecureSettings: true
-    }
-  });
+  if (!lead) throw new Error('Failed to find user');
 
-  if (!user || !user.userSecureSettings || !user.userSettings) throw new Error('Failed to find user');
-  if (!creatorLead || !creatorLead.userSecureSettings || !creatorLead.userSettings) throw new Error('Failed to find lead');
-
-  const teamType = await TeamsService.createTeamType(user, 'Team1', 'Software', 'Software Team');
+  const teamType = await TeamsService.createTeamType(lead, 'Team1', 'Software', 'Software Team');
   const dr = await DesignReviewsService.createDesignReview(
-    creatorLead,
+    lead,
     '03/25/2024',
     teamType.teamTypeId,
     [6], // this must be the ID of a member with the lead role
