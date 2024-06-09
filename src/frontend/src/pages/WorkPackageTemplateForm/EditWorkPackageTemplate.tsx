@@ -1,10 +1,6 @@
-import { WbsNumber, wbsPipe } from 'shared';
-import { useEditWorkPackage, useEditWorkPackageTemplate } from '../../hooks/work-packages.hooks';
+import { useEditWorkPackageTemplate } from '../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import { startDateTester } from '../../utils/form';
 import * as yup from 'yup';
-import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { routes } from '../../utils/routes';
 import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 import { useQuery } from '../../hooks/utils.hooks';
@@ -18,7 +14,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ setPageMo
 
   const query = useQuery();
 
-  const workPackageTemplateId = query.get("workPackageTemplateId")
+  const workPackageTemplateId = query.get('workPackageTemplateId');
 
   const { mutateAsync: editWorkPackageTemplate } = useEditWorkPackageTemplate(workPackageTemplateId!);
 

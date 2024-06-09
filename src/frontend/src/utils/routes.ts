@@ -46,7 +46,7 @@ const SETTINGS_PREFERENCES = '/preferences';
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
 const WORK_PACKAGE_TEMPLATE_NEW = ADMIN_TOOLS + `/work-package-templates/new`;
-const WORK_PACKAGE_TEMPLATE_EDIT = ADMIN_TOOLS + '/work-package-templates' + '/:workPackageTemplateId'
+const WORK_PACKAGE_TEMPLATE_EDIT = ADMIN_TOOLS + '/work-package-templates/:workPackageTemplateId';
 /**************** Design Review Calendar ****************/
 const CALENDAR = `/design-review-calendar`;
 const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;

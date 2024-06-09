@@ -15,7 +15,6 @@ import { routes } from '../../utils/routes';
 import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
 import { NERButton } from '../../components/NERButton';
 import WorkPackageTemplateFormDetails from './WorkPackageTemplateFormDetails';
-import WorkPackageTemplateFormDetails2 from './WorkPackageTemplateFormDetails2';
 
 interface WorkPackageTemplateFormViewProps {
   exitActiveMode: () => void;
@@ -141,7 +140,6 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
         }
       >
         <Stack spacing={2}>
-          <WorkPackageTemplateFormDetails2 control={control} errors={errors} />
           <Box my={2}>
             <WorkPackageTemplateFormDetails control={control} errors={errors} />
           </Box>

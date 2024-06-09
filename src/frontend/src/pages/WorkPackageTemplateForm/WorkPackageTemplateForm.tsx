@@ -1,19 +1,14 @@
 import React from 'react';
-import { WbsNumber, WorkPackage, isGuest, wbsPipe } from 'shared';
-import { bulletsToObject } from '../../utils/form';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllUsers } from '../../hooks/users.hooks';
 import { useAllWorkPackageTemplates, useSingleProject } from '../../hooks/projects.hooks';
 import { useQuery } from '../../hooks/utils.hooks';
-import { WorkPackageApiInputs, WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
+import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
-import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
 import WorkPackageTemplateFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 
 interface WorkPackageTemplateFormProps {
-  workPackageTemplateId?: string; 
+  workPackageTemplateId?: string;
   exitActiveMode: () => void;
   workPackageTemplateMutateAsync: (data: WorkPackageTemplateApiInputs) => void;
   schema: ObjectSchema<any>;
@@ -44,12 +39,9 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   let defaultValues: WorkPackageTemplateFormViewPayload | undefined;
 
   if (workPackageTemplateId) {
-    workPackageTemplate = workPackageTemplates?.find(
-      (wpt) =>
-        wpt.workPackageTemplateId == workPackageTemplateId
-    );
+    workPackageTemplate = workPackageTemplates?.find((wpt) => wpt.workPackageTemplateId == workPackageTemplateId);
 
-    console.log(workPackageTemplate)
+    console.log(workPackageTemplate);
 
     if (workPackageTemplate) {
       defaultValues = {
@@ -60,19 +52,24 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
         duration: workPackageTemplate.duration,
         descriptionBullets: workPackageTemplate.descriptionBullets,
         stage: workPackageTemplate!.stage ?? 'NONE',
-        blockedBy: workPackageTemplate.blockedBy.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId).map((wp) => ({
-          id: wp.workPackageTemplateId,
-          label: `${wp.templateName}`
-        })) || []
+        blockedBy:
+          workPackageTemplate.blockedBy
+            .filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId)
+            .map((wp) => ({
+              id: wp.workPackageTemplateId,
+              label: `${wp.templateName}`
+            })) || []
       };
     }
   }
 
   const blockedByOptions =
-    (workPackageTemplates?.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId).map((wp) => ({
-      id: wp.workPackageTemplateId,
-      label: `${wp.templateName}`
-    })) || []);
+    workPackageTemplates
+      ?.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId)
+      .map((wp) => ({
+        id: wp.workPackageTemplateId,
+        label: `${wp.templateName}`
+      })) || [];
 
   return (
     <WorkPackageTemplateFormView
@@ -81,7 +78,8 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
       defaultValues={defaultValues}
       blockedByOptions={blockedByOptions}
       schema={schema}
-      breadcrumbs={breadcrumbs}    />
+      breadcrumbs={breadcrumbs}
+    />
   );
 };
 

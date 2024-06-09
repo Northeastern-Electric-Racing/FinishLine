@@ -6,10 +6,7 @@
 import { User, WorkPackageStage } from 'shared';
 import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
-import { DatePicker } from '@mui/x-date-pickers';
 import { Box } from '@mui/system';
-import ChangeRequestDropdown from '../../components/ChangeRequestDropdown';
-import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
@@ -19,10 +16,7 @@ interface Props {
   errors: Partial<FieldErrorsImpl<WorkPackageTemplateFormViewPayload>>;
 }
 
-const WorkPackageTemplateFormDetails: React.FC<Props> = ({
-  control,
-  errors,
-}) => {
+const WorkPackageTemplateFormDetails: React.FC<Props> = ({ control, errors }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
@@ -77,6 +71,28 @@ const WorkPackageTemplateFormDetails: React.FC<Props> = ({
               type="number"
               placeholder="Enter duration..."
               errorMessage={errors.duration}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth>
+            <FormLabel>Template Name</FormLabel>
+            <ReactHookTextField
+              name="templateName"
+              control={control}
+              placeholder="Enter template name..."
+              errorMessage={errors.templateName}
+            />
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth>
+            <FormLabel>Template Notes</FormLabel>
+            <ReactHookTextField
+              name="templateNotes"
+              control={control}
+              placeholder="Enter notes..."
+              errorMessage={errors.templateNotes}
             />
           </FormControl>
         </Grid>
