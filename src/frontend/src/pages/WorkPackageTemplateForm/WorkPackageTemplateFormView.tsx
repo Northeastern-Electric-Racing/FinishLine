@@ -35,7 +35,6 @@ export interface WorkPackageTemplateFormViewPayload {
   stage: string;
   blockedBy: { id: string; label: string }[];
   descriptionBullets: DescriptionBulletPreview[];
-  deliverables: DescriptionBulletPreview[];
 }
 
 const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = ({
@@ -64,8 +63,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       duration: defaultValues?.duration ?? 0,
       blockedBy: defaultValues?.blockedBy ?? [],
       stage: defaultValues?.stage ?? 'NONE',
-      descriptionBullets: defaultValues?.descriptionBullets ?? [],
-      deliverables: defaultValues?.deliverables ?? []
+      descriptionBullets: defaultValues?.descriptionBullets ?? []
     }
   });
 
@@ -85,7 +83,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
   } = useFieldArray({ control, name: 'descriptionBullets' });
 
   const onSubmit = async (data: WorkPackageTemplateFormViewPayload) => {
-    const { workPackageName, templateName, templateNotes, duration, blockedBy, stage, descriptionBullets, deliverables } = data;
+    const { workPackageName, templateName, templateNotes, duration, blockedBy, stage, descriptionBullets } = data;
 
     const blockedByWbsNums = blockedBy.map((blocker) => blocker.id);
 
