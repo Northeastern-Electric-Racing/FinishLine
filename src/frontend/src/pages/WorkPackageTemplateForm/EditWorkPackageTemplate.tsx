@@ -7,31 +7,34 @@ import * as yup from 'yup';
 import { useCreateStandardChangeRequest } from '../../hooks/change-requests.hooks';
 import { routes } from '../../utils/routes';
 import WorkPackageTemplateForm from './WorkPackageTemplateForm';
+import { useQuery } from '../../hooks/utils.hooks';
 
 interface EditWorkPackageTemplateProps {
-  workPackageTemplateId: string;
   setPageMode: (value: React.SetStateAction<boolean>) => void;
 }
 
-const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ workPackageTemplateId, setPageMode }) => {
+const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ setPageMode }) => {
   const history = useHistory();
 
-  const { mutateAsync: editWorkPackageTemplate, isLoading } = useEditWorkPackageTemplate(workPackageTemplateId);
+  const query = useQuery();
+
+  const workPackageTemplateId = query.get("workPackageTemplateId")
+
+  const { mutateAsync: editWorkPackageTemplate, isLoading } = useEditWorkPackageTemplate(workPackageTemplateId!);
 
   const schema = yup.object().shape({
-    name: yup.string().required('Name is required!'),
-    startDate: yup
-      .date()
-      .required('Start Date is required!')
-      .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
+    workPackageName: yup.string().required('Name is required!'),
     duration: yup.number().required()
   });
-  
+
   return (
     <WorkPackageTemplateForm
+      workPackageTemplateId={workPackageTemplateId!}
       workPackageTemplateMutateAsync={editWorkPackageTemplate}
       exitActiveMode={() => history.push(routes.ADMIN_TOOLS)}
-      schema={schema} breadcrumbs={[]}    />
+      schema={schema}
+      breadcrumbs={[]}
+    />
   );
 };
 

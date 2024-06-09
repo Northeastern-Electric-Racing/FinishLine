@@ -19,11 +19,7 @@ const CreateWorkPackageTemplate: React.FC = () => {
 
 
   const schema = yup.object().shape({
-    name: yup.string().required('Name is required!'),
-    startDate: yup
-      .date()
-      .required('Start Date is required!')
-      .test('start-date-valid', 'Start Date Must be a Monday', startDateTester),
+    workPackageName: yup.string().required('Name is required!'),
     duration: yup.number().required()
   });
   return (

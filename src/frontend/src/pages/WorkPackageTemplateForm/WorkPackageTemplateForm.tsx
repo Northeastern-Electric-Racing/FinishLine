@@ -49,22 +49,25 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
         wpt.workPackageTemplateId == workPackageTemplateId
     );
 
+    console.log(workPackageTemplate)
+
     if (workPackageTemplate) {
       defaultValues = {
         ...workPackageTemplate,
-        name: workPackageTemplate.workPackageName,
+        workPackageName: workPackageTemplate.workPackageName,
         templateName: workPackageTemplate.templateName,
         workPackageTemplateId: workPackageTemplate.workPackageTemplateId,
         duration: workPackageTemplate.duration,
         expectedActivities: workPackageTemplate.descriptionBullets,
         stage: workPackageTemplate!.stage ?? 'NONE',
-        blockedBy: workPackageTemplate.blockedBy.map((workPackageId) => workPackageId)
+        blockedBy: workPackageTemplate.blockedBy.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId).map((wp) => ({
+          id: wp.workPackageTemplateId,
+          label: `${wp.templateName}`
+        })) || []
       };
     }
   }
 
-
-  const leadOrManagerOptions = users?.filter((user) => !isGuest(user.role));
   const blockedByOptions =
     (workPackageTemplates?.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId).map((wp) => ({
       id: wp.workPackageTemplateId,

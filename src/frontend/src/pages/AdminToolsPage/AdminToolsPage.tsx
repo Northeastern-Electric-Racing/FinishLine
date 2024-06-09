@@ -81,10 +81,13 @@ const AdminToolsPage: React.FC = () => {
         </Box>
       }
     >
-      {tabIndex === 0 && <UserManagementTab />}
-      {tabIndex === 1 && <ProjectConfigurationTab />}
-      {tabIndex === 2 && <AdminToolsFinanceConfig />}
-      {tabIndex === 3 && (
+      {tabIndex === 0 ? (
+        <UserManagementTab />
+      ) : tabIndex === 1 ? (
+        <ProjectConfigurationTab />
+      ) : tabIndex === 2 ? (
+        <AdminToolsFinanceConfig />
+      ) : (
         <Box>
           <Box pb={2}>
             <AdminToolsSlackUpcomingDeadlines />

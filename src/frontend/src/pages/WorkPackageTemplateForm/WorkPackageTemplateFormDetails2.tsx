@@ -40,8 +40,8 @@ const WorkPackageTemplateFormDetails2: React.FC<Props> = ({
             <ReactHookTextField
               name="templateName"
               control={control}
-              placeholder="Enter work package name..."
-              errorMessage={errors.name}
+              placeholder="Enter template name..."
+              errorMessage={errors.workPackageName}
             />
           </FormControl>
         </Grid>
@@ -49,9 +49,9 @@ const WorkPackageTemplateFormDetails2: React.FC<Props> = ({
           <FormControl fullWidth>
             <FormLabel>Template Notes</FormLabel>
             <ReactHookTextField
-              name="notes"
+              name="templateNotes"
               control={control}
-              placeholder="Enter duration..."
+              placeholder="Enter notes..."
               errorMessage={errors.duration}
             />
           </FormControl>

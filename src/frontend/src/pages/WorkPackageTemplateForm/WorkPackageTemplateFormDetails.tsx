@@ -58,10 +58,10 @@ const WorkPackageTemplateFormDetails: React.FC<Props> = ({
           <FormControl fullWidth>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
-              name="name"
+              name="workPackageName"
               control={control}
               placeholder="Enter work package name..."
-              errorMessage={errors.name}
+              errorMessage={errors.workPackageName}
             />
           </FormControl>
         </Grid>

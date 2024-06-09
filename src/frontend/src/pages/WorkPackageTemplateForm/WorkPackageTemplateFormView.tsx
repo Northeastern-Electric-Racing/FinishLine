@@ -1,55 +1,19 @@
-import {
-  DescriptionBulletPreview,
-  OtherProductReason,
-  User,
-  validateWBS,
-  WbsElement,
-  wbsPipe,
-  WorkPackageTemplatePreview
-} from 'shared';
-import { Controller, useFieldArray, useForm, Control, UseFormReset } from 'react-hook-form';
+import React from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Box,
-  TextField,
-  Autocomplete,
-  FormControl,
-  Typography,
-  Tooltip,
-  TableRow,
-  Button,
-  FormHelperText,
-  FormLabel,
-  IconButton,
-  InputAdornment,
-  ListItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  Stack
-} from '@mui/material';
-import { useState } from 'react';
+import { Box, TextField, Autocomplete, Typography, Stack, FormControl } from '@mui/material';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
-import { WorkPackageApiInputs, WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
-import { WorkPackageStage } from 'shared';
+import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
+import { DescriptionBulletPreview, WorkPackageStage } from 'shared';
 import { ObjectSchema } from 'yup';
-import { getMonday, transformDate } from '../../utils/datetime.utils';
-import { CreateStandardChangeRequestPayload } from '../../hooks/change-requests.hooks';
-import CreateChangeRequestModal from '../CreateChangeRequestPage/CreateChangeRequestModal';
-import { FormInput } from '../CreateChangeRequestPage/CreateChangeRequest';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import HelpIcon from '@mui/icons-material/Help';
-import { NERButton } from '../../components/NERButton';
-import dayjs from 'dayjs';
 import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
-import { Delete, Add } from '@mui/icons-material';
+import { NERButton } from '../../components/NERButton';
 import WorkPackageTemplateFormDetails from './WorkPackageTemplateFormDetails';
 import WorkPackageTemplateFormDetails2 from './WorkPackageTemplateFormDetails2';
 
@@ -63,7 +27,7 @@ interface WorkPackageTemplateFormViewProps {
 }
 
 export interface WorkPackageTemplateFormViewPayload {
-  name?: string;
+  workPackageName?: string;
   templateName: string;
   templateNotes: string;
   workPackageTemplateId: string;
@@ -89,27 +53,24 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
     handleSubmit,
     control,
     watch,
-    formState: { errors }
+    formState: { errors, isSubmitting, isSubmitted, isSubmitSuccessful }
   } = useForm<WorkPackageTemplateFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: defaultValues?.name ?? '',
+      workPackageName: defaultValues?.workPackageName ?? '',
+      templateName: defaultValues?.templateName ?? '',
+      templateNotes: defaultValues?.templateNotes ?? '',
       workPackageTemplateId: defaultValues?.workPackageTemplateId ?? '',
       duration: defaultValues?.duration ?? 0,
-      blockedBy: defaultValues?.blockedBy.map((blocker) => ({ id: blocker.id, label: blocker.label })) ?? [],
+      blockedBy: defaultValues?.blockedBy ?? [],
       stage: defaultValues?.stage ?? 'NONE',
-      descriptionBullets: defaultValues?.descriptionBullets,
-      deliverables: defaultValues?.deliverables
+      descriptionBullets: defaultValues?.descriptionBullets ?? [],
+      deliverables: defaultValues?.deliverables ?? []
     }
   });
 
   const history = useHistory();
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  let changeRequestFormInput: FormInput | undefined = undefined;
   const pageTitle = defaultValues ? 'Edit Work Package Template' : 'Create Work Package Template';
-
-  const { userId } = user;
 
   const {
     fields: descriptionBullets,
@@ -124,30 +85,26 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
   } = useFieldArray({ control, name: 'descriptionBullets' });
 
   const onSubmit = async (data: WorkPackageTemplateFormViewPayload) => {
-    // Destructure the required fields from the data object
-    const { name, workPackageTemplateId, templateName, templateNotes, duration, blockedBy, stage, descriptionBullets } =
-      data;
+    const { workPackageName, templateName, templateNotes, duration, blockedBy, stage, descriptionBullets, deliverables } = data;
 
-    // Transform blockedBy into an array of strings
-    const blockedByWbsNums = blockedBy.map((blocker) => blocker.id); // Use the id property
+    const blockedByWbsNums = blockedBy.map((blocker) => blocker.id);
 
     try {
-      const payload = {
-        workPackageTemplateId,
+      const payload: WorkPackageTemplateApiInputs = {
         templateName,
         templateNotes,
-        userId,
-        name,
         duration,
-        blockedBy: blockedByWbsNums,
-        descriptionBullets: descriptionBullets,
         stage: stage as WorkPackageStage,
-        links: []
+        blockedBy: blockedByWbsNums,
+        descriptionBullets,
+        workPackageName
       };
 
-      // Call your mutation function
       await workPackageTemplateMutateAsync(payload);
+      toast.success('Work Package Template submitted successfully');
+      history.push(routes.ADMIN_TOOLS + '/project-configuration/work-package-templates');
     } catch (error) {
+      toast.error('Error submitting work package template');
       console.error('Error submitting work package template:', error);
     }
   };
@@ -158,7 +115,9 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        handleSubmit(onSubmit)(e);
+        handleSubmit((data) => {
+          onSubmit(data);
+        })(e);
       }}
       onKeyPress={(e) => {
         e.key === 'Enter' && e.preventDefault();
@@ -167,9 +126,10 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       <Box mb={-1}>
         <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={breadcrumbs} />
       </Box>
-      <PageLayout stickyHeader title={pageTitle}
-        headerRight=
-        {
+      <PageLayout
+        stickyHeader
+        title={pageTitle}
+        headerRight={
           <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
             <Box>
               <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
@@ -180,12 +140,13 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
               </NERSuccessButton>
             </Box>
           </Box>
-        }>
-        <WorkPackageTemplateFormDetails2 control={control} errors={errors} />
-        <Box my={2}>
-          <WorkPackageTemplateFormDetails control={control} errors={errors} />
-        </Box>
-        <Box my={2}>
+        }
+      >
+        <Stack spacing={2}>
+          <WorkPackageTemplateFormDetails2 control={control} errors={errors} />
+          <Box my={2}>
+            <WorkPackageTemplateFormDetails control={control} errors={errors} />
+          </Box>
           <Typography variant="h5">Blocked By</Typography>
           <FormControl fullWidth>
             <Controller
@@ -207,12 +168,8 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
               )}
             />
           </FormControl>
-        </Box>
-        <Stack spacing={4}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
-              {'Expected Activities'}
-            </Typography>
+            <Typography variant="h5">Expected Activities</Typography>
             <DescriptionBulletsEditView
               type="workPackage"
               watch={watch}
@@ -222,12 +179,8 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
               remove={removeDescriptionBullet}
             />
           </Box>
-        </Stack>
-        <Stack spacing={4}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
-              {'Deliverables'}
-            </Typography>
+            <Typography variant="h5">Deliverables</Typography>
             <DescriptionBulletsEditView
               type="workPackage"
               watch={watch}

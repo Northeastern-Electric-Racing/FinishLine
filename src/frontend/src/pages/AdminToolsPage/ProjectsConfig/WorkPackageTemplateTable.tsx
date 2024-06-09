@@ -33,7 +33,7 @@ const WorkPackageTemplateTable = () => {
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
   const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplateId) => (
-    <TableRow onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplateId.workPackageTemplateId}`)}
+    <TableRow onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?workPackageTemplateId=${workPackageTemplateId.workPackageTemplateId}`)}
     sx={{ cursor: 'pointer' }}>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {workPackageTemplateId.templateName}

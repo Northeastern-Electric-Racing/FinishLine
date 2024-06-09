@@ -24,9 +24,9 @@ const AdminTools: React.FC = () => {
 
   return (
     <Switch>
-      <Route path={routes.ADMIN_TOOLS} component={AdminToolsPage} />
       <Route path={routes.WORK_PACKAGE_TEMPLATE_NEW} component={CreateWorkPackageTemplate} />
       <Route path={routes.WORK_PACKAGE_TEMPLATE_EDIT} component={EditWorkPackageTemplate} />
+      <Route path={routes.ADMIN_TOOLS} component={AdminToolsPage} />
     </Switch>
   );
 };
