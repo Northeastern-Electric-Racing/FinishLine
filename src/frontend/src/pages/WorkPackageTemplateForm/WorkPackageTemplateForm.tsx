@@ -28,7 +28,7 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   let defaultValues: WorkPackageTemplateFormViewPayload | undefined;
 
   if (workPackageTemplateId) {
-    workPackageTemplate = workPackageTemplates?.find((wpt) => wpt.workPackageTemplateId == workPackageTemplateId);
+    workPackageTemplate = workPackageTemplates?.find((wpt) => wpt.workPackageTemplateId === workPackageTemplateId);
 
     console.log(workPackageTemplate);
 
