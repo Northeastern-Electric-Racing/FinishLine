@@ -7,7 +7,7 @@ import { assert } from 'console';
 import { DesignReview, DesignReviewStatus } from 'shared';
 
 describe('Design Reviews', () => {
-  let designReview: Design_Review; // should be type: Design_Review
+  let designReview: DesignReview; // should be type: Design_Review
   let orgId: string;
   beforeEach(async () => {
     const result = await createTestDesignReview();
