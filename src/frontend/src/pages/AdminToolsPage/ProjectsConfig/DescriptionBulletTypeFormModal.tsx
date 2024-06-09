@@ -84,7 +84,7 @@ const DescriptionBulletTypeFormModal = ({
         <Grid item xs={12}>
           <FormControl fullWidth>
             <FormLabel>Description Bullet Type Name</FormLabel>
-            <ReactHookTextField name="name" control={control} disabled={!creatingNew} onChange={handleClose}/>
+            <ReactHookTextField name="name" control={control} disabled={!creatingNew} />
             <FormHelperText error>{errors.name?.message}</FormHelperText>
           </FormControl>
         </Grid>

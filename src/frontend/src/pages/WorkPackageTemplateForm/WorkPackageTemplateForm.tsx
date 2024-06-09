@@ -58,7 +58,7 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
         templateName: workPackageTemplate.templateName,
         workPackageTemplateId: workPackageTemplate.workPackageTemplateId,
         duration: workPackageTemplate.duration,
-        expectedActivities: workPackageTemplate.descriptionBullets,
+        descriptionBullets: workPackageTemplate.descriptionBullets,
         stage: workPackageTemplate!.stage ?? 'NONE',
         blockedBy: workPackageTemplate.blockedBy.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId).map((wp) => ({
           id: wp.workPackageTemplateId,

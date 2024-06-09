@@ -20,7 +20,7 @@ const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ setPageMo
 
   const workPackageTemplateId = query.get("workPackageTemplateId")
 
-  const { mutateAsync: editWorkPackageTemplate, isLoading } = useEditWorkPackageTemplate(workPackageTemplateId!);
+  const { mutateAsync: editWorkPackageTemplate } = useEditWorkPackageTemplate(workPackageTemplateId!);
 
   const schema = yup.object().shape({
     workPackageName: yup.string().required('Name is required!'),
@@ -31,7 +31,10 @@ const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ setPageMo
     <WorkPackageTemplateForm
       workPackageTemplateId={workPackageTemplateId!}
       workPackageTemplateMutateAsync={editWorkPackageTemplate}
-      exitActiveMode={() => history.push(routes.ADMIN_TOOLS)}
+      exitActiveMode={() => {
+        setPageMode(false);
+        history.push(routes.ADMIN_TOOLS);
+      }}
       schema={schema}
       breadcrumbs={[]}
     />
