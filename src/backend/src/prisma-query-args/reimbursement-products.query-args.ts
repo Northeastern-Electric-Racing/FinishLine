@@ -5,14 +5,14 @@ export type ReimbursementProductQueryArgs = ReturnType<typeof getReimbursementPr
 export type ReimbursementProductReasonQueryArgs = ReturnType<typeof getReimbursementProductReasonQueryArgs>;
 
 export const getReimbursementProductReasonQueryArgs = (_organizationId: string) =>
-  Prisma.validator<Prisma.Reimbursement_Product_ReasonArgs>()({
+  Prisma.validator<Prisma.Reimbursement_Product_ReasonDefaultArgs>()({
     include: {
       wbsElement: true
     }
   });
 
 export const getReimbursementProductQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Reimbursement_ProductArgs>()({
+  Prisma.validator<Prisma.Reimbursement_ProductDefaultArgs>()({
     include: {
       reimbursementProductReason: getReimbursementProductReasonQueryArgs(organizationId)
     }

@@ -20,9 +20,11 @@ import NotesIcon from '@mui/icons-material/Notes';
 
 interface BOMTableWrapperProps {
   project: Project;
+  hideColumn: boolean[];
+  setHideColumn: React.Dispatch<React.SetStateAction<boolean[]>>;
 }
 
-const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
+const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, setHideColumn }) => {
   const [showEditMaterial, setShowEditMaterial] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState('');
   const [modalShow, setModalShow] = useState(false);
@@ -44,6 +46,13 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
 
   const user = useCurrentUser();
   const toast = useToast();
+  const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
+
+  if (storedHideColumn === 'false') {
+    setHideColumn(new Array(12).fill(false));
+  } else {
+    setHideColumn(storedHideColumn);
+  }
 
   if (isLoading) return <LoadingIndicator />;
 
@@ -178,6 +187,7 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
     return actions;
   };
 
+  //Try to have the updated column created in BOMTable stored here, and then look at if the name of the column appears here, if it does then we dont hide, else we hide.
   const columns: GridColumns<any> = [
     {
       ...bomBaseColDef,
@@ -186,7 +196,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Status',
       renderCell: renderStatusBOM,
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[0]
     },
     {
       ...bomBaseColDef,
@@ -194,7 +205,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Type',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[1]
     },
     {
       ...bomBaseColDef,
@@ -203,7 +215,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Name',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[2]
     },
     {
       ...bomBaseColDef,
@@ -212,7 +225,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Manufacturer',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[3]
     },
     {
       ...bomBaseColDef,
@@ -225,10 +239,10 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       colSpan: ({ row }) => {
         if (row.id.includes('assembly')) {
           return 2;
-        } else {
-          return 1;
         }
-      }
+        return 1;
+      },
+      hide: hideColumn[4]
     },
     {
       ...bomBaseColDef,
@@ -237,7 +251,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'PDM File Name',
       type: 'string',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[5]
     },
     {
       ...bomBaseColDef,
@@ -245,7 +260,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Quantity',
       type: 'number',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[6]
     },
     {
       ...bomBaseColDef,
@@ -253,7 +269,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Price per Unit',
       type: 'number',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[7]
     },
     {
       ...bomBaseColDef,
@@ -261,7 +278,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       headerName: 'Subtotal',
       type: 'number',
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[8]
     },
     {
       ...bomBaseColDef,
@@ -271,7 +289,8 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
       type: 'actions',
       getActions,
       sortable: false,
-      filterable: false
+      filterable: false,
+      hide: hideColumn[11]
     }
   ];
 
@@ -298,7 +317,13 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project }) => {
           </Box>
         </NERModal>
       )}
-      <BOMTable columns={columns} assemblies={project.assemblies} materials={project.materials} />
+
+      <BOMTable
+        setHideColumn={setHideColumn}
+        columns={columns}
+        assemblies={project.assemblies}
+        materials={project.materials}
+      />
     </Box>
   );
 };

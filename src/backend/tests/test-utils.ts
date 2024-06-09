@@ -18,7 +18,6 @@ import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-p
 import DesignReviewsService from '../src/services/design-reviews.services';
 
 export interface CreateTestUserParams {
-  userId?: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -83,7 +82,6 @@ export const createTestUser = async (
 export const resetUsers = async () => {
   await prisma.project.deleteMany();
   await prisma.work_Package.deleteMany();
-
   await prisma.team_Type.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
@@ -175,11 +173,9 @@ export const createTestOrganization = async () => {
   });
 };
 
-export const createTestWorkPackageTemplate = async (organizationId?: string) => {
+export const createTestWorkPackageTemplate = async (user: User, organizationId?: string) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
   if (!organizationId) throw new Error('Failed to create organization');
-
-  const user = await createTestUser(batmanAppAdmin, organizationId);
 
   const workPackageTemplate = await prisma.work_Package_Template.create({
     data: {

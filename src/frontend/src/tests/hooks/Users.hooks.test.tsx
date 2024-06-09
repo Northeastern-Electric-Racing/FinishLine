@@ -29,7 +29,7 @@ describe('user hooks', () => {
     const mockedGetSingleUser = getSingleUser as jest.Mock<Promise<AxiosResponse<User>>>;
     mockedGetSingleUser.mockReturnValue(mockPromiseAxiosResponse<User>(exampleAdminUser));
 
-    const { result, waitFor } = renderHook(() => useSingleUser(1), { wrapper });
+    const { result, waitFor } = renderHook(() => useSingleUser('1'), { wrapper });
     await waitFor(() => result.current.isSuccess);
     expect(result.current.data).toEqual(exampleAdminUser);
   });

@@ -54,7 +54,7 @@ const ChangeRequestsTable: React.FC = () => {
 
   const idColumn: GridColDef = {
     ...baseColDef,
-    field: 'crId',
+    field: 'identifier',
     type: 'number',
     headerName: 'ID',
     maxWidth: 75
@@ -87,9 +87,8 @@ const ChangeRequestsTable: React.FC = () => {
         return wbs1.projectNumber - wbs2.projectNumber;
       } else if (wbs1.workPackageNumber !== wbs2.workPackageNumber) {
         return wbs1.workPackageNumber - wbs2.workPackageNumber;
-      } else {
-        return 0;
       }
+      return 0;
     }
   };
 
@@ -163,7 +162,7 @@ const ChangeRequestsTable: React.FC = () => {
 
   const filterValues = JSON.parse(
     // sets filter to a default value if no filter is stored in local storage
-    localStorage.getItem('changeRequestsTableFilter') ?? '{"columnField": "crId", "operatorValue": "=", "value": ""}'
+    localStorage.getItem('changeRequestsTableFilter') ?? '{"columnField": "identifier", "operatorValue": "=", "value": ""}'
   );
 
   return (
@@ -253,7 +252,7 @@ const ChangeRequestsTable: React.FC = () => {
             }
           },
           sorting: {
-            sortModel: [{ field: 'crId', sort: 'desc' }]
+            sortModel: [{ field: 'identifier', sort: 'desc' }]
           },
           columns: {
             columnVisibilityModel: {

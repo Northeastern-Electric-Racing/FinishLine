@@ -22,12 +22,12 @@ export const bulletsToObject = (bullets: DescriptionBullet[]): DescriptionBullet
  */
 export const rulesToObject = (rules: string[]) =>
   rules.map((rule, bulletId) => {
-    return { bulletId: bulletId, detail: rule };
+    return { bulletId, detail: rule };
   });
 
 // transforms the bullets made by react-hook-forms to the objects needed for the payload to the backend
 export const mapBulletsToPayload = (
-  ls: { bulletId: number; detail: string; type: string }[]
+  ls: { bulletId: string; detail: string; type: string }[]
 ): DescriptionBulletPreview[] => {
   return ls.map((ele) => {
     return { id: ele.bulletId, detail: ele.detail, type: ele.type };
@@ -70,10 +70,10 @@ export enum WPFormType {
  */
 export const generateUUID = () => {
   // Public Domain/MIT
-  var d = new Date().getTime(); //Timestamp
-  var d2 = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0; //Time in microseconds since page-load or 0 if unsupported
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = Math.random() * 16; //random number between 0 and 16
+  let d = new Date().getTime(); //Timestamp
+  let d2 = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0; //Time in microseconds since page-load or 0 if unsupported
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    let r = Math.random() * 16; //random number between 0 and 16
     if (d > 0) {
       //Use timestamp until depleted
       r = (d + r) % 16 | 0;

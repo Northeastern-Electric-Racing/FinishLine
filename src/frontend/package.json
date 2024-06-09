@@ -25,8 +25,10 @@
     "file-saver": "^2.0.5",
     "google-auth-library": "^8.1.1",
     "pdf-lib": "^1.17.1",
-    "react": "^18.2.0",
+    "react": "18.2.0",
+    "react-archer": "^4.4.0",
     "react-dom": "^18.2.0",
+    "react-draggable": "^4.4.6",
     "react-google-charts": "^4.0.0",
     "react-google-login": "^5.2.2",
     "react-helmet": "^6.1.0",
@@ -37,8 +39,9 @@
     "react-scripts": "^4.0.1",
     "react-use-measure": "^2.1.1",
     "shared": "1.0.0",
-    "typescript": "^4.1.5",
-    "vite": "^4.4.5",
+    "typescript": "4.1.5",
+    "vite": "4.4.5",
+    "vitest": "^0.32.1",
     "web-vitals": "^0.2.4",
     "yup": "^0.32.11"
   },
@@ -54,16 +57,13 @@
     "jest-fail-on-console": "^3.0.2",
     "msw": "^0.44.2",
     "sass": "^1.54.0",
-    "typed-scss-modules": "^6.5.0",
-    "vitest": "^0.32.1"
+    "typed-scss-modules": "^6.5.0"
   },
   "scripts": {
     "start": "vite",
     "build": "vite build",
+    "build:dev": "vite build --mode development",
     "test": "vitest"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   },
   "browserslist": {
     "production": [

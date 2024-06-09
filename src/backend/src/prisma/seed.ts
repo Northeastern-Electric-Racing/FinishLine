@@ -5,17 +5,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import {
-  CR_Type,
-  Club_Accounts,
-  PrismaClient,
-  Scope_CR_Why_Type,
-  Task_Priority,
-  Task_Status,
-  Team,
-  Vendor,
-  WBS_Element_Status
-} from '@prisma/client';
+import { CR_Type, Club_Accounts, PrismaClient, Scope_CR_Why_Type, Task_Priority, Task_Status, Team } from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
@@ -30,28 +20,23 @@ import {
   WorkPackageStage
 } from 'shared';
 import TasksService from '../services/tasks.services';
-import DescriptionBulletsService from '../services/description-bullets.services';
 import { seedProject } from './seed-data/projects.seed';
 import { seedWorkPackage } from './seed-data/work-packages.seed';
 import ReimbursementRequestService from '../services/reimbursement-requests.services';
-import { writeFileSync } from 'fs';
 import ProjectsService from '../services/projects.services';
 import { Decimal } from 'decimal.js';
 import DesignReviewsService from '../services/design-reviews.services';
 import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
+import { writeFileSync } from 'fs';
+import WorkPackageTemplatesService from '../services/work-package-template.services';
 
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
   const thomasEmrax = await prisma.user.create({
     data: dbSeedAllUsers.thomasEmrax,
-    include: { userSettings: true, userSecureSettings: true }
-  });
-
-  const regina = await prisma.user.create({
-    data: dbSeedAllUsers.regina,
     include: { userSettings: true, userSecureSettings: true }
   });
 
@@ -94,7 +79,7 @@ const performSeed: () => Promise<void> = async () => {
   const wonderwoman = await createUser(dbSeedAllUsers.wonderwoman, RoleEnum.LEADERSHIP, organizationId);
   const flash = await createUser(dbSeedAllUsers.flash, RoleEnum.LEADERSHIP, organizationId);
   const aquaman = await createUser(dbSeedAllUsers.aquaman, RoleEnum.LEADERSHIP, organizationId);
-  const robin = await createUser(dbSeedAllUsers.robin, RoleEnum.LEADERSHIP, organizationId);
+  await createUser(dbSeedAllUsers.robin, RoleEnum.LEADERSHIP, organizationId);
   const batman = await createUser(dbSeedAllUsers.batman, RoleEnum.APP_ADMIN, organizationId);
   const superman = await createUser(dbSeedAllUsers.superman, RoleEnum.LEADERSHIP, organizationId);
   const hawkMan = await createUser(dbSeedAllUsers.hawkMan, RoleEnum.LEADERSHIP, organizationId);
@@ -154,7 +139,7 @@ const performSeed: () => Promise<void> = async () => {
   const mannyMachado = await createUser(dbSeedAllUsers.mannyMachado, RoleEnum.LEADERSHIP, organizationId);
   const babyDollJacobson = await createUser(dbSeedAllUsers.babyDollJacobson, RoleEnum.LEADERSHIP, organizationId);
   const husky = await createUser(dbSeedAllUsers.husky, RoleEnum.LEADERSHIP, organizationId);
-  const winter = await createUser(dbSeedAllUsers.winter, RoleEnum.LEADERSHIP, organizationId);
+  await createUser(dbSeedAllUsers.winter, RoleEnum.LEADERSHIP, organizationId);
   const frostBite = await createUser(dbSeedAllUsers.frostBite, RoleEnum.LEADERSHIP, organizationId);
   const snowPaws = await createUser(dbSeedAllUsers.snowPaws, RoleEnum.LEADERSHIP, organizationId);
   const paws = await createUser(dbSeedAllUsers.paws, RoleEnum.LEADERSHIP, organizationId);
@@ -191,6 +176,7 @@ const performSeed: () => Promise<void> = async () => {
   const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.LEADERSHIP, organizationId);
   const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
+  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', organizationId);
 
@@ -275,17 +261,14 @@ const performSeed: () => Promise<void> = async () => {
   /** Gets the current content of the .env file */
   const currentEnv = require('dotenv').config().parsed;
 
-  /** If the .env file exists, set the FINANCE_TEAM_ID */
-  if (currentEnv) {
-    currentEnv.FINANCE_TEAM_ID = financeTeam.teamId;
+  currentEnv.DEV_ORGANIZATION_ID = organizationId;
 
-    /** Write the new .env file */
-    let stringifiedEnv = '';
-    Object.keys(currentEnv).forEach((key) => {
-      stringifiedEnv += `${key}=${currentEnv[key]}\n`;
-    });
-    writeFileSync('.env', stringifiedEnv);
-  }
+  /** Write the new .env file with the organization ID */
+  let stringifiedEnv = '';
+  Object.keys(currentEnv).forEach((key) => {
+    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  });
+  writeFileSync('.env', stringifiedEnv);
 
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
@@ -429,18 +412,18 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Link Types */
-  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'doc', true, organizationId);
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, organizationId);
 
-  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'doc', true, organizationId);
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, organizationId);
 
-  const googleDriveLinkType = await ProjectsService.createLinkType(batman, 'Google Drive', 'doc', true, organizationId);
+  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, organizationId);
 
   /**
    * Projects
    */
 
   /** Project 1 */
-  const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
+  const { projectWbsNumber: project1WbsNumber } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -468,7 +451,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 2 */
-  const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
+  const { projectWbsNumber: project2WbsNumber } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -496,7 +479,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 3 */
-  const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
+  const { projectWbsNumber: project3WbsNumber } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -524,7 +507,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 4 */
-  const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
+  const { projectWbsNumber: project4WbsNumber } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -552,7 +535,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 5 */
-  const { projectWbsNumber: project5WbsNumber, projectId: project5Id } = await seedProject(
+  const { projectWbsNumber: project5WbsNumber } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -580,7 +563,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 6 */
-  const { projectWbsNumber: project6WbsNumber, projectId: project6Id } = await seedProject(
+  const { projectWbsNumber: project6WbsNumber } = await seedProject(
     aang,
     changeRequest1.crId,
     0,
@@ -608,7 +591,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 7 */
-  const { projectWbsNumber: project7WbsNumber, projectId: project7Id } = await seedProject(
+  const { projectWbsNumber: project7WbsNumber } = await seedProject(
     lexLuther,
     changeRequest1.crId,
     0,
@@ -636,7 +619,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 8 */
-  const { projectWbsNumber: project8WbsNumber, projectId: project8Id } = await seedProject(
+  const { projectWbsNumber: project8WbsNumber } = await seedProject(
     ryanGiggs,
     changeRequest1.crId,
     0,
@@ -664,7 +647,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 9 */
-  const { projectWbsNumber: project9WbsNumber, projectId: project9Id } = await seedProject(
+  const { projectWbsNumber: project9WbsNumber } = await seedProject(
     glen,
     changeRequest1.crId,
     0,
@@ -1048,7 +1031,7 @@ const performSeed: () => Promise<void> = async () => {
   // await DescriptionBulletsService.checkDescriptionBullet(thomasEmrax, workPackage1.deliverables[0].descriptionId);
 
   /** Work Package 2 */
-  const { workPackageWbsNumber: workPackage2WbsNumber, workPackage: workPackage2 } = await seedWorkPackage(
+  await seedWorkPackage(
     thomasEmrax,
     'Adhesive Shear Strength Test',
     changeRequestProject1Id,
@@ -1233,7 +1216,7 @@ const performSeed: () => Promise<void> = async () => {
 
   /** Work Packages for Project 7 */
   /** Work Package 1 */
-  const { workPackageWbsNumber: project3WP1WbsNumber, workPackage: project3WP1 } = await seedWorkPackage(
+  const { workPackage: project3WP1 } = await seedWorkPackage(
     lexLuther,
     'Design Laser Canon',
     changeRequestProject7Id,
@@ -1272,7 +1255,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Work Package 2 */
-  const { workPackageWbsNumber: project3WP2WbsNumber, workPackage: project3WP2 } = await seedWorkPackage(
+  await seedWorkPackage(
     lexLuther,
     'Laser Canon Research',
     changeRequestProject7Id,
@@ -1289,7 +1272,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Work Package 3 */
-  const { workPackageWbsNumber: project3WP3WbsNumber, workPackage: project3WP3 } = await seedWorkPackage(
+  await seedWorkPackage(
     lexLuther,
     'Laser Canon Testing',
     changeRequestProject7Id,
@@ -1307,7 +1290,7 @@ const performSeed: () => Promise<void> = async () => {
 
   /** Work Packages for Project 8 */
   /** Work Package 1 */
-  const { workPackageWbsNumber: project4WP1WbsNumber, workPackage: project4WP1 } = await seedWorkPackage(
+  const { workPackage: project4WP1 } = await seedWorkPackage(
     ryanGiggs,
     'Stadium Research',
     changeRequestProject8Id,
@@ -1346,7 +1329,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Work Package 2 */
-  const { workPackageWbsNumber: project4WP2WbsNumber, workPackage: project4WP2 } = await seedWorkPackage(
+  await seedWorkPackage(
     ryanGiggs,
     'Stadium Install',
     changeRequestProject8Id,
@@ -1363,7 +1346,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Work Package 3 */
-  const { workPackageWbsNumber: project4WP3WbsNumber, workPackage: project4WP3 } = await seedWorkPackage(
+  await seedWorkPackage(
     ryanGiggs,
     'Stadium Testing',
     changeRequestProject8Id,
@@ -1700,10 +1683,8 @@ const performSeed: () => Promise<void> = async () => {
    */
 
   const vendor = await ReimbursementRequestService.createVendor(thomasEmrax, 'Tesla', organizationId);
-  const vendor2 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', organizationId);
-  const vendor3 = await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', organizationId);
-
-  const vendors: Vendor[] = [vendor, vendor2, vendor3];
+  await ReimbursementRequestService.createVendor(thomasEmrax, 'Amazon', organizationId);
+  await ReimbursementRequestService.createVendor(thomasEmrax, 'Google', organizationId);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     thomasEmrax,
@@ -1824,8 +1805,8 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     nextDay.toDateString(),
     teamType1.teamTypeId,
-    [1, 2],
-    [3, 4],
+    [thomasEmrax.userId, batman.userId],
+    [superman.userId, wonderwoman.userId],
     {
       carNumber: 0,
       projectNumber: 1,
@@ -1840,15 +1821,15 @@ const performSeed: () => Promise<void> = async () => {
     designReview1.designReviewId,
     nextDay,
     teamType1.teamTypeId,
-    [1, 2, 3, 4],
-    [5, 6, 7],
+    [thomasEmrax.userId, batman.userId, superman.userId, wonderwoman.userId],
+    [joeBlow.userId, joeShmoe.userId, aang.userId],
     false,
     true,
     null,
     'The Bay',
     null,
     DesignReviewStatus.CONFIRMED,
-    [1, 2],
+    [thomasEmrax.userId, batman.userId],
     [1, 2, 3, 4, 5, 6, 7],
     organizationId
   );
@@ -1885,7 +1866,7 @@ const performSeed: () => Promise<void> = async () => {
     null
   );
 
-  const { workPackageWbsNumber: workPackage9WbsNumber, workPackage: workPackage9 } = await seedWorkPackage(
+  const { workPackageWbsNumber: workPackage9WbsNumber } = await seedWorkPackage(
     thomasEmrax,
     'Slim and Light Car',
     newWorkPackageChangeRequest.crId,
@@ -1901,7 +1882,7 @@ const performSeed: () => Promise<void> = async () => {
     organizationId
   );
 
-  const editingWorkPackageChangeRequest = await ChangeRequestsService.createStandardChangeRequest(
+  await ChangeRequestsService.createStandardChangeRequest(
     joeShmoe,
     workPackage9WbsNumber.carNumber,
     workPackage9WbsNumber.projectNumber,
@@ -1923,6 +1904,42 @@ const performSeed: () => Promise<void> = async () => {
       descriptionBullets: [],
       links: []
     }
+  );
+
+  await WorkPackageTemplatesService.createWorkPackageTemplate(
+    batman,
+    'Batmobile Config 1',
+    'This is the first Batmobile configuration',
+    null,
+    null,
+    5,
+    [],
+    [],
+    organizationId
+  );
+
+  const schematicWpTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
+    batman,
+    'Schematic',
+    'This is the schematic template',
+    null,
+    WorkPackageStage.Design,
+    4,
+    [],
+    [],
+    organizationId
+  );
+
+  await WorkPackageTemplatesService.createWorkPackageTemplate(
+    batman,
+    'Layout ',
+    'This is the Layout  template',
+    null,
+    WorkPackageStage.Design,
+    4,
+    [],
+    [schematicWpTemplate.workPackageTemplateId],
+    organizationId
   );
 };
 

@@ -6,12 +6,16 @@ import { getDescriptionBulletQueryArgs } from './description-bullets.query-args'
 export type WorkPackageQueryArgs = ReturnType<typeof getWorkPackageQueryArgs>;
 
 export const getWorkPackageQueryArgs = (organizationId: string) =>
-  Prisma.validator<Prisma.Work_PackageArgs>()({
+  Prisma.validator<Prisma.Work_PackageDefaultArgs>()({
     include: {
       project: {
         include: {
           wbsElement: true,
-          teams: true
+          teams: {
+            include: {
+              teamType: true
+            }
+          }
         }
       },
       wbsElement: {
@@ -23,7 +27,7 @@ export const getWorkPackageQueryArgs = (organizationId: string) =>
             include: { implementer: getUserQueryArgs(organizationId) },
             orderBy: { dateImplemented: 'asc' }
           },
-          blocking: true,
+          blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
           tasks: { where: { dateDeleted: null }, ...getTaskQueryArgs(organizationId) },
           descriptionBullets: { where: { dateDeleted: null }, ...getDescriptionBulletQueryArgs(organizationId) }
         }

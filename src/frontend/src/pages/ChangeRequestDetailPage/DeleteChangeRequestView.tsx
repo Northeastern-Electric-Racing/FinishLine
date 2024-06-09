@@ -8,7 +8,6 @@ import { FormControl, FormLabel, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { DeleteChangeRequestInputs } from './DeleteChangeRequest';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import NERFormModal from '../../components/NERFormModal';
 
@@ -16,14 +15,15 @@ interface DeleteChangeRequestViewProps {
   changeRequest: ChangeRequest;
   modalShow: boolean;
   onHide: () => void;
-  onSubmit: (data: DeleteChangeRequestInputs) => Promise<void>;
+  onSubmit: () => Promise<void>;
 }
 
 const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ changeRequest, modalShow, onHide, onSubmit }) => {
-  const changeRequestIdTester = (crId: string | undefined) => crId !== undefined && crId === changeRequest.crId.toString();
+  const changeRequestIdTester = (identifier: string | undefined) =>
+    identifier !== undefined && identifier === changeRequest.identifier.toString();
 
   const schema = yup.object().shape({
-    crId: yup.string().required().test('cr-id-test', 'Change Request ID does not match', changeRequestIdTester)
+    identifier: yup.string().required().test('cr-identifier-test', 'Change Request ID does not match', changeRequestIdTester)
   });
 
   const {
@@ -34,7 +34,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      crId: ''
+      identifier: ''
     },
     mode: 'onChange'
   });
@@ -43,7 +43,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
     <NERFormModal
       open={modalShow}
       onHide={onHide}
-      title={`Delete Change Request #${changeRequest.crId}`}
+      title={`Delete Change Request #${changeRequest.identifier}`}
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
@@ -52,7 +52,7 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
       showCloseButton
     >
       <Typography sx={{ marginBottom: '1rem' }}>
-        Are you sure you want to delete Change Request #{changeRequest.crId}?
+        Are you sure you want to delete Change Request #{changeRequest.identifier}?
       </Typography>
       <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
       <FormControl>
@@ -61,8 +61,8 @@ const DeleteChangeRequestView: React.FC<DeleteChangeRequestViewProps> = ({ chang
         </FormLabel>
         <ReactHookTextField
           control={control}
-          name="crId"
-          errorMessage={errors.crId}
+          name="identifier"
+          errorMessage={errors.identifier}
           placeholder="Enter Change Request ID here"
           sx={{ width: 1 }}
           type="number"

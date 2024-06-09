@@ -91,8 +91,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     name: yup.string().required('Name is required!'),
     budget: yup.number().required('Budget is required!').min(0).integer('Budget must be an even dollar amount!'),
     summary: yup.string().required('Summary is required!'),
-    leadId: yup.number().optional(),
-    managerId: yup.number().optional(),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
     links: yup.array().of(
       yup.object().shape({
         linkTypeName: yup.string().required('Link Type is required!'),
@@ -102,7 +102,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, carNumber, type, what, why } = data;
+    const { name, budget, summary, links, type, what, why, descriptionBullets } = data;
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
@@ -112,13 +112,13 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         budget,
         descriptionBullets,
         links,
-        carNumber,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined
+        leadId,
+        managerId,
+        workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: project.wbsNum,
-        type: type,
+        type,
         what,
         why,
         proposedSolutions: [],
@@ -135,7 +135,7 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
 
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links, descriptionBullets } = data;
-    const crId = data.crId;
+    const { crId } = data;
 
     try {
       const payload: EditSingleProjectPayload = {
@@ -144,10 +144,10 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
         summary,
         links,
         projectId: project.id,
-        crId: Number(crId),
+        crId,
         descriptionBullets,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined
+        leadId,
+        managerId
       };
       await mutateAsync(payload);
       exitEditMode();

@@ -17,7 +17,7 @@ import { fullNamePipe } from '../utils/pipes';
 import { useToast } from '../hooks/toasts.hooks';
 
 export type CheckListItem = {
-  id: number;
+  id: string;
   detail: string;
   resolved: boolean;
   user?: User;

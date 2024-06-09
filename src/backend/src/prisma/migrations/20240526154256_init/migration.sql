@@ -39,7 +39,7 @@ CREATE TYPE "Design_Review_Status" AS ENUM ('UNCONFIRMED', 'CONFIRMED', 'SCHEDUL
 
 -- CreateTable
 CREATE TABLE "User" (
-    "userId" SERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "googleAuthId" TEXT NOT NULL,
@@ -51,9 +51,9 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Role" (
-    "roleId" SERIAL NOT NULL,
+    "roleId" TEXT NOT NULL,
     "roleType" "Role_Type" NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Role_pkey" PRIMARY KEY ("roleId")
@@ -66,9 +66,9 @@ CREATE TABLE "Team" (
     "slackId" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
     "financeTeam" BOOLEAN NOT NULL DEFAULT false,
-    "headId" INTEGER NOT NULL,
+    "headId" TEXT NOT NULL,
     "dateArchived" TIMESTAMP(3),
-    "userArchivedId" INTEGER,
+    "userArchivedId" TEXT,
     "teamTypeId" TEXT,
     "organizationId" TEXT NOT NULL,
 
@@ -77,8 +77,8 @@ CREATE TABLE "Team" (
 
 -- CreateTable
 CREATE TABLE "Session" (
-    "sessionId" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "created" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deviceInfo" TEXT,
 
@@ -88,7 +88,7 @@ CREATE TABLE "Session" (
 -- CreateTable
 CREATE TABLE "User_Settings" (
     "id" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "defaultTheme" "Theme" NOT NULL DEFAULT 'DARK',
     "slackId" TEXT NOT NULL DEFAULT '',
 
@@ -97,14 +97,16 @@ CREATE TABLE "User_Settings" (
 
 -- CreateTable
 CREATE TABLE "Change_Request" (
-    "crId" SERIAL NOT NULL,
-    "submitterId" INTEGER NOT NULL,
+    "crId" TEXT NOT NULL,
+    "identifier" INTEGER NOT NULL,
+    "submitterId" TEXT NOT NULL,
     "dateSubmitted" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
-    "wbsElementId" INTEGER NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
     "type" "CR_Type" NOT NULL,
-    "reviewerId" INTEGER,
-    "deletedByUserId" INTEGER,
+    "reviewerId" TEXT,
+    "deletedByUserId" TEXT,
     "dateReviewed" TIMESTAMP(3),
     "accepted" BOOLEAN,
     "reviewNotes" TEXT,
@@ -117,7 +119,7 @@ CREATE TABLE "Message_Info" (
     "messageInfoId" TEXT NOT NULL,
     "channelId" TEXT NOT NULL,
     "timestamp" TEXT NOT NULL,
-    "changeRequestId" INTEGER,
+    "changeRequestId" TEXT,
     "designReviewId" TEXT,
 
     CONSTRAINT "Message_Info_pkey" PRIMARY KEY ("messageInfoId")
@@ -125,13 +127,12 @@ CREATE TABLE "Message_Info" (
 
 -- CreateTable
 CREATE TABLE "Scope_CR" (
-    "scopeCrId" SERIAL NOT NULL,
-    "changeRequestId" INTEGER NOT NULL,
+    "scopeCrId" TEXT NOT NULL,
+    "changeRequestId" TEXT NOT NULL,
     "what" TEXT NOT NULL,
     "scopeImpact" TEXT NOT NULL,
     "timelineImpact" INTEGER NOT NULL,
     "budgetImpact" INTEGER NOT NULL,
-    "wbsProposedChangesId" TEXT,
 
     CONSTRAINT "Scope_CR_pkey" PRIMARY KEY ("scopeCrId")
 );
@@ -143,8 +144,8 @@ CREATE TABLE "Proposed_Solution" (
     "timelineImpact" INTEGER NOT NULL,
     "budgetImpact" INTEGER NOT NULL,
     "scopeImpact" TEXT NOT NULL,
-    "changeRequestId" INTEGER NOT NULL,
-    "createdByUserId" INTEGER NOT NULL,
+    "scopeChangeRequestId" TEXT NOT NULL,
+    "createdByUserId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "approved" BOOLEAN NOT NULL DEFAULT false,
 
@@ -153,8 +154,8 @@ CREATE TABLE "Proposed_Solution" (
 
 -- CreateTable
 CREATE TABLE "Scope_CR_Why" (
-    "scopeCrWhyId" SERIAL NOT NULL,
-    "scopeCrId" INTEGER NOT NULL,
+    "scopeCrWhyId" TEXT NOT NULL,
+    "scopeCrId" TEXT NOT NULL,
     "type" "Scope_CR_Why_Type" NOT NULL,
     "explain" TEXT NOT NULL,
 
@@ -163,8 +164,8 @@ CREATE TABLE "Scope_CR_Why" (
 
 -- CreateTable
 CREATE TABLE "Stage_Gate_CR" (
-    "stageGateCrId" SERIAL NOT NULL,
-    "changeRequestId" INTEGER NOT NULL,
+    "stageGateCrId" TEXT NOT NULL,
+    "changeRequestId" TEXT NOT NULL,
     "leftoverBudget" INTEGER NOT NULL,
     "confirmDone" BOOLEAN NOT NULL,
 
@@ -173,10 +174,10 @@ CREATE TABLE "Stage_Gate_CR" (
 
 -- CreateTable
 CREATE TABLE "Activation_CR" (
-    "activationCrId" SERIAL NOT NULL,
-    "changeRequestId" INTEGER NOT NULL,
-    "leadId" INTEGER NOT NULL,
-    "managerId" INTEGER NOT NULL,
+    "activationCrId" TEXT NOT NULL,
+    "changeRequestId" TEXT NOT NULL,
+    "leadId" TEXT NOT NULL,
+    "managerId" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "confirmDetails" BOOLEAN NOT NULL,
 
@@ -185,11 +186,11 @@ CREATE TABLE "Activation_CR" (
 
 -- CreateTable
 CREATE TABLE "Change" (
-    "changeId" SERIAL NOT NULL,
-    "changeRequestId" INTEGER NOT NULL,
+    "changeId" TEXT NOT NULL,
+    "changeRequestId" TEXT NOT NULL,
     "dateImplemented" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "implementerId" INTEGER NOT NULL,
-    "wbsElementId" INTEGER NOT NULL,
+    "implementerId" TEXT NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
     "detail" TEXT NOT NULL,
 
     CONSTRAINT "Change_pkey" PRIMARY KEY ("changeId")
@@ -197,7 +198,7 @@ CREATE TABLE "Change" (
 
 -- CreateTable
 CREATE TABLE "WBS_Element" (
-    "wbsElementId" SERIAL NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "carNumber" INTEGER NOT NULL,
@@ -205,9 +206,9 @@ CREATE TABLE "WBS_Element" (
     "workPackageNumber" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "status" "WBS_Element_Status" NOT NULL DEFAULT 'INACTIVE',
-    "leadId" INTEGER,
-    "managerId" INTEGER,
-    "deletedByUserId" INTEGER,
+    "leadId" TEXT,
+    "managerId" TEXT,
+    "deletedByUserId" TEXT,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "WBS_Element_pkey" PRIMARY KEY ("wbsElementId")
@@ -215,8 +216,8 @@ CREATE TABLE "WBS_Element" (
 
 -- CreateTable
 CREATE TABLE "Project" (
-    "projectId" SERIAL NOT NULL,
-    "wbsElementId" INTEGER NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
     "budget" INTEGER NOT NULL DEFAULT 0,
     "summary" TEXT NOT NULL,
     "carId" TEXT NOT NULL,
@@ -226,9 +227,9 @@ CREATE TABLE "Project" (
 
 -- CreateTable
 CREATE TABLE "Work_Package" (
-    "workPackageId" SERIAL NOT NULL,
-    "wbsElementId" INTEGER NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "workPackageId" TEXT NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
     "orderInProject" INTEGER NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "duration" INTEGER NOT NULL,
@@ -242,9 +243,9 @@ CREATE TABLE "Link_Type" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "creatorId" INTEGER NOT NULL,
     "iconName" TEXT NOT NULL,
     "required" BOOLEAN NOT NULL,
+    "creatorId" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Link_Type_pkey" PRIMARY KEY ("id")
@@ -254,11 +255,11 @@ CREATE TABLE "Link_Type" (
 CREATE TABLE "Link" (
     "linkId" TEXT NOT NULL,
     "url" TEXT NOT NULL,
-    "creatorId" INTEGER NOT NULL,
+    "creatorId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "linkTypeId" TEXT NOT NULL,
-    "wbsElementId" INTEGER,
+    "wbsElementId" TEXT,
     "wbsProposedChangesId" TEXT,
 
     CONSTRAINT "Link_pkey" PRIMARY KEY ("linkId")
@@ -272,8 +273,8 @@ CREATE TABLE "Description_Bullet_Type" (
     "dateDeleted" TIMESTAMP(3),
     "projectRequired" BOOLEAN NOT NULL,
     "workPackageRequired" BOOLEAN NOT NULL,
-    "userCreatedId" INTEGER NOT NULL,
-    "userDeletedId" INTEGER,
+    "userCreatedId" TEXT NOT NULL,
+    "userDeletedId" TEXT,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Description_Bullet_Type_pkey" PRIMARY KEY ("id")
@@ -281,14 +282,14 @@ CREATE TABLE "Description_Bullet_Type" (
 
 -- CreateTable
 CREATE TABLE "Description_Bullet" (
-    "descriptionId" SERIAL NOT NULL,
+    "descriptionId" TEXT NOT NULL,
     "dateAdded" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userCheckedId" INTEGER,
+    "userCheckedId" TEXT,
     "dateTimeChecked" TIMESTAMP(3),
     "dateDeleted" TIMESTAMP(3),
     "detail" TEXT NOT NULL,
     "descriptionBulletTypeId" TEXT NOT NULL,
-    "wbsElementId" INTEGER,
+    "wbsElementId" TEXT,
     "proposedChangeId" TEXT,
     "workPackageTemplateId" TEXT,
 
@@ -303,20 +304,20 @@ CREATE TABLE "Task" (
     "deadline" TIMESTAMP(3) NOT NULL,
     "priority" "Task_Priority" NOT NULL,
     "status" "Task_Status" NOT NULL,
-    "deletedByUserId" INTEGER,
+    "deletedByUserId" TEXT,
     "dateDeleted" TIMESTAMP(3),
-    "createdByUserId" INTEGER NOT NULL,
+    "createdByUserId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "wbsElementId" INTEGER NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("taskId")
 );
 
 -- CreateTable
 CREATE TABLE "Reimbursement_Status" (
-    "reimbursementStatusId" SERIAL NOT NULL,
+    "reimbursementStatusId" TEXT NOT NULL,
     "type" "Reimbursement_Status_Type" NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "reimbursementRequestId" TEXT NOT NULL,
 
@@ -328,9 +329,9 @@ CREATE TABLE "Receipt" (
     "receiptId" TEXT NOT NULL,
     "googleFileId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "deletedByUserId" INTEGER,
+    "deletedByUserId" TEXT,
     "dateDeleted" TIMESTAMP(3),
-    "createdByUserId" INTEGER NOT NULL,
+    "createdByUserId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "reimbursementRequestId" TEXT NOT NULL,
 
@@ -340,17 +341,18 @@ CREATE TABLE "Receipt" (
 -- CreateTable
 CREATE TABLE "Reimbursement_Request" (
     "reimbursementRequestId" TEXT NOT NULL,
-    "identifier" SERIAL NOT NULL,
+    "identifier" INTEGER NOT NULL,
     "saboId" INTEGER,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
     "dateOfExpense" TIMESTAMP(3) NOT NULL,
-    "recipientId" INTEGER NOT NULL,
+    "recipientId" TEXT NOT NULL,
     "vendorId" TEXT NOT NULL,
     "account" "Club_Accounts" NOT NULL,
     "totalCost" INTEGER NOT NULL,
     "dateDelivered" TIMESTAMP(3),
     "accountCodeId" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Reimbursement_Request_pkey" PRIMARY KEY ("reimbursementRequestId")
 );
@@ -358,7 +360,7 @@ CREATE TABLE "Reimbursement_Request" (
 -- CreateTable
 CREATE TABLE "Reimbursement_Product_Reason" (
     "reimbursementProductReasonId" TEXT NOT NULL,
-    "wbsElementId" INTEGER,
+    "wbsElementId" TEXT,
     "otherReason" "Other_Reimbursement_Product_Reason",
 
     CONSTRAINT "Reimbursement_Product_Reason_pkey" PRIMARY KEY ("reimbursementProductReasonId")
@@ -405,8 +407,8 @@ CREATE TABLE "Reimbursement" (
     "reimbursementId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "amount" INTEGER NOT NULL,
-    "userSubmittedId" INTEGER NOT NULL,
-    "purchaserId" INTEGER NOT NULL,
+    "userSubmittedId" TEXT NOT NULL,
+    "purchaserId" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Reimbursement_pkey" PRIMARY KEY ("reimbursementId")
@@ -416,7 +418,7 @@ CREATE TABLE "Reimbursement" (
 CREATE TABLE "User_Secure_Settings" (
     "userSecureSettingsId" TEXT NOT NULL,
     "nuid" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "street" TEXT NOT NULL,
     "city" TEXT NOT NULL,
     "state" TEXT NOT NULL,
@@ -430,7 +432,7 @@ CREATE TABLE "User_Secure_Settings" (
 CREATE TABLE "Unit" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "userCreatedId" INTEGER NOT NULL,
+    "userCreatedId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "organizationId" TEXT NOT NULL,
 
@@ -443,10 +445,10 @@ CREATE TABLE "Assembly" (
     "name" TEXT NOT NULL,
     "pdmFileName" TEXT,
     "dateDeleted" TIMESTAMP(3),
-    "userDeletedId" INTEGER,
+    "userDeletedId" TEXT,
     "dateCreated" TIMESTAMP(3) NOT NULL,
-    "userCreatedId" INTEGER NOT NULL,
-    "wbsElementId" INTEGER NOT NULL,
+    "userCreatedId" TEXT NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
 
     CONSTRAINT "Assembly_pkey" PRIMARY KEY ("assemblyId")
 );
@@ -456,11 +458,11 @@ CREATE TABLE "Material" (
     "materialId" TEXT NOT NULL,
     "assemblyId" TEXT,
     "name" TEXT NOT NULL,
-    "wbsElementId" INTEGER NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
     "dateDeleted" TIMESTAMP(3),
-    "userDeletedId" INTEGER,
+    "userDeletedId" TEXT,
     "dateCreated" TIMESTAMP(3) NOT NULL,
-    "userCreatedId" INTEGER NOT NULL,
+    "userCreatedId" TEXT NOT NULL,
     "status" "Material_Status" NOT NULL,
     "materialTypeId" TEXT NOT NULL,
     "manufacturerId" TEXT NOT NULL,
@@ -482,7 +484,7 @@ CREATE TABLE "Material_Type" (
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "dateDeleted" TIMESTAMP(3),
-    "userCreatedId" INTEGER NOT NULL,
+    "userCreatedId" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Material_Type_pkey" PRIMARY KEY ("id")
@@ -494,7 +496,7 @@ CREATE TABLE "Manufacturer" (
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL,
     "dateDeleted" TIMESTAMP(3),
-    "userCreatedId" INTEGER NOT NULL,
+    "userCreatedId" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Manufacturer_pkey" PRIMARY KEY ("id")
@@ -516,7 +518,7 @@ CREATE TABLE "Design_Review" (
     "dateScheduled" DATE NOT NULL,
     "meetingTimes" INTEGER[],
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userCreatedId" INTEGER NOT NULL,
+    "userCreatedId" TEXT NOT NULL,
     "status" "Design_Review_Status" NOT NULL,
     "teamTypeId" TEXT NOT NULL,
     "location" TEXT,
@@ -524,9 +526,9 @@ CREATE TABLE "Design_Review" (
     "isInPerson" BOOLEAN NOT NULL,
     "zoomLink" TEXT,
     "dateDeleted" TIMESTAMP(3),
-    "userDeletedId" INTEGER,
+    "userDeletedId" TEXT,
     "docTemplateLink" TEXT,
-    "wbsElementId" INTEGER NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
 
     CONSTRAINT "Design_Review_pkey" PRIMARY KEY ("designReviewId")
 );
@@ -537,7 +539,7 @@ CREATE TABLE "Schedule_Settings" (
     "personalGmail" TEXT NOT NULL,
     "personalZoomLink" TEXT NOT NULL,
     "availability" INTEGER[],
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Schedule_Settings_pkey" PRIMARY KEY ("drScheduleSettingsId")
 );
@@ -557,10 +559,11 @@ CREATE TABLE "Wbs_Proposed_Changes" (
     "wbsProposedChangesId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "status" "WBS_Element_Status" NOT NULL,
-    "leadId" INTEGER,
-    "managerId" INTEGER,
-    "changeRequestId" INTEGER NOT NULL,
+    "leadId" TEXT,
+    "managerId" TEXT,
     "dateDeleted" TIMESTAMP(3),
+    "scopeChangeRequestAsOriginalDataId" TEXT,
+    "scopeChangeRequestId" TEXT,
 
     CONSTRAINT "Wbs_Proposed_Changes_pkey" PRIMARY KEY ("wbsProposedChangesId")
 );
@@ -570,7 +573,6 @@ CREATE TABLE "Project_Proposed_Changes" (
     "projectProposedChangesId" TEXT NOT NULL,
     "budget" INTEGER NOT NULL,
     "summary" TEXT NOT NULL,
-    "rules" TEXT[],
     "wbsProposedChangesId" TEXT NOT NULL,
     "carId" TEXT,
 
@@ -596,10 +598,10 @@ CREATE TABLE "Work_Package_Template" (
     "workPackageName" TEXT,
     "stage" "Work_Package_Stage",
     "duration" INTEGER,
-    "dateCreated" TIMESTAMP(3) NOT NULL,
-    "userCreatedId" INTEGER NOT NULL,
+    "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userCreatedId" TEXT NOT NULL,
     "dateDeleted" TIMESTAMP(3),
-    "userDeletedId" INTEGER,
+    "userDeletedId" TEXT,
     "organizationId" TEXT NOT NULL,
 
     CONSTRAINT "Work_Package_Template_pkey" PRIMARY KEY ("workPackageTemplateId")
@@ -609,7 +611,7 @@ CREATE TABLE "Work_Package_Template" (
 CREATE TABLE "Car" (
     "carId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "wbsElementId" INTEGER NOT NULL,
+    "wbsElementId" TEXT NOT NULL,
 
     CONSTRAINT "Car_pkey" PRIMARY KEY ("carId")
 );
@@ -619,9 +621,11 @@ CREATE TABLE "Organization" (
     "organizationId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userCreatedId" INTEGER NOT NULL,
+    "userCreatedId" TEXT NOT NULL,
     "dateDeleted" TIMESTAMP(3),
-    "userDeletedId" INTEGER,
+    "userDeletedId" TEXT,
+    "treasurerId" TEXT,
+    "advisorId" TEXT,
 
     CONSTRAINT "Organization_pkey" PRIMARY KEY ("organizationId")
 );
@@ -629,79 +633,79 @@ CREATE TABLE "Organization" (
 -- CreateTable
 CREATE TABLE "_teamsAsMember" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_teamsAsLead" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_requestedChangeRequestReviewers" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_blockedBy" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_proposedBlockedBy" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_assignedBy" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_favoritedBy" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_assignedTo" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_requiredAttendee" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_optionalAttendee" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_confirmedAttendee" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_deniedAttendee" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "_userAttended" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -719,7 +723,7 @@ CREATE TABLE "_blocking" (
 -- CreateTable
 CREATE TABLE "_organizationMembers" (
     "A" TEXT NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex
@@ -736,6 +740,9 @@ CREATE UNIQUE INDEX "Role_userId_organizationId_key" ON "Role"("userId", "organi
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_Settings_userId_key" ON "User_Settings"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Change_Request_identifier_organizationId_key" ON "Change_Request"("identifier", "organizationId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Scope_CR_changeRequestId_key" ON "Scope_CR"("changeRequestId");
@@ -765,10 +772,10 @@ CREATE UNIQUE INDEX "Description_Bullet_Type_name_organizationId_key" ON "Descri
 CREATE UNIQUE INDEX "Receipt_googleFileId_key" ON "Receipt"("googleFileId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Reimbursement_Request_identifier_key" ON "Reimbursement_Request"("identifier");
+CREATE UNIQUE INDEX "Reimbursement_Request_saboId_key" ON "Reimbursement_Request"("saboId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Reimbursement_Request_saboId_key" ON "Reimbursement_Request"("saboId");
+CREATE UNIQUE INDEX "Reimbursement_Request_identifier_organizationId_key" ON "Reimbursement_Request"("identifier", "organizationId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Reimbursement_Product_reimbursementProductReasonId_key" ON "Reimbursement_Product"("reimbursementProductReasonId");
@@ -804,7 +811,10 @@ CREATE UNIQUE INDEX "Team_Type_name_organizationId_key" ON "Team_Type"("name", "
 CREATE UNIQUE INDEX "Schedule_Settings_userId_key" ON "Schedule_Settings"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Wbs_Proposed_Changes_changeRequestId_key" ON "Wbs_Proposed_Changes"("changeRequestId");
+CREATE UNIQUE INDEX "Wbs_Proposed_Changes_scopeChangeRequestAsOriginalDataId_key" ON "Wbs_Proposed_Changes"("scopeChangeRequestAsOriginalDataId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Wbs_Proposed_Changes_scopeChangeRequestId_key" ON "Wbs_Proposed_Changes"("scopeChangeRequestId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Project_Proposed_Changes_wbsProposedChangesId_key" ON "Project_Proposed_Changes"("wbsProposedChangesId");
@@ -939,6 +949,9 @@ ALTER TABLE "User_Settings" ADD CONSTRAINT "User_Settings_userId_fkey" FOREIGN K
 ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_submitterId_fkey" FOREIGN KEY ("submitterId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Change_Request" ADD CONSTRAINT "Change_Request_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -957,7 +970,7 @@ ALTER TABLE "Message_Info" ADD CONSTRAINT "Message_Info_designReviewId_fkey" FOR
 ALTER TABLE "Scope_CR" ADD CONSTRAINT "Scope_CR_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Change_Request"("crId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Proposed_Solution" ADD CONSTRAINT "Proposed_Solution_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Proposed_Solution" ADD CONSTRAINT "Proposed_Solution_scopeChangeRequestId_fkey" FOREIGN KEY ("scopeChangeRequestId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Proposed_Solution" ADD CONSTRAINT "Proposed_Solution_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1086,6 +1099,9 @@ ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_vendor
 ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_accountCodeId_fkey" FOREIGN KEY ("accountCodeId") REFERENCES "Account_Code"("accountCodeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Reimbursement_Request" ADD CONSTRAINT "Reimbursement_Request_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Reimbursement_Product_Reason" ADD CONSTRAINT "Reimbursement_Product_Reason_wbsElementId_fkey" FOREIGN KEY ("wbsElementId") REFERENCES "WBS_Element"("wbsElementId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1188,7 +1204,10 @@ ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_leadId_f
 ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_managerId_fkey" FOREIGN KEY ("managerId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_changeRequestId_fkey" FOREIGN KEY ("changeRequestId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_scopeChangeRequestAsOriginalDataId_fkey" FOREIGN KEY ("scopeChangeRequestAsOriginalDataId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Wbs_Proposed_Changes" ADD CONSTRAINT "Wbs_Proposed_Changes_scopeChangeRequestId_fkey" FOREIGN KEY ("scopeChangeRequestId") REFERENCES "Scope_CR"("scopeCrId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project_Proposed_Changes" ADD CONSTRAINT "Project_Proposed_Changes_wbsProposedChangesId_fkey" FOREIGN KEY ("wbsProposedChangesId") REFERENCES "Wbs_Proposed_Changes"("wbsProposedChangesId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1216,6 +1235,12 @@ ALTER TABLE "Organization" ADD CONSTRAINT "Organization_userCreatedId_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "Organization" ADD CONSTRAINT "Organization_userDeletedId_fkey" FOREIGN KEY ("userDeletedId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Organization" ADD CONSTRAINT "Organization_treasurerId_fkey" FOREIGN KEY ("treasurerId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Organization" ADD CONSTRAINT "Organization_advisorId_fkey" FOREIGN KEY ("advisorId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_teamsAsMember" ADD CONSTRAINT "_teamsAsMember_A_fkey" FOREIGN KEY ("A") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -12,7 +12,7 @@ interface DescriptionBulletWithIndex {
   detail: string;
   type: string;
   index: number;
-  id: number;
+  id: string;
 }
 
 const DescriptionBulletsEditView: React.FC<{
@@ -49,7 +49,7 @@ const DescriptionBulletsEditView: React.FC<{
       descriptionBulletsSeparatedByType.set(name, []);
     });
 
-    ls.forEach((element, index) => {
+    ls.forEach((_element, index) => {
       const descriptionBullet = watch(`descriptionBullets.${index}`);
       const { type } = descriptionBullet;
       if (!descriptionBulletsSeparatedByType.has(type)) {
@@ -89,7 +89,7 @@ const DescriptionBulletsEditView: React.FC<{
             <NERButton
               variant="contained"
               color="primary"
-              onClick={() => append({ id: -1, detail: '', type: descriptionBullets[0] })}
+              onClick={() => append({ id: '-1', detail: '', type: descriptionBullets[0] })}
               sx={{ my: 2, width: 'max-content' }}
             >
               + Add New Description Bullet

@@ -20,7 +20,7 @@ export const separateDescriptionBulletsByType = (descriptionBullets: Description
   return descriptionBulletsSeparatedByType;
 };
 
-export const hasBulletCheckingPermissions = async (userId: number, descriptionId: number, organizationId: string) => {
+export const hasBulletCheckingPermissions = async (userId: string, descriptionId: string, organizationId: string) => {
   const user = await prisma.user.findUnique({ where: { userId } });
 
   if (!user) return false;
@@ -66,7 +66,7 @@ export const descriptionBulletToChangeListValue = (
 ): ChangeListValue<DescriptionBulletPreview> => {
   return {
     element: descriptionBullet,
-    comparator: `${descriptionBullet.id}`,
+    comparator: `${descriptionBullet.detail}`,
     displayValue: descriptionBullet.detail
   };
 };
@@ -89,6 +89,11 @@ export const descriptionBulletsToChangeListValues = (
     .map((bullet) => descriptionBulletToChangeListValue(descBulletConverter(bullet)));
 };
 
+/**
+ * Converts a DescriptionBulletWithType to a DescriptionBullet
+ * @param descBullet the DescriptionBulletWithType to convert
+ * @returns the converted DescriptionBullet
+ */
 export const descBulletConverter = (descBullet: DescriptionBulletWithType): DescriptionBullet => {
   return {
     id: descBullet.descriptionId,
@@ -102,7 +107,7 @@ export const descBulletConverter = (descBullet: DescriptionBulletWithType): Desc
 // helper method to add the given description bullets into the database, linked to the given wbs element id
 export const addDescriptionBulletsToWbsElement = async (
   addedDetails: string[],
-  wbsElementId: number,
+  wbsElementId: string,
   typeName: string,
   organizationId: string
 ) => {
@@ -157,7 +162,7 @@ export enum DescriptionBulletDestination {
 export const addRawDescriptionBullets = async (
   descriptionBullets: DescriptionBulletPreview[],
   destination: DescriptionBulletDestination,
-  destinationId: string | number,
+  destinationId: string,
   organizationId: string
 ) => {
   const descriptionBulletsSeparatedByType = separateDescriptionBulletsByType(descriptionBullets);
@@ -168,7 +173,7 @@ export const addRawDescriptionBullets = async (
         promises.concat(
           addDescriptionBulletsToWbsElement(
             bullets.map((bullet) => bullet.detail),
-            destinationId as number,
+            destinationId,
             type,
             organizationId
           )
@@ -178,7 +183,7 @@ export const addRawDescriptionBullets = async (
         promises.concat(
           addDescriptionBulletsToTemplate(
             bullets.map((bullet) => bullet.detail),
-            destinationId as string,
+            destinationId,
             type,
             organizationId
           )

@@ -1,4 +1,4 @@
-import { Description_Bullet, Prisma, WBS_Element, Work_Package_Template } from '@prisma/client';
+import { Description_Bullet, Prisma, User, WBS_Element, Work_Package_Template } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
 import { WbsNumber } from 'shared';
@@ -19,10 +19,10 @@ export const calculateWorkPackageProgress = (
  */
 export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>) => {
   // track the wbs element ids we've seen so far so we don't update the same one multiple times
-  const seenWbsElementIds: Set<number> = new Set<number>([initialWorkPackage.wbsElement.wbsElementId]);
+  const seenWbsElementIds: Set<string> = new Set<string>([initialWorkPackage.wbsElement.wbsElementId]);
 
   // blocking ids that still need to be updated
-  const blockingUpdateQueue: number[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
+  const blockingUpdateQueue: string[] = initialWorkPackage.wbsElement.blocking.map((blocking) => blocking.wbsElementId);
   const blockingWorkPackages: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>[] = [];
   while (blockingUpdateQueue.length > 0) {
     const currWbsId = blockingUpdateQueue.pop(); // get the next blocking and remove it from the queue
@@ -49,12 +49,70 @@ export const getBlockingWorkPackages = async (initialWorkPackage: Prisma.Work_Pa
     if (!currWbs.workPackage) continue; // this wbs element is a project so skip it
 
     // get all the blockings of the current wbs and add them to the queue to update
-    const newBlocking: number[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
+    const newBlocking: string[] = currWbs.blocking.map((blocking) => blocking.wbsElementId);
     blockingUpdateQueue.push(...newBlocking);
     blockingWorkPackages.push(currWbs.workPackage);
   }
 
   return blockingWorkPackages;
+};
+
+interface WorkPackageTemplateWithBlocking extends Work_Package_Template {
+  blocking: Work_Package_Template[];
+}
+
+export const deleteBlockingTemplates = async (workPackageTemplate: WorkPackageTemplateWithBlocking, submitter: User) => {
+  const seenWorkPackageTemplateIds: Set<string> = new Set<string>(workPackageTemplate.workPackageTemplateId);
+
+  // blocking ids that still need to be updated
+  const blockingIdUpdateQueue: string[] = workPackageTemplate.blocking.map(
+    (blocking: Work_Package_Template) => blocking.workPackageTemplateId
+  );
+
+  while (blockingIdUpdateQueue.length > 0) {
+    const currentBlockingId = blockingIdUpdateQueue.pop();
+
+    if (!currentBlockingId) break;
+    if (seenWorkPackageTemplateIds.has(currentBlockingId)) continue; // if we've already seen it we skip it
+
+    seenWorkPackageTemplateIds.add(currentBlockingId);
+
+    // gets the current blocking work package template
+    const currentBlocking = await prisma.work_Package_Template.findUnique({
+      where: {
+        workPackageTemplateId: currentBlockingId
+      },
+      include: {
+        blocking: true
+      }
+    });
+
+    if (currentBlocking?.workPackageTemplateId === workPackageTemplate.workPackageTemplateId) {
+      throw new HttpException(400, 'Circular dependency detected');
+    }
+
+    if (!currentBlocking) throw new NotFoundException('Work Package Template', currentBlockingId);
+    if (currentBlocking.dateDeleted) continue; // skip if this work package template has been deleted
+    const newBlocking: string[] = currentBlocking.blocking.map((blocking) => blocking.workPackageTemplateId);
+    blockingIdUpdateQueue.push(...newBlocking);
+
+    const dateDeleted = new Date();
+
+    // delete the work package template
+    await prisma.work_Package_Template.update({
+      where: {
+        workPackageTemplateId: currentBlockingId
+      },
+      data: {
+        dateDeleted,
+        userDeleted: {
+          connect: {
+            userId: submitter.userId
+          }
+        }
+      }
+    });
+  }
 };
 
 export const validateBlockedBys = async (blockedBy: WbsNumber[], organizationId: string): Promise<WBS_Element[]> => {

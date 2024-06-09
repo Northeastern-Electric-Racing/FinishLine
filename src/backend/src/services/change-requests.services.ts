@@ -4,6 +4,7 @@ import {
   isGuest,
   isLeadership,
   isNotLeadership,
+  isProject,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -32,7 +33,7 @@ import {
   reviewProposedSolution,
   sendCRSubmitterReviewedNotification
 } from '../utils/change-requests.utils';
-import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Project, Work_Package, Prisma } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import { buildChangeDetail } from '../utils/changes.utils';
@@ -43,7 +44,6 @@ import {
   sendSlackRequestedReviewNotification
 } from '../utils/slack.utils';
 import { ChangeRequestQueryArgs, getChangeRequestQueryArgs } from '../prisma-query-args/change-requests.query-args';
-import { validateBlockedBys } from '../utils/work-packages.utils';
 import proposedSolutionTransformer from '../transformers/proposed-solutions.transformer';
 import { getProposedSolutionQueryArgs } from '../prisma-query-args/proposed-solutions.query-args';
 
@@ -55,7 +55,7 @@ export default class ChangeRequestsService {
    * @returns The change request with the given id
    * @throws if the change request does not exist
    */
-  static async getChangeRequestByID(crId: number, organizationId: string): Promise<ChangeRequest> {
+  static async getChangeRequestByID(crId: string, organizationId: string): Promise<ChangeRequest> {
     const changeRequest = await prisma.change_Request.findUnique({
       where: { crId },
       ...getChangeRequestQueryArgs(organizationId)
@@ -63,7 +63,7 @@ export default class ChangeRequestsService {
 
     if (!changeRequest) throw new NotFoundException('Change Request', crId);
     if (changeRequest.dateDeleted) throw new DeletedException('Change Request', crId);
-    if (changeRequest.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
+    if (changeRequest.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
 
     return changeRequestTransformer(changeRequest);
   }
@@ -95,12 +95,12 @@ export default class ChangeRequestsService {
    */
   static async reviewChangeRequest(
     reviewer: User,
-    crId: number,
+    crId: string,
     reviewNotes: string,
     accepted: boolean,
     organizationId: string,
     psId: string | null
-  ): Promise<Number> {
+  ): Promise<string> {
     // verify that the user is allowed review change requests
     if (await userHasPermission(reviewer.userId, organizationId, isNotLeadership))
       throw new AccessDeniedMemberException('review change requests');
@@ -115,7 +115,7 @@ export default class ChangeRequestsService {
     if (foundCR.accepted) throw new HttpException(400, `This change request is already approved!`);
     if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
     if (foundCR.wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsPipe(foundCR.wbsElement));
-    if (foundCR.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
+    if (foundCR.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
 
     // verify that the user is not reviewing their own change request
     if (reviewer.userId === foundCR.submitterId)
@@ -176,30 +176,86 @@ export default class ChangeRequestsService {
       // reviews a proposed solution applying certain changes based on the content of the proposed solution
       await reviewProposedSolution(psId, foundCR, reviewer, organizationId);
     } else if (foundCR.scopeChangeRequest?.wbsProposedChanges && !psId) {
-      // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
-      await validateNoUnreviewedOpenCRs(foundCR.wbsElementId);
-
-      // must accept and review a change request before using the workpackage and project services
-      await prisma.change_Request.update({
-        where: { crId: foundCR.crId },
-        data: {
-          accepted: true,
-          dateReviewed: new Date()
-        }
-      });
-
       const associatedProject = foundCR.wbsElement.project;
       const associatedWorkPackage = foundCR.wbsElement.workPackage;
       const { wbsProposedChanges } = foundCR.scopeChangeRequest;
       const { workPackageProposedChanges } = wbsProposedChanges;
       const { projectProposedChanges } = wbsProposedChanges;
 
+      // must accept and review a change request before using the workpackage and project services
+      await prisma.scope_CR.update({
+        where: { changeRequestId: foundCR.crId },
+        data: {
+          changeRequest: {
+            update: {
+              accepted: true,
+              dateReviewed: new Date()
+            }
+          },
+          wbsOriginalData: {
+            create: {
+              name: foundCR.wbsElement.name,
+              status: foundCR.wbsElement.status,
+              leadId: foundCR.wbsElement.leadId,
+              managerId: foundCR.wbsElement.managerId,
+              links: {
+                connect: foundCR.wbsElement.links.map((link) => ({
+                  linkId: link.linkId
+                }))
+              },
+              proposedDescriptionBulletChanges: {
+                connect: foundCR.wbsElement.descriptionBullets.map((descriptionBullet) => ({
+                  descriptionId: descriptionBullet.descriptionId
+                }))
+              },
+              projectProposedChanges:
+                projectProposedChanges && associatedProject
+                  ? {
+                      create: {
+                        budget: associatedProject.budget,
+                        summary: associatedProject.summary,
+                        teams: {
+                          connect: associatedProject.teams.map((team) => ({ teamId: team.teamId }))
+                        },
+                        car: {
+                          connect: {
+                            carId: associatedProject.carId
+                          }
+                        }
+                      }
+                    }
+                  : undefined,
+              workPackageProposedChanges:
+                workPackageProposedChanges && associatedWorkPackage
+                  ? {
+                      create: {
+                        startDate: associatedWorkPackage.startDate,
+                        duration: associatedWorkPackage.duration,
+                        blockedBy: {
+                          connect: associatedWorkPackage.blockedBy.map((wbsElement) => ({
+                            wbsNumber: {
+                              carNumber: wbsElement.carNumber,
+                              projectNumber: wbsElement.projectNumber,
+                              workPackageNumber: wbsElement.workPackageNumber,
+                              organizationId: wbsElement.organizationId
+                            }
+                          }))
+                        },
+                        stage: associatedWorkPackage.stage
+                      }
+                    }
+                  : undefined
+            }
+          }
+        }
+      });
+
       if (workPackageProposedChanges) {
         await applyWorkPackageProposedChanges(
           wbsProposedChanges,
           workPackageProposedChanges,
-          associatedProject as Project,
-          associatedWorkPackage as Work_Package,
+          associatedProject?.wbsElementId ?? null,
+          associatedWorkPackage,
           reviewer,
           foundCR.crId,
           organizationId
@@ -208,7 +264,7 @@ export default class ChangeRequestsService {
         await applyProjectProposedChanges(
           wbsProposedChanges,
           projectProposedChanges,
-          associatedProject as Project,
+          associatedProject,
           reviewer,
           foundCR.crId,
           foundCR.wbsElement.carNumber,
@@ -356,12 +412,12 @@ export default class ChangeRequestsService {
     projectNumber: number,
     workPackageNumber: number,
     type: CR_Type,
-    leadId: number,
-    managerId: number,
+    leadId: string,
+    managerId: string,
     startDate: Date,
     confirmDetails: boolean,
     organizationId: string
-  ): Promise<number> {
+  ): Promise<string> {
     // verify user is allowed to create activation change requests
     if (await userHasPermission(submitter.userId, organizationId, isGuest))
       throw new AccessDeniedGuestException('create activation change requests');
@@ -384,6 +440,8 @@ export default class ChangeRequestsService {
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
     const { changeRequests } = wbsElement;
     const nonDeletedChangeRequests = changeRequests.filter((changeRequest) => !changeRequest.dateDeleted);
@@ -395,6 +453,10 @@ export default class ChangeRequestsService {
         } before proceeding`
       );
     }
+
+    const numChanges = await prisma.change_Request.count({
+      where: { organizationId }
+    });
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -408,7 +470,9 @@ export default class ChangeRequestsService {
             startDate: new Date(startDate),
             confirmDetails
           }
-        }
+        },
+        organization: { connect: { organizationId } },
+        identifier: numChanges + 1
       },
       include: {
         wbsElement: {
@@ -460,7 +524,7 @@ export default class ChangeRequestsService {
     type: CR_Type,
     confirmDone: boolean,
     organizationId: string
-  ): Promise<Number> {
+  ): Promise<string> {
     // verify user is allowed to create stage gate change requests
     if (await userHasPermission(submitter.userId, organizationId, isGuest))
       throw new AccessDeniedGuestException('create stage gate change requests');
@@ -479,9 +543,10 @@ export default class ChangeRequestsService {
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
-
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    // we don't want to have merge conflictS on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+    await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
 
     if (wbsElement.workPackage) {
       throwIfUncheckedDescriptionBullets(wbsElement.descriptionBullets);
@@ -498,6 +563,10 @@ export default class ChangeRequestsService {
       );
     }
 
+    const numChangeRequests = await prisma.change_Request.count({
+      where: { organizationId }
+    });
+
     const createdChangeRequest = await prisma.change_Request.create({
       data: {
         submitter: { connect: { userId: submitter.userId } },
@@ -508,7 +577,9 @@ export default class ChangeRequestsService {
             leftoverBudget: 0,
             confirmDone
           }
-        }
+        },
+        organization: { connect: { organizationId } },
+        identifier: numChangeRequests + 1
       },
       include: {
         wbsElement: {
@@ -598,6 +669,19 @@ export default class ChangeRequestsService {
     if (!wbsElement) throw new NotFoundException('WBS Element', `${carNumber}.${projectNumber}.${workPackageNumber}`);
     if (wbsElement.dateDeleted)
       throw new DeletedException('WBS Element', wbsPipe({ carNumber, projectNumber, workPackageNumber }));
+    if (wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('WBS Element');
+    // we don't want to have merge conflicts on the wbs element thus we check if there are unreviewed or open CRs on the wbs element
+    if (
+      projectNumber !== 0 && // Excluding Cars
+      !(projectProposedChanges && projectProposedChanges.workPackageProposedChanges.length === 0) && // Excluding new projects with work packages
+      !(isProject(wbsElement) && workPackageProposedChanges) // Excluding Creating Work Package on Project
+    ) {
+      await validateNoUnreviewedOpenCRs(wbsElement.wbsElementId);
+    }
+
+    const numChangeRequests = await prisma.change_Request.count({
+      where: { organizationId }
+    });
 
     const createdCR = await prisma.change_Request.create({
       data: {
@@ -612,7 +696,9 @@ export default class ChangeRequestsService {
             budgetImpact: 0,
             why: { createMany: { data: why } }
           }
-        }
+        },
+        organization: { connect: { organizationId } },
+        identifier: numChangeRequests + 1
       },
       include: {
         wbsElement: {
@@ -632,12 +718,25 @@ export default class ChangeRequestsService {
     if (projectProposedChanges && workPackageProposedChanges) {
       throw new HttpException(400, "Change Request can't be on both a project and a work package");
     } else if (projectProposedChanges) {
-      const { name, leadId, managerId, links, budget, summary, teamIds, descriptionBullets, carNumber } =
-        projectProposedChanges;
+      const {
+        name,
+        leadId,
+        managerId,
+        links,
+        budget,
+        summary,
+        teamIds,
+        descriptionBullets,
+        workPackageProposedChanges,
+        carNumber
+      } = projectProposedChanges;
 
       const validationResult = await validateProposedChangesFields(
+        projectProposedChanges,
         links,
         descriptionBullets,
+        [],
+        workPackageProposedChanges,
         organizationId,
         carNumber,
         leadId,
@@ -651,13 +750,15 @@ export default class ChangeRequestsService {
         }
       }
 
-      await prisma.wbs_Proposed_Changes.create({
+      const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
-          changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
+          scopeChangeRequest: {
+            connect: {
+              scopeCrId: createdCR.scopeChangeRequest!.scopeCrId
+            }
+          },
           name,
           status: WBS_Element_Status.ACTIVE,
-          leadId,
-          managerId,
           links: {
             create: validationResult.links.map((linkInfo) => ({
               url: linkInfo.url,
@@ -676,6 +777,47 @@ export default class ChangeRequestsService {
               budget,
               summary,
               teams: { connect: teamIds.map((teamId) => ({ teamId })) },
+              workPackageProposedChanges: {
+                create: validationResult.workPackageProposedChanges.map((workPackage) => ({
+                  wbsProposedChanges: {
+                    create: {
+                      name: workPackage.originalElement.name,
+                      status: WBS_Element_Status.INACTIVE,
+                      proposedDescriptionBulletChanges: {
+                        create: workPackage.descriptionBullets.map((bullet) => ({
+                          detail: bullet.detail,
+                          descriptionBulletTypeId: bullet.descriptionBulletType.id
+                        }))
+                      }
+                    }
+                  },
+                  duration: workPackage.originalElement.duration,
+                  startDate: new Date(workPackage.originalElement.startDate),
+                  stage: workPackage.originalElement.stage,
+                  blockedBy: {
+                    connect: workPackage.validatedBlockedBys.map((wbsElement) => ({
+                      wbsNumber: {
+                        carNumber: wbsElement.carNumber,
+                        projectNumber: wbsElement.projectNumber,
+                        workPackageNumber: wbsElement.workPackageNumber,
+                        organizationId
+                      }
+                    }))
+                  }
+                }))
+              }
+            }
+          }
+        }
+      });
+
+      await prisma.wbs_Proposed_Changes.update({
+        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+        data: {
+          leadId,
+          managerId,
+          projectProposedChanges: {
+            update: {
               carId: validationResult.carId
             }
           }
@@ -686,23 +828,22 @@ export default class ChangeRequestsService {
         workPackageProposedChanges;
 
       const validationResult = await validateProposedChangesFields(
+        workPackageProposedChanges,
         [],
         descriptionBullets,
+        blockedBy,
+        [],
         organizationId,
         undefined,
         leadId,
         managerId
       );
 
-      await validateBlockedBys(blockedBy, organizationId);
-
-      await prisma.wbs_Proposed_Changes.create({
+      const changes = await prisma.wbs_Proposed_Changes.create({
         data: {
-          changeRequestId: createdCR.scopeChangeRequest!.scopeCrId,
+          scopeChangeRequest: { connect: { scopeCrId: createdCR.scopeChangeRequest!.scopeCrId } },
           name,
           status: WBS_Element_Status.INACTIVE,
-          leadId,
-          managerId,
           proposedDescriptionBulletChanges: {
             create: validationResult.descriptionBullets.map((bullet) => ({
               detail: bullet.detail,
@@ -715,7 +856,7 @@ export default class ChangeRequestsService {
               startDate: new Date(startDate),
               stage,
               blockedBy: {
-                connect: blockedBy.map((wbsNumber) => ({
+                connect: validationResult.validatedBlockedBys.map((wbsNumber) => ({
                   wbsNumber: {
                     carNumber: wbsNumber.carNumber,
                     projectNumber: wbsNumber.projectNumber,
@@ -726,6 +867,14 @@ export default class ChangeRequestsService {
               }
             }
           }
+        }
+      });
+
+      await prisma.wbs_Proposed_Changes.update({
+        where: { wbsProposedChangesId: changes.wbsProposedChangesId },
+        data: {
+          leadId,
+          managerId
         }
       });
     }
@@ -764,7 +913,9 @@ export default class ChangeRequestsService {
       ...getChangeRequestQueryArgs(organizationId)
     });
 
-    return changeRequestTransformer(finishedCR!) as StandardChangeRequest;
+    if (!finishedCR) throw new NotFoundException('Change Request', createdCR.crId);
+
+    return changeRequestTransformer(finishedCR) as StandardChangeRequest;
   }
 
   /**
@@ -782,7 +933,7 @@ export default class ChangeRequestsService {
    */
   static async addProposedSolution(
     submitter: User,
-    crId: number,
+    crId: string,
     budgetImpact: number,
     description: string,
     timelineImpact: number,
@@ -813,7 +964,7 @@ export default class ChangeRequestsService {
         scopeImpact,
         timelineImpact,
         budgetImpact,
-        changeRequest: { connect: { scopeCrId: foundScopeCR.scopeCrId } },
+        scopeChangeRequest: { connect: { scopeCrId: foundScopeCR.scopeCrId } },
         createdBy: { connect: { userId: submitter.userId } }
       },
       ...getProposedSolutionQueryArgs(organizationId)
@@ -828,7 +979,7 @@ export default class ChangeRequestsService {
    * @param crId the change request to be deleted
    * @param organizationId the organization the user is currently in
    */
-  static async deleteChangeRequest(submitter: User, crId: number, organizationId: string): Promise<void> {
+  static async deleteChangeRequest(submitter: User, crId: string, organizationId: string): Promise<void> {
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
@@ -839,7 +990,7 @@ export default class ChangeRequestsService {
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
     if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
-    if (foundCR.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
+    if (foundCR.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
 
     // verify user is allowed to delete change requests
     if (!((await userHasPermission(submitter.userId, organizationId, isAdmin)) || submitter.userId === foundCR.submitterId))
@@ -862,13 +1013,15 @@ export default class ChangeRequestsService {
    * @param crId The change request that will be reviewed
    * @param organizationId The organization the user is currently in
    */
-  static async requestCRReview(submitter: User, userIds: number[], crId: number, organizationId: string): Promise<void> {
+  static async requestCRReview(submitter: User, userIds: string[], crId: string, organizationId: string): Promise<void> {
     const reviewers = await getUsersWithSettings(userIds);
 
     // check if any reviewers' role is below leadership
-    const underLeads = reviewers.filter(
-      async (user) => !(await userHasPermission(user.userId, organizationId, isLeadership))
-    );
+    const underLeadsPromises = reviewers.map(async (user) => {
+      return { ...user, underLead: !(await userHasPermission(user.userId, organizationId, isLeadership)) };
+    });
+
+    const underLeads = (await Promise.all(underLeadsPromises)).filter((reviewer) => reviewer.underLead);
 
     if (underLeads.length > 0) {
       const underLeadsNames = underLeads.map((reviewer) => reviewer.firstName + ' ' + reviewer.lastName);
@@ -892,7 +1045,7 @@ export default class ChangeRequestsService {
 
     if (!foundCR) throw new NotFoundException('Change Request', crId);
     if (foundCR.dateDeleted) throw new DeletedException('Change Request', crId);
-    if (foundCR.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
+    if (foundCR.organizationId !== organizationId) throw new InvalidOrganizationException('Change Request');
     if (foundCR.submitterId !== submitter.userId)
       throw new AccessDeniedException(`Only the author of this change request can request a reviewer`);
     if (foundCR.reviewerId) throw new HttpException(400, `Cannot request a review on an already reviewed change request`);

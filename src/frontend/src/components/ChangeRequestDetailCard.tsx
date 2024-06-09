@@ -47,10 +47,10 @@ const CRCardDescription = ({ cr }: { cr: ChangeRequest }) => {
         ) : isActivation ? (
           <div>
             <Typography variant="body1" fontSize={14}>
-              Lead: {fullNamePipe((cr as ActivationChangeRequest).projectLead)}
+              Lead: {fullNamePipe((cr as ActivationChangeRequest).lead)}
             </Typography>
             <Typography variant="body1" fontSize={14}>
-              Manager: {fullNamePipe((cr as ActivationChangeRequest).projectManager)}
+              Manager: {fullNamePipe((cr as ActivationChangeRequest).manager)}
             </Typography>
           </div>
         ) : isStageGate ? (
@@ -80,7 +80,7 @@ const ChangeRequestDetailCard: React.FC<ChangeRequestDetailCardProps> = ({ chang
               to={`${routes.CHANGE_REQUESTS}/${changeRequest.crId}`}
             >
               <Typography variant="h6" sx={{ mb: 0.5 }}>
-                {'Change Request #' + changeRequest.crId}
+                {'Change Request #' + changeRequest.identifier}
               </Typography>
             </Link>
             <Stack direction={'column'} maxWidth={'195px'}>

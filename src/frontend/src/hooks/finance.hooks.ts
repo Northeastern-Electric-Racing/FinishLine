@@ -39,13 +39,15 @@ import {
   Vendor,
   ReimbursementStatus,
   OtherReimbursementProductCreateArgs,
-  WbsReimbursementProductCreateArgs
+  WbsReimbursementProductCreateArgs,
+  ReimbursementStatusType
 } from 'shared';
+import { fullNamePipe } from '../utils/pipes';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense: Date;
-  expenseTypeId: string;
+  accountCodeId: string;
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
@@ -63,7 +65,7 @@ export interface DownloadReceiptsFormInput {
   refundSource: string;
 }
 
-export interface ExpenseTypePayload {
+export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
@@ -356,6 +358,31 @@ export const useDownloadPDFOfImages = () => {
   });
 };
 
+export const useDownloadCSVFileOfReimbursementRequests = () => {
+  return useMutation(['reimbursement-requests'], async () => {
+    const { data } = await getAllReimbursementRequests();
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      'SABO ID,Recipient,Total Cost,Status,Account,Date Created,Date Delivered,Date Submitted,Vendor\n' +
+      data
+        .map(
+          (rr) =>
+            `${rr.saboId},${fullNamePipe(rr.recipient)},${rr.totalCost},${
+              rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
+            },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+              rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
+            },${rr.vendor.name}`
+        )
+        .join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'reimbursement-requests.csv');
+    document.body.appendChild(link);
+    link.click();
+  });
+};
+
 /**
  * Custom react hook to get the list of Reimbursement Requests that are pending Advisor Approval
  *
@@ -406,7 +433,7 @@ export const useReportRefund = () => {
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, { saboNumber: number }>(
-    ['reimbursement-requests', 'edit'],
+    ['reimbursement-requests', reimbursementRequestId],
     async (formData: { saboNumber: number }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
     },
@@ -423,12 +450,12 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
  *
  * @param expenseId The id of the expense type
  */
-export const useEditAccountCode = (expenseTypeId: string) => {
+export const useEditAccountCode = (accountCodeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'edit'],
-    async (accountCodeData: ExpenseTypePayload) => {
-      const { data } = await editAccountCode(expenseTypeId, accountCodeData);
+    async (accountCodeData: AccountCodePayload) => {
+      const { data } = await editAccountCode(accountCodeId, accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;
     }
@@ -440,9 +467,9 @@ export const useEditAccountCode = (expenseTypeId: string) => {
  */
 export const useCreateAccountCode = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'create'],
-    async (accountCodeData: ExpenseTypePayload) => {
+    async (accountCodeData: AccountCodePayload) => {
       const { data } = await createAccountCode(accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;

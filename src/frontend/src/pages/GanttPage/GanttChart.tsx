@@ -1,43 +1,61 @@
 import { Box } from '@mui/material';
-import { EventChange, GanttTask, RequestEventChange } from '../../utils/gantt.utils';
+import { Dispatch } from 'react';
+import { Project, Team, WbsElement, WorkPackage } from 'shared';
+import { filterGanttProjects, GanttFilters } from '../../utils/gantt.utils';
 import GanttChartTeamSection from './GanttChartTeamSection';
 
 interface GanttChartProps {
   startDate: Date;
   endDate: Date;
-  teamsList: string[];
-  teamNameToGanttTasksMap: Map<string, GanttTask[]>;
-  saveChanges: (eventChanges: EventChange[]) => void;
+  teamsList: Team[];
+  defaultGanttFilters: GanttFilters;
+  searchText: string;
+  addNewWorkPackage: (workPackage: WorkPackage) => void;
+  addNewProject: (project: Project) => void;
+  getNewProjectNumber: (carNumber: number) => number;
+  allWbsElements: WbsElement[];
   showWorkPackagesMap: Map<string, boolean>;
-  setShowWorkPackagesMap: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
-  highlightedChange?: RequestEventChange;
+  setShowWorkPackagesMap: Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  removeAddedProjects: (projects: Project[]) => void;
+  removeAddedWorkPackages: (workPackages: WorkPackage[]) => void;
 }
 
 const GanttChart = ({
   startDate,
   endDate,
   teamsList,
-  teamNameToGanttTasksMap,
-  saveChanges,
+  defaultGanttFilters,
+  searchText,
+  addNewWorkPackage,
+  addNewProject,
+  getNewProjectNumber,
+  allWbsElements,
   showWorkPackagesMap,
   setShowWorkPackagesMap,
-  highlightedChange
+  removeAddedProjects,
+  removeAddedWorkPackages
 }: GanttChartProps) => {
   return (
     <Box>
-      {teamsList.map((teamName: string) => {
-        const projectTasks = teamNameToGanttTasksMap.get(teamName);
+      {teamsList.map((team: Team) => {
+        const { projects } = team;
 
-        return projectTasks ? (
+        const filteredProjects = filterGanttProjects(projects, defaultGanttFilters, searchText, team);
+
+        return filteredProjects ? (
           <GanttChartTeamSection
             startDate={startDate}
             endDate={endDate}
-            saveChanges={saveChanges}
+            team={team}
+            filteredProjects={filteredProjects}
+            addNewWorkPackage={addNewWorkPackage}
+            addNewProject={addNewProject}
+            getNewProjectNumber={getNewProjectNumber}
+            allWbsElements={allWbsElements}
             showWorkPackagesMap={showWorkPackagesMap}
             setShowWorkPackagesMap={setShowWorkPackagesMap}
-            teamName={teamName}
-            projectTasks={projectTasks}
-            highlightedChange={highlightedChange}
+            removeAddedProjects={removeAddedProjects}
+            removeAddedWorkPackages={removeAddedWorkPackages}
           />
         ) : (
           <></>

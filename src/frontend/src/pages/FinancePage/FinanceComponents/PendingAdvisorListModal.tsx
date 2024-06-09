@@ -68,7 +68,7 @@ const PendingAdvisorModal: React.FC<PendingAdvisorModalProps> = ({ open, saboNum
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      saboNumbers: saboNumbers
+      saboNumbers
     }
   });
 

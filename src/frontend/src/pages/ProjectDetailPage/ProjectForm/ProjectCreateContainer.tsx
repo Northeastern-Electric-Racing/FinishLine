@@ -59,12 +59,12 @@ const ProjectCreateContainer: React.FC = () => {
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
     // TODO update upper bound here once new car model is made
-    carNumber: yup.number().min(0).max(3).required('A car number is required!'),
+    carNumber: yup.number().min(0).required('A car number is required!'),
     teamIds: yup.array().of(yup.string()).required('Teams are required'),
     budget: yup.number().optional(),
     summary: yup.string().required('Summary is required!'),
-    projectLeadId: yup.number().optional(),
-    projectManagerId: yup.number().optional(),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
     links: yup
       .array()
       .optional()
@@ -79,6 +79,9 @@ const ProjectCreateContainer: React.FC = () => {
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
     const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, type, what, why } = data;
 
+    // Car number could be zero and a truthy check would fail
+    if (carNumber === undefined) throw new Error('Car number is required!');
+
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
         name,
@@ -87,18 +90,18 @@ const ProjectCreateContainer: React.FC = () => {
         budget,
         descriptionBullets,
         links,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined,
-        carNumber: carNumber
+        leadId,
+        managerId,
+        carNumber,
+        workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
-          // TODO change this to use the car model when we add it to the schema
-          carNumber: carNumber,
+          carNumber,
           projectNumber: 0,
           workPackageNumber: 0
         },
-        type: type,
+        type,
         what,
         why,
         proposedSolutions: [],
@@ -116,18 +119,21 @@ const ProjectCreateContainer: React.FC = () => {
   const onSubmit = async (data: ProjectFormInput) => {
     const { name, budget, summary, links, crId, teamIds, carNumber, descriptionBullets } = data;
 
+    // Car number could be zero and a truthy check would fail
+    if (carNumber === undefined) throw new Error('Car number is required!');
+
     try {
       const payload: CreateSingleProjectPayload = {
-        crId: Number(crId),
+        crId,
         name,
         carNumber,
         summary,
-        teamIds: teamIds.map((number) => '' + number),
+        teamIds,
         budget,
         descriptionBullets,
         links,
-        leadId: leadId ? parseInt(leadId) : undefined,
-        managerId: managerId ? parseInt(managerId) : undefined
+        leadId,
+        managerId
       };
       await mutateAsync(payload);
       history.push(routes.PROJECTS_ALL);

@@ -8,7 +8,8 @@ import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedC
 import { WorkPackageStage } from './work-package-types';
 
 export interface ChangeRequest {
-  crId: number;
+  crId: string;
+  identifier: number;
   wbsNum: WbsNumber;
   wbsName: string;
   submitter: User;
@@ -43,6 +44,8 @@ export interface StandardChangeRequest extends ChangeRequest {
   proposedSolutions: ProposedSolution[];
   projectProposedChanges?: ProjectProposedChanges;
   workPackageProposedChanges?: WorkPackageProposedChanges;
+  originalProjectData?: ProjectProposedChanges;
+  originalWorkPackageData?: WorkPackageProposedChanges;
 }
 
 export interface ProposedSolution {
@@ -57,8 +60,8 @@ export interface ProposedSolution {
 }
 
 export interface ActivationChangeRequest extends ChangeRequest {
-  projectLead: User;
-  projectManager: User;
+  lead: User;
+  manager: User;
   startDate: Date;
   confirmDetails: boolean;
 }
@@ -94,8 +97,8 @@ export enum ChangeRequestStatus {
 }
 
 export interface ImplementedChange {
-  changeId: number;
-  changeRequestId: number;
+  changeId: string;
+  changeRequestId: string;
   wbsNum: WbsNumber;
   implementer: User;
   detail: string;
@@ -110,15 +113,15 @@ export interface ProposedSolutionCreateArgs {
 }
 
 export interface DescriptionBulletPreview {
-  id: number;
+  id: string;
   detail: string;
   type: string;
 }
 
 export interface WBSProposedChangesCreateArgs {
   name: string;
-  leadId?: number;
-  managerId?: number;
+  leadId?: string;
+  managerId?: string;
   descriptionBullets: DescriptionBulletPreview[];
   links: LinkCreateArgs[];
 }
@@ -127,6 +130,7 @@ export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCrea
   budget: number;
   summary: string;
   teamIds: string[];
+  workPackageProposedChanges: WorkPackageProposedChangesCreateArgs[];
   carNumber?: number;
 }
 

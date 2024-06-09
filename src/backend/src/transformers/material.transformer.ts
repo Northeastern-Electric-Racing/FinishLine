@@ -7,9 +7,7 @@ export const assemblyTransformer = (assembly: Prisma.AssemblyGetPayload<Assembly
   return {
     assemblyId: assembly.assemblyId,
     name: assembly.name,
-    userCreatedId: assembly.userCreatedId,
     userCreated: userTransformer(assembly.userCreated),
-    userDeletedId: assembly.userDeletedId ?? undefined,
     userDeleted: assembly.userDeleted ? userTransformer(assembly.userDeleted) : undefined,
     wbsElementId: assembly.wbsElementId,
     materials: assembly.materials.map(materialPreviewTransformer)
@@ -19,7 +17,6 @@ export const assemblyTransformer = (assembly: Prisma.AssemblyGetPayload<Assembly
 const assemblyPreviewTransformer = (assembly: Prisma.AssemblyGetPayload<null>): AssemblyPreview => {
   return {
     ...assembly,
-    userDeletedId: assembly.userDeletedId ?? undefined,
     dateDeleted: assembly.dateDeleted ?? undefined,
     pdmFileName: assembly.pdmFileName ?? undefined
   };
@@ -33,10 +30,8 @@ export const materialTransformer = (material: Prisma.MaterialGetPayload<Material
     name: material.name,
     wbsElementId: material.wbsElementId,
     dateDeleted: material.dateDeleted ?? undefined,
-    userDeletedId: material.userDeletedId ?? undefined,
     userDeleted: material.userDeleted ? userTransformer(material.userDeleted) : undefined,
     dateCreated: material.dateCreated,
-    userCreatedId: material.userCreatedId,
     userCreated: userTransformer(material.userCreated),
     status: material.status as MaterialStatus,
     materialTypeName: material.materialType.name,
@@ -60,7 +55,6 @@ export const materialPreviewTransformer = (
   return {
     ...material,
     notes: material.notes ?? undefined,
-    userDeletedId: material.userDeletedId ?? undefined,
     dateDeleted: material.dateDeleted ?? undefined,
     assemblyId: material.assemblyId ?? undefined,
     pdmFileName: material.pdmFileName ?? undefined,

@@ -6,7 +6,7 @@
 import { Link, LinkType, Project, WbsElementStatus } from 'shared';
 import { exampleTask1 } from './tasks.stub';
 import { exampleTeam } from './teams.stub';
-import { exampleAdminUser, exampleLeadershipUser, exampleProjectLeadUser, exampleProjectManagerUser } from './users.stub';
+import { exampleAdminUser, exampleLeadershipUser, exampleLeadUser, exampleManagerUser } from './users.stub';
 import { exampleWbsProject1, exampleWbsProject2 } from './wbs-numbers.stub';
 import { exampleResearchWorkPackage, exampleDesignWorkPackage, exampleManufacturingWorkPackage } from './work-packages.stub';
 
@@ -58,12 +58,12 @@ const exampleLinks: Link[] = [
   }
 ];
 export const exampleProject1: Project = {
-  id: 4,
+  id: '4',
   wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
   dateCreated: new Date('08/01/20'),
   name: 'Impact Attenuator',
   status: WbsElementStatus.Active,
-  lead: exampleProjectLeadUser,
+  lead: exampleLeadUser,
   manager: exampleLeadershipUser,
   links: exampleLinks,
   summary: 'Make an impact attenuator',
@@ -71,11 +71,11 @@ export const exampleProject1: Project = {
   teams: [],
   descriptionBullets: [],
   favoritedBy: [],
-  wbsElementId: 4,
+  wbsElementId: '4',
   changes: [
     {
-      changeId: 10,
-      changeRequestId: 37,
+      changeId: '10',
+      changeRequestId: '37',
       wbsNum: exampleWbsProject1,
       implementer: exampleAdminUser,
       detail: 'Added goal for weight reduction',
@@ -92,19 +92,19 @@ export const exampleProject1: Project = {
 };
 
 export const exampleProject2: Project = {
-  id: 5,
+  id: '5',
   wbsNum: { carNumber: 1, projectNumber: 2, workPackageNumber: 0 },
   dateCreated: new Date('08/02/20'),
   name: 'Bodywork',
   status: WbsElementStatus.Inactive,
-  lead: exampleProjectLeadUser,
-  manager: exampleProjectManagerUser,
+  lead: exampleLeadUser,
+  manager: exampleManagerUser,
   links: exampleLinks,
   summary: 'Do some bodywork',
   budget: 50,
   descriptionBullets: [],
   favoritedBy: [],
-  wbsElementId: 5,
+  wbsElementId: '5',
   changes: [],
   duration: 0,
   startDate: undefined,
@@ -117,19 +117,19 @@ export const exampleProject2: Project = {
 };
 
 export const exampleProject3: Project = {
-  id: 6,
+  id: '6',
   wbsNum: exampleWbsProject1,
   dateCreated: new Date('08/04/20'),
   name: 'Battery Box',
   status: WbsElementStatus.Active,
   lead: exampleLeadershipUser,
-  manager: exampleProjectManagerUser,
+  manager: exampleManagerUser,
   links: exampleLinks,
   summary: 'Make a box for the battery',
   budget: 5000,
   descriptionBullets: [],
   favoritedBy: [],
-  wbsElementId: 5,
+  wbsElementId: '5',
   changes: [],
   duration: 3,
   startDate: new Date('01/01/21'),
@@ -142,7 +142,7 @@ export const exampleProject3: Project = {
 };
 
 export const exampleProject4: Project = {
-  id: 7,
+  id: '7',
   wbsNum: exampleWbsProject2,
   dateCreated: new Date('11/07/20'),
   name: 'Motor Controller Integration',
@@ -155,7 +155,7 @@ export const exampleProject4: Project = {
   teams: [],
   descriptionBullets: [],
   favoritedBy: [],
-  wbsElementId: 5,
+  wbsElementId: '5',
   changes: [],
   duration: 5,
   startDate: new Date('01/22/21'),
@@ -167,20 +167,20 @@ export const exampleProject4: Project = {
 };
 
 export const exampleProject5: Project = {
-  id: 8,
+  id: '8',
   wbsNum: { carNumber: 2, projectNumber: 7, workPackageNumber: 0 },
   dateCreated: new Date('08/03/20'),
   name: 'Wiring Harness',
   status: WbsElementStatus.Complete,
-  lead: exampleProjectLeadUser,
-  manager: exampleProjectManagerUser,
+  lead: exampleLeadUser,
+  manager: exampleManagerUser,
   links: exampleLinks,
   summary: 'Harness the wiring',
   budget: 234,
   descriptionBullets: [],
   teams: [],
   favoritedBy: [],
-  wbsElementId: 5,
+  wbsElementId: '5',
   changes: [],
   duration: 2,
   startDate: new Date('01/01/21'),

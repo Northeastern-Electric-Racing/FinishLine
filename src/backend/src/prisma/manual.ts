@@ -4,8 +4,10 @@
  */
 
 import prisma from './prisma';
-import { WBS_Element_Status } from '@prisma/client';
+import { Club_Accounts, Reimbursement_Status_Type, WBS_Element_Status } from '@prisma/client';
 import { calculateEndDate } from 'shared';
+import { writeFileSync } from 'fs';
+import { getUserFullName } from '../utils/users.utils';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -20,7 +22,7 @@ const executeScripts = async () => {};
 /**
  * Print metrics on accepted Change Requests with timeline impact
  */
-const checkTimelineImpact = async () => {
+export const checkTimelineImpact = async () => {
   const res = await prisma.change_Request.findMany({
     where: {
       accepted: true,
@@ -44,7 +46,7 @@ const checkTimelineImpact = async () => {
 /**
  * Print count of total work packages
  */
-const countWorkPackages = async () => {
+export const countWorkPackages = async () => {
   const res = await prisma.work_Package.count();
   console.log('total work packages:', res);
 };
@@ -52,7 +54,7 @@ const countWorkPackages = async () => {
 /**
  * Calculate active users by week
  */
-const activeUserMetrics = async () => {
+export const activeUserMetrics = async () => {
   // sad dev doesn't feel like converting SQL to Prisma
   // select extract(week from "created") as wk, count(distinct "userId") as "# users", count(distinct "sessionId") as "# sessions" from "Session" group by wk order by wk;
 };
@@ -60,7 +62,7 @@ const activeUserMetrics = async () => {
 /**
  * Calculate, pull, and print various metrics per request from Anushka.
  */
-const pullNumbersForPM = async () => {
+export const pullNumbersForPM = async () => {
   const nums = await Promise.all([
     '# of CRs',
     prisma.change_Request.count(),
@@ -110,11 +112,11 @@ const pullNumbersForPM = async () => {
 /**
  * migrate all Change Requests to use Proposed Solutions
  */
-const migrateToProposedSolutions = async () => {
+export const migrateToProposedSolutions = async () => {
   const crs = await prisma.scope_CR.findMany({ include: { changeRequest: true } });
   crs.forEach(async (cr) => {
     const alreadyHasSolution = await prisma.proposed_Solution.findFirst({
-      where: { changeRequestId: cr.scopeCrId }
+      where: { scopeChangeRequestId: cr.scopeCrId }
     });
 
     if (!alreadyHasSolution) {
@@ -124,7 +126,7 @@ const migrateToProposedSolutions = async () => {
           timelineImpact: cr.timelineImpact,
           scopeImpact: cr.scopeImpact,
           budgetImpact: cr.budgetImpact,
-          changeRequestId: cr.scopeCrId,
+          scopeChangeRequestId: cr.scopeCrId,
           createdByUserId: cr.changeRequest.submitterId,
           dateCreated: cr.changeRequest.dateSubmitted,
           approved: cr.changeRequest.accepted ?? false
@@ -137,7 +139,7 @@ const migrateToProposedSolutions = async () => {
 /**
  * Migrate all complete wps to have checked description bullets
  */
-const migrateToCheckableDescBullets = async () => {
+export const migrateToCheckableDescBullets = async () => {
   const wps = await prisma.work_Package.findMany({
     where: { wbsElement: { status: WBS_Element_Status.COMPLETE } },
     include: { wbsElement: true }
@@ -145,13 +147,89 @@ const migrateToCheckableDescBullets = async () => {
 
   wps.forEach(async (wp) => {
     // 1 is James' id
-    const projectLeadId = wp.wbsElement.leadId || 1;
+    const { leadId } = wp.wbsElement;
 
     await prisma.description_Bullet.updateMany({
       where: { wbsElement: { project: null } },
-      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: projectLeadId }
+      data: { dateTimeChecked: calculateEndDate(wp.startDate, wp.duration), userCheckedId: leadId }
     });
   });
+};
+
+/**
+ * Download All Reimbursement Requests with reimbursement status to csv
+ */
+const downloadReimbursementRequests = async () => {
+  const rrs = await prisma.reimbursement_Request.findMany({
+    where: {
+      dateDeleted: null
+    },
+    include: { reimbursementStatuses: true, vendor: true }
+  });
+
+  const promises = rrs.map(
+    async (rr) =>
+      await `${rr.saboId},${await getUserFullName(rr.recipientId)},${rr.totalCost},${
+        rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
+      },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+        rr.reimbursementStatuses.find((rs) => rs.type === Reimbursement_Status_Type.SABO_SUBMITTED)?.dateCreated ?? ''
+      },${rr.vendor.name}`
+  );
+
+  const csv = await Promise.all(promises);
+
+  // if file doesnt exist create it
+  writeFileSync('./reimbursements.csv', csv.join('\n'), 'utf-8');
+};
+
+const getTotalAmountOwedForCashAndBudgetForSubmittedToSaboAndPendingFinanceTeam = async () => {
+  const reimbursementRequests = await prisma.reimbursement_Request.findMany({
+    where: {
+      dateDeleted: null
+    },
+    include: {
+      reimbursementStatuses: true
+    }
+  });
+
+  const submittedToSabo = reimbursementRequests.filter(
+    (rr) => rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.SABO_SUBMITTED
+  );
+
+  const pendingFinance = reimbursementRequests.filter(
+    (rr) => rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type === Reimbursement_Status_Type.PENDING_FINANCE
+  );
+
+  const totalAmountOwedForCashSabo = submittedToSabo.reduce((acc, curr) => {
+    if (curr.account === 'CASH') {
+      return acc + curr.totalCost / 100;
+    }
+    return 0;
+  }, 0);
+  const totalAmountOwedForBudgetSabo = submittedToSabo.reduce((acc, curr) => {
+    if (curr.account === Club_Accounts.BUDGET) {
+      return acc + curr.totalCost / 100;
+    }
+    return acc + 0;
+  }, 0);
+
+  const totalAmountOwedForCashFinance = pendingFinance.reduce((acc, curr) => {
+    if (curr.account === Club_Accounts.CASH) {
+      return acc + curr.totalCost / 100;
+    }
+    return acc + 0;
+  }, 0);
+
+  const totalAmountOwedForBudgetFinance = pendingFinance.reduce((acc, curr) => {
+    if (curr.account === Club_Accounts.BUDGET) {
+      return acc + curr.totalCost / 100;
+    }
+    return acc + 0;
+  }, 0);
+
+  console.log('Total amount owed for cash submitted to SABO:', totalAmountOwedForCashSabo);
+  console.log('Total amount owed for budget submitted to SABO:', totalAmountOwedForBudgetSabo);
+  console.log('Total amount owed for cash pending finance team:', totalAmountOwedForCashFinance);
 };
 
 executeScripts()

@@ -6,7 +6,7 @@
 import { render, screen } from '../test-support/test-utils';
 import PageBlock from '../../layouts/PageBlock';
 
-const renderComponent = (headerRight = false, defaultOpen: boolean) => {
+const renderComponent = (headerRight = false) => {
   return render(
     <PageBlock title={'test'} headerRight={headerRight ? <p>hi</p> : undefined}>
       hello
@@ -16,7 +16,7 @@ const renderComponent = (headerRight = false, defaultOpen: boolean) => {
 
 describe('card component', () => {
   it('renders title', () => {
-    renderComponent(true, true);
+    renderComponent(true);
 
     expect(screen.getByText('test')).toBeInTheDocument();
     expect(screen.getByText('hi')).toBeInTheDocument();
@@ -24,14 +24,14 @@ describe('card component', () => {
   });
 
   it('renders title and headerRight but not children if collapsed', () => {
-    renderComponent(true, false);
+    renderComponent(true);
 
     expect(screen.getByText('test')).toBeInTheDocument();
     expect(screen.getByText('hi')).toBeInTheDocument();
   });
 
   it('doesnt render headerRight if none is given', () => {
-    renderComponent(false, true);
+    renderComponent(false);
 
     expect(screen.queryByText('hi')).not.toBeInTheDocument();
   });

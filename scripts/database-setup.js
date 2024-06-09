@@ -3,6 +3,11 @@ const fs = require('fs');
 const filePath = './src/backend/.env';
 const lineToAdd = 'DATABASE_URL="postgresql://postgres:docker@localhost:5432/nerpm?schema=public"';
 
+if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, lineToAdd, 'utf8');
+    return;
+}
+
 fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
         console.error('Error reading file:', err);

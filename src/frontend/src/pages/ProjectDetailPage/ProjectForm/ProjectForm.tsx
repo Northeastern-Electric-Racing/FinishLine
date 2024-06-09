@@ -32,8 +32,8 @@ export interface ProjectFormInput {
   summary: string;
   links: LinkCreateArgs[];
   crId: string;
-  carNumber: number;
-  teamIds: number[];
+  carNumber: number | undefined;
+  teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
 }
 
@@ -178,9 +178,16 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
         <Stack spacing={4}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2, mt: 2 }}>
-              {!project ? 'Links (optional)' : 'Links'}
+              {!!project ? 'Links' : 'Links (optional)'}
             </Typography>
-            <LinksEditView watch={watch} ls={links} register={register} append={appendLink} remove={removeLink} />
+            <LinksEditView
+              watch={watch}
+              ls={links}
+              register={register}
+              append={appendLink}
+              remove={removeLink}
+              enforceRequired={!!project}
+            />
           </Box>
           <Box>
             <DescriptionBulletsEditView

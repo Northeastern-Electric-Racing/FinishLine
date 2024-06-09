@@ -1,5 +1,5 @@
 import { ClubAccount, AccountCode } from 'shared';
-import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
+import { AccountCodePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
 import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput } from '@mui/material';
@@ -20,7 +20,7 @@ interface AccountCodeFormModalProps {
   showModal: boolean;
   handleClose: () => void;
   defaultValues?: AccountCode;
-  onSubmit: (data: ExpenseTypePayload) => void;
+  onSubmit: (data: AccountCodePayload) => void;
 }
 
 const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: AccountCodeFormModalProps) => {
@@ -41,7 +41,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
   });
   const theme = useTheme();
 
-  const onFormSubmit = async (data: ExpenseTypePayload) => {
+  const onFormSubmit = async (data: AccountCodePayload) => {
     try {
       await onSubmit(data);
     } catch (error: unknown) {

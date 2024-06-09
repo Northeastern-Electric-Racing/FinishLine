@@ -17,7 +17,10 @@ import {
   WorkPackageApiInputs,
   WorkPackageTemplateApiInputs,
   editWorkPackageTemplate,
-  getAllWorkPackageTemplates
+  getAllWorkPackageTemplates,
+  deleteWorkPackageTemplate,
+  getSingleWorkPackageTemplate,
+  createSingleWorkPackageTemplate
 } from '../apis/work-packages.api';
 
 /**
@@ -62,7 +65,7 @@ export const useCreateSingleWorkPackage = () => {
  *
  * @returns React-query utility functions exposed by the useMutation hook
  */
-export const useEditWorkPackage = (wbsNum: WbsNumber) => {
+export const useEditWorkPackage = (_wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, WorkPackageApiInputs>(
     ['work packages', 'edit'],
@@ -156,4 +159,46 @@ export const useAllWorkPackageTemplates = () => {
     const { data } = await getAllWorkPackageTemplates();
     return data;
   });
+};
+
+/**
+ * Custom React Hook to delete a work package template.
+ */
+export const useDeleteWorkPackageTemplate = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, string>(
+    ['work package templates', 'delete'],
+    async (workPackageTemplateId: string) => {
+      const { data } = await deleteWorkPackageTemplate(workPackageTemplateId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work package templates']);
+      }
+    }
+  );
+};
+
+/*
+ * Custom React Hook to get a single workpackage template
+ */
+export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
+  return useQuery<WorkPackageTemplate, Error>(['work package templates'], async () => {
+    const { data } = await getSingleWorkPackageTemplate(workPackageTemplateId);
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to create a workpackage template
+ */
+export const useCreateSingleWorkPackageTemplate = () => {
+  return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
+    ['work package templates', 'create'],
+    async (wptPayload: WorkPackageTemplateApiInputs) => {
+      const { data } = await createSingleWorkPackageTemplate(wptPayload);
+      return data;
+    }
+  );
 };

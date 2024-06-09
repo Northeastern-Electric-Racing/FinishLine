@@ -40,12 +40,6 @@ const UsefulLinks: React.FC = () => {
       </Link>
     </>,
     <>
-      <AttachMoney sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link href="https://forms.gle/6ztRoa1iL7p1KHwP6" target="_blank" underline="hover" fontSize={19} sx={{ pl: 1 }}>
-        Procurement Form
-      </Link>
-    </>,
-    <>
       <Receipt sx={{ fontSize: 17, color: theme.palette.text.primary }} />
       <Link
         href="https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit"
@@ -91,6 +85,18 @@ const UsefulLinks: React.FC = () => {
         sx={{ pl: 1 }}
       >
         Confluence
+      </Link>
+    </>,
+    <>
+      <AttachMoney sx={{ fontSize: 17, color: theme.palette.text.primary }} />
+      <Link
+        href="https://docs.google.com/forms/d/e/1FAIpQLSfLu2tRjlolDEYbVtClJspnSjbHcQt59f3bUZIRnky_uOL9HA/viewform"
+        target="_blank"
+        underline="hover"
+        fontSize={19}
+        sx={{ pl: 1 }}
+      >
+        Sponsorship Form
       </Link>
     </>
   ];

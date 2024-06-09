@@ -108,7 +108,7 @@ enum Design_Review_Status {
 }
 
 model User {
-  userId                     Int                       @id @default(autoincrement())
+  userId                     String                    @id @default(uuid())
   firstName                  String
   lastName                   String
   googleAuthId               String                    @unique
@@ -171,13 +171,15 @@ model User {
   createdDescriptionBullets  Description_Bullet_Type[] @relation(name: "descriptionBulletTypeCreator")
   deletedDescriptionBullets  Description_Bullet_Type[] @relation(name: "descriptionBulletTypeDeleter")
   createdUnits               Unit[]                    @relation(name: "unitCreator")
+  organizationsAsAdvisor     Organization[]            @relation(name: "advisor")
+  organizationsAsTreasurer   Organization[]            @relation(name: "treasurer")
 }
 
 model Role {
-  roleId   Int       @id @default(autoincrement())
+  roleId   String    @id @default(uuid())
   roleType Role_Type
 
-  userId         Int
+  userId         String
   user           User         @relation(fields: [userId], references: [userId])
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
@@ -194,10 +196,10 @@ model Team {
   projects               Project[]                  @relation(name: "assignedBy")
   members                User[]                     @relation(name: "teamsAsMember")
   leads                  User[]                     @relation(name: "teamsAsLead")
-  headId                 Int
+  headId                 String
   head                   User                       @relation(name: "teamsAsHead", fields: [headId], references: [userId])
   dateArchived           DateTime?
-  userArchivedId         Int?
+  userArchivedId         String?
   userArchived           User?                      @relation(name: "userArchived", fields: [userArchivedId], references: [userId])
   meetings               Meeting[]
   proposedProjectChanges Project_Proposed_Changes[] @relation(name: "proposedProjectTeams")
@@ -208,8 +210,8 @@ model Team {
 }
 
 model Session {
-  sessionId  Int      @id @default(autoincrement())
-  userId     Int
+  sessionId  String   @id @default(uuid())
+  userId     String
   user       User     @relation(fields: [userId], references: [userId])
   created    DateTime @default(now())
   deviceInfo String?
@@ -217,25 +219,29 @@ model Session {
 
 model User_Settings {
   id           String @id @default(uuid())
-  userId       Int    @unique
+  userId       String @unique
   user         User   @relation(fields: [userId], references: [userId])
   defaultTheme Theme  @default(DARK)
   slackId      String @default("")
 }
 
 model Change_Request {
-  crId                     Int            @id @default(autoincrement())
-  submitterId              Int
-  submitter                User           @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
-  dateSubmitted            DateTime       @default(now())
-  dateDeleted              DateTime?
-  wbsElementId             Int
+  crId          String    @id @default(uuid())
+  identifier    Int
+  submitterId   String
+  submitter     User      @relation(name: "submittedChangeRequests", fields: [submitterId], references: [userId])
+  dateSubmitted DateTime  @default(now())
+  dateDeleted   DateTime?
+
+  organizationId           String
+  organization             Organization   @relation(fields: [organizationId], references: [organizationId])
+  wbsElementId             String
   wbsElement               WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
   type                     CR_Type
-  reviewerId               Int?
+  reviewerId               String?
   reviewer                 User?          @relation(name: "reviewedChangeRequests", fields: [reviewerId], references: [userId])
   requestedReviewers       User[]         @relation(name: "requestedChangeRequestReviewers")
-  deletedByUserId          Int?
+  deletedByUserId          String?
   deletedBy                User?          @relation(name: "deletedChangeRequests", fields: [deletedByUserId], references: [userId])
   dateReviewed             DateTime?
   accepted                 Boolean?
@@ -245,88 +251,91 @@ model Change_Request {
   stageGateChangeRequest   Stage_Gate_CR?
   activationChangeRequest  Activation_CR?
   notificationSlackThreads Message_Info[]
+
+  @@unique([identifier, organizationId], name: "uniqueChangeRequest")
 }
 
 model Message_Info {
-  messageInfoId   String          @id @default(uuid())
-  channelId       String
-  timestamp       String
-  changeRequestId Int?
+  messageInfoId String @id @default(uuid())
+  channelId     String
+  timestamp     String
+
+  changeRequestId String?
   changeRequest   Change_Request? @relation(fields: [changeRequestId], references: [crId])
   designReviewId  String?
   designReview    Design_Review?  @relation(fields: [designReviewId], references: [designReviewId])
 }
 
 model Scope_CR {
-  scopeCrId            Int                   @id @default(autoincrement())
-  changeRequestId      Int                   @unique
-  changeRequest        Change_Request        @relation(fields: [changeRequestId], references: [crId])
-  what                 String
-  why                  Scope_CR_Why[]
-  scopeImpact          String
-  timelineImpact       Int
-  budgetImpact         Int
-  proposedSolutions    Proposed_Solution[]
-  wbsProposedChangesId String?
-  wbsProposedChanges   Wbs_Proposed_Changes?
+  scopeCrId          String                @id @default(uuid())
+  changeRequestId    String                @unique
+  changeRequest      Change_Request        @relation(fields: [changeRequestId], references: [crId])
+  what               String
+  why                Scope_CR_Why[]
+  scopeImpact        String
+  timelineImpact     Int
+  budgetImpact       Int
+  proposedSolutions  Proposed_Solution[]
+  wbsProposedChanges Wbs_Proposed_Changes? @relation(name: "wbsProposedChanges")
+  wbsOriginalData    Wbs_Proposed_Changes? @relation(name: "wbsOriginalData")
 }
 
 model Proposed_Solution {
-  proposedSolutionId String   @id @default(uuid())
-  description        String
-  timelineImpact     Int
-  budgetImpact       Int
-  scopeImpact        String
-  changeRequest      Scope_CR @relation(fields: [changeRequestId], references: [scopeCrId])
-  changeRequestId    Int
-  createdByUserId    Int
-  createdBy          User     @relation(fields: [createdByUserId], references: [userId])
-  dateCreated        DateTime @default(now())
-  approved           Boolean  @default(false)
+  proposedSolutionId   String   @id @default(uuid())
+  description          String
+  timelineImpact       Int
+  budgetImpact         Int
+  scopeImpact          String
+  scopeChangeRequest   Scope_CR @relation(fields: [scopeChangeRequestId], references: [scopeCrId])
+  scopeChangeRequestId String
+  createdByUserId      String
+  createdBy            User     @relation(fields: [createdByUserId], references: [userId])
+  dateCreated          DateTime @default(now())
+  approved             Boolean  @default(false)
 }
 
 model Scope_CR_Why {
-  scopeCrWhyId Int               @id @default(autoincrement())
-  scopeCrId    Int
+  scopeCrWhyId String            @id @default(uuid())
+  scopeCrId    String
   scopeCr      Scope_CR          @relation(fields: [scopeCrId], references: [scopeCrId])
   type         Scope_CR_Why_Type
   explain      String
 }
 
 model Stage_Gate_CR {
-  stageGateCrId   Int            @id @default(autoincrement())
-  changeRequestId Int            @unique
+  stageGateCrId   String         @id @default(uuid())
+  changeRequestId String         @unique
   changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
   leftoverBudget  Int
   confirmDone     Boolean
 }
 
 model Activation_CR {
-  activationCrId  Int            @id @default(autoincrement())
-  changeRequestId Int            @unique
+  activationCrId  String         @id @default(uuid())
+  changeRequestId String         @unique
   changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
-  leadId          Int
+  leadId          String
   lead            User           @relation(name: "markAsLead", fields: [leadId], references: [userId])
-  managerId       Int
+  managerId       String
   manager         User           @relation(name: "markAsManager", fields: [managerId], references: [userId])
   startDate       DateTime
   confirmDetails  Boolean
 }
 
 model Change {
-  changeId        Int            @id @default(autoincrement())
-  changeRequestId Int
+  changeId        String         @id @default(uuid())
+  changeRequestId String
   changeRequest   Change_Request @relation(fields: [changeRequestId], references: [crId])
   dateImplemented DateTime       @default(now())
-  implementerId   Int
+  implementerId   String
   implementer     User           @relation(fields: [implementerId], references: [userId])
-  wbsElementId    Int
+  wbsElementId    String
   wbsElement      WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
   detail          String
 }
 
 model WBS_Element {
-  wbsElementId      Int                @id @default(autoincrement())
+  wbsElementId      String             @id @default(uuid())
   dateCreated       DateTime           @default(now())
   dateDeleted       DateTime?
   carNumber         Int
@@ -334,13 +343,13 @@ model WBS_Element {
   workPackageNumber Int
   name              String
   status            WBS_Element_Status @default(INACTIVE)
-  leadId            Int?
+  leadId            String?
   lead              User?              @relation(name: "lead", fields: [leadId], references: [userId])
-  managerId         Int?
+  managerId         String?
   manager           User?              @relation(name: "manager", fields: [managerId], references: [userId])
   changeRequests    Change_Request[]
   changes           Change[]
-  deletedByUserId   Int?
+  deletedByUserId   String?
   deletedBy         User?              @relation(name: "deletedWbsElements", fields: [deletedByUserId], references: [userId])
 
   // A WBS Element can be either a project, a work package or a car, not a combination or none of them
@@ -364,8 +373,8 @@ model WBS_Element {
 }
 
 model Project {
-  projectId    Int            @id @default(autoincrement())
-  wbsElementId Int            @unique
+  projectId    String         @id @default(uuid())
+  wbsElementId String         @unique
   wbsElement   WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
   budget       Int            @default(0)
   summary      String
@@ -377,10 +386,10 @@ model Project {
 }
 
 model Work_Package {
-  workPackageId  Int                 @id @default(autoincrement())
-  wbsElementId   Int                 @unique
+  workPackageId  String              @id @default(uuid())
+  wbsElementId   String              @unique
   wbsElement     WBS_Element         @relation(fields: [wbsElementId], references: [wbsElementId])
-  projectId      Int
+  projectId      String
   project        Project             @relation(fields: [projectId], references: [projectId])
   orderInProject Int
   startDate      DateTime
@@ -393,9 +402,9 @@ model Link_Type {
   id             String       @id @default(uuid())
   name           String
   dateCreated    DateTime     @default(now())
-  creatorId      Int
   iconName       String
   required       Boolean
+  creatorId      String
   creator        User         @relation(name: "linkTypeCreator", fields: [creatorId], references: [userId])
   links          Link[]       @relation(name: "linkTypes")
   organizationId String
@@ -407,7 +416,7 @@ model Link_Type {
 model Link {
   linkId      String    @id @default(uuid())
   url         String
-  creatorId   Int
+  creatorId   String
   creator     User      @relation(name: "linkCreator", fields: [creatorId], references: [userId])
   dateCreated DateTime  @default(now())
   dateDeleted DateTime?
@@ -415,7 +424,7 @@ model Link {
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
   // Either its on a wbsElement or a wbsProposedChanges, not both and not neither
-  wbsElementId         Int?
+  wbsElementId         String?
   wbsElment            WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
   wbsProposedChangesId String?
   wbsProposedChanges   Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
@@ -429,9 +438,9 @@ model Description_Bullet_Type {
   projectRequired     Boolean
   workPackageRequired Boolean
 
-  userCreatedId      Int
+  userCreatedId      String
   userCreated        User                 @relation(name: "descriptionBulletTypeCreator", fields: [userCreatedId], references: [userId])
-  userDeletedId      Int?
+  userDeletedId      String?
   userDeleted        User?                @relation(name: "descriptionBulletTypeDeleter", fields: [userDeletedId], references: [userId])
   descriptionBullets Description_Bullet[]
   organizationId     String
@@ -441,9 +450,9 @@ model Description_Bullet_Type {
 }
 
 model Description_Bullet {
-  descriptionId           Int                     @id @default(autoincrement())
+  descriptionId           String                  @id @default(uuid())
   dateAdded               DateTime                @default(now())
-  userCheckedId           Int?
+  userCheckedId           String?
   userChecked             User?                   @relation(name: "checkDescriptionBullets", fields: [userCheckedId], references: [userId])
   dateTimeChecked         DateTime?
   dateDeleted             DateTime?
@@ -452,7 +461,7 @@ model Description_Bullet {
   descriptionBulletType   Description_Bullet_Type @relation(fields: [descriptionBulletTypeId], references: [id])
 
   // Relation references, A description bullet can be either on a WBS_Element, a Proposed Change or a work package template, not multiple and not none
-  wbsElementId          Int?
+  wbsElementId          String?
   wbsElement            WBS_Element?           @relation(fields: [wbsElementId], references: [wbsElementId])
   proposedChangeId      String?
   proposedChange        Wbs_Proposed_Changes?  @relation(fields: [proposedChangeId], references: [wbsProposedChangesId], name: "proposedDescriptionBulletChanges")
@@ -469,19 +478,19 @@ model Task {
   priority        Task_Priority
   status          Task_Status
   deletedBy       User?         @relation(name: "deletedBy", fields: [deletedByUserId], references: [userId])
-  deletedByUserId Int?
+  deletedByUserId String?
   dateDeleted     DateTime?
   createdBy       User          @relation(name: "createdBy", fields: [createdByUserId], references: [userId])
-  createdByUserId Int
+  createdByUserId String
   dateCreated     DateTime      @default(now())
   wbsElement      WBS_Element   @relation(fields: [wbsElementId], references: [wbsElementId])
-  wbsElementId    Int
+  wbsElementId    String
 }
 
 model Reimbursement_Status {
-  reimbursementStatusId  Int                       @id @default(autoincrement())
+  reimbursementStatusId  String                    @id @default(uuid())
   type                   Reimbursement_Status_Type
-  userId                 Int
+  userId                 String
   user                   User                      @relation(fields: [userId], references: [userId])
   dateCreated            DateTime                  @default(now())
   reimbursementRequestId String
@@ -492,11 +501,11 @@ model Receipt {
   receiptId              String                @id @default(uuid())
   googleFileId           String                @unique
   name                   String
-  deletedByUserId        Int?
+  deletedByUserId        String?
   deletedBy              User?                 @relation(name: "deletedReceipts", fields: [deletedByUserId], references: [userId])
   dateDeleted            DateTime?
   createdBy              User                  @relation(name: "receiptsCreatedBy", fields: [createdByUserId], references: [userId])
-  createdByUserId        Int
+  createdByUserId        String
   dateCreated            DateTime              @default(now())
   reimbursementRequestId String
   reimbursementRequest   Reimbursement_Request @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
@@ -504,13 +513,13 @@ model Receipt {
 
 model Reimbursement_Request {
   reimbursementRequestId String                  @id @default(uuid())
-  identifier             Int                     @unique @default(autoincrement())
+  identifier             Int
   saboId                 Int?                    @unique
   dateCreated            DateTime                @default(now())
   dateDeleted            DateTime?
   dateOfExpense          DateTime
   reimbursementStatuses  Reimbursement_Status[]
-  recipientId            Int
+  recipientId            String
   recipient              User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
   vendorId               String
   vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
@@ -521,6 +530,10 @@ model Reimbursement_Request {
   dateDelivered          DateTime?
   accountCodeId          String
   accountCode            Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
+  organizationId         String
+  organization           Organization            @relation(fields: [organizationId], references: [organizationId])
+
+  @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
 }
 
 model Reimbursement_Product_Reason {
@@ -528,7 +541,7 @@ model Reimbursement_Product_Reason {
   reimbursementProduct         Reimbursement_Product?
 
   // Can be either a WBS_Element or an Other_Reimbursement_Product_Reason, not both and not neither
-  wbsElementId Int?
+  wbsElementId String?
   wbsElement   WBS_Element?                        @relation(fields: [wbsElementId], references: [wbsElementId])
   otherReason  Other_Reimbursement_Product_Reason?
 }
@@ -574,9 +587,9 @@ model Reimbursement {
   reimbursementId String       @id @default(uuid())
   dateCreated     DateTime     @default(now())
   amount          Int
-  userSubmittedId Int
+  userSubmittedId String
   userSubmitted   User         @relation(fields: [userSubmittedId], references: [userId], name: "submitter")
-  purchaserId     Int
+  purchaserId     String
   purchaser       User         @relation(fields: [purchaserId], references: [userId], name: "purchaser")
   organizationId  String
   organization    Organization @relation(fields: [organizationId], references: [organizationId])
@@ -585,7 +598,7 @@ model Reimbursement {
 model User_Secure_Settings {
   userSecureSettingsId String @id @default(uuid())
   nuid                 String @unique
-  userId               Int    @unique
+  userId               String @unique
   user                 User   @relation(fields: [userId], references: [userId])
   street               String
   city                 String
@@ -598,7 +611,7 @@ model Unit {
   id             String       @id @default(uuid())
   name           String
   materials      Material[]
-  userCreatedId  Int
+  userCreatedId  String
   userCreated    User         @relation(name: "unitCreator", fields: [userCreatedId], references: [userId])
   dateCreated    DateTime     @default(now())
   organizationId String
@@ -613,12 +626,12 @@ model Assembly {
   pdmFileName   String?
   dateDeleted   DateTime?
   userDeleted   User?       @relation(fields: [userDeletedId], references: [userId], name: "assemblyDeleter")
-  userDeletedId Int?
+  userDeletedId String?
   dateCreated   DateTime
   userCreated   User        @relation(fields: [userCreatedId], references: [userId], name: "assemblyCreator")
-  userCreatedId Int
+  userCreatedId String
   wbsElement    WBS_Element @relation(fields: [wbsElementId], references: [wbsElementId])
-  wbsElementId  Int
+  wbsElementId  String
   materials     Material[]
 }
 
@@ -628,13 +641,13 @@ model Material {
   assemblyId             String?
   name                   String
   wbsElement             WBS_Element     @relation(fields: [wbsElementId], references: [wbsElementId])
-  wbsElementId           Int
+  wbsElementId           String
   dateDeleted            DateTime?
   userDeleted            User?           @relation(fields: [userDeletedId], references: [userId], name: "materialDeleter")
-  userDeletedId          Int?
+  userDeletedId          String?
   dateCreated            DateTime
   userCreated            User            @relation(fields: [userCreatedId], references: [userId], name: "materialCreator")
-  userCreatedId          Int
+  userCreatedId          String
   status                 Material_Status
   materialType           Material_Type   @relation(fields: [materialTypeId], references: [id])
   materialTypeId         String
@@ -656,7 +669,7 @@ model Material_Type {
   name           String
   dateCreated    DateTime
   dateDeleted    DateTime?
-  userCreatedId  Int
+  userCreatedId  String
   userCreated    User         @relation(name: "materialTypeCreator", fields: [userCreatedId], references: [userId])
   materials      Material[]
   organizationId String
@@ -670,7 +683,7 @@ model Manufacturer {
   name           String
   dateCreated    DateTime
   dateDeleted    DateTime?
-  userCreatedId  Int
+  userCreatedId  String
   userCreated    User         @relation(name: "manufacturerCreator", fields: [userCreatedId], references: [userId])
   materials      Material[]
   organizationId String
@@ -698,7 +711,7 @@ model Design_Review {
   meetingTimes             Int[]
   dateCreated              DateTime             @default(now()) @db.Timestamp(3)
   userCreated              User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
-  userCreatedId            Int
+  userCreatedId            String
   status                   Design_Review_Status
   teamType                 Team_Type            @relation(fields: [teamTypeId], references: [teamTypeId])
   teamTypeId               String
@@ -713,9 +726,9 @@ model Design_Review {
   attendees                User[]               @relation(name: "userAttended")
   dateDeleted              DateTime?            @db.Timestamp(3)
   userDeleted              User?                @relation(fields: [userDeletedId], references: [userId], name: "designReviewDeleter")
-  userDeletedId            Int?
+  userDeletedId            String?
   docTemplateLink          String?
-  wbsElementId             Int
+  wbsElementId             String
   wbsElement               WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
   notificationSlackThreads Message_Info[]
 }
@@ -727,7 +740,7 @@ model Schedule_Settings {
   // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
   availability         Int[]
   User                 User   @relation(fields: [userId], references: [userId])
-  userId               Int    @unique
+  userId               String @unique
 }
 
 model Meeting {
@@ -743,39 +756,46 @@ model Wbs_Proposed_Changes {
   wbsProposedChangesId             String                         @id @default(uuid())
   name                             String
   status                           WBS_Element_Status
-  leadId                           Int?
+  leadId                           String?
   lead                             User?                          @relation(name: "wbslead", fields: [leadId], references: [userId])
-  managerId                        Int?
+  managerId                        String?
   manager                          User?                          @relation(name: "wbsmanager", fields: [managerId], references: [userId])
   links                            Link[]                         @relation(name: "proposedChangeLinks")
-  changeRequest                    Scope_CR                       @relation(fields: [changeRequestId], references: [scopeCrId])
-  changeRequestId                  Int                            @unique
   projectProposedChanges           Project_Proposed_Changes?      @relation(name: "projectProposedChanges")
   workPackageProposedChanges       Work_Package_Proposed_Changes? @relation(name: "wpProposedChanges")
   proposedDescriptionBulletChanges Description_Bullet[]           @relation(name: "proposedDescriptionBulletChanges")
   dateDeleted                      DateTime?
+
+  // A Wbs Proposed Change can either be original data or a proposed change, not both and not neither
+  scopeChangeRequestAsOriginalData   Scope_CR? @relation(name: "wbsOriginalData", fields: [scopeChangeRequestAsOriginalDataId], references: [scopeCrId])
+  scopeChangeRequestAsOriginalDataId String?   @unique
+  scopeChangeRequest                 Scope_CR? @relation(name: "wbsProposedChanges", fields: [scopeChangeRequestId], references: [scopeCrId])
+  scopeChangeRequestId               String?   @unique
 }
 
 model Project_Proposed_Changes {
   projectProposedChangesId String               @id @default(uuid())
   budget                   Int
   summary                  String
-  rules                    String[]
   teams                    Team[]               @relation(name: "proposedProjectTeams")
   wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique
-  carId                    String?
-  car                      Car?                 @relation(fields: [carId], references: [carId])
+
+  workPackageProposedChanges Work_Package_Proposed_Changes[]
+  carId                      String?
+  car                        Car?                            @relation(fields: [carId], references: [carId])
 }
 
 model Work_Package_Proposed_Changes {
-  workPackageProposedChangesId String               @id @default(uuid())
-  startDate                    DateTime             @db.Date
+  workPackageProposedChangesId String                    @id @default(uuid())
+  startDate                    DateTime                  @db.Date
   duration                     Int
-  blockedBy                    WBS_Element[]        @relation(name: "proposedBlockedBy")
+  blockedBy                    WBS_Element[]             @relation(name: "proposedBlockedBy")
   stage                        Work_Package_Stage?
-  wbsProposedChanges           Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
-  wbsProposedChangesId         String               @unique
+  wbsProposedChanges           Wbs_Proposed_Changes      @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChangesId         String                    @unique
+  projectProposedChanges       Project_Proposed_Changes? @relation(fields: [projectProposedChangesId], references: [projectProposedChangesId])
+  projectProposedChangesId     String?
 }
 
 model Work_Package_Template {
@@ -788,12 +808,12 @@ model Work_Package_Template {
   blockedBy             Work_Package_Template[] @relation("blocking")
   blocking              Work_Package_Template[] @relation("blocking")
   descriptionBullets    Description_Bullet[]
-  dateCreated           DateTime
+  dateCreated           DateTime                @default(now())
   userCreated           User                    @relation(fields: [userCreatedId], references: [userId], name: "workPackageTemplateCreator")
-  userCreatedId         Int
+  userCreatedId         String
   dateDeleted           DateTime?
   userDeleted           User?                   @relation(fields: [userDeletedId], references: [userId], name: "workPackageTemplateDeleter")
-  userDeletedId         Int?
+  userDeletedId         String?
   organizationId        String
   organization          Organization            @relation(fields: [organizationId], references: [organizationId])
 }
@@ -805,7 +825,7 @@ model Car {
   // Relation references
   projects               Project[]
   projectProposedChanges Project_Proposed_Changes[]
-  wbsElementId           Int                        @unique
+  wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
 }
 
@@ -813,11 +833,15 @@ model Organization {
   organizationId String    @id @default(uuid())
   name           String
   dateCreated    DateTime  @default(now())
-  userCreatedId  Int
+  userCreatedId  String
   userCreated    User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
   dateDeleted    DateTime?
-  userDeletedId  Int?
+  userDeletedId  String?
   userDeleted    User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
+  treasurerId    String?
+  treasurer      User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
+  advisor        User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
+  advisorId      String?
 
   // Relation references
   wbsElements            WBS_Element[]
@@ -833,5 +857,7 @@ model Organization {
   units                  Unit[]
   descriptionBulletTypes Description_Bullet_Type[]
   workPackageTemplates   Work_Package_Template[]
-  Role                   Role[]
+  roles                  Role[]
+  changeRequests         Change_Request[]
+  reimbursementReqeusts  Reimbursement_Request[]
 }

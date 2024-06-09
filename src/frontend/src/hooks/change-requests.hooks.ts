@@ -40,7 +40,7 @@ export const useAllChangeRequests = () => {
  *
  * @param id Change request ID of the requested change request.
  */
-export const useSingleChangeRequest = (id: number) => {
+export const useSingleChangeRequest = (id: string) => {
   return useQuery<ChangeRequest, Error>(['change requests', id], async () => {
     const { data } = await getSingleChangeRequest(id);
     return data;
@@ -48,8 +48,8 @@ export const useSingleChangeRequest = (id: number) => {
 };
 
 export interface ReviewPayload {
-  reviewerId: number;
-  crId: number;
+  reviewerId: string;
+  crId: string;
   accepted: boolean;
   reviewNotes: string;
   psId: string;
@@ -85,9 +85,9 @@ export const useReviewChangeRequest = () => {
  */
 export const useDeleteChangeRequest = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, number>(
+  return useMutation<{ message: string }, Error, string>(
     ['change requests', 'delete'],
-    async (id: number) => {
+    async (id: string) => {
       const { data } = await deleteChangeRequest(id);
       return data;
     },
@@ -129,25 +129,25 @@ export const useCreateStandardChangeRequest = () => {
 };
 
 export interface CreateActivationChangeRequestPayload {
-  submitterId: number;
+  submitterId: string;
   wbsNum: WbsNumber;
-  projectLeadId: number;
-  projectManagerId: number;
+  leadId: string;
+  managerId: string;
   startDate: string;
   confirmDetails: boolean;
   type: string;
 }
 
 export interface CreateStageGateChangeRequestPayload {
-  submitterId: number;
+  submitterId: string;
   wbsNum: WbsNumber;
   confirmDone: boolean;
   type: string;
 }
 
-export interface CreateProposeSolutionPayload {
-  submitterId: number;
-  crId: number;
+export interface CreateProposedSolutionPayload {
+  submitterId: string;
+  crId: string;
   description: string;
   scopeImpact: string;
   timelineImpact: number;
@@ -164,8 +164,8 @@ export const useCreateActivationChangeRequest = () => {
       const { data } = await createActivationChangeRequest(
         payload.submitterId,
         payload.wbsNum,
-        payload.projectLeadId,
-        payload.projectManagerId,
+        payload.leadId,
+        payload.managerId,
         payload.startDate,
         payload.confirmDetails
       );
@@ -192,9 +192,9 @@ export const useCreateStageGateChangeRequest = () => {
  */
 export const useCreateProposeSolution = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateProposeSolutionPayload>(
+  return useMutation<{ message: string }, Error, CreateProposedSolutionPayload>(
     ['change requests', 'create', 'propose solution'],
-    async (payload: CreateProposeSolutionPayload) => {
+    async (payload: CreateProposedSolutionPayload) => {
       const { data } = await addProposedSolution(
         payload.submitterId,
         payload.crId,
@@ -214,7 +214,7 @@ export const useCreateProposeSolution = () => {
 };
 
 export interface CRReviewPayload {
-  userIds: number[];
+  userIds: string[];
 }
 
 /**

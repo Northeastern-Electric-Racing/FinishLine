@@ -93,7 +93,7 @@ export const sendSlackTaskAssignedNotification = async (
  * @param requestId the id if the reimbursement request
  * @param submitterId the id of the user who created the reimbursement request
  */
-export const sendReimbursementRequestCreatedNotification = async (requestId: string, submitterId: number): Promise<void> => {
+export const sendReimbursementRequestCreatedNotification = async (requestId: string, submitterId: string): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
@@ -174,14 +174,15 @@ export const sendSlackDesignReviewConfirmNotification = async (
 export const sendSlackChangeRequestNotification = async (
   team: Team,
   message: string,
-  crId: number,
+  crId: string,
+  identifier: number,
   budgetImpact?: number
 ): Promise<{ channelId: string; ts: string }[]> => {
   if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
   const fullMsg = `:tada: New Change Request! :tada: ${message}`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
-  const btnText = `View CR #${crId}`;
+  const btnText = `View CR #${identifier}`;
   const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
   if (notification) msgs.push(notification);
 
@@ -222,7 +223,8 @@ export const sendAndGetSlackCRNotifications = async (
     const sentNotifications: { channelId: string; ts: string }[] = await sendSlackChangeRequestNotification(
       team,
       message,
-      changeRequest.crId
+      changeRequest.crId,
+      changeRequest.identifier
     );
     if (sentNotifications) notifications.push(...sentNotifications);
   });
@@ -283,7 +285,7 @@ export const sendDRUserConfirmationToThread = async (
     messageInfoId: string;
     channelId: string;
     timestamp: string;
-    changeRequestId: number | null;
+    changeRequestId: string | null;
   }[],
   submitter: UserWithSettings
 ) => {
@@ -307,7 +309,7 @@ export const sendDRConfirmationToThread = async (
     messageInfoId: string;
     channelId: string;
     timestamp: string;
-    changeRequestId: number | null;
+    changeRequestId: string | null;
   }[],
   submitter: UserWithSettings
 ) => {
@@ -331,7 +333,7 @@ export const sendDRScheduledSlackNotif = async (
     messageInfoId: string;
     channelId: string;
     timestamp: string;
-    changeRequestId: number | null;
+    changeRequestId: string | null;
   }[],
   designReview: Design_Review & { wbsElement: WBS_Element; userCreated: User }
 ) => {
@@ -367,7 +369,7 @@ export const sendDRScheduledSlackNotif = async (
   }
 };
 
-export const sendSlackCRReviewedNotification = async (slackId: string, crId: number) => {
+export const sendSlackCRReviewedNotification = async (slackId: string, crId: string) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
   const fullMsg = `:tada: Your Change Request was just reviewed! Click the link to view! :tada:`;
@@ -390,9 +392,9 @@ export const sendSlackCRStatusToThread = async (
     messageInfoId: string;
     channelId: string;
     timestamp: string;
-    changeRequestId: number | null;
+    changeRequestId: string | null;
   }[],
-  crId: number,
+  crId: string,
   approved: boolean
 ) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
@@ -422,7 +424,7 @@ export const sendSlackCRStatusToThread = async (
  * @param crId the change request to add the slack threads to
  * @param notifications the slack threads to add to the change request
  */
-export const addSlackThreadsToChangeRequest = async (crId: number, threads: { channelId: string; ts: string }[]) => {
+export const addSlackThreadsToChangeRequest = async (crId: string, threads: { channelId: string; ts: string }[]) => {
   const promises = threads.map((notification) =>
     prisma.message_Info.create({
       data: {

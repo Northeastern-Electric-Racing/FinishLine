@@ -5,8 +5,8 @@
 import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
-  ExpenseTypePayload,
-  EditVendorPayload
+  EditVendorPayload,
+  AccountCodePayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -17,7 +17,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { AccountCode } from 'shared';
+import { AccountCode, ReimbursementRequest } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -136,7 +136,7 @@ export const getCurrentUserReimbursementRequests = () => {
  * Gets all the reimbursement requests
  */
 export const getAllReimbursementRequests = () => {
-  return axios.get(apiUrls.financeEndpoints(), {
+  return axios.get<ReimbursementRequest[]>(apiUrls.financeEndpoints(), {
     transformResponse: (data) => JSON.parse(data).map(reimbursementRequestTransformer)
   });
 };
@@ -308,7 +308,7 @@ export const reportRefund = (amount: number, dateReceived: string) => {
  * @param accountCodeData the edited data of the expense type
  * @returns the updated expense type
  */
-export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePayload) => {
+export const editAccountCode = async (id: string, accountCodeData: AccountCodePayload) => {
   return axios.post(apiUrls.financeEditAccountCode(id), accountCodeData);
 };
 
@@ -317,7 +317,7 @@ export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePa
  * @param accountCodeData the data for the expense type
  * @returns the new expense type
  */
-export const createAccountCode = async (accountCodeData: ExpenseTypePayload) => {
+export const createAccountCode = async (accountCodeData: AccountCodePayload) => {
   return axios.post(apiUrls.financeCreateAccountCode(), accountCodeData);
 };
 

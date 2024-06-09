@@ -11,17 +11,23 @@ import {
   getAllDesignReviews,
   getAllTeamTypes,
   getSingleDesignReview,
-  markUserConfirmed
+  markUserConfirmed,
+  createTeamType
 } from '../apis/design-reviews.api';
 import { useCurrentUser } from './users.hooks';
 
 export interface CreateDesignReviewsPayload {
   dateScheduled: Date;
   teamTypeId: string;
-  requiredMemberIds: number[];
-  optionalMemberIds: number[];
+  requiredMemberIds: string[];
+  optionalMemberIds: string[];
   wbsNum: WbsNumber;
   meetingTimes: number[];
+}
+
+export interface CreateTeamTypePayload {
+  name: string;
+  iconName: string;
 }
 
 export const useCreateDesignReviews = () => {
@@ -55,15 +61,15 @@ export const useAllDesignReviews = () => {
 export interface EditDesignReviewPayload {
   dateScheduled: Date;
   teamTypeId: string;
-  requiredMembersIds: number[];
-  optionalMembersIds: number[];
+  requiredMembersIds: string[];
+  optionalMembersIds: string[];
   isOnline: boolean;
   isInPerson: boolean;
   zoomLink?: string;
   location?: string;
   docTemplateLink?: string;
   status: DesignReviewStatus;
-  attendees: number[];
+  attendees: string[];
   meetingTimes: number[];
 }
 
@@ -97,6 +103,27 @@ export const useAllTeamTypes = () => {
     const { data } = await getAllTeamTypes();
     return data;
   });
+};
+
+/**
+ * Custom react hook to create a team type
+ *
+ * @returns the team type created
+ */
+export const useCreateTeamType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamType, Error, CreateTeamTypePayload>(
+    ['teamTypes', 'create'],
+    async (teamTypePayload) => {
+      const { data } = await createTeamType(teamTypePayload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teamTypes']);
+      }
+    }
+  );
 };
 
 /**

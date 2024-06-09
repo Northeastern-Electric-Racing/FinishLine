@@ -16,7 +16,7 @@ import {
   exampleGuestUser,
   exampleMemberUser
 } from '../../test-support/test-data/users.stub';
-import { render, screen, routerWrapperBuilder, act, fireEvent } from '../../test-support/test-utils';
+import { render, screen, routerWrapperBuilder, fireEvent } from '../../test-support/test-utils';
 import { mockUseQueryResult, mockAuth } from '../../test-support/test-data/test-utils.stub';
 import { useSingleChangeRequest } from '../../../hooks/change-requests.hooks';
 import { useAuth } from '../../../hooks/auth.hooks';
@@ -97,9 +97,7 @@ describe.skip('change request details container', () => {
     mockAuthHook(exampleAdminUser);
     renderComponent();
 
-    act(() => {
-      fireEvent.click(screen.getByText('Implement Change Request'));
-    });
+    fireEvent.click(screen.getByText('Implement Change Request'));
     expect(screen.getByText('Create New Project')).not.toHaveAttribute('disabled');
     expect(screen.getByText('Create New Work Package')).not.toHaveAttribute('disabled');
   });
@@ -109,9 +107,7 @@ describe.skip('change request details container', () => {
     mockAuthHook(exampleGuestUser);
     renderComponent();
 
-    act(() => {
-      fireEvent.click(screen.getByText('Implement Change Request'));
-    });
+    fireEvent.click(screen.getByText('Implement Change Request'));
     expect(screen.getByText('Create New Project')).toHaveAttribute('disabled');
     expect(screen.getByText('Create New Work Package')).toHaveAttribute('disabled');
   });

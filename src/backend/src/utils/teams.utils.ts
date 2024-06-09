@@ -74,7 +74,7 @@ export const getTeamsFromUsers = (users: UserWithTeams[]): Team[][] => {
 };
 
 export type UserWithId = {
-  userId: number;
+  userId: string;
 };
 
 /**

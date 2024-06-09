@@ -22,9 +22,9 @@ describe('Change request details activation cr display element tests', () => {
   it('Renders everything', () => {
     renderComponent(cr);
     expect(screen.getByText(`Project Lead`)).toBeInTheDocument();
-    expect(screen.getByText(`${cr.projectLead.firstName} ${cr.projectLead.lastName}`)).toBeInTheDocument();
+    expect(screen.getByText(`${cr.lead.firstName} ${cr.lead.lastName}`)).toBeInTheDocument();
     expect(screen.getByText(`Project Manager`)).toBeInTheDocument();
-    expect(screen.getByText(`${cr.projectManager.firstName} ${cr.projectManager.lastName}`)).toBeInTheDocument();
+    expect(screen.getByText(`${cr.manager.firstName} ${cr.manager.lastName}`)).toBeInTheDocument();
     expect(screen.getByText(`Start Date`)).toBeInTheDocument();
     expect(screen.getByText(`${datePipe(cr.startDate)}`)).toBeInTheDocument();
   });

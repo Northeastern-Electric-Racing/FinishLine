@@ -37,14 +37,6 @@ export interface WorkPackageTemplate {
   descriptionBullets: DescriptionBullet[];
   dateCreated: Date;
   userCreated: User;
-  userCreatedId: Number;
   dateDeleted?: Date;
   userDeleted?: User;
-  userDeletedId?: Number;
-}
-
-export interface BlockedByCreateArgs {
-  blockedByInfoId?: string;
-  stage?: WorkPackageStage;
-  name: string;
 }

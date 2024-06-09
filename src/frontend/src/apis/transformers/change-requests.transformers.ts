@@ -29,7 +29,7 @@ export const changeRequestTransformer = (changeRequest: ChangeRequest | Standard
   }
   const output: ChangeRequest = data;
 
-  const workPackageProposedChanges = (changeRequest as StandardChangeRequest).workPackageProposedChanges;
+  const { workPackageProposedChanges } = changeRequest as StandardChangeRequest;
   if (workPackageProposedChanges && workPackageProposedChanges.startDate) {
     const scopeOutput = {
       ...data,

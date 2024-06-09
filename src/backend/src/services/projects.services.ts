@@ -125,15 +125,15 @@ export default class ProjectsService {
    * @param linkCreateArgs the link create args
    * @param summary the new summary of the project
    * @param descriptionBullets the new description bullets of the project
-   * @param projectLeadId the new projectLead of the project
-   * @param projectManagerId the new projectManager of the project
+   * @param leadId the new lead of the project
+   * @param managerId the new manager of the project
    * @param organizationId the id of the organization the user is currently in
    * @returns the wbs number of the created project
    * @throws if the user doesn't have permission or if the change request is invalid
    */
   static async createProject(
     user: User,
-    crId: number,
+    crId: string,
     carNumber: number,
     name: string,
     summary: string,
@@ -141,8 +141,8 @@ export default class ProjectsService {
     budget: number | null,
     linkCreateArgs: LinkCreateArgs[] | null,
     descriptionBullets: DescriptionBulletPreview[],
-    projectLeadId: number | null,
-    projectManagerId: number | null,
+    leadId: string | null,
+    managerId: string | null,
     organizationId: string
   ): Promise<Project> {
     const { userId } = user;
@@ -214,8 +214,8 @@ export default class ProjectsService {
       summary,
       descriptionBullets,
       linkCreateArgs,
-      projectLeadId,
-      projectManagerId,
+      leadId,
+      managerId,
       organizationId
     );
 
@@ -232,22 +232,22 @@ export default class ProjectsService {
    * @param summary the new summary of the project
    * @param newDescriptionBullets the new description bullets of the project
    * @param linkCreateArgs the new links of the project
-   * @param leadId the new projectLead of the project
-   * @param projectManagerId the new projectManager of the project
+   * @param leadId the new lead of the project
+   * @param managerId the new manager of the project
    * @param organizationId the id of the organization the user is currently in
    * @returns the edited project
    */
   static async editProject(
     user: User,
-    projectId: number,
-    crId: number,
+    projectId: string,
+    crId: string,
     name: string,
     budget: number,
     summary: string,
     newDescriptionBullets: DescriptionBulletPreview[],
     linkCreateArgs: LinkCreateArgs[],
-    projectLeadId: number | null,
-    projectManagerId: number | null,
+    leadId: string | null,
+    managerId: string | null,
     organizationId: string
   ): Promise<Project> {
     const { userId } = user;
@@ -284,8 +284,8 @@ export default class ProjectsService {
       summary,
       newDescriptionBullets,
       linkCreateArgs,
-      projectLeadId,
-      projectManagerId,
+      leadId,
+      managerId,
       organizationId
     );
 
@@ -519,7 +519,6 @@ export default class ProjectsService {
 
   /**
    * Updates the linkType's name, iconName, or required.
-   * @param linkId the id of the linkType being editted
    * @param linkName the name of the linkType being editted
    * @param iconName the new iconName
    * @param required the new required status
@@ -528,7 +527,6 @@ export default class ProjectsService {
    * @returns the updated linkType
    */
   static async editLinkType(
-    linkId: string,
     linkName: string,
     iconName: string,
     required: boolean,
@@ -540,15 +538,19 @@ export default class ProjectsService {
 
     // check if the linkType we are trying to update exists
     const linkType = await prisma.link_Type.findUnique({
-      where: { id: linkId }
+      where: {
+        uniqueLinkType: {
+          name: linkName,
+          organizationId
+        }
+      }
     });
 
     if (!linkType) throw new NotFoundException('Link Type', linkName);
-    if (linkType.organizationId !== organizationId) throw new InvalidOrganizationException('Link Type');
 
     // update the LinkType
     const linkTypeUpdated = await prisma.link_Type.update({
-      where: { id: linkId },
+      where: { id: linkType.id },
       data: {
         name: linkName,
         iconName,

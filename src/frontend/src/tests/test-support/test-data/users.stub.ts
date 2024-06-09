@@ -6,7 +6,7 @@
 import { User, RoleEnum, AuthenticatedUser } from 'shared';
 
 export const exampleAppAdminUser: User = {
-  userId: 1,
+  userId: '1',
   firstName: 'Thomas',
   lastName: 'Emrax',
   email: 'emrax.t@husky.neu.edu',
@@ -15,7 +15,7 @@ export const exampleAppAdminUser: User = {
 };
 
 export const exampleAdminUser: AuthenticatedUser = {
-  userId: 2,
+  userId: '2',
   firstName: 'Joe',
   lastName: 'Shmoe',
   email: 'shmoe.j@husky.neu.edu',
@@ -27,7 +27,7 @@ export const exampleAdminUser: AuthenticatedUser = {
 };
 
 export const exampleAdminUser2: AuthenticatedUser = {
-  userId: 8,
+  userId: '8',
   firstName: 'Joe',
   lastName: 'Shmoseph',
   email: 'shmoseph.j@husky.neu.edu',
@@ -39,7 +39,7 @@ export const exampleAdminUser2: AuthenticatedUser = {
 };
 
 export const exampleLeadershipUser: User = {
-  userId: 3,
+  userId: '3',
   firstName: 'Joe',
   lastName: 'Blow',
   email: 'blow.j@husky.neu.edu',
@@ -47,8 +47,8 @@ export const exampleLeadershipUser: User = {
   role: RoleEnum.LEADERSHIP
 };
 
-export const exampleProjectLeadUser: User = {
-  userId: 4,
+export const exampleLeadUser: User = {
+  userId: '4',
   firstName: 'Amy',
   lastName: 'Smith',
   email: 'smith.a@husky.neu.edu',
@@ -56,8 +56,8 @@ export const exampleProjectLeadUser: User = {
   role: RoleEnum.HEAD
 };
 
-export const exampleProjectManagerUser: User = {
-  userId: 5,
+export const exampleManagerUser: User = {
+  userId: '5',
   firstName: 'Rachel',
   lastName: 'Barmatha',
   email: 'barmatha.r@husky.neu.edu',
@@ -66,7 +66,7 @@ export const exampleProjectManagerUser: User = {
 };
 
 export const exampleMemberUser: AuthenticatedUser = {
-  userId: 6,
+  userId: '6',
   firstName: 'Emily',
   lastName: 'Bendara',
   email: 'bendara.e@husky.neu.edu',
@@ -78,7 +78,7 @@ export const exampleMemberUser: AuthenticatedUser = {
 };
 
 export const exampleGuestUser: AuthenticatedUser = {
-  userId: 7,
+  userId: '7',
   firstName: 'Jackson',
   lastName: 'James',
   email: 'james.j@husky.neu.edu',
@@ -90,7 +90,7 @@ export const exampleGuestUser: AuthenticatedUser = {
 };
 
 export const exampleGuestUser2: User = {
-  userId: 8,
+  userId: '8',
   firstName: 'James',
   lastName: 'Jackson',
   email: 'jackson.j@husky.neu.edu',
@@ -102,8 +102,8 @@ export const exampleAllUsers: User[] = [
   exampleAppAdminUser,
   exampleAdminUser,
   exampleLeadershipUser,
-  exampleProjectLeadUser,
-  exampleProjectManagerUser,
+  exampleLeadUser,
+  exampleManagerUser,
   exampleMemberUser,
   exampleGuestUser
 ];
