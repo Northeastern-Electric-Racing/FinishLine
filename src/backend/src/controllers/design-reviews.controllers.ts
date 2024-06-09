@@ -140,7 +140,7 @@ export default class DesignReviewsController {
       const updatedDesignReview = await DesignReviewsService.setStatus(user, designReviewId, status, organizationId);
       return res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }
