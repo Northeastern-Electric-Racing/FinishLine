@@ -12,8 +12,16 @@ interface TaskListProps {
 }
 
 const isEqual = (task1: Task, task2: Task) => {
-  return task1.taskId === task2.taskId && task1.status === task2.status && task1.title === task2.title && task1.notes === task2.notes && task1.priority === task2.priority && task1.deadline === task2.deadline && task1.assignees === task2.assignees; 
-}
+  return (
+    task1.taskId === task2.taskId &&
+    task1.status === task2.status &&
+    task1.title === task2.title &&
+    task1.notes === task2.notes &&
+    task1.priority === task2.priority &&
+    task1.deadline === task2.deadline &&
+    task1.assignees === task2.assignees
+  );
+};
 
 export const TaskListContent = ({ project }: TaskListProps) => {
   const { tasks } = project;
@@ -21,8 +29,10 @@ export const TaskListContent = ({ project }: TaskListProps) => {
   const { mutateAsync: setTaskStatus, isLoading } = useSetTaskStatus();
 
   useEffect(() => {
-    console.log(tasks);
-    if (tasks.length !== tasksByStatus.DONE.length + tasksByStatus.IN_PROGRESS.length + tasksByStatus.IN_BACKLOG.length || tasks.some((task, index) => !isEqual(task, tasksByStatus[task.status][index]))){
+    if (
+      tasks.length !== tasksByStatus.DONE.length + tasksByStatus.IN_PROGRESS.length + tasksByStatus.IN_BACKLOG.length ||
+      tasks.some((task, index) => !isEqual(task, tasksByStatus[task.status][index]))
+    ) {
       setTasksByStatus(getTasksByStatus(tasks));
     }
   }, [tasks, tasksByStatus]);
