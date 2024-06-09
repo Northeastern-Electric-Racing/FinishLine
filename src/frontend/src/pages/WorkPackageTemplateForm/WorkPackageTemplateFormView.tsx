@@ -5,7 +5,6 @@ import { Box, TextField, Autocomplete, Typography, Stack, FormControl } from '@m
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
-import { useCurrentUser } from '../../hooks/users.hooks';
 import PageBreadcrumbs from '../../layouts/PageTitle/PageBreadcrumbs';
 import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import { DescriptionBulletPreview, WorkPackageStage } from 'shared';

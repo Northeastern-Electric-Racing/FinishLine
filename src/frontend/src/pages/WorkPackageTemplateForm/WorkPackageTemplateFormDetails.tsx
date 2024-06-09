@@ -3,12 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User, WorkPackageStage } from 'shared';
+import { WorkPackageStage } from 'shared';
 import { FormControl, FormLabel, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import { Control, Controller, FieldErrorsImpl } from 'react-hook-form';
 import { Box } from '@mui/system';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 
 interface Props {

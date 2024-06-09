@@ -1,8 +1,6 @@
 import React from 'react';
 import ErrorPage from '../ErrorPage';
-import { useAllUsers } from '../../hooks/users.hooks';
-import { useAllWorkPackageTemplates, useSingleProject } from '../../hooks/projects.hooks';
-import { useQuery } from '../../hooks/utils.hooks';
+import { useAllWorkPackageTemplates } from '../../hooks/projects.hooks';
 import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import { ObjectSchema } from 'yup';
 import WorkPackageTemplateFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
