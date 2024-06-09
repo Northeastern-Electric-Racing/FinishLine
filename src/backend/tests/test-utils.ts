@@ -315,7 +315,13 @@ export const createTestDesignReview = async () => {
 
   // create a lead, just matters that they are not admin
   const creatorLead = await prisma.user.findFirst({
-    where: {},
+    where: {
+      roles: {
+        some: {
+          roleType: RoleEnum.LEADERSHIP
+        }
+      }
+    },
     include: {
       userSettings: true,
       userSecureSettings: true
@@ -330,7 +336,7 @@ export const createTestDesignReview = async () => {
     creatorLead,
     '03/25/2024',
     teamType.teamTypeId,
-    [user.userId],
+    [6], // this must be the ID of a member with the lead role
     [],
     {
       carNumber: 0,

@@ -5,8 +5,7 @@ import { createTestDesignReview, createTestUser, resetUsers } from '../test-util
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
 import { Design_Review } from '@prisma/client';
-import { DesignReviewStatus } from 'shared';
-import { DesignReview } from 'shared';
+import { DesignReview, DesignReviewStatus } from 'shared';
 
 describe('Design Reviews', () => {
   let designReview: DesignReview; // should be type: Design_Review
@@ -55,7 +54,7 @@ describe('Design Reviews', () => {
   test('Set status works when creator is not admin', async () => {
     const lead = await prisma.user.findUnique({
       where: {
-        userId: 1 // designReview.userCreatedId (would be this if type worked)
+        userId: 6
       },
       include: {
         roles: true
