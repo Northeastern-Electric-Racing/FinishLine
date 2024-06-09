@@ -315,7 +315,7 @@ export const createTestDesignReview = async () => {
     lead,
     '03/25/2024',
     teamType.teamTypeId,
-    [6], // this must be the ID of a member with the lead role
+    [lead.userId], // this must be the ID of a member with the lead role
     [],
     {
       carNumber: 0,
