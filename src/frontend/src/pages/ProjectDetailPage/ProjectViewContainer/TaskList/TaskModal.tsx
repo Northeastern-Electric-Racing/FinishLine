@@ -78,7 +78,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
               <Typography fontWeight={'bold'}>
                 Priority:{' '}
                 <Typography display={'inline'} color={priorityColor}>
-                  {' '}
                   {task.priority}
                 </Typography>
               </Typography>

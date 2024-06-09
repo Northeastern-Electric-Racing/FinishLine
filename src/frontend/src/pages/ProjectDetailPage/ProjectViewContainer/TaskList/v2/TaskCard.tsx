@@ -80,6 +80,8 @@ export const TaskCard = ({
     );
   };
 
+  const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
+
   return (
     <>
       <TaskModal
@@ -112,6 +114,11 @@ export const TaskCard = ({
                     <Grid item xs={1}>
                       <Delete onClick={handleDelete} />
                     </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="body1" color={priorityColor}>
+                        {task.priority}
+                      </Typography>
+                    </Grid>
                     <Grid item xs={12} lg={8}>
                       <Chip
                         sx={{ marginTop: 1, marginRight: 2 }}
@@ -124,8 +131,8 @@ export const TaskCard = ({
                         size="medium"
                       />
                     </Grid>
-                    <Grid item xs={12} lg={4}>
-                      <Box alignItems={'center'} mt={1} display={'flex'}>
+                    <Grid item xs={12} lg={4} justifyContent={'right'}>
+                      <Box alignItems={'center'} mt={1} justifyContent={'right'} display={'flex'}>
                         <Schedule />
                         <Typography variant="body2">{datePipe(task.deadline)}</Typography>
                       </Box>
