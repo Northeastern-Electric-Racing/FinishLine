@@ -4,7 +4,6 @@ import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { Design_Review } from '@prisma/client';
 import { DesignReview, DesignReviewStatus } from 'shared';
 
 describe('Design Reviews', () => {
