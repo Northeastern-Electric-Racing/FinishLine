@@ -33,7 +33,7 @@ import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
 import ChangeRequestTab from './ChangeRequestTab';
-import { TaskList } from './TaskList/tasks';
+import { TaskList } from './TaskList/v2';
 
 interface ProjectViewContainerProps {
   project: Project;

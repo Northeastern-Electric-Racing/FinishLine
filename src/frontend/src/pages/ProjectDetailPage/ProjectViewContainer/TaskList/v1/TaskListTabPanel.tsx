@@ -7,22 +7,22 @@ import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { Task, TaskPriority, TaskStatus, UserPreview } from 'shared';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { useAuth } from '../../../../hooks/auth.hooks';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
+import { useAuth } from '../../../../../hooks/auth.hooks';
 import {
   useCreateTask,
   useDeleteTask,
   useEditTask,
   useEditTaskAssignees,
   useSetTaskStatus
-} from '../../../../hooks/tasks.hooks';
-import { useToast } from '../../../../hooks/toasts.hooks';
-import { TaskListTabPanelProps } from '../../../../utils/task.utils';
-import ErrorPage from '../../../ErrorPage';
+} from '../../../../../hooks/tasks.hooks';
+import { useToast } from '../../../../../hooks/toasts.hooks';
+import { TaskListTabPanelProps } from '../../../../../utils/task.utils';
+import ErrorPage from '../../../../ErrorPage';
 import TaskListDataGrid from './TaskListDataGrid';
-import { transformDate } from '../../../../utils/datetime.utils';
-import { EditTaskFormInput } from './TaskFormModal';
-import TaskListNotesModal from './TaskModal';
+import { transformDate } from '../../../../../utils/datetime.utils';
+import { EditTaskFormInput } from '../TaskFormModal';
+import TaskListNotesModal from '../TaskModal';
 
 const TaskListTabPanel = (props: TaskListTabPanelProps) => {
   const { tasks, status, addTask, onAddCancel, project, setDisabled } = props;
