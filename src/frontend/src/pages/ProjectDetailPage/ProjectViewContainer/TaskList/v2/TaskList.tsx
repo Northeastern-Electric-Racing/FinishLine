@@ -9,6 +9,6 @@ export const TaskList = ({ project }: { project: Project }) => {
 
 const FallbackForMobile = () => (
   <Typography mt={3} align="center">
-    The Kanban board demo is not available on mobile
+    The Kanban board is not available on mobile
   </Typography>
 );
