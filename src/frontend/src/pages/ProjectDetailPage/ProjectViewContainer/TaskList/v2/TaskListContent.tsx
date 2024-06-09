@@ -1,7 +1,7 @@
 import { DragDropContext, OnDragEndResponder } from '@hello-pangea/dnd';
 import { Box } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { Project, Task } from 'shared';
+import { useState } from 'react';
+import { Project, Task, TaskWithIndex } from 'shared';
 import { getTasksByStatus, statuses, TasksByStatus } from '.';
 import { useSetTaskStatus } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
@@ -11,34 +11,48 @@ interface TaskListProps {
   project: Project;
 }
 
-const isEqual = (task1: Task, task2: Task) => {
-  return (
-    task1.taskId === task2.taskId &&
-    task1.status === task2.status &&
-    task1.title === task2.title &&
-    task1.notes === task2.notes &&
-    task1.priority === task2.priority &&
-    task1.deadline === task2.deadline &&
-    task1.assignees === task2.assignees
-  );
-};
-
 export const TaskListContent = ({ project }: TaskListProps) => {
   const { tasks } = project;
   const [tasksByStatus, setTasksByStatus] = useState<TasksByStatus>(getTasksByStatus(tasks));
-  const { mutateAsync: setTaskStatus, isLoading } = useSetTaskStatus();
+  const { mutateAsync: setTaskStatus } = useSetTaskStatus();
 
-  useEffect(() => {
-    if (
-      tasks.length !== tasksByStatus.DONE.length + tasksByStatus.IN_PROGRESS.length + tasksByStatus.IN_BACKLOG.length ||
-      tasks.some((task, index) => !isEqual(task, tasksByStatus[task.status][index]))
-    ) {
-      setTasksByStatus(getTasksByStatus(tasks));
-    }
-  }, [tasks, tasksByStatus]);
   const toast = useToast();
 
-  if (isLoading) return null;
+  const onDeleteTask = (taskId: string) => {
+    setTasksByStatus((prev) => {
+      const newTasksByStatus = { ...prev };
+      for (const status of statuses) {
+        const index = newTasksByStatus[status].findIndex((task) => task?.taskId === taskId);
+        if (index !== -1) {
+          newTasksByStatus[status].splice(index, 1);
+          break;
+        }
+      }
+      return newTasksByStatus;
+    });
+  };
+
+  const onEditTask = (task: Task) => {
+    setTasksByStatus((prev) => {
+      const newTasksByStatus = { ...prev };
+      for (const status of statuses) {
+        const index = newTasksByStatus[status].findIndex((t) => t?.taskId === task.taskId);
+        if (index !== -1) {
+          newTasksByStatus[status][index] = { ...task, index };
+          break;
+        }
+      }
+      return newTasksByStatus;
+    });
+  };
+
+  const onAddTask = (task: Task) => {
+    setTasksByStatus((prev) => {
+      const newTasksByStatus = { ...prev };
+      newTasksByStatus[task.status].push({ ...task, index: newTasksByStatus[task.status].length });
+      return newTasksByStatus;
+    });
+  };
 
   const onDragEnd: OnDragEndResponder = async (result) => {
     const { destination, source } = result;
@@ -83,7 +97,15 @@ export const TaskListContent = ({ project }: TaskListProps) => {
     <DragDropContext onDragEnd={onDragEnd}>
       <Box display="flex">
         {statuses.map((status) => (
-          <TaskColumn status={status} tasks={tasksByStatus[status]} key={status} project={project} />
+          <TaskColumn
+            onAddTask={onAddTask}
+            onDeleteTask={onDeleteTask}
+            onEditTask={onEditTask}
+            status={status}
+            tasks={tasksByStatus[status]}
+            key={status}
+            project={project}
+          />
         ))}
       </Box>
     </DragDropContext>
@@ -91,7 +113,7 @@ export const TaskListContent = ({ project }: TaskListProps) => {
 };
 
 const updateTaskStatusLocal = (
-  sourceTask: Task,
+  sourceTask: TaskWithIndex,
   source: { status: Task['status']; index: number },
   destination: {
     status: Task['status'];

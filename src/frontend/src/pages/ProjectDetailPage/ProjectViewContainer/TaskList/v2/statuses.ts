@@ -1,4 +1,4 @@
-import { Task, TaskStatus, TaskPriority } from 'shared';
+import { Task, TaskStatus, TaskPriority, TaskWithIndex } from 'shared';
 
 export const statuses: Task['status'][] = [TaskStatus.IN_BACKLOG, TaskStatus.IN_PROGRESS, TaskStatus.DONE];
 
@@ -8,7 +8,7 @@ export const statusNames: Record<Task['status'], string> = {
   DONE: 'Done'
 };
 
-export type TasksByStatus = Record<Task['status'], Task[]>;
+export type TasksByStatus = Record<Task['status'], TaskWithIndex[]>;
 
 const rankTaskPriority = (priority: TaskPriority) => {
   if (priority === TaskPriority.High) return 2;
@@ -23,7 +23,7 @@ const compareTaskPriorities = (priorityA: TaskPriority, priorityB: TaskPriority)
 export const getTasksByStatus = (unorderedTasks: Task[]) => {
   const postsByStatus: TasksByStatus = unorderedTasks.reduce(
     (acc, task) => {
-      acc[task.status].push(task);
+      acc[task.status].push({ ...task, index: acc[task.status].length });
       return acc;
     },
     statuses.reduce((obj, status) => ({ ...obj, [status]: [] }), {} as TasksByStatus)

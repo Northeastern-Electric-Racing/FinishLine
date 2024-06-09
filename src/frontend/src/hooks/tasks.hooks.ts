@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from 'react-query';
-import { WbsNumber, TaskPriority, TaskStatus } from 'shared';
+import { WbsNumber, TaskPriority, TaskStatus, Task } from 'shared';
 import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
 
 export interface CreateTaskPayload {
@@ -18,7 +18,7 @@ export interface CreateTaskPayload {
 
 export const useCreateTask = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateTaskPayload>(
+  return useMutation<Task, Error, CreateTaskPayload>(
     ['tasks'],
     async (createTaskPayload: CreateTaskPayload) => {
       const { data } = await createSingleTask(
@@ -81,7 +81,7 @@ export const useEditTask = () => {
  */
 export const useEditTaskAssignees = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, { taskId: string; assignees: string[] }>(
+  return useMutation<Task, Error, { taskId: string; assignees: string[] }>(
     ['tasks', 'edit-assignees'],
     async (editAssigneesTaskPayload: { taskId: string; assignees: string[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);

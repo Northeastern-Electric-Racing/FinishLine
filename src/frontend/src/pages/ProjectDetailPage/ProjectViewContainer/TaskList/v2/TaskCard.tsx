@@ -1,9 +1,8 @@
 import { Draggable } from '@hello-pangea/dnd';
-import { Construction, Schedule } from '@mui/icons-material';
-import { Box, Card, CardActions, CardContent, Chip, Typography } from '@mui/material';
+import { Construction, Delete, Schedule } from '@mui/icons-material';
+import { Box, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
 import { isLeadership, Project, Task } from 'shared';
-import NERFailButton from '../../../../../components/NERFailButton';
 import { useDeleteTask, useEditTask, useEditTaskAssignees } from '../../../../../hooks/tasks.hooks';
 import { useToast } from '../../../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../../../hooks/users.hooks';
@@ -12,7 +11,19 @@ import { isUserOnTeam } from '../../../../../utils/teams.utils';
 import { EditTaskFormInput } from '../TaskFormModal';
 import TaskModal from '../TaskModal';
 
-export const TaskCard = ({ task, index, project }: { task: Task; index: number; project: Project }) => {
+export const TaskCard = ({
+  task,
+  index,
+  project,
+  onDeleteTask,
+  onEditTask
+}: {
+  task: Task;
+  index: number;
+  project: Project;
+  onDeleteTask: (taskId: string) => void;
+  onEditTask: (task: Task) => void;
+}) => {
   const { mutateAsync: deleteTask } = useDeleteTask();
   const { mutateAsync: editTask } = useEditTask();
   const { mutateAsync: editTaskAssignees } = useEditTaskAssignees();
@@ -25,6 +36,7 @@ export const TaskCard = ({ task, index, project }: { task: Task; index: number; 
   const handleDelete = async () => {
     try {
       await deleteTask({ taskId: task.taskId });
+      onDeleteTask(task.taskId);
       toast.success('Task deleted successfully!');
     } catch (error) {
       if (error instanceof Error) {
@@ -42,10 +54,11 @@ export const TaskCard = ({ task, index, project }: { task: Task; index: number; 
         deadline,
         priority
       });
-      await editTaskAssignees({
+      const newTask = await editTaskAssignees({
         taskId,
         assignees
       });
+      onEditTask(newTask);
       toast.success('Task edited successfully!');
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -90,35 +103,35 @@ export const TaskCard = ({ task, index, project }: { task: Task; index: number; 
                 elevation={snapshot.isDragging ? 3 : 1}
               >
                 <CardContent>
-                  <Typography variant="h5" component="div">
-                    {task.title}
-                  </Typography>
-                  <Chip
-                    sx={{ marginTop: 1, marginRight: 2 }}
-                    icon={<Construction />}
-                    label={task.assignees.map((assignee) => fullNamePipe(assignee)).join(', ')}
-                    size="medium"
-                  />
-                  <Typography sx={{ mt: 1 }} variant="body2">
-                    {task.notes}
-                  </Typography>
-                  <Box alignItems={'center'} mt={1} display={'flex'}>
-                    <Schedule />
-                    <Typography variant="body2">{datePipe(task.deadline)}</Typography>
-                  </Box>
+                  <Grid container>
+                    <Grid item xs={11}>
+                      <Typography variant="h5" component="div">
+                        {task.title}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={1}>
+                      <Delete onClick={handleDelete} />
+                    </Grid>
+                    <Grid item xs={12} lg={8}>
+                      <Chip
+                        sx={{ marginTop: 1, marginRight: 2 }}
+                        icon={<Construction />}
+                        label={
+                          task.assignees.length === 0
+                            ? 'No Assignees'
+                            : task.assignees.map((assignee) => fullNamePipe(assignee)).join(', ')
+                        }
+                        size="medium"
+                      />
+                    </Grid>
+                    <Grid item xs={12} lg={4}>
+                      <Box alignItems={'center'} mt={1} display={'flex'}>
+                        <Schedule />
+                        <Typography variant="body2">{datePipe(task.deadline)}</Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
                 </CardContent>
-                <CardActions>
-                  <div style={{ textAlign: 'right', width: '100%' }}>
-                    <NERFailButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete();
-                      }}
-                    >
-                      Delete
-                    </NERFailButton>
-                  </div>
-                </CardActions>
               </Card>
             </div>
           </Box>

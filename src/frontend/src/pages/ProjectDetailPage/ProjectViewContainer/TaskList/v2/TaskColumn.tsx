@@ -1,7 +1,7 @@
 import { Droppable } from '@hello-pangea/dnd';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { useState } from 'react';
-import { Project, Task, TaskStatus } from 'shared';
+import { Project, Task, TaskStatus, TaskWithIndex } from 'shared';
 import { statusNames, TaskCard } from '.';
 import { NERButton } from '../../../../../components/NERButton';
 import { useCreateTask } from '../../../../../hooks/tasks.hooks';
@@ -9,14 +9,29 @@ import { useToast } from '../../../../../hooks/toasts.hooks';
 import { transformDate } from '../../../../../utils/datetime.utils';
 import TaskFormModal, { EditTaskFormInput } from '../TaskFormModal';
 
-export const TaskColumn = ({ status, tasks, project }: { status: Task['status']; tasks: Task[]; project: Project }) => {
+export const TaskColumn = ({
+  status,
+  tasks,
+  project,
+  onEditTask,
+  onDeleteTask,
+  onAddTask
+}: {
+  status: Task['status'];
+  tasks: TaskWithIndex[];
+  project: Project;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
+  onAddTask: (task: Task) => void;
+}) => {
   const { mutateAsync: createTask } = useCreateTask(project.wbsNum);
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const toast = useToast();
+  const theme = useTheme();
 
   const handleCreateTask = async ({ notes, title, deadline, assignees, priority }: EditTaskFormInput) => {
     try {
-      await createTask({
+      const task = await createTask({
         title,
         deadline: transformDate(deadline),
         priority,
@@ -24,6 +39,7 @@ export const TaskColumn = ({ status, tasks, project }: { status: Task['status'];
         assignees,
         notes
       });
+      onAddTask(task);
       toast.success('Task Successfully Created!');
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -46,7 +62,7 @@ export const TaskColumn = ({ status, tasks, project }: { status: Task['status'];
           flex: 1,
           paddingTop: '8px',
           paddingBottom: '16px',
-          backgroundColor: '#454545',
+          backgroundColor: theme.palette.background.paper,
           marginLeft: '5px',
           borderRadius: '5px'
         }}
@@ -54,12 +70,6 @@ export const TaskColumn = ({ status, tasks, project }: { status: Task['status'];
         <Typography align="center" variant="h5">
           {statusNames[status]}
         </Typography>
-        <NERButton
-          sx={{ marginTop: '5px', backgroundColor: '#545454', width: 'calc(100% - 10px)', marginX: '5px' }}
-          onClick={() => setShowCreateTaskModal(true)}
-        >
-          + Add A Task
-        </NERButton>
         <Droppable droppableId={status}>
           {(droppableProvided, snapshot) => (
             <Box
@@ -77,12 +87,30 @@ export const TaskColumn = ({ status, tasks, project }: { status: Task['status'];
               }}
             >
               {tasks.map((task, index) => (
-                <TaskCard key={task.taskId} task={task} index={index} project={project} />
+                <TaskCard
+                  onDeleteTask={onDeleteTask}
+                  onEditTask={onEditTask}
+                  key={task.taskId}
+                  task={task}
+                  index={index}
+                  project={project}
+                />
               ))}
               {droppableProvided.placeholder}
             </Box>
           )}
         </Droppable>
+        <NERButton
+          sx={{
+            marginTop: '5px',
+            backgroundColor: theme.palette.secondary.contrastText,
+            width: 'calc(100% - 10px)',
+            marginX: '5px'
+          }}
+          onClick={() => setShowCreateTaskModal(true)}
+        >
+          + Add A Task
+        </NERButton>
       </Box>
     </>
   );
