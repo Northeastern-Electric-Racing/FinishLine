@@ -17,11 +17,6 @@ interface Props {
 }
 
 const WorkPackageTemplateFormDetails: React.FC<Props> = ({ control, errors }) => {
-  const userToOption = (user?: User): { label: string; id: string } => {
-    if (!user) return { label: '', id: '' };
-    return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
-  };
-
   const StageSelect = () => (
     <FormControl fullWidth>
       <FormLabel>Work Package Stage</FormLabel>

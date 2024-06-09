@@ -45,13 +45,12 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
   breadcrumbs
 }) => {
   const toast = useToast();
-  const user = useCurrentUser();
   const {
     register,
     handleSubmit,
     control,
     watch,
-    formState: { errors, isSubmitting, isSubmitted, isSubmitSuccessful }
+    formState: { errors }
   } = useForm<WorkPackageTemplateFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {

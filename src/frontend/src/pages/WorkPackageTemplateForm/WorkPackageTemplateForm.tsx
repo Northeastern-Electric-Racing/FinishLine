@@ -22,17 +22,8 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   schema,
   breadcrumbs
 }) => {
-  const { data: users, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
-  const query = useQuery();
+  const { data: workPackageTemplates, isError: wpIsError, error: wpError } = useAllWorkPackageTemplates();
 
-  const {
-    data: workPackageTemplates,
-    isLoading: wpIsLoading,
-    isError: wpIsError,
-    error: wpError
-  } = useAllWorkPackageTemplates();
-
-  if (usersIsError) return <ErrorPage message={usersError.message} />;
   if (wpIsError) return <ErrorPage message={wpError.message} />;
 
   let workPackageTemplate;
