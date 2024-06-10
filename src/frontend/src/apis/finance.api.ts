@@ -303,6 +303,18 @@ export const reportRefund = (amount: number, dateReceived: string) => {
 };
 
 /**
+ * Edits a refund in the database
+ *
+ * @param id the reimbursement id
+ * @param amount the new amount reimbursed being reported
+ * @param dateReceived the new date the refund was received
+ * @returns the updated reimbursement
+ */
+export const editRefund = (id: string, amount: number, dateReceived: string) => {
+  return axios.post(apiUrls.financeEditRefund(id), { amount, dateReceived });
+};
+
+/**
  * Edits an expense type in the database
  * @param id id of the expense type
  * @param accountCodeData the edited data of the expense type

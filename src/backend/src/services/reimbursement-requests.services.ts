@@ -334,7 +334,7 @@ export default class ReimbursementRequestService {
    * @param amount The new amount of the reimbursement
    * @param dateCreated The new date the reimbursement was created
    * @param organizationId The organization the user is currently in
-   * @returns The updatd reimbursement
+   * @returns The updated reimbursement
    */
   static async editReimbursement(
     reimbursementId: string,

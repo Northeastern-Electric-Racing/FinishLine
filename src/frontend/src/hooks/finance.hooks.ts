@@ -28,7 +28,8 @@ import {
   createAccountCode,
   createVendor,
   editVendor,
-  getAllAccountCodes
+  getAllAccountCodes,
+  editRefund
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -421,6 +422,24 @@ export const useReportRefund = () => {
       const { data } = await reportRefund(formData.refundAmount, formData.dateReceived);
       queryClient.invalidateQueries(['reimbursement']);
       return data;
+    }
+  );
+};
+
+export const useEditRefund = (reimbursementId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Reimbursement, Error, { refundAmount: number; dateReceived: string }>(
+    ['reimbursement', 'edit', reimbursementId],
+    async (formData: { refundAmount: number; dateReceived: string }) => {
+      const { data } = await editRefund(reimbursementId, formData.refundAmount, formData.dateReceived);
+      queryClient.invalidateQueries(['reimbursement', reimbursementId]);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement']);
+      }
     }
   );
 };
