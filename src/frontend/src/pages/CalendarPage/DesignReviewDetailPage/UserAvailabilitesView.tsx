@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
 import { Box, useTheme } from '@mui/system';
-import { DesignReview, User } from 'shared';
+import { DesignReview, DesignReviewStatus, User } from 'shared';
 import { HeatmapColors } from '../../../utils/design-review.utils';
 import { fullNamePipe } from '../../../utils/pipes';
 import NERFailButton from '../../../components/NERFailButton';
@@ -8,6 +8,8 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useState } from 'react';
 import FinalizeDesignReviewDetailsModal from './FinalizeDesignReviewDetailsModal';
 import { FinalizeReviewInformation } from './DesignReviewDetailPage';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../../utils/routes';
 
 interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
@@ -31,8 +33,13 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   startTime
 }) => {
   const theme = useTheme();
+  const history = useHistory();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
   const totalUsers = usersToAvailabilities.size;
+
+  const handleCancel = () => {
+    history.push(routes.CALENDAR);
+  };
 
   return (
     <Box
@@ -114,11 +121,14 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             overflow: 'auto'
           }}
         >
-          <NERFailButton>Cancel</NERFailButton>
+          <NERFailButton onClick={handleCancel}>Cancel</NERFailButton>
           <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={() => handleEdit()}>
             Save
           </NERSuccessButton>
           <NERSuccessButton
+            disabled={
+              designReview.status === DesignReviewStatus.DONE || designReview.status === DesignReviewStatus.SCHEDULED
+            }
             variant="contained"
             type="submit"
             sx={{ mr: 1 }}

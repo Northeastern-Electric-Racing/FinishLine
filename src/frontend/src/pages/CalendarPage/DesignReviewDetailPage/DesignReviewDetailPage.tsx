@@ -22,7 +22,12 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker } from '@mui/x-date-pickers';
 import { DesignReview, DesignReviewStatus, isAdmin } from 'shared';
-import { useAllDesignReviews, useDeleteDesignReview, useEditDesignReview } from '../../../hooks/design-reviews.hooks';
+import {
+  EditDesignReviewPayload,
+  useAllDesignReviews,
+  useDeleteDesignReview,
+  useEditDesignReview
+} from '../../../hooks/design-reviews.hooks';
 import { designReviewNamePipe, meetingStartTimePipe } from '../../../utils/pipes';
 import { HOURS } from '../../../utils/design-review.utils';
 import { useHistory } from 'react-router-dom';
@@ -106,8 +111,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
       times.push(i);
     }
     try {
-      const payload = {
-        ...data,
+      const payload: EditDesignReviewPayload = {
         dateScheduled: date,
         teamTypeId: designReview.teamType.teamTypeId,
         requiredMembersIds: requiredUsers.map((user) => user.id),
@@ -116,7 +120,10 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         isInPerson: data?.meetingType.includes('inPerson') ?? false,
         status: data ? DesignReviewStatus.SCHEDULED : designReview.status,
         attendees: [],
-        meetingTimes: times
+        meetingTimes: times,
+        docTemplateLink: data?.docTemplateLink ?? designReview.docTemplateLink,
+        zoomLink: data?.zoomLink ?? designReview.zoomLink,
+        location: data?.location ?? designReview.location
       };
       await editDesignReview(payload);
       history.push(routes.CALENDAR);
