@@ -7,7 +7,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import { useState } from 'react';
 import FinalizeDesignReviewDetailsModal from './FinalizeDesignReviewDetailsModal';
-import { DesignReviewEditData } from './DesignReviewDetailPage';
+import { FinalizeReviewInformation } from './DesignReviewDetailPage';
 
 interface UserAvailabilitiesProps {
   currentAvailableUsers: User[];
@@ -15,7 +15,9 @@ interface UserAvailabilitiesProps {
   usersToAvailabilities: Map<User, number[]>;
   designReview: DesignReview;
   conflictingDesignReviews: DesignReview[];
-  editPayload: DesignReviewEditData;
+  selectedDate: Date;
+  startTime: number;
+  handleEdit: (data?: FinalizeReviewInformation) => void;
 }
 
 const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
@@ -24,7 +26,9 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
   usersToAvailabilities,
   designReview,
   conflictingDesignReviews,
-  editPayload
+  handleEdit,
+  selectedDate,
+  startTime
 }) => {
   const theme = useTheme();
   const [showFinalizeDesignReviewDetailsModal, setShowFinalizeDesignReviewDetailsModal] = useState(false);
@@ -111,10 +115,13 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
           }}
         >
           <NERFailButton>Cancel</NERFailButton>
+          <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} onClick={() => handleEdit()}>
+            Save
+          </NERSuccessButton>
           <NERSuccessButton
             variant="contained"
             type="submit"
-            sx={{ mx: 1 }}
+            sx={{ mr: 1 }}
             onClick={() => setShowFinalizeDesignReviewDetailsModal(true)}
           >
             Finalize
@@ -124,7 +131,9 @@ const UserAvailabilites: React.FC<UserAvailabilitiesProps> = ({
             setOpen={setShowFinalizeDesignReviewDetailsModal}
             conflictingDesignReviews={conflictingDesignReviews}
             designReview={designReview}
-            editData={editPayload}
+            finalizeDesignReview={handleEdit}
+            selectedDate={selectedDate}
+            startTime={startTime}
           />
         </Box>
       </Box>

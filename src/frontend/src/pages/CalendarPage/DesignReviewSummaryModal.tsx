@@ -79,11 +79,9 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
             <IconButton onClick={() => setShowDeleteModal(true)}>
               <DeleteIcon />
             </IconButton>
-            {isScheduled && (
-              <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
-                <EditIcon />
-              </IconButton>
-            )}
+            <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
+              <EditIcon />
+            </IconButton>
           </Box>
         )}
         <Box>

@@ -7,13 +7,13 @@ export const EnumToArray = (en: { [key: number]: string | number }) => {
 export const NOON_IN_MINUTES = 720;
 
 export enum DAY_NAMES {
+  Sunday,
   Monday,
   Tuesday,
   Wednesday,
   Thursday,
   Friday,
-  Saturday,
-  Sunday
+  Saturday
 }
 
 export enum MONTH_NAMES {
