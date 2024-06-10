@@ -13,7 +13,7 @@ import {
   useTheme
 } from '@mui/material';
 import { useState } from 'react';
-import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
+import { useAllReimbursements, useCurrentUserReimbursements, useEditRefund } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
@@ -24,7 +24,7 @@ import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { getRefundRowData } from '../../utils/reimbursement-request.utils';
 
 type Order = 'asc' | 'desc'; // ascending or descending
-type OrderBy = keyof { date: Date; amount: number };
+type OrderBy = 'amount' | 'date';
 
 const RefundHeader = ({ header, data }: { header: string; data: string }) => {
   return (
@@ -106,6 +106,14 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
     error: allReimbursementsError
   } = useAllReimbursements();
   const theme = useTheme();
+
+  const { mutateAsync } = useEditRefund();
+
+  const onClick = (refundId: string) => {
+    mutateAsync({ refundId, refundAmount: 0, dateReceived: new Date().toISOString() });
+  };
+
+  const editModalRefundId = useState<string | null>();
 
   const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
   if (canViewAllReimbursementRequests && allReimbursementsIsError)
@@ -202,7 +210,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
                   key={`${row.date}-$${row.amount}-${index}`}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
-                  <TableCell align="center">{datePipe(row.date)}</TableCell>
+                  <TableCell onClick={() => onClick(row.id)}>{datePipe(row.date)}</TableCell>
                   <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
                   {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
                 </TableRow>

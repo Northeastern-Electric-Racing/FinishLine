@@ -426,14 +426,13 @@ export const useReportRefund = () => {
   );
 };
 
-export const useEditRefund = (reimbursementId: string) => {
+export const useEditRefund = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<Reimbursement, Error, { refundAmount: number; dateReceived: string }>(
-    ['reimbursement', 'edit', reimbursementId],
-    async (formData: { refundAmount: number; dateReceived: string }) => {
-      const { data } = await editRefund(reimbursementId, formData.refundAmount, formData.dateReceived);
-      queryClient.invalidateQueries(['reimbursement', reimbursementId]);
+  return useMutation<Reimbursement, Error, { refundId: string; refundAmount: number; dateReceived: string }>(
+    ['reimbursement', 'edit'],
+    async (formData: { refundId: string; refundAmount: number; dateReceived: string }) => {
+      const { data } = await editRefund(formData.refundId, formData.refundAmount, formData.dateReceived);
       return data;
     },
     {

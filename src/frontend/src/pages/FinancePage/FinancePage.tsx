@@ -24,7 +24,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import ReportRefundModal from './FinanceComponents/ReportRefundModal';
+import RefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 import { isAdmin, isGuest } from 'shared';
@@ -176,7 +176,7 @@ const FinancePage = () => {
           onHide={() => setShowTotalAmountSpent(false)}
         />
       )}
-      <ReportRefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
+      <RefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}

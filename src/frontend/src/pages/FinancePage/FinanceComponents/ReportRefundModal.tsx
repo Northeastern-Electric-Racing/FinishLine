@@ -33,7 +33,7 @@ export interface ReportRefundInputs {
   newAccountCreditAmount: number;
 }
 
-const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose }: ReportRefundProps) => {
+const RefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose }: ReportRefundProps) => {
   const toast = useToast();
   const { isLoading, mutateAsync } = useReportRefund();
 
@@ -110,4 +110,4 @@ const ReportRefundModal: React.FC<ReportRefundProps> = ({ modalShow, handleClose
   );
 };
 
-export default ReportRefundModal;
+export default RefundModal;
