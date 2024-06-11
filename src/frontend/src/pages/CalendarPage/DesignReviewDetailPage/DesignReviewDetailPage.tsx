@@ -227,6 +227,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             displayEmpty
             renderValue={(value) => meetingStartTimePipe([value])}
             value={endTime}
+            disabled={true}
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
             placeholder={'End Time'}
