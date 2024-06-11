@@ -15,6 +15,7 @@ import { useDeleteDesignReview } from '../../hooks/design-reviews.hooks';
 import { designReviewStatusColor, designReviewStatusPipe } from '../../utils/design-review.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { DesignReviewAvailabilityInfo } from './DesignReviewAvailabilityInfo';
+import { CheckCircle } from '@mui/icons-material';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -74,16 +75,30 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
     >
       <Box minWidth="550px">
         <DeleteModal />
-        {isDesignReviewCreator && (
-          <Box position="absolute" right="52px" top="12px">
-            <IconButton onClick={() => setShowDeleteModal(true)}>
-              <DeleteIcon />
-            </IconButton>
-            <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
-              <EditIcon />
-            </IconButton>
-          </Box>
-        )}
+        <Box position="absolute" right="52px" top="12px">
+          {isDesignReviewCreator && (
+            <>
+              <IconButton onClick={() => setShowDeleteModal(true)}>
+                <DeleteIcon />
+              </IconButton>
+              <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
+                <EditIcon />
+              </IconButton>
+            </>
+          )}
+          <IconButton
+            component={RouterLink}
+            to={`${routes.SETTINGS_PREFERENCES}?drId=${designReview.designReviewId}`}
+            disabled={
+              !designReview.requiredMembers
+                .concat(designReview.optionalMembers)
+                .some((attendee) => attendee.userId === user.userId) || isScheduled
+            }
+          >
+            <CheckCircle />
+          </IconButton>
+        </Box>
+
         <Box>
           <Box display={'flex'} alignItems={'center'}>
             <Typography flexGrow={1} variant="h4">
