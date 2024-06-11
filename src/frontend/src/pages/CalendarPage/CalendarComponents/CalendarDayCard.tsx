@@ -1,5 +1,4 @@
-import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography } from '@mui/material';
 import { DesignReview, TeamType } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
@@ -33,7 +32,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const CardClick = () => (
     <Card
-      sx={{ borderRadius: 0, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}
+      sx={{ width: { xs: '95%', md: '100%' }, height: { xs: '100%', sm: '95%' }, cursor: 'pointer' }}
       onClick={() => setIsCreateModalOpen(true)}
     ></Card>
   );
