@@ -69,7 +69,7 @@ export const daysInMonth = (month: Date): number => {
 };
 
 export const calendarPaddingDays = (month: Date): number => {
-  return new Date(month.getFullYear(), month.getMonth(), 0).getDay();
+  return new Date(month.getFullYear(), month.getMonth(), 1).getDay();
 };
 
 export const getStartOfWeek = (currentDate: Date) => {
