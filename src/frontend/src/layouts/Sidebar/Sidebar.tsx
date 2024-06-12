@@ -79,7 +79,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setMoveContent(!moveContent);
   };
 
-  console.log('NEW BAR-----------------');
   return (
     <NERDrawer open={drawerOpen} variant="permanent">
       <Box
@@ -108,13 +107,13 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
             ))}
             {<NavUserMenu open={drawerOpen} />}
           </Box>
-          <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
-            <Box marginLeft={1.1}>
-              <Typography marginLeft={1.1}>Sponsored By:</Typography>
-              <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
-            </Box>
-            <Typography className={styles.versionNumber}>v4.3.5</Typography>
+        </Box>
+        <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
+          <Box marginLeft={1.1}>
+            <Typography marginLeft={1.1}>Sponsored By:</Typography>
+            <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
           </Box>
+          <Typography className={styles.versionNumber}>v4.3.5</Typography>
         </Box>
       </Box>
     </NERDrawer>

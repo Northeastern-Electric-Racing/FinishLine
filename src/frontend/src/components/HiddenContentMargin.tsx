@@ -4,8 +4,7 @@
  */
 
 import { CSSObject, Drawer, Theme, styled } from '@mui/material';
-
-export const DRAWERWIDTH = 200;
+import { DRAWERWIDTH } from './NERDrawer';
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: DRAWERWIDTH,
