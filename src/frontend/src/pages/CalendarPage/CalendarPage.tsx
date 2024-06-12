@@ -96,7 +96,8 @@ const CalendarPage = () => {
   const paddingArrayStart = [...Array<number>(calendarPaddingDays(displayMonthYear)).keys()]
     .map(
       (day) =>
-        daysInMonth(new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, displayMonthYear.getDate())) - day
+        daysInMonth(new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth() - 1, displayMonthYear.getDate())) -
+        day
     )
     .reverse();
   const paddingArrayEnd = [
