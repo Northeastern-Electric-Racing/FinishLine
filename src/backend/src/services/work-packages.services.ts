@@ -426,9 +426,16 @@ export default class WorkPackagesService {
    * Deletes the Work Package
    * @param submitter The user who deleted the work package
    * @param wbsNum The work package number to be deleted
+   * @param identifer The id of the change request whose change is
+   * to be implemented by this deletion
    * @param organizationId The organization id that the user is in
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, organizationId: string): Promise<void> {
+  static async deleteWorkPackage(
+    submitter: User,
+    wbsNum: WbsNumber,
+    identifier: number,
+    organizationId: string
+  ): Promise<void> {
     // Verify submitter is allowed to delete work packages
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work packages');
@@ -436,6 +443,17 @@ export default class WorkPackagesService {
     const workPackage = await WorkPackagesService.getSingleWorkPackage(wbsNum, organizationId);
 
     const { wbsElementId, id: workPackageId } = workPackage;
+
+    await validateChangeRequestAccepted(identifier.toString());
+
+    await prisma.change.create({
+      data: {
+        changeRequestId: identifier.toString(),
+        implementerId: submitter.userId,
+        wbsElementId,
+        detail: 'Work Package Deleted'
+      }
+    });
 
     const dateDeleted = new Date();
     const deletedByUserId = submitter.userId;
