@@ -18,6 +18,7 @@ export const WorkPackageTemplateSection: React.FC<WorkPackageTemplateProps> = ({
       <Box sx={{ display: 'flex', flexDirection: 'row' }}>
         {workPackageTemplates.map((template) => (
           <Box
+            key={template.workPackageTemplateId}
             onClick={() => {
               setCurrentWorkPackageTemplate(template);
             }}

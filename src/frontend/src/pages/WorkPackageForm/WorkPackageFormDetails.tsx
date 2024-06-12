@@ -25,7 +25,6 @@ interface Props {
   errors: Partial<FieldErrorsImpl<WorkPackageFormViewPayload>>;
   createForm?: boolean;
   endDate: Date;
-  currentWorkPackageTemplate?: WorkPackageTemplate;
 }
 
 const WorkPackageFormDetails: React.FC<Props> = ({
@@ -38,8 +37,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   control,
   errors,
   createForm = false,
-  endDate,
-  currentWorkPackageTemplate
+  endDate
 }) => {
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
@@ -57,12 +55,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
         name="stage"
         control={control}
         render={({ field: { onChange, value } }) => (
-          <TextField
-            select
-            onChange={onChange}
-            value={currentWorkPackageTemplate ? currentWorkPackageTemplate.stage : value}
-            fullWidth
-          >
+          <TextField select onChange={onChange} value={value} fullWidth>
             <MenuItem value={'NONE'}>NONE</MenuItem>
             {Object.values(WorkPackageStage).map((stage) => (
               <MenuItem key={stage} value={stage}>

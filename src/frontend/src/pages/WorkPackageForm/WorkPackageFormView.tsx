@@ -115,7 +115,9 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     isError: workPackageTemplateisError,
     error: workPackageTemplateError
   } = useAllWorkPackageTemplates();
-  const [currentWorkPackageTemplate] = useState<WorkPackageTemplate>();
+
+  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate>();
+
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
 
@@ -229,6 +231,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
             setValue('stage', WorkPackageTemplate.stage ?? 'NONE');
             setValue('duration', WorkPackageTemplate.duration ?? 0);
             setValue('descriptionBullets', WorkPackageTemplate.descriptionBullets ?? []);
+            setValue('workPackageId', WorkPackageTemplate.workPackageTemplateId);
+            setCurrentWorkPackageTemplate(WorkPackageTemplate);
           }}
         />
 
@@ -243,7 +247,6 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           setManager={setManagerId}
           createForm={!defaultValues}
           endDate={calculatedEndDate}
-          currentWorkPackageTemplate={currentWorkPackageTemplate}
         />
         <Box my={2}>
           <Typography variant="h5">Blocked By</Typography>
