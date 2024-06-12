@@ -10379,6 +10379,7 @@ __metadata:
     msw: ^0.44.2
     pdf-lib: ^1.17.1
     react: 18.2.0
+    react-archer: ^4.4.0
     react-dom: ^18.2.0
     react-draggable: ^4.4.6
     react-google-charts: ^4.0.0
@@ -16983,6 +16984,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-archer@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "react-archer@npm:4.4.0"
+  dependencies:
+    react-fast-compare: ^2.0.4
+    resize-observer-polyfill: 1.5.0
+  peerDependencies:
+    "@types/react": ^16.8.8 || ^17 || ^18
+    prop-types: ^15.6.2
+    react: ^16.9.0 || ^17 || ^18
+  checksum: 2f675499d9af5a06911332e432af24280b38715151078a3a75b6dd7790f6756c19647928e3f67cda3b21526c6dda2729bedb17e40d1f21835a1b4873c362c6c4
+  languageName: node
+  linkType: hard
+
 "react-dev-utils@npm:^11.0.3":
   version: 11.0.4
   resolution: "react-dev-utils@npm:11.0.4"
@@ -17055,6 +17070,13 @@ __metadata:
   version: 6.0.11
   resolution: "react-error-overlay@npm:6.0.11"
   checksum: ce7b44c38fadba9cedd7c095cf39192e632daeccf1d0747292ed524f17dcb056d16bc197ddee5723f9dd888f0b9b19c3b486c430319e30504289b9296f2d2c42
+  languageName: node
+  linkType: hard
+
+"react-fast-compare@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "react-fast-compare@npm:2.0.4"
+  checksum: 06046595f90a4e3e3a56f40a8078c00aa71bdb064ddb98343f577f546aa22e888831fd45f009c93b34707cc842b4c637737e956fd13d6f80607ee92fb9cf9a1c
   languageName: node
   linkType: hard
 
@@ -17691,6 +17713,13 @@ __metadata:
   version: 0.1.2
   resolution: "reserved-words@npm:0.1.2"
   checksum: 72e80f71dcde1e2d697e102473ad6d597e1659118836092c63cc4db68a64857f07f509176d239c8675b24f7f03574336bf202a780cc1adb39574e2884d1fd1fa
+  languageName: node
+  linkType: hard
+
+"resize-observer-polyfill@npm:1.5.0":
+  version: 1.5.0
+  resolution: "resize-observer-polyfill@npm:1.5.0"
+  checksum: ecc6aab5d4f967f1b76cee0748c1967c8b6b5d8c4393764ca3b788dbd15c0f846326c4ebff9f4f39aba45fea8016cd42bb95e28e8fab1d14349e173790c58133
   languageName: node
   linkType: hard
 

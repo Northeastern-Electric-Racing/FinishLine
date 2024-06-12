@@ -423,11 +423,13 @@ model Link {
   linkTypeId  String
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
-  // Either its on a wbsElement or a wbsProposedChanges, not both and not neither
-  wbsElementId         String?
-  wbsElment            WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
-  wbsProposedChangesId String?
-  wbsProposedChanges   Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  // Either its on a wbsElement, a wbsProposedChanges, or an organization
+  wbsElementId               String?
+  wbsElment                  WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  wbsProposedChangesId       String?
+  wbsProposedChanges         Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  organization               Organization?         @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?
 }
 
 model Description_Bullet_Type {
@@ -780,18 +782,22 @@ model Project_Proposed_Changes {
   teams                    Team[]               @relation(name: "proposedProjectTeams")
   wbsProposedChanges       Wbs_Proposed_Changes @relation(name: "projectProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
   wbsProposedChangesId     String               @unique
-  carId                    String?
-  car                      Car?                 @relation(fields: [carId], references: [carId])
+
+  workPackageProposedChanges Work_Package_Proposed_Changes[]
+  carId                      String?
+  car                        Car?                            @relation(fields: [carId], references: [carId])
 }
 
 model Work_Package_Proposed_Changes {
-  workPackageProposedChangesId String               @id @default(uuid())
-  startDate                    DateTime             @db.Date
+  workPackageProposedChangesId String                    @id @default(uuid())
+  startDate                    DateTime                  @db.Date
   duration                     Int
-  blockedBy                    WBS_Element[]        @relation(name: "proposedBlockedBy")
+  blockedBy                    WBS_Element[]             @relation(name: "proposedBlockedBy")
   stage                        Work_Package_Stage?
-  wbsProposedChanges           Wbs_Proposed_Changes @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
-  wbsProposedChangesId         String               @unique
+  wbsProposedChanges           Wbs_Proposed_Changes      @relation(name: "wpProposedChanges", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  wbsProposedChangesId         String                    @unique
+  projectProposedChanges       Project_Proposed_Changes? @relation(fields: [projectProposedChangesId], references: [projectProposedChangesId])
+  projectProposedChangesId     String?
 }
 
 model Work_Package_Template {
@@ -856,4 +862,5 @@ model Organization {
   roles                  Role[]
   changeRequests         Change_Request[]
   reimbursementReqeusts  Reimbursement_Request[]
+  usefulLinks            Link[]
 }

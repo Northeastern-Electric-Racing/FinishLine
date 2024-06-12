@@ -156,7 +156,7 @@ export default class ProjectsController {
       const { name, pdmFileName } = req.body;
       const organizationId = getOrganizationId(req.headers);
 
-      const createAssembly = await BillOfMaterialsService.createAssembly(name, user, wbsNum, pdmFileName, organizationId);
+      const createAssembly = await BillOfMaterialsService.createAssembly(name, user, wbsNum, organizationId, pdmFileName);
       res.status(200).json(createAssembly);
     } catch (error: unknown) {
       next(error);
@@ -428,13 +428,12 @@ export default class ProjectsController {
 
   static async editLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { linkId } = req.params;
-      const { iconName, required, linkTypeName } = req.body;
+      const { linkTypeName } = req.params;
+      const { iconName, required } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
       const linkTypeUpdated = await ProjectsService.editLinkType(
-        linkId,
         linkTypeName,
         iconName,
         required,

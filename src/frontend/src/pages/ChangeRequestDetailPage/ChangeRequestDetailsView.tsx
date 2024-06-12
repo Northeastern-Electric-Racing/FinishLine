@@ -5,7 +5,7 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest, isProject } from 'shared';
+import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest } from 'shared';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
@@ -16,9 +16,6 @@ import ReviewNotes from './ReviewNotes';
 import ProposedSolutionsList from './ProposedSolutionsList';
 import { Grid, Typography, Link, Box } from '@mui/material';
 import DeleteChangeRequest from './DeleteChangeRequest';
-import { useSingleProject } from '../../hooks/projects.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import ChangeRequestActionMenu from './ChangeRequestActionMenu';
 import OtherChangeRequestsPopupTabs from './OtherChangeRequestsPopupTabs';
@@ -57,21 +54,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
   const handleDeleteClose = () => setDeleteModalShow(false);
   const handleDeleteOpen = () => setDeleteModalShow(true);
 
-  const {
-    data: project,
-    isLoading,
-    isError,
-    error
-  } = useSingleProject({
-    carNumber: changeRequest.wbsNum.carNumber,
-    projectNumber: changeRequest.wbsNum.projectNumber,
-    workPackageNumber: 0
-  });
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (!project || isLoading) return <LoadingIndicator />;
-
-  const { name: projectName } = project;
-
   const isStandard =
     changeRequest.type !== ChangeRequestType.Activation && changeRequest.type !== ChangeRequestType.StageGate;
 
@@ -79,7 +61,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
 
   return (
     <PageLayout
-      title={`Change Request #${changeRequest.crId}`}
+      title={`Change Request #${changeRequest.identifier}`}
       chips={
         <Box display="flex" gap="20px">
           <ChangeRequestTypePill type={changeRequest.type} />
@@ -104,8 +86,7 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
             <Typography sx={{ fontWeight: 'normal', fontSize: '21px' }}>
               <b>WBS: </b>
               <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
-                {wbsPipe(changeRequest.wbsNum)} - {projectName}
-                {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
+                {changeRequest.wbsName}
               </Link>
             </Typography>
           </Grid>

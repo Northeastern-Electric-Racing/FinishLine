@@ -29,18 +29,14 @@ import DesignReviewsService from '../services/design-reviews.services';
 import BillOfMaterialsService from '../services/boms.services';
 import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
-import WorkPackagesService from '../services/work-packages.services';
+import { writeFileSync } from 'fs';
+import WorkPackageTemplatesService from '../services/work-package-template.services';
 
 const prisma = new PrismaClient();
 
 const performSeed: () => Promise<void> = async () => {
   const thomasEmrax = await prisma.user.create({
     data: dbSeedAllUsers.thomasEmrax,
-    include: { userSettings: true, userSecureSettings: true }
-  });
-
-  const regina = await prisma.user.create({
-    data: dbSeedAllUsers.regina,
     include: { userSettings: true, userSecureSettings: true }
   });
 
@@ -180,6 +176,7 @@ const performSeed: () => Promise<void> = async () => {
   const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.LEADERSHIP, organizationId);
   const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
+  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', organizationId);
 
@@ -260,6 +257,18 @@ const performSeed: () => Promise<void> = async () => {
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
   const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
+
+  /** Gets the current content of the .env file */
+  const currentEnv = require('dotenv').config().parsed;
+
+  currentEnv.DEV_ORGANIZATION_ID = organizationId;
+
+  /** Write the new .env file with the organization ID */
+  let stringifiedEnv = '';
+  Object.keys(currentEnv).forEach((key) => {
+    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  });
+  writeFileSync('.env', stringifiedEnv);
 
   /** Setting Team Members */
   await TeamsService.setTeamMembers(
@@ -403,11 +412,11 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Link Types */
-  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'doc', true, organizationId);
+  const confluenceLinkType = await ProjectsService.createLinkType(batman, 'Confluence', 'description', true, organizationId);
 
-  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'doc', true, organizationId);
+  const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, organizationId);
 
-  await ProjectsService.createLinkType(batman, 'Google Drive', 'doc', true, organizationId);
+  await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, organizationId);
 
   /**
    * Projects
@@ -1897,7 +1906,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   );
 
-  await WorkPackagesService.createWorkPackageTemplate(
+  await WorkPackageTemplatesService.createWorkPackageTemplate(
     batman,
     'Batmobile Config 1',
     'This is the first Batmobile configuration',
@@ -1909,7 +1918,7 @@ const performSeed: () => Promise<void> = async () => {
     organizationId
   );
 
-  const schematicWpTemplate = await WorkPackagesService.createWorkPackageTemplate(
+  const schematicWpTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
     batman,
     'Schematic',
     'This is the schematic template',
@@ -1921,7 +1930,7 @@ const performSeed: () => Promise<void> = async () => {
     organizationId
   );
 
-  await WorkPackagesService.createWorkPackageTemplate(
+  await WorkPackageTemplatesService.createWorkPackageTemplate(
     batman,
     'Layout ',
     'This is the Layout  template',

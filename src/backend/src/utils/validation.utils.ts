@@ -77,6 +77,24 @@ const projectProposedChangesExists = (validationObject: ValidationChain): Valida
   return validationObject.if((_value: any, { req }: any) => req.body.projectProposedChanges);
 };
 
+const workPackageProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.if((_value: any, { req }: any) => req.body.workPackageProposedChanges);
+};
+
+export const workPackageProposedChangesValidators = (base: string) => [
+  body(base).optional(),
+  nonEmptyString(workPackageProposedChangesExists(body(`${base}.name`))),
+  nonEmptyString(body(`${base}.leadId`).optional()),
+  nonEmptyString(body(`${base}.managerId`).optional()),
+  isWorkPackageStageOrNone(workPackageProposedChangesExists(body(`${base}.stage`).optional())),
+  isDate(workPackageProposedChangesExists(body(`${base}.startDate`))),
+  intMinZero(workPackageProposedChangesExists(body(`${base}.duration`))),
+  workPackageProposedChangesExists(body(`${base}.blockedBy`)).isArray(),
+  intMinZero(body(`${base}.blockedBy.*.carNumber`)),
+  intMinZero(body(`${base}.blockedBy.*.projectNumber`)),
+  intMinZero(body(`${base}.blockedBy.*.workPackageNumber`))
+];
+
 export const projectProposedChangesValidators = [
   body('projectProposedChanges').optional(),
   nonEmptyString(projectProposedChangesExists(body('projectProposedChanges.name'))),
@@ -89,25 +107,9 @@ export const projectProposedChangesValidators = [
   intMinZero(projectProposedChangesExists(body('projectProposedChanges.budget'))),
   projectProposedChangesExists(body('projectProposedChanges.teamIds')).isArray(),
   nonEmptyString(body('projectProposedChanges.teamIds.*')),
-  projectProposedChangesExists(body('projectProposedChanges.carNumber')).optional().isInt()
-];
-
-const workPackageProposedChangesExists = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.if((_value: any, { req }: any) => req.body.workPackageProposedChanges);
-};
-
-export const workPackageProposedChangesValidators = [
-  body('workPackageProposedChanges').optional(),
-  nonEmptyString(workPackageProposedChangesExists(body('workPackageProposedChanges.name'))),
-  nonEmptyString(body('workPackageProposedChanges.leadId').optional()),
-  nonEmptyString(body('workPackageProposedChanges.managerId').optional()),
-  isWorkPackageStageOrNone(workPackageProposedChangesExists(body('workPackageProposedChanges.stage').optional())),
-  isDate(workPackageProposedChangesExists(body('workPackageProposedChanges.startDate'))),
-  intMinZero(workPackageProposedChangesExists(body('workPackageProposedChanges.duration'))),
-  workPackageProposedChangesExists(body('workPackageProposedChanges.blockedBy')).isArray(),
-  intMinZero(body('workPackageProposedChanges.blockedBy.*.carNumber')),
-  intMinZero(body('workPackageProposedChanges.blockedBy.*.projectNumber')),
-  intMinZero(body('workPackageProposedChanges.blockedBy.*.workPackageNumber'))
+  projectProposedChangesExists(body('projectProposedChanges.carNumber')).optional().isInt(),
+  projectProposedChangesExists(body('projectProposedChanges.workPackageProposedChanges')).isArray(),
+  ...workPackageProposedChangesValidators('projectProposedChanges.workPackageProposedChanges.*')
 ];
 
 export const isTaskPriority = (validationObject: ValidationChain): ValidationChain => {

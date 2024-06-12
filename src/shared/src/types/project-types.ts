@@ -7,7 +7,7 @@ import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
-import { Assembly, Material, Task } from 'shared';
+import { Assembly, Material, Task, TeamType } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
@@ -49,7 +49,7 @@ export interface Project extends WbsElement {
   favoritedBy: UserPreview[];
 }
 
-export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status'>;
+export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status' | 'workPackages' | 'lead' | 'manager'>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
@@ -57,8 +57,10 @@ export interface WorkPackage extends WbsElement {
   endDate: Date;
   duration: number;
   blockedBy: WbsNumber[];
+  blocking: WbsNumber[];
   projectName: string;
   stage?: WorkPackageStage;
+  teamTypes: TeamType[];
 }
 
 export interface DescriptionBullet {
@@ -108,6 +110,7 @@ export interface ProjectProposedChanges extends WbsProposedChanges {
   budget: number;
   teams: TeamPreview[];
   carNumber?: number;
+  workPackageProposedChanges: WorkPackageProposedChanges[];
 }
 
 export interface WorkPackageProposedChanges extends WbsProposedChanges {
@@ -139,3 +142,5 @@ export interface DescriptionBulletTypeCreatePayload {
   workPackageRequired: boolean;
   projectRequired: boolean;
 }
+
+export interface Car extends WbsElement {}

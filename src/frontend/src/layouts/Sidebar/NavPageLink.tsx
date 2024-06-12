@@ -12,7 +12,7 @@ export interface NavPageLinkItemProps extends LinkItem {
   open?: boolean;
 }
 
-const NavPageLink: React.FC<NavPageLinkItemProps> = ({ open, name, route, icon }) => {
+const NavPageLink: React.FC<NavPageLinkItemProps> = ({ name, route, icon }) => {
   const theme = useTheme();
   return (
     <NavLink
@@ -26,7 +26,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({ open, name, route, icon }
           backgroundColor: isActive ? 'white' : 'transparent',
           display: 'flex',
           flexDirection: 'row',
-          justifyContent: open ? 'flex-start' : 'center',
+          justifyContent: 'flex-start',
           gap: '8px',
           borderRadius: '8px',
           padding: '8px',
@@ -35,7 +35,7 @@ const NavPageLink: React.FC<NavPageLinkItemProps> = ({ open, name, route, icon }
       }}
     >
       {icon}
-      {open && <Typography>{name}</Typography>}
+      <Typography>{name}</Typography>
     </NavLink>
   );
 };

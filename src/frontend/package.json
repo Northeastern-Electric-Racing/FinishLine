@@ -26,6 +26,7 @@
     "google-auth-library": "^8.1.1",
     "pdf-lib": "^1.17.1",
     "react": "18.2.0",
+    "react-archer": "^4.4.0",
     "react-dom": "^18.2.0",
     "react-draggable": "^4.4.6",
     "react-google-charts": "^4.0.0",

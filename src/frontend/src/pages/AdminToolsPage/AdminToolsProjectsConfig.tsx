@@ -2,11 +2,16 @@ import { Box } from '@mui/system';
 import { Typography } from '@mui/material';
 import WorkPackageTemplateTable from './ProjectsConfig/WorkPackageTemplateTable';
 import LinkTypeTable from './ProjectsConfig/LinkTypeTable';
-import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTpeTable';
+import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypeTable';
+import CarsTable from './ProjectsConfig/CarsTable';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
     <Box>
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Cars Config
+      </Typography>
+      <CarsTable />
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
       </Typography>

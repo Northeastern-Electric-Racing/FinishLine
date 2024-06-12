@@ -519,7 +519,6 @@ export default class ProjectsService {
 
   /**
    * Updates the linkType's name, iconName, or required.
-   * @param linkId the id of the linkType being editted
    * @param linkName the name of the linkType being editted
    * @param iconName the new iconName
    * @param required the new required status
@@ -528,7 +527,6 @@ export default class ProjectsService {
    * @returns the updated linkType
    */
   static async editLinkType(
-    linkId: string,
     linkName: string,
     iconName: string,
     required: boolean,
@@ -540,15 +538,19 @@ export default class ProjectsService {
 
     // check if the linkType we are trying to update exists
     const linkType = await prisma.link_Type.findUnique({
-      where: { id: linkId }
+      where: {
+        uniqueLinkType: {
+          name: linkName,
+          organizationId
+        }
+      }
     });
 
     if (!linkType) throw new NotFoundException('Link Type', linkName);
-    if (linkType.organizationId !== organizationId) throw new InvalidOrganizationException('Link Type');
 
     // update the LinkType
     const linkTypeUpdated = await prisma.link_Type.update({
-      where: { id: linkId },
+      where: { id: linkType.id },
       data: {
         name: linkName,
         iconName,
