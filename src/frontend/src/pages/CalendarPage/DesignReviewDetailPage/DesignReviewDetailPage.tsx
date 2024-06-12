@@ -21,8 +21,13 @@ import { useState } from 'react';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { DatePicker } from '@mui/x-date-pickers';
-import { DesignReview, isAdmin } from 'shared';
-import { useAllDesignReviews, useDeleteDesignReview } from '../../../hooks/design-reviews.hooks';
+import { DesignReview, DesignReviewStatus, isAdmin } from 'shared';
+import {
+  EditDesignReviewPayload,
+  useAllDesignReviews,
+  useDeleteDesignReview,
+  useEditDesignReview
+} from '../../../hooks/design-reviews.hooks';
 import { designReviewNamePipe, meetingStartTimePipe } from '../../../utils/pipes';
 import { HOURS } from '../../../utils/design-review.utils';
 import { useHistory } from 'react-router-dom';
@@ -42,6 +47,13 @@ interface DesignReviewDetailPageProps {
   designReview: DesignReview;
 }
 
+export interface FinalizeReviewInformation {
+  docTemplateLink: string;
+  zoomLink?: string;
+  location?: string;
+  meetingType: string[];
+}
+
 const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designReview }) => {
   const theme = useTheme();
   const [requiredUsers, setRequiredUsers] = useState(designReview.requiredMembers.map(userToAutocompleteOption));
@@ -52,6 +64,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [startTime, setStateTime] = useState(designReview.meetingTimes[0] % 12);
   const [endTime, setEndTime] = useState((designReview.meetingTimes[designReview.meetingTimes.length - 1] % 12) + 1);
+  const { mutateAsync: editDesignReview } = useEditDesignReview(designReview.designReviewId);
 
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: allUsers } = useAllUsers();
   const {
@@ -69,7 +82,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   if (allDesignReviewsIsError) return <ErrorPage message={allDesignReviewsError?.message} />;
   if (allUsersIsLoading || !allUsers || allDesignReviewsIsLoading || !allDesignReviews) return <LoadingIndicator />;
 
-  const users = allUsers.filter((user) => user.scheduleSettings).map(userToAutocompleteOption);
+  const users = allUsers.map(userToAutocompleteOption);
 
   const handleDateChange = (newDate: Date | null) => {
     if (newDate) {
@@ -79,13 +92,44 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     try {
-      deleteDesignReview();
+      await deleteDesignReview();
       history.push(routes.CALENDAR);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleEdit = async (data?: FinalizeReviewInformation) => {
+    const day = date.getDay();
+    const adjustedDay = day === 0 ? 6 : day - 1;
+    const times: number[] = [];
+    for (let i = adjustedDay * 12 + startTime; i < adjustedDay * 12 + endTime; i++) {
+      times.push(i);
+    }
+    try {
+      const payload: EditDesignReviewPayload = {
+        dateScheduled: date,
+        teamTypeId: designReview.teamType.teamTypeId,
+        requiredMembersIds: requiredUsers.map((user) => user.id),
+        optionalMembersIds: optionalUsers.map((user) => user.id),
+        isOnline: data?.meetingType.includes('virtual') ?? false,
+        isInPerson: data?.meetingType.includes('inPerson') ?? false,
+        status: data ? DesignReviewStatus.SCHEDULED : designReview.status,
+        attendees: [],
+        meetingTimes: times,
+        docTemplateLink: data?.docTemplateLink ?? designReview.docTemplateLink,
+        zoomLink: data?.zoomLink ?? designReview.zoomLink,
+        location: data?.location ?? designReview.location
+      };
+      await editDesignReview(payload);
+      history.push(routes.CALENDAR);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
       }
     }
   };
@@ -128,7 +172,6 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
     backgroundColor: theme.palette.background.paper,
     borderRadius: 3,
     textAlign: 'center',
-    textDecoration: 'underline',
     width: '100%',
     border: 'none'
   };
@@ -184,6 +227,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
             displayEmpty
             renderValue={(value) => meetingStartTimePipe([value])}
             value={endTime}
+            disabled={true}
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
             size={'small'}
             placeholder={'End Time'}
@@ -280,16 +324,18 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
         </Grid>
       </Grid>
       <AvailabilityView
-        editPayload={{
-          requiredUserIds: requiredUsers.map((option) => option.id),
-          optionalUserIds: optionalUsers.map((option) => option.id),
-          selectedDate: date,
-          startTime,
-          endTime
-        }}
+        handleEdit={handleEdit}
         designReview={designReview}
         allDesignReviews={allDesignReviews}
         allUsers={allUsers}
+        selectedDate={date}
+        setSelectDate={setDate}
+        requiredUserIds={requiredUsers.map((user) => user.id)}
+        optionalUserIds={optionalUsers.map((user) => user.id)}
+        startTime={startTime}
+        endTime={endTime}
+        setStartTime={setStateTime}
+        setEndTime={setEndTime}
       />
     </PageLayout>
   );

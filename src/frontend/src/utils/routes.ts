@@ -41,7 +41,7 @@ const CHANGE_REQUESTS_OVERVIEW = CHANGE_REQUESTS + `/overview`;
 /****************** Settings Section  *********************/
 const SETTINGS = `/settings`;
 const SETTINGS_DETAILS = '/details';
-const SETTINGS_PREFERENCES = '/preferences';
+const SETTINGS_PREFERENCES = SETTINGS + '/preferences';
 
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
