@@ -9,6 +9,7 @@ tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
   body('deadline').isDate(),
+  body('notes').isString(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
   body('assignees').isArray(),
