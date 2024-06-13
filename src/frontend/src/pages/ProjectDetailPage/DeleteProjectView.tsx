@@ -34,7 +34,10 @@ const DeleteProjectView: React.FC<DeleteProjectViewProps> = ({ project, modalSho
   const projectWbsNumTester = (wbsNum: string | undefined) => wbsNum !== undefined && wbsNum === wbsPipe(project);
 
   const schema = yup.object().shape({
-    wbsNum: yup.string().required().test('project-wbs-test', 'Project WBS does not match', projectWbsNumTester)
+    wbsNum: yup
+      .string()
+      .required('Project WBS is required')
+      .test('project-wbs-test', 'Project WBS does not match', projectWbsNumTester)
   });
 
   const {
