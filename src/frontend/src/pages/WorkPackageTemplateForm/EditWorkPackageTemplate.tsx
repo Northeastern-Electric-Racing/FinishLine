@@ -27,12 +27,8 @@ const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ setPageMo
     <WorkPackageTemplateForm
       workPackageTemplateId={workPackageTemplateId!}
       workPackageTemplateMutateAsync={editWorkPackageTemplate}
-      exitActiveMode={() => {
-        setPageMode(false);
-        history.push(routes.ADMIN_TOOLS);
-      }}
+      exitActiveMode={() => history.push(routes.ADMIN_TOOLS)}
       schema={schema}
-      breadcrumbs={[]}
     />
   );
 };

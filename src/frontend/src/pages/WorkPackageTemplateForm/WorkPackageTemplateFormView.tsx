@@ -21,7 +21,6 @@ interface WorkPackageTemplateFormViewProps {
   defaultValues?: WorkPackageTemplateFormViewPayload;
   blockedByOptions: { id: string; label: string }[];
   schema: ObjectSchema<any>;
-  breadcrumbs: { name: string; route: string }[];
 }
 
 export interface WorkPackageTemplateFormViewPayload {
@@ -40,8 +39,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
   workPackageTemplateMutateAsync,
   defaultValues,
   blockedByOptions,
-  schema,
-  breadcrumbs
+  schema
 }) => {
   const toast = useToast();
   const {
@@ -118,9 +116,6 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
         e.key === 'Enter' && e.preventDefault();
       }}
     >
-      <Box mb={-1}>
-        <PageBreadcrumbs currentPageTitle={pageTitle} previousPages={breadcrumbs} />
-      </Box>
       <PageLayout
         stickyHeader
         title={pageTitle}
@@ -163,7 +158,6 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
             />
           </FormControl>
           <Box>
-            <Typography variant="h5">Expected Activities</Typography>
             <DescriptionBulletsEditView
               type="workPackage"
               watch={watch}
@@ -171,17 +165,6 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
               register={register}
               append={appendDescriptionBullet}
               remove={removeDescriptionBullet}
-            />
-          </Box>
-          <Box>
-            <Typography variant="h5">Deliverables</Typography>
-            <DescriptionBulletsEditView
-              type="workPackage"
-              watch={watch}
-              ls={deliverables}
-              register={register}
-              append={appendDeliverable}
-              remove={removeDeliverable}
             />
           </Box>
         </Stack>

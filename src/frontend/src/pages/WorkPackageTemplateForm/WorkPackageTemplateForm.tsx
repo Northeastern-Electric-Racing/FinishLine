@@ -10,15 +10,13 @@ interface WorkPackageTemplateFormProps {
   exitActiveMode: () => void;
   workPackageTemplateMutateAsync: (data: WorkPackageTemplateApiInputs) => void;
   schema: ObjectSchema<any>;
-  breadcrumbs: { name: string; route: string }[];
 }
 
 const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   workPackageTemplateId,
   workPackageTemplateMutateAsync,
   exitActiveMode,
-  schema,
-  breadcrumbs
+  schema
 }) => {
   const { data: workPackageTemplates, isError: wpIsError, error: wpError } = useAllWorkPackageTemplates();
 
@@ -29,8 +27,6 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
 
   if (workPackageTemplateId) {
     workPackageTemplate = workPackageTemplates?.find((wpt) => wpt.workPackageTemplateId === workPackageTemplateId);
-
-    console.log(workPackageTemplate);
 
     if (workPackageTemplate) {
       defaultValues = {
@@ -67,7 +63,6 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
       defaultValues={defaultValues}
       blockedByOptions={blockedByOptions}
       schema={schema}
-      breadcrumbs={breadcrumbs}
     />
   );
 };

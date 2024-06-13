@@ -33,6 +33,7 @@ const WorkPackageTemplateTable = () => {
 
   const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplateId) => (
     <TableRow
+      key={workPackageTemplateId.workPackageTemplateId}
       onClick={() =>
         history.push(
           `${routes.WORK_PACKAGE_TEMPLATE_EDIT}?workPackageTemplateId=${workPackageTemplateId.workPackageTemplateId}`
@@ -47,18 +48,17 @@ const WorkPackageTemplateTable = () => {
         {workPackageTemplateId.templateNotes}
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        <IconButton onClick={() => setTemplateToDelete(workPackageTemplateId)}>
+        <IconButton
+          onClick={(event) => {
+            event.stopPropagation();
+            setTemplateToDelete(workPackageTemplateId);
+          }}
+        >
           <Delete />
         </IconButton>
       </TableCell>
     </TableRow>
   ));
-
-  /*
-  const buildURLForCreateWorkPackageTemplate = () => {
-    return `${routes.WORK_PACKAGE_TEMPLATE_NEW}?wbs=${projectWbsPipe(project.wbsNum)}&crId=null`;
-  };
-  */
 
   return (
     <Box>

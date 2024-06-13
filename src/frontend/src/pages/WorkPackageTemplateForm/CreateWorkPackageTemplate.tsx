@@ -18,7 +18,6 @@ const CreateWorkPackageTemplate: React.FC = () => {
       workPackageTemplateMutateAsync={createWorkPackageTemplateScopeCR}
       exitActiveMode={() => history.push(routes.ADMIN_TOOLS)}
       schema={schema}
-      breadcrumbs={[]}
     />
   );
 };
