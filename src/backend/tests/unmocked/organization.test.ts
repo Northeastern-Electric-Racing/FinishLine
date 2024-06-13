@@ -96,4 +96,42 @@ describe('Team Type Tests', () => {
       expect(updatedOrganization!.usefulLinks[1].url).toBe('link 4');
     });
   });
+
+  describe('Get all Useful Links', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () => await OrganizationsService.getAllUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('get useful links'));
+    });
+
+    it('Fails if a organization does not exist', async () => {
+      await expect(
+        async () => await OrganizationsService.getAllUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1')
+      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
+    });
+
+    it('succeds and gets all the links', async () => {
+      const testLinks1: LinkCreateArgs[] = [
+        {
+          linkId: '1',
+          linkTypeName: 'Link type 1',
+          url: 'link 1'
+        },
+        {
+          linkId: '2',
+          linkTypeName: 'Link type 1',
+          url: 'link 2'
+        }
+      ];
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestLinkType(testBatman, orgId);
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks1);
+      const links = await OrganizationsService.getAllUsefulLinks(testBatman, orgId);
+
+      expect(links).not.toBeNull();
+      expect(links.length).toBe(2);
+      expect(links[0].url).toBe('link 1');
+      expect(links[1].url).toBe('link 2');
+    });
+  });
 });

@@ -53,4 +53,25 @@ export default class OrganizationsService {
 
     return newLinks;
   }
+
+  static async getAllUsefulLinks(submitter: User, organizationId: string) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('get useful links');
+
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      select: { usefulLinks: { select: { linkId: true } } }
+    });
+
+    if (!organization) {
+      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+    }
+
+    const links = await prisma.link.findMany({
+      where: {
+        linkId: { in: organization.usefulLinks.map((link) => link.linkId) }
+      }
+    });
+    return links;
+  }
 }
