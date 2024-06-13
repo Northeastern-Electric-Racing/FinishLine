@@ -9,7 +9,7 @@ interface EditWorkPackageTemplateProps {
   setPageMode: (value: React.SetStateAction<boolean>) => void;
 }
 
-const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = ({ setPageMode }) => {
+const EditWorkPackageForm: React.FC<EditWorkPackageTemplateProps> = () => {
   const history = useHistory();
 
   const query = useQuery();
