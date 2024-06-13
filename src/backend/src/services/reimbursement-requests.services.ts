@@ -483,7 +483,6 @@ export default class ReimbursementRequestService {
 
     await sendMailToAdvisor(mailOptions.subject, mailOptions.text);
 
-
     const processReimbursementRequests = async () => {
       for (const reimbursementRequest of reimbursementRequests) {
         await prisma.reimbursement_Status.create({
@@ -984,7 +983,7 @@ export default class ReimbursementRequestService {
     if (notification) {
       await reactToMessage(notification.channelId, notification.timestamp, 'x');
     }
-    
+
     return reimbursementStatusTransformer(reimbursementStatus);
   }
 
