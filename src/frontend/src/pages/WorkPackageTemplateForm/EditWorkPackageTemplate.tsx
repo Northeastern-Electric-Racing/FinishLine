@@ -15,8 +15,6 @@ const EditWorkPackageTemplate: React.FC = () => {
 
   if (!workPackageTemplate) return <LoadingIndicator />;
 
-  console.log(workPackageTemplate);
-
   const defaultValues: WorkPackageTemplateFormInputs = {
     ...workPackageTemplate,
     stage: workPackageTemplate?.stage ?? 'NONE',
