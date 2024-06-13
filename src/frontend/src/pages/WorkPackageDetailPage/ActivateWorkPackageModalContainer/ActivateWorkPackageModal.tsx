@@ -20,6 +20,7 @@ import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { startDateTester } from '../../../utils/form';
+import NERFormModal from '../../../components/NERFormModal';
 
 interface ActivateWorkPackageModalProps {
   allUsers: User[];
@@ -91,97 +92,90 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   };
 
   return (
-    <form id={'activate-work-package-form'} onSubmit={handleSubmit(onSubmitWrapper)}>
-      <Dialog open={modalShow} onClose={onHide}>
-        <DialogTitle>{`Activate #${wbsPipe(wbsNum)}`}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <NERAutocomplete
-                id="project-lead-autocomplete"
-                onChange={(_event, value) => setLeadId(value?.id)}
-                options={allUsers.map((p) => ({
-                  label: fullNamePipe(p),
-                  id: p.userId.toString()
-                }))}
-                size="small"
-                placeholder="Project Lead"
-                listboxProps={{ style: { maxHeight: '199px' } }}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <NERAutocomplete
-                id="project-manager-autocomplete"
-                onChange={(_event, value) => setManagerId(value?.id)}
-                options={allUsers.map((p) => ({
-                  label: fullNamePipe(p),
-                  id: p.userId.toString()
-                }))}
-                size="small"
-                placeholder="Project Manager"
-                listboxProps={{ style: { maxHeight: '199px' } }}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
-                <Controller
-                  name="startDate"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field: { onChange, value } }) => (
-                    <>
-                      <DatePicker
-                        format="yyyy-MM-dd"
-                        onChange={(date) => onChange(date ?? new Date())}
-                        className={'padding: 10'}
-                        value={value}
-                        shouldDisableDate={isStartDateDisabled}
-                        slotProps={{ textField: { autoComplete: 'off' } }}
-                      />
-                    </>
-                  )}
+    <NERFormModal
+      open={modalShow}
+      onHide={onHide}
+      title={`Activate #${wbsPipe(wbsNum)}`}
+      reset={() => reset(defaultValues)}
+      submitText="Submit"
+      handleUseFormSubmit={handleSubmit}
+      onFormSubmit={onSubmitWrapper}
+      formId="activate-work-package-form"
+      showCloseButton
+    >
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <NERAutocomplete
+            id="project-lead-autocomplete"
+            onChange={(_event, value) => setLeadId(value?.id)}
+            options={allUsers.map((p) => ({
+              label: fullNamePipe(p),
+              id: p.userId.toString()
+            }))}
+            size="small"
+            placeholder="Project Lead"
+            listboxProps={{ style: { maxHeight: '199px' } }}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <NERAutocomplete
+            id="project-manager-autocomplete"
+            onChange={(_event, value) => setManagerId(value?.id)}
+            options={allUsers.map((p) => ({
+              label: fullNamePipe(p),
+              id: p.userId.toString()
+            }))}
+            size="small"
+            placeholder="Project Manager"
+            listboxProps={{ style: { maxHeight: '199px' } }}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+          <Controller
+            name="startDate"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <>
+                <DatePicker
+                  format="yyyy-MM-dd"
+                  onChange={(date) => onChange(date ?? new Date())}
+                  className={'padding: 10'}
+                  value={value}
+                  shouldDisableDate={isStartDateDisabled}
+                  slotProps={{ textField: { autoComplete: 'off' } }}
                 />
-              </FormControl>
-            </Grid>
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <FormLabel>Are the WP details correct?</FormLabel>
-                <Controller
-                  name="confirmDetails"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field: { onChange, value } }) => (
-                    <>
-                      <RadioGroup
-                        value={value}
-                        row
-                        aria-labelledby="demo-row-radio-buttons-group-label"
-                        name="row-radio-buttons-group"
-                        onChange={onChange}
-                      >
-                        <FormControlLabel value={1} control={<Radio />} label="Yes" />
-                        <FormControlLabel value={0} control={<Radio />} label="No" />
-                      </RadioGroup>
-                    </>
-                  )}
-                />
-              </FormControl>
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Box textAlign="right" sx={{ my: 2 }}>
-            <NERFailButton variant="outlined" form="activate-work-package-form" onClick={onHide} sx={{ mx: 1 }}>
-              Cancel
-            </NERFailButton>
-            <NERSuccessButton variant="contained" type="submit" form="activate-work-package-form" sx={{ mx: 1 }}>
-              Submit
-            </NERSuccessButton>
-          </Box>
-        </DialogActions>
-      </Dialog>
-    </form>
+              </>
+            )}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <FormLabel>Are the WP details correct?</FormLabel>
+            <Controller
+              name="confirmDetails"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <RadioGroup
+                    value={value}
+                    row
+                    aria-labelledby="demo-row-radio-buttons-group-label"
+                    name="row-radio-buttons-group"
+                    onChange={onChange}
+                  >
+                    <FormControlLabel value={1} control={<Radio />} label="Yes" />
+                    <FormControlLabel value={0} control={<Radio />} label="No" />
+                  </RadioGroup>
+                </>
+              )}
+            />
+          </FormControl>
+        </Grid>
+      </Grid>
+    </NERFormModal>
   );
 };
 
