@@ -4,23 +4,11 @@
  */
 
 import { WbsNumber, wbsPipe } from 'shared';
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  FormLabel,
-  IconButton,
-  Typography
-} from '@mui/material';
+import { FormControl, FormLabel, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import NERSuccessButton from '../../components/NERSuccessButton';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import NERFailButton from '../../components/NERFailButton';
 import ReactHookTextField from '../../components/ReactHookTextField';
-import CloseIcon from '@mui/icons-material/Close';
 import { DeleteProjectInputs } from './DeleteProject';
 import NERFormModal from '../../components/NERFormModal';
 
