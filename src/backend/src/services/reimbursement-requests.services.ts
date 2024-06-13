@@ -686,9 +686,12 @@ export default class ReimbursementRequestService {
     }
     if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
-    if (reimbursementRequest.recipientId !== submitter.userId) {
+    if (
+      reimbursementRequest.recipientId !== submitter.userId &&
+      !(await isUserLeadOrHeadOfFinanceTeam(submitter, organizationId))
+    ) {
       throw new AccessDeniedException(
-        'You do not have access to upload a receipt for this reimbursement request, only the creator can edit a reimbursement request'
+        'You do not have access to upload a receipt for this reimbursement request, only the creator or a finance lead can edit a reimbursement request'
       );
     }
 

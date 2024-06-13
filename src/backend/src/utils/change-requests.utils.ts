@@ -342,8 +342,9 @@ export const applyProjectProposedChanges = async (
       descriptionBulletToDescriptionBulletPreview
     );
 
+    let projectWbsElmeId: string | null = null;
     if (!associatedProject) {
-      await ProjectsService.createProject(
+      const proj = await ProjectsService.createProject(
         reviewer,
         crId,
         carNumber,
@@ -357,8 +358,10 @@ export const applyProjectProposedChanges = async (
         wbsProposedChanges.managerId,
         organizationId
       );
+
+      projectWbsElmeId = proj.wbsElementId;
     } else if (associatedProject) {
-      await ProjectsService.editProject(
+      const proj = await ProjectsService.editProject(
         reviewer,
         associatedProject.projectId,
         crId,
@@ -371,21 +374,21 @@ export const applyProjectProposedChanges = async (
         wbsProposedChanges.managerId,
         organizationId
       );
+
+      projectWbsElmeId = proj.wbsElementId;
     }
 
-    const promises = projectProposedChanges.workPackageProposedChanges.map(async (proposedChange) => {
+    for (const proposedChange of projectProposedChanges.workPackageProposedChanges) {
       await applyWorkPackageProposedChanges(
         wbsProposedChanges,
         proposedChange,
-        associatedProject,
+        projectWbsElmeId,
         null,
         reviewer,
         crId,
         organizationId
       );
-    });
-
-    await Promise.all(promises);
+    }
   }
 };
 
@@ -402,31 +405,28 @@ export const applyProjectProposedChanges = async (
 export const applyWorkPackageProposedChanges = async (
   wbsProposedChanges: Prisma.Wbs_Proposed_ChangesGetPayload<WbsProposedChangeQueryArgs>,
   workPackageProposedChanges: Prisma.Work_Package_Proposed_ChangesGetPayload<WorkPackageProposedChangesQueryArgs>,
-  associatedProject: Project | null,
+  existingWbsElementId: string | null,
   associatedWorkPackage: Work_Package | null,
   reviewer: User,
   crId: string,
   organizationId: string
 ) => {
-  if (associatedProject) {
+  if (existingWbsElementId) {
     await WorkPackagesService.createWorkPackage(
       reviewer,
-      wbsProposedChanges.name,
+      workPackageProposedChanges.wbsProposedChanges.name,
       crId,
       workPackageProposedChanges.stage as WorkPackageStage,
       transformDate(workPackageProposedChanges.startDate),
       workPackageProposedChanges.duration,
       workPackageProposedChanges.blockedBy,
-      wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
-      organizationId
+      workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(
+        descriptionBulletToDescriptionBulletPreview
+      ),
+      organizationId,
+      existingWbsElementId
     );
   } else if (associatedWorkPackage) {
-    if (wbsProposedChanges.leadId === null) {
-      throw new HttpException(400, 'Lead ID cannot be null');
-    }
-    if (wbsProposedChanges.managerId === null) {
-      throw new HttpException(400, 'Manager ID cannot be null');
-    }
     await WorkPackagesService.editWorkPackage(
       reviewer,
       associatedWorkPackage.workPackageId,

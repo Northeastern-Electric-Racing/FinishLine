@@ -1,24 +1,27 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { RequestEventChange } from '../../../../utils/gantt.utils';
-import { ChangeRequestReason, ChangeRequestType } from 'shared';
+import { ChangeRequestReason, ChangeRequestType, Project } from 'shared';
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { CreateStandardChangeRequestPayload, useCreateStandardChangeRequest } from '../../../../hooks/change-requests.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import { NERDraggableFormModal } from '../../../../components/NERDraggableFormModal';
+import { getProjectStartDate, getProjectEndDate } from '../../../../utils/gantt.utils';
 
 interface GanttProjectCreateModalProps {
-  change: RequestEventChange;
+  project: Project;
   handleClose: () => void;
   open: boolean;
 }
 
-export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProjectCreateModalProps) => {
+export const GanttProjectCreateModal = ({ project, handleClose, open }: GanttProjectCreateModalProps) => {
   const toast = useToast();
   const [reasonForChange, setReasonForChange] = useState<ChangeRequestReason>(ChangeRequestReason.Initialization);
   const [explanationForChange, setExplanationForChange] = useState('');
   const { isLoading, mutateAsync } = useCreateStandardChangeRequest();
+
+  const startDate = getProjectStartDate(project);
+  const latestEndDate = getProjectEndDate(project);
 
   if (isLoading) return <LoadingIndicator />;
 
@@ -30,19 +33,24 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
     setExplanationForChange(event.target.value);
   };
 
-  const changeInTimeline = (startDate: Date, endDate: Date) => {
-    return `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(endDate).format('MMMM D, YYYY')}`;
-  };
-
+  const changeInTimeline = `${dayjs(startDate).format('MMMM D, YYYY')} - ${dayjs(latestEndDate).format('MMMM D, YYYY')}`;
   const handleSubmit = async () => {
     if (!reasonForChange) {
       return;
     }
 
+    const [selectedTeam] = project.teams;
+
+    const teamIds = selectedTeam ? [selectedTeam.teamId] : [];
+
     const payload: CreateStandardChangeRequestPayload = {
-      wbsNum: change.baseWbs,
+      wbsNum: {
+        carNumber: project.wbsNum.carNumber,
+        projectNumber: 0,
+        workPackageNumber: 0
+      },
       type: ChangeRequestType.Issue,
-      what: `Create New Project with timeline of: ${changeInTimeline(change.newStart, change.newEnd)}`,
+      what: `Create New Project with timeline of: ${changeInTimeline}`,
       why: [
         {
           explain: explanationForChange,
@@ -51,22 +59,22 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
       ],
       proposedSolutions: [],
       projectProposedChanges: {
-        name: change.name,
+        name: project.name,
         budget: 0,
-        summary: `New Project for ${change.name}`,
+        summary: `New Project for ${project.name}`,
         descriptionBullets: [],
         leadId: undefined,
         managerId: undefined,
         links: [],
-        teamIds: [],
-        carNumber: change.baseWbs.carNumber,
-        workPackageProposedChanges: change.workPackageChanges.map((workPackage) => ({
+        teamIds,
+        carNumber: project.wbsNum.carNumber,
+        workPackageProposedChanges: project.workPackages.map((workPackage) => ({
           name: workPackage.name,
           stage: workPackage.stage,
           leadId: undefined,
           managerId: undefined,
-          startDate: workPackage.newStart.toLocaleString(),
-          duration: workPackage.duration,
+          startDate: workPackage.startDate.toLocaleString(),
+          duration: dayjs(workPackage.endDate).diff(dayjs(workPackage.startDate), 'week'),
           blockedBy: [],
           descriptionBullets: [],
           links: []
@@ -87,13 +95,13 @@ export const GanttProjectCreateModal = ({ change, handleClose, open }: GanttProj
   return (
     <NERDraggableFormModal
       open={open}
-      title={'New Project: ' + change.name}
+      title={'New Project: ' + project.name}
       disableSuccessButton={!reasonForChange || !explanationForChange}
       handleSubmit={handleSubmit}
       onHide={handleClose}
     >
       <Box sx={{ padding: 2, borderRadius: '10px 0 10px 0' }}>
-        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline(change.newStart, change.newEnd)}`}</Typography>
+        <Typography sx={{ fontSize: '1em' }}>{`New: ${changeInTimeline}`}</Typography>
         <Box sx={{ mt: 2 }}>
           <FormControl fullWidth>
             <InputLabel>Reason for Initialization</InputLabel>

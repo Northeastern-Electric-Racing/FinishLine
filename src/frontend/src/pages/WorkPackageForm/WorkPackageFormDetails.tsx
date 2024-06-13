@@ -145,6 +145,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
                 size="small"
                 placeholder="Select a Project Lead"
                 value={userToOption(usersForLead.find((user) => user.userId.toString() === lead))}
+                required={false}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -157,6 +158,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
                 size="small"
                 placeholder="Select a Project Manager"
                 value={userToOption(usersForManager.find((user) => user.userId.toString() === manager))}
+                required={false}
               />
             </Grid>
           </>

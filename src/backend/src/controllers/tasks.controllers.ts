@@ -8,7 +8,7 @@ import { getOrganizationId } from '../utils/utils';
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title, deadline, priority, status, assignees } = req.body;
+      const { title, deadline, priority, status, assignees, notes } = req.body;
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
       const createdBy: User = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
@@ -17,7 +17,7 @@ export default class TasksController {
         createdBy,
         wbsNum,
         title,
-        '',
+        notes,
         new Date(deadline),
         priority,
         status,

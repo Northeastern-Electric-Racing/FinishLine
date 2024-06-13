@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, Link, LinkType, Project } from 'shared';
+import { DescriptionBullet, Link, LinkType, Project, ProjectPreview } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { taskTransformer } from './tasks.transformers';
 import { workPackageTransformer } from './work-packages.transformers';
@@ -67,5 +67,12 @@ export const projectTransformer = (project: Project): Project => {
     changes: project.changes.map(implementedChangeTransformer),
     tasks: project.tasks.map(taskTransformer),
     links: project.links.map(linkTransformer)
+  };
+};
+
+export const projectPreviewTranformer = (project: ProjectPreview): ProjectPreview => {
+  return {
+    ...project,
+    workPackages: project.workPackages.map(workPackageTransformer)
   };
 };

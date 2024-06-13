@@ -5,22 +5,41 @@ import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
 import { getWeekDateRange } from '../../../utils/design-review.utils';
 import { dateRangePipe } from '../../../utils/pipes';
-import { DesignReviewEditData } from './DesignReviewDetailPage';
+import { FinalizeReviewInformation } from './DesignReviewDetailPage';
 
 interface AvailabilityViewProps {
   designReview: DesignReview;
   allDesignReviews: DesignReview[];
   allUsers: UserWithScheduleSettings[];
-  editPayload: DesignReviewEditData;
+  handleEdit: (data?: FinalizeReviewInformation) => void;
+  selectedDate: Date;
+  setSelectDate: (date: Date) => void;
+  startTime: number;
+  endTime: number;
+  setStartTime: (time: number) => void;
+  setEndTime: (time: number) => void;
+  requiredUserIds: string[];
+  optionalUserIds: string[];
 }
 
-const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDesignReviews, allUsers, editPayload }) => {
+const AvailabilityView: React.FC<AvailabilityViewProps> = ({
+  designReview,
+  allDesignReviews,
+  allUsers,
+  handleEdit,
+  selectedDate,
+  setSelectDate,
+  startTime,
+  endTime,
+  setStartTime,
+  setEndTime,
+  requiredUserIds,
+  optionalUserIds
+}) => {
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const existingMeetingData = new Map<number, string>();
   const usersToAvailabilities = new Map<User, number[]>();
-
-  const { selectedDate, requiredUserIds, optionalUserIds } = editPayload;
 
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
@@ -34,11 +53,29 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDe
     return drDate >= startRange && drDate <= endRange;
   });
 
+  const convertTimeSlotToDate = (index: number) => {
+    const day = Math.floor(index / 12);
+    const time = index % 12;
+    const date = new Date(startDateRange);
+    date.setDate(date.getDate() + day);
+    date.setHours(time + startTime);
+    return date;
+  };
+
+  const onSelectedTimeslotChanged = (index: number | null) => {
+    if (index === null) return;
+    const date = convertTimeSlotToDate(index);
+    const startTime = index % 12;
+    setStartTime(startTime);
+    setEndTime(startTime + 1);
+    setSelectDate(date);
+  };
+
   const conflictingDesignReviews = allDesignReviews.filter((currDr) => {
-    const day = editPayload.selectedDate.getDay();
+    const day = selectedDate.getDay();
     const adjustedDay = day === 0 ? 6 : day - 1;
     const times = [];
-    for (let i = adjustedDay * 12 + editPayload.startTime; i < adjustedDay * 12 + editPayload.endTime; i++) {
+    for (let i = adjustedDay * 12 + startTime; i < adjustedDay * 12 + endTime; i++) {
       times.push(i);
     }
     const cleanDate = new Date(currDr.dateScheduled.getTime() - currDr.dateScheduled.getTimezoneOffset() * -60000);
@@ -74,6 +111,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDe
           setCurrentAvailableUsers={setCurrentAvailableUsers}
           setCurrentUnavailableUsers={setCurrentUnavailableUsers}
           dateRangeTitle={dateRangePipe(startDateRange, endDateRange)}
+          onSelectedTimeslotChanged={onSelectedTimeslotChanged}
         />
       </Grid>
       <Grid item xs={3}>
@@ -83,7 +121,9 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({ designReview, allDe
           usersToAvailabilities={usersToAvailabilities}
           designReview={designReview}
           conflictingDesignReviews={conflictingDesignReviews}
-          editPayload={editPayload}
+          handleEdit={handleEdit}
+          selectedDate={selectedDate}
+          startTime={startTime}
         />
       </Grid>
     </Grid>

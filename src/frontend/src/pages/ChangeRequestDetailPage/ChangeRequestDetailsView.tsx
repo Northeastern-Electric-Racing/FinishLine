@@ -5,7 +5,7 @@
 
 import { ReactElement, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest, isProject } from 'shared';
+import { ActivationChangeRequest, ChangeRequest, ChangeRequestType, StandardChangeRequest } from 'shared';
 import { routes } from '../../utils/routes';
 import { datePipe, fullNamePipe, wbsPipe } from '../../utils/pipes';
 import ActivationDetails from './ActivationDetails';
@@ -87,7 +87,6 @@ const ChangeRequestDetailsView: React.FC<ChangeRequestDetailsProps> = ({
               <b>WBS: </b>
               <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(changeRequest.wbsNum)}`}>
                 {changeRequest.wbsName}
-                {isProject(changeRequest.wbsNum) ? '' : ' - ' + changeRequest.wbsName}
               </Link>
             </Typography>
           </Grid>
