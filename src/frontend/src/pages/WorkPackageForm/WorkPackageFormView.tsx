@@ -30,7 +30,7 @@ import DescriptionBulletsEditView from '../../components/DescriptionBulletEditVi
 import { useAllWorkPackageTemplates } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import { WorkPackageTemplateSection } from './WorkPackageTemplateDetails';
+import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;

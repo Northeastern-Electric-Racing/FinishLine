@@ -15,7 +15,7 @@ export const WorkPackageTemplateSection: React.FC<WorkPackageTemplateProps> = ({
   return (
     <>
       <Typography variant="h5">Templates</Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', cursor: 'pointer'}}>
         {workPackageTemplates.map((template) => (
           <Box
             key={template.workPackageTemplateId}
