@@ -51,22 +51,22 @@ describe('Design Reviews', () => {
 
   // set status works when creator is not admin
   test('Set status works when creator is not admin', async () => {
-    // ensure that creator of the dr is the same as this user
-    const drCreator = await createTestUser(aquamanLeadership, orgId);
-
-    if (!drCreator) {
-      console.log('No user lead found, please check that the creator of the DR exists and is not an admin');
-      assert(false);
-      throw new Error('No user lead found, please check that the creator of the DR exists and is not an admin');
-    }
     const ogDR = await prisma.design_Review.findUnique({
       where: {
         designReviewId: designReview.designReviewId
+      },
+      include: {
+        userCreated: true
       }
     });
 
     expect(ogDR?.status).toBe(DesignReviewStatus.UNCONFIRMED);
-
+    const drCreator = ogDR?.userCreated;
+    if (!drCreator) {
+      console.log('No creator found, please check that the creator exists');
+      assert(false);
+      throw new Error('No creator found, please check that the creator exists');
+    }
     await DesignReviewsService.setStatus(drCreator, designReview.designReviewId, DesignReviewStatus.CONFIRMED, orgId);
 
     const updatedDR = await prisma.design_Review.findUnique({
