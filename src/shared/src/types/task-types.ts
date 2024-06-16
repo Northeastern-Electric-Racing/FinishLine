@@ -32,3 +32,7 @@ export interface Task {
   priority: TaskPriority;
   status: TaskStatus;
 }
+
+export interface TaskWithIndex extends Task {
+  index: number;
+}

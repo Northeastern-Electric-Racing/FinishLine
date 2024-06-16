@@ -8,11 +8,11 @@ import { Box, Button, Tab, Tabs } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useRouteMatch } from 'react-router-dom';
 import { isLeadership, Project, Task, TaskStatus, wbsPipe } from 'shared';
-import { useAuth } from '../../../../hooks/auth.hooks';
-import { routes } from '../../../../utils/routes';
-import { Auth } from '../../../../utils/types';
+import { useAuth } from '../../../../../hooks/auth.hooks';
+import { routes } from '../../../../../utils/routes';
+import { Auth } from '../../../../../utils/types';
 import TaskListTabPanel from './TaskListTabPanel';
-import LoadingIndicator from '../../../../components/LoadingIndicator';
+import LoadingIndicator from '../../../../../components/LoadingIndicator';
 
 interface TaskListProps {
   project: Project;
