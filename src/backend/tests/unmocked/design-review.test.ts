@@ -4,12 +4,13 @@ import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { DesignReview, DesignReviewStatus, User } from 'shared';
 
 describe('Design Reviews', () => {
   let designReview: DesignReview; // should be type: Design_Review
   let orgId: string;
   beforeEach(async () => {
+    await resetUsers();
     const result = await createTestDesignReview();
     orgId = result.organization.organizationId;
     // FOR REVIEW: not sure why this type is failing,
@@ -23,7 +24,11 @@ describe('Design Reviews', () => {
 
   // change with app admin who is not creator
   test('Set status works when an admin who is not the creator works', async () => {
-    const user = await createTestUser(batmanAppAdmin, orgId);
+    const user = await prisma.user.findUnique({
+      where: {
+        email: batmanAppAdmin.email
+      }
+    });
 
     if (!user) {
       console.log('No user found, please check that the user exists');
