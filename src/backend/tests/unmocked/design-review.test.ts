@@ -9,13 +9,17 @@ import { DesignReview, DesignReviewStatus, User } from 'shared';
 describe('Design Reviews', () => {
   let designReview: DesignReview; // should be type: Design_Review
   let orgId: string;
+  let designReviewId: string;
   beforeEach(async () => {
     await resetUsers();
-    const result = await createTestDesignReview();
-    orgId = result.organization.organizationId;
-    // FOR REVIEW: not sure why this type is failing,
-    // return type seems to work exactly like other examples (in reference to createTestDesignReview in utils)
-    designReview = result.dr;
+    const {
+      organization: { organizationId },
+      dr,
+      designReviewId: id
+    } = await createTestDesignReview();
+    orgId = organizationId;
+    designReview = dr;
+    designReviewId = id;
   });
 
   afterEach(async () => {
@@ -37,7 +41,7 @@ describe('Design Reviews', () => {
     }
     const ogDR = await prisma.design_Review.findUnique({
       where: {
-        designReviewId: designReview.designReviewId
+        designReviewId
       }
     });
 
@@ -47,7 +51,7 @@ describe('Design Reviews', () => {
 
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
-        designReviewId: designReview.designReviewId
+        designReviewId
       }
     });
 
@@ -58,7 +62,7 @@ describe('Design Reviews', () => {
   test('Set status works when creator is not admin', async () => {
     const ogDR = await prisma.design_Review.findUnique({
       where: {
-        designReviewId: designReview.designReviewId
+        designReviewId
       },
       include: {
         userCreated: true
