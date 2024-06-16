@@ -307,7 +307,7 @@ export const createTestDesignReview = async () => {
   await createFinanceTeamAndLead(organization);
   const lead = await prisma.user.findUnique({
     where: {
-      googleAuthId: aquamanLeadership.googleAuthId
+      googleAuthId: 'financeLead'
     }
   });
   if (!lead) throw new Error('Failed to find user');
