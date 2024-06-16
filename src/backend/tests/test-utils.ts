@@ -330,7 +330,7 @@ export const createTestDesignReview = async () => {
       projectNumber: 0,
       workPackageNumber: 0
     },
-    [],
+    [0, 1],
     organization.organizationId
   );
 
