@@ -321,7 +321,7 @@ export const createTestDesignReview = async () => {
   const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization.organizationId);
   const dr = await DesignReviewsService.createDesignReview(
     lead,
-    '03/25/2024',
+    '03/25/2027',
     teamType.teamTypeId,
     [lead.userId],
     [],
