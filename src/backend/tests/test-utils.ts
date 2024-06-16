@@ -86,8 +86,8 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
-  await prisma.project.deleteMany();
   await prisma.work_Package.deleteMany();
+  await prisma.project.deleteMany();
   await prisma.team_Type.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
@@ -305,10 +305,15 @@ export const createTestReimbursementRequest = async () => {
 export const createTestDesignReview = async () => {
   const organization = await createTestOrganization();
   await createFinanceTeamAndLead(organization);
-  const lead = await createTestUser(aquamanLeadership, organization.organizationId);
+  const lead = prisma.user.findUnique({
+    where: {
+      userId: batmanAppAdmin.email
+    }
+  });
+  if (!lead) throw new Error('Failed to find user');
   const appAdmin = await createTestUser(batmanAppAdmin, organization.organizationId);
 
-  if (!lead) throw new Error('Failed to find user');
+  if (!aquamanLeadership) throw new Error('Failed to find user');
 
   const teamType = await TeamsService.createTeamType(appAdmin, 'Team1', 'Software', organization.organizationId);
   const dr = await DesignReviewsService.createDesignReview(
