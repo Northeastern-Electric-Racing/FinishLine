@@ -110,7 +110,7 @@ describe('Team Type Tests', () => {
       ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
-    it('succeds and gets all the links', async () => {
+    it('succeeds and gets all the links', async () => {
       const testLinks1: LinkCreateArgs[] = [
         {
           linkId: '1',
