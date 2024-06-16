@@ -21,10 +21,6 @@ describe('Design Reviews', () => {
     designReviewId = id;
   });
 
-  afterEach(async () => {
-    await resetUsers();
-  });
-
   // change with app admin who is not creator
   test('Set status works when an admin who is not the creator works', async () => {
     const user = await prisma.user.findUnique({
