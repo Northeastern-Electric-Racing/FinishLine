@@ -11,7 +11,6 @@ describe('Design Reviews', () => {
   let orgId: string;
   let designReviewId: string;
   beforeEach(async () => {
-    await resetUsers();
     const {
       organization: { organizationId },
       dr,
