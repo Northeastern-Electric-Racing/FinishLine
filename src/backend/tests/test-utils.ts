@@ -305,13 +305,19 @@ export const createTestReimbursementRequest = async () => {
 export const createTestDesignReview = async () => {
   const organization = await createTestOrganization();
   await createFinanceTeamAndLead(organization);
+  const head = await prisma.user.findUnique({
+    where: {
+      googleAuthId: 'financeHead'
+    }
+  });
   const lead = await prisma.user.findUnique({
     where: {
       googleAuthId: 'financeLead'
     }
   });
+  if (!head) throw new Error('Failed to find user');
   if (!lead) throw new Error('Failed to find user');
-  const teamType = await TeamsService.createTeamType(lead, 'Team1', 'Software', organization.organizationId);
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization.organizationId);
   const dr = await DesignReviewsService.createDesignReview(
     lead,
     '03/25/2024',
