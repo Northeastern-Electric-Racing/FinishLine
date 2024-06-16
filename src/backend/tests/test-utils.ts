@@ -13,13 +13,7 @@ import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import { ClubAccount, RoleEnum } from 'shared';
-import {
-  aquamanLeadership,
-  batmanAppAdmin,
-  batmanScheduleSettings,
-  batmanSecureSettings,
-  batmanSettings
-} from './test-data/users.test-data';
+import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
 

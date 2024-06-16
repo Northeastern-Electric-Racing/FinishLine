@@ -1,10 +1,10 @@
-import { alfred, batmanAppAdmin, aquamanLeadership, financeMember } from '../test-data/users.test-data';
+import { batmanAppAdmin, financeMember } from '../test-data/users.test-data';
 import DesignReviewsService from '../../src/services/design-reviews.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { DesignReview, DesignReviewStatus, User } from 'shared';
+import { DesignReview, DesignReviewStatus } from 'shared';
 
 describe('Design Reviews', () => {
   let designReview: DesignReview; // should be type: Design_Review
