@@ -10,6 +10,7 @@ describe('Reimbursement Requests', () => {
   let orgId: string;
   let reimbursementRequest: Reimbursement_Request;
   beforeEach(async () => {
+    await resetUsers();
     const result = await createTestReimbursementRequest();
     orgId = result.organization.organizationId;
     reimbursementRequest = result.rr;

@@ -88,7 +88,6 @@ export const createTestUser = async (
 export const resetUsers = async () => {
   await prisma.work_Package.deleteMany();
   await prisma.project.deleteMany();
-  await prisma.team_Type.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
   await prisma.material_Type.deleteMany();
@@ -101,7 +100,6 @@ export const resetUsers = async () => {
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
   await prisma.car.deleteMany();
-  await prisma.wBS_Element.deleteMany();
   await prisma.task.deleteMany();
   await prisma.stage_Gate_CR.deleteMany();
   await prisma.activation_CR.deleteMany();
@@ -118,6 +116,9 @@ export const resetUsers = async () => {
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.schedule_Settings.deleteMany();
   await prisma.role.deleteMany();
+  await prisma.design_Review.deleteMany();
+  await prisma.team_Type.deleteMany();
+  await prisma.wBS_Element.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };

@@ -1,4 +1,4 @@
-import { alfred, batmanAppAdmin, aquamanLeadership } from '../test-data/users.test-data';
+import { alfred, batmanAppAdmin, aquamanLeadership, financeMember } from '../test-data/users.test-data';
 import DesignReviewsService from '../../src/services/design-reviews.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
@@ -87,11 +87,13 @@ describe('Design Reviews', () => {
   test('Set status fails when user is not admin or creator', async () => {
     await expect(async () =>
       DesignReviewsService.setStatus(
-        await createTestUser(alfred, orgId),
+        await createTestUser(financeMember, orgId),
         designReview.designReviewId,
         DesignReviewStatus.CONFIRMED,
         orgId
       )
-    ).rejects.toThrow(new AccessDeniedException(''));
+    ).rejects.toThrow(
+      new AccessDeniedException('admin and app-admin only have the ability to set the status of a design review')
+    );
   });
 });
