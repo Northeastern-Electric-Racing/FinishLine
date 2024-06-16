@@ -138,9 +138,9 @@ export default class DesignReviewsController {
       const organizationId = getOrganizationId(req.headers);
 
       const updatedDesignReview = await DesignReviewsService.setStatus(user, designReviewId, status, organizationId);
-      return res.status(200).json(updatedDesignReview);
+      res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }
