@@ -5,7 +5,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { LinkCreateArgs, LinkType, LinkTypeCreatePayload } from 'shared';
+import { LinkCreateArgs, LinkType } from 'shared';
 
 interface UsefulLinkFormModalProps {
   open: boolean;

@@ -8,7 +8,7 @@ import ErrorPage from '../../ErrorPage';
 import { Delete } from '@mui/icons-material';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
-import { Link, LinkCreateArgs, LinkType } from 'shared';
+import { Link, LinkCreateArgs } from 'shared';
 import { useAllUsefulLinks, useSetUsefulLinks } from '../../../hooks/projects.hooks';
 import { useAllLinkTypes } from '../../../hooks/projects.hooks';
 import CreateUsefulLinkModal from './CreateUsefulLinkModal';
