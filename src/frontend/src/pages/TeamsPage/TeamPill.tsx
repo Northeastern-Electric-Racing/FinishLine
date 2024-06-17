@@ -1,4 +1,4 @@
-import { Typography, Box, Chip } from '@mui/material';
+import { Chip } from '@mui/material';
 import { red } from '@mui/material/colors';
 
 export const TeamPill: React.FC<{
