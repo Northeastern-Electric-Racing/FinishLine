@@ -31,27 +31,27 @@ const WorkPackageTemplateTable = () => {
   if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
-  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplateId) => (
+  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate) => (
     <TableRow
-      key={workPackageTemplateId.workPackageTemplateId}
+      key={workPackageTemplate.workPackageTemplateId}
       onClick={() =>
         history.push(
-          `${routes.WORK_PACKAGE_TEMPLATE_EDIT}?workPackageTemplateId=${workPackageTemplateId.workPackageTemplateId}`
+          `${routes.WORK_PACKAGE_TEMPLATE_EDIT}?workPackageTemplateId=${workPackageTemplate.workPackageTemplateId}`
         )
       }
       sx={{ cursor: 'pointer' }}
     >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {workPackageTemplateId.templateName}
+        {workPackageTemplate.templateName}
       </TableCell>
       <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        {workPackageTemplateId.templateNotes}
+        {workPackageTemplate.templateNotes}
       </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <IconButton
           onClick={(event) => {
             event.stopPropagation();
-            setTemplateToDelete(workPackageTemplateId);
+            setTemplateToDelete(workPackageTemplate);
           }}
         >
           <Delete />

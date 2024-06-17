@@ -2,51 +2,32 @@ import React from 'react';
 import ErrorPage from '../ErrorPage';
 import { useAllWorkPackageTemplates } from '../../hooks/projects.hooks';
 import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
-import { ObjectSchema } from 'yup';
 import WorkPackageTemplateFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
+import { useHistory } from 'react-router-dom';
+import * as yup from 'yup';
+import { useSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
 
 interface WorkPackageTemplateFormProps {
   workPackageTemplateId?: string;
-  exitActiveMode: () => void;
   workPackageTemplateMutateAsync: (data: WorkPackageTemplateApiInputs) => void;
-  schema: ObjectSchema<any>;
+  defaultValues?: WorkPackageTemplateFormViewPayload;
 }
 
 const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   workPackageTemplateId,
   workPackageTemplateMutateAsync,
-  exitActiveMode,
-  schema
+  defaultValues
 }) => {
   const { data: workPackageTemplates, isError: wpIsError, error: wpError } = useAllWorkPackageTemplates();
 
+  const history = useHistory();
+
+  const schema = yup.object().shape({
+    workPackageName: yup.string().required('Name is required!'),
+    duration: yup.number().required()
+  });
+
   if (wpIsError) return <ErrorPage message={wpError.message} />;
-
-  let workPackageTemplate;
-  let defaultValues: WorkPackageTemplateFormViewPayload | undefined;
-
-  if (workPackageTemplateId) {
-    workPackageTemplate = workPackageTemplates?.find((wpt) => wpt.workPackageTemplateId === workPackageTemplateId);
-
-    if (workPackageTemplate) {
-      defaultValues = {
-        ...workPackageTemplate,
-        workPackageName: workPackageTemplate.workPackageName,
-        templateName: workPackageTemplate.templateName,
-        workPackageTemplateId: workPackageTemplate.workPackageTemplateId,
-        duration: workPackageTemplate.duration,
-        descriptionBullets: workPackageTemplate.descriptionBullets,
-        stage: workPackageTemplate!.stage ?? 'NONE',
-        blockedBy:
-          workPackageTemplate.blockedBy
-            .filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId)
-            .map((wp) => ({
-              id: wp.workPackageTemplateId,
-              label: `${wp.templateName}`
-            })) || []
-      };
-    }
-  }
 
   const blockedByOptions =
     workPackageTemplates
@@ -58,7 +39,7 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
 
   return (
     <WorkPackageTemplateFormView
-      exitActiveMode={exitActiveMode}
+      exitActiveMode={() => history.goBack()}
       workPackageTemplateMutateAsync={workPackageTemplateMutateAsync}
       defaultValues={defaultValues}
       blockedByOptions={blockedByOptions}

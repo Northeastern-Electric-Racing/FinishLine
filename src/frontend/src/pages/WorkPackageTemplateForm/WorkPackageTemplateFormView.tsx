@@ -73,7 +73,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
   const onSubmit = async (data: WorkPackageTemplateFormViewPayload) => {
     const { workPackageName, templateName, templateNotes, duration, blockedBy, stage, descriptionBullets } = data;
 
-    const blockedByWbsNums = blockedBy.map((blocker) => blocker.id);
+    const blockedByIds = blockedBy.map((blocker) => blocker.id);
 
     try {
       const payload: WorkPackageTemplateApiInputs = {
@@ -81,13 +81,13 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
         templateNotes,
         duration,
         stage: stage as WorkPackageStage,
-        blockedBy: blockedByWbsNums,
+        blockedBy: blockedByIds,
         descriptionBullets,
         workPackageName
       };
 
       await workPackageTemplateMutateAsync(payload);
-      toast.success('Work Package Template submitted successfully');
+      toast.success('Work package template edited successfully');
       history.push(routes.ADMIN_TOOLS + '/project-configuration/work-package-templates');
     } catch (error) {
       toast.error('Error submitting work package template');
