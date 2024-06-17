@@ -99,9 +99,9 @@ describe('Team Type Tests', () => {
 
   describe('Get all Useful Links', () => {
     it('Fails if a organization does not exist', async () => {
-      await expect(
-        async () => await OrganizationsService.getAllUsefulLinks('1')
-      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
+      await expect(async () => await OrganizationsService.getAllUsefulLinks('1')).rejects.toThrow(
+        new HttpException(400, `Organization with id: 1 not found`)
+      );
     });
 
     it('succeeds and gets all the links', async () => {

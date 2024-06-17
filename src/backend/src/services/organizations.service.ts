@@ -60,14 +60,13 @@ export default class OrganizationsService {
     @returns the useful links for the organization
   */
   static async getAllUsefulLinks(organizationId: string) {
-
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       select: { usefulLinks: { select: { linkId: true } } }
     });
 
     if (!organization) {
-      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+      throw new HttpException(400, `Organization with id ${organizationId} not found`);
     }
 
     const links = await prisma.link.findMany({
