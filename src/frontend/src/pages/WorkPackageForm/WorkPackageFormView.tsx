@@ -7,7 +7,7 @@ import { DescriptionBulletPreview, User, validateWBS, WbsElement, wbsPipe, WorkP
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
@@ -117,6 +117,25 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   } = useAllWorkPackageTemplates();
 
   const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate>();
+
+  const watchedName = watch('name');
+  const watchedStage = watch('stage');
+  const watchedDuration = watch('duration');
+  const watchedDescriptionBullets = watch('descriptionBullets');
+
+  useEffect(() => {
+    if (currentWorkPackageTemplate) {
+      const { workPackageName, stage, duration, descriptionBullets } = currentWorkPackageTemplate;
+      if (
+        watchedName !== workPackageName ||
+        watchedStage !== stage ||
+        watchedDuration !== duration ||
+        JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(descriptionBullets)
+      ) {
+        setCurrentWorkPackageTemplate(undefined);
+      }
+    }
+  }, [currentWorkPackageTemplate, watchedName, watchedStage, watchedDuration, watchedDescriptionBullets]);
 
   if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
