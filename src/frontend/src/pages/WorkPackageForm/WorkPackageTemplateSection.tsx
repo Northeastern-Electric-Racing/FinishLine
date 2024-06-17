@@ -23,8 +23,8 @@ export const WorkPackageTemplateSection: React.FC<WorkPackageTemplateProps> = ({
               setCurrentWorkPackageTemplate(template);
             }}
             sx={{
-              width: { xs: '10em', sm: '12em', md: '15em', lg: '18em' },
-              height: { xs: '4em', sm: '5em', md: '6em', lg: '7em' },
+              width: '15em',
+              height: '6em',
               borderRadius: '10px',
               backgroundColor: 'transparent',
               border: 1,
@@ -38,12 +38,8 @@ export const WorkPackageTemplateSection: React.FC<WorkPackageTemplateProps> = ({
               marginBottom: 2
             }}
           >
-            <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '0.8em', sm: '1em', md: '1.2em', lg: '1.4em' } }}>
-              {template.templateName}
-            </Typography>
-            <Typography sx={{ fontSize: { xs: '0.6em', sm: '0.8em', md: '1em', lg: '1.2em' } }}>
-              {template.templateNotes}
-            </Typography>
+            <Typography sx={{ fontWeight: 'bold' }}>{template.templateName}</Typography>
+            <Typography>{template.templateNotes}</Typography>
           </Box>
         ))}
       </Box>
