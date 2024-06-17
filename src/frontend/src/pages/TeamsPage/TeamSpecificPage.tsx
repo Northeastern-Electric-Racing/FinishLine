@@ -13,10 +13,11 @@ import { Delete } from '@mui/icons-material';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isAdmin } from 'shared';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import DeleteTeamModal from './DeleteTeamModal';
 import SetTeamTypeModal from './SetTeamTypeModal';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { TeamPill } from './TeamPill';
 
 interface ParamTypes {
   teamId: string;
@@ -107,6 +108,11 @@ const TeamSpecificPage: React.FC = () => {
         </Stack>
       }
       title={`Team ${data.teamName}`}
+      chips={
+        <Box display="flex" gap="20px">
+          <TeamPill displayText={data.dateArchived ? 'Archived' : 'Unarchived'} />
+        </Box>
+      }
       previousPages={[{ name: 'Teams', route: routes.TEAMS }]}
     >
       <Grid container spacing={2}>

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Grid } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import ErrorPage from '../ErrorPage';
@@ -12,8 +12,6 @@ import PageLayout from '../../components/PageLayout';
 
 const TeamsPage: React.FC = () => {
   const { isLoading, isError, data: teams, error } = useAllTeams();
-
-  const archivedTeams = teams?.filter((team) => team.dateArchived);
 
   if (isLoading || !teams) return <LoadingIndicator />;
 
@@ -28,26 +26,6 @@ const TeamsPage: React.FC = () => {
           </Grid>
         ))}
       </Grid>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              {/* Add more headers as needed */}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {archivedTeams?.map((team) => (
-              <TableRow key={team.teamId}>
-                <TableCell align="left" sx={{ border: '2px solid black' }}>
-                  {team.teamName}
-                </TableCell>
-                {/* Add more cells for additional columns */}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
     </PageLayout>
   );
 };
