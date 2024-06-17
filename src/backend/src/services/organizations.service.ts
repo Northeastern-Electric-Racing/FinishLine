@@ -66,7 +66,7 @@ export default class OrganizationsService {
     });
 
     if (!organization) {
-      throw new HttpException(400, `Organization with id ${organizationId} not found`);
+      throw new HttpException(400, `Organization with id: ${organizationId} not found`);
     }
 
     const links = await prisma.link.findMany({
