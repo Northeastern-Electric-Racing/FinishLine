@@ -33,6 +33,15 @@ export const userComparator = (user1: User, user2: User) => {
   return user1.firstName > user2.firstName ? 1 : -1;
 };
 
-export type SubmitText = 'Submit' | 'Save' | 'Create' | 'Yes' | 'Delete' | 'Schedule' | 'Send To Advisor' | 'Submit to SABO' | 'Update';
+export type SubmitText =
+  | 'Submit'
+  | 'Save'
+  | 'Create'
+  | 'Yes'
+  | 'Delete'
+  | 'Schedule'
+  | 'Send To Advisor'
+  | 'Submit to SABO'
+  | 'Update';
 
 export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';

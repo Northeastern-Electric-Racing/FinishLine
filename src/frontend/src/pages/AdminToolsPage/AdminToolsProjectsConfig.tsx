@@ -18,6 +18,10 @@ const AdminToolsProjectsConfig: React.FC = () => {
       </Typography>
       <LinkTypeTable />
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Useful Links
+      </Typography>
+      <UsefulLinksTable />
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Description Bullet Types
       </Typography>
       <DescriptionBulletTypeTable />
@@ -25,10 +29,6 @@ const AdminToolsProjectsConfig: React.FC = () => {
         Work Package Templates
       </Typography>
       <WorkPackageTemplateTable />
-      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
-        Useful Links
-      </Typography>
-      <UsefulLinksTable />
     </Box>
   );
 };

@@ -8,8 +8,11 @@ import ErrorPage from '../../ErrorPage';
 import { Delete } from '@mui/icons-material';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
-import { Link, LinkCreateArgs } from 'shared';
+import { Link, LinkCreateArgs, LinkType } from 'shared';
 import { useAllUsefulLinks, useSetUsefulLinks } from '../../../hooks/projects.hooks';
+import { useAllLinkTypes } from '../../../hooks/projects.hooks';
+import CreateUsefulLinkModal from './CreateUsefulLinkModal';
+import EditUsefulLinkModal from './EditUsefulLinkModal';
 
 const linkToLinkCreateArgs = (links: Link[]) => {
   return links.map((link) => {
@@ -29,12 +32,15 @@ const UsefulLinksTable = () => {
     isError: usefulLinksIsError,
     error: usefulLinksError
   } = useAllUsefulLinks();
+  const { mutateAsync } = useSetUsefulLinks();
+  const { data: linkTypes, isLoading: linkTypesIsLoading } = useAllLinkTypes();
 
   const [linkToDelete, setLinkToDelete] = useState<LinkCreateArgs>();
+  const [clickedLink, setClickedLink] = useState<LinkCreateArgs>();
+  const [showCreateModel, setShowCreateModel] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
-  const { mutateAsync } = useSetUsefulLinks();
-
-  if (!usefulLinks || usefulLinksIsLoading) return <LoadingIndicator />;
+  if (!usefulLinks || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
 
   const handleDelete = (allLinks: Link[], linkToDelete: LinkCreateArgs) => {
@@ -46,7 +52,13 @@ const UsefulLinksTable = () => {
   const usefulLinkCreateArgs = linkToLinkCreateArgs(usefulLinks);
 
   const usefulLinkRows = usefulLinkCreateArgs.map((link) => (
-    <TableRow>
+    <TableRow
+      onClick={() => {
+        setShowEditModal(true);
+        return setClickedLink(link);
+      }}
+      sx={{ cursor: 'pointer' }}
+    >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {link.linkTypeName}
       </TableCell>
@@ -64,11 +76,28 @@ const UsefulLinksTable = () => {
   ));
 
   return (
-    <>
+    <Box>
+      <CreateUsefulLinkModal open={showCreateModel} handleClose={() => setShowCreateModel(false)} linkTypes={linkTypes} />
+      {clickedLink && (
+        <EditUsefulLinkModal
+          open={showEditModal}
+          handleClose={() => {
+            setShowEditModal(false);
+            setClickedLink(undefined);
+          }}
+          linkType={clickedLink}
+          linkTypes={linkTypes}
+        />
+      )}
+
       <Box>
         <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }, { name: '' }]} rows={usefulLinkRows} />
         <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-          {isAdmin(currentUser.role) && <NERButton variant="contained">New Useful Link</NERButton>}
+          {isAdmin(currentUser.role) && (
+            <NERButton onClick={() => setShowCreateModel(true)} variant="contained">
+              New Useful Link
+            </NERButton>
+          )}
         </Box>
       </Box>
       <NERModal
@@ -85,7 +114,7 @@ const UsefulLinksTable = () => {
         </Typography>
         <Typography fontWeight="bold">This action cannot be undone!</Typography>
       </NERModal>
-    </>
+    </Box>
   );
 };
 

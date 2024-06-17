@@ -303,7 +303,7 @@ export const apiUrls = {
 
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
-  
+
   cars,
   carsCreate,
   version
