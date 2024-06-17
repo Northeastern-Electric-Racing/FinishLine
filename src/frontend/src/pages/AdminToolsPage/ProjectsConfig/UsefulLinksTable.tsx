@@ -8,14 +8,14 @@ import ErrorPage from '../../ErrorPage';
 import { Delete } from '@mui/icons-material';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
-import { Link } from 'shared';
+import { Link, LinkCreateArgs } from 'shared';
 import { useAllUsefulLinks, useSetUsefulLinks } from '../../../hooks/projects.hooks';
 
 const linkToLinkCreateArgs = (links: Link[]) => {
   return links.map((link) => {
     return {
       linkId: link.linkId,
-      linkTypeName: 'Confluence',
+      linkTypeName: link.linkType.name,
       url: link.url
     };
   });
@@ -30,28 +30,33 @@ const UsefulLinksTable = () => {
     error: usefulLinksError
   } = useAllUsefulLinks();
 
-  const [linkToDelete, setLinkToDelete] = useState<Link>();
+  const [linkToDelete, setLinkToDelete] = useState<LinkCreateArgs>();
 
   const { mutateAsync } = useSetUsefulLinks();
 
   if (!usefulLinks || usefulLinksIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
 
-  const handleDelete = (allLinks: Link[], linkToDelete: Link) => {
+  const handleDelete = (allLinks: Link[], linkToDelete: LinkCreateArgs) => {
     const updatedLinks = allLinks.filter((link) => link.linkId !== linkToDelete.linkId);
     mutateAsync(linkToLinkCreateArgs(updatedLinks));
     setLinkToDelete(undefined);
   };
 
+  const usefulLinkCreateArgs = linkToLinkCreateArgs(usefulLinks);
 
-  const usefulLinkRows = usefulLinks.map((link) => (
+  const usefulLinkRows = usefulLinkCreateArgs.map((link) => (
     <TableRow>
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {link.linkType.name}
+        {link.linkTypeName}
       </TableCell>
       <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{link.url}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        <IconButton onClick={() => setLinkToDelete(link)}>
+        <IconButton
+          onClick={() => {
+            return setLinkToDelete(link);
+          }}
+        >
           <Delete />
         </IconButton>
       </TableCell>
@@ -76,7 +81,7 @@ const UsefulLinksTable = () => {
         }}
       >
         <Typography gutterBottom>
-          Are you sure you want to delete the link <i>{linkToDelete?.linkType}</i>?
+          Are you sure you want to delete the link <i>{linkToDelete?.linkTypeName}</i>?
         </Typography>
         <Typography fontWeight="bold">This action cannot be undone!</Typography>
       </NERModal>
