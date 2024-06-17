@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { LinkType, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import { Link, LinkCreateArgs, LinkType, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -16,7 +16,9 @@ import {
   getAllLinkTypes,
   createLinkType,
   getAllWorkPackageTemplates,
-  editLinkType
+  editLinkType,
+  getAllUsefulLinks,
+  setUsefulLinks
 } from '../apis/projects.api';
 import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
@@ -196,6 +198,38 @@ export const useEditLinkType = (linkTypeName: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['linkTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all useful links
+ */
+export const useAllUsefulLinks = () => {
+  return useQuery<Link[], Error>(['useful links'], async () => {
+    const { data } = await getAllUsefulLinks();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to set all useful links.
+ *
+ * @param links All the links to be set
+ * @returns all the links
+ */
+export const useSetUsefulLinks = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Link[], Error, LinkCreateArgs[]>(
+    ['useful links'],
+    async (links: LinkCreateArgs[]) => {
+      const { data } = await setUsefulLinks({ links });
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['useful links']);
       }
     }
   );

@@ -4,6 +4,7 @@ import WorkPackageTemplateTable from './ProjectsConfig/WorkPackageTemplateTable'
 import LinkTypeTable from './ProjectsConfig/LinkTypeTable';
 import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypeTable';
 import CarsTable from './ProjectsConfig/CarsTable';
+import UsefulLinksTable from './ProjectsConfig/UsefulLinksTable';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (
@@ -24,6 +25,10 @@ const AdminToolsProjectsConfig: React.FC = () => {
         Work Package Templates
       </Typography>
       <WorkPackageTemplateTable />
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Useful Links
+      </Typography>
+      <UsefulLinksTable />
     </Box>
   );
 };
