@@ -3,7 +3,6 @@ import DesignReviewsService from '../../src/services/design-reviews.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { assert } from 'console';
 import { DesignReview, DesignReviewStatus } from 'shared';
 
 describe('Design Reviews', () => {
