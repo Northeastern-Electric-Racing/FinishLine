@@ -4,14 +4,13 @@ import { useQuery } from '../../hooks/utils.hooks';
 import { useHistory } from 'react-router-dom';
 
 const EditWorkPackageTemplate: React.FC = () => {
-
   const query = useQuery();
 
   const workPackageTemplateId = query.get('workPackageTemplateId');
 
   const { mutateAsync: editWorkPackageTemplate } = useEditWorkPackageTemplate(workPackageTemplateId!);
 
-  const { data: workPackageTemplate } = useSingleWorkPackageTemplate(workPackageTemplateId!)
+  const { data: workPackageTemplate } = useSingleWorkPackageTemplate(workPackageTemplateId!);
 
   const defaultValues = {
     ...workPackageTemplate,
@@ -26,7 +25,7 @@ const EditWorkPackageTemplate: React.FC = () => {
         .filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId)
         .map((wp) => ({
           id: wp.workPackageTemplateId,
-           label: `${wp.templateName}`
+          label: `${wp.templateName}`
         })) || []
   };
 

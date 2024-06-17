@@ -44,9 +44,7 @@ const WorkPackageTemplateTable = () => {
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {workPackageTemplate.templateName}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        {workPackageTemplate.templateNotes}
-      </TableCell>
+      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{workPackageTemplate.templateNotes}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <IconButton
           onClick={(event) => {

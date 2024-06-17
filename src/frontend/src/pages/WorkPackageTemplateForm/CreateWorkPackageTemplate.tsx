@@ -2,14 +2,9 @@ import { useCreateSingleWorkPackageTemplate } from '../../hooks/work-packages.ho
 import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 
 const CreateWorkPackageTemplate: React.FC = () => {
-
   const { mutateAsync: createWorkPackageTemplateScopeCR } = useCreateSingleWorkPackageTemplate();
 
-  return (
-    <WorkPackageTemplateForm
-      workPackageTemplateMutateAsync={createWorkPackageTemplateScopeCR}
-    />
-  );
+  return <WorkPackageTemplateForm workPackageTemplateMutateAsync={createWorkPackageTemplateScopeCR} />;
 };
 
 export default CreateWorkPackageTemplate;
