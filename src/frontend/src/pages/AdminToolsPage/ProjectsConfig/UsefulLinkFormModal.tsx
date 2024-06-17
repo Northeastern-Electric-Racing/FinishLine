@@ -1,6 +1,14 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel, FormHelperText, Switch, Box, Typography, Tooltip, Grid, Select, MenuItem } from '@mui/material';
+import {
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  Box,
+  Grid,
+  Select,
+  MenuItem
+} from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -63,15 +71,9 @@ const UsefulLinkFormModal = ({ open, handleClose, defaultValues, onSubmit, linkT
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>LinkType</FormLabel>
-            <Select
-              name="linkTypeName"
-              defaultValue={defaultValues?.linkTypeName ?? ''}
-              error={!!errors.linktypeName}
-            >
+            <Select name="linkTypeName" defaultValue={defaultValues?.linkTypeName ?? ''} error={!!errors.linktypeName}>
               {linkTypes.map((linkType) => (
-                <MenuItem value={linkType.name}>
-                  {linkType.name}
-                </MenuItem>
+                <MenuItem value={linkType.name}>{linkType.name}</MenuItem>
               ))}
             </Select>{' '}
             <FormHelperText error>{errors.linktypeName?.message}</FormHelperText>
