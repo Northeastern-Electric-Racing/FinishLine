@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 
@@ -66,7 +66,7 @@ export default class OrganizationsService {
     });
 
     if (!organization) {
-      throw new HttpException(400, `Organization with id: ${organizationId} not found`);
+      throw new NotFoundException("Organization", organizationId);
     }
 
     const links = await prisma.link.findMany({

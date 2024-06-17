@@ -1,6 +1,6 @@
 import { LinkCreateArgs } from 'shared';
 import OrganizationsService from '../../src/services/organizations.service';
-import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
@@ -100,7 +100,7 @@ describe('Team Type Tests', () => {
   describe('Get all Useful Links', () => {
     it('Fails if a organization does not exist', async () => {
       await expect(async () => await OrganizationsService.getAllUsefulLinks('1')).rejects.toThrow(
-        new HttpException(400, `Organization with id: 1 not found`)
+        new NotFoundException('Organization', '1')
       );
     });
 
