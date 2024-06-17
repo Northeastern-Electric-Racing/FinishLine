@@ -54,9 +54,12 @@ export default class OrganizationsService {
     return newLinks;
   }
 
-  static async getAllUsefulLinks(submitter: User, organizationId: string) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('get useful links');
+  /**
+    Gets all the useful links for an organization
+    @param organizationId the organization to get the links for
+    @returns the useful links for the organization
+  */
+  static async getAllUsefulLinks(organizationId: string) {
 
     const organization = await prisma.organization.findUnique({
       where: { organizationId },

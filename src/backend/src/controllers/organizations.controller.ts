@@ -19,10 +19,9 @@ export default class OrganizationsController {
 
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
-      const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
-      const links = await OrganizationsService.getAllUsefulLinks(submitter, organizationId);
+      const links = await OrganizationsService.getAllUsefulLinks(organizationId);
       res.status(200).json(links);
     } catch (error: unknown) {
       next(error);
