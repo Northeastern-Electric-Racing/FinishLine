@@ -112,7 +112,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             }))}
             size="small"
             placeholder="Project Lead"
-            listboxProps={{ style: { maxHeight: '199px' } }}
+            listboxProps={{ style: { maxHeight: '150px' } }}
           />
         </Grid>
         <Grid item xs={6}>
@@ -125,7 +125,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             }))}
             size="small"
             placeholder="Project Manager"
-            listboxProps={{ style: { maxHeight: '199px' } }}
+            listboxProps={{ style: { maxHeight: '150px' } }}
           />
         </Grid>
         <Grid item xs={6}>
