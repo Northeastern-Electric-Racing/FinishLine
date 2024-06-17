@@ -1,20 +1,11 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import {
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Box,
-  Grid,
-  Select,
-  MenuItem
-} from '@mui/material';
+import { FormControl, FormLabel, FormHelperText, Box, Grid, Select, MenuItem } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LinkCreateArgs, LinkType, LinkTypeCreatePayload } from 'shared';
-import { useTheme } from '@mui/material/styles';
 
 interface UsefulLinkFormModalProps {
   open: boolean;
@@ -26,7 +17,6 @@ interface UsefulLinkFormModalProps {
 
 const UsefulLinkFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTypes }: UsefulLinkFormModalProps) => {
   const toast = useToast();
-  const creatingNew = defaultValues === undefined;
 
   const schema = yup.object().shape({
     linkTypeName: yup.string().required('LinkType is Required'),
