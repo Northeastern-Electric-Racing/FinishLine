@@ -5,7 +5,6 @@ import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import WorkPackageTemplateFormView, { WorkPackageTemplateFormViewPayload } from './WorkPackageTemplateFormView';
 import { useHistory } from 'react-router-dom';
 import * as yup from 'yup';
-import { useSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
 
 interface WorkPackageTemplateFormProps {
   workPackageTemplateId?: string;

@@ -1,7 +1,6 @@
 import { useEditWorkPackageTemplate, useSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
 import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 import { useQuery } from '../../hooks/utils.hooks';
-import { useHistory } from 'react-router-dom';
 
 const EditWorkPackageTemplate: React.FC = () => {
   const query = useQuery();
@@ -15,11 +14,12 @@ const EditWorkPackageTemplate: React.FC = () => {
   const defaultValues = {
     ...workPackageTemplate,
     workPackageName: workPackageTemplate?.workPackageName,
-    templateName: workPackageTemplate?.templateName,
-    workPackageTemplateId: workPackageTemplate?.workPackageTemplateId,
+    templateName: workPackageTemplate!.templateName,
+    templateNotes: workPackageTemplate!.templateNotes,
+    workPackageTemplateId: workPackageTemplate!.workPackageTemplateId,
     duration: workPackageTemplate?.duration,
-    descriptionBullets: workPackageTemplate?.descriptionBullets,
-    stage: workPackageTemplate!.stage ?? 'NONE',
+    descriptionBullets: workPackageTemplate!.descriptionBullets,
+    stage: workPackageTemplate?.stage ?? 'NONE',
     blockedBy:
       workPackageTemplate?.blockedBy
         .filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId)
@@ -33,6 +33,7 @@ const EditWorkPackageTemplate: React.FC = () => {
     <WorkPackageTemplateForm
       workPackageTemplateId={workPackageTemplateId!}
       workPackageTemplateMutateAsync={editWorkPackageTemplate}
+      defaultValues={defaultValues}
     />
   );
 };
