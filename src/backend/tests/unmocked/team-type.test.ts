@@ -6,7 +6,6 @@ import { createTestOrganization, createTestUser, resetUsers } from '../test-util
 describe('Team Type Tests', () => {
   let orgId: string;
   beforeEach(async () => {
-    await resetUsers();
     orgId = (await createTestOrganization()).organizationId;
   });
 

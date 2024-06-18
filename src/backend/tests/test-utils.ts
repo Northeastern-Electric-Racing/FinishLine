@@ -317,17 +317,14 @@ export const createTestReimbursementRequest = async () => {
 // DRAFT FOR DESIGN REVIEW UNMOCKED TEST
 export const createTestDesignReview = async () => {
   const organization = await createTestOrganization();
-  await createFinanceTeamAndLead(organization);
-  const head = await prisma.user.findUnique({
-    where: {
-      googleAuthId: 'financeHead'
-    }
-  });
-  const lead = await prisma.user.findUnique({
-    where: {
-      googleAuthId: 'financeLead'
-    }
-  });
+  const head = await createTestUser(
+    { ...batmanAppAdmin, googleAuthId: 'financeHead', role: RoleEnum.APP_ADMIN },
+    organization.organizationId
+  );
+  const lead = await createTestUser(
+    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
+    organization.organizationId
+  );
   if (!head) throw new Error('Failed to find user');
   if (!lead) throw new Error('Failed to find user');
   await createTestProject(head, organization.organizationId);

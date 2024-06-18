@@ -9,11 +9,14 @@ describe('Design Reviews', () => {
   let designReview: DesignReview; // should be type: Design_Review
   let organizationId: string;
   beforeEach(async () => {
-    await resetUsers();
-    // FOR REVIEW, TO BE DELETED: orgId is needed to ensure congruence of created users.
+    // FOR REVIEW, TO BE DELETED: orgId is needed to ensure congruence of created users and their organization
     const { dr, orgId } = await createTestDesignReview();
     designReview = dr;
     organizationId = orgId;
+  });
+
+  afterEach(async () => {
+    await resetUsers();
   });
 
   // change with admin who is not creator
