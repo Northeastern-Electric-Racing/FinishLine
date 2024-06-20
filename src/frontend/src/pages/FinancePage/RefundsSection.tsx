@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
+import { Reimbursement, ReimbursementRequest, ReimbursementStatusType, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
@@ -120,9 +120,21 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   )
     return <LoadingIndicator />;
 
-  const displayedReimbursements = allReimbursements && tabValue === 1 ? allReimbursements : userReimbursements;
+  const displayedReimbursements =
+    allReimbursements && tabValue === 1
+      ? allReimbursements.filter((request: Reimbursement) => request.reimbursementId == ReimbursementStatusType.REIMBURSED)
+      : userReimbursements.filter((request: Reimbursement) => request.reimbursementId == ReimbursementStatusType.REIMBURSED);
+
   const displayedReimbursementRequests =
-    allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests;
+    allReimbursementRequests && tabValue === 1
+      ? allReimbursementRequests.filter(
+          (request: ReimbursementRequest) =>
+            request.reimbursementStatuses[request.reimbursementStatuses.length-1].type == ReimbursementStatusType.REIMBURSED
+        )
+      : userReimbursementRequests.filter(
+          (request: ReimbursementRequest) =>
+            request.reimbursementStatuses[request.reimbursementStatuses.length-1].type == ReimbursementStatusType.REIMBURSED
+        );
 
   const rows = displayedReimbursements.map(getRefundRowData).sort(getComparator(order, orderBy));
 
