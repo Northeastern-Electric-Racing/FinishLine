@@ -1,5 +1,5 @@
 import { Design_Review_Status, Team_Type, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership, DesignReviewStatus } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -258,7 +258,7 @@ export default class DesignReviewsService {
     meetingTimes: number[],
     organizationId: string
   ): Promise<DesignReview> {
-    // verify user is allowed to edit work package
+    // verify user is allowed to edit design review
     if (await userHasPermission(user.userId, organizationId, isNotLeadership))
       throw new AccessDeniedMemberException('edit design reviews');
 
@@ -416,6 +416,50 @@ export default class DesignReviewsService {
       return designReviewTransformer(updatedDesignReview);
     }
     return designReviewTransformer(designReview);
+  }
+
+  /**
+   * Sets the status of a design review, only admin or the user who created the design review can set the status.
+   * @param user the user trying to set the status
+   * @param designReviewId the id of the design review
+   * @param status the status to set the design review to
+   * @param organizationId the organization that the user is currently in
+   * @returns the modified design review
+   */
+  static async setStatus(
+    user: User,
+    designReviewId: string,
+    status: DesignReviewStatus,
+    organizationId: string
+  ): Promise<DesignReview> {
+    // validate the design review exists and is not deleted
+    const originaldesignReview = await prisma.design_Review.findUnique({
+      where: { designReviewId },
+      include: { wbsElement: true }
+    });
+    if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
+    if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+    if (originaldesignReview.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Design Review');
+
+    // verify user is allowed to set the status of the design review
+    if (
+      !(await userHasPermission(user.userId, organizationId, isAdmin)) &&
+      user.userId !== originaldesignReview.userCreatedId
+    ) {
+      throw new AccessDeniedAdminOnlyException('set the status of a design review');
+    }
+
+    // actually try to update the design review
+    const updatedDesignReview = await prisma.design_Review.update({
+      where: { designReviewId },
+      ...getDesignReviewQueryArgs(organizationId),
+      data: {
+        status
+      }
+    });
+
+    return designReviewTransformer(updatedDesignReview);
   }
 
   /**

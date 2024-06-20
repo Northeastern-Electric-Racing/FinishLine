@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -56,17 +56,19 @@ export default class OrganizationsService {
     return newLinks;
   }
 
-  static async getAllUsefulLinks(submitter: User, organizationId: string) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('get useful links');
-
+  /**
+    Gets all the useful links for an organization
+    @param organizationId the organization to get the links for
+    @returns the useful links for the organization
+  */
+  static async getAllUsefulLinks(organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       select: { usefulLinks: { select: { linkId: true } } }
     });
 
     if (!organization) {
-      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+      throw new NotFoundException('Organization', organizationId);
     }
 
     const links = await prisma.link.findMany({
