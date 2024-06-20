@@ -314,7 +314,7 @@ export const createTestReimbursementRequest = async () => {
   return { rr, organization };
 };
 
-// DRAFT FOR DESIGN REVIEW UNMOCKED TEST
+// Always creates a new design review
 export const createTestDesignReview = async () => {
   const organization = await createTestOrganization();
   const head = await createTestUser(
@@ -329,7 +329,7 @@ export const createTestDesignReview = async () => {
   if (!lead) throw new Error('Failed to find user');
   await createTestProject(head, organization.organizationId);
   const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization.organizationId);
-  const dr = await DesignReviewsService.createDesignReview(
+  const { designReviewId } = await DesignReviewsService.createDesignReview(
     lead,
     '03/25/2027',
     teamType.teamTypeId,
@@ -343,6 +343,15 @@ export const createTestDesignReview = async () => {
     [0, 1],
     organization.organizationId
   );
+
+  const dr = await prisma.design_Review.findUnique({
+    where: {
+      designReviewId
+    },
+    include: {
+      userCreated: true
+    }
+  });
 
   if (!dr) throw new Error('Failed to create design review');
   const orgId = organization.organizationId;

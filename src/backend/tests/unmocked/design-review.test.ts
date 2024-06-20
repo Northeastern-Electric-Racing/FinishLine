@@ -3,13 +3,14 @@ import DesignReviewsService from '../../src/services/design-reviews.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
-import { DesignReview, DesignReviewStatus } from 'shared';
+import { getUserQueryArgs } from '../../src/prisma-query-args/user.query-args';
+import { DesignReviewStatus } from 'shared';
+import { Design_Review } from '@prisma/client';
 
 describe('Design Reviews', () => {
-  let designReview: DesignReview; // should be type: Design_Review
+  let designReview: Design_Review;
   let organizationId: string;
   beforeEach(async () => {
-    // FOR REVIEW, TO BE DELETED: orgId is needed to ensure congruence of created users and their organization
     const { dr, orgId } = await createTestDesignReview();
     designReview = dr;
     organizationId = orgId;
@@ -22,12 +23,6 @@ describe('Design Reviews', () => {
   // change with admin who is not creator
   test('Set status works when an admin who is not the creator sets', async () => {
     const user = await createTestUser(supermanAdmin, organizationId);
-    if (!user) {
-      console.log('No user found, please check that the user exists');
-      throw new Error('No user lead found, please check that the user exists');
-    }
-    // check status is different prior to setting
-    expect(designReview?.status).toBe(DesignReviewStatus.UNCONFIRMED);
     await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organizationId);
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
@@ -39,23 +34,15 @@ describe('Design Reviews', () => {
   });
 
   // Set status works when creator is not admin
-  test('Set status works when creator is not admin', async () => {
-    // FOR REVIEW: I would think this is required because the shared type is the only thing
-    // that seems to returned in test utils (createTestDesignReview method) so in order
-    // to reliable get the creator I don't see another way (other than below)
-    const ogDR = await prisma.design_Review.findUnique({
+  test('Set status works when set with creator who is not admin', async () => {
+    const drCreator = await prisma.user.findUnique({
       where: {
-        designReviewId: designReview.designReviewId
+        userId: designReview.userCreatedId
       },
-      include: {
-        userCreated: true
-      }
+      ...getUserQueryArgs(organizationId)
     });
-    // FOR REVIEW, TO BE DELETED: wouldn't be possible with shared type
-    const drCreator = ogDR?.userCreated;
     if (!drCreator) {
-      console.log('No creator found, please check that the creator exists');
-      throw new Error('No creator found, please check that the creator exists');
+      throw new Error('User not found in database');
     }
     await DesignReviewsService.setStatus(
       drCreator,
@@ -63,13 +50,11 @@ describe('Design Reviews', () => {
       DesignReviewStatus.CONFIRMED,
       organizationId
     );
-    // FOR REVIEW, TO BE DELETED: this is required to get new status from db.
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
         designReviewId: designReview.designReviewId
       }
     });
-
     expect(updatedDR?.status).toBe(DesignReviewStatus.CONFIRMED);
   });
 
