@@ -15,6 +15,7 @@ import ReimbursementRequestService from '../src/services/reimbursement-requests.
 import { ClubAccount, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
+import DesignReviewsService from '../src/services/design-reviews.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -79,9 +80,8 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
-  await prisma.project.deleteMany();
   await prisma.work_Package.deleteMany();
-  await prisma.team_Type.deleteMany();
+  await prisma.project.deleteMany();
   await prisma.material.deleteMany();
   await prisma.manufacturer.deleteMany();
   await prisma.material_Type.deleteMany();
@@ -94,7 +94,6 @@ export const resetUsers = async () => {
   await prisma.vendor.deleteMany();
   await prisma.account_Code.deleteMany();
   await prisma.car.deleteMany();
-  await prisma.wBS_Element.deleteMany();
   await prisma.task.deleteMany();
   await prisma.stage_Gate_CR.deleteMany();
   await prisma.activation_CR.deleteMany();
@@ -111,6 +110,9 @@ export const resetUsers = async () => {
   await prisma.user_Secure_Settings.deleteMany();
   await prisma.schedule_Settings.deleteMany();
   await prisma.role.deleteMany();
+  await prisma.design_Review.deleteMany();
+  await prisma.team_Type.deleteMany();
+  await prisma.wBS_Element.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -310,4 +312,49 @@ export const createTestReimbursementRequest = async () => {
   if (!rr) throw new Error('Failed to create reimbursement request');
 
   return { rr, organization };
+};
+
+// Always creates a new design review
+export const createTestDesignReview = async () => {
+  const organization = await createTestOrganization();
+  const head = await createTestUser(
+    { ...batmanAppAdmin, googleAuthId: 'financeHead', role: RoleEnum.APP_ADMIN },
+    organization.organizationId
+  );
+  const lead = await createTestUser(
+    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
+    organization.organizationId
+  );
+  if (!head) throw new Error('Failed to find user');
+  if (!lead) throw new Error('Failed to find user');
+  await createTestProject(head, organization.organizationId);
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization.organizationId);
+  const { designReviewId } = await DesignReviewsService.createDesignReview(
+    lead,
+    '03/25/2027',
+    teamType.teamTypeId,
+    [lead.userId],
+    [],
+    {
+      carNumber: 0,
+      projectNumber: 0,
+      workPackageNumber: 0
+    },
+    [0, 1],
+    organization.organizationId
+  );
+
+  const dr = await prisma.design_Review.findUnique({
+    where: {
+      designReviewId
+    },
+    include: {
+      userCreated: true
+    }
+  });
+
+  if (!dr) throw new Error('Failed to create design review');
+  const orgId = organization.organizationId;
+
+  return { dr, orgId };
 };
