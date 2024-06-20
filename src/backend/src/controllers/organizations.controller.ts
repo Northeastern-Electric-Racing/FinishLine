@@ -16,4 +16,15 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = getOrganizationId(req.headers);
+
+      const links = await OrganizationsService.getAllUsefulLinks(organizationId);
+      res.status(200).json(links);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

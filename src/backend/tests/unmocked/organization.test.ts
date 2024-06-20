@@ -1,6 +1,6 @@
 import { LinkCreateArgs } from 'shared';
 import OrganizationsService from '../../src/services/organizations.service';
-import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
@@ -94,6 +94,38 @@ describe('Team Type Tests', () => {
       expect(updatedOrganization!.usefulLinks.length).toBe(2);
       expect(updatedOrganization!.usefulLinks[0].url).toBe('link 3');
       expect(updatedOrganization!.usefulLinks[1].url).toBe('link 4');
+    });
+  });
+
+  describe('Get all Useful Links', () => {
+    it('Fails if a organization does not exist', async () => {
+      await expect(async () => await OrganizationsService.getAllUsefulLinks('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('succeeds and gets all the links', async () => {
+      const testLinks1: LinkCreateArgs[] = [
+        {
+          linkId: '1',
+          linkTypeName: 'Link type 1',
+          url: 'link 1'
+        },
+        {
+          linkId: '2',
+          linkTypeName: 'Link type 1',
+          url: 'link 2'
+        }
+      ];
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestLinkType(testBatman, orgId);
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks1);
+      const links = await OrganizationsService.getAllUsefulLinks(orgId);
+
+      expect(links).not.toBeNull();
+      expect(links.length).toBe(2);
+      expect(links[0].url).toBe('link 1');
+      expect(links[1].url).toBe('link 2');
     });
   });
 });
