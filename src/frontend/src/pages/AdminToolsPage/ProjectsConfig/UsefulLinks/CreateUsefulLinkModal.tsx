@@ -1,17 +1,17 @@
-import { useSetUsefulLinks } from '../../../hooks/projects.hooks';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { LinkCreateArgs, LinkType } from 'shared';
+import { useSetUsefulLinks } from '../../../../hooks/projects.hooks';
 import UsefulLinkFormModal from './UsefulLinkFormModal';
 
-interface EditUsefulLinkModalProps {
+interface CreateUsefulLinkModalProps {
   open: boolean;
   handleClose: () => void;
-  linkType: LinkCreateArgs;
   linkTypes: LinkType[];
+  currentLinks: LinkCreateArgs[];
 }
 
-const EditUsefulLinkModal = ({ open, handleClose, linkType, linkTypes }: EditUsefulLinkModalProps) => {
+const CreateUsefulLinkModal = ({ open, handleClose, linkTypes, currentLinks }: CreateUsefulLinkModalProps) => {
   const { isLoading, isError, error, mutateAsync } = useSetUsefulLinks();
 
   if (isError) return <ErrorPage message={error?.message} />;
@@ -22,10 +22,10 @@ const EditUsefulLinkModal = ({ open, handleClose, linkType, linkTypes }: EditUse
       open={open}
       handleClose={handleClose}
       onSubmit={mutateAsync}
-      defaultValues={linkType}
       linkTypes={linkTypes}
+      currentLinks={currentLinks}
     />
   );
 };
 
-export default EditUsefulLinkModal;
+export default CreateUsefulLinkModal;

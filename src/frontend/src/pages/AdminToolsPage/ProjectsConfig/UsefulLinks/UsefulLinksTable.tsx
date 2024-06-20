@@ -1,28 +1,19 @@
 import { TableRow, TableCell, Box, IconButton, Typography } from '@mui/material';
-import AdminToolTable from '../AdminToolTable';
-import { NERButton } from '../../../components/NERButton';
+import AdminToolTable from '../../AdminToolTable';
+import { NERButton } from '../../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
-import { useCurrentUser } from '../../../hooks/users.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
+import { useCurrentUser } from '../../../../hooks/users.hooks';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
 import { Delete } from '@mui/icons-material';
 import { useState } from 'react';
-import NERModal from '../../../components/NERModal';
+import NERModal from '../../../../components/NERModal';
 import { Link, LinkCreateArgs } from 'shared';
-import { useAllUsefulLinks, useSetUsefulLinks } from '../../../hooks/projects.hooks';
-import { useAllLinkTypes } from '../../../hooks/projects.hooks';
+import { useAllUsefulLinks, useSetUsefulLinks } from '../../../../hooks/projects.hooks';
+import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
 import CreateUsefulLinkModal from './CreateUsefulLinkModal';
 import EditUsefulLinkModal from './EditUsefulLinkModal';
-
-const linkToLinkCreateArgs = (links: Link[]) => {
-  return links.map((link) => {
-    return {
-      linkId: link.linkId,
-      linkTypeName: link.linkType.name,
-      url: link.url
-    };
-  });
-};
+import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
 
 const UsefulLinksTable = () => {
   const currentUser = useCurrentUser();
@@ -77,7 +68,12 @@ const UsefulLinksTable = () => {
 
   return (
     <Box>
-      <CreateUsefulLinkModal open={showCreateModel} handleClose={() => setShowCreateModel(false)} linkTypes={linkTypes} />
+      <CreateUsefulLinkModal
+        open={showCreateModel}
+        handleClose={() => setShowCreateModel(false)}
+        linkTypes={linkTypes}
+        currentLinks={usefulLinkCreateArgs}
+      />
       {clickedLink && (
         <EditUsefulLinkModal
           open={showEditModal}
@@ -87,6 +83,7 @@ const UsefulLinksTable = () => {
           }}
           linkType={clickedLink}
           linkTypes={linkTypes}
+          currentLinks={usefulLinkCreateArgs}
         />
       )}
 

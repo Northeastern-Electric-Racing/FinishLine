@@ -1,10 +1,10 @@
 import { Box } from '@mui/system';
 import { Typography } from '@mui/material';
 import WorkPackageTemplateTable from './ProjectsConfig/WorkPackageTemplateTable';
-import LinkTypeTable from './ProjectsConfig/LinkTypeTable';
-import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypeTable';
+import LinkTypeTable from './ProjectsConfig/LinkTypes/LinkTypeTable';
+import DescriptionBulletTypeTable from './ProjectsConfig/DescriptionBulletTypes/DescriptionBulletTypeTable';
 import CarsTable from './ProjectsConfig/CarsTable';
-import UsefulLinksTable from './ProjectsConfig/UsefulLinksTable';
+import UsefulLinksTable from './ProjectsConfig/UsefulLinks/UsefulLinksTable';
 
 const AdminToolsProjectsConfig: React.FC = () => {
   return (

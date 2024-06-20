@@ -1,8 +1,8 @@
-import { useForm } from 'react-hook-form';
-import NERFormModal from '../../../components/NERFormModal';
+import { Controller, useForm } from 'react-hook-form';
+import NERFormModal from '../../../../components/NERFormModal';
 import { FormControl, FormLabel, FormHelperText, Box, Grid, Select, MenuItem } from '@mui/material';
-import ReactHookTextField from '../../../components/ReactHookTextField';
-import { useToast } from '../../../hooks/toasts.hooks';
+import ReactHookTextField from '../../../../components/ReactHookTextField';
+import { useToast } from '../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LinkCreateArgs, LinkType } from 'shared';
@@ -10,17 +10,25 @@ import { LinkCreateArgs, LinkType } from 'shared';
 interface UsefulLinkFormModalProps {
   open: boolean;
   handleClose: () => void;
-  defaultValues?: LinkCreateArgs;
+  clickedLink?: LinkCreateArgs;
   onSubmit: (data: LinkCreateArgs[]) => void;
   linkTypes: LinkType[];
+  currentLinks: LinkCreateArgs[];
 }
 
-const UsefulLinkFormModal = ({ open, handleClose, defaultValues, onSubmit, linkTypes }: UsefulLinkFormModalProps) => {
+const UsefulLinkFormModal = ({
+  open,
+  handleClose,
+  clickedLink,
+  onSubmit,
+  linkTypes,
+  currentLinks
+}: UsefulLinkFormModalProps) => {
   const toast = useToast();
 
   const schema = yup.object().shape({
     linkTypeName: yup.string().required('LinkType is Required'),
-    url: yup.string().required('URL is required')
+    url: yup.string().required('URL is required').url('URL is not valid')
   });
 
   const {
@@ -31,14 +39,18 @@ const UsefulLinkFormModal = ({ open, handleClose, defaultValues, onSubmit, linkT
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      linktypeName: defaultValues?.linkTypeName ?? '',
-      url: defaultValues?.url ?? ''
+      linkTypeName: clickedLink?.linkTypeName ?? '',
+      url: clickedLink?.url ?? ''
     }
   });
 
-  const onFormSubmit = async (data: LinkCreateArgs[]) => {
+  const onFormSubmit = async (data: LinkCreateArgs) => {
     try {
-      await onSubmit(data);
+      console.log('test');
+      let newLinks = clickedLink
+        ? [...currentLinks.filter((link) => link.linkId !== clickedLink.linkId), data]
+        : [...currentLinks, data];
+      onSubmit(newLinks);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -50,23 +62,31 @@ const UsefulLinkFormModal = ({ open, handleClose, defaultValues, onSubmit, linkT
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Useful Link' : 'Create Useful Link'}
-      reset={() => reset({ linktypeName: '' })}
+      title={!!clickedLink ? 'Edit Useful Link' : 'Create Useful Link'}
+      reset={() => reset({ linkTypeName: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!defaultValues ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
+      formId={!!clickedLink ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
       showCloseButton
     >
       <Grid container spacing={2} alignItems="flex-start">
         <Grid item xs={6}>
           <FormControl fullWidth>
             <FormLabel>LinkType</FormLabel>
-            <Select name="linkTypeName" defaultValue={defaultValues?.linkTypeName ?? ''} error={!!errors.linktypeName}>
-              {linkTypes.map((linkType) => (
-                <MenuItem value={linkType.name}>{linkType.name}</MenuItem>
-              ))}
-            </Select>{' '}
-            <FormHelperText error>{errors.linktypeName?.message}</FormHelperText>
+            <Controller
+              name="linkTypeName"
+              control={control}
+              render={({ field }) => (
+                <Select {...field} error={!!errors.linkTypeName}>
+                  {linkTypes.map((linkType) => (
+                    <MenuItem key={linkType.name} value={linkType.name}>
+                      {linkType.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            />
+            <FormHelperText error>{errors.linkTypeName?.message}</FormHelperText>
           </FormControl>
         </Grid>
         <Grid item xs={6}>
