@@ -8,7 +8,7 @@ import ErrorPage from '../../../ErrorPage';
 import { Delete } from '@mui/icons-material';
 import { useState } from 'react';
 import NERModal from '../../../../components/NERModal';
-import { Link, LinkCreateArgs } from 'shared';
+import { Link } from 'shared';
 import { useAllUsefulLinks, useSetUsefulLinks } from '../../../../hooks/projects.hooks';
 import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
 import CreateUsefulLinkModal from './CreateUsefulLinkModal';
@@ -26,23 +26,21 @@ const UsefulLinksTable = () => {
   const { mutateAsync } = useSetUsefulLinks();
   const { data: linkTypes, isLoading: linkTypesIsLoading } = useAllLinkTypes();
 
-  const [linkToDelete, setLinkToDelete] = useState<LinkCreateArgs>();
-  const [clickedLink, setClickedLink] = useState<LinkCreateArgs>();
+  const [linkToDelete, setLinkToDelete] = useState<Link>();
+  const [clickedLink, setClickedLink] = useState<Link>();
   const [showCreateModel, setShowCreateModel] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
   if (!usefulLinks || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
 
-  const handleDelete = (allLinks: Link[], linkToDelete: LinkCreateArgs) => {
+  const handleDelete = (allLinks: Link[], linkToDelete: Link) => {
     const updatedLinks = allLinks.filter((link) => link.linkId !== linkToDelete.linkId);
     mutateAsync(linkToLinkCreateArgs(updatedLinks));
     setLinkToDelete(undefined);
   };
 
-  const usefulLinkCreateArgs = linkToLinkCreateArgs(usefulLinks);
-
-  const usefulLinkRows = usefulLinkCreateArgs.map((link) => (
+  const usefulLinkRows = usefulLinks.map((link) => (
     <TableRow
       onClick={() => {
         setShowEditModal(true);
@@ -51,7 +49,7 @@ const UsefulLinksTable = () => {
       sx={{ cursor: 'pointer' }}
     >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {link.linkTypeName}
+        {link.linkType.name}
       </TableCell>
       <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{link.url}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
@@ -72,7 +70,7 @@ const UsefulLinksTable = () => {
         open={showCreateModel}
         handleClose={() => setShowCreateModel(false)}
         linkTypes={linkTypes}
-        currentLinks={usefulLinkCreateArgs}
+        currentLinks={usefulLinks}
       />
       {clickedLink && (
         <EditUsefulLinkModal
@@ -83,7 +81,7 @@ const UsefulLinksTable = () => {
           }}
           linkType={clickedLink}
           linkTypes={linkTypes}
-          currentLinks={usefulLinkCreateArgs}
+          currentLinks={usefulLinks}
         />
       )}
 
@@ -107,7 +105,7 @@ const UsefulLinksTable = () => {
         }}
       >
         <Typography gutterBottom>
-          Are you sure you want to delete the link <i>{linkToDelete?.linkTypeName}</i>?
+          Are you sure you want to delete the link <i>{linkToDelete?.linkType.name}</i>?
         </Typography>
         <Typography fontWeight="bold">This action cannot be undone!</Typography>
       </NERModal>

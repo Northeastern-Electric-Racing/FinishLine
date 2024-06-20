@@ -1,6 +1,6 @@
 import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { LinkCreateArgs, LinkType } from 'shared';
+import { Link, LinkCreateArgs, LinkType } from 'shared';
 import { useSetUsefulLinks } from '../../../../hooks/projects.hooks';
 import UsefulLinkFormModal from './UsefulLinkFormModal';
 
@@ -8,7 +8,7 @@ interface CreateUsefulLinkModalProps {
   open: boolean;
   handleClose: () => void;
   linkTypes: LinkType[];
-  currentLinks: LinkCreateArgs[];
+  currentLinks: Link[];
 }
 
 const CreateUsefulLinkModal = ({ open, handleClose, linkTypes, currentLinks }: CreateUsefulLinkModalProps) => {

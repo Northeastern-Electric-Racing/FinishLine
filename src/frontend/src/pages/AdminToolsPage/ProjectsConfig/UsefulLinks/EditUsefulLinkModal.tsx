@@ -7,9 +7,9 @@ import UsefulLinkFormModal from './UsefulLinkFormModal';
 interface EditUsefulLinkModalProps {
   open: boolean;
   handleClose: () => void;
-  linkType: LinkCreateArgs;
+  linkType: Link;
   linkTypes: LinkType[];
-  currentLinks: LinkCreateArgs[];
+  currentLinks: Link[];
 }
 
 const EditUsefulLinkModal = ({ open, handleClose, linkType, linkTypes, currentLinks }: EditUsefulLinkModalProps) => {

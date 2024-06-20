@@ -5,15 +5,16 @@ import ReactHookTextField from '../../../../components/ReactHookTextField';
 import { useToast } from '../../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { LinkCreateArgs, LinkType } from 'shared';
+import { Link, LinkCreateArgs, LinkType } from 'shared';
+import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
 
 interface UsefulLinkFormModalProps {
   open: boolean;
   handleClose: () => void;
-  clickedLink?: LinkCreateArgs;
+  clickedLink?: Link;
   onSubmit: (data: LinkCreateArgs[]) => void;
   linkTypes: LinkType[];
-  currentLinks: LinkCreateArgs[];
+  currentLinks: Link[];
 }
 
 const UsefulLinkFormModal = ({
@@ -39,17 +40,18 @@ const UsefulLinkFormModal = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      linkTypeName: clickedLink?.linkTypeName ?? '',
+      linkTypeName: clickedLink?.linkType.name ?? '',
       url: clickedLink?.url ?? ''
     }
   });
 
   const onFormSubmit = async (data: LinkCreateArgs) => {
     try {
-      console.log('test');
+      const previousLinks = linkToLinkCreateArgs(currentLinks);
       let newLinks = clickedLink
-        ? [...currentLinks.filter((link) => link.linkId !== clickedLink.linkId), data]
-        : [...currentLinks, data];
+        ? [...previousLinks.filter((link) => link.linkId !== clickedLink.linkId), data]
+        : [...previousLinks, data];
+        console.log(newLinks);
       onSubmit(newLinks);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -79,7 +81,7 @@ const UsefulLinkFormModal = ({
               render={({ field }) => (
                 <Select {...field} error={!!errors.linkTypeName}>
                   {linkTypes.map((linkType) => (
-                    <MenuItem key={linkType.name} value={linkType.name}>
+                    <MenuItem value={linkType.name}>
                       {linkType.name}
                     </MenuItem>
                   ))}
