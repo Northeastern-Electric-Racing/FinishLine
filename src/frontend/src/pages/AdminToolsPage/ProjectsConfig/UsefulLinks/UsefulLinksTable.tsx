@@ -54,7 +54,8 @@ const UsefulLinksTable = () => {
       <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{link.url}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <IconButton
-          onClick={() => {
+          onClick={(event) => {
+            event?.stopPropagation();
             return setLinkToDelete(link);
           }}
         >
