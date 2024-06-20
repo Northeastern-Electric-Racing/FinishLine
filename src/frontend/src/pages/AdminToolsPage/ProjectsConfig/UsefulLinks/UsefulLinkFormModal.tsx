@@ -48,10 +48,10 @@ const UsefulLinkFormModal = ({
   const onFormSubmit = async (data: LinkCreateArgs) => {
     try {
       const previousLinks = linkToLinkCreateArgs(currentLinks);
-      let newLinks = clickedLink
+      const newLinks = clickedLink
         ? [...previousLinks.filter((link) => link.linkId !== clickedLink.linkId), data]
         : [...previousLinks, data];
-        console.log(newLinks);
+      console.log(newLinks);
       onSubmit(newLinks);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -81,9 +81,7 @@ const UsefulLinkFormModal = ({
               render={({ field }) => (
                 <Select {...field} error={!!errors.linkTypeName}>
                   {linkTypes.map((linkType) => (
-                    <MenuItem value={linkType.name}>
-                      {linkType.name}
-                    </MenuItem>
+                    <MenuItem value={linkType.name}>{linkType.name}</MenuItem>
                   ))}
                 </Select>
               )}

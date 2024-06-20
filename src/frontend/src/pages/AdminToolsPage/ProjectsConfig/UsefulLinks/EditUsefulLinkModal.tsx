@@ -1,7 +1,7 @@
 import { useSetUsefulLinks } from '../../../../hooks/projects.hooks';
 import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { Link, LinkCreateArgs, LinkType } from 'shared';
+import { Link, LinkType } from 'shared';
 import UsefulLinkFormModal from './UsefulLinkFormModal';
 
 interface EditUsefulLinkModalProps {

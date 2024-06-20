@@ -1,6 +1,6 @@
 import ErrorPage from '../../../ErrorPage';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
-import { Link, LinkCreateArgs, LinkType } from 'shared';
+import { Link, LinkType } from 'shared';
 import { useSetUsefulLinks } from '../../../../hooks/projects.hooks';
 import UsefulLinkFormModal from './UsefulLinkFormModal';
 
