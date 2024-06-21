@@ -80,33 +80,30 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
   };
 
   return (
-    <NERDrawer open={drawerOpen} variant="permanent">
+    <NERDrawer
+      open={drawerOpen}
+      variant="permanent"
+      onMouseLeave={() => {
+        if (!moveContent) setDrawerOpen(false);
+      }}
+    >
+      <DrawerHeader>
+        <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
+      </DrawerHeader>
+      <Divider />
       <Box
-        onMouseLeave={() => {
-          if (!moveContent) {
-            setDrawerOpen(false);
-            setMoveContent(false);
-          }
-        }}
+        overflow={'auto'}
+        sx={{ overflowX: 'hidden' }}
+        display="flex"
+        flexDirection={'column'}
+        flex={1}
+        justifyContent={'space-between'}
       >
-        <DrawerHeader>
-          <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
-        </DrawerHeader>
-        <Divider />
-        <Box
-          overflow={'auto'}
-          sx={{ overflowX: 'hidden' }}
-          display="flex"
-          flexDirection={'column'}
-          flex={1}
-          justifyContent={'space-between'}
-        >
-          <Box>
-            {linkItems.map((linkItem) => (
-              <NavPageLink {...linkItem} />
-            ))}
-            {<NavUserMenu open={drawerOpen} />}
-          </Box>
+        <Box>
+          {linkItems.map((linkItem) => (
+            <NavPageLink {...linkItem} />
+          ))}
+          {<NavUserMenu open={drawerOpen} />}
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
           <Box marginLeft={1.1}>
