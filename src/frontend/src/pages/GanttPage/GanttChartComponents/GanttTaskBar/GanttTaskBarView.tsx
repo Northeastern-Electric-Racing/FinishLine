@@ -5,7 +5,6 @@ import {
   isHighlightedChangeOnWbsProject
 } from '../../../../utils/gantt.utils';
 import { Collapse } from '@mui/material';
-
 import GanttTaskBar from './GanttTaskBar';
 import BlockedGanttTaskView from './BlockedTaskBarView';
 import { wbsPipe } from 'shared';

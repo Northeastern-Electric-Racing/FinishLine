@@ -6,6 +6,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
+    "@hello-pangea/dnd": "^16.6.0",
     "@hookform/resolvers": "^2.9.7",
     "@mui/icons-material": "^5.10.3",
     "@mui/material": "^5.10.3",
@@ -26,6 +27,7 @@
     "google-auth-library": "^8.1.1",
     "pdf-lib": "^1.17.1",
     "react": "18.2.0",
+    "react-archer": "^4.4.0",
     "react-dom": "^18.2.0",
     "react-draggable": "^4.4.6",
     "react-google-charts": "^4.0.0",

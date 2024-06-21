@@ -31,6 +31,7 @@ import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
 import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
+import OrganizationsService from '../services/organizations.service';
 
 const prisma = new PrismaClient();
 
@@ -1910,8 +1911,8 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     'Batmobile Config 1',
     'This is the first Batmobile configuration',
-    null,
-    null,
+    'Batman Template',
+    WorkPackageStage.Install,
     5,
     [],
     [],
@@ -1922,9 +1923,9 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     'Schematic',
     'This is the schematic template',
-    null,
+    'Schematic Template',
     WorkPackageStage.Design,
-    4,
+    2,
     [],
     [],
     organizationId
@@ -1934,13 +1935,26 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     'Layout ',
     'This is the Layout  template',
-    null,
-    WorkPackageStage.Design,
+    'Layout Template',
+    WorkPackageStage.Manufacturing,
     4,
     [],
     [schematicWpTemplate.workPackageTemplateId],
     organizationId
   );
+
+  await OrganizationsService.setUsefulLinks(batman, organizationId, [
+    {
+      linkId: '1',
+      linkTypeName: 'Confluence',
+      url: 'https://google.com'
+    },
+    {
+      linkId: '2',
+      linkTypeName: 'Bill of Materials',
+      url: 'https://apple.com'
+    }
+  ]);
 };
 
 performSeed()

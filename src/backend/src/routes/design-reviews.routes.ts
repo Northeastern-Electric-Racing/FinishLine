@@ -38,7 +38,7 @@ designReviewsRouter.post(
   body('isInPerson').isBoolean(),
   nonEmptyString(body('zoomLink')).isURL().optional(),
   nonEmptyString(body('location')).optional(),
-  nonEmptyString(body('docTemplateLink')).isURL().optional(),
+  nonEmptyString(body('docTemplateLink')).optional(),
   isDesignReviewStatus(body('status')),
   body('attendees').isArray(),
   nonEmptyString(body('attendees.*')),
@@ -54,6 +54,13 @@ designReviewsRouter.post(
   intMinZero(body('availability.*')),
   validateInputs,
   DesignReviewsController.markUserConfirmed
+);
+
+designReviewsRouter.post(
+  '/:designReviewId/set-status',
+  isDesignReviewStatus(body('status')),
+  validateInputs,
+  DesignReviewsController.setStatus
 );
 
 export default designReviewsRouter;

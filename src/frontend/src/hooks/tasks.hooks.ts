@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from 'react-query';
-import { WbsNumber, TaskPriority, TaskStatus } from 'shared';
+import { WbsNumber, TaskPriority, TaskStatus, Task } from 'shared';
 import { createSingleTask, deleteSingleTask, editSingleTaskStatus, editTask, editTaskAssignees } from '../apis/tasks.api';
 
 export interface CreateTaskPayload {
@@ -12,12 +12,13 @@ export interface CreateTaskPayload {
   deadline: string;
   priority: TaskPriority;
   status: TaskStatus;
+  notes: string;
   assignees: string[];
 }
 
 export const useCreateTask = (wbsNum: WbsNumber) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, CreateTaskPayload>(
+  return useMutation<Task, Error, CreateTaskPayload>(
     ['tasks'],
     async (createTaskPayload: CreateTaskPayload) => {
       const { data } = await createSingleTask(
@@ -26,7 +27,8 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
         createTaskPayload.deadline,
         createTaskPayload.priority,
         createTaskPayload.status,
-        createTaskPayload.assignees
+        createTaskPayload.assignees,
+        createTaskPayload.notes
       );
       return data;
     },
@@ -79,7 +81,7 @@ export const useEditTask = () => {
  */
 export const useEditTaskAssignees = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, { taskId: string; assignees: string[] }>(
+  return useMutation<Task, Error, { taskId: string; assignees: string[] }>(
     ['tasks', 'edit-assignees'],
     async (editAssigneesTaskPayload: { taskId: string; assignees: string[] }) => {
       const { data } = await editTaskAssignees(editAssigneesTaskPayload.taskId, editAssigneesTaskPayload.assignees);
@@ -98,18 +100,18 @@ export const useEditTaskAssignees = () => {
  * @returns the edit task status mutation
  */
 export const useSetTaskStatus = () => {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, { taskId: string; status: TaskStatus }>(
     ['tasks', 'edit-status'],
     async (editStatusTaskPayload: { taskId: string; status: TaskStatus }) => {
       const { data } = await editSingleTaskStatus(editStatusTaskPayload.taskId, editStatusTaskPayload.status);
       return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['projects']);
-      }
     }
+    // {
+    //   onSuccess: () => {
+    //     queryClient.invalidateQueries(['projects']);
+    //   }
+    // }
   );
 };
 
