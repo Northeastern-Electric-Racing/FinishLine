@@ -11,7 +11,7 @@ import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
 interface UsefulLinkFormModalProps {
   open: boolean;
   handleClose: () => void;
-  clickedLink?: Link;
+  defaulValues?: Link;
   onSubmit: (data: LinkCreateArgs[]) => void;
   linkTypes: LinkType[];
   currentLinks: Link[];
@@ -20,7 +20,7 @@ interface UsefulLinkFormModalProps {
 const UsefulLinkFormModal = ({
   open,
   handleClose,
-  clickedLink,
+  defaulValues,
   onSubmit,
   linkTypes,
   currentLinks
@@ -40,16 +40,16 @@ const UsefulLinkFormModal = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      linkTypeName: clickedLink?.linkType.name ?? '',
-      url: clickedLink?.url ?? ''
+      linkTypeName: defaulValues?.linkType.name ?? '',
+      url: defaulValues?.url ?? ''
     }
   });
 
   const onFormSubmit = async (data: LinkCreateArgs) => {
     try {
       const previousLinks = linkToLinkCreateArgs(currentLinks);
-      const newLinks = clickedLink
-        ? [...previousLinks.filter((link) => link.linkId !== clickedLink.linkId), data]
+      const newLinks = defaulValues
+        ? [...previousLinks.filter((link) => link.linkId !== defaulValues.linkId), data]
         : [...previousLinks, data];
       onSubmit(newLinks);
     } catch (error: unknown) {
@@ -63,11 +63,11 @@ const UsefulLinkFormModal = ({
     <NERFormModal
       open={open}
       onHide={handleClose}
-      title={!!clickedLink ? 'Edit Useful Link' : 'Create Useful Link'}
+      title={!!defaulValues ? 'Edit Useful Link' : 'Create Useful Link'}
       reset={() => reset({ linkTypeName: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!clickedLink ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
+      formId={!!defaulValues ? 'edit-UsefulLink-form' : 'create-UsefulLink-form'}
       showCloseButton
     >
       <Grid container spacing={2} alignItems="flex-start">

@@ -23,7 +23,7 @@ const EditUsefulLinkModal = ({ open, handleClose, linkType, linkTypes, currentLi
       open={open}
       handleClose={handleClose}
       onSubmit={mutateAsync}
-      clickedLink={linkType}
+      defaulValues={linkType}
       linkTypes={linkTypes}
       currentLinks={currentLinks}
     />
