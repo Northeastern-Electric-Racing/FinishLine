@@ -22,8 +22,7 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   const history = useHistory();
 
   const schema = yup.object().shape({
-    workPackageName: yup.string().required('Name is required!'),
-    duration: yup.number().required()
+    workPackageName: yup.string().required('Name is required!')
   });
 
   if (wpIsError) return <ErrorPage message={wpError.message} />;

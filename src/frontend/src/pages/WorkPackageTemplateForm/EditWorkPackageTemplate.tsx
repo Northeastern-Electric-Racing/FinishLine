@@ -1,6 +1,8 @@
 import { useEditWorkPackageTemplate, useSingleWorkPackageTemplate } from '../../hooks/work-packages.hooks';
 import WorkPackageTemplateForm from './WorkPackageTemplateForm';
 import { useQuery } from '../../hooks/utils.hooks';
+import { WorkPackageTemplateFormViewPayload as WorkPackageTemplateFormInputs } from './WorkPackageTemplateFormView';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 const EditWorkPackageTemplate: React.FC = () => {
   const query = useQuery();
@@ -11,22 +13,18 @@ const EditWorkPackageTemplate: React.FC = () => {
 
   const { data: workPackageTemplate } = useSingleWorkPackageTemplate(workPackageTemplateId!);
 
-  const defaultValues = {
+  if (!workPackageTemplate) return <LoadingIndicator />;
+
+  console.log(workPackageTemplate);
+
+  const defaultValues: WorkPackageTemplateFormInputs = {
     ...workPackageTemplate,
-    workPackageName: workPackageTemplate?.workPackageName,
-    templateName: workPackageTemplate!.templateName,
-    templateNotes: workPackageTemplate!.templateNotes,
-    workPackageTemplateId: workPackageTemplate!.workPackageTemplateId,
-    duration: workPackageTemplate?.duration,
-    descriptionBullets: workPackageTemplate!.descriptionBullets,
     stage: workPackageTemplate?.stage ?? 'NONE',
     blockedBy:
-      workPackageTemplate?.blockedBy
-        .filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId)
-        .map((wp) => ({
-          id: wp.workPackageTemplateId,
-          label: `${wp.templateName}`
-        })) || []
+      workPackageTemplate?.blockedBy.map((wp) => ({
+        id: wp.workPackageTemplateId,
+        label: `${wp.templateName}`
+      })) || []
   };
 
   return (
