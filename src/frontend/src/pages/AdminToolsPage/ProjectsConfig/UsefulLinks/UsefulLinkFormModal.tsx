@@ -51,7 +51,6 @@ const UsefulLinkFormModal = ({
       const newLinks = clickedLink
         ? [...previousLinks.filter((link) => link.linkId !== clickedLink.linkId), data]
         : [...previousLinks, data];
-      console.log(newLinks);
       onSubmit(newLinks);
     } catch (error: unknown) {
       if (error instanceof Error) {

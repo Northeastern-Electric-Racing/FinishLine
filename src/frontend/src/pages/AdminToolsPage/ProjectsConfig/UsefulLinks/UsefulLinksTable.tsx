@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Box, IconButton, Typography } from '@mui/material';
+import { TableRow, TableCell, Box, IconButton, Typography, Link as LinkComponent } from '@mui/material';
 import AdminToolTable from '../../AdminToolTable';
 import { NERButton } from '../../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
@@ -27,9 +27,8 @@ const UsefulLinksTable = () => {
   const { data: linkTypes, isLoading: linkTypesIsLoading } = useAllLinkTypes();
 
   const [linkToDelete, setLinkToDelete] = useState<Link>();
-  const [clickedLink, setClickedLink] = useState<Link>();
+  const [editingLink, setEditingLink] = useState<Link>();
   const [showCreateModel, setShowCreateModel] = useState<boolean>(false);
-  const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
   if (!usefulLinks || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
   if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
@@ -43,15 +42,18 @@ const UsefulLinksTable = () => {
   const usefulLinkRows = usefulLinks.map((link) => (
     <TableRow
       onClick={() => {
-        setShowEditModal(true);
-        return setClickedLink(link);
+        return setEditingLink(link);
       }}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
         {link.linkType.name}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{link.url}</TableCell>
+      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+        <LinkComponent sx={{ color: 'white', textDecorationColor: 'white' }} href={link.url} target="_blank">
+          {link.url}
+        </LinkComponent>
+      </TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <IconButton
           onClick={(event) => {
@@ -73,21 +75,20 @@ const UsefulLinksTable = () => {
         linkTypes={linkTypes}
         currentLinks={usefulLinks}
       />
-      {clickedLink && (
+      {editingLink && (
         <EditUsefulLinkModal
-          open={showEditModal}
+          open={!!editingLink}
           handleClose={() => {
-            setShowEditModal(false);
-            setClickedLink(undefined);
+            setEditingLink(undefined);
           }}
-          linkType={clickedLink}
+          linkType={editingLink}
           linkTypes={linkTypes}
           currentLinks={usefulLinks}
         />
       )}
 
       <Box>
-        <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }, { name: '' }]} rows={usefulLinkRows} />
+        <AdminToolTable columns={[{ name: 'Name' }, { name: 'URL' }, { name: '' }]} rows={usefulLinkRows} />
         <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
           {isAdmin(currentUser.role) && (
             <NERButton onClick={() => setShowCreateModel(true)} variant="contained">
