@@ -306,7 +306,6 @@ export default class DesignReviewsService {
     // actually try to update the design review
     const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
-      ...getDesignReviewQueryArgs(organizationId),
       data: {
         designReviewId,
         dateScheduled,
@@ -327,12 +326,12 @@ export default class DesignReviewsService {
         attendees: {
           set: updatedAttendees
         }
-      }
+      },
+      ...getDesignReviewQueryArgs(organizationId)
     });
 
     if (status === Design_Review_Status.SCHEDULED) {
-      const relevantThreads = await prisma.message_Info.findMany({ where: {} });
-      await sendDRScheduledSlackNotif(relevantThreads, updatedDesignReview);
+      await sendDRScheduledSlackNotif(updatedDesignReview.notificationSlackThreads, updatedDesignReview);
     }
 
     return designReviewTransformer(updatedDesignReview);
@@ -397,8 +396,7 @@ export default class DesignReviewsService {
         }
       });
 
-      const relevantThreads = await prisma.message_Info.findMany({ where: { designReviewId: designReview.designReviewId } });
-      await sendDRUserConfirmationToThread(relevantThreads, submitter);
+      await sendDRUserConfirmationToThread(updatedDesignReview.notificationSlackThreads, submitter);
 
       // If all required attendees have confirmed their schedule, mark design review as confirmed
       if (areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers)) {

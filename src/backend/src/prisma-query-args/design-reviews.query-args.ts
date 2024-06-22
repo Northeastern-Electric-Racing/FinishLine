@@ -14,6 +14,7 @@ export const getDesignReviewQueryArgs = (organizationId: string) =>
       deniedMembers: getUserQueryArgs(organizationId),
       attendees: getUserQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
-      wbsElement: true
+      wbsElement: true,
+      notificationSlackThreads: true,
     }
   });
