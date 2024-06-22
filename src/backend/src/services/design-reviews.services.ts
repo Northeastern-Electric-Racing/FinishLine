@@ -408,7 +408,7 @@ export default class DesignReviewsService {
           }
         });
 
-        await sendDRConfirmationToThread(relevantThreads, updatedDesignReview.userCreated);
+        await sendDRConfirmationToThread(updatedDesignReview.notificationSlackThreads, updatedDesignReview.userCreated);
       }
 
       return designReviewTransformer(updatedDesignReview);
