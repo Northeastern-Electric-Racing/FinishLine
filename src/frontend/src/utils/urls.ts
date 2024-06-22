@@ -162,6 +162,11 @@ const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
 const workPackageTemplateDelete = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/delete`;
 
+/******************* Organizations Endpoints ********************/
+const organizations = () => `${API_URL}/organizations`;
+const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
+const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
@@ -295,6 +300,9 @@ export const apiUrls = {
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
+
+  organizationsUsefulLinks,
+  organizationsSetUsefulLinks,
 
   cars,
   carsCreate,

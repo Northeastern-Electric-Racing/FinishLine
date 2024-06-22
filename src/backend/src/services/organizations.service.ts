@@ -4,6 +4,8 @@ import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
+import { linkTransformer } from '../transformers/links.transformer';
+import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 
 export default class OrganizationsService {
   /**
@@ -72,8 +74,9 @@ export default class OrganizationsService {
     const links = await prisma.link.findMany({
       where: {
         linkId: { in: organization.usefulLinks.map((link) => link.linkId) }
-      }
+      },
+      ...getLinkQueryArgs(organizationId)
     });
-    return links;
+    return links.map(linkTransformer);
   }
 }
