@@ -4,8 +4,7 @@
  */
 
 import { CSSObject, Drawer, Theme, styled } from '@mui/material';
-
-export const DRAWERWIDTH = 200;
+import { DRAWERWIDTH } from './NERDrawer';
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: DRAWERWIDTH,
@@ -13,8 +12,9 @@ const openedMixin = (theme: Theme): CSSObject => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen
   }),
-  overflowX: 'hidden',
-  backgroundColor: '#ef4345'
+  backgroundColor: 'transparent',
+  pointerEvents: 'none',
+  border: 'none'
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
@@ -22,14 +22,13 @@ const closedMixin = (theme: Theme): CSSObject => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen
   }),
-
-  overflowX: 'hidden',
   width: 0,
-  backgroundColor: '#ef4345',
-  contentVisibility: 'auto'
+  backgroundColor: 'transparent',
+  pointerEvents: 'none',
+  border: 'none'
 });
 
-const NERDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+const HiddenContentMargin = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
   width: DRAWERWIDTH,
   flexShrink: 0,
   whiteSpace: 'nowrap',
@@ -44,4 +43,4 @@ const NERDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' 
   })
 }));
 
-export default NERDrawer;
+export default HiddenContentMargin;
