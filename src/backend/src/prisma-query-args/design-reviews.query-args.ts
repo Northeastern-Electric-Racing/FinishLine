@@ -15,6 +15,6 @@ export const getDesignReviewQueryArgs = (organizationId: string) =>
       attendees: getUserQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
       wbsElement: true,
-      notificationSlackThreads: true,
+      notificationSlackThreads: true
     }
   });
