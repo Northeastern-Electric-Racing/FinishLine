@@ -6,6 +6,7 @@
 import { Task, TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Api call to create a task.
@@ -26,14 +27,20 @@ export const createSingleTask = (
   assignees: string[],
   notes: string
 ) => {
-  return axios.post<Task>(apiUrls.tasksCreate(wbsPipe(wbsNum)), {
-    title,
-    deadline,
-    priority,
-    status,
-    assignees,
-    notes
-  });
+  return axios.post<Task>(
+    apiUrls.tasksCreate(wbsPipe(wbsNum)),
+    {
+      title,
+      deadline,
+      priority,
+      status,
+      assignees,
+      notes
+    },
+    {
+      transformResponse: (data) => taskTransformer(JSON.parse(data))
+    }
+  );
 };
 
 /**
@@ -62,9 +69,15 @@ export const editTask = (taskId: string, title: string, notes: string, priority:
  * @returns the edited task
  */
 export const editTaskAssignees = (taskId: string, assignees: string[]) => {
-  return axios.post<Task>(apiUrls.editTaskAssignees(taskId), {
-    assignees
-  });
+  return axios.post<Task>(
+    apiUrls.editTaskAssignees(taskId),
+    {
+      assignees
+    },
+    {
+      transformResponse: (data) => taskTransformer(JSON.parse(data))
+    }
+  );
 };
 
 /**
