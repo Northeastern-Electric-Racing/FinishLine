@@ -10,11 +10,9 @@ const EditWorkPackageTemplate: React.FC = () => {
 
   const workPackageTemplateId = query.get('id');
 
-  if (!workPackageTemplateId) return <LoadingIndicator />;
+  const { mutateAsync: editWorkPackageTemplate } = useEditWorkPackageTemplate(workPackageTemplateId!);
 
-  const { mutateAsync: editWorkPackageTemplate } = useEditWorkPackageTemplate(workPackageTemplateId);
-
-  const { data: workPackageTemplate, isLoading, isError, error } = useSingleWorkPackageTemplate(workPackageTemplateId);
+  const { data: workPackageTemplate, isLoading, isError, error } = useSingleWorkPackageTemplate(workPackageTemplateId!);
 
   if (!workPackageTemplate || isLoading) return <LoadingIndicator />;
 
@@ -34,7 +32,7 @@ const EditWorkPackageTemplate: React.FC = () => {
 
   return (
     <WorkPackageTemplateForm
-      workPackageTemplateId={workPackageTemplateId}
+      workPackageTemplateId={workPackageTemplateId!}
       workPackageTemplateMutateAsync={editWorkPackageTemplate}
       defaultValues={defaultValues}
     />
