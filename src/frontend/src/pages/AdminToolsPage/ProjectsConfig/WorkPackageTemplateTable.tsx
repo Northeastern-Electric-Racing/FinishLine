@@ -34,11 +34,7 @@ const WorkPackageTemplateTable = () => {
   const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate) => (
     <TableRow
       key={workPackageTemplate.workPackageTemplateId}
-      onClick={() =>
-        history.push(
-          `${routes.WORK_PACKAGE_TEMPLATE_EDIT}?workPackageTemplateId=${workPackageTemplate.workPackageTemplateId}`
-        )
-      }
+      onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`)}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell align="left" sx={{ border: '2px solid black' }}>

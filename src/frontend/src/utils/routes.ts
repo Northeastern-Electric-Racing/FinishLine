@@ -45,8 +45,9 @@ const SETTINGS_PREFERENCES = SETTINGS + '/preferences';
 
 /**************** Admin Tools Setion ****************/
 const ADMIN_TOOLS = `/admin-tools`;
-const WORK_PACKAGE_TEMPLATE_NEW = ADMIN_TOOLS + `/work-package-templates/new`;
-const WORK_PACKAGE_TEMPLATE_EDIT = ADMIN_TOOLS + '/work-package-templates/:workPackageTemplateId';
+const WORK_PACKAGE_TEMPLATES = ADMIN_TOOLS + '/templates';
+const WORK_PACKAGE_TEMPLATE_NEW = WORK_PACKAGE_TEMPLATES + `/new`;
+const WORK_PACKAGE_TEMPLATE_EDIT = WORK_PACKAGE_TEMPLATES + '/edit';
 /**************** Design Review Calendar ****************/
 const CALENDAR = `/design-review-calendar`;
 const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
@@ -93,6 +94,7 @@ export const routes = {
   ADMIN_TOOLS,
   WORK_PACKAGE_TEMPLATE_NEW,
   WORK_PACKAGE_TEMPLATE_EDIT,
+  WORK_PACKAGE_TEMPLATES,
 
   CALENDAR,
   DESIGN_REVIEW_BY_ID,

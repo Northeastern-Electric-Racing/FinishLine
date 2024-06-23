@@ -19,6 +19,8 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
 }) => {
   const { data: workPackageTemplates, isError: wpIsError, error: wpError } = useAllWorkPackageTemplates();
 
+  console.log('ALL', workPackageTemplates);
+
   const history = useHistory();
 
   const schema = yup.object().shape({
