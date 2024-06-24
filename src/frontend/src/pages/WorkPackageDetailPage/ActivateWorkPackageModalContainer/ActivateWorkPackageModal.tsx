@@ -33,7 +33,7 @@ const schema = yup.object().shape({
     .date()
     .required('Start Date is required')
     .test('start-date-valid', 'start date is not valid', startDateTester),
-  confirmDetails: yup.boolean().required()
+  confirmDetails: yup.boolean().required('Please confirm project details are correct')
 });
 
 const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
@@ -74,6 +74,10 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     }
     if (!managerId) {
       toast.error('Please Select a Project Manager');
+      return;
+    }
+    if (!confirmDetails) {
+      toast.error('Please confirm project details are correct');
       return;
     }
     await onSubmit({
@@ -135,16 +139,14 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <>
-                <DatePicker
-                  format="yyyy-MM-dd"
-                  onChange={(date) => onChange(date ?? new Date())}
-                  className={'padding: 10'}
-                  value={value}
-                  shouldDisableDate={isStartDateDisabled}
-                  slotProps={{ textField: { autoComplete: 'off' } }}
-                />
-              </>
+              <DatePicker
+                format="yyyy-MM-dd"
+                onChange={(date) => onChange(date ?? new Date())}
+                className={'padding: 10'}
+                value={value}
+                shouldDisableDate={isStartDateDisabled}
+                slotProps={{ textField: { autoComplete: 'off' } }}
+              />
             )}
           />
         </Grid>
@@ -156,18 +158,16 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
-                <>
-                  <RadioGroup
-                    value={value}
-                    row
-                    aria-labelledby="demo-row-radio-buttons-group-label"
-                    name="row-radio-buttons-group"
-                    onChange={onChange}
-                  >
-                    <FormControlLabel value={1} control={<Radio />} label="Yes" />
-                    <FormControlLabel value={0} control={<Radio />} label="No" />
-                  </RadioGroup>
-                </>
+                <RadioGroup
+                  value={value}
+                  row
+                  aria-labelledby="demo-row-radio-buttons-group-label"
+                  name="row-radio-buttons-group"
+                  onChange={onChange}
+                >
+                  <FormControlLabel value={1} control={<Radio />} label="Yes" />
+                  <FormControlLabel value={0} control={<Radio />} label="No" />
+                </RadioGroup>
               )}
             />
           </FormControl>
