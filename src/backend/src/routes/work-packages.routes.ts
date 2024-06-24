@@ -51,7 +51,11 @@ workPackagesRouter.post(
   validateInputs,
   WorkPackagesController.editWorkPackage
 );
-workPackagesRouter.delete('/:wbsNum/delete', nonEmptyString(body('identifier')), WorkPackagesController.deleteWorkPackage);
+workPackagesRouter.delete(
+  '/:wbsNum/delete',
+  nonEmptyString(body('changeRequestIdentifier')),
+  WorkPackagesController.deleteWorkPackage
+);
 workPackagesRouter.get('/:wbsNum/blocking', WorkPackagesController.getBlockingWorkPackages);
 workPackagesRouter.post(
   '/slack-upcoming-deadlines',
