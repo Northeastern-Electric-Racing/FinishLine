@@ -73,7 +73,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       hideBackDrop
       showCloseButton
     >
-      <Box minWidth="550px">
+      <Box minWidth="550px" position={'relative'}>
         <DeleteModal />
         <Box position="absolute" right="52px" top="12px">
           {isDesignReviewCreator && (
