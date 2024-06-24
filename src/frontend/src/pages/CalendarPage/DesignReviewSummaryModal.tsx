@@ -72,9 +72,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       icon={getTeamTypeIcon(designReview.teamType.teamTypeId, true)}
       hideBackDrop
       showCloseButton
-    >
-      <Box minWidth="550px">
-        <DeleteModal />
+      titleChildren={
         <Box position="absolute" right="52px" top="12px">
           {isDesignReviewCreator && (
             <>
@@ -98,6 +96,10 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
             <CheckCircle />
           </IconButton>
         </Box>
+      }
+    >
+      <Box minWidth="550px">
+        <DeleteModal />
 
         <Box>
           <Box display={'flex'} alignItems={'center'}>
