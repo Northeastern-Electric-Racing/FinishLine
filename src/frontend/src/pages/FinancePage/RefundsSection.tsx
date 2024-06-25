@@ -13,7 +13,7 @@ import {
   useTheme
 } from '@mui/material';
 import { useState } from 'react';
-import { useAllReimbursements, useCurrentUserReimbursements, useEditRefund } from '../../hooks/finance.hooks';
+import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
@@ -22,6 +22,7 @@ import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
 import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { getRefundRowData } from '../../utils/reimbursement-request.utils';
+import EditRefundModal from './FinanceComponents/EditRefundModal';
 
 type Order = 'asc' | 'desc'; // ascending or descending
 type OrderBy = 'amount' | 'date';
@@ -105,15 +106,10 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
     isError: allReimbursementsIsError,
     error: allReimbursementsError
   } = useAllReimbursements();
+
+  const [editModalRefund, setEditModalRefund] = useState<Reimbursement>();
+
   const theme = useTheme();
-
-  const { mutateAsync } = useEditRefund();
-
-  const onClick = (refundId: string) => {
-    mutateAsync({ refundId, refundAmount: 0, dateReceived: new Date().toISOString() });
-  };
-
-  const editModalRefundId = useState<string | null>();
 
   const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
   if (canViewAllReimbursementRequests && allReimbursementsIsError)
@@ -149,77 +145,88 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Refunds', value: 1 });
 
   return (
-    <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
-      <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
-      <Box
-        sx={{
-          backgroundColor: theme.palette.background.paper,
-          width: '100%',
-          padding: '30px',
-          borderRadius: '0 0 8px 8px'
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
-          <RefundHeader header="Total Received" data={`$${centsToDollar(totalReceived)}`} />
-          <RefundHeader header="Currently Owed" data={`$${centsToDollar(currentlyOwed)}`} />
-        </Box>
-        <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                {columnHeaders.map((columnHeader) => (
-                  <TableCell
-                    key={columnHeader.id}
-                    align="center"
-                    sortDirection={orderBy === columnHeader.id ? order : false}
-                  >
-                    <TableSortLabel
-                      active={orderBy === columnHeader.id}
-                      direction={orderBy === columnHeader.id ? order : 'asc'}
-                      onClick={() => {
-                        handleSort(columnHeader.id as OrderBy);
-                      }}
+    <>
+      <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
+        <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
+        <Box
+          sx={{
+            backgroundColor: theme.palette.background.paper,
+            width: '100%',
+            padding: '30px',
+            borderRadius: '0 0 8px 8px'
+          }}
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'horizontal', justifyContent: 'space-between', paddingX: '30px' }}>
+            <RefundHeader header="Total Received" data={`$${centsToDollar(totalReceived)}`} />
+            <RefundHeader header="Currently Owed" data={`$${centsToDollar(currentlyOwed)}`} />
+          </Box>
+          <NERProgressBar sx={{ margin: '20px' }} variant="determinate" value={percentRefunded} />
+          <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  {columnHeaders.map((columnHeader) => (
+                    <TableCell
+                      key={columnHeader.id}
+                      align="center"
+                      sortDirection={orderBy === columnHeader.id ? order : false}
                     >
+                      <TableSortLabel
+                        active={orderBy === columnHeader.id}
+                        direction={orderBy === columnHeader.id ? order : 'asc'}
+                        onClick={() => {
+                          handleSort(columnHeader.id as OrderBy);
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          {columnHeader.label}
+                        </Typography>
+                      </TableSortLabel>
+                    </TableCell>
+                  ))}
+                  {tabValue === 1 && (
+                    <TableCell key="Recipient">
                       <Typography
                         sx={{
                           fontWeight: 'bold'
                         }}
                       >
-                        {columnHeader.label}
+                        Recipient
                       </Typography>
-                    </TableSortLabel>
-                  </TableCell>
-                ))}
-                {tabValue === 1 && (
-                  <TableCell key="Recipient">
-                    <Typography
-                      sx={{
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Recipient
-                    </Typography>
-                  </TableCell>
-                )}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row, index) => (
-                <TableRow
-                  key={`${row.date}-$${row.amount}-${index}`}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell onClick={() => onClick(row.id)}>{datePipe(row.date)}</TableCell>
-                  <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
-                  {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
+                    </TableCell>
+                  )}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {rows.map((row, index) => (
+                  <TableRow
+                    key={`${row.date}-$${row.amount}-${index}`}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    onClick={() => {
+                      setEditModalRefund({
+                        reimbursementId: row.id,
+                        amount: row.amount,
+                        dateCreated: row.date,
+                        userSubmitted: row.recipient
+                      });
+                    }}
+                  >
+                    <TableCell>{datePipe(row.date)}</TableCell>
+                    <TableCell align="center">{centsToDollar(row.amount)}</TableCell>
+                    {tabValue === 1 && <TableCell align="center">{fullNamePipe(row.recipient)}</TableCell>}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
       </Box>
-    </Box>
+      {editModalRefund && <EditRefundModal refund={editModalRefund} handleClose={() => setEditModalRefund(undefined)} />}
+    </>
   );
 };
 

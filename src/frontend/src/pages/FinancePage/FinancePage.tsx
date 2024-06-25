@@ -24,13 +24,13 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import PageLayout from '../../components/PageLayout';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
-import RefundModal from './FinanceComponents/ReportRefundModal';
 import GenerateReceiptsModal from './FinanceComponents/GenerateReceiptsModal';
 import PendingAdvisorModal from './FinanceComponents/PendingAdvisorListModal';
 import { isAdmin, isGuest } from 'shared';
 import WorkIcon from '@mui/icons-material/Work';
 import TotalAmountSpentModal from './FinanceComponents/TotalAmountSpentModal';
 import { useToast } from '../../hooks/toasts.hooks';
+import ReportRefundModal from './FinanceComponents/ReportRefundModal';
 
 const FinancePage = () => {
   const user = useCurrentUser();
@@ -176,7 +176,7 @@ const FinancePage = () => {
           onHide={() => setShowTotalAmountSpent(false)}
         />
       )}
-      <RefundModal modalShow={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
+      <ReportRefundModal showModal={accountCreditModalShow} handleClose={() => setAccountCreditModalShow(false)} />
       <GenerateReceiptsModal
         open={showGenerateReceipts}
         setOpen={setShowGenerateReceipts}

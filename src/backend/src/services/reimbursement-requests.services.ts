@@ -29,7 +29,8 @@ import {
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserEditRRPermissions,
-  validateUserIsPartOfFinanceTeam
+  validateUserIsPartOfFinanceTeam,
+  validateRefund
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -210,26 +211,7 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
 
-    const totalOwed = await prisma.reimbursement_Request
-      .findMany({
-        where: { recipientId: submitter.userId, dateDeleted: null, accountCode: { organizationId } }
-      })
-      .then((userReimbursementRequests: Reimbursement_Request[]) => {
-        return userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
-      });
-
-    const totalReimbursed = await prisma.reimbursement
-      .findMany({
-        where: { purchaserId: submitter.userId, organizationId },
-        select: { amount: true }
-      })
-      .then((reimbursements: { amount: number }[]) =>
-        reimbursements.reduce((acc: number, curr: { amount: number }) => acc + curr.amount, 0)
-      );
-
-    if (amount > totalOwed - totalReimbursed) {
-      throw new HttpException(400, 'Reimbursement is greater than the total amount owed to the user');
-    }
+    await validateRefund(submitter, amount, organizationId);
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const dateCreated = new Date(dateReceived.split('T')[0]);
@@ -353,6 +335,10 @@ export default class ReimbursementRequestService {
         'You do not have access to edit this refund, only the submitter can edit their refund'
       );
     if (request.organizationId !== organizationId) throw new InvalidOrganizationException('Reimbursement');
+
+    const difference = amount - request.amount;
+
+    if (difference > 0) await validateRefund(editor, difference, organizationId);
 
     const updatedReimbursement = await prisma.reimbursement.update({
       where: { reimbursementId },
