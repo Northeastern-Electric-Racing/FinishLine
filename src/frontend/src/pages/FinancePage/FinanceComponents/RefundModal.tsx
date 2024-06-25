@@ -30,7 +30,7 @@ const schema = yup.object().shape({
 interface RefundModalProps {
   showModal: boolean;
   handleClose: () => void;
-  mutateAsync: (data: any) => void; // if you can figure out how to change this without raising type errors, be my guest
+  mutateAsync: (data: any) => void; // if anyone can figure out how to change this without raising type errors, be my guest
   isLoading: boolean;
   defaultValues?: RefundModalInputs;
   title: string;
@@ -38,7 +38,7 @@ interface RefundModalProps {
 
 export interface RefundModalInputs {
   refundId?: string;
-  refundAmount: string; // this allows us to display default value with 2 decimal places
+  refundAmount: string; // this allows us to display default value with 2 decimal places - the type is enforced and casted via the input field and form schema
   dateReceived: Date;
 }
 
