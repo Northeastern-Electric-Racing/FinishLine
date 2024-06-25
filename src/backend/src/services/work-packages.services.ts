@@ -1,6 +1,5 @@
 import { Prisma, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
-  calculateEndDate,
   DescriptionBulletPreview,
   getDay,
   isAdmin,
@@ -545,10 +544,9 @@ export default class WorkPackagesService {
     });
 
     const upcomingWorkPackages = workPackages
-      .filter((wp) => getDay(calculateEndDate(wp.startDate, wp.duration)) <= getDay(deadline))
-      .sort(
-        (a, b) => calculateEndDate(a.startDate, a.duration).getTime() - calculateEndDate(b.startDate, b.duration).getTime()
-      );
+      .map(workPackageTransformer)
+      .filter((wp) => getDay(wp.endDate) <= getDay(deadline))
+      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime());
 
     // have to do it like this so it goes sequentially and we can sleep between each because of rate limiting
     await upcomingWorkPackages.reduce(
