@@ -4,6 +4,7 @@
  */
 
 import {
+  DesignReview,
   isProject,
   isWorkPackage,
   Project,
@@ -38,6 +39,7 @@ export interface GanttTaskData {
   allWorkPackages: WorkPackage[];
   unblockedWorkPackages: WorkPackage[];
   blocking: WbsNumber[];
+  designReviews: DesignReview[];
 
   // Optional Values
   styles?: {
@@ -131,7 +133,8 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
     changes: [],
     blocking: task.blocking,
     projectName: '',
-    duration: dayjs(task.end).diff(dayjs(task.start), 'week')
+    duration: dayjs(task.end).diff(dayjs(task.start), 'week'),
+    designReviews: task.designReviews
   };
 };
 
@@ -338,7 +341,8 @@ export const transformWorkPackageToGanttTask = (
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
     },
     lead: workPackage.lead,
-    manager: workPackage.manager
+    manager: workPackage.manager,
+    designReviews: workPackage.designReviews
   };
 };
 
@@ -363,7 +367,8 @@ export const transformProjectToGanttTask = (project: ProjectPreview, teamName: s
     blocking: [],
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
-    }
+    },
+    designReviews: project.workPackages.flatMap((wp) => wp.designReviews)
   };
 };
 

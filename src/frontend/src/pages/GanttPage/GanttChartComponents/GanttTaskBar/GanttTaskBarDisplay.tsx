@@ -9,7 +9,7 @@ import {
   transformWorkPackageToGanttTask
 } from '../../../../utils/gantt.utils';
 import { routes } from '../../../../utils/routes';
-import { wbsPipe } from 'shared';
+import { addWeeksToDate, DesignReview, DesignReviewStatus, wbsPipe } from 'shared';
 import {
   ganttTaskBarBackgroundStyles,
   ganttTaskBarContainerStyles,
@@ -81,6 +81,20 @@ const GanttTaskBarDisplay = ({
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: '0.25rem',
       backgroundColor: child.styles ? child.styles.backgroundColor : grey[700],
+      cursor: 'pointer',
+      gridRow: 1,
+      zIndex: 2
+    };
+  };
+
+  const ganttTaskBarDesignReviewOverlayStyles = (designReview: DesignReview): CSSProperties => {
+    return {
+      gridColumnStart: getStartCol(designReview.dateScheduled),
+      gridColumnEnd: getEndCol(addWeeksToDate(designReview.dateScheduled, 1)),
+      height: '2rem',
+      border: `1px solid ${theme.palette.divider}`,
+      borderRadius: '0.25rem',
+      backgroundColor: designReview.status !== DesignReviewStatus.UNCONFIRMED ? '#712f99' : '#876e96',
       cursor: 'pointer',
       gridRow: 1,
       zIndex: 2
@@ -159,6 +173,15 @@ const GanttTaskBarDisplay = ({
               />
             );
           })}
+        {task.designReviews.map((designReview) => {
+          return (
+            <div
+              style={ganttTaskBarDesignReviewOverlayStyles(designReview)}
+              onMouseOver={(e) => handleOnMouseOver(e, task)}
+              onMouseLeave={handleOnMouseLeave}
+            />
+          );
+        })}
         {highlightedChange && isHighlightedChangeOnGanttTask(highlightedChange, task) && (
           <div id="proposedChange" style={highlightedChangeBoxStyles(highlightedChange)}>
             <Typography

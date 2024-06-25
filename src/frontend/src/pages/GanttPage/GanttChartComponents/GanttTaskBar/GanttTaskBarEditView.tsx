@@ -114,7 +114,8 @@ export const GanttTaskBarEditView = ({
       teamTypes: [],
       changes: [],
       materials: [],
-      assemblies: []
+      assemblies: [],
+      designReviews: []
     };
     addWorkPackage(workPackage);
 

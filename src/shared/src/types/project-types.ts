@@ -7,7 +7,7 @@ import { User, UserPreview } from './user-types';
 import { ImplementedChange } from './change-request-types';
 import { WorkPackageStage } from './work-package-types';
 import { TeamPreview } from './team-types';
-import { Assembly, Material, Task, TeamType } from 'shared';
+import { Assembly, DesignReview, Material, Task, TeamType } from 'shared';
 
 export interface WbsNumber {
   carNumber: number;
@@ -61,6 +61,7 @@ export interface WorkPackage extends WbsElement {
   projectName: string;
   stage?: WorkPackageStage;
   teamTypes: TeamType[];
+  designReviews: DesignReview[];
 }
 
 export interface DescriptionBullet {
