@@ -426,6 +426,10 @@ export const useReportRefund = () => {
   );
 };
 
+/**
+ * Custom react hook to edit a refund
+ * @returns the edited refund
+ */
 export const useEditRefund = () => {
   const queryClient = useQueryClient();
 

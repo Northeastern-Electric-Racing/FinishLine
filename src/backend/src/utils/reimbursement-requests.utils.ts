@@ -396,6 +396,12 @@ export const validateUserEditRRPermissions = async (
   }
 };
 
+/**
+ * Validates that the refund amount is less than the total amount owed to the user
+ * @param user the user reporting or editing a refund
+ * @param refundAmount the amount of the refund
+ * @param organizationId the organization the request pertains to
+ */
 export const validateRefund = async (user: User, refundAmount: number, organizationId: string) => {
   const totalOwed = await prisma.reimbursement_Request
     .findMany({
