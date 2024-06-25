@@ -3,23 +3,38 @@ import {
   TaskWithAssignees,
   endOfDayTomorrow,
   getTeamFromTaskAssignees,
-  startOfDayTomorrow,
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
+import WorkPackagesService from './work-packages.services';
+import { addWeeksToDate } from 'shared';
+import { HttpException } from '../utils/errors.utils';
 
 export default class NotificationsService {
+  static async sendDailySlackNotifications() {
+    await NotificationsService.sendTaskDeadlineSlackNotifications();
+    const date = new Date();
+    if (date.getDay() === 1) {
+      const nextWeek = addWeeksToDate(date, 1);
+      const ADMIN = process.env.ADMIN_USER_ID;
+      const admin = await prisma.user.findUnique({ where: { userId: ADMIN } });
+      if (!admin) throw new HttpException(404, 'Admin user not found');
+      const organizations = await prisma.organization.findMany();
+      for (const organization of organizations) {
+        await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization.organizationId);
+      }
+    }
+  }
+
   /**
-   * Sends the task deadline slack notifications for all tasks with a deadline of tomorrow
+   * Sends the task deadline slack notifications for all tasks with a deadline of tomorrow or before that are not done
    */
   static async sendTaskDeadlineSlackNotifications() {
-    const startOfDay = startOfDayTomorrow();
     const endOfDay = endOfDayTomorrow();
 
     const tasks = await prisma.task.findMany({
       where: {
         deadline: {
-          gte: startOfDay,
           lt: endOfDay
         },
         status: {
