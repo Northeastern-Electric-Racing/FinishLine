@@ -1,5 +1,11 @@
 import { Grid } from '@mui/material';
-import { DesignReview, DesignReviewStatus, User, UserWithScheduleSettings } from 'shared';
+import {
+  DesignReview,
+  DesignReviewStatus,
+  getAvailabilityForGivenWeekOfDateOrMostRecent,
+  User,
+  UserWithScheduleSettings
+} from 'shared';
 import { useState } from 'react';
 import AvailabilityScheduleView from './AvailabilityScheduleView';
 import UserAvailabilites from './UserAvailabilitesView';
@@ -97,7 +103,12 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   allUsers
     .filter((user) => requiredUserIds.concat(optionalUserIds).includes(user.userId))
     .forEach((user: UserWithScheduleSettings) => {
-      usersToAvailabilities.set(user, user.scheduleSettings?.availability ?? []);
+      const availability = getAvailabilityForGivenWeekOfDateOrMostRecent(
+        user.scheduleSettings?.availabilities ?? [],
+        selectedDate
+      );
+
+      usersToAvailabilities.set(user, availability?.availability ?? []);
     });
 
   return (

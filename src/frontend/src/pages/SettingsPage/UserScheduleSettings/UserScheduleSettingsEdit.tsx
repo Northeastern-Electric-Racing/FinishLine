@@ -11,19 +11,19 @@ import { NERButton } from '../../../components/NERButton';
 import { ScheduleSettingsFormInput, ScheduleSettingsPayload } from './UserScheduleSettings';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
 import { useState } from 'react';
-import { UserScheduleSettings } from 'shared';
+import { SetUserScheduleSettingsArgs } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
 
 interface UserScheduleSettingsEditProps {
   onSubmit: (data: ScheduleSettingsPayload) => Promise<void>;
-  defaultValues?: UserScheduleSettings;
+  defaultValues?: SetUserScheduleSettingsArgs;
 }
 
 const schema = yup.object().shape({
-  personalGmail: yup.string().email('Must be an email address').required('Personal Gmail is required'),
+  personalGmail: yup.string().email('Must be an email address').optional(),
   personalZoomLink: yup
     .string()
-    .required('Personal Zoom Link is required')
+    .optional()
     .test('zoom-link', 'Must be a valid zoom link', (value) => value!.includes('zoom.us/'))
 });
 

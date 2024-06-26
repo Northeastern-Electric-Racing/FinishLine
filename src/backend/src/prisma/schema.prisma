@@ -424,12 +424,12 @@ model Link {
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
   // Either its on a wbsElement, a wbsProposedChanges, or an organization
-  wbsElementId               String?
-  wbsElment                  WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
-  wbsProposedChangesId       String?
-  wbsProposedChanges         Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
-  organization               Organization?         @relation(fields: [organizationId], references: [organizationId])
-  organizationId String?
+  wbsElementId         String?
+  wbsElment            WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  wbsProposedChangesId String?
+  wbsProposedChanges   Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  organization         Organization?         @relation(fields: [organizationId], references: [organizationId])
+  organizationId       String?
 }
 
 model Description_Bullet_Type {
@@ -735,14 +735,23 @@ model Design_Review {
   notificationSlackThreads Message_Info[]
 }
 
+model Availability {
+  availabilityId     String            @id @default(uuid())
+  scheduleSettingsId String
+  scheduleSettings   Schedule_Settings @relation(fields: [scheduleSettingsId], references: [drScheduleSettingsId])
+
+  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
+  availability Int[]
+  dateSet      DateTime @default(now())
+}
+
 model Schedule_Settings {
-  drScheduleSettingsId String @id @default(uuid())
+  drScheduleSettingsId String         @id @default(uuid())
   personalGmail        String
   personalZoomLink     String
-  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
-  availability         Int[]
-  User                 User   @relation(fields: [userId], references: [userId])
-  userId               String @unique
+  User                 User           @relation(fields: [userId], references: [userId])
+  userId               String         @unique
+  availabilities       Availability[]
 }
 
 model Meeting {
