@@ -3,13 +3,14 @@ import { grey } from '@mui/material/colors';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import { useHistory } from 'react-router-dom';
 import {
+  GanttDesignReviewStatusColorPipe,
   GanttTask,
   isHighlightedChangeOnGanttTask,
   RequestEventChange,
   transformWorkPackageToGanttTask
 } from '../../../../utils/gantt.utils';
 import { routes } from '../../../../utils/routes';
-import { addWeeksToDate, DesignReview, DesignReviewStatus, wbsPipe } from 'shared';
+import { addWeeksToDate, DesignReview, wbsPipe } from 'shared';
 import {
   ganttTaskBarBackgroundStyles,
   ganttTaskBarContainerStyles,
@@ -94,7 +95,7 @@ const GanttTaskBarDisplay = ({
       height: '2rem',
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: '0.25rem',
-      backgroundColor: designReview.status !== DesignReviewStatus.UNCONFIRMED ? '#712f99' : '#876e96',
+      backgroundColor: GanttDesignReviewStatusColorPipe(designReview.status),
       cursor: 'pointer',
       gridRow: 1,
       zIndex: 2

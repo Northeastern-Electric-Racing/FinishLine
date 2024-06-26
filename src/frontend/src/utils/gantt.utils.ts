@@ -5,6 +5,7 @@
 
 import {
   DesignReview,
+  DesignReviewStatus,
   isProject,
   isWorkPackage,
   Project,
@@ -402,6 +403,10 @@ export const sortTeamList = (a: Team, b: Team, ganttFilters: GanttFilters, searc
   if (bProjects.length === 0) return Number.MIN_SAFE_INTEGER;
 
   return a.teamName.localeCompare(b.teamName);
+};
+
+export const GanttDesignReviewStatusColorPipe = (status: DesignReviewStatus) => {
+  return status !== DesignReviewStatus.UNCONFIRMED ? '#712f99' : '#876e96';
 };
 
 // maps stage and status to the desired color for Gantt Chart
