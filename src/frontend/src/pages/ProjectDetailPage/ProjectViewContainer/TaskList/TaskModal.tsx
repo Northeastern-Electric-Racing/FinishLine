@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogTitle, Box, Grid, Breakpoint, Typography, 
 import { useState } from 'react';
 import { Close, Edit } from '@mui/icons-material';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
+import NERModal from '../../../../components/NERModal';
 
 interface TaskModalProps {
   task: Task;
@@ -28,7 +29,37 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const ViewModal: React.FC = () => {
     return (
-      <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
+      <NERModal open={modalShow} title={task.title} onHide={onHide}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <Typography fontWeight={'bold'}>
+              Priority:{' '}
+              <Typography display={'inline'} color={priorityColor}>
+                {task.priority}
+              </Typography>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography fontWeight={'bold'}>
+              Deadline:
+              <Typography display={'inline'}> {datePipe(task.deadline)}</Typography>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <Typography fontWeight={'bold'}>
+              Assignee(s):
+              <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <Typography fontWeight={'bold'}>Notes:</Typography>
+            <Box sx={{ height: '200px', overflow: 'auto' }}>
+              <Typography> {task.notes}</Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </NERModal>
+      /*<Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide}>
         <DialogTitle sx={{ fontWeight: 'bold', fontSize: '30' }}>
           {task.title}{' '}
           <IconButton
@@ -102,7 +133,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
             </Grid>
           </Grid>
         </DialogContent>
-      </Dialog>
+      </Dialog>*/
     );
   };
 
