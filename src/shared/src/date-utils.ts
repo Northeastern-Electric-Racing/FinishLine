@@ -69,14 +69,14 @@ const getMostRecentAvailability = (availabilities: Availability[]): Availability
       availability: [],
       dateSet: new Date()
     };
-  console.log(availabilities);
+
   return availabilities.reduce((prev, current) => (prev.dateSet > current.dateSet ? prev : current));
 };
 
 const getAvailabilityForGivenWeekOfDateOrMostRecent = (availabilities: Availability[], date: Date): Availability => {
-  const availabilityForWeekOfDesignReview = availabilities.filter((availability) =>
-    isWithinSameWeek(availability.dateSet, date)
-  );
+  const availabilityForWeekOfDesignReview = availabilities.filter((availability) => {
+    return isWithinSameWeek(availability.dateSet, date);
+  });
 
   return availabilityForWeekOfDesignReview.length > 0
     ? availabilityForWeekOfDesignReview[0]
