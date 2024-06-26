@@ -1,23 +1,8 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Autocomplete,
-  Box,
-  Breakpoint,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  FormLabel,
-  Grid,
-  MenuItem,
-  TextField,
-  useTheme
-} from '@mui/material';
+import { Autocomplete, FormControl, FormLabel, Grid, MenuItem, TextField, useTheme } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
-import NERFailButton from '../../../../components/NERFailButton';
-import NERSuccessButton from '../../../../components/NERSuccessButton';
+import { countWords, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
@@ -50,7 +35,6 @@ interface TaskFormModalProps {
 
 const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, teams }) => {
   const user = useCurrentUser();
-  const theme = useTheme();
 
   const options: { label: string; id: string }[] = getTaskAssigneeOptions(teams).map(taskUserToAutocompleteOption);
 
@@ -70,8 +54,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       assignees: task?.assignees.map((assignee) => assignee.userId) ?? []
     }
   });
-
-  const dialogWidth: Breakpoint = 'md';
 
   return (
     <NERFormModal
