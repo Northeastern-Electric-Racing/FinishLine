@@ -13,7 +13,7 @@ import { Prisma } from '@prisma/client';
 import { userTransformer } from '../transformers/user.transformer';
 
 // build the "due" string for the upcoming deadlines slack message
-const buildDueString = (daysUntilDeadline: number): string => {
+export const buildDueString = (daysUntilDeadline: number): string => {
   if (daysUntilDeadline < 0) return `was due *${daysUntilDeadline * -1} days ago!*`;
   else if (daysUntilDeadline === 0) return `is due today!`;
   return `is due in ${daysUntilDeadline} days!`;

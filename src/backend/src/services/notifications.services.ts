@@ -7,8 +7,9 @@ import {
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
 import WorkPackagesService from './work-packages.services';
-import { addWeeksToDate } from 'shared';
+import { addWeeksToDate, daysBetween } from 'shared';
 import { HttpException } from '../utils/errors.utils';
+import { buildDueString } from '../utils/slack.utils';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -76,10 +77,13 @@ export default class NotificationsService {
     // send the notifications to each team for their respective tasks
     teamTaskMap.forEach((tasks, slackId) => {
       const messageBlock = tasks
-        .map(
-          (task) =>
-            `${usersToSlackPings(task.assignees ?? [])} ${task.title} due tomorrow in project ${task.wbsElement?.name}`
-        )
+        .map((task) => {
+          const daysUntilDeadline = daysBetween(task.deadline, new Date());
+
+          return `${usersToSlackPings(task.assignees ?? [])} ${task.title} ${buildDueString(daysUntilDeadline)} in project ${
+            task.wbsElement?.name
+          }`;
+        })
         .join('\n\n');
 
       // messageBlock will be empty if there are tasks with no assignees
