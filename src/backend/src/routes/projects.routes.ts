@@ -12,7 +12,7 @@ import ProjectsController from '../controllers/projects.controllers';
 
 const projectRouter = express.Router();
 
-projectRouter.get('/', ProjectsController.getAllProjects);
+projectRouter.get('/:deleted', ProjectsController.getAllProjects);
 
 /* Link Types */
 projectRouter.get('/link-types', ProjectsController.getAllLinkTypes);

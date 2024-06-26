@@ -186,7 +186,8 @@ const GanttChartTeamSection = ({
               workPackageNumber: 0
             },
             status: WbsElementStatus.Inactive,
-            workPackages: []
+            workPackages: [],
+            deleted: false
           };
 
           addNewProjectHandler(newProject);

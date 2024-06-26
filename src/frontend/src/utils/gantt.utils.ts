@@ -130,6 +130,7 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
     teamTypes: [],
     changes: [],
     blocking: task.blocking,
+    deleted: false,
     projectName: '',
     duration: dayjs(task.end).diff(dayjs(task.start), 'week')
   };
@@ -281,7 +282,8 @@ export const filterGanttProjects = (
   // apply the search
   deepCopy = deepCopy.filter((project) => project.name.toLowerCase().includes(searchText.toLowerCase()));
 
-  // deepCopy = deepCopy.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
+  // filter out deleted projects
+  deepCopy = deepCopy.filter((project) => !project.deleted);
 
   return deepCopy;
 };
