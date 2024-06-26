@@ -55,10 +55,8 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
 
   const convertTimeSlotToDate = (index: number) => {
     const day = Math.floor(index / 12);
-    const time = index % 12;
     const date = new Date(startDateRange);
     date.setDate(date.getDate() + day);
-    date.setHours(time + startTime);
     return date;
   };
 
