@@ -28,7 +28,6 @@ import {
   UserSecureSettings,
   UserScheduleSettings,
   UserWithScheduleSettings,
-  SetUserScheduleSettingsArgs,
   SetUserScheduleSettingsPayload
 } from 'shared';
 import { useAuth } from './auth.hooks';

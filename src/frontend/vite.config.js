@@ -18,5 +18,5 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: 'src/tests/setup-tests.ts'
   },
-  optimizeDeps: { exclude: ['@shared'] },
+  optimizeDeps: { exclude: ['@shared'] }
 });
