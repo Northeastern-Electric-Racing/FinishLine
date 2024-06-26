@@ -4,102 +4,48 @@
  *
  */
 
-import { useTheme } from '@mui/material';
+import { Icon, useTheme } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { ShoppingCart, Settings, Receipt, CurrencyExchange, AttachMoney, CalendarMonth, Info } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
 import PageBlock from '../../layouts/PageBlock';
 import React from 'react';
+import { useAllUsefulLinks } from '../../hooks/projects.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const UsefulLinks: React.FC = () => {
   const theme = useTheme();
-  const links = [
-    <>
-      <ShoppingCart sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://docs.google.com/document/d/1M5Ldy9L1BifBo18tdKpv3CH-frRneyEK26hUXbtMg7Q/edit"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Purchasing Guidelines
-      </Link>
-    </>,
-    <>
-      <CurrencyExchange sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://docs.google.com/document/d/1DbT_--TrrQqhUQFA0ReyBydVLSojGW0QPWussvfOxNA/edit"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Reimbursement Guidelines
-      </Link>
-    </>,
-    <>
-      <Receipt sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://docs.google.com/spreadsheets/d/1kqpnw8jZDx2GO5NFUtqefRXqT1XX46iMx5ZI4euPJgY/edit"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        McMaster Order Sheet
-      </Link>
-    </>,
-    <>
-      <Settings sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://nerdocs.atlassian.net/wiki/spaces/NER/pages/4554841/Hardware+Guidelines"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Hardware Guidelines
-      </Link>
-    </>,
-    <>
-      <CalendarMonth sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://nerdocs.atlassian.net/wiki/spaces/NER/pages/6619279/Calendars"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Calendars
-      </Link>
-    </>,
-    <>
-      <Info sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://nerdocs.atlassian.net/wiki/spaces/NER/overview"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Confluence
-      </Link>
-    </>,
-    <>
-      <AttachMoney sx={{ fontSize: 17, color: theme.palette.text.primary }} />
-      <Link
-        href="https://docs.google.com/forms/d/e/1FAIpQLSfLu2tRjlolDEYbVtClJspnSjbHcQt59f3bUZIRnky_uOL9HA/viewform"
-        target="_blank"
-        underline="hover"
-        fontSize={19}
-        sx={{ pl: 1 }}
-      >
-        Sponsorship Form
-      </Link>
-    </>
-  ];
+  const {
+    data: usefulLinks,
+    isLoading: usefulLinksIsLoading,
+    error: usefulLinksError,
+    isError: usefulLinksIsError
+  } = useAllUsefulLinks();
+
+  if (!usefulLinks || usefulLinksIsLoading) return <LoadingIndicator />;
+  if (usefulLinksIsError) return <ErrorPage message={usefulLinksError.message} />;
+
+  const links = usefulLinks.map((link) => {
+    return (
+      <>
+        <Icon
+          sx={{
+            fontSize: 22,
+            marginRight: 1,
+            position: 'relative',
+            top: 3,
+            color: theme.palette.text.primary
+          }}
+        >
+          {link.linkType.iconName}
+        </Icon>
+        <Link href={link.url} target="_blank" underline="hover" fontSize={19}>
+          {link.linkType.name}
+        </Link>
+      </>
+    );
+  });
 
   // gets the text wrapped in the React element, used here to generate keys
   const rawText = (component: React.ReactElement | string): string => {
