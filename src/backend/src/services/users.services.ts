@@ -506,12 +506,14 @@ export default class UsersService {
     personalZoomLink: string,
     availability: number[]
   ): Promise<UserScheduleSettings> {
-    const existingUser = await prisma.schedule_Settings.findFirst({
-      where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
-    });
+    if (personalGmail !== '') {
+      const existingUser = await prisma.schedule_Settings.findFirst({
+        where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
+      });
 
-    if (existingUser) {
-      throw new HttpException(400, 'Email already in use');
+      if (existingUser) {
+        throw new HttpException(400, 'Email already in use');
+      }
     }
 
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({

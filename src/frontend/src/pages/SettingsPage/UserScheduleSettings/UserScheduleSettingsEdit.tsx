@@ -13,6 +13,7 @@ import AvailabilityEditModal from './Availability/AvailabilityEditModal';
 import { useState } from 'react';
 import { SetUserScheduleSettingsArgs } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 interface UserScheduleSettingsEditProps {
   onSubmit: (data: ScheduleSettingsPayload) => Promise<void>;
@@ -21,17 +22,19 @@ interface UserScheduleSettingsEditProps {
 
 const schema = yup.object().shape({
   personalGmail: yup.string().email('Must be an email address').optional(),
-  personalZoomLink: yup
-    .string()
-    .optional()
-    .test('zoom-link', 'Must be a valid zoom link', (value) => value!.includes('zoom.us/'))
+  personalZoomLink: yup.string().optional()
 });
 
 const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onSubmit, defaultValues }) => {
   const [editAvailabilityOpen, setEditAvailability] = useState(false);
   const [availabilities, setAvailabilities] = useState<number[]>(defaultValues?.availability || []);
+  const toast = useToast();
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
+    if (data.personalZoomLink !== '' && !data.personalZoomLink.startsWith('https://zoom.us/j/')) {
+      toast.error('Invalid Zoom Link Format. Must start with "https://zoom.us/j/"');
+      return;
+    }
     onSubmit({ availability: availabilities, ...data });
   };
 
@@ -66,10 +69,8 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
             <Controller
               name="personalGmail"
               control={control}
-              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <TextField
-                  required
                   id="email-input"
                   autoComplete="off"
                   onChange={onChange}
@@ -93,10 +94,8 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
             <Controller
               name="personalZoomLink"
               control={control}
-              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <TextField
-                  required
                   id="zoom-link-input"
                   autoComplete="off"
                   onChange={onChange}

@@ -64,6 +64,12 @@ const isWithinSameWeek = (date1: Date, date2: Date): boolean => {
 };
 
 const getMostRecentAvailability = (availabilities: Availability[]): Availability => {
+  if (availabilities.length === 0)
+    return {
+      availability: [],
+      dateSet: new Date()
+    };
+  console.log(availabilities);
   return availabilities.reduce((prev, current) => (prev.dateSet > current.dateSet ? prev : current));
 };
 

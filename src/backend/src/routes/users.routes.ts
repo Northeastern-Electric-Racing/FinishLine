@@ -34,8 +34,8 @@ userRouter.post(
 
 userRouter.post(
   '/schedule-settings/set',
-  nonEmptyString(body('personalGmail')).isEmail(),
-  nonEmptyString(body('personalZoomLink')).isURL(),
+  body('personalGmail').isString(),
+  body('personalZoomLink').isString(),
   body('availability').isArray(),
   intMinZero(body('availibility.*')),
   validateInputs,

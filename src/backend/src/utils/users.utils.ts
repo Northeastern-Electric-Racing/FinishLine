@@ -123,7 +123,7 @@ export const updateUserAvailability = async (
   const availabilityInSameWeek = userSettings.availabilities.filter((availability) =>
     isWithinSameWeek(availability.dateSet, dateToCheckFor)
   );
-  if (availability.length > 0) {
+  if (availabilityInSameWeek.length > 0) {
     await prisma.availability.update({
       where: { availabilityId: availabilityInSameWeek[0].availabilityId },
       data: {
