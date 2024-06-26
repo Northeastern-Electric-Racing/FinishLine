@@ -6,9 +6,8 @@
 import { TeamPreview } from 'shared';
 import { fullNamePipe, datePipe } from '../../../../utils/pipes';
 import { Task } from 'shared';
-import { Dialog, DialogContent, DialogTitle, Box, Grid, Breakpoint, Typography, IconButton, useTheme } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
-import { Close, Edit } from '@mui/icons-material';
 import TaskFormModal, { EditTaskFormInput } from './TaskFormModal';
 import NERModal from '../../../../components/NERModal';
 
