@@ -37,7 +37,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
           }
         }}
       >
-        <Grid container spacing={2}>
+        <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>
               Priority:{' '}
@@ -52,13 +52,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
               <Typography display={'inline'}> {datePipe(task.deadline)}</Typography>
             </Typography>
           </Grid>
-          <Grid item xs={12} md={12}>
+          <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>
               Assignee(s):
               <Typography display={'inline'}> {task.assignees.map((user) => fullNamePipe(user)).join(', ')}</Typography>
             </Typography>
           </Grid>
-          <Grid item xs={12} md={12}>
+          <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: '200px', overflow: 'auto' }}>
               <Typography>{task.notes}</Typography>
