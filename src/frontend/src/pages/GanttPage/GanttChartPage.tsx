@@ -180,8 +180,11 @@ const GanttChartPage: FC = () => {
     setAddedWorkPackages((prev) => prev.filter((workPackage) => !workPackages.includes(workPackage)));
   };
 
+  console.log('projects: ', projects);
+
   const allWorkPackages = projects.flatMap((project) => project.workPackages).concat(addedWorkPackages);
   const allProjects = projects.concat(addedProjects);
+  console.log('all projects: ', allProjects);
   const allWbsElements: WbsElement[] = [...allProjects];
   allWbsElements.push(...allWorkPackages);
 
@@ -228,6 +231,7 @@ const GanttChartPage: FC = () => {
   const getNewProjectNumber = (carNumber: number) => {
     const existingCarProjects = allProjects.filter((project) => project.wbsNum.carNumber === carNumber).length;
 
+    console.log('existingCarProjects: ', existingCarProjects);
     return existingCarProjects + 1;
   };
 

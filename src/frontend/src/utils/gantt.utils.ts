@@ -275,13 +275,13 @@ export const filterGanttProjects = (
   deepCopy = deepCopy.filter((project) => project.status !== WbsElementStatus.Complete);
 
   if (ganttFilters.showOnlyOverdue) {
-    deepCopy = projects.filter((project) => getProjectEndDate(project) < new Date());
+    deepCopy = deepCopy.filter((project) => getProjectEndDate(project) < new Date());
   }
 
   // apply the search
   deepCopy = deepCopy.filter((project) => project.name.toLowerCase().includes(searchText.toLowerCase()));
 
-  deepCopy = deepCopy.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
+  // deepCopy = deepCopy.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
 
   return deepCopy;
 };
