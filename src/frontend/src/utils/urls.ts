@@ -27,6 +27,7 @@ const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
+const allProjects = (includeDeleted: boolean) => `${projects()}/${includeDeleted ? 'true' : 'false'}`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -189,6 +190,7 @@ export const apiUrls = {
   userScheduleSettingsSet,
 
   projects,
+  allProjects,
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,

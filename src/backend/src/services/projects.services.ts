@@ -36,13 +36,19 @@ export default class ProjectsService {
   /**
    * Get all the non deleted projects in the database for the given organization.
    * @param organizationId the id of the organization the user is currently in
+   * @param includeDeleted whether or not to include deleted projects
    * @returns all the projects
    */
-  static async getAllProjects(organizationId: string): Promise<Project[]> {
-    const projects = await prisma.project.findMany({
-      where: { wbsElement: { dateDeleted: null, organizationId } },
-      ...getProjectQueryArgs(organizationId)
-    });
+  static async getAllProjects(organizationId: string, includeDeleted: boolean): Promise<Project[]> {
+    const projects = includeDeleted
+      ? await prisma.project.findMany({
+          where: { wbsElement: { organizationId } },
+          ...getProjectQueryArgs(organizationId)
+        })
+      : await prisma.project.findMany({
+          where: { wbsElement: { dateDeleted: null, organizationId } },
+          ...getProjectQueryArgs(organizationId)
+        });
     return projects.map(projectTransformer);
   }
 
