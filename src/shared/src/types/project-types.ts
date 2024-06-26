@@ -50,7 +50,10 @@ export interface Project extends WbsElement {
   favoritedBy: UserPreview[];
 }
 
-export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status' | 'workPackages' | 'lead' | 'manager' | 'deleted'>;
+export type ProjectPreview = Pick<
+  Project,
+  'id' | 'name' | 'wbsNum' | 'status' | 'workPackages' | 'lead' | 'manager' | 'deleted'
+>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;
