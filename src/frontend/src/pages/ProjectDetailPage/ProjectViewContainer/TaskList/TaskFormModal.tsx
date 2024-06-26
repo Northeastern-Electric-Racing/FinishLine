@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, FormControl, FormLabel, Grid, MenuItem, TextField, useTheme } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
-import { countWords, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
+import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import * as yup from 'yup';
 import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
@@ -67,8 +67,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       submitText="Save"
     >
       <form
-        id={'create-work-package-form'}
         onSubmit={(e) => {
+          if (isGuest(user.role)) return;
           e.preventDefault();
           e.stopPropagation();
           handleSubmit(onSubmit)(e);
