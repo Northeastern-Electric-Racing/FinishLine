@@ -26,9 +26,9 @@ import { useCurrentUser } from './users.hooks';
 /**
  * Custom React Hook to supply all projects.
  */
-export const useAllProjects = () => {
+export const useAllProjects = (includeDeleted: boolean = false) => {
   return useQuery<Project[], Error>(['projects'], async () => {
-    const { data } = await getAllProjects();
+    const { data } = await getAllProjects(includeDeleted);
     return data;
   });
 };

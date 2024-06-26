@@ -20,6 +20,7 @@ export interface WbsElement {
   id: string; // project/ work package id
   wbsNum: WbsNumber;
   dateCreated: Date;
+  deleted: boolean;
   name: string;
   status: WbsElementStatus;
   lead?: User;
@@ -49,7 +50,7 @@ export interface Project extends WbsElement {
   favoritedBy: UserPreview[];
 }
 
-export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status' | 'workPackages' | 'lead' | 'manager'>;
+export type ProjectPreview = Pick<Project, 'id' | 'name' | 'wbsNum' | 'status' | 'workPackages' | 'lead' | 'manager' | 'deleted'>;
 
 export interface WorkPackage extends WbsElement {
   orderInProject: number;

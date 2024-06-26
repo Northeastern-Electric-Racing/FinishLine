@@ -21,6 +21,7 @@ export const carTransformer = (car: Prisma.CarGetPayload<CarQueryArgs>): Car => 
     descriptionBullets: car.wbsElement.descriptionBullets.map(descBulletConverter),
     materials: car.wbsElement.materials.map(materialTransformer),
     assemblies: car.wbsElement.assemblies.map(assemblyTransformer),
-    changes: []
+    changes: [],
+    deleted: car.wbsElement.dateDeleted !== null
   };
 };
