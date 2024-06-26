@@ -22,14 +22,22 @@ interface TaskModalProps {
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, onSubmit, hasEditPermissions }) => {
-  const theme = useTheme();
   const [isEditMode, setIsEditMode] = useState(false);
-
-  const dialogWidth: Breakpoint = 'md';
   const priorityColor = task.priority === 'HIGH' ? '#ef4345' : task.priority === 'LOW' ? '#00ab41' : '#FFA500';
   const ViewModal: React.FC = () => {
     return (
-      <NERModal open={modalShow} title={task.title} onHide={onHide}>
+      <NERModal
+        open={modalShow}
+        title={task.title}
+        onHide={onHide}
+        cancelText="Exit"
+        submitText="Update"
+        onSubmit={() => {
+          if (hasEditPermissions) {
+            setIsEditMode(true);
+          }
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <Typography fontWeight={'bold'}>
@@ -54,7 +62,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
           <Grid item xs={12} md={12}>
             <Typography fontWeight={'bold'}>Notes:</Typography>
             <Box sx={{ height: '200px', overflow: 'auto' }}>
-              <Typography> {task.notes}</Typography>
+              <Typography>{task.notes}</Typography>
             </Box>
           </Grid>
         </Grid>
