@@ -50,7 +50,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
   } = useForm<WorkPackageTemplateFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
-      workPackageName: defaultValues?.workPackageName ?? '',
+      workPackageName: defaultValues?.workPackageName,
       templateName: defaultValues?.templateName ?? '',
       templateNotes: defaultValues?.templateNotes ?? '',
       workPackageTemplateId: defaultValues?.workPackageTemplateId ?? '',

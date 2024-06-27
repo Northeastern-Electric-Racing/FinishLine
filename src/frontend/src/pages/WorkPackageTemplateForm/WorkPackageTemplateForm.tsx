@@ -24,9 +24,11 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
   const schema = yup.object().shape({
     workPackageName: yup.string().optional(),
     stage: yup.string().required('Stage is required'),
-    duration: yup.number().required('Duration is required').positive().integer(),
+    duration: yup.number().optional(),
     templateName: yup.string().required('Template Name is required'),
-    templateNotes: yup.string()
+    templateNotes: yup.string(),
+    blockedBy: yup.array(),
+    descriptionBullets: yup.array()
   });
 
   if (wpIsError) return <ErrorPage message={wpError.message} />;
