@@ -114,8 +114,6 @@ const ReimbursementRequestTable = ({
     }
   ];
 
-  console.log(rows.map((row) => cleanReimbursementRequestStatus(row.status)));
-
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
       <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />

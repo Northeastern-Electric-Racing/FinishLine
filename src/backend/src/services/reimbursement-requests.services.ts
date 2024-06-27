@@ -863,7 +863,6 @@ export default class ReimbursementRequestService {
     if (!(await userHasPermission(submitter.userId, organizationId, isHead)))
       throw new AccessDeniedException('Only a head or admin can approve reimbursement requests');
 
-    console.log('test');
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
