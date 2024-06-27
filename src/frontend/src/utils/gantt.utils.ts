@@ -559,7 +559,7 @@ export const aggregateGanttChanges = (ganttChanges: GanttChange[], allWbsElement
     const newWorkPackage = changeEvents.some((change) => change.type === 'create-work-package');
 
     const change: RequestEventChange = {
-      changeId: updatedEvent.id,
+      changeId: wbsPipe(wbsElement.wbsNum),
       prevStart: isProject(wbsElement.wbsNum) ? new Date() : (wbsElement as WorkPackage).startDate,
       prevEnd: isProject(wbsElement.wbsNum) ? new Date() : (wbsElement as WorkPackage).endDate,
       newStart: start,
