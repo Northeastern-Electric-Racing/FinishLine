@@ -19,12 +19,14 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
 }) => {
   const { data: workPackageTemplates, isError: wpIsError, error: wpError } = useAllWorkPackageTemplates();
 
-  console.log('ALL', workPackageTemplates);
-
   const history = useHistory();
 
   const schema = yup.object().shape({
-    workPackageName: yup.string().required('Name is required!')
+    workPackageName: yup.string().optional(),
+    stage: yup.string().required('Stage is required'),
+    duration: yup.number().required('Duration is required').positive().integer(),
+    templateName: yup.string().required('Template Name is required'),
+    templateNotes: yup.string()
   });
 
   if (wpIsError) return <ErrorPage message={wpError.message} />;

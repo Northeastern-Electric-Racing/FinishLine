@@ -18,8 +18,6 @@ const EditWorkPackageTemplate: React.FC = () => {
 
   if (isError) return <ErrorPage message={error.message} />;
 
-  console.log('SINGLE', workPackageTemplate);
-
   const defaultValues: WorkPackageTemplateFormInputs = {
     ...workPackageTemplate,
     stage: workPackageTemplate?.stage ?? 'NONE',

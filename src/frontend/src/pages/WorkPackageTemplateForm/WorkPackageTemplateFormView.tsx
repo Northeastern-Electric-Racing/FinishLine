@@ -54,7 +54,7 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       templateName: defaultValues?.templateName ?? '',
       templateNotes: defaultValues?.templateNotes ?? '',
       workPackageTemplateId: defaultValues?.workPackageTemplateId ?? '',
-      duration: defaultValues?.duration ?? 0,
+      duration: defaultValues?.duration,
       blockedBy: defaultValues?.blockedBy ?? [],
       stage: defaultValues?.stage ?? 'NONE',
       descriptionBullets: defaultValues?.descriptionBullets ?? []
@@ -91,7 +91,6 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
       history.push(routes.ADMIN_TOOLS + '/project-configuration/work-package-templates');
     } catch (error) {
       toast.error('Error submitting work package template');
-      console.error('Error submitting work package template:', error);
     }
   };
 
