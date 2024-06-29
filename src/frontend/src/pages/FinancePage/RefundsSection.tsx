@@ -123,7 +123,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   const displayedReimbursements = allReimbursements && tabValue === 1 ? allReimbursements : userReimbursements;
   const displayedReimbursementRequests = (
     allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests
-  ).filter((request: ReimbursementRequest) => request.reimbursementStatuses[0].type !== ReimbursementStatusType.DENIED);
+  ).filter((request: ReimbursementRequest) => !request.reimbursementStatuses.some(status => status.type === ReimbursementStatusType.DENIED));
 
   const rows = displayedReimbursements.map(getRefundRowData).sort(getComparator(order, orderBy));
 
