@@ -1947,12 +1947,12 @@ const performSeed: () => Promise<void> = async () => {
     {
       linkId: '1',
       linkTypeName: 'Confluence',
-      url: 'https://google.com'
+      url: 'https://confluence.com'
     },
     {
       linkId: '2',
       linkTypeName: 'Bill of Materials',
-      url: 'https://apple.com'
+      url: 'https://docs.google.com'
     }
   ]);
 };
