@@ -47,6 +47,7 @@ const WorkPackageTemplateFormDetails: React.FC<Props> = ({ control, errors }) =>
             <FormLabel>Work Package Name</FormLabel>
             <ReactHookTextField
               name="workPackageName"
+              required={false}
               control={control}
               placeholder="Enter work package name..."
               errorMessage={errors.workPackageName}
@@ -61,6 +62,7 @@ const WorkPackageTemplateFormDetails: React.FC<Props> = ({ control, errors }) =>
             <FormLabel>Duration</FormLabel>
             <ReactHookTextField
               name="duration"
+              required={false}
               control={control}
               type="number"
               placeholder="Enter duration..."
