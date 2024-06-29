@@ -28,7 +28,8 @@ import {
   createAccountCode,
   createVendor,
   editVendor,
-  getAllAccountCodes
+  getAllAccountCodes,
+  editRefund
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -421,6 +422,27 @@ export const useReportRefund = () => {
       const { data } = await reportRefund(formData.refundAmount, formData.dateReceived);
       queryClient.invalidateQueries(['reimbursement']);
       return data;
+    }
+  );
+};
+
+/**
+ * Custom react hook to edit a refund
+ * @returns the edited refund
+ */
+export const useEditRefund = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Reimbursement, Error, { refundId: string; refundAmount: number; dateReceived: string }>(
+    ['reimbursement', 'edit'],
+    async (formData: { refundId: string; refundAmount: number; dateReceived: string }) => {
+      const { data } = await editRefund(formData.refundId, formData.refundAmount, formData.dateReceived);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement']);
+      }
     }
   );
 };

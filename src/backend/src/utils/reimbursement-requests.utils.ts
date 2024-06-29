@@ -395,3 +395,32 @@ export const validateUserEditRRPermissions = async (
       throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');
   }
 };
+
+/**
+ * Validates that the refund amount is less than the total amount owed to the user
+ * @param user the user reporting or editing a refund
+ * @param refundAmount the amount of the refund
+ * @param organizationId the organization the request pertains to
+ */
+export const validateRefund = async (user: User, refundAmount: number, organizationId: string) => {
+  const totalOwed = await prisma.reimbursement_Request
+    .findMany({
+      where: { recipientId: user.userId, dateDeleted: null, accountCode: { organizationId } }
+    })
+    .then((userReimbursementRequests: Reimbursement_Request[]) => {
+      return userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
+    });
+
+  const totalReimbursed = await prisma.reimbursement
+    .findMany({
+      where: { purchaserId: user.userId, organizationId },
+      select: { amount: true }
+    })
+    .then((reimbursements: { amount: number }[]) =>
+      reimbursements.reduce((acc: number, curr: { amount: number }) => acc + curr.amount, 0)
+    );
+
+  if (refundAmount > totalOwed - totalReimbursed) {
+    throw new HttpException(400, 'Reimbursement is greater than the total amount owed');
+  }
+};
