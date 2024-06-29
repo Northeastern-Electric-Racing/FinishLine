@@ -21,6 +21,7 @@ import {
 } from './GanttTaskBarDisplayStyles';
 import { CSSProperties } from 'react';
 import { ArcherElement } from 'react-archer';
+import { datePipe } from '../../../../utils/pipes';
 
 interface GanttTaskBarDisplayProps {
   days: Date[];
@@ -182,7 +183,15 @@ const GanttTaskBarDisplay = ({
               onMouseOver={(e) => handleOnMouseOver(e, transformDesignReviewToGanttTask(designReview))}
               onMouseLeave={handleOnMouseLeave}
               onClick={() => history.push(`${routes.CALENDAR}/${designReview.designReviewId}`)}
-            />
+            >
+              <Typography
+                variant="body1"
+                sx={taskNameContainerStyles(task)}
+                onClick={() => history.push(`${routes.CALENDAR}/${designReview.designReviewId}`)}
+              >
+                {datePipe(designReview.dateScheduled, false)}
+              </Typography>
+            </div>
           );
         })}
         {highlightedChange && isHighlightedChangeOnGanttTask(highlightedChange, task) && (
