@@ -19,7 +19,8 @@ const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
       wbsNum: wbsNumOf(project.wbsElement),
       name: project.wbsElement.name,
       status: calculateProjectStatus(project),
-      workPackages: project.workPackages.map(workPackageTransformer)
+      workPackages: project.workPackages.map(workPackageTransformer),
+      deleted: project.wbsElement.dateDeleted !== null
     })),
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,

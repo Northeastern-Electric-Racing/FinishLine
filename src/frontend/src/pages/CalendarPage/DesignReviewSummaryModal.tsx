@@ -1,4 +1,4 @@
-import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType, isAdmin } from 'shared';
 import NERModal from '../../components/NERModal';
 import { Box, Chip, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -74,7 +74,7 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       showCloseButton
       titleChildren={
         <Box position="absolute" right="52px" top="12px">
-          {isDesignReviewCreator && (
+          {(isDesignReviewCreator || isAdmin(user.role)) && (
             <>
               <IconButton onClick={() => setShowDeleteModal(true)}>
                 <DeleteIcon />

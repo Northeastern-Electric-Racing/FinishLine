@@ -42,6 +42,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
       detail: change.detail,
       dateImplemented: change.dateImplemented
     })),
+    deleted: wbsElement.dateDeleted !== null,
     favoritedBy: project.favoritedBy.map(userTransformer),
     teams: project.teams.map(teamTransformer),
     summary: project.summary,
@@ -87,7 +88,8 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
         materials: workPackage.wbsElement?.materials.map(materialTransformer),
         assemblies: workPackage.wbsElement?.assemblies.map(assemblyTransformer),
         blocking: workPackage.wbsElement.blocking.map((blocking) => wbsNumOf(blocking.wbsElement)),
-        designReviews: workPackage.wbsElement.designReviews.map(designReviewTransformer)
+        designReviews: workPackage.wbsElement.designReviews.map(designReviewTransformer),
+        deleted: workPackage.wbsElement.dateDeleted !== null
       };
     })
   };
