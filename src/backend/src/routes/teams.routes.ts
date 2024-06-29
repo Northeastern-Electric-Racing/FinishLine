@@ -5,7 +5,7 @@ import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 
 const teamsRouter = express.Router();
 
-teamsRouter.get('/', TeamsController.getAllTeams);
+teamsRouter.get('/:ignoreArchive', TeamsController.getAllTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 teamsRouter.post(
   '/:teamId/set-members',
