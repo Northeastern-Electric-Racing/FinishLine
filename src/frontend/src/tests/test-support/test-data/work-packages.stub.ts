@@ -172,7 +172,7 @@ export const exampleInstallWorkPackage: WorkPackage = {
   blocking: [],
   teamTypes: [],
   designReviews: [],
-  deleted: false,
+  deleted: false
 };
 
 export const exampleWorkPackage5: WorkPackage = {

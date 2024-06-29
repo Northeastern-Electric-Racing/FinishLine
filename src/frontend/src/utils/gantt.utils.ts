@@ -88,6 +88,29 @@ export const getProjectEndDate = (project: ProjectPreview): Date => {
   }, new Date(0));
 };
 
+export const transformDesignReviewToGanttTask = (designReview: DesignReview): GanttTask => {
+  return {
+    id: designReview.designReviewId,
+    name: designReview.wbsName + ' - Design Review',
+    start: designReview.dateScheduled,
+    end: designReview.dateScheduled,
+    projectNumber: 0,
+    carNumber: 0,
+    workPackageNumber: 0,
+    allWorkPackages: [],
+    lead: designReview.userCreated,
+    manager: designReview.userCreated,
+    teamName: NO_TEAM,
+    stage: WorkPackageStage.Design,
+    unblockedWorkPackages: [],
+    blocking: [],
+    onClick: () => {
+      window.open(`/design-reviews-calendar/${designReview.designReviewId}`, '_blank');
+    },
+    designReviews: []
+  };
+};
+
 export const transformProjectPreviewToProject = (projectPreview: ProjectPreview, team: Team): Project => {
   return {
     ...projectPreview,

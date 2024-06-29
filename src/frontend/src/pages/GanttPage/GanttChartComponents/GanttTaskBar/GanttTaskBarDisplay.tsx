@@ -7,6 +7,7 @@ import {
   GanttTask,
   isHighlightedChangeOnGanttTask,
   RequestEventChange,
+  transformDesignReviewToGanttTask,
   transformWorkPackageToGanttTask
 } from '../../../../utils/gantt.utils';
 import { routes } from '../../../../utils/routes';
@@ -178,8 +179,9 @@ const GanttTaskBarDisplay = ({
           return (
             <div
               style={ganttTaskBarDesignReviewOverlayStyles(designReview)}
-              onMouseOver={(e) => handleOnMouseOver(e, task)}
+              onMouseOver={(e) => handleOnMouseOver(e, transformDesignReviewToGanttTask(designReview))}
               onMouseLeave={handleOnMouseLeave}
+              onClick={() => history.push(`${routes.CALENDAR}/${designReview.designReviewId}`)}
             />
           );
         })}
