@@ -10,7 +10,13 @@ import {
   AccessDeniedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { getUsers, getPrismaQueryUserIds, userHasPermission, areUsersinList } from '../utils/users.utils';
+import {
+  getUsers,
+  getPrismaQueryUserIds,
+  userHasPermission,
+  areUsersinList,
+  updateUserAvailability
+} from '../utils/users.utils';
 import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import {
@@ -23,6 +29,7 @@ import {
 import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
 export default class DesignReviewsService {
   /**
@@ -363,24 +370,28 @@ export default class DesignReviewsService {
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    availability.forEach((time) => {
-      if (time < 0 || time > 83) {
-        throw new HttpException(400, 'Availability times have to be in range 0-83');
-      }
+    let userSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId: submitter.userId },
+      ...getUserScheduleSettingsQueryArgs()
     });
 
-    await prisma.schedule_Settings.upsert({
-      where: { userId: submitter.userId },
-      update: {
-        availability
-      },
-      create: {
-        userId: submitter.userId,
-        personalGmail: '',
-        personalZoomLink: '',
-        availability
-      }
-    });
+    if (!userSettings) {
+      userSettings = await prisma.schedule_Settings.create({
+        data: {
+          userId: submitter.userId,
+          availabilities: {
+            create: {
+              availability
+            }
+          },
+          personalGmail: '',
+          personalZoomLink: ''
+        },
+        ...getUserScheduleSettingsQueryArgs()
+      });
+    }
+
+    await updateUserAvailability(availability, userSettings, submitter, designReview.dateScheduled);
 
     // set submitter as confirmed if they're not already
     if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {

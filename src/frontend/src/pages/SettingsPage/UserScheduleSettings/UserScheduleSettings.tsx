@@ -10,7 +10,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
-import { User } from 'shared';
+import { getMostRecentAvailability, SetUserScheduleSettingsArgs, User } from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -55,8 +55,9 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
   if (updateUserScheduleSettingsIsError)
     return <ErrorPage error={updateUserScheduleSettingsError!} message={updateUserScheduleSettingsError?.message} />;
 
-  const handleConfirm = async (payload: ScheduleSettingsPayload) => {
+  const handleConfirm = async (payload: SetUserScheduleSettingsArgs) => {
     setEdit(false);
+
     try {
       await updateUserScheduleSettings({
         drScheduleSettingsId: data.drScheduleSettingsId,
@@ -67,6 +68,12 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
         toast.error(e.message);
       }
     }
+  };
+
+  const defaultValues: SetUserScheduleSettingsArgs = {
+    personalGmail: data.personalGmail,
+    personalZoomLink: data.personalZoomLink,
+    availability: getMostRecentAvailability(data.availabilities).availability
   };
 
   return (
@@ -108,7 +115,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
       {!edit ? (
         <UserScheduleSettingsView scheduleSettings={data} designReview={designReview} />
       ) : (
-        <UserScheduleSettingsEdit onSubmit={handleConfirm} defaultValues={data} />
+        <UserScheduleSettingsEdit onSubmit={handleConfirm} defaultValues={defaultValues} />
       )}
       {edit && (
         <Box

@@ -27,7 +27,8 @@ import {
   Project,
   UserSecureSettings,
   UserScheduleSettings,
-  UserWithScheduleSettings
+  UserWithScheduleSettings,
+  SetUserScheduleSettingsPayload
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -135,7 +136,7 @@ export const useUserScheduleSettings = (id: string) => {
       const { data } = await getUserScheduleSettings(id);
       return data;
     } catch (error: unknown) {
-      return { drScheduleSettingsId: '', personalGmail: '', personalZoomLink: '', availability: [] };
+      return { drScheduleSettingsId: '', personalGmail: '', personalZoomLink: '', availabilities: [] };
     }
   });
 };
@@ -198,9 +199,9 @@ export const useUpdateUserSecureSettings = () => {
 export const useUpdateUserScheduleSettings = () => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  return useMutation<UserScheduleSettings, Error, UserScheduleSettings>(
+  return useMutation<UserScheduleSettings, Error, SetUserScheduleSettingsPayload>(
     ['users', 'schedule-settings', 'update'],
-    async (settings: UserScheduleSettings) => {
+    async (settings: SetUserScheduleSettingsPayload) => {
       const { data } = await updateUserScheduleSettings(settings);
       return data;
     },

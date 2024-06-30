@@ -736,14 +736,23 @@ model Design_Review {
   notificationSlackThreads Message_Info[]
 }
 
+model Availability {
+  availabilityId     String            @id @default(uuid())
+  scheduleSettingsId String
+  scheduleSettings   Schedule_Settings @relation(fields: [scheduleSettingsId], references: [drScheduleSettingsId])
+
+  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
+  availability Int[]
+  dateSet      DateTime @default(now())
+}
+
 model Schedule_Settings {
-  drScheduleSettingsId String @id @default(uuid())
+  drScheduleSettingsId String         @id @default(uuid())
   personalGmail        String
   personalZoomLink     String
-  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
-  availability         Int[]
-  User                 User   @relation(fields: [userId], references: [userId])
-  userId               String @unique
+  User                 User           @relation(fields: [userId], references: [userId])
+  userId               String         @unique
+  availabilities       Availability[]
 }
 
 model Meeting {
