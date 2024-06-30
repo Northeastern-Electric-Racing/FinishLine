@@ -8,6 +8,8 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { Reimbursement } from 'shared';
+import { UseMutateAsyncFunction } from 'react-query';
 
 const schema = yup.object().shape({
   amount: yup
@@ -30,7 +32,15 @@ const schema = yup.object().shape({
 interface RefundModalProps {
   showModal: boolean;
   handleClose: () => void;
-  mutateAsync: (data: any) => void; // if anyone can figure out how to change this without raising type errors, be my guest
+  mutateAsync: UseMutateAsyncFunction<
+    Reimbursement,
+    Error,
+    {
+      amount: number;
+      dateReceived: string;
+    },
+    unknown
+  >;
   isLoading: boolean;
   defaultValues?: RefundModalInputs;
   title: string;
