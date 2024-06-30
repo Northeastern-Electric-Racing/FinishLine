@@ -77,6 +77,7 @@ enum Club_Accounts {
 }
 
 enum Reimbursement_Status_Type {
+  PENDING_LEADERSHIP_APPROVAL
   PENDING_FINANCE
   SABO_SUBMITTED
   ADVISOR_APPROVED
@@ -424,12 +425,12 @@ model Link {
   linkType    Link_Type @relation(name: "linkTypes", fields: [linkTypeId], references: [id])
 
   // Either its on a wbsElement, a wbsProposedChanges, or an organization
-  wbsElementId               String?
-  wbsElment                  WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
-  wbsProposedChangesId       String?
-  wbsProposedChanges         Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
-  organization               Organization?         @relation(fields: [organizationId], references: [organizationId])
-  organizationId String?
+  wbsElementId         String?
+  wbsElment            WBS_Element?          @relation(name: "links", fields: [wbsElementId], references: [wbsElementId])
+  wbsProposedChangesId String?
+  wbsProposedChanges   Wbs_Proposed_Changes? @relation(name: "proposedChangeLinks", fields: [wbsProposedChangesId], references: [wbsProposedChangesId])
+  organization         Organization?         @relation(fields: [organizationId], references: [organizationId])
+  organizationId       String?
 }
 
 model Description_Bullet_Type {
