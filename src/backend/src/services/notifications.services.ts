@@ -24,7 +24,8 @@ export default class NotificationsService {
         },
         status: {
           not: 'DONE'
-        }
+        },
+        dateDeleted: null
       },
       include: {
         assignees: {
