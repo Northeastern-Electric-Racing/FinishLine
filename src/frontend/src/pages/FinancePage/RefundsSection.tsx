@@ -205,7 +205,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
                 {rows.map((row, index) => (
                   <TableRow
                     key={`${row.date}-$${row.amount}-${index}`}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, cursor: 'pointer' }}
                     onClick={() => {
                       setEditModalRefund({
                         reimbursementId: row.id,

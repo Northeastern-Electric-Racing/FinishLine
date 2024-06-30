@@ -77,6 +77,11 @@ export interface EditVendorPayload {
   name: string;
 }
 
+export interface RefundPayload {
+  amount: number;
+  dateReceived: string;
+}
+
 /**
  * Custom React Hook to upload a new picture.
  */
@@ -416,10 +421,10 @@ export const useSendPendingAdvisorList = () => {
  */
 export const useReportRefund = () => {
   const queryClient = useQueryClient();
-  return useMutation<Reimbursement, Error, { refundAmount: number; dateReceived: string }>(
+  return useMutation<Reimbursement, Error, { amount: number; dateReceived: string }>(
     ['reimbursement'],
-    async (formData: { refundAmount: number; dateReceived: string }) => {
-      const { data } = await reportRefund(formData.refundAmount, formData.dateReceived);
+    async (formData: { amount: number; dateReceived: string }) => {
+      const { data } = await reportRefund(formData.amount, formData.dateReceived);
       queryClient.invalidateQueries(['reimbursement']);
       return data;
     }
@@ -430,13 +435,13 @@ export const useReportRefund = () => {
  * Custom react hook to edit a refund
  * @returns the edited refund
  */
-export const useEditRefund = () => {
+export const useEditRefund = (id: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation<Reimbursement, Error, { refundId: string; refundAmount: number; dateReceived: string }>(
+  return useMutation<Reimbursement, Error, { amount: number; dateReceived: string }>(
     ['reimbursement', 'edit'],
-    async (formData: { refundId: string; refundAmount: number; dateReceived: string }) => {
-      const { data } = await editRefund(formData.refundId, formData.refundAmount, formData.dateReceived);
+    async (formData: { amount: number; dateReceived: string }) => {
+      const { data } = await editRefund(id, formData);
       return data;
     },
     {

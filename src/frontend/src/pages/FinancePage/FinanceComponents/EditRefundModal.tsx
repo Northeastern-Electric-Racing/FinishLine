@@ -8,11 +8,10 @@ interface EditRefundModalProps {
 }
 
 const EditRefundModal: React.FC<EditRefundModalProps> = ({ refund, handleClose }: EditRefundModalProps) => {
-  const { mutateAsync, isLoading } = useEditRefund();
+  const { mutateAsync, isLoading } = useEditRefund(refund!.reimbursementId);
 
   const defaultValues: RefundModalInputs | undefined = refund && {
-    refundId: refund.reimbursementId,
-    refundAmount: (refund.amount / 100).toFixed(2),
+    amount: (refund.amount / 100).toFixed(2),
     dateReceived: new Date(refund.dateCreated)
   };
 

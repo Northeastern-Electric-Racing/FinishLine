@@ -6,7 +6,8 @@ import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
   EditVendorPayload,
-  AccountCodePayload
+  AccountCodePayload,
+  RefundPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -306,12 +307,11 @@ export const reportRefund = (amount: number, dateReceived: string) => {
  * Edits a refund in the database
  *
  * @param id the reimbursement id
- * @param amount the new amount reimbursed being reported
- * @param dateReceived the new date the refund was received
+ * @param formData the amount and date to edit the refund with
  * @returns the updated reimbursement
  */
-export const editRefund = (id: string, amount: number, dateReceived: string) => {
-  return axios.post(apiUrls.financeEditRefund(id), { amount, dateReceived });
+export const editRefund = (id: string, formData: RefundPayload) => {
+  return axios.post(apiUrls.financeEditRefund(id), formData);
 };
 
 /**

@@ -10,7 +10,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const schema = yup.object().shape({
-  refundAmount: yup
+  amount: yup
     .number()
     .required('Refund amount is required')
     .positive('Refund amount must be positive')
@@ -37,8 +37,7 @@ interface RefundModalProps {
 }
 
 export interface RefundModalInputs {
-  refundId?: string;
-  refundAmount: string; // this allows us to display default value with 2 decimal places - the type is enforced and casted via the input field and form schema
+  amount: string; // this allows us to display default value with 2 decimal places - the type is enforced and casted via the input field and form schema
   dateReceived: Date;
 }
 
@@ -61,21 +60,20 @@ const RefundModal: React.FC<RefundModalProps> = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: defaultValues ?? {
-      refundAmount: '0',
+      amount: '0',
       dateReceived: new Date()
     },
     mode: 'onChange'
   });
 
-  const handleConfirm = async (data: { refundAmount: number; dateReceived: Date }) => {
-    handleClose();
+  const handleConfirm = async (data: { amount: number; dateReceived: Date }) => {
     try {
       await mutateAsync({
-        refundId: defaultValues?.refundId,
-        refundAmount: Math.round(data.refundAmount * 100),
+        amount: Math.round(data.amount * 100),
         dateReceived: data.dateReceived.toISOString()
       });
       toast.success(defaultValues ? 'Account credit updated successfully' : 'New account credit reported successfully');
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -92,7 +90,7 @@ const RefundModal: React.FC<RefundModalProps> = ({
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleConfirm}
       formId="reimbursement-form"
-      disabled={!isValid || (defaultValues && defaultValues.refundAmount === watch('refundAmount'))}
+      disabled={!isValid || (defaultValues && defaultValues.amount === watch('amount'))}
     >
       {isLoading ? (
         <LoadingIndicator />
@@ -100,12 +98,12 @@ const RefundModal: React.FC<RefundModalProps> = ({
         <FormControl>
           <FormLabel>Amount</FormLabel>
           <ReactHookTextField
-            name="refundAmount"
+            name="amount"
             type="number"
             control={control}
             sx={{ width: 1 }}
             startAdornment={<AttachMoneyIcon />}
-            errorMessage={errors.refundAmount}
+            errorMessage={errors.amount}
           />
 
           <FormLabel sx={{ paddingTop: 2 }}>Date Received</FormLabel>
