@@ -1,5 +1,4 @@
-import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { Box, Card, CardContent, Grid, Link, Stack, Tooltip, Typography } from '@mui/material';
 import { DesignReview, TeamType } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
@@ -31,13 +30,15 @@ interface CalendarDayCardProps {
 const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, teamTypes }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const CardClick = () => (
+    <Card
+      sx={{ width: { xs: '95%', md: '100%' }, height: { xs: '100%', sm: '95%' }, cursor: 'pointer' }}
+      onClick={() => setIsCreateModalOpen(true)}
+    ></Card>
+  );
+
   const DayCardTitle = () => (
     <Grid container alignItems="center" margin={0} padding={0}>
-      <Grid item>
-        <IconButton onClick={() => setIsCreateModalOpen(true)}>
-          <AddCircleOutlineIcon fontSize="small" />
-        </IconButton>
-      </Grid>
       <Grid item xs display="flex" justifyContent="flex-end">
         <Typography variant="h6" marginRight={1} noWrap>
           {cardDate.getDate()}
@@ -185,6 +186,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           </>
         )}
       </CardContent>
+      <CardClick />
     </Card>
   );
 };
