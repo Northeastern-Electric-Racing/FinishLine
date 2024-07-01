@@ -76,10 +76,6 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       toast.error('Please Select a Project Manager');
       return;
     }
-    if (!confirmDetails) {
-      toast.error('Please confirm project details are correct');
-      return;
-    }
     await onSubmit({
       startDate,
       confirmDetails,
