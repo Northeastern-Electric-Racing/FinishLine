@@ -174,6 +174,9 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                 >
                   <FormControlLabel value={true} control={<Radio />} label="Yes" />
                   <FormControlLabel value={false} control={<Radio />} label="No" />
+                  {errors.confirmDetails ? (
+                    <p style={{ color: 'red', fontSize: '12px' }}>Please confirm the details before proceeding.</p>
+                  ) : null}
                 </RadioGroup>
               )}
             />
