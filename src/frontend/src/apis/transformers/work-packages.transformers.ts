@@ -5,6 +5,7 @@
 
 import { WorkPackage } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
+import { designReviewTransformer } from './design-reviews.tranformers';
 import { descriptionBulletTransformer } from './projects.transformers';
 
 /**
@@ -20,6 +21,7 @@ export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage =>
     startDate: new Date(workPackage.startDate),
     endDate: new Date(workPackage.endDate),
     descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
-    changes: workPackage.changes.map(implementedChangeTransformer)
+    changes: workPackage.changes.map(implementedChangeTransformer),
+    designReviews: workPackage.designReviews.map(designReviewTransformer)
   };
 };

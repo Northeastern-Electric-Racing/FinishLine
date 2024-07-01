@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { yellow, green, blue, purple, grey, orange } from '@mui/material/colors';
-import { ChangeRequestStatus, ChangeRequestType, WbsElementStatus, WorkPackageStage } from 'shared';
+import { ChangeRequestStatus, ChangeRequestType, DesignReviewStatus, WbsElementStatus, WorkPackageStage } from 'shared';
 
 // maps stage to the desired color
 export const WorkPackageStageColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
@@ -77,5 +77,18 @@ export const WbsElementStatusTextPipe: (status: WbsElementStatus) => string = (s
       return 'Active';
     case WbsElementStatus.Complete:
       return 'Complete';
+  }
+};
+
+export const DesignReviewStatusTextPipe: (status: DesignReviewStatus) => string = (status) => {
+  switch (status) {
+    case DesignReviewStatus.UNCONFIRMED:
+      return 'Unconfirmed';
+    case DesignReviewStatus.CONFIRMED:
+      return 'Confirmed';
+    case DesignReviewStatus.DONE:
+      return 'Done';
+    case DesignReviewStatus.SCHEDULED:
+      return 'Scheduled';
   }
 };
