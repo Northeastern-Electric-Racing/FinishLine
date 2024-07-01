@@ -33,7 +33,10 @@ const schema = yup.object().shape({
     .date()
     .required('Start Date is required')
     .test('start-date-valid', 'start date is not valid', startDateTester),
-  confirmDetails: yup.boolean().required('Please confirm project details are correct')
+  confirmDetails: yup
+    .boolean()
+    .required('Please confirm project details are correct')
+    .test('is-true', 'Please confirm', (value) => value === true)
 });
 
 const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
@@ -55,9 +58,18 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     confirmDetails: false
   };
 
-  const { reset, handleSubmit, control } = useForm<FormInput>({
+  const {
+    reset,
+    handleSubmit,
+    control,
+    formState: { errors, isValid }
+  } = useForm<FormInput>({
     resolver: yupResolver(schema),
-    defaultValues
+    defaultValues: {
+      startDate,
+      confirmDetails: false
+    },
+    mode: 'onChange'
   });
 
   const [leadId, setLeadId] = useState<string>();
@@ -100,6 +112,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       onFormSubmit={onSubmitWrapper}
       formId="activate-work-package-form"
       showCloseButton
+      disabled={!isValid}
     >
       <Grid container spacing={2}>
         <Grid item xs={6}>
@@ -133,7 +146,6 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
           <Controller
             name="startDate"
             control={control}
-            rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <DatePicker
                 format="yyyy-MM-dd"
@@ -152,7 +164,6 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             <Controller
               name="confirmDetails"
               control={control}
-              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <RadioGroup
                   value={value}
@@ -161,8 +172,8 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
                   name="row-radio-buttons-group"
                   onChange={onChange}
                 >
-                  <FormControlLabel value={1} control={<Radio />} label="Yes" />
-                  <FormControlLabel value={0} control={<Radio />} label="No" />
+                  <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                  <FormControlLabel value={false} control={<Radio />} label="No" />
                 </RadioGroup>
               )}
             />
