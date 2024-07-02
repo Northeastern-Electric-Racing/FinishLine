@@ -2,22 +2,35 @@ import { useAllLinkTypes } from '../hooks/projects.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
 import { IconButton, MenuItem, Select, TextField } from '@mui/material';
-import { FieldArrayWithId, UseFieldArrayAppend, UseFieldArrayRemove, UseFormRegister, UseFormWatch } from 'react-hook-form';
+import {
+  Control,
+  FieldArrayWithId,
+  FieldErrors,
+  FieldErrorsImpl,
+  FieldValues,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+  UseFormRegister,
+  UseFormWatch
+} from 'react-hook-form';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getRequiredLinkTypeNames } from '../utils/link.utils';
 import { ProjectFormInput } from '../pages/ProjectDetailPage/ProjectForm/ProjectForm';
 import { Box } from '@mui/system';
 import { NERButton } from './NERButton';
 import { useEffect, useMemo } from 'react';
+import ReactHookTextField from './ReactHookTextField';
 
 const LinksEditView: React.FC<{
   ls: FieldArrayWithId[];
+  control: Control<ProjectFormInput>;
+  errors: FieldErrorsImpl<ProjectFormInput>;
   register: UseFormRegister<ProjectFormInput>;
   watch: UseFormWatch<ProjectFormInput>;
   append: UseFieldArrayAppend<ProjectFormInput, 'links'>;
   remove: UseFieldArrayRemove;
   enforceRequired?: boolean;
-}> = ({ ls, register, append, remove, watch, enforceRequired }) => {
+}> = ({ ls, control, errors, register, append, remove, watch, enforceRequired }) => {
   const { isLoading, isError, error, data: linkTypes } = useAllLinkTypes();
 
   const requiredLinkTypeNames = useMemo(() => {
@@ -50,6 +63,10 @@ const LinksEditView: React.FC<{
     );
   };
 
+  const isValidLink = (i: number, yupErrors: FieldValues) => {
+    return yupErrors.at(i)?.url;
+  };
+
   return (
     <>
       {ls.map((_element, i) => {
@@ -67,7 +84,13 @@ const LinksEditView: React.FC<{
                 </MenuItem>
               ))}
             </Select>
-            <TextField required fullWidth autoComplete="off" {...register(`links.${i}.url`, { required: true })} />
+            <ReactHookTextField
+              required
+              fullWidth
+              control={control}
+              errorMessage={errors && errors.links && isValidLink(i, errors.links)}
+              {...register(`links.${i}.url`, { required: true })}
+            />
             <Box sx={{ minWidth: '56px', height: '40px' }}>
               {(!enforceRequired || !isRequired(i)) && (
                 <IconButton type="button" onClick={() => remove(i)} sx={{ mx: 1, my: 0 }}>
