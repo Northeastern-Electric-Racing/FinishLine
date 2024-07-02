@@ -57,6 +57,7 @@ import { userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
 import { getReimbursementQueryArgs } from '../prisma-query-args/reimbursement.query-args';
 import { getReimbursementStatusQueryArgs } from '../prisma-query-args/reimbursement-statuses.query-args';
+import { reactToMessage } from '../integrations/slack';
 
 export default class ReimbursementRequestService {
   /**
@@ -482,17 +483,30 @@ export default class ReimbursementRequestService {
 
     await sendMailToAdvisor(mailOptions.subject, mailOptions.text);
 
-    reimbursementRequests.forEach((reimbursementRequest) => {
-      prisma.reimbursement_Status.create({
-        data: {
-          type: Reimbursement_Status_Type.ADVISOR_APPROVED,
-          userId: sender.userId,
-          reimbursementRequestId: reimbursementRequest.reimbursementRequestId
-        }
-      });
-    });
-  }
+    const processReimbursementRequests = async () => {
+      for (const reimbursementRequest of reimbursementRequests) {
+        await prisma.reimbursement_Status.create({
+          data: {
+            type: Reimbursement_Status_Type.ADVISOR_APPROVED,
+            userId: sender.userId,
+            reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+          }
+        });
 
+        const notification = await prisma.message_Info.findFirst({
+          where: {
+            reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+          }
+        });
+
+        if (notification) {
+          await reactToMessage(notification.channelId, notification.timestamp, 'thumbs_up');
+        }
+      }
+    };
+
+    await processReimbursementRequests();
+  }
   /**
    * Sets the given reimbursement request with the given sabo number
    *
@@ -812,6 +826,16 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organizationId)
     });
 
+    const notification = await prisma.message_Info.findFirst({
+      where: {
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      }
+    });
+
+    if (notification) {
+      await reactToMessage(notification.channelId, notification.timestamp, 'money_with_wings');
+    }
+
     return reimbursementStatusTransformer(reimbursementStatus);
   }
 
@@ -943,6 +967,16 @@ export default class ReimbursementRequestService {
       ...getReimbursementStatusQueryArgs(organizationId)
     });
 
+    const notification = await prisma.message_Info.findFirst({
+      where: {
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      }
+    });
+
+    if (notification) {
+      await reactToMessage(notification.channelId, notification.timestamp, 'white_check_mark');
+    }
+
     return reimbursementStatusTransformer(reimbursementStatus);
   }
 
@@ -994,6 +1028,16 @@ export default class ReimbursementRequestService {
     if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
 
     await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
+
+    const notification = await prisma.message_Info.findFirst({
+      where: {
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      }
+    });
+
+    if (notification) {
+      await reactToMessage(notification.channelId, notification.timestamp, 'x');
+    }
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
