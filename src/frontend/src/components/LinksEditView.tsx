@@ -1,11 +1,10 @@
 import { useAllLinkTypes } from '../hooks/projects.hooks';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorPage from '../pages/ErrorPage';
-import { IconButton, MenuItem, Select, TextField } from '@mui/material';
+import { IconButton, MenuItem, Select } from '@mui/material';
 import {
   Control,
   FieldArrayWithId,
-  FieldErrors,
   FieldErrorsImpl,
   FieldValues,
   UseFieldArrayAppend,
