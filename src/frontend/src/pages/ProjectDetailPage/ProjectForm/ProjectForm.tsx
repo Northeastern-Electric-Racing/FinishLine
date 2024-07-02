@@ -137,7 +137,7 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
               <Box display="inline-flex" alignItems="center">
                 <Tooltip
                   title={
-                    <Typography fontSize={'16px'}>
+                    <Typography fontSize={'15px'}>
                       {`If you don't enter a Change Request ID into this form, you can create one here that when accepted will
                       ${project ? `edit the selected Project` : `create a new Project`} with the inputted values`}
                     </Typography>

@@ -63,8 +63,8 @@ const LinksEditView: React.FC<{
     );
   };
 
-  const isValidLink = (i: number, yupErrors: FieldValues) => {
-    return yupErrors.at(i)?.url;
+  const isValidLink = (index: number, yupErrors: FieldValues) => {
+    return yupErrors.at(index)?.url;
   };
 
   return (
