@@ -142,13 +142,13 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
           />
         </Grid>
         <Grid item xs={6}>
-          <FormLabel>Start Date (YYYY-MM-DD)</FormLabel>
+          <FormLabel>Start Date (MM-DD-YYYY)</FormLabel>
           <Controller
             name="startDate"
             control={control}
             render={({ field: { onChange, value } }) => (
               <DatePicker
-                format="yyyy-MM-dd"
+                format="MM-dd-yyyy"
                 onChange={(date) => onChange(date ?? new Date())}
                 className={'padding: 10'}
                 value={value}
