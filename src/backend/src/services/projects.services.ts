@@ -354,7 +354,12 @@ export default class ProjectsService {
    * delete the project is not admin/app-admin, or the project is not found.
    * @returns the project that is deleted.
    */
-  static async deleteProject(user: User, wbsNumber: WbsNumber, changeRequestIdentifier: string, organizationId: string): Promise<Project> {
+  static async deleteProject(
+    user: User,
+    wbsNumber: WbsNumber,
+    changeRequestIdentifier: string,
+    organizationId: string
+  ): Promise<Project> {
     if (!(await userHasPermission(user.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete projects');
     }
@@ -408,7 +413,12 @@ export default class ProjectsService {
     await Promise.all(
       workPackages.map(
         async (workPackage) =>
-          await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement), changeRequestIdentifier, organizationId)
+          await WorkPackagesService.deleteWorkPackage(
+            user,
+            wbsNumOf(workPackage.wbsElement),
+            changeRequestIdentifier,
+            organizationId
+          )
       )
     );
 
