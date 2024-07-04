@@ -119,6 +119,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
           <NERAutocomplete
             id="project-lead-autocomplete"
             onChange={(_event, value) => setLeadId(value?.id)}
+            errorMessage={errors.leadId}
             options={allUsers.map((p) => ({
               label: fullNamePipe(p),
               id: p.userId.toString()
@@ -132,6 +133,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
           <NERAutocomplete
             id="project-manager-autocomplete"
             onChange={(_event, value) => setManagerId(value?.id)}
+            errorMessage={errors.managerId}
             options={allUsers.map((p) => ({
               label: fullNamePipe(p),
               id: p.userId.toString()
