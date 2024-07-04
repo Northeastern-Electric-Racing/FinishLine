@@ -112,7 +112,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       onFormSubmit={onSubmitWrapper}
       formId="activate-work-package-form"
       showCloseButton
-      disabled={!isValid}
+      disabled={leadId === undefined || managerId === undefined || !isValid}
     >
       <Grid container spacing={2}>
         <Grid item xs={6}>
