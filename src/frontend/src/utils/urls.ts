@@ -110,6 +110,7 @@ const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
+const financeEditRefund = (id: string) => `${financeReportRefund()}/${id}/edit`;
 const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
@@ -258,6 +259,7 @@ export const apiUrls = {
   financeGetUserReimbursements,
   financeGetAllReimbursements,
   financeReportRefund,
+  financeEditRefund,
   financeSetSaboNumber,
   financeImageById,
   financeDeleteReimbursement,

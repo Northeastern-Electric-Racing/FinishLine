@@ -6,7 +6,8 @@ import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
   EditVendorPayload,
-  AccountCodePayload
+  AccountCodePayload,
+  RefundPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -310,6 +311,17 @@ export const sendPendingAdvisorList = (saboNumbers: number[]) => {
  */
 export const reportRefund = (amount: number, dateReceived: string) => {
   return axios.post(apiUrls.financeReportRefund(), { amount, dateReceived });
+};
+
+/**
+ * Edits a refund in the database
+ *
+ * @param id the reimbursement id
+ * @param formData the amount and date to edit the refund with
+ * @returns the updated reimbursement
+ */
+export const editRefund = (id: string, formData: RefundPayload) => {
+  return axios.post(apiUrls.financeEditRefund(id), formData);
 };
 
 /**

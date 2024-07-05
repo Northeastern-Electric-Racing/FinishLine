@@ -175,7 +175,7 @@ export const imageFileUrl = (googleFileId: string) => `https://drive.google.com/
 export const imageDownloadUrl = (googleFileId: string) => `https://drive.google.com/uc?export=download&id=${googleFileId}`;
 
 export const getRefundRowData = (refund: Reimbursement) => {
-  return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted };
+  return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted, id: refund.reimbursementId };
 };
 
 export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest): ReimbursementRequestRow => {
