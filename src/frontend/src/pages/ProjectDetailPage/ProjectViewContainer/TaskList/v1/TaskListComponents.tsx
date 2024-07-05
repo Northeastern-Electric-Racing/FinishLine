@@ -7,8 +7,8 @@ import { Autocomplete, MenuItem, TextField } from '@mui/material';
 import { GridRenderEditCellParams, useGridApiContext } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers';
 import { UserPreview } from 'shared';
-import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../utils/task.utils';
-import ErrorPage from '../../../ErrorPage';
+import { getTaskAssigneeOptions, taskUserToAutocompleteOption } from '../../../../../utils/task.utils';
+import ErrorPage from '../../../../ErrorPage';
 
 export const TitleEdit = (params: GridRenderEditCellParams) => {
   const { id, value, field, setTitle } = params;

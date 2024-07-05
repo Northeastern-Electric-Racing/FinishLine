@@ -1,4 +1,4 @@
-import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, WorkPackage } from 'shared';
+import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate } from 'shared';
 import { User } from '@prisma/client';
 import { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
 import { getUserFullName, getUserSlackId } from './users.utils';
@@ -8,9 +8,12 @@ import { Change_Request, Design_Review, Team, WBS_Element } from '@prisma/client
 import { UserWithSettings } from './auth.utils';
 import { usersToSlackPings, userToSlackPing } from './notifications.utils';
 import { addHours, meetingStartTimePipe } from './design-reviews.utils';
+import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { Prisma } from '@prisma/client';
+import { userTransformer } from '../transformers/user.transformer';
 
 // build the "due" string for the upcoming deadlines slack message
-const buildDueString = (daysUntilDeadline: number): string => {
+export const buildDueString = (daysUntilDeadline: number): string => {
   if (daysUntilDeadline < 0) return `was due *${daysUntilDeadline * -1} days ago!*`;
   else if (daysUntilDeadline === 0) return `is due today!`;
   return `is due in ${daysUntilDeadline} days!`;
@@ -24,25 +27,27 @@ const buildUserString = (lead?: UserPreview, slackId?: string): string => {
   return '(no project lead)';
 };
 
-export const sendSlackUpcomingDeadlineNotification = async (workPackage: WorkPackage): Promise<void> => {
+export const sendSlackUpcomingDeadlineNotification = async (
+  workPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>
+): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
 
-  const { LEAD_CHANNEL_SLACK_ID } = process.env;
-  if (!LEAD_CHANNEL_SLACK_ID) return;
-
-  const { lead } = workPackage;
+  const { lead } = workPackage.wbsElement;
   const slackId = await getUserSlackId(lead?.userId);
-  const daysUntilDeadline = daysBetween(workPackage.endDate, new Date());
+  const daysUntilDeadline = daysBetween(endDate, new Date());
 
-  const userString = buildUserString(lead, slackId);
+  const userString = lead ? buildUserString(userTransformer(lead), slackId) : 'No Lead Set';
   const dueString = buildDueString(daysUntilDeadline);
 
-  const wbsNumber: string = wbsPipe(workPackage.wbsNum);
+  const wbsNumber: string = wbsPipe(workPackage.wbsElement);
   const wbsString = `<https://finishlinebyner.com/projects/${wbsNumber}|${wbsNumber}>`;
 
-  const fullMsg = `${userString} ${wbsString}: ${workPackage.projectName} - ${workPackage.name} ${dueString}`;
+  const fullMsg = `${userString} ${wbsString}: ${workPackage.project.wbsElement.name} - ${workPackage.wbsElement.name} ${dueString}`;
 
-  await sendMessage(LEAD_CHANNEL_SLACK_ID, fullMsg);
+  const promises = workPackage.project.teams.map(async (team) => await sendMessage(team.slackId, fullMsg));
+
+  await Promise.all(promises);
 };
 
 /**

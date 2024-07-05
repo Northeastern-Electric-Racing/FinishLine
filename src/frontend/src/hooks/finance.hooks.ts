@@ -29,7 +29,8 @@ import {
   createVendor,
   editVendor,
   getAllAccountCodes,
-  editRefund
+  editRefund,
+  leadershipApproveReimbursementRequest
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -311,6 +312,28 @@ export const useApproveReimbursementRequest = (id: string) => {
     ['reimbursement-requests', 'edit'],
     async () => {
       const { data } = await approveReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to approve a reimbursement request for the leadership team
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created pending finance reimbursement status
+ */
+export const useLeadershipApproveReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await leadershipApproveReimbursementRequest(id);
       return data;
     },
     {

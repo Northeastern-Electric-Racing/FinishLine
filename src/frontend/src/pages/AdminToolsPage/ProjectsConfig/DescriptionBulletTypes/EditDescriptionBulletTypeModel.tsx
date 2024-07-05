@@ -1,8 +1,8 @@
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
 import { DescriptionBulletType } from 'shared';
 import DescriptionBulletTypeFormModal from './DescriptionBulletTypeFormModal';
-import { useEditDescriptionBulletType } from '../../../hooks/description-bullets.hooks';
+import { useEditDescriptionBulletType } from '../../../../hooks/description-bullets.hooks';
 
 interface EditdescriptionBulletTypeModalProps {
   open: boolean;

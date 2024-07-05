@@ -171,6 +171,16 @@ export const approveReimbursementRequest = (id: string) => {
 };
 
 /**
+ * Leadership approve Reimbursement Request (set it to Pending Finance)
+ *
+ * @param id of the reimbursement request being approved by finance
+ * @returns the pending finance reimbursement status
+ */
+export const leadershipApproveReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeLeadershipApprove(id));
+};
+
+/**
  * Deny Reimbursement Request
  *
  * @param id of the reimbursement request being denied by finance

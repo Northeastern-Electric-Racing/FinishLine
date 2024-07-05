@@ -1,6 +1,6 @@
-import { useEditLinkType } from '../../../hooks/projects.hooks';
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useEditLinkType } from '../../../../hooks/projects.hooks';
+import ErrorPage from '../../../ErrorPage';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
 import LinkTypeFormModal from './LinkTypeFormModal';
 import { LinkType } from 'shared';
 

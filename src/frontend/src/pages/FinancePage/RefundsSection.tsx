@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { useAllReimbursements, useCurrentUserReimbursements } from '../../hooks/finance.hooks';
 import ErrorPage from '../ErrorPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
+import { Reimbursement, ReimbursementRequest, ReimbursementStatusType, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
@@ -125,8 +125,12 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
     return <LoadingIndicator />;
 
   const displayedReimbursements = allReimbursements && tabValue === 1 ? allReimbursements : userReimbursements;
-  const displayedReimbursementRequests =
-    allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests;
+  const displayedReimbursementRequests = (
+    allReimbursementRequests && tabValue === 1 ? allReimbursementRequests : userReimbursementRequests
+  ).filter(
+    (request: ReimbursementRequest) =>
+      !request.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)
+  );
 
   const rows = displayedReimbursements.map(getRefundRowData).sort(getComparator(order, orderBy));
 

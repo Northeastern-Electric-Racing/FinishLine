@@ -155,7 +155,6 @@ export const batmanScheduleSettings: Schedule_Settings = {
   drScheduleSettingsId: 'bmschedule',
   personalGmail: 'brucewayne@gmail.com',
   personalZoomLink: 'https://zoom.us/j/gotham',
-  availability: [],
   userId: '69'
 };
 
@@ -170,14 +169,13 @@ export const batmanUserScheduleSettings: UserScheduleSettings = {
   drScheduleSettingsId: 'bmschedule',
   personalGmail: 'brucewayne@gmail.com',
   personalZoomLink: 'https://zoom.us/j/gotham',
-  availability: []
+  availabilities: []
 };
 
 export const wonderwomanScheduleSettings: Schedule_Settings = {
   drScheduleSettingsId: 'wwschedule',
   personalGmail: 'diana@gmail.com',
   personalZoomLink: 'https://zoom.us/jk/athens',
-  availability: [3],
   userId: '72'
 };
 
@@ -185,7 +183,6 @@ export const wonderwomanMarkedScheduleSettings: Schedule_Settings = {
   drScheduleSettingsId: 'wwschedule',
   personalGmail: 'diana@gmail.com',
   personalZoomLink: 'https://zoom.us/jk/athens',
-  availability: [1, 2],
   userId: '72'
 };
 

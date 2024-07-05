@@ -1,8 +1,9 @@
-import { User, User_Settings } from '@prisma/client';
+import { Prisma, User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
-import { PermissionCheck, Role, RoleEnum } from 'shared';
+import { isWithinSameWeek, PermissionCheck, Role, RoleEnum } from 'shared';
 import { UserWithId } from './teams.utils';
+import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
 type UserWithSettings = {
   userSettings: User_Settings | null;
@@ -106,4 +107,42 @@ export const userHasPermission = async (
 
 export const areUsersinList = (users: User[], userList: User[]): boolean => {
   return users.every((user) => userList.some((u) => u.userId === user.userId));
+};
+
+export const updateUserAvailability = async (
+  availability: number[],
+  userSettings: Prisma.Schedule_SettingsGetPayload<UserScheduleSettingsQueryArgs>,
+  submitter: User,
+  dateToCheckFor: Date
+) => {
+  availability.forEach((time) => {
+    if (time < 0 || time > 83) {
+      throw new HttpException(400, 'Availability times have to be in range 0-83');
+    }
+  });
+  const availabilityInSameWeek = userSettings.availabilities.filter((availability) =>
+    isWithinSameWeek(availability.dateSet, dateToCheckFor)
+  );
+
+  if (availabilityInSameWeek.length > 0) {
+    await prisma.availability.update({
+      where: { availabilityId: availabilityInSameWeek[0].availabilityId },
+      data: {
+        availability,
+        dateSet: dateToCheckFor
+      }
+    });
+  } else {
+    await prisma.availability.create({
+      data: {
+        availability,
+        dateSet: dateToCheckFor,
+        scheduleSettings: {
+          connect: {
+            userId: submitter.userId
+          }
+        }
+      }
+    });
+  }
 };

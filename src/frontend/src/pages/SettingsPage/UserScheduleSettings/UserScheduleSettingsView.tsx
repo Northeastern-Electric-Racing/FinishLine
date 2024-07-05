@@ -6,10 +6,9 @@
 import { Grid } from '@mui/material';
 import DetailDisplay from '../../../components/DetailDisplay';
 import { NERButton } from '../../../components/NERButton';
-import { DesignReview, UserScheduleSettings } from 'shared';
+import { DesignReview, getAvailabilityForGivenWeekOfDateOrMostRecent, UserScheduleSettings } from 'shared';
 import { useState } from 'react';
 import SingleAvailabilityModal from './Availability/SingleAvailabilityModal';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
 import { useMarkUserConfirmed } from '../../../hooks/design-reviews.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
@@ -21,12 +20,16 @@ const UserScheduleSettingsView = ({
   scheduleSettings: UserScheduleSettings;
   designReview?: DesignReview;
 }) => {
+  const availability = getAvailabilityForGivenWeekOfDateOrMostRecent(
+    scheduleSettings.availabilities,
+    designReview?.dateScheduled ?? new Date()
+  );
+
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const toast = useToast();
-  const user = useCurrentUser();
-  const defaultOpen = designReview && !designReview.confirmedMembers.map((user) => user.userId).includes(user.userId);
+  const defaultOpen = designReview !== undefined;
   const [confirmAvailabilityOpen, setConfirmAvailabilityOpen] = useState(defaultOpen || false);
-  const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(scheduleSettings.availability);
+  const [confirmedAvailabilities, setConfirmedAvailabilities] = useState(availability.availability);
   const { mutateAsync } = useMarkUserConfirmed(designReview?.designReviewId || '');
   const confirmModalTitle = designReview
     ? `Update your availability for the ${designReview?.wbsName} Design Review on the week of ${new Date(
@@ -52,7 +55,7 @@ const UserScheduleSettingsView = ({
         open={availabilityOpen}
         onHide={() => setAvailabilityOpen(false)}
         header={'Availability'}
-        availabilites={scheduleSettings.availability}
+        availabilites={availability.availability}
       />
       <AvailabilityEditModal
         open={confirmAvailabilityOpen}

@@ -31,7 +31,12 @@ const GanttChartPage: FC = () => {
   if (ganttParams && history.location.search !== ganttParams) {
     history.push(`${history.location.pathname + ganttParams}`);
   }
-  const { isLoading: projectsIsLoading, isError: projectsIsError, data: projects, error: projectsError } = useAllProjects();
+  const {
+    isLoading: projectsIsLoading,
+    isError: projectsIsError,
+    data: projects,
+    error: projectsError
+  } = useAllProjects(true);
   const {
     isLoading: teamTypesIsLoading,
     isError: teamTypesIsError,

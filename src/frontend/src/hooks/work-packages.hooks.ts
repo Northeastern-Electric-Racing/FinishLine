@@ -184,7 +184,7 @@ export const useDeleteWorkPackageTemplate = () => {
  * Custom React Hook to get a single workpackage template
  */
 export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
-  return useQuery<WorkPackageTemplate, Error>(['work package templates'], async () => {
+  return useQuery<WorkPackageTemplate, Error>(['work package templates', workPackageTemplateId], async () => {
     const { data } = await getSingleWorkPackageTemplate(workPackageTemplateId);
     return data;
   });

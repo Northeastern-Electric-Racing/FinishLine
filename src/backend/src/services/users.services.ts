@@ -27,8 +27,12 @@ import userSecureSettingsTransformer from '../transformers/user-secure-settings.
 import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
 import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
-import { getUserRole } from '../utils/users.utils';
-import { getUserQueryArgs, getUserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import { getUserRole, updateUserAvailability } from '../utils/users.utils';
+import {
+  getUserQueryArgs,
+  getUserScheduleSettingsQueryArgs,
+  getUserWithSettingsQueryArgs
+} from '../prisma-query-args/user.query-args';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 
@@ -44,7 +48,7 @@ export default class UsersService {
         include: {
           roles: true,
           userSettings: true,
-          drScheduleSettings: true,
+          drScheduleSettings: getUserScheduleSettingsQueryArgs(),
           organizations: true
         }
       });
@@ -480,7 +484,8 @@ export default class UsersService {
   static async getUserScheduleSettings(userId: string, submitter: PrismaUser): Promise<UserScheduleSettings> {
     if (submitter.userId !== userId) throw new AccessDeniedException('You can only access your own schedule settings');
     const scheduleSettings = await prisma.schedule_Settings.findUnique({
-      where: { userId }
+      where: { userId },
+      ...getUserScheduleSettingsQueryArgs()
     });
     if (!scheduleSettings) throw new HttpException(404, 'User Schedule Settings Not Found');
 
@@ -501,28 +506,32 @@ export default class UsersService {
     personalZoomLink: string,
     availability: number[]
   ): Promise<UserScheduleSettings> {
-    const existingUser = await prisma.schedule_Settings.findFirst({
-      where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
-    });
+    if (personalGmail !== '') {
+      const existingUser = await prisma.schedule_Settings.findFirst({
+        where: { personalGmail, userId: { not: user.userId } } // excludes the current user from check
+      });
 
-    if (existingUser) {
-      throw new HttpException(400, 'Email already in use');
+      if (existingUser) {
+        throw new HttpException(400, 'Email already in use');
+      }
     }
 
     const newUserScheduleSettings = await prisma.schedule_Settings.upsert({
       where: { userId: user.userId },
       update: {
         personalGmail,
-        personalZoomLink,
-        availability
+        personalZoomLink
       },
       create: {
         userId: user.userId,
         personalGmail,
-        personalZoomLink,
-        availability
-      }
+        personalZoomLink
+      },
+      ...getUserScheduleSettingsQueryArgs()
     });
+
+    await updateUserAvailability(availability, newUserScheduleSettings, user, new Date());
+
     return userScheduleSettingsTransformer(newUserScheduleSettings);
   }
 }

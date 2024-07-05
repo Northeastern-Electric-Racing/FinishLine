@@ -172,7 +172,7 @@ export default class ReimbursementRequestService {
         totalCost,
         reimbursementStatuses: {
           create: {
-            type: ReimbursementStatusType.PENDING_FINANCE,
+            type: ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL,
             userId: recipient.userId
           }
         },
@@ -834,6 +834,53 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Adds a reimbursement status with type pending finance to the given reimbursement request
+   *
+   * @param reimbursementRequestId The id of the reimbursement request to approve
+   * @param submitter The person approving the reimbursement request
+   * @param organizationId The organization the user is currently in
+   * @returns The Pending Finance reimbursement status
+   */
+  static async leadershipApproveReimbursementRequest(
+    reimbursementRequestId: string,
+    submitter: User,
+    organizationId: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isHead)))
+      throw new AccessDeniedException('Only a head or admin can approve reimbursement requests');
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    if (reimbursementRequest.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Reimbursement Request');
+
+    if (
+      reimbursementRequest.reimbursementStatuses.some(
+        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.PENDING_FINANCE
+      )
+    )
+      throw new HttpException(400, 'This reimbursement request has already been approved by leadership');
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.PENDING_FINANCE,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      ...getReimbursementStatusQueryArgs(organizationId)
+    });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
    * Adds a reimbursement status with type sabo submitted to the given reimbursement request
    *
    * @param reimbursementRequestId the id of the reimbursement request to approve
@@ -858,6 +905,11 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
+    if (
+      !reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.PENDING_FINANCE)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has not been approved by leadership');
+    }
     if (
       reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
     ) {

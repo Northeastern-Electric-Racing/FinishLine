@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, useTheme, IconButton, Divider } from '@mui/material';
+import { Typography, Box, IconButton, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -16,18 +16,19 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import NavPageLink from './NavPageLink';
-import DrawerHeader from '../../components/DrawerHeader';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
+import DrawerHeader from '../../components/DrawerHeader';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 interface SidebarProps {
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
+  moveContent: boolean;
+  setMoveContent: (move: boolean) => void;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
-  const theme = useTheme();
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const linkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -71,12 +72,23 @@ const Sidebar = ({ drawerOpen, setDrawerOpen }: SidebarProps) => {
     }
   ];
 
+  const handleMoveContent = () => {
+    if (moveContent) {
+      setDrawerOpen(false);
+    }
+    setMoveContent(!moveContent);
+  };
+
   return (
-    <NERDrawer open={drawerOpen} variant="permanent">
+    <NERDrawer
+      open={drawerOpen}
+      variant="permanent"
+      onMouseLeave={() => {
+        if (!moveContent) setDrawerOpen(false);
+      }}
+    >
       <DrawerHeader>
-        <IconButton onClick={() => setDrawerOpen(false)}>
-          {theme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
-        </IconButton>
+        <IconButton onClick={() => handleMoveContent()}>{moveContent ? <ChevronLeft /> : <ChevronRight />}</IconButton>
       </DrawerHeader>
       <Divider />
       <Box

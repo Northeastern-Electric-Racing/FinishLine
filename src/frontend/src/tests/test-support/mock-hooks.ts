@@ -1,5 +1,15 @@
 import { UseMutationResult } from 'react-query';
-import { AuthenticatedUser, DescriptionBullet, Project, User, UserSettings, WorkPackage } from 'shared';
+import {
+  AuthenticatedUser,
+  DescriptionBullet,
+  Project,
+  Task,
+  TaskPriority,
+  TaskStatus,
+  User,
+  UserSettings,
+  WorkPackage
+} from 'shared';
 import { CheckDescriptionBulletRequestPayload } from '../../hooks/description-bullets.hooks';
 import { CreateTaskPayload, DeleteTaskPayload, TaskPayload } from '../../hooks/tasks.hooks';
 import { VersionObject } from '../../utils/types';
@@ -33,19 +43,41 @@ export const mockUseSingleUserSettings = (settings?: UserSettings) =>
 export const mockUseUsersFavoriteProjects = (projects?: Project[]) =>
   mockUseQueryResult<Project[]>(false, false, projects || [], new Error());
 
-export const mockEditProjectReturnValue = mockUseMutationResult<{ message: string }>(
+export const mockEditProjectReturnValue = mockUseMutationResult<Task>(
   false,
   false,
-  { message: 'hi' },
+  {
+    taskId: '1',
+    title: 'title',
+    deadline: new Date(),
+    status: TaskStatus.IN_PROGRESS,
+    priority: TaskPriority.Medium,
+    wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+    notes: '',
+    dateCreated: new Date(),
+    createdBy: exampleAdminUser,
+    assignees: []
+  },
   new Error()
 );
 
-export const mockCreateTaskReturnValue = mockUseMutationResult<{ message: string }>(
+export const mockCreateTaskReturnValue = mockUseMutationResult<Task>(
   false,
   false,
-  { message: 'hi' },
+  {
+    taskId: '1',
+    title: 'title',
+    deadline: new Date(),
+    status: TaskStatus.IN_PROGRESS,
+    priority: TaskPriority.Medium,
+    wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+    notes: '',
+    dateCreated: new Date(),
+    createdBy: exampleAdminUser,
+    assignees: []
+  },
   new Error()
-) as UseMutationResult<{ message: string }, Error, CreateTaskPayload, unknown>;
+) as UseMutationResult<Task, Error, CreateTaskPayload, unknown>;
 
 export const mockEditTaskReturnValue = mockUseMutationResult<{ message: string }>(
   false,
@@ -54,12 +86,23 @@ export const mockEditTaskReturnValue = mockUseMutationResult<{ message: string }
   new Error()
 ) as UseMutationResult<{ message: string }, Error, TaskPayload, unknown>;
 
-export const mockEditTaskAssigneesReturnValue = mockUseMutationResult<{ message: string }>(
+export const mockEditTaskAssigneesReturnValue = mockUseMutationResult<Task>(
   false,
   false,
-  { message: 'hi' },
+  {
+    taskId: '1',
+    title: 'title',
+    deadline: new Date(),
+    status: TaskStatus.IN_PROGRESS,
+    priority: TaskPriority.Medium,
+    wbsNum: { carNumber: 1, projectNumber: 1, workPackageNumber: 0 },
+    notes: '',
+    dateCreated: new Date(),
+    createdBy: exampleAdminUser,
+    assignees: []
+  },
   new Error()
-) as UseMutationResult<{ message: string }, Error, { taskId: string; assignees: string[] }, unknown>;
+) as UseMutationResult<Task, Error, { taskId: string; assignees: string[] }, unknown>;
 
 export const mockDeleteTaskReturnValue = mockUseMutationResult<{ message: string }>(
   false,

@@ -18,6 +18,7 @@ interface AvailabilityScheduleViewProps {
   existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
+  onSelectedTimeslotChanged: (val: number | null) => void;
   dateRangeTitle: string;
 }
 
@@ -28,7 +29,8 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   existingMeetingData,
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
-  dateRangeTitle
+  dateRangeTitle,
+  onSelectedTimeslotChanged
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
@@ -43,6 +45,8 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
       setCurrentAvailableUsers(availableUsers.get(index) || []);
       setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
     }
+
+    onSelectedTimeslotChanged(index);
   };
 
   const handleOnMouseOver = (index: number) => {

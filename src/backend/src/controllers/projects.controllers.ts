@@ -9,8 +9,9 @@ import { getOrganizationId } from '../utils/utils';
 export default class ProjectsController {
   static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
+      const includeDeleted = req.params.deleted === 'true';
       const organizationId = getOrganizationId(req.headers);
-      const projects: Project[] = await ProjectsService.getAllProjects(organizationId);
+      const projects: Project[] = await ProjectsService.getAllProjects(organizationId, includeDeleted);
       res.status(200).json(projects);
     } catch (error: unknown) {
       next(error);

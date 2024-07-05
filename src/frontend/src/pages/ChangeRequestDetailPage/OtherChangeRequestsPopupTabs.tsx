@@ -83,8 +83,7 @@ const OtherChangeRequestsPopupTabs: React.FC<OtherChangeRequestsPopupTabsProps> 
     <Box
       sx={{
         position: 'fixed',
-        bottom: '0px',
-        left: '65px',
+        bottom: 0,
         width: 'calc(100% - 65px)'
       }}
     >
