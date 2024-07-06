@@ -64,7 +64,7 @@ export const sendSlackRequestedReviewNotification = async (
   const btnText = `View CR`;
   const changeRequestLink = `https://finishlinebyner.com/change-requests/${changeRequest.crId}`;
   const slackPingMessage = usersToSlackPings(reviewers);
-  const fullMsg = `${slackPingMessage} Your review has been requested on CR #${changeRequest.crId}!`;
+  const fullMsg = `${slackPingMessage} Your review has been requested on CR #${changeRequest.identifier}!`;
 
   const threads = await prisma.message_Info.findMany({ where: { changeRequestId: changeRequest.crId } });
 
@@ -173,15 +173,14 @@ export const sendSlackDesignReviewConfirmNotification = async (
  * @param team the teams of the cr to notify
  * @param message the message to send to the teams
  * @param crId the cr id
- * @param budgetImpact the amount of budget requested for the cr
+ * @param identifier the cr identifier
  * @returns the channelId and timestamp of the messages sent in slack
  */
 export const sendSlackChangeRequestNotification = async (
   team: Team,
   message: string,
   crId: string,
-  identifier: number,
-  budgetImpact?: number
+  identifier: number
 ): Promise<{ channelId: string; ts: string }[]> => {
   if (process.env.NODE_ENV !== 'production') return []; // don't send msgs unless in prod
   const msgs: { channelId: string; ts: string }[] = [];
@@ -190,16 +189,6 @@ export const sendSlackChangeRequestNotification = async (
   const btnText = `View CR #${identifier}`;
   const notification = await sendMessage(team.slackId, fullMsg, fullLink, btnText);
   if (notification) msgs.push(notification);
-
-  if (budgetImpact && budgetImpact > 100) {
-    const importantNotification = await sendMessage(
-      process.env.SLACK_EBOARD_CHANNEL!,
-      `${fullMsg} with $${budgetImpact} requested`,
-      fullLink,
-      btnText
-    );
-    if (importantNotification) msgs.push(importantNotification);
-  }
 
   return msgs;
 };
@@ -374,12 +363,12 @@ export const sendDRScheduledSlackNotif = async (
   }
 };
 
-export const sendSlackCRReviewedNotification = async (slackId: string, crId: string) => {
+export const sendSlackCRReviewedNotification = async (slackId: string, crId: string, identifier: number) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
   const fullMsg = `:tada: Your Change Request was just reviewed! Click the link to view! :tada:`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
-  const btnText = `View CR#${crId}`;
+  const btnText = `View CR#${identifier}`;
   msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
 
   return Promise.all(msgs);
@@ -390,6 +379,7 @@ export const sendSlackCRReviewedNotification = async (slackId: string, crId: str
  *
  * @param threads the threads of cr slack notifications to reply/react to
  * @param crId the cr id
+ * @param identifier the cr identifier
  * @param approved is the cr approved
  */
 export const sendSlackCRStatusToThread = async (
@@ -400,12 +390,13 @@ export const sendSlackCRStatusToThread = async (
     changeRequestId: string | null;
   }[],
   crId: string,
+  identifier: number,
   approved: boolean
 ) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const fullMsg = `This Change Request was ${approved ? 'approved! :tada:' : 'denied.'} Click the link to view.`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
-  const btnText = `View CR#${crId}`;
+  const btnText = `View CR#${identifier}`;
   try {
     if (threads && threads.length !== 0) {
       const msgs = threads.map((thread) =>

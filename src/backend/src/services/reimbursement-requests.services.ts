@@ -466,7 +466,15 @@ export default class ReimbursementRequestService {
       text: `The following reimbursement requests need to be approved by you: ${saboNumbers.join(', ')}`
     };
 
-    await sendMailToAdvisor(mailOptions.subject, mailOptions.text);
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { advisor: true }
+    });
+
+    if (!organization) throw new NotFoundException('Organization', organizationId);
+    if (!organization.advisor) throw new HttpException(400, 'Organization does not have an advisor');
+
+    await sendMailToAdvisor(mailOptions.subject, mailOptions.text, organization.advisor);
 
     reimbursementRequests.forEach((reimbursementRequest) => {
       prisma.reimbursement_Status.create({

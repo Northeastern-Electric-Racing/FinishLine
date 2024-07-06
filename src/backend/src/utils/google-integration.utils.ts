@@ -4,6 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
+import { User } from '@prisma/client';
 
 const { OAuth2 } = google.auth;
 const {
@@ -12,8 +13,7 @@ const {
   GOOGLE_CLIENT_SECRET,
   EMAIL_REFRESH_TOKEN,
   USER_EMAIL,
-  DRIVE_REFRESH_TOKEN,
-  ADVISOR_EMAIL
+  DRIVE_REFRESH_TOKEN
 } = process.env;
 
 const oauth2Client = new OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
@@ -49,12 +49,12 @@ const createTransporter = async () => {
   }
 };
 
-export const sendMailToAdvisor = async (subject: string, text: string) => {
+export const sendMailToAdvisor = async (subject: string, text: string, advisor: User) => {
   try {
     //this sends an email from our email to our advisor: professor Goldstone
     const mailOptions = {
       from: USER_EMAIL,
-      to: ADVISOR_EMAIL,
+      to: advisor.email,
       subject,
       text
     };

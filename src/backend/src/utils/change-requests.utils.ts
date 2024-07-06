@@ -561,7 +561,7 @@ export const sendCRSubmitterReviewedNotification = async (
   const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
   if (creatorUserSettings && creatorUserSettings.slackId) {
     try {
-      await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
+      await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId, foundCR.identifier);
     } catch (err: unknown) {
       if (err instanceof Error) {
         throw new HttpException(500, `Failed to send slack notification: ${err.message}`);
