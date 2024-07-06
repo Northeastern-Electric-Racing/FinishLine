@@ -4,6 +4,7 @@ import descriptionBulletTransformer from '../transformers/description-bullets.tr
 import { convertStatus, wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
 import { WorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
+import { designReviewTransformer } from './design-reviews.transformer';
 
 const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>): WorkPackage => {
   const wbsNum = wbsNumOf(wpInput.wbsElement);
@@ -37,6 +38,7 @@ const workPackageTransformer = (wpInput: Prisma.Work_PackageGetPayload<WorkPacka
     projectName: wpInput.project.wbsElement.name,
     stage: (wpInput.stage as WorkPackageStage) || undefined,
     blocking: wpInput.wbsElement.blocking.map((wp) => wbsNumOf(wp.wbsElement)),
+    designReviews: wpInput.wbsElement.designReviews.map(designReviewTransformer),
     deleted: wpInput.wbsElement.dateDeleted !== null
   };
 };

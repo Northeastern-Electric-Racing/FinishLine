@@ -17,6 +17,7 @@ import { assemblyTransformer, materialTransformer } from './material.transformer
 import { userTransformer } from './user.transformer';
 import { ProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import teamTransformer from './teams.transformer';
+import { designReviewTransformer } from './design-reviews.transformer';
 
 const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>): Project => {
   const { wbsElement } = project;
@@ -87,6 +88,7 @@ const projectTransformer = (project: Prisma.ProjectGetPayload<ProjectQueryArgs>)
         materials: workPackage.wbsElement?.materials.map(materialTransformer),
         assemblies: workPackage.wbsElement?.assemblies.map(assemblyTransformer),
         blocking: workPackage.wbsElement.blocking.map((blocking) => wbsNumOf(blocking.wbsElement)),
+        designReviews: workPackage.wbsElement.designReviews.map(designReviewTransformer),
         deleted: workPackage.wbsElement.dateDeleted !== null
       };
     })
