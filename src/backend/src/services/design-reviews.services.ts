@@ -23,6 +23,7 @@ import {
 import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import { createCalendarEvent } from '../utils/google-integration.utils';
 
 export default class DesignReviewsService {
   /**
@@ -93,11 +94,11 @@ export default class DesignReviewsService {
     meetingTimes: number[],
     organizationId: string
   ): Promise<DesignReview> {
+    console.log('SERVICE 1');
     if (!(await userHasPermission(submitter.userId, organizationId, isLeadership)))
       throw new AccessDeniedException('create design review');
 
     const teamType = await DesignReviewsService.getSingleTeamType(teamTypeId, organizationId);
-
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
@@ -111,6 +112,8 @@ export default class DesignReviewsService {
         workPackage: getWorkPackageQueryArgs(organizationId)
       }
     });
+
+    console.log('SERVICE 2');
 
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsNum.carNumber);
     if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsNum.carNumber);
@@ -131,6 +134,7 @@ export default class DesignReviewsService {
       }
     }
 
+    console.log('SERVICE 3');
     const date = new Date(dateScheduled);
     if (new Date(date.toDateString()) < new Date(new Date().toDateString())) {
       throw new HttpException(400, 'Design review cannot be scheduled for a past day');
@@ -193,7 +197,12 @@ export default class DesignReviewsService {
       await sendSlackDRNotifications(teams, designReview, submitter, wbsElement.name);
     }
 
-    return designReviewTransformer(designReview);
+    const transformedDesignReview = designReviewTransformer(designReview);
+    const calendars = await createCalendarEvent(transformedDesignReview);
+    console.log('MEETING TIME FORMAT:', transformedDesignReview.meetingTimes);
+    console.log(calendars);
+
+    return transformedDesignReview;
   }
 
   /**

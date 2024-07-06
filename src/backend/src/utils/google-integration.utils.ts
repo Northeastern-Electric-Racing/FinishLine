@@ -4,6 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
+import { DesignReview } from 'shared';
 
 const { OAuth2 } = google.auth;
 const {
@@ -13,7 +14,9 @@ const {
   EMAIL_REFRESH_TOKEN,
   USER_EMAIL,
   DRIVE_REFRESH_TOKEN,
-  ADVISOR_EMAIL
+  ADVISOR_EMAIL,
+  CALENDAR_REFRESH_TOKEN,
+  CALENDAR_ACCESS_TOKEN
 } = process.env;
 
 const oauth2Client = new OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
@@ -165,6 +168,50 @@ export const downloadImageFile = async (fileId: string) => {
     if (error instanceof Error) {
       throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
     }
+    throw error;
+  }
+};
+
+export const createCalendarEvent = async (designReview: DesignReview) => {
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN,
+      access_token: CALENDAR_ACCESS_TOKEN
+    });
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const calendarIds = (await calendar.calendarList.list()).data.items?.map((calendar) => calendar.id);
+    if (!calendarIds) throw Error('no calendar ids');
+    const eventInput = {
+      location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
+      description: `${designReview.wbsNum} ${designReview.wbsName}`,
+      start: {
+        dateTime: '2024-07-05T09:00:00-04:00',
+        timeZone: 'America/New_York'
+      },
+      end: {
+        dateTime: '2024-07-05T10:00:00-04:00',
+        timeZone: 'America/New_York'
+      },
+      attendees: designReview.attendees.map((user) => {
+        return { email: user.email };
+      }),
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'email', minutes: 24 * 60 },
+          { method: 'popup', minutes: 10 }
+        ]
+      }
+    };
+
+    const calendarEvent = await calendar.events.insert({
+      calendarId: calendarIds[9] ?? 'primary',
+      requestBody: eventInput
+    });
+
+    return calendarEvent;
+  } catch (error: unknown) {
     throw error;
   }
 };
