@@ -20,11 +20,11 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
-  static async getAllTeams(organizationId: string, ignoreArchive: boolean): Promise<Team[]> {
+  static async getAllTeams(organizationId: string, onlyArchive: boolean): Promise<Team[]> {
     const teams = await prisma.team.findMany({
       where: {
         organizationId,
-        ...(ignoreArchive ? { dateArchived: null } : { dateArchived: { not: null } })
+        ...(onlyArchive ? { dateArchived: { not: null } } : { dateArchived: null })
       },
       ...getTeamQueryArgs(organizationId)
     });

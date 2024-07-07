@@ -24,9 +24,9 @@ export interface CreateTeamPayload {
   isFinanceTeam: boolean;
 }
 
-export const useAllTeams = () => {
-  return useQuery<Team[], Error>(['teams'], async () => {
-    const { data } = await getAllTeams();
+export const useAllTeams = (onlyArchive: boolean) => {
+  return useQuery<Team[], Error>(['teams', onlyArchive], async () => {
+    const { data } = await getAllTeams(onlyArchive);
     return data;
   });
 };

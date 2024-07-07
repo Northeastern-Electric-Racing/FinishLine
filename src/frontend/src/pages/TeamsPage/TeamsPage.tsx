@@ -9,15 +9,22 @@ import { useAllTeams } from '../../hooks/teams.hooks';
 import ErrorPage from '../ErrorPage';
 import TeamSummary from './TeamSummary';
 import PageLayout from '../../components/PageLayout';
+import { FlashOffRounded } from '@mui/icons-material';
 
 const TeamsPage: React.FC = () => {
-  const { isLoading, isError, data: teams, error } = useAllTeams();
+  const { isLoading: teamsLoading, isError: isTeamsError, data: teams, error: teamsError } = useAllTeams(false);
 
-  if (isLoading || !teams) return <LoadingIndicator />;
+  const { isLoading: archivedTeamsLoading, isError: isArchivedTeamsError, data: archivedTeams, error: archivedTeamsError } = useAllTeams(true);
+  console.log(archivedTeams)
 
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (teamsLoading || !teams) return <LoadingIndicator />;
+  if (archivedTeamsLoading || !archivedTeams) return <LoadingIndicator />;
+
+  if (isArchivedTeamsError) return <ErrorPage message={archivedTeamsError?.message} />;
+  if (isTeamsError) return <ErrorPage message={teamsError?.message} />;
 
   return (
+    <>
     <PageLayout title="Teams">
       <Grid container spacing={2}>
         {teams.map((team) => (
@@ -27,6 +34,16 @@ const TeamsPage: React.FC = () => {
         ))}
       </Grid>
     </PageLayout>
+    <PageLayout title="Archived Teams">
+    <Grid container spacing={2}>
+      {archivedTeams.map((archivedTeam) => (
+        <Grid item key={archivedTeam.teamId}>
+          <TeamSummary team={archivedTeam} />
+        </Grid>
+      ))}
+    </Grid>
+  </PageLayout>
+  </>
   );
 };
 

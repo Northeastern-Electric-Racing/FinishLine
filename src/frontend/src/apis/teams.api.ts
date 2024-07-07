@@ -9,8 +9,8 @@ import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
 import { teamTransformer } from './transformers/teams.transformers';
 
-export const getAllTeams = () => {
-  return axios.get<Team[]>(apiUrls.teams(), {
+export const getAllTeams = (onlyArchive: boolean) => {
+  return axios.get<Team[]>(apiUrls.teams() + (onlyArchive ? '/archive' : ''), {
     transformResponse: (data) => JSON.parse(data).map(teamTransformer)
   });
 };

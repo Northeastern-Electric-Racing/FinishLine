@@ -4,8 +4,8 @@ import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 
 const teamsRouter = express.Router();
-
-teamsRouter.get('/:ignoreArchive', TeamsController.getAllTeams);
+teamsRouter.get('/', TeamsController.getAllTeams);
+teamsRouter.get('/archive', TeamsController.getAllArchivedTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 teamsRouter.post(
   '/:teamId/set-members',

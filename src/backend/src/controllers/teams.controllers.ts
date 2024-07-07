@@ -6,10 +6,18 @@ import { getOrganizationId } from '../utils/utils';
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
     try {
-      const ignoreArchive = req.params.ignoreArchive === "true" ? true : false;
       const organizationId = getOrganizationId(req.headers);
-      const teams = await TeamsService.getAllTeams(organizationId, ignoreArchive);
+      const teams = await TeamsService.getAllTeams(organizationId, false);
+      res.status(200).json(teams);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 
+  static async getAllArchivedTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = getOrganizationId(req.headers);
+      const teams = await TeamsService.getAllTeams(organizationId, true);
       res.status(200).json(teams);
     } catch (error: unknown) {
       next(error);

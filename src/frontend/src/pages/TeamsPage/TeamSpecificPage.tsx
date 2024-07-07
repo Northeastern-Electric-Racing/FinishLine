@@ -60,20 +60,18 @@ const TeamSpecificPage: React.FC = () => {
     </NERButton>
   );
 
-  const ArchiveTeamButton = () => (
+  interface ArchiveTeamButtonProps {
+    archive: boolean;
+  }
+  
+  const ArchiveTeamButton: React.FC<ArchiveTeamButtonProps> = ({ archive }) => (
     <NERButton variant="contained" disabled={!isAdmin(user.role)}>
-      Archive Team
-    </NERButton>
-  );
-
-  const UnarchiveTeamButton = () => (
-    <NERButton variant="contained" disabled={!isAdmin(user.role)}>
-      Unarchive
+      {archive ? 'Archive Team' : 'Unarchive Team'}
     </NERButton>
   );
 
   const TeamActionsDropdown = () => (
-    <div>
+    <Box>
       <NERButton
         endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
         variant="contained"
@@ -90,13 +88,13 @@ const TeamSpecificPage: React.FC = () => {
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         <MenuItem onClick={handleDropdownClose}>
-          {data.dateArchived ? <UnarchiveTeamButton /> : <ArchiveTeamButton />}
+          <ArchiveTeamButton archive={!!data.dateArchived} />
         </MenuItem>
         <MenuItem onClick={handleDropdownClose}>
           <DeleteButton />
         </MenuItem>
       </Menu>
-    </div>
+    </Box>
   );
 
   return (
