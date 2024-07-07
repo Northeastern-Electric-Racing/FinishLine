@@ -6,7 +6,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { useAllDesignReviews } from '../../hooks/design-reviews.hooks'
+import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
 import { DesignReviewStatus } from 'shared';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
