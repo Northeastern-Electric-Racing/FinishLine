@@ -63,7 +63,7 @@ const TeamSpecificPage: React.FC = () => {
   interface ArchiveTeamButtonProps {
     archive: boolean;
   }
-  
+
   const ArchiveTeamButton: React.FC<ArchiveTeamButtonProps> = ({ archive }) => (
     <NERButton variant="contained" disabled={!isAdmin(user.role)}>
       {archive ? 'Archive Team' : 'Unarchive Team'}

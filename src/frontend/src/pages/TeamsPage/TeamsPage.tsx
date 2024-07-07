@@ -9,13 +9,17 @@ import { useAllTeams } from '../../hooks/teams.hooks';
 import ErrorPage from '../ErrorPage';
 import TeamSummary from './TeamSummary';
 import PageLayout from '../../components/PageLayout';
-import { FlashOffRounded } from '@mui/icons-material';
 
 const TeamsPage: React.FC = () => {
   const { isLoading: teamsLoading, isError: isTeamsError, data: teams, error: teamsError } = useAllTeams(false);
 
-  const { isLoading: archivedTeamsLoading, isError: isArchivedTeamsError, data: archivedTeams, error: archivedTeamsError } = useAllTeams(true);
-  console.log(archivedTeams)
+  const {
+    isLoading: archivedTeamsLoading,
+    isError: isArchivedTeamsError,
+    data: archivedTeams,
+    error: archivedTeamsError
+  } = useAllTeams(true);
+  console.log(archivedTeams);
 
   if (teamsLoading || !teams) return <LoadingIndicator />;
   if (archivedTeamsLoading || !archivedTeams) return <LoadingIndicator />;
@@ -25,25 +29,25 @@ const TeamsPage: React.FC = () => {
 
   return (
     <>
-    <PageLayout title="Teams">
-      <Grid container spacing={2}>
-        {teams.map((team) => (
-          <Grid item key={team.teamId}>
-            <TeamSummary team={team} />
-          </Grid>
-        ))}
-      </Grid>
-    </PageLayout>
-    <PageLayout title="Archived Teams">
-    <Grid container spacing={2}>
-      {archivedTeams.map((archivedTeam) => (
-        <Grid item key={archivedTeam.teamId}>
-          <TeamSummary team={archivedTeam} />
+      <PageLayout title="Teams">
+        <Grid container spacing={2}>
+          {teams.map((team) => (
+            <Grid item key={team.teamId}>
+              <TeamSummary team={team} />
+            </Grid>
+          ))}
         </Grid>
-      ))}
-    </Grid>
-  </PageLayout>
-  </>
+      </PageLayout>
+      <PageLayout title="Archived Teams">
+        <Grid container spacing={2}>
+          {archivedTeams.map((archivedTeam) => (
+            <Grid item key={archivedTeam.teamId}>
+              <TeamSummary team={archivedTeam} />
+            </Grid>
+          ))}
+        </Grid>
+      </PageLayout>
+    </>
   );
 };
 

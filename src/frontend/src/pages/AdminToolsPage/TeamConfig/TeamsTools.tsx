@@ -11,7 +11,7 @@ import CreateTeamForm from './CreateTeamForm';
 import TeamTypeTable from './TeamTypeTable';
 
 const TeamsTools = () => {
-  const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams();
+  const { data: allTeams, isLoading: allTeamsIsLoading, isError: allTeamsIsError, error: allTeamsError } = useAllTeams(false);
 
   if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
 

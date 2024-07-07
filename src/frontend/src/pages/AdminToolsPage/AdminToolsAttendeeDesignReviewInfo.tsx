@@ -6,13 +6,13 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { fullNamePipe } from '../../utils/pipes';
 import { useAllUsers } from '../../hooks/users.hooks';
-import { useAllDesignReviews } from '../../hooks/design-reviews.hooks';
+import { useAllDesignReviews } from '../../hooks/design-reviews.hooks'
 import { DesignReviewStatus } from 'shared';
 
 const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: allTeams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams();
+  const { data: allTeams, isLoading: teamsIsLoading, isError: teamsIsError, error: teamsError } = useAllTeams(false);
   const { data: allUsers, isLoading: usersIsLoading, isError: usersIsError, error: usersError } = useAllUsers();
   const {
     data: allDesignReviews,
