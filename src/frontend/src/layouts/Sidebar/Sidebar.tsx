@@ -110,7 +110,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
             <Typography marginLeft={1.1}>Sponsored By:</Typography>
             <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
           </Box>
-          <Typography className={styles.versionNumber}>v4.3.5</Typography>
+          <Typography className={styles.versionNumber}>v5.0.0</Typography>
         </Box>
       </Box>
     </NERDrawer>
