@@ -70,7 +70,7 @@ const LinksEditView: React.FC<{
     <>
       {ls.map((_element, i) => {
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: '5px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: '5px' }}>
             <Select
               {...register(`links.${i}.linkTypeName`, { required: true })}
               sx={{ minWidth: '200px', mr: '5px' }}
