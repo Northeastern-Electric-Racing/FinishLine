@@ -53,7 +53,8 @@ workPackagesRouter.post(
 );
 workPackagesRouter.delete(
   '/:wbsNum/delete',
-  nonEmptyString(body('changeRequestIdentifier')),
+  intMinZero(body('changeRequestIdentifier')),
+  validateInputs,
   WorkPackagesController.deleteWorkPackage
 );
 workPackagesRouter.get('/:wbsNum/blocking', WorkPackagesController.getBlockingWorkPackages);
