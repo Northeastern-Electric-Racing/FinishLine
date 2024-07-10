@@ -184,7 +184,7 @@ export const createCalendarEvent = async (designReview: DesignReview) => {
     if (!calendarIds) throw Error('no calendar ids');
     const eventInput = {
       location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
-      description: `${designReview.wbsNum} ${designReview.wbsName}`,
+      summary: `${designReview.wbsNum} ${designReview.wbsName}`,
       start: {
         dateTime: '2024-07-05T09:00:00-04:00',
         timeZone: 'America/New_York'
@@ -207,7 +207,8 @@ export const createCalendarEvent = async (designReview: DesignReview) => {
 
     const calendarEvent = await calendar.events.insert({
       calendarId: calendarIds[9] ?? 'primary',
-      requestBody: eventInput
+      requestBody: eventInput,
+      sendUpdates: 'all'
     });
 
     return calendarEvent;
