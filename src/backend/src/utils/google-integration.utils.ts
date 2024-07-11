@@ -181,7 +181,7 @@ export const createCalendarEvent = async (
     wbsElement: WBS_Element;
   }
 ) => {
-  //if (process.env.NODE_ENV !== 'production') return;
+  if (process.env.NODE_ENV !== 'production') return;
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
@@ -190,8 +190,6 @@ export const createCalendarEvent = async (
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const calendarIds = (await calendar.calendarList.list()).data.items?.map((calendar) => calendar.id);
     if (!calendarIds) throw Error('no calendar ids');
-    console.log(designReview.dateScheduled);
-    console.log(transformDate(designReview.dateScheduled));
     const startTime = transformStartTime(designReview.meetingTimes);
     const eventInput = {
       location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
