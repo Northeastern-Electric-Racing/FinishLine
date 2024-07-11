@@ -43,7 +43,7 @@ export default class WorkPackageTemplatesService {
       throw new AccessDeniedGuestException('get a work package template');
     }
 
-    const template = await prisma.work_Package_Template.findFirst({
+    const template = await prisma.work_Package_Template.findUnique({
       where: {
         workPackageTemplateId
       },

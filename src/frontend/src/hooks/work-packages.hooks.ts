@@ -167,14 +167,14 @@ export const useAllWorkPackageTemplates = () => {
 export const useDeleteWorkPackageTemplate = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, string>(
-    ['work package template', 'delete'],
+    ['work package templates', 'delete'],
     async (workPackageTemplateId: string) => {
       const { data } = await deleteWorkPackageTemplate(workPackageTemplateId);
       return data;
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['work package template']);
+        queryClient.invalidateQueries(['work package templates']);
       }
     }
   );
@@ -184,7 +184,7 @@ export const useDeleteWorkPackageTemplate = () => {
  * Custom React Hook to get a single workpackage template
  */
 export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
-  return useQuery<WorkPackageTemplate, Error>(['work package templates'], async () => {
+  return useQuery<WorkPackageTemplate, Error>(['work package templates', workPackageTemplateId], async () => {
     const { data } = await getSingleWorkPackageTemplate(workPackageTemplateId);
     return data;
   });
@@ -195,7 +195,7 @@ export const useSingleWorkPackageTemplate = (workPackageTemplateId: string) => {
  */
 export const useCreateSingleWorkPackageTemplate = () => {
   return useMutation<{ message: string }, Error, WorkPackageTemplateApiInputs>(
-    ['work package template', 'create'],
+    ['work package templates', 'create'],
     async (wptPayload: WorkPackageTemplateApiInputs) => {
       const { data } = await createSingleWorkPackageTemplate(wptPayload);
       return data;

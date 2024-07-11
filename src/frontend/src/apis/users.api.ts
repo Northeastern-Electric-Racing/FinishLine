@@ -4,7 +4,14 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User, UserScheduleSettings, UserSecureSettings, UserWithScheduleSettings } from 'shared';
+import {
+  Project,
+  SetUserScheduleSettingsPayload,
+  User,
+  UserScheduleSettings,
+  UserSecureSettings,
+  UserWithScheduleSettings
+} from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -120,7 +127,7 @@ export const updateUserSecureSettings = (settings: UserSecureSettings) => {
 /**
  * Update the given user's schedule settings by UserId
  */
-export const updateUserScheduleSettings = (settings: UserScheduleSettings) => {
+export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayload) => {
   return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
 };
 

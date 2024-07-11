@@ -6,7 +6,8 @@ import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
   EditVendorPayload,
-  AccountCodePayload
+  AccountCodePayload,
+  RefundPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -170,6 +171,16 @@ export const approveReimbursementRequest = (id: string) => {
 };
 
 /**
+ * Leadership approve Reimbursement Request (set it to Pending Finance)
+ *
+ * @param id of the reimbursement request being approved by finance
+ * @returns the pending finance reimbursement status
+ */
+export const leadershipApproveReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeLeadershipApprove(id));
+};
+
+/**
  * Deny Reimbursement Request
  *
  * @param id of the reimbursement request being denied by finance
@@ -300,6 +311,17 @@ export const sendPendingAdvisorList = (saboNumbers: number[]) => {
  */
 export const reportRefund = (amount: number, dateReceived: string) => {
   return axios.post(apiUrls.financeReportRefund(), { amount, dateReceived });
+};
+
+/**
+ * Edits a refund in the database
+ *
+ * @param id the reimbursement id
+ * @param formData the amount and date to edit the refund with
+ * @returns the updated reimbursement
+ */
+export const editRefund = (id: string, formData: RefundPayload) => {
+  return axios.post(apiUrls.financeEditRefund(id), formData);
 };
 
 /**

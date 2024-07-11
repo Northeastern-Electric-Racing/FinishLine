@@ -13,7 +13,6 @@ import WorkPackageTemplatesService from '../../src/services/work-package-templat
 describe('Work Package Template Tests', () => {
   let orgId: string;
   beforeEach(async () => {
-    await resetUsers();
     orgId = (await createTestOrganization()).organizationId;
   });
 

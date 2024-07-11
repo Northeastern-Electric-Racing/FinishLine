@@ -141,15 +141,18 @@ export default class ChangeRequestsService {
         accepted,
         dateReviewed: new Date()
       },
-      include: { activationChangeRequest: true, wbsElement: { include: { workPackage: true } } }
+      include: {
+        activationChangeRequest: true,
+        notificationSlackThreads: true,
+        wbsElement: { include: { workPackage: true } }
+      }
     });
 
     // send the creator of the cr a slack notification that their cr was reviewed
     await sendCRSubmitterReviewedNotification(foundCR);
 
     // send a reply to a CR's notifications of its updated status
-    const relevantThreads = await prisma.message_Info.findMany({ where: { changeRequestId: foundCR.crId } });
-    await sendSlackCRStatusToThread(relevantThreads, foundCR.crId, accepted);
+    await sendSlackCRStatusToThread(updated.notificationSlackThreads, foundCR.crId, foundCR.identifier, accepted);
 
     return updated.crId;
   }

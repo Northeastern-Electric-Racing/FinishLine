@@ -1,5 +1,5 @@
 import { Design_Review_Status, Team_Type, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership, DesignReviewStatus } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -10,7 +10,13 @@ import {
   AccessDeniedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { getUsers, getPrismaQueryUserIds, userHasPermission, areUsersinList } from '../utils/users.utils';
+import {
+  getUsers,
+  getPrismaQueryUserIds,
+  userHasPermission,
+  areUsersinList,
+  updateUserAvailability
+} from '../utils/users.utils';
 import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import {
@@ -23,6 +29,7 @@ import {
 import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 import { createCalendarEvent } from '../utils/google-integration.utils';
 
 export default class DesignReviewsService {
@@ -197,12 +204,7 @@ export default class DesignReviewsService {
       await sendSlackDRNotifications(teams, designReview, submitter, wbsElement.name);
     }
 
-    const transformedDesignReview = designReviewTransformer(designReview);
-    const calendars = await createCalendarEvent(transformedDesignReview);
-    console.log('MEETING TIME FORMAT:', transformedDesignReview.meetingTimes);
-    console.log(calendars);
-
-    return transformedDesignReview;
+    return designReviewTransformer(designReview);
   }
 
   /**
@@ -267,7 +269,7 @@ export default class DesignReviewsService {
     meetingTimes: number[],
     organizationId: string
   ): Promise<DesignReview> {
-    // verify user is allowed to edit work package
+    // verify user is allowed to edit design review
     if (await userHasPermission(user.userId, organizationId, isNotLeadership))
       throw new AccessDeniedMemberException('edit design reviews');
 
@@ -285,7 +287,7 @@ export default class DesignReviewsService {
       throw new HttpException(400, 'location is required for in person design reviews');
     }
 
-    // throws if meeting times are not: consecutive and between 0-83
+    // throws if meeting times are not: consecutive and between 0-83x
     meetingTimes = validateMeetingTimes(meetingTimes);
 
     // docTemplateLink is required if the status is scheduled or done
@@ -315,7 +317,6 @@ export default class DesignReviewsService {
     // actually try to update the design review
     const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
-      ...getDesignReviewQueryArgs(organizationId),
       data: {
         designReviewId,
         dateScheduled,
@@ -336,12 +337,17 @@ export default class DesignReviewsService {
         attendees: {
           set: updatedAttendees
         }
-      }
+      },
+      ...getDesignReviewQueryArgs(organizationId)
     });
 
     if (status === Design_Review_Status.SCHEDULED) {
-      const relevantThreads = await prisma.message_Info.findMany({ where: {} });
-      await sendDRScheduledSlackNotif(relevantThreads, updatedDesignReview);
+      await sendDRScheduledSlackNotif(updatedDesignReview.notificationSlackThreads, updatedDesignReview);
+      await createCalendarEvent(
+        [...updatedDesignReview.requiredMembers, ...updatedDesignReview.optionalMembers],
+        updatedDesignReview.teamType,
+        updatedDesignReview
+      );
     }
 
     return designReviewTransformer(updatedDesignReview);
@@ -373,24 +379,28 @@ export default class DesignReviewsService {
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    availability.forEach((time) => {
-      if (time < 0 || time > 83) {
-        throw new HttpException(400, 'Availability times have to be in range 0-83');
-      }
+    let userSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId: submitter.userId },
+      ...getUserScheduleSettingsQueryArgs()
     });
 
-    await prisma.schedule_Settings.upsert({
-      where: { userId: submitter.userId },
-      update: {
-        availability
-      },
-      create: {
-        userId: submitter.userId,
-        personalGmail: '',
-        personalZoomLink: '',
-        availability
-      }
-    });
+    if (!userSettings) {
+      userSettings = await prisma.schedule_Settings.create({
+        data: {
+          userId: submitter.userId,
+          availabilities: {
+            create: {
+              availability
+            }
+          },
+          personalGmail: '',
+          personalZoomLink: ''
+        },
+        ...getUserScheduleSettingsQueryArgs()
+      });
+    }
+
+    await updateUserAvailability(availability, userSettings, submitter, designReview.dateScheduled);
 
     // set submitter as confirmed if they're not already
     if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
@@ -406,8 +416,7 @@ export default class DesignReviewsService {
         }
       });
 
-      const relevantThreads = await prisma.message_Info.findMany({ where: { designReviewId: designReview.designReviewId } });
-      await sendDRUserConfirmationToThread(relevantThreads, submitter);
+      await sendDRUserConfirmationToThread(updatedDesignReview.notificationSlackThreads, submitter);
 
       // If all required attendees have confirmed their schedule, mark design review as confirmed
       if (areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers)) {
@@ -419,12 +428,56 @@ export default class DesignReviewsService {
           }
         });
 
-        await sendDRConfirmationToThread(relevantThreads, updatedDesignReview.userCreated);
+        await sendDRConfirmationToThread(updatedDesignReview.notificationSlackThreads, updatedDesignReview.userCreated);
       }
 
       return designReviewTransformer(updatedDesignReview);
     }
     return designReviewTransformer(designReview);
+  }
+
+  /**
+   * Sets the status of a design review, only admin or the user who created the design review can set the status.
+   * @param user the user trying to set the status
+   * @param designReviewId the id of the design review
+   * @param status the status to set the design review to
+   * @param organizationId the organization that the user is currently in
+   * @returns the modified design review
+   */
+  static async setStatus(
+    user: User,
+    designReviewId: string,
+    status: DesignReviewStatus,
+    organizationId: string
+  ): Promise<DesignReview> {
+    // validate the design review exists and is not deleted
+    const originaldesignReview = await prisma.design_Review.findUnique({
+      where: { designReviewId },
+      include: { wbsElement: true }
+    });
+    if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
+    if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+    if (originaldesignReview.wbsElement.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Design Review');
+
+    // verify user is allowed to set the status of the design review
+    if (
+      !(await userHasPermission(user.userId, organizationId, isAdmin)) &&
+      user.userId !== originaldesignReview.userCreatedId
+    ) {
+      throw new AccessDeniedAdminOnlyException('set the status of a design review');
+    }
+
+    // actually try to update the design review
+    const updatedDesignReview = await prisma.design_Review.update({
+      where: { designReviewId },
+      ...getDesignReviewQueryArgs(organizationId),
+      data: {
+        status
+      }
+    });
+
+    return designReviewTransformer(updatedDesignReview);
   }
 
   /**

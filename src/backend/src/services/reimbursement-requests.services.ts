@@ -29,7 +29,8 @@ import {
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserEditRRPermissions,
-  validateUserIsPartOfFinanceTeam
+  validateUserIsPartOfFinanceTeam,
+  validateRefund
 } from '../utils/reimbursement-requests.utils';
 import {
   AccessDeniedAdminOnlyException,
@@ -171,7 +172,7 @@ export default class ReimbursementRequestService {
         totalCost,
         reimbursementStatuses: {
           create: {
-            type: ReimbursementStatusType.PENDING_FINANCE,
+            type: ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL,
             userId: recipient.userId
           }
         },
@@ -210,26 +211,7 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedException('Guests cannot reimburse a user for their expenses.');
     }
 
-    const totalOwed = await prisma.reimbursement_Request
-      .findMany({
-        where: { recipientId: submitter.userId, dateDeleted: null, accountCode: { organizationId } }
-      })
-      .then((userReimbursementRequests: Reimbursement_Request[]) => {
-        return userReimbursementRequests.reduce((acc: number, curr: Reimbursement_Request) => acc + curr.totalCost, 0);
-      });
-
-    const totalReimbursed = await prisma.reimbursement
-      .findMany({
-        where: { purchaserId: submitter.userId, organizationId },
-        select: { amount: true }
-      })
-      .then((reimbursements: { amount: number }[]) =>
-        reimbursements.reduce((acc: number, curr: { amount: number }) => acc + curr.amount, 0)
-      );
-
-    if (amount > totalOwed - totalReimbursed) {
-      throw new HttpException(400, 'Reimbursement is greater than the total amount owed to the user');
-    }
+    await validateRefund(submitter, amount, organizationId);
 
     // make the date object but add 12 hours so that the time isn't 00:00 to avoid timezone problems
     const dateCreated = new Date(dateReceived.split('T')[0]);
@@ -334,7 +316,7 @@ export default class ReimbursementRequestService {
    * @param amount The new amount of the reimbursement
    * @param dateCreated The new date the reimbursement was created
    * @param organizationId The organization the user is currently in
-   * @returns The updatd reimbursement
+   * @returns The updated reimbursement
    */
   static async editReimbursement(
     reimbursementId: string,
@@ -353,6 +335,10 @@ export default class ReimbursementRequestService {
         'You do not have access to edit this refund, only the submitter can edit their refund'
       );
     if (request.organizationId !== organizationId) throw new InvalidOrganizationException('Reimbursement');
+
+    const difference = amount - request.amount;
+
+    if (difference > 0) await validateRefund(editor, difference, organizationId);
 
     const updatedReimbursement = await prisma.reimbursement.update({
       where: { reimbursementId },
@@ -480,7 +466,15 @@ export default class ReimbursementRequestService {
       text: `The following reimbursement requests need to be approved by you: ${saboNumbers.join(', ')}`
     };
 
-    await sendMailToAdvisor(mailOptions.subject, mailOptions.text);
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { advisor: true }
+    });
+
+    if (!organization) throw new NotFoundException('Organization', organizationId);
+    if (!organization.advisor) throw new HttpException(400, 'Organization does not have an advisor');
+
+    await sendMailToAdvisor(mailOptions.subject, mailOptions.text, organization.advisor);
 
     reimbursementRequests.forEach((reimbursementRequest) => {
       prisma.reimbursement_Status.create({
@@ -848,6 +842,53 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Adds a reimbursement status with type pending finance to the given reimbursement request
+   *
+   * @param reimbursementRequestId The id of the reimbursement request to approve
+   * @param submitter The person approving the reimbursement request
+   * @param organizationId The organization the user is currently in
+   * @returns The Pending Finance reimbursement status
+   */
+  static async leadershipApproveReimbursementRequest(
+    reimbursementRequestId: string,
+    submitter: User,
+    organizationId: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isHead)))
+      throw new AccessDeniedException('Only a head or admin can approve reimbursement requests');
+
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    if (reimbursementRequest.dateDeleted) throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    if (reimbursementRequest.organizationId !== organizationId)
+      throw new InvalidOrganizationException('Reimbursement Request');
+
+    if (
+      reimbursementRequest.reimbursementStatuses.some(
+        (reimbursementStatus) => reimbursementStatus.type === Reimbursement_Status_Type.PENDING_FINANCE
+      )
+    )
+      throw new HttpException(400, 'This reimbursement request has already been approved by leadership');
+
+    const reimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        type: ReimbursementStatusType.PENDING_FINANCE,
+        userId: submitter.userId,
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId
+      },
+      ...getReimbursementStatusQueryArgs(organizationId)
+    });
+
+    return reimbursementStatusTransformer(reimbursementStatus);
+  }
+
+  /**
    * Adds a reimbursement status with type sabo submitted to the given reimbursement request
    *
    * @param reimbursementRequestId the id of the reimbursement request to approve
@@ -872,6 +913,11 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.organizationId !== organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
+    if (
+      !reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.PENDING_FINANCE)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has not been approved by leadership');
+    }
     if (
       reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
     ) {

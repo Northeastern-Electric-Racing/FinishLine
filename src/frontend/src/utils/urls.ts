@@ -27,6 +27,7 @@ const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
+const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -109,6 +110,7 @@ const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
+const financeEditRefund = (id: string) => `${financeReportRefund()}/${id}/edit`;
 const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
@@ -121,6 +123,7 @@ const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes(
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -162,6 +165,11 @@ const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
 const workPackageTemplateDelete = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/delete`;
 
+/******************* Organizations Endpoints ********************/
+const organizations = () => `${API_URL}/organizations`;
+const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
+const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
@@ -184,6 +192,7 @@ export const apiUrls = {
   userScheduleSettingsSet,
 
   projects,
+  allProjects,
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,
@@ -250,6 +259,7 @@ export const apiUrls = {
   financeGetUserReimbursements,
   financeGetAllReimbursements,
   financeReportRefund,
+  financeEditRefund,
   financeSetSaboNumber,
   financeImageById,
   financeDeleteReimbursement,
@@ -263,6 +273,7 @@ export const apiUrls = {
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeLeadershipApprove,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
@@ -295,6 +306,9 @@ export const apiUrls = {
   workPackageTemplatesEdit,
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
+
+  organizationsUsefulLinks,
+  organizationsSetUsefulLinks,
 
   cars,
   carsCreate,

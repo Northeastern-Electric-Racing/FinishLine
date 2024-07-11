@@ -14,6 +14,7 @@ export interface NERModalProps {
   onSubmit?: () => void;
   onHide: () => void;
   children?: ReactNode;
+  titleChildren?: ReactNode;
   cancelText?: CancelText;
   submitText?: SubmitText;
   disabled?: boolean;
@@ -38,7 +39,8 @@ const NERModal = ({
   hideFormButtons = false,
   hideBackDrop = false,
   icon,
-  paperProps
+  paperProps,
+  titleChildren
 }: NERModalProps) => {
   return (
     <Dialog
@@ -51,7 +53,7 @@ const NERModal = ({
           : { borderRadius: '10px', maxWidth: '700px' }
       }}
     >
-      <DialogTitle sx={{ backgroundColor: background, minHeight: '64px' }}>
+      <DialogTitle sx={{ backgroundColor: background, minHeight: '64px', position: 'relative' }}>
         {icon ? (
           <Box display="flex" justifyContent="left" alignItems="center">
             <Icon
@@ -73,6 +75,7 @@ const NERModal = ({
         ) : (
           title
         )}
+        {titleChildren}
       </DialogTitle>
 
       {showCloseButton && (

@@ -1,15 +1,15 @@
-import { useCurrentUser } from '../../../hooks/users.hooks';
-import { useGetAllDescriptionBulletTypes } from '../../../hooks/description-bullets.hooks';
+import { useCurrentUser } from '../../../../hooks/users.hooks';
+import { useGetAllDescriptionBulletTypes } from '../../../../hooks/description-bullets.hooks';
 import { useState } from 'react';
 import { DescriptionBulletType, isAdmin } from 'shared';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
 import { TableCell, TableRow, Typography } from '@mui/material';
-import CreateDescriptionBulletTypeModal from './CreateDescriptionBulletTypeModel';
+import CreateDescriptionBulletTypeModal from './CreateDescriptionBulletTypeModal';
 import EditDescriptionBulletTypeModal from './EditDescriptionBulletTypeModel';
 import { Box } from '@mui/system';
-import AdminToolTable from '../AdminToolTable';
-import { NERButton } from '../../../components/NERButton';
+import AdminToolTable from '../../AdminToolTable';
+import { NERButton } from '../../../../components/NERButton';
 
 const DescriptionBulletTypeTable = () => {
   const currentUser = useCurrentUser();

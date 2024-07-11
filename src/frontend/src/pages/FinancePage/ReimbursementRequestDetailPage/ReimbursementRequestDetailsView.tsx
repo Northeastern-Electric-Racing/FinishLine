@@ -15,7 +15,7 @@ import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequest, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
@@ -23,6 +23,7 @@ import VerticalDetailDisplay from '../../../components/VerticalDetailDisplay';
 import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
+  useLeadershipApproveReimbursementRequest,
   useMarkReimbursementRequestAsDelivered,
   useMarkReimbursementRequestAsReimbursed
 } from '../../../hooks/finance.hooks';
@@ -64,6 +65,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const toast = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDenyModal, setShowDenyModal] = useState(false);
+  const [showLeadershipApproveModal, setShowLeadershipApproveModal] = useState(false);
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
   const [showMarkReimbursed, setShowMarkReimbursed] = useState(false);
   const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
@@ -75,7 +77,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const { mutateAsync: markReimbursed } = useMarkReimbursementRequestAsReimbursed(
     reimbursementRequest.reimbursementRequestId
   );
+  const { mutateAsync: leadershipApproveReimbursementRequest } = useLeadershipApproveReimbursementRequest(
+    reimbursementRequest.reimbursementRequestId
+  );
+
   const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
+  const isLeadershipApproved = isReimbursementRequestAdvisorApproved(reimbursementRequest);
 
   const handleDelete = async () => {
     try {
@@ -121,6 +128,17 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     }
   };
 
+  const handleLeadershipApprove = async () => {
+    try {
+      await leadershipApproveReimbursementRequest();
+      setShowLeadershipApproveModal(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
   const DeleteModal = () => {
     return (
       <NERModal
@@ -147,6 +165,21 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         onSubmit={handleDeny}
       >
         <Typography>Are you sure you want to deny this reimbursement request?</Typography>
+      </NERModal>
+    );
+  };
+
+  const LeadershipApproveModal = () => {
+    return (
+      <NERModal
+        open={showLeadershipApproveModal}
+        onHide={() => setShowLeadershipApproveModal(false)}
+        title="Warning!"
+        cancelText="No"
+        submitText="Yes"
+        onSubmit={handleLeadershipApprove}
+      >
+        <Typography>Are you sure you want to approve this reimbursement request?</Typography>
       </NERModal>
     );
   };
@@ -304,6 +337,16 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled: !user.isFinance
     },
     {
+      title: 'Leadership Approve',
+      onClick: () => setShowLeadershipApproveModal(true),
+      icon: <CheckIcon />,
+      disabled:
+        !isHead(user.role) ||
+        isReimbursementRequestDenied(reimbursementRequest) ||
+        isReimbursementRequestReimbursed(reimbursementRequest) ||
+        isLeadershipApproved
+    },
+    {
       title: 'Deny',
       onClick: () => setShowDenyModal(true),
       icon: <CloseIcon />,
@@ -337,6 +380,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       <DenyModal />
       <MarkDeliveredModal />
       <MarkReimbursedModal />
+      <LeadershipApproveModal />
       <SubmitToSaboModal
         open={showSubmitToSaboModal}
         setOpen={setShowSubmitToSaboModal}

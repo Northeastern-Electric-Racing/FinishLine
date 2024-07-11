@@ -22,7 +22,7 @@ interface ProjectGanttProps {
 }
 
 const ProjectGantt: React.FC<ProjectGanttProps> = ({ workPackages }) => {
-  const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, null]);
+  const rows = workPackages.map((wp) => [wp.id, wp.name, wp.startDate, wp.endDate, wp.duration, 100, null]);
   const data = [ganttAllColumns, ...rows];
   const options = {
     height: 30 * rows.length + 50,

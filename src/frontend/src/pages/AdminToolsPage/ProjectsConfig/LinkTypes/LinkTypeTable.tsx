@@ -1,14 +1,14 @@
 import { TableRow, TableCell, Typography, Box, Icon } from '@mui/material';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useAllLinkTypes } from '../../../hooks/projects.hooks';
-import ErrorPage from '../../ErrorPage';
-import { NERButton } from '../../../components/NERButton';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
+import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
+import ErrorPage from '../../../ErrorPage';
+import { NERButton } from '../../../../components/NERButton';
 import { useState } from 'react';
 import CreateLinkTypeModal from './CreateLinkTypeModal';
 import EditLinkTypeModal from './EditLinkTypeModal';
-import AdminToolTable from '../AdminToolTable';
+import AdminToolTable from '../../AdminToolTable';
 import { isAdmin, LinkType } from 'shared';
-import { useCurrentUser } from '../../../hooks/users.hooks';
+import { useCurrentUser } from '../../../../hooks/users.hooks';
 
 const LinkTypeTable = () => {
   const currentUser = useCurrentUser();

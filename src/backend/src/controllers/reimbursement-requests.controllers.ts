@@ -295,6 +295,23 @@ export default class ReimbursementRequestsController {
     }
   }
 
+  static async leadershipApproveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const reimbursementStatus = await ReimbursementRequestService.leadershipApproveReimbursementRequest(
+        requestId,
+        user,
+        organizationId
+      );
+      res.status(200).json(reimbursementStatus);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async approveReimbursementRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;

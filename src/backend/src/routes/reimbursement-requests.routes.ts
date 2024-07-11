@@ -137,6 +137,10 @@ reimbursementRequestsRouter.post(
 );
 
 reimbursementRequestsRouter.post('/:requestId/approve', ReimbursementRequestController.approveReimbursementRequest);
+reimbursementRequestsRouter.post(
+  '/:requestId/leadership-approve',
+  ReimbursementRequestController.leadershipApproveReimbursementRequest
+);
 reimbursementRequestsRouter.delete('/:requestId/delete', ReimbursementRequestController.deleteReimbursementRequest);
 reimbursementRequestsRouter.post('/:requestId/deny', ReimbursementRequestController.denyReimbursementRequest);
 

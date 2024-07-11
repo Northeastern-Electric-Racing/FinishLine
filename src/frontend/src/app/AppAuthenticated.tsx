@@ -23,12 +23,13 @@ import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import { Container, IconButton } from '@mui/material';
+import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
+import HiddenContentMargin from '../components/HiddenContentMargin';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -38,7 +39,9 @@ interface AppAuthenticatedProps {
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const theme = useTheme();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [moveContent, setMoveContent] = useState(false);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -51,28 +54,43 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        onClick={() => setDrawerOpen(true)}
-        sx={{
-          position: 'fixed'
+      <Box
+        onMouseEnter={() => {
+          setDrawerOpen(true);
         }}
+        sx={{
+          height: '100vh',
+          position: 'fixed',
+          width: 15,
+          borderRight: 2,
+          borderRightColor: theme.palette.background.paper
+        }}
+      />
+      <IconButton
+        onClick={() => {
+          setDrawerOpen(true);
+          setMoveContent(true);
+        }}
+        sx={{ position: 'fixed', left: -8, top: '3%' }}
       >
-        <ArrowForwardIosSharpIcon
+        <ArrowCircleRightTwoToneIcon
           sx={{
-            marginRight: -0.5,
-            color: '#ffffff',
-            transition: 'transform 0.2s ease-in-out',
-            '&:hover': {
-              transform: 'translateX(3px)'
-            }
+            fontSize: '30px',
+            zIndex: 1,
+            '& path:first-of-type': { color: '#000000' },
+            '& path:last-of-type': { color: '#ef4345' }
           }}
         />
       </IconButton>
+      <Sidebar
+        drawerOpen={drawerOpen}
+        setDrawerOpen={setDrawerOpen}
+        moveContent={moveContent}
+        setMoveContent={setMoveContent}
+      />
       <Box display={'flex'}>
-        <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 40px)' }}>
+        <HiddenContentMargin open={moveContent} variant="permanent" />
+        <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />

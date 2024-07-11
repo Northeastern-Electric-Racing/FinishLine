@@ -4,7 +4,7 @@
  */
 
 import { FormEvent, useState } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';

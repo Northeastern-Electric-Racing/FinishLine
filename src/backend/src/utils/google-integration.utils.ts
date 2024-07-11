@@ -4,7 +4,11 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { DesignReview } from 'shared';
+import { Design_Review, User, WBS_Element } from '@prisma/client';
+import { transformDate } from './datetime.utils';
+import { transformStartTime } from './design-reviews.utils';
+import { TeamType } from 'shared';
+import { getCalendarByTeamName } from './calendar.utils';
 
 const { OAuth2 } = google.auth;
 const {
@@ -14,9 +18,7 @@ const {
   EMAIL_REFRESH_TOKEN,
   USER_EMAIL,
   DRIVE_REFRESH_TOKEN,
-  ADVISOR_EMAIL,
-  CALENDAR_REFRESH_TOKEN,
-  CALENDAR_ACCESS_TOKEN
+  CALENDAR_REFRESH_TOKEN
 } = process.env;
 
 const oauth2Client = new OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
@@ -52,12 +54,12 @@ const createTransporter = async () => {
   }
 };
 
-export const sendMailToAdvisor = async (subject: string, text: string) => {
+export const sendMailToAdvisor = async (subject: string, text: string, advisor: User) => {
   try {
     //this sends an email from our email to our advisor: professor Goldstone
     const mailOptions = {
       from: USER_EMAIL,
-      to: ADVISOR_EMAIL,
+      to: advisor.email,
       subject,
       text
     };
@@ -172,28 +174,37 @@ export const downloadImageFile = async (fileId: string) => {
   }
 };
 
-export const createCalendarEvent = async (designReview: DesignReview) => {
+export const createCalendarEvent = async (
+  members: User[],
+  teamType: TeamType,
+  designReview: Design_Review & {
+    wbsElement: WBS_Element;
+  }
+) => {
+  //if (process.env.NODE_ENV !== 'production') return;
   try {
     oauth2Client.setCredentials({
-      refresh_token: CALENDAR_REFRESH_TOKEN,
-      access_token: CALENDAR_ACCESS_TOKEN
+      refresh_token: CALENDAR_REFRESH_TOKEN
     });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const calendarIds = (await calendar.calendarList.list()).data.items?.map((calendar) => calendar.id);
     if (!calendarIds) throw Error('no calendar ids');
+    console.log(designReview.dateScheduled);
+    console.log(transformDate(designReview.dateScheduled));
+    const startTime = transformStartTime(designReview.meetingTimes);
     const eventInput = {
       location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
-      summary: `${designReview.wbsNum} ${designReview.wbsName}`,
+      summary: `Design Review - ${designReview.wbsElement.projectNumber} ${designReview.wbsElement.name}`,
       start: {
-        dateTime: '2024-07-05T09:00:00-04:00',
+        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime}:00:00-04:00`,
         timeZone: 'America/New_York'
       },
       end: {
-        dateTime: '2024-07-05T10:00:00-04:00',
+        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime + 1}:00:00-04:00`,
         timeZone: 'America/New_York'
       },
-      attendees: designReview.attendees.map((user) => {
+      attendees: members.map((user) => {
         return { email: user.email };
       }),
       reminders: {
@@ -206,9 +217,8 @@ export const createCalendarEvent = async (designReview: DesignReview) => {
     };
 
     const calendarEvent = await calendar.events.insert({
-      calendarId: calendarIds[9] ?? 'primary',
-      requestBody: eventInput,
-      sendUpdates: 'all'
+      calendarId: getCalendarByTeamName(teamType),
+      requestBody: eventInput
     });
 
     return calendarEvent;

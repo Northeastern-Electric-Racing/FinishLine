@@ -59,7 +59,6 @@ const GanttChartTeamSection = ({
 
   useEffect(() => {
     if (!IsProjectPreviewsEqual(projectsState, deeplyCopiedProjects.concat(addedProjects))) {
-      console.log('Projects state changed');
       setProjectsState([...deeplyCopiedProjects, ...addedProjects]);
     }
   }, [addedProjects, projectsState, deeplyCopiedProjects]);
@@ -97,6 +96,8 @@ const GanttChartTeamSection = ({
   const handleCancel = () => {
     setIsEditMode(false);
     setGanttChanges([]);
+    removeAddedProjects([...addedProjects]);
+    removeAddedWorkPackages([...addedWorkPackages]);
     setAddedProjects([]);
     setAddedWorkPackages([]);
     const deepCopy: ProjectPreview[] = JSON.parse(JSON.stringify(filteredProjects)).map(projectPreviewTranformer);
@@ -185,7 +186,8 @@ const GanttChartTeamSection = ({
               workPackageNumber: 0
             },
             status: WbsElementStatus.Inactive,
-            workPackages: []
+            workPackages: [],
+            deleted: false
           };
 
           addNewProjectHandler(newProject);

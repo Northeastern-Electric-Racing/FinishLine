@@ -3,7 +3,7 @@ import useId from '@mui/material/utils/useId';
 import { useTheme } from '@mui/system';
 import { CSSProperties, DragEvent, MouseEvent, useEffect, useState } from 'react';
 import useMeasure from 'react-use-measure';
-import { addDaysToDate, WbsElementStatus, WorkPackage, WorkPackageStage } from 'shared';
+import { addDaysToDate, WbsElementStatus, wbsPipe, WorkPackage, WorkPackageStage } from 'shared';
 import {
   GanttChange,
   GanttTask,
@@ -19,6 +19,7 @@ import {
   webKitBoxContainerStyles,
   webKitBoxStyles
 } from './GanttTaskBarDisplayStyles';
+import { ArcherElement } from 'react-archer';
 
 interface GanttTaskBarEditProps {
   days: Date[];
@@ -113,7 +114,9 @@ export const GanttTaskBarEditView = ({
       teamTypes: [],
       changes: [],
       materials: [],
-      assemblies: []
+      assemblies: [],
+      designReviews: [],
+      deleted: false
     };
     addWorkPackage(workPackage);
 
@@ -207,19 +210,31 @@ export const GanttTaskBarEditView = ({
           ))}
       </Box>
       <Box sx={ganttTaskBarBackgroundStyles(days.length)}>
-        <div ref={measureRef} style={taskBarDisplayStyles}>
-          <Box sx={webKitBoxContainerStyles()}>
-            <Box draggable={!isProject} onDrag={onDragStart} onDragEnd={onDragEnd} sx={webKitBoxStyles()}>
-              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                <Typography variant="body1" sx={taskNameContainerStyles(task)}>
-                  {task.name}
-                </Typography>
+        <ArcherElement
+          id={task.teamName + wbsPipe(task)}
+          relations={task.blocking.map((blocking) => {
+            return {
+              targetId: task.teamName + wbsPipe(blocking),
+              targetAnchor: 'left',
+              sourceAnchor: 'right',
+              style: { strokeDasharray: '5,5', noCurves: true, endMarker: false }
+            };
+          })}
+        >
+          <div ref={measureRef} style={taskBarDisplayStyles}>
+            <Box sx={webKitBoxContainerStyles()}>
+              <Box draggable={!isProject} onDrag={onDragStart} onDragEnd={onDragEnd} sx={webKitBoxStyles()}>
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  <Typography variant="body1" sx={taskNameContainerStyles(task)}>
+                    {task.name}
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
 
-            <Box sx={hoverContainerBoxStyles} onMouseDown={isProject ? undefined : handleMouseDown} />
-          </Box>
-        </div>
+              <Box sx={hoverContainerBoxStyles} onMouseDown={isProject ? undefined : handleMouseDown} />
+            </Box>
+          </div>
+        </ArcherElement>
         {isProject && (
           <Chip
             label={'+'}

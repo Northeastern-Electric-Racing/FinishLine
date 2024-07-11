@@ -31,6 +31,10 @@ export const meetingStartTimePipe = (times: number[]) => {
   return time <= 12 ? time + 'am' : time - 12 + 'pm';
 };
 
+export const transformStartTime = (times: number[]) => {
+  return (times[0] % 12) + 10;
+};
+
 export const addHours = (date: Date, hours: number) => {
   const hoursToAdd = hours * 60 * 60 * 1000;
   date.setTime(date.getTime() + hoursToAdd);

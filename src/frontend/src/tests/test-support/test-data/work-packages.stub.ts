@@ -25,6 +25,7 @@ import {
 export const exampleResearchWorkPackage: WorkPackage = {
   id: '1',
   wbsElementId: '1',
+  deleted: false,
   wbsNum: exampleWbsWorkPackage1,
   dateCreated: new Date('11/15/20'),
   name: 'Bodywork Concept of Design',
@@ -53,12 +54,14 @@ export const exampleResearchWorkPackage: WorkPackage = {
   materials: [],
   assemblies: [],
   blocking: [],
-  teamTypes: []
+  teamTypes: [],
+  designReviews: []
 };
 
 export const exampleDesignWorkPackage: WorkPackage = {
   id: '2',
   wbsElementId: '2',
+  deleted: false,
   wbsNum: exampleWbsWorkPackage2,
   dateCreated: new Date('10/02/20'),
   name: 'Adhesive Shear Strength Test',
@@ -96,12 +99,14 @@ export const exampleDesignWorkPackage: WorkPackage = {
   materials: [],
   assemblies: [],
   blocking: [],
-  teamTypes: []
+  teamTypes: [],
+  designReviews: []
 };
 
 export const exampleManufacturingWorkPackage: WorkPackage = {
   id: '3',
   wbsElementId: '3',
+  deleted: false,
   wbsNum: exampleWbsWorkPackage3,
   dateCreated: new Date('09/27/20'),
   name: 'Manufacture Wiring Harness',
@@ -130,7 +135,8 @@ export const exampleManufacturingWorkPackage: WorkPackage = {
   materials: [],
   assemblies: [],
   blocking: [],
-  teamTypes: []
+  teamTypes: [],
+  designReviews: []
 };
 
 export const exampleInstallWorkPackage: WorkPackage = {
@@ -164,7 +170,9 @@ export const exampleInstallWorkPackage: WorkPackage = {
   materials: [],
   assemblies: [],
   blocking: [],
-  teamTypes: []
+  teamTypes: [],
+  designReviews: [],
+  deleted: false
 };
 
 export const exampleWorkPackage5: WorkPackage = {
@@ -183,6 +191,7 @@ export const exampleWorkPackage5: WorkPackage = {
   blockedBy: [],
   links: [],
   descriptionBullets: [],
+  deleted: false,
   changes: [
     {
       changeId: '9',
@@ -197,7 +206,8 @@ export const exampleWorkPackage5: WorkPackage = {
   materials: [],
   assemblies: [],
   blocking: [],
-  teamTypes: []
+  teamTypes: [],
+  designReviews: []
 };
 
 export const exampleAllWorkPackages: WorkPackage[] = [

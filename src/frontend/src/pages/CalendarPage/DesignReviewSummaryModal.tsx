@@ -1,4 +1,4 @@
-import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType, isAdmin } from 'shared';
 import NERModal from '../../components/NERModal';
 import { Box, Chip, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -15,6 +15,7 @@ import { useDeleteDesignReview } from '../../hooks/design-reviews.hooks';
 import { designReviewStatusColor, designReviewStatusPipe } from '../../utils/design-review.utils';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import { DesignReviewAvailabilityInfo } from './DesignReviewAvailabilityInfo';
+import { CheckCircle } from '@mui/icons-material';
 
 interface DRCSummaryModalProps {
   open: boolean;
@@ -71,21 +72,35 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       icon={getTeamTypeIcon(designReview.teamType.teamTypeId, true)}
       hideBackDrop
       showCloseButton
-    >
-      <Box minWidth="550px">
-        <DeleteModal />
-        {isDesignReviewCreator && (
-          <Box position="absolute" right="52px" top="12px">
-            <IconButton onClick={() => setShowDeleteModal(true)}>
-              <DeleteIcon />
-            </IconButton>
-            {isScheduled && (
+      titleChildren={
+        <Box position="absolute" right="52px" top="12px">
+          {(isDesignReviewCreator || isAdmin(user.role)) && (
+            <>
+              <IconButton onClick={() => setShowDeleteModal(true)}>
+                <DeleteIcon />
+              </IconButton>
               <IconButton component={RouterLink} to={`${routes.CALENDAR}/${designReview.designReviewId}`}>
                 <EditIcon />
               </IconButton>
-            )}
-          </Box>
-        )}
+            </>
+          )}
+          <IconButton
+            component={RouterLink}
+            to={`${routes.SETTINGS_PREFERENCES}?drId=${designReview.designReviewId}`}
+            disabled={
+              !designReview.requiredMembers
+                .concat(designReview.optionalMembers)
+                .some((attendee) => attendee.userId === user.userId) || isScheduled
+            }
+          >
+            <CheckCircle />
+          </IconButton>
+        </Box>
+      }
+    >
+      <Box minWidth="550px">
+        <DeleteModal />
+
         <Box>
           <Box display={'flex'} alignItems={'center'}>
             <Typography flexGrow={1} variant="h4">

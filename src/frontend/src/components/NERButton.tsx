@@ -10,7 +10,8 @@ export const NERButton = styled(Button)<NERButtonProps>(({ whiteVariant }) => ({
   borderColor: '#ef4345',
   boxShadow: 'none',
   '&:hover': {
-    backgroundColor: '#ff0000'
+    backgroundColor: '#ff0000',
+    color: 'white'
   },
   ...(whiteVariant && {
     backgroundColor: '#d9d9d9',

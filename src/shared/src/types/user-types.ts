@@ -71,6 +71,11 @@ export interface UserScheduleSettings {
   drScheduleSettingsId: string;
   personalGmail: string;
   personalZoomLink: string;
+  availabilities: Availability[];
+}
+
+export interface Availability {
+  dateSet: Date;
   availability: number[];
 }
 
@@ -82,4 +87,14 @@ export interface UserWithScheduleSettings {
   emailId: string | null;
   role: Role;
   scheduleSettings?: UserScheduleSettings;
+}
+
+export interface SetUserScheduleSettingsArgs {
+  personalGmail: string;
+  personalZoomLink: string;
+  availability: number[];
+}
+
+export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {
+  drScheduleSettingsId: string;
 }

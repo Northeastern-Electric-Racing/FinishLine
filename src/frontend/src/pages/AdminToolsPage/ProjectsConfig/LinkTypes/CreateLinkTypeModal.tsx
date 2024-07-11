@@ -1,8 +1,8 @@
-import ErrorPage from '../../ErrorPage';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../../ErrorPage';
+import LoadingIndicator from '../../../../components/LoadingIndicator';
 import LinkTypeFormModal from './LinkTypeFormModal';
 import { LinkType } from 'shared';
-import { useCreateLinkType } from '../../../hooks/projects.hooks';
+import { useCreateLinkType } from '../../../../hooks/projects.hooks';
 
 interface CreateLinkTypeModalProps {
   open: boolean;
