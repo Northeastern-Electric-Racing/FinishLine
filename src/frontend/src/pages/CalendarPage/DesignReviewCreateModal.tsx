@@ -71,6 +71,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const [requiredMembers, setRequiredMembers] = useState([].map(userToAutocompleteOption));
   const [optionalMembers, setOptionalMembers] = useState([].map(userToAutocompleteOption));
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
+
   const {
     isLoading: allWorkPackagesIsLoading,
     isError: allWorkPackagesIsError,
@@ -83,7 +84,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     const day = data.date.getDay();
     const adjustedDay = day === 0 ? 6 : day - 1;
-    const times = [];
+    const times: number[] = [];
     for (let i = adjustedDay * 12; i < adjustedDay * 12 + 1; i++) {
       times.push(i);
     }
@@ -91,8 +92,8 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
       await mutateAsync({
         dateScheduled: data.date,
         teamTypeId: data.teamTypeId,
-        requiredMemberIds: requiredMembers.map((member) => parseInt(member.id)),
-        optionalMemberIds: optionalMembers.map((member) => parseInt(member.id)),
+        requiredMemberIds: requiredMembers.map((member) => member.id),
+        optionalMemberIds: optionalMembers.map((member) => member.id),
         wbsNum: validateWBS(data.wbsNum),
         meetingTimes: times
       });
@@ -123,7 +124,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
   if (allUsersIsError) return <ErrorPage error={allUsersError} message={allUsersError?.message} />;
   if (allWorkPackagesIsError) return <ErrorPage error={allWorkPackagesError} message={allWorkPackagesError?.message} />;
-  if (allUsersIsLoading || !users || allWorkPackagesIsLoading || !allWorkPackages || isLoading) return <LoadingIndicator />;
+  if (allUsersIsLoading || allWorkPackagesIsLoading || !allWorkPackages || !users || isLoading) return <LoadingIndicator />;
 
   const memberOptions = users.map(userToAutocompleteOption);
 
@@ -158,13 +159,33 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
             const onClear = () => {
               setValue('wbsNum', '');
               onChange('');
+              setValue('teamTypeId', '');
             };
+
+            const handleWorkPackageSelect = async (selectedValue: string) => {
+              onChange(selectedValue);
+              setValue('wbsNum', selectedValue);
+
+              const workPackage = allWorkPackages.find((wp) => wbsPipe(wp.wbsNum) === selectedValue);
+
+              if (workPackage) {
+                const { teamTypes } = workPackage;
+
+                if (teamTypes.length > 0) {
+                  const [teamType] = teamTypes;
+                  setValue('teamTypeId', teamType ? teamType.teamTypeId : '');
+                } else {
+                  setValue('teamTypeId', '');
+                }
+              }
+            };
+
             return (
               <NERAutocomplete
                 id="wbs-autocomplete"
                 sx={{ bgcolor: 'inherit' }}
                 onChange={(_event, newValue) => {
-                  newValue ? onChange(newValue.id) : onClear();
+                  newValue ? handleWorkPackageSelect(newValue.id) : onClear();
                 }}
                 options={wbsDropdownOptions}
                 size="medium"
@@ -195,7 +216,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
                   textField: {
                     error: !!errors.date,
                     helperText: errors.date?.message,
-                    onClick: (e) => setDatePickerOpen(true),
+                    onClick: () => setDatePickerOpen(true),
                     inputProps: { readOnly: true },
                     fullWidth: true
                   }

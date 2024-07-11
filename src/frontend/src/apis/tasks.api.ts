@@ -3,9 +3,10 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
+import { Task, TaskPriority, TaskStatus, WbsNumber, wbsPipe } from 'shared';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Api call to create a task.
@@ -23,15 +24,23 @@ export const createSingleTask = (
   deadline: string,
   priority: TaskPriority,
   status: TaskStatus,
-  assignees: number[]
+  assignees: string[],
+  notes: string
 ) => {
-  return axios.post<{ message: string }>(apiUrls.tasksCreate(wbsPipe(wbsNum)), {
-    title,
-    deadline,
-    priority,
-    status,
-    assignees
-  });
+  return axios.post<Task>(
+    apiUrls.tasksCreate(wbsPipe(wbsNum)),
+    {
+      title,
+      deadline,
+      priority,
+      status,
+      assignees,
+      notes
+    },
+    {
+      transformResponse: (data) => taskTransformer(JSON.parse(data))
+    }
+  );
 };
 
 /**
@@ -59,10 +68,16 @@ export const editTask = (taskId: string, title: string, notes: string, priority:
  * @param assignees the ids of the users to assign to the task
  * @returns the edited task
  */
-export const editTaskAssignees = (taskId: string, assignees: number[]) => {
-  return axios.post<{ message: string }>(apiUrls.editTaskAssignees(taskId), {
-    assignees
-  });
+export const editTaskAssignees = (taskId: string, assignees: string[]) => {
+  return axios.post<Task>(
+    apiUrls.editTaskAssignees(taskId),
+    {
+      assignees
+    },
+    {
+      transformResponse: (data) => taskTransformer(JSON.parse(data))
+    }
+  );
 };
 
 /**

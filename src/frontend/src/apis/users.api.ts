@@ -4,7 +4,14 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User, UserScheduleSettings, UserSecureSettings, UserWithScheduleSettings } from 'shared';
+import {
+  Project,
+  SetUserScheduleSettingsPayload,
+  User,
+  UserScheduleSettings,
+  UserSecureSettings,
+  UserWithScheduleSettings
+} from 'shared';
 import { apiUrls } from '../utils/urls';
 import { authUserTransformer, userTransformer } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
@@ -24,8 +31,8 @@ export const getAllUsers = () => {
  *
  * @param id User ID of the requested user.
  */
-export const getSingleUser = (id: number) => {
-  return axios.get<User>(apiUrls.usersById(`${id}`), {
+export const getSingleUser = (id: string) => {
+  return axios.get<User>(apiUrls.usersById(id), {
     transformResponse: (data) => userTransformer(JSON.parse(data))
   });
 };
@@ -48,7 +55,7 @@ export const logUserIn = (id_token: string) => {
  *
  * @param userId The userId to log in.
  */
-export const logUserInDev = (userId: number) => {
+export const logUserInDev = (userId: string) => {
   return axios.post<AuthenticatedUser>(
     apiUrls.usersLoginDev(),
     { userId },
@@ -61,8 +68,8 @@ export const logUserInDev = (userId: number) => {
  *
  * @param id User ID of the requested user's settings.
  */
-export const getSingleUserSettings = (id: number) => {
-  return axios.get<UserSettings>(apiUrls.userSettingsByUserId(`${id}`));
+export const getSingleUserSettings = (id: string) => {
+  return axios.get<UserSettings>(apiUrls.userSettingsByUserId(id));
 };
 
 /**
@@ -77,8 +84,8 @@ export const getCurrentUserSecureSettings = () => {
  *
  * @param id User ID of the requested user's favorite projects.
  */
-export const getUsersFavoriteProjects = (id: number) => {
-  return axios.get<Project[]>(apiUrls.userFavoriteProjects(`${id}`), {
+export const getUsersFavoriteProjects = (id: string) => {
+  return axios.get<Project[]>(apiUrls.userFavoriteProjects(id), {
     transformResponse: (data) => JSON.parse(data).map(projectTransformer)
   });
 };
@@ -89,8 +96,8 @@ export const getUsersFavoriteProjects = (id: number) => {
  * @param id User ID of the requested user's secure settings
  * @returns the secure settings
  */
-export const getUserSecureSettings = (id: number) => {
-  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(`${id}`));
+export const getUserSecureSettings = (id: string) => {
+  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(id));
 };
 
 /**
@@ -99,15 +106,15 @@ export const getUserSecureSettings = (id: number) => {
  * @param userId User ID of the requested user's schedule settings
  * @returns the schedule settings
  */
-export const getUserScheduleSettings = (userId: number) => {
-  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(`${userId}`));
+export const getUserScheduleSettings = (userId: string) => {
+  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(userId));
 };
 
 /**
  * Update the given user's settings by UserId
  */
-export const updateUserSettings = (id: number, settings: UserSettings) => {
-  return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(`${id}`), settings);
+export const updateUserSettings = (id: string, settings: UserSettings) => {
+  return axios.post<{ message: string }>(apiUrls.userSettingsByUserId(id), settings);
 };
 
 /**
@@ -120,10 +127,10 @@ export const updateUserSecureSettings = (settings: UserSecureSettings) => {
 /**
  * Update the given user's schedule settings by UserId
  */
-export const updateUserScheduleSettings = (settings: UserScheduleSettings) => {
+export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayload) => {
   return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
 };
 
-export const updateUserRole = (id: number, role: string) => {
-  return axios.post<{ message: string }>(apiUrls.userRoleByUserId(`${id}`), { role });
+export const updateUserRole = (id: string, role: string) => {
+  return axios.post<{ message: string }>(apiUrls.userRoleByUserId(id), { role });
 };

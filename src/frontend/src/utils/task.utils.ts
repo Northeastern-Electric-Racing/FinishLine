@@ -5,7 +5,7 @@
 
 import { Dispatch, MouseEventHandler, SetStateAction } from 'react';
 import { Project, Task, TaskPriority, TaskStatus, TeamPreview, User, UserPreview } from 'shared';
-import { FormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskListNotesModal';
+import { EditTaskFormInput } from '../pages/ProjectDetailPage/ProjectViewContainer/TaskList/TaskFormModal';
 import { fullNamePipe } from './pipes';
 import { makeTeamList } from './teams.utils';
 
@@ -57,11 +57,11 @@ export interface TaskListDataGridProps {
   moveToInProgress: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToDone: (taskId: string) => MouseEventHandler<HTMLLIElement>;
   moveToBacklog: (taskId: string) => MouseEventHandler<HTMLLIElement>;
-  editTask: (editInfo: FormInput) => Promise<void>;
+  editTask: (editInfo: EditTaskFormInput) => Promise<void>;
   setDisabled: Dispatch<SetStateAction<boolean>>;
 }
 
-export const taskUserToAutocompleteOption = (user: User): { label: string; id: number } => {
+export const taskUserToAutocompleteOption = (user: User): { label: string; id: string } => {
   return { label: `${fullNamePipe(user)} (${user.email})`, id: user.userId };
 };
 

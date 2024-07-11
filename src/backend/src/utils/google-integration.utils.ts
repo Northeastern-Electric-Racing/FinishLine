@@ -4,6 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
+import { User } from '@prisma/client';
 
 const { OAuth2 } = google.auth;
 const {
@@ -12,8 +13,7 @@ const {
   GOOGLE_CLIENT_SECRET,
   EMAIL_REFRESH_TOKEN,
   USER_EMAIL,
-  DRIVE_REFRESH_TOKEN,
-  ADVISOR_EMAIL
+  DRIVE_REFRESH_TOKEN
 } = process.env;
 
 const oauth2Client = new OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'https://developers.google.com/oauthplayground');
@@ -26,7 +26,7 @@ const createTransporter = async () => {
 
     let accessToken: string | null | undefined;
 
-    await oauth2Client.getAccessToken((err, token) => {
+    oauth2Client.getAccessToken((_err, token) => {
       accessToken = token;
     });
 
@@ -45,15 +45,16 @@ const createTransporter = async () => {
   } catch (err) {
     console.log('ERROR: ' + err);
     if (err instanceof Error) throw new HttpException(500, 'Failed to Create Transporter ' + err.message);
+    throw err;
   }
 };
 
-export const sendMailToAdvisor = async (subject: string, text: string) => {
+export const sendMailToAdvisor = async (subject: string, text: string, advisor: User) => {
   try {
     //this sends an email from our email to our advisor: professor Goldstone
     const mailOptions = {
       from: USER_EMAIL,
-      to: ADVISOR_EMAIL,
+      to: advisor.email,
       subject,
       text
     };
@@ -128,6 +129,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       throw new HttpException(500, `Failed to Upload Receipt(s): ${error.message}`);
     }
     console.log('error' + error);
+    throw error;
   }
 };
 
@@ -163,5 +165,6 @@ export const downloadImageFile = async (fileId: string) => {
     if (error instanceof Error) {
       throw new HttpException(500, `Failed to Download Image(${fileId}): ${error.message}`);
     }
+    throw error;
   }
 };

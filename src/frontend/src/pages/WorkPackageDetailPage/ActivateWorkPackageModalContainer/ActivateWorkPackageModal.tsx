@@ -52,7 +52,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
   }
 
   const defaultValues: FormInput = {
-    startDate: startDate,
+    startDate,
     confirmDetails: false
   };
 
@@ -61,27 +61,27 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     defaultValues
   });
 
-  const [projectLeadId, setProjectLeadId] = useState<string>();
-  const [projectManagerId, setProjectManagerId] = useState<string>();
+  const [leadId, setLeadId] = useState<string>();
+  const [managerId, setManagerId] = useState<string>();
   const toast = useToast();
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
    */
   const onSubmitWrapper = async (data: FormInput) => {
     const { startDate, confirmDetails } = data;
-    if (!projectLeadId) {
+    if (!leadId) {
       toast.error('Please Select a Project Lead');
       return;
     }
-    if (!projectManagerId) {
+    if (!managerId) {
       toast.error('Please Select a Project Manager');
       return;
     }
     await onSubmit({
       startDate,
       confirmDetails,
-      projectLeadId: parseInt(projectLeadId),
-      projectManagerId: parseInt(projectManagerId)
+      leadId,
+      managerId
     });
     reset(defaultValues);
   };
@@ -99,7 +99,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             <Grid item xs={6}>
               <NERAutocomplete
                 id="project-lead-autocomplete"
-                onChange={(_event, value) => setProjectLeadId(value?.id)}
+                onChange={(_event, value) => setLeadId(value?.id)}
                 options={allUsers.map((p) => ({
                   label: fullNamePipe(p),
                   id: p.userId.toString()
@@ -112,7 +112,7 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
             <Grid item xs={6}>
               <NERAutocomplete
                 id="project-manager-autocomplete"
-                onChange={(_event, value) => setProjectManagerId(value?.id)}
+                onChange={(_event, value) => setManagerId(value?.id)}
                 options={allUsers.map((p) => ({
                   label: fullNamePipe(p),
                   id: p.userId.toString()

@@ -57,18 +57,18 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
     .map(userToAutocompleteOption);
 
   const headOptions = users
-    .filter((user) => memberOptions.some((option) => parseInt(option.id) === user.userId) && isHead(user.role))
+    .filter((user) => memberOptions.some((option) => option.id === user.userId) && isHead(user.role))
     .sort(userComparator)
     .map(userToAutocompleteOption);
 
   const leadOptions = users
-    .filter((user) => memberOptions.some((option) => parseInt(option.id) === user.userId) && isLeadership(user.role))
+    .filter((user) => memberOptions.some((option) => option.id === user.userId) && isLeadership(user.role))
     .sort((a, b) => (a.firstName > b.firstName ? 1 : -1))
     .map(userToAutocompleteOption);
 
   const submitHead = async () => {
     try {
-      await setTeamHeadMutateAsync(parseInt(head.id));
+      await setTeamHeadMutateAsync(head.id);
       setIsEditingHead(false);
     } catch (error) {
       error instanceof Error && toast.error(error.message);
@@ -77,7 +77,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const submitMembers = async () => {
     try {
-      await setTeamMembersMutateAsync(members.map((member) => parseInt(member.id)));
+      await setTeamMembersMutateAsync(members.map((member) => member.id));
       setIsEditingMembers(false);
     } catch (error) {
       error instanceof Error && toast.error(error.message);
@@ -86,7 +86,7 @@ const TeamMembersPageBlock: React.FC<TeamMembersPageBlockProps> = ({ team }) => 
 
   const submitLeads = async () => {
     try {
-      await setTeamLeadsMutateAsync(leads.map((lead) => parseInt(lead.id)));
+      await setTeamLeadsMutateAsync(leads.map((lead) => lead.id));
       setIsEditingLeads(false);
     } catch (error) {
       error instanceof Error && toast.error(error.message);

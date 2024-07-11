@@ -42,7 +42,7 @@ describe('activate work package modal test suite', () => {
   it('renders all the info', () => {
     renderComponent(true);
 
-    expect(screen.queryByText(`Activate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
+    expect(screen.getByText(`Activate #${wbsPipe(exampleWbs1)}`)).toBeInTheDocument();
     expect(screen.getByText(/Date/)).toBeInTheDocument();
     expect(screen.getByText(/WP details/)).toBeInTheDocument();
 

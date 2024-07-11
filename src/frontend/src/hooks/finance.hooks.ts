@@ -11,7 +11,6 @@ import {
   downloadBlobsToPdf,
   downloadGoogleImage,
   editReimbursementRequest,
-  getAllExpenseTypes,
   getAllReimbursementRequests,
   getAllReimbursements,
   getAllVendors,
@@ -28,11 +27,14 @@ import {
   editAccountCode,
   createAccountCode,
   createVendor,
-  editVendor
+  editVendor,
+  getAllAccountCodes,
+  editRefund,
+  leadershipApproveReimbursementRequest
 } from '../apis/finance.api';
 import {
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   Reimbursement,
   ReimbursementReceiptCreateArgs,
   ReimbursementRequest,
@@ -47,7 +49,7 @@ import { fullNamePipe } from '../utils/pipes';
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
   dateOfExpense: Date;
-  expenseTypeId: string;
+  accountCodeId: string;
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
   totalCost: number;
@@ -65,7 +67,7 @@ export interface DownloadReceiptsFormInput {
   refundSource: string;
 }
 
-export interface ExpenseTypePayload {
+export interface AccountCodePayload {
   code: number;
   name: string;
   allowed: boolean;
@@ -74,6 +76,11 @@ export interface ExpenseTypePayload {
 
 export interface EditVendorPayload {
   name: string;
+}
+
+export interface RefundPayload {
+  amount: number;
+  dateReceived: string;
 }
 
 /**
@@ -137,13 +144,13 @@ export const useEditReimbursementRequest = (reimbursementRequestId: string) => {
 };
 
 /**
- * Custom react hook to get all expense types
+ * Custom react hook to get all account codes
  *
- * @returns all the expense types
+ * @returns all the account codes
  */
-export const useGetAllExpenseTypes = () => {
-  return useQuery<ExpenseType[], Error>(['expense-types'], async () => {
-    const { data } = await getAllExpenseTypes();
+export const useGetAllAccountCodes = () => {
+  return useQuery<AccountCode[], Error>(['expense-types'], async () => {
+    const { data } = await getAllAccountCodes();
     return data;
   });
 };
@@ -316,6 +323,28 @@ export const useApproveReimbursementRequest = (id: string) => {
 };
 
 /**
+ * Custom react hook to approve a reimbursement request for the leadership team
+ *
+ * @param id id of the reimbursement request to approve
+ * @returns the created pending finance reimbursement status
+ */
+export const useLeadershipApproveReimbursementRequest = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'edit'],
+    async () => {
+      const { data } = await leadershipApproveReimbursementRequest(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
  * Custom react hook to deny a reimbursement request for the finance team
  *
  * @param id id of the reimbursement request to deny
@@ -415,12 +444,33 @@ export const useSendPendingAdvisorList = () => {
  */
 export const useReportRefund = () => {
   const queryClient = useQueryClient();
-  return useMutation<Reimbursement, Error, { refundAmount: number; dateReceived: string }>(
+  return useMutation<Reimbursement, Error, { amount: number; dateReceived: string }>(
     ['reimbursement'],
-    async (formData: { refundAmount: number; dateReceived: string }) => {
-      const { data } = await reportRefund(formData.refundAmount, formData.dateReceived);
+    async (formData: { amount: number; dateReceived: string }) => {
+      const { data } = await reportRefund(formData.amount, formData.dateReceived);
       queryClient.invalidateQueries(['reimbursement']);
       return data;
+    }
+  );
+};
+
+/**
+ * Custom react hook to edit a refund
+ * @returns the edited refund
+ */
+export const useEditRefund = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Reimbursement, Error, { amount: number; dateReceived: string }>(
+    ['reimbursement', 'edit'],
+    async (formData: { amount: number; dateReceived: string }) => {
+      const { data } = await editRefund(id, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement']);
+      }
     }
   );
 };
@@ -433,7 +483,7 @@ export const useReportRefund = () => {
 export const useSetSaboNumber = (reimbursementRequestId: string) => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, { saboNumber: number }>(
-    ['reimbursement-requests', 'edit'],
+    ['reimbursement-requests', reimbursementRequestId],
     async (formData: { saboNumber: number }) => {
       await setSaboNumber(reimbursementRequestId, formData.saboNumber);
     },
@@ -450,12 +500,12 @@ export const useSetSaboNumber = (reimbursementRequestId: string) => {
  *
  * @param expenseId The id of the expense type
  */
-export const useEditAccountCode = (expenseTypeId: string) => {
+export const useEditAccountCode = (accountCodeId: string) => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'edit'],
-    async (accountCodeData: ExpenseTypePayload) => {
-      const { data } = await editAccountCode(expenseTypeId, accountCodeData);
+    async (accountCodeData: AccountCodePayload) => {
+      const { data } = await editAccountCode(accountCodeId, accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;
     }
@@ -467,9 +517,9 @@ export const useEditAccountCode = (expenseTypeId: string) => {
  */
 export const useCreateAccountCode = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, ExpenseTypePayload>(
+  return useMutation<{ message: string }, Error, AccountCodePayload>(
     ['expense-types', 'create'],
-    async (accountCodeData: ExpenseTypePayload) => {
+    async (accountCodeData: AccountCodePayload) => {
       const { data } = await createAccountCode(accountCodeData);
       queryClient.invalidateQueries(['expense-types']);
       return data;

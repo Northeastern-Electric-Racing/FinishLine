@@ -11,7 +11,7 @@ import {
   isProject,
   WorkPackage,
   ClubAccount,
-  ExpenseType,
+  AccountCode,
   DesignReview
 } from 'shared';
 
@@ -69,13 +69,13 @@ export const emDashPipe = (str: string) => {
  * so to get around that we do the toDateString() of the time and pass it into the Date constructor
  * where the constructor assumes it's in UTC and makes the correct Date object finally
  */
-export const datePipe = (date?: Date) => {
+export const datePipe = (date?: Date, includeYear = true) => {
   if (!date) return '';
   date = typeof date == 'string' ? new Date(date) : new Date(date.toDateString());
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric',
+    year: includeYear ? 'numeric' : undefined,
     timeZone: 'UTC'
   });
 };
@@ -95,8 +95,8 @@ export const numberParamPipe = (param: string | null) => {
   }
 };
 
-export const expenseTypePipe = (expenseType: ExpenseType) => {
-  return `${expenseType.code} - ${expenseType.name}`;
+export const accountCodePipe = (accountCode: AccountCode) => {
+  return `${accountCode.code} - ${accountCode.name}`;
 };
 
 /** Display timeline status in readable form
@@ -186,7 +186,7 @@ export const displayEnum = (enumString: string) => {
 export const meetingStartTimePipe = (times: number[]) => {
   const time = (times[0] % 12) + 10;
 
-  return time <= 12 ? time + 'am' : time - 12 + 'pm';
+  return time === 12 ? time + 'pm' : time < 12 ? time + 'am' : time - 12 + 'pm';
 };
 
 // takes in a Date and returns it as a string in the form mm/dd/yy

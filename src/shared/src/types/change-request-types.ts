@@ -4,11 +4,12 @@
  */
 
 import { User } from './user-types';
-import { ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
+import { LinkCreateArgs, ProjectProposedChanges, WbsNumber, WorkPackageProposedChanges } from './project-types';
 import { WorkPackageStage } from './work-package-types';
 
 export interface ChangeRequest {
-  crId: number;
+  crId: string;
+  identifier: number;
   wbsNum: WbsNumber;
   wbsName: string;
   submitter: User;
@@ -43,6 +44,8 @@ export interface StandardChangeRequest extends ChangeRequest {
   proposedSolutions: ProposedSolution[];
   projectProposedChanges?: ProjectProposedChanges;
   workPackageProposedChanges?: WorkPackageProposedChanges;
+  originalProjectData?: ProjectProposedChanges;
+  originalWorkPackageData?: WorkPackageProposedChanges;
 }
 
 export interface ProposedSolution {
@@ -57,8 +60,8 @@ export interface ProposedSolution {
 }
 
 export interface ActivationChangeRequest extends ChangeRequest {
-  projectLead: User;
-  projectManager: User;
+  lead: User;
+  manager: User;
   startDate: Date;
   confirmDetails: boolean;
 }
@@ -94,8 +97,8 @@ export enum ChangeRequestStatus {
 }
 
 export interface ImplementedChange {
-  changeId: number;
-  changeRequestId: number;
+  changeId: string;
+  changeRequestId: string;
   wbsNum: WbsNumber;
   implementer: User;
   detail: string;
@@ -109,29 +112,31 @@ export interface ProposedSolutionCreateArgs {
   timelineImpact: number;
 }
 
-export interface ProjectProposedChangesCreateArgs {
+export interface DescriptionBulletPreview {
+  id: string;
+  detail: string;
+  type: string;
+}
+
+export interface WBSProposedChangesCreateArgs {
   name: string;
-  leadId?: number;
-  managerId?: number;
-  links: { url: string; linkTypeName: string }[];
+  leadId?: string;
+  managerId?: string;
+  descriptionBullets: DescriptionBulletPreview[];
+  links: LinkCreateArgs[];
+}
+
+export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   budget: number;
   summary: string;
-  goals: string[];
-  features: string[];
-  otherConstraints: string[];
-  rules: string[];
   teamIds: string[];
+  workPackageProposedChanges: WorkPackageProposedChangesCreateArgs[];
   carNumber?: number;
 }
 
-export interface WorkPackageProposedChangesCreateArgs {
-  name: string;
+export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
   duration: number;
   startDate: string;
   stage?: WorkPackageStage;
   blockedBy: WbsNumber[];
-  expectedActivities: string[];
-  deliverables: string[];
-  leadId?: number;
-  managerId?: number;
 }

@@ -5,6 +5,7 @@
 
 import { WorkPackage } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
+import { designReviewTransformer } from './design-reviews.tranformers';
 import { descriptionBulletTransformer } from './projects.transformers';
 
 /**
@@ -13,14 +14,14 @@ import { descriptionBulletTransformer } from './projects.transformers';
  * @param workPackage Incoming work package object supplied by the HTTP response.
  * @returns Properly transformed work package object.
  */
-export const workPackageTransformer = (workPackage: WorkPackage) => {
+export const workPackageTransformer = (workPackage: WorkPackage): WorkPackage => {
   return {
     ...workPackage,
     dateCreated: new Date(workPackage.dateCreated),
     startDate: new Date(workPackage.startDate),
     endDate: new Date(workPackage.endDate),
-    expectedActivities: workPackage.expectedActivities.map(descriptionBulletTransformer),
-    deliverables: workPackage.deliverables.map(descriptionBulletTransformer),
-    changes: workPackage.changes.map(implementedChangeTransformer)
+    descriptionBullets: workPackage.descriptionBullets.map(descriptionBulletTransformer),
+    changes: workPackage.changes.map(implementedChangeTransformer),
+    designReviews: workPackage.designReviews.map(designReviewTransformer)
   };
 };

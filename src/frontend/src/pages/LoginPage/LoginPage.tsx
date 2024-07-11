@@ -12,7 +12,7 @@ import LoginDev from './LoginDev';
 import { FormEvent } from 'react';
 
 interface LoginPageProps {
-  devSetUser: (userId: number) => void;
+  devSetUser: (userId: string) => void;
   devFormSubmit: (e: FormEvent) => void;
   prodSuccess: (res: GoogleLoginResponse | GoogleLoginResponseOffline) => void;
   prodFailure: (res: any) => void;

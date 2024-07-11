@@ -21,7 +21,7 @@ interface SubmitToSaboModalProps {
 const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSaboModalProps) => {
   const user = useCurrentUser();
   const { mutateAsync: submitToSabo } = useApproveReimbursementRequest(reimbursementRequest.reimbursementRequestId);
-  const { recipient, dateOfExpense, totalCost, vendor, expenseType, reimbursementProducts, receiptPictures } =
+  const { recipient, dateOfExpense, totalCost, vendor, accountCode, reimbursementProducts, receiptPictures } =
     reimbursementRequest;
   const { data: userInfo, isLoading, isError, error } = useUserSecureSettings(recipient.userId);
   const toast = useToast();
@@ -59,7 +59,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
       open={open}
       onHide={() => setOpen(false)}
       title="Input these fields into the SABO Form"
-      submitText={isSaboSubmitted ? '' : 'Submit to SABO'}
+      submitText={isSaboSubmitted ? undefined : 'Submit to SABO'}
       showCloseButton={isSaboSubmitted}
       hideFormButtons={isSaboSubmitted}
       onSubmit={() => handleSubmitToSabo()}
@@ -118,7 +118,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           />
         </Grid>
         <Grid item xs={6}>
-          <DetailDisplay label={'Expense Type'} content={`${expenseType.code} - ${expenseType.name}`} copyButton />
+          <DetailDisplay label={'Account Code'} content={`${accountCode.code} - ${accountCode.name}`} copyButton />
         </Grid>
       </Grid>
       <Grid container spacing={1} sx={{ marginTop: 2 }}>
@@ -128,7 +128,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography>Brody Pearlman</Typography>
+              <Typography>Alex Leblang</Typography>
               <CopyToClipboardButton msg={'Brody Pearlman'} />
             </Box>
             <Box display="flex" alignItems="center">

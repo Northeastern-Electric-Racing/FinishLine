@@ -1,17 +1,13 @@
 import { Box, Grid, Link, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useState } from 'react';
-import { DesignReview, DesignReviewStatus, wbsPipe } from 'shared';
+import { DesignReview, wbsPipe } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
-import { DesignReviewEditData } from './DesignReviewDetailPage';
 import NERFormModal from '../../../components/NERFormModal';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useForm } from 'react-hook-form';
-import { useToast } from '../../../hooks/toasts.hooks';
-import { useEditDesignReview } from '../../../hooks/design-reviews.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useHistory } from 'react-router-dom';
-import { routes } from '../../../utils/routes';
+import { FinalizeReviewInformation } from './DesignReviewDetailPage';
 
 const schema = yup.object().shape({
   zoomLink: yup
@@ -26,8 +22,10 @@ interface FinalizeDesignReviewProps {
   open: boolean;
   setOpen: (val: boolean) => void;
   designReview: DesignReview;
-  editData: DesignReviewEditData;
   conflictingDesignReviews: DesignReview[];
+  startTime: number;
+  selectedDate: Date;
+  finalizeDesignReview: (data: FinalizeReviewInformation) => void;
 }
 
 const FinalizeDesignReviewDetailsModal = ({
@@ -35,20 +33,16 @@ const FinalizeDesignReviewDetailsModal = ({
   setOpen,
   designReview,
   conflictingDesignReviews,
-  editData
+  finalizeDesignReview,
+  startTime,
+  selectedDate
 }: FinalizeDesignReviewProps) => {
-  const toast = useToast();
-  const history = useHistory();
-  const { mutateAsync } = useEditDesignReview(designReview.designReviewId);
   const [meetingType, setMeetingType] = useState<string[]>([]);
-
-  const { selectedDate } = editData;
 
   const title = `Finalize Design Review for ${designReview.wbsName}`;
 
   const designReviewConflicts = conflictingDesignReviews.map(
-    (designReview) =>
-      `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${meetingStartTimePipe([editData.startTime])}`
+    (designReview) => `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName} at ${meetingStartTimePipe([startTime])}`
   );
 
   const handleMeetingTypeChange = (_event: any, newMeetingType: string[]) => {
@@ -56,32 +50,7 @@ const FinalizeDesignReviewDetailsModal = ({
   };
 
   const onSubmit = async (data: { docTemplateLink: string; zoomLink?: string; location?: string }) => {
-    const day = editData.selectedDate.getDay();
-    const adjustedDay = day === 0 ? 6 : day - 1;
-    const times = [];
-    for (let i = adjustedDay * 12 + editData.startTime; i < adjustedDay * 12 + editData.endTime; i++) {
-      times.push(i);
-    }
-    try {
-      const payload = {
-        ...data,
-        dateScheduled: editData.selectedDate,
-        teamTypeId: designReview.teamType.teamTypeId,
-        requiredMembersIds: editData.requiredUserIds,
-        optionalMembersIds: editData.optionalUserIds,
-        isOnline: meetingType.includes('virtual'),
-        isInPerson: meetingType.includes('inPerson'),
-        status: DesignReviewStatus.SCHEDULED,
-        attendees: [],
-        meetingTimes: times
-      };
-      await mutateAsync(payload);
-      history.push(routes.CALENDAR);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
+    finalizeDesignReview({ ...data, meetingType });
     setOpen(false);
   };
 
@@ -113,7 +82,7 @@ const FinalizeDesignReviewDetailsModal = ({
       <Box style={{ display: 'flex', marginBottom: 20 }}>
         <Typography style={{ fontSize: '1.2em', marginRight: 90 }}>Meeting Time:</Typography>
         <Typography style={{ fontSize: '1.2em' }}>{`${meetingStartTimePipe([
-          editData.startTime
+          startTime
         ])} - ${selectedDate.toDateString()}`}</Typography>
       </Box>
       <Box style={{ display: 'flex', marginBottom: 20 }}>

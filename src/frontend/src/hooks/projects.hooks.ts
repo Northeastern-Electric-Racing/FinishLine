@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import { Link, LinkCreateArgs, LinkType, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import {
   editSingleProject,
   createSingleProject,
@@ -16,17 +16,19 @@ import {
   getAllLinkTypes,
   createLinkType,
   getAllWorkPackageTemplates,
-  editLinkType
+  editLinkType,
+  getAllUsefulLinks,
+  setUsefulLinks
 } from '../apis/projects.api';
-import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 import { useCurrentUser } from './users.hooks';
 
 /**
  * Custom React Hook to supply all projects.
  */
-export const useAllProjects = () => {
+export const useAllProjects = (includeDeleted: boolean = false) => {
   return useQuery<Project[], Error>(['projects'], async () => {
-    const { data } = await getAllProjects();
+    const { data } = await getAllProjects(includeDeleted);
     return data;
   });
 };
@@ -196,6 +198,38 @@ export const useEditLinkType = (linkTypeName: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['linkTypes']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to get all useful links
+ */
+export const useAllUsefulLinks = () => {
+  return useQuery<Link[], Error>(['useful links'], async () => {
+    const { data } = await getAllUsefulLinks();
+    return data;
+  });
+};
+
+/**
+ * Custom React Hook to set all useful links.
+ *
+ * @param links All the links to be set
+ * @returns all the links
+ */
+export const useSetUsefulLinks = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Link[], Error, LinkCreateArgs[]>(
+    ['useful links'],
+    async (links: LinkCreateArgs[]) => {
+      const { data } = await setUsefulLinks({ links });
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['useful links']);
       }
     }
   );

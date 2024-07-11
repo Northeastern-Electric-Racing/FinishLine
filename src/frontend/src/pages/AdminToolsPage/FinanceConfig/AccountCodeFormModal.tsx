@@ -1,5 +1,5 @@
-import { ClubAccount, ExpenseType } from 'shared';
-import { ExpenseTypePayload } from '../../../hooks/finance.hooks';
+import { ClubAccount, AccountCode } from 'shared';
+import { AccountCodePayload } from '../../../hooks/finance.hooks';
 import { Controller, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
 import { Checkbox, FormControl, FormLabel, FormHelperText, Select, MenuItem, OutlinedInput } from '@mui/material';
@@ -19,8 +19,8 @@ const schema = yup.object().shape({
 interface AccountCodeFormModalProps {
   showModal: boolean;
   handleClose: () => void;
-  defaultValues?: ExpenseType;
-  onSubmit: (data: ExpenseTypePayload) => void;
+  defaultValues?: AccountCode;
+  onSubmit: (data: AccountCodePayload) => void;
 }
 
 const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit }: AccountCodeFormModalProps) => {
@@ -41,7 +41,7 @@ const AccountCodeFormModal = ({ showModal, handleClose, defaultValues, onSubmit 
   });
   const theme = useTheme();
 
-  const onFormSubmit = async (data: ExpenseTypePayload) => {
+  const onFormSubmit = async (data: AccountCodePayload) => {
     try {
       await onSubmit(data);
     } catch (error: unknown) {

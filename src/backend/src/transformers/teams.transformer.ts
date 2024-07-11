@@ -1,11 +1,12 @@
 import { Prisma } from '@prisma/client';
 import { Team } from 'shared';
-import teamQueryArgs from '../prisma-query-args/teams.query-args';
+import { TeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { calculateProjectStatus } from '../utils/projects.utils';
 import { wbsNumOf } from '../utils/utils';
 import { userTransformer } from './user.transformer';
+import workPackageTransformer from './work-packages.transformer';
 
-const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Team => {
+const teamTransformer = (team: Prisma.TeamGetPayload<TeamQueryArgs>): Team => {
   return {
     teamId: team.teamId,
     teamName: team.teamName,
@@ -17,7 +18,9 @@ const teamTransformer = (team: Prisma.TeamGetPayload<typeof teamQueryArgs>): Tea
       id: project.projectId,
       wbsNum: wbsNumOf(project.wbsElement),
       name: project.wbsElement.name,
-      status: calculateProjectStatus(project)
+      status: calculateProjectStatus(project),
+      workPackages: project.workPackages.map(workPackageTransformer),
+      deleted: project.wbsElement.dateDeleted !== null
     })),
     leads: team.leads.map(userTransformer),
     userArchived: team.userArchived ? userTransformer(team.userArchived) : undefined,

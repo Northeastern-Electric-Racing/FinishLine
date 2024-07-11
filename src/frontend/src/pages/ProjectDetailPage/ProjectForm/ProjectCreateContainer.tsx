@@ -3,7 +3,6 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useAllLinkTypes, useCreateSingleProject } from '../../../hooks/projects.hooks';
-import { mapBulletsToPayload } from '../../../utils/form';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { CreateSingleProjectPayload } from '../../../utils/types';
 import { useState } from 'react';
@@ -25,8 +24,8 @@ const ProjectCreateContainer: React.FC = () => {
   const history = useHistory();
   const query = useQuery();
 
-  const [projectManagerId, setProjectManagerId] = useState<string | undefined>();
-  const [projectLeadId, setProjectLeadId] = useState<string | undefined>();
+  const [managerId, setManagerId] = useState<string | undefined>();
+  const [leadId, setLeadId] = useState<string | undefined>();
 
   const { mutateAsync, isLoading } = useCreateSingleProject();
   const { mutateAsync: mutateCRAsync, isLoading: isCRHookLoading } = useCreateStandardChangeRequest();
@@ -52,23 +51,20 @@ const ProjectCreateContainer: React.FC = () => {
     carNumber: 0,
     links: [],
     crId: query.get('crId') || '',
-    goals: [],
-    features: [],
-    constraints: [],
-    rules: [],
-    projectLeadId,
-    projectManagerId
+    descriptionBullets: [],
+    leadId,
+    managerId
   };
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required!'),
     // TODO update upper bound here once new car model is made
-    carNumber: yup.number().min(0).max(3).required('A car number is required!'),
+    carNumber: yup.number().min(0).required('A car number is required!'),
     teamIds: yup.array().of(yup.string()).required('Teams are required'),
     budget: yup.number().optional(),
     summary: yup.string().required('Summary is required!'),
-    projectLeadId: yup.number().optional(),
-    projectManagerId: yup.number().optional(),
+    leadId: yup.string().optional(),
+    managerId: yup.string().optional(),
     links: yup
       .array()
       .optional()
@@ -81,9 +77,10 @@ const ProjectCreateContainer: React.FC = () => {
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, teamIds, carNumber, goals, features, constraints, type, what, why } = data;
+    const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, type, what, why } = data;
 
-    const rules = data.rules.map((rule) => rule.detail);
+    // Car number could be zero and a truthy check would fail
+    if (carNumber === undefined) throw new Error('Car number is required!');
 
     try {
       const projectPayload: ProjectProposedChangesCreateArgs = {
@@ -91,23 +88,20 @@ const ProjectCreateContainer: React.FC = () => {
         summary,
         teamIds: teamIds.map((number) => '' + number),
         budget,
-        rules,
-        goals: goals.map((g) => g.detail),
-        features: features.map((f) => f.detail),
-        otherConstraints: constraints.map((c) => c.detail),
+        descriptionBullets,
         links,
-        leadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        managerId: projectManagerId ? parseInt(projectManagerId) : undefined,
-        carNumber: carNumber
+        leadId,
+        managerId,
+        carNumber,
+        workPackageProposedChanges: []
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
-          // TODO change this to use the car model when we add it to the schema
-          carNumber: carNumber,
+          carNumber,
           projectNumber: 0,
           workPackageNumber: 0
         },
-        type: type,
+        type,
         what,
         why,
         proposedSolutions: [],
@@ -123,28 +117,23 @@ const ProjectCreateContainer: React.FC = () => {
   };
 
   const onSubmit = async (data: ProjectFormInput) => {
-    const { name, budget, summary, links, crId, teamIds, carNumber } = data;
+    const { name, budget, summary, links, crId, teamIds, carNumber, descriptionBullets } = data;
 
-    const rules = data.rules.map((rule) => rule.detail);
-    const goals = mapBulletsToPayload(data.goals);
-    const features = mapBulletsToPayload(data.features);
-    const otherConstraints = mapBulletsToPayload(data.constraints);
+    // Car number could be zero and a truthy check would fail
+    if (carNumber === undefined) throw new Error('Car number is required!');
 
     try {
       const payload: CreateSingleProjectPayload = {
-        crId: Number(crId),
+        crId,
         name,
         carNumber,
         summary,
-        teamIds: teamIds.map((number) => '' + number),
+        teamIds,
         budget,
-        rules,
-        goals,
-        features,
-        otherConstraints,
+        descriptionBullets,
         links,
-        projectLeadId: projectLeadId ? parseInt(projectLeadId) : undefined,
-        projectManagerId: projectManagerId ? parseInt(projectManagerId) : undefined
+        leadId,
+        managerId
       };
       await mutateAsync(payload);
       history.push(routes.PROJECTS_ALL);
@@ -161,11 +150,11 @@ const ProjectCreateContainer: React.FC = () => {
       exitEditMode={() => history.push(routes.PROJECTS_ALL)}
       onSubmit={onSubmit}
       defaultValues={defaultValues}
-      setProjectLeadId={setProjectLeadId}
-      setProjectManagerId={setProjectManagerId}
+      setLeadId={setLeadId}
+      setManagerId={setManagerId}
       schema={schema}
-      projectLeadId={projectLeadId}
-      projectManagerId={projectManagerId}
+      leadId={leadId}
+      managerId={managerId}
       onSubmitChangeRequest={onSubmitChangeRequest}
     />
   );

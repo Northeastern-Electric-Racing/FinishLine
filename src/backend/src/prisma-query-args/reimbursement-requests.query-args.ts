@@ -1,22 +1,24 @@
 import { Prisma } from '@prisma/client';
-import reimbursementStatusQueryArgs from './reimbursement-statuses.query-args';
-import receiptQueryArgs from './receipt-query.args';
-import { reimbursementProductQueryArgs } from './reimbursement-products.query-args';
+import { getReimbursementStatusQueryArgs } from './reimbursement-statuses.query-args';
+import { getUserQueryArgs } from './user.query-args';
+import { getReceiptQueryArgs } from './receipt-query.args';
+import { getReimbursementProductQueryArgs } from './reimbursement-products.query-args';
 
-const reimbursementRequestQueryArgs = Prisma.validator<Prisma.Reimbursement_RequestArgs>()({
-  include: {
-    recipient: true,
-    vendor: true,
-    expenseType: true,
-    receiptPictures: receiptQueryArgs,
-    reimbursementStatuses: reimbursementStatusQueryArgs,
-    reimbursementProducts: {
-      where: {
-        dateDeleted: null
-      },
-      ...reimbursementProductQueryArgs
+export type ReimbursementRequestQueryArgs = ReturnType<typeof getReimbursementRequestQueryArgs>;
+
+export const getReimbursementRequestQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Reimbursement_RequestDefaultArgs>()({
+    include: {
+      recipient: getUserQueryArgs(organizationId),
+      vendor: true,
+      accountCode: true,
+      receiptPictures: getReceiptQueryArgs(organizationId),
+      reimbursementStatuses: getReimbursementStatusQueryArgs(organizationId),
+      reimbursementProducts: {
+        where: {
+          dateDeleted: null
+        },
+        ...getReimbursementProductQueryArgs(organizationId)
+      }
     }
-  }
-});
-
-export default reimbursementRequestQueryArgs;
+  });

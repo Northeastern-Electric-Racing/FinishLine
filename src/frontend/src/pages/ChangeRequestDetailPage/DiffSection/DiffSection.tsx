@@ -1,9 +1,10 @@
 import { Box } from '@mui/system';
 import InfoBlock from '../../../components/InfoBlock';
-import { ProjectProposedChangesPreview, StandardChangeRequest, WorkPackageProposedChangesPreview, isProject } from 'shared';
+import { StandardChangeRequest, isProject } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
 import DiffSectionCreate from './DiffSectionCreate';
 import DiffSectionEdit from './DiffSectionEdit';
+import { projectProposedChangesToPreview, workPackageProposedChangesToPreview } from '../../../utils/diff-page.utils';
 
 interface DiffSectionProps {
   changeRequest: StandardChangeRequest;
@@ -29,35 +30,10 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
       ? ChangeRequestAction.EDIT_PROJECT
       : ChangeRequestAction.EDIT_WORK_PACKAGE;
 
-  const projectProposedChangesPreview: ProjectProposedChangesPreview | undefined = projectProposedChanges
-    ? {
-        name: projectProposedChanges.name,
-        summary: projectProposedChanges.summary,
-        lead: projectProposedChanges.lead,
-        manager: projectProposedChanges.manager,
-        teams: projectProposedChanges.teams,
-        budget: projectProposedChanges.budget,
-        goals: projectProposedChanges.goals,
-        features: projectProposedChanges.features,
-        rules: projectProposedChanges.rules,
-        otherConstraints: projectProposedChanges.otherConstraints,
-        links: projectProposedChanges.links
-      }
-    : undefined;
-
-  const workPackageProposedChangesPreview: WorkPackageProposedChangesPreview | undefined = workPackageProposedChanges
-    ? {
-        name: workPackageProposedChanges.name,
-        stage: workPackageProposedChanges.stage,
-        lead: workPackageProposedChanges.lead,
-        manager: workPackageProposedChanges.manager,
-        startDate: workPackageProposedChanges.startDate,
-        duration: workPackageProposedChanges.duration,
-        blockedBy: workPackageProposedChanges.blockedBy,
-        expectedActivities: workPackageProposedChanges.expectedActivities,
-        deliverables: workPackageProposedChanges.deliverables
-      }
-    : undefined;
+  const projectProposedChangesPreview = projectProposedChangesToPreview(projectProposedChanges);
+  const originalProjectData = projectProposedChangesToPreview(changeRequest.originalProjectData);
+  const originalWorkPackageData = workPackageProposedChangesToPreview(changeRequest.originalWorkPackageData);
+  const workPackageProposedChangesPreview = workPackageProposedChangesToPreview(workPackageProposedChanges);
 
   return (
     <Box>
@@ -72,6 +48,8 @@ const DiffSection: React.FC<DiffSectionProps> = ({ changeRequest }) => {
         <DiffSectionEdit
           projectProposedChanges={projectProposedChangesPreview}
           workPackageProposedChanges={workPackageProposedChangesPreview}
+          originalProjectData={originalProjectData}
+          originalWorkPackageData={originalWorkPackageData}
           wbsNum={wbsNum}
         />
       )}

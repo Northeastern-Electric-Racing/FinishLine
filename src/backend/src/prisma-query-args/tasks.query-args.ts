@@ -1,12 +1,14 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
 
-const taskQueryArgs = Prisma.validator<Prisma.TaskArgs>()({
-  include: {
-    wbsElement: true,
-    createdBy: true,
-    deletedBy: true,
-    assignees: true
-  }
-});
+export type TaskQueryArgs = ReturnType<typeof getTaskQueryArgs>;
 
-export default taskQueryArgs;
+export const getTaskQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.TaskDefaultArgs>()({
+    include: {
+      wbsElement: true,
+      createdBy: getUserQueryArgs(organizationId),
+      deletedBy: getUserQueryArgs(organizationId),
+      assignees: getUserQueryArgs(organizationId)
+    }
+  });

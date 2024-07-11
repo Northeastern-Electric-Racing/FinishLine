@@ -2,5 +2,5 @@
 **/dist
 **/tests
 **/*.test.ts
-
-src/frontend
+.vscode
+yarn.lock

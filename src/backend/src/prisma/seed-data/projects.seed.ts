@@ -4,10 +4,8 @@
  */
 
 import { User } from '@prisma/client';
-import { LinkCreateArgs, WbsNumber } from 'shared';
-import projectQueryArgs from '../../prisma-query-args/projects.query-args';
+import { DescriptionBulletPreview, LinkCreateArgs, WbsNumber } from 'shared';
 import ProjectsService from '../../services/projects.services';
-import prisma from '../prisma';
 
 /**
  * Creates a project with the given data using service functions. This has to be done by:
@@ -16,22 +14,20 @@ import prisma from '../prisma';
  */
 export const seedProject = async (
   creator: User,
-  changeRequestId: number,
+  changeRequestId: string,
   carNumber: number,
   name: string,
   summary: string,
   teamIds: string[],
   editor: User,
   budget: number,
-  rules: string[],
-  goals: string[],
-  features: string[],
-  otherConstraints: string[],
   links: LinkCreateArgs[],
-  projectLeadId: number | null,
-  projectManagerId: number | null
-): Promise<{ projectWbsNumber: WbsNumber; projectId: number }> => {
-  const projectWbsNumber = await ProjectsService.createProject(
+  descriptionBullets: DescriptionBulletPreview[],
+  leadId: string | null,
+  managerId: string | null,
+  organizationId: string
+): Promise<{ projectWbsNumber: WbsNumber; projectId: string }> => {
+  const project = await ProjectsService.createProject(
     creator,
     changeRequestId,
     carNumber,
@@ -40,52 +36,25 @@ export const seedProject = async (
     teamIds,
     budget,
     links,
-    rules,
-    goals.map((element) => {
-      return { id: -1, detail: element };
-    }),
-    features.map((element) => {
-      return { id: -1, detail: element };
-    }),
-    otherConstraints.map((element) => {
-      return { id: -1, detail: element };
-    }),
-    projectLeadId,
-    projectManagerId
+    descriptionBullets,
+    leadId,
+    managerId,
+    organizationId
   );
-
-  const { projectId } = await prisma.project.findFirstOrThrow({
-    where: {
-      wbsElement: {
-        carNumber: projectWbsNumber.carNumber,
-        projectNumber: projectWbsNumber.projectNumber,
-        workPackageNumber: projectWbsNumber.workPackageNumber
-      }
-    },
-    ...projectQueryArgs
-  });
 
   await ProjectsService.editProject(
     editor,
-    projectId,
+    project.id,
     changeRequestId,
     name,
     budget,
     summary,
-    rules,
-    goals.map((element) => {
-      return { id: -1, detail: element };
-    }),
-    features.map((element) => {
-      return { id: -1, detail: element };
-    }),
-    otherConstraints.map((element) => {
-      return { id: -1, detail: element };
-    }),
+    [],
     links,
-    projectLeadId,
-    projectManagerId
+    leadId,
+    managerId,
+    organizationId
   );
 
-  return { projectWbsNumber, projectId };
+  return { projectWbsNumber: project.wbsNum, projectId: project.id };
 };

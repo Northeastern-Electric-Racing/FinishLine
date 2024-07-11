@@ -1,9 +1,11 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
 
-const proposedSolutionQueryArgs = Prisma.validator<Prisma.Proposed_SolutionArgs>()({
-  include: {
-    createdBy: true
-  }
-});
+export type ProposedSolutionQueryArgs = ReturnType<typeof getProposedSolutionQueryArgs>;
 
-export default proposedSolutionQueryArgs;
+export const getProposedSolutionQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Proposed_SolutionDefaultArgs>()({
+    include: {
+      createdBy: getUserQueryArgs(organizationId)
+    }
+  });

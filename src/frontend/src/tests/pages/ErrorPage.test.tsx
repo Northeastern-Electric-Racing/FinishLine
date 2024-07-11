@@ -3,14 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import ErrorPage from '../../pages/ErrorPage';
 
 describe('error page', () => {
   it('renders everything', () => {
-    const { getByText } = render(<ErrorPage />);
+    render(<ErrorPage />);
 
-    expect(getByText('Oops, sorry!')).toBeInTheDocument();
-    expect(getByText('There was an error loading the page.')).toBeInTheDocument();
+    expect(screen.getByText('Oops, sorry!')).toBeInTheDocument();
+    expect(screen.getByText('There was an error loading the page.')).toBeInTheDocument();
   });
 });

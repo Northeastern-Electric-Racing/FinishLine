@@ -1,8 +1,8 @@
 import { ProjectProposedChangesPreview, WorkPackageProposedChangesPreview } from 'shared';
 import { Box } from '@mui/system';
-import { PotentialChangeType, potentialChangeBackgroundMap } from '../../../utils/diff-page.utils';
+import { PotentialChangeType, getPotentialChangeBackground } from '../../../utils/diff-page.utils';
 import DiffPanel from './DiffPanel';
-import { Grid } from '@mui/material';
+import { Grid, useTheme } from '@mui/material';
 
 interface DiffSectionCreateProps {
   projectProposedChanges?: ProjectProposedChangesPreview;
@@ -10,19 +10,21 @@ interface DiffSectionCreateProps {
 }
 
 const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({ projectProposedChanges, workPackageProposedChanges }) => {
+  const theme = useTheme();
+
   const isCreateProject = !!projectProposedChanges;
   const potentialChangeTypeMap: Map<string, PotentialChangeType> = new Map();
   delete workPackageProposedChanges?.lead;
   delete workPackageProposedChanges?.manager;
 
   if (isCreateProject) {
-    for (var projectKey in projectProposedChanges) {
+    for (const projectKey in projectProposedChanges) {
       if (projectProposedChanges.hasOwnProperty(projectKey)) {
         potentialChangeTypeMap.set(projectKey, PotentialChangeType.ADDED);
       }
     }
   } else {
-    for (var workPackageKey in workPackageProposedChanges) {
+    for (const workPackageKey in workPackageProposedChanges) {
       if (workPackageProposedChanges.hasOwnProperty(workPackageKey)) {
         potentialChangeTypeMap.set(workPackageKey, PotentialChangeType.ADDED);
       }
@@ -35,7 +37,7 @@ const DiffSectionCreate: React.FC<DiffSectionCreateProps> = ({ projectProposedCh
         borderRadius="10px"
         p={1.4}
         mb={3}
-        sx={{ backgroundColor: potentialChangeBackgroundMap.get(PotentialChangeType.ADDED) }}
+        sx={{ backgroundColor: getPotentialChangeBackground(PotentialChangeType.ADDED, theme) }}
       >
         <DiffPanel
           projectProposedChanges={projectProposedChanges}

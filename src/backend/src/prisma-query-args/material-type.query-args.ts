@@ -4,12 +4,15 @@
  */
 
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
+import { getMaterialPreviewQueryArgs } from './bom.query-args';
 
-const materialTypeQueryArgs = Prisma.validator<Prisma.Material_TypeArgs>()({
-  include: {
-    materials: true,
-    userCreated: true
-  }
-});
+export type MaterialTypeQueryArgs = ReturnType<typeof getMaterialTypeQueryArgs>;
 
-export default materialTypeQueryArgs;
+export const getMaterialTypeQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.Material_TypeDefaultArgs>()({
+    include: {
+      materials: getMaterialPreviewQueryArgs(organizationId),
+      userCreated: getUserQueryArgs(organizationId)
+    }
+  });

@@ -39,7 +39,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         </IconButton>
       </Grid>
       <Grid item xs display="flex" justifyContent="flex-end">
-        <Typography variant="h6" marginRight={1}>
+        <Typography variant="h6" marginRight={1} noWrap>
           {cardDate.getDate()}
         </Typography>
       </Grid>
@@ -63,8 +63,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
             sx={{
               backgroundColor: designReviewStatusColor(event.status),
               borderRadius: 1,
-              minWidth: 140,
-              maxWidth: 140,
+              width: '100%',
               minHeight: 20,
               maxHeight: 20
             }}
@@ -166,7 +165,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   };
 
   return (
-    <Card sx={{ borderRadius: 2, minWidth: 150, maxWidth: 150, minHeight: 90, maxHeight: 90 }}>
+    <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
       <DesignReviewCreateModal
         showModal={isCreateModalOpen}
         handleClose={() => {

@@ -30,7 +30,7 @@ const ProjectsOverview: React.FC = () => {
   if (isError) return <ErrorPage message={error?.message} />;
   if (useAllProjectsIsError) return <ErrorPage message={useAllProjectsError?.message} />;
 
-  const favoriteProjectsSet: Set<number> = new Set(favoriteProjects.map((project) => project.id));
+  const favoriteProjectsSet: Set<string> = new Set(favoriteProjects.map((project) => project.id));
 
   const projectsImLeading = projects.filter(
     (project) =>

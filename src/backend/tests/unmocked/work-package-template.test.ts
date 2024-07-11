@@ -1,13 +1,19 @@
+import {
+  AccessDeniedGuestException,
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException
+} from '../../src/utils/errors.utils';
+import { createTestOrganization, createTestUser, createTestWorkPackageTemplate, resetUsers } from '../test-utils';
+import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/users.test-data';
+import { workPackageTemplateTransformer } from '../../src/transformers/work-package-template.transformer';
 import prisma from '../../src/prisma/prisma';
-import WorkPackageService from '../../src/services/work-packages.services';
-import { AccessDeniedGuestException, HttpException } from '../../src/utils/errors.utils';
-import { createTestUser, resetUsers } from '../test-utils';
-import { batman, theVisitor } from '../test-data/users.test-data';
-import { WorkPackageTemplate1 } from '../test-data/work-packages.test-data';
+import WorkPackageTemplatesService from '../../src/services/work-package-template.services';
 
 describe('Work Package Template Tests', () => {
+  let orgId: string;
   beforeEach(async () => {
-    await resetUsers();
+    orgId = (await createTestOrganization()).organizationId;
   });
 
   afterEach(async () => {
@@ -16,36 +22,143 @@ describe('Work Package Template Tests', () => {
 
   describe('Get single work package template', () => {
     it('fails if user is a guest', async () => {
-      await expect(async () => await WorkPackageService.getSingleWorkPackageTemplate(theVisitor, 'id')).rejects.toThrow(
-        new AccessDeniedGuestException('get a work package template')
-      );
+      await expect(
+        async () =>
+          await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
+            await createTestUser(theVisitorGuest, orgId),
+            'id',
+            orgId
+          )
+      ).rejects.toThrow(new AccessDeniedGuestException('get a work package template'));
     });
 
     it('fails is the work package template ID is not found', async () => {
-      await expect(async () => await WorkPackageService.getSingleWorkPackageTemplate(batman, 'id1')).rejects.toThrow(
-        new HttpException(400, `Work package template with id id1 not found`)
-      );
+      await expect(
+        async () =>
+          await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
+            await createTestUser(batmanAppAdmin, orgId),
+            'id1',
+            orgId
+          )
+      ).rejects.toThrow(new HttpException(400, `Work package template with id id1 not found`));
     });
 
     it('get single work package template succeeds', async () => {
-      const createdUser = await createTestUser(batman);
-      await prisma.work_Package_Template.create({
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const createdWorkPackageTemplate = await createTestWorkPackageTemplate(testBatman, orgId);
+
+      const recievedWorkPackageTemplate = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
+        await createTestUser(supermanAdmin, orgId),
+        createdWorkPackageTemplate.workPackageTemplateId,
+        orgId
+      );
+
+      expect(recievedWorkPackageTemplate).toStrictEqual(workPackageTemplateTransformer(createdWorkPackageTemplate));
+    });
+  });
+
+  describe('Delete single work package template', () => {
+    it('fails if user is a guest', async () => {
+      await expect(
+        async () =>
+          await WorkPackageTemplatesService.deleteWorkPackageTemplate(
+            await createTestUser(theVisitorGuest, orgId),
+            'id',
+            orgId
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete work package template'));
+    });
+
+    it('fails is the work package template ID is not found', async () => {
+      await expect(
+        async () =>
+          await WorkPackageTemplatesService.deleteWorkPackageTemplate(
+            await createTestUser(supermanAdmin, orgId),
+            'id1',
+            orgId
+          )
+      ).rejects.toThrow(new HttpException(400, `Work Package Template with id: id1 not found!`));
+    });
+
+    it('fails is the work package template has already been deleted', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testWorkPackageTemplate = await createTestWorkPackageTemplate(testSuperman, orgId);
+      await WorkPackageTemplatesService.deleteWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate.workPackageTemplateId,
+        orgId
+      );
+
+      await expect(
+        async () =>
+          await WorkPackageTemplatesService.deleteWorkPackageTemplate(
+            testSuperman,
+            testWorkPackageTemplate.workPackageTemplateId,
+            orgId
+          )
+      ).rejects.toThrow(new DeletedException('Work Package Template', testWorkPackageTemplate.workPackageTemplateId));
+    });
+
+    it('succeeds and deletes all blocking templates', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const [testWorkPackageTemplate1, testWorkPackageTemplate2, testWorkPackageTemplate3] = await Promise.all([
+        createTestWorkPackageTemplate(testSuperman, orgId),
+        createTestWorkPackageTemplate(testSuperman, orgId),
+        createTestWorkPackageTemplate(testSuperman, orgId)
+      ]);
+
+      await prisma.work_Package_Template.update({
+        where: {
+          workPackageTemplateId: testWorkPackageTemplate3.workPackageTemplateId
+        },
         data: {
-          workPackageTemplateId: 'id1',
-          workPackageName: 'Work Package 1',
-          templateName: 'Template 1',
-          templateNotes: 'This is a new work package template',
-          dateCreated: new Date('03/25/2024'),
-          userCreatedId: createdUser.userId
+          blockedBy: {
+            connect: {
+              workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
+            }
+          }
         }
       });
 
-      const recievedWorkPackageTemplate = await WorkPackageService.getSingleWorkPackageTemplate(batman, 'id1');
-      expect(recievedWorkPackageTemplate).toStrictEqual({
-        ...WorkPackageTemplate1,
-        userCreated: { ...batman, userId: createdUser.userId },
-        userCreatedId: createdUser.userId
+      await prisma.work_Package_Template.update({
+        where: {
+          workPackageTemplateId: testWorkPackageTemplate2.workPackageTemplateId
+        },
+        data: {
+          blockedBy: {
+            connect: {
+              workPackageTemplateId: testWorkPackageTemplate1.workPackageTemplateId
+            }
+          }
+        }
       });
+
+      await WorkPackageTemplatesService.deleteWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate1.workPackageTemplateId,
+        orgId
+      );
+
+      const updatedTestWorkPackageTemplate1 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate1.workPackageTemplateId,
+        orgId
+      );
+
+      const updatedTestWorkPackageTemplate2 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate2.workPackageTemplateId,
+        orgId
+      );
+      const updatedTestWorkPackageTemplate3 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
+        testSuperman,
+        testWorkPackageTemplate3.workPackageTemplateId,
+        orgId
+      );
+
+      expect(updatedTestWorkPackageTemplate1.dateDeleted).not.toBe(null);
+      expect(updatedTestWorkPackageTemplate2.dateDeleted).not.toBe(null);
+      expect(updatedTestWorkPackageTemplate3.dateDeleted).not.toBe(null);
     });
   });
 });

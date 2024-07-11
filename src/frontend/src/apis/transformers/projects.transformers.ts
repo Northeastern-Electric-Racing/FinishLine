@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBullet, Link, LinkType, Project } from 'shared';
+import { DescriptionBullet, Link, LinkType, Project, ProjectPreview } from 'shared';
 import { implementedChangeTransformer } from './change-requests.transformers';
 import { taskTransformer } from './tasks.transformers';
 import { workPackageTransformer } from './work-packages.transformers';
@@ -56,18 +56,23 @@ export const linkTypeTransformer = (linkType: LinkType) => {
  * @param project Incoming project object supplied by the HTTP response.
  * @returns Properly transformed project object.
  */
-export const projectTransformer = (project: Project) => {
+export const projectTransformer = (project: Project): Project => {
   return {
     ...project,
     dateCreated: new Date(project.dateCreated),
     startDate: project.startDate ? new Date(project.startDate) : undefined,
     endDate: project.endDate ? new Date(project.endDate) : undefined,
     workPackages: project.workPackages.map(workPackageTransformer),
-    goals: project.goals.map(descriptionBulletTransformer),
-    features: project.features.map(descriptionBulletTransformer),
-    otherConstraints: project.otherConstraints.map(descriptionBulletTransformer),
+    descriptionBullets: project.descriptionBullets.map(descriptionBulletTransformer),
     changes: project.changes.map(implementedChangeTransformer),
     tasks: project.tasks.map(taskTransformer),
     links: project.links.map(linkTransformer)
+  };
+};
+
+export const projectPreviewTranformer = (project: ProjectPreview): ProjectPreview => {
+  return {
+    ...project,
+    workPackages: project.workPackages.map(workPackageTransformer)
   };
 };

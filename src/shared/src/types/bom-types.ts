@@ -19,7 +19,6 @@ export type UnitPreview = Omit<Unit, 'materials'>;
 export interface MaterialType {
   name: string;
   dateCreated: Date;
-  userCreatedId: number;
   userCreated: UserPreview;
   dateDeleted?: Date;
   materials: MaterialPreview[];
@@ -31,11 +30,9 @@ export interface Assembly {
   name: string;
   pdmFileName?: string;
   dateDeleted?: Date;
-  userDeletedId?: number;
   userDeleted?: UserPreview;
-  userCreatedId: number;
   userCreated: UserPreview;
-  wbsElementId: number;
+  wbsElementId: string;
   materials: MaterialPreview[];
 }
 
@@ -45,7 +42,6 @@ export interface Manufacturer {
   name: string;
   dateCreated: Date;
   dateDeleted?: Date;
-  userCreatedId: number;
   userCreated: User;
   materials: MaterialPreview[];
 }
@@ -57,12 +53,10 @@ export interface Material {
   assemblyId?: string;
   assembly?: AssemblyPreview;
   name: string;
-  wbsElementId: number;
+  wbsElementId: string;
   dateDeleted?: Date;
-  userDeletedId?: number;
   userDeleted?: UserPreview;
   dateCreated: Date;
-  userCreatedId: number;
   userCreated: UserPreview;
   status: MaterialStatus;
   materialTypeName: string;

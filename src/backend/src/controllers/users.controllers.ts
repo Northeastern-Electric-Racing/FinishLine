@@ -2,11 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
+import { getOrganizationId } from '../utils/utils';
 
 export default class UsersController {
-  static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
+  static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await UsersService.getAllUsers();
+      const organizationId = getOrganizationId(req.headers);
+
+      const users = await UsersService.getAllUsers(organizationId);
 
       res.status(200).json(users);
     } catch (error: unknown) {
@@ -16,8 +19,10 @@ export default class UsersController {
 
   static async getSingleUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
-      const requestedUser = await UsersService.getSingleUser(userId);
+      const { userId } = req.params;
+      const organizationId = getOrganizationId(req.headers);
+
+      const requestedUser = await UsersService.getSingleUser(userId, organizationId);
 
       res.status(200).json(requestedUser);
     } catch (error: unknown) {
@@ -25,10 +30,11 @@ export default class UsersController {
     }
   }
 
-  static async getUserSettings(req: Request, res: Response, next: NextFunction) {
+  static async getUserSettings(_req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
-      const settings = await UsersService.getUserSettings(userId);
+      const user = await getCurrentUser(res);
+
+      const settings = await UsersService.getUserSettings(user.userId);
 
       res.status(200).json(settings);
     } catch (error: unknown) {
@@ -36,7 +42,7 @@ export default class UsersController {
     }
   }
 
-  static async getCurrentUserSecureSettings(req: Request, res: Response, next: NextFunction) {
+  static async getCurrentUserSecureSettings(_req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
       const secureSettings = await UsersService.getCurrentUserSecureSettings(user);
@@ -49,9 +55,10 @@ export default class UsersController {
 
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
 
-      const projects = await UsersService.getUsersFavoriteProjects(userId);
+      const projects = await UsersService.getUsersFavoriteProjects(user.userId, organizationId);
 
       res.status(200).json(projects);
     } catch (error: unknown) {
@@ -108,11 +115,12 @@ export default class UsersController {
 
   static async updateUserRole(req: Request, res: Response, next: NextFunction) {
     try {
-      const targetUserId: number = parseInt(req.params.userId);
+      const { userId } = req.params;
       const { role } = req.body;
       const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
 
-      const targetUser = await UsersService.updateUserRole(targetUserId, user, role);
+      const targetUser = await UsersService.updateUserRole(userId, user, role, organizationId);
 
       res.status(200).json(targetUser);
     } catch (error: unknown) {
@@ -122,10 +130,11 @@ export default class UsersController {
 
   static async getUserSecureSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
+      const { userId } = req.params;
       const submitter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
 
-      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter);
+      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter, organizationId);
 
       res.status(200).json(userSecureSettings);
     } catch (error: unknown) {
@@ -158,7 +167,7 @@ export default class UsersController {
         availability
       );
 
-      return res.status(200).json(updatedScheduleSettings);
+      res.status(200).json(updatedScheduleSettings);
     } catch (error: unknown) {
       next(error);
     }
@@ -166,8 +175,9 @@ export default class UsersController {
 
   static async getUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: number = parseInt(req.params.userId);
+      const { userId } = req.params;
       const submitter = await getCurrentUser(res);
+
       const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, submitter);
       res.status(200).json(userScheduleSettings);
     } catch (error: unknown) {

@@ -8,7 +8,7 @@ import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
 // generate a jwt using the user's first and last name
-export const generateAccessToken = (user: { userId: number; firstName: string; lastName: string }) => {
+export const generateAccessToken = (user: { userId: string; firstName: string; lastName: string }) => {
   return jwt.sign(user, TOKEN_SECRET, { expiresIn: '12h' });
 };
 
@@ -21,7 +21,8 @@ export const prodHeaders = [
   'Authorization',
   'XMLHttpRequest',
   'X-Auth-Token',
-  'Client-Security-Token'
+  'Client-Security-Token',
+  'organizationId'
 ];
 
 // middleware function for production that will enforce jwt authorization
@@ -31,7 +32,7 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' // this is a pre-flight request and those don't send cookies
   ) {
-    next();
+    return next();
   } else if (
     req.path.startsWith('/notifications') // task deadline notification endpoint
   ) {
@@ -47,9 +48,9 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
       if (!decoded || typeof decoded === 'string') {
         return res.status(401).json({ message: 'Authentication Failed: Invalid JWT payload!' });
       }
-      res.locals.userId = parseInt(decoded.userId);
+      res.locals.userId = decoded.userId;
 
-      next();
+      return next();
     });
   }
 };
@@ -72,9 +73,9 @@ export const requireJwtDev = (req: Request, res: Response, next: NextFunction) =
 
     if (!devUserId) return res.status(401).json({ message: 'Authentication Failed: Not logged in (dev)!' });
 
-    res.locals.userId = parseInt(devUserId);
+    res.locals.userId = devUserId;
 
-    next();
+    return next();
   }
 };
 
@@ -89,7 +90,7 @@ const notificationEndpointAuth = (req: Request, res: Response, next: NextFunctio
   if (authorization !== NOTIFICATION_ENDPOINT_SECRET)
     return res.status(401).json({ message: 'Authentication Failed: Invalid secret!' });
 
-  next();
+  return next();
 };
 
 /**
@@ -100,6 +101,7 @@ const notificationEndpointAuth = (req: Request, res: Response, next: NextFunctio
  */
 export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
+
   const user = await prisma.user.findUnique({ where: { userId } });
   if (!user) throw new NotFoundException('User', userId);
   return user;

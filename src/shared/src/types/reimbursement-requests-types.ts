@@ -20,6 +20,7 @@ export interface ReimbursementRequestRow {
 }
 
 export enum ReimbursementStatusType {
+  PENDING_LEADERSHIP_APPROVAL = 'PENDING_LEADERSHIP_APPROVAL',
   PENDING_FINANCE = 'PENDING_FINANCE',
   SABO_SUBMITTED = 'SABO_SUBMITTED',
   ADVISOR_APPROVED = 'ADVISOR_APPROVED',
@@ -28,7 +29,7 @@ export enum ReimbursementStatusType {
 }
 
 export interface ReimbursementStatus {
-  reimbursementStatusId: number;
+  reimbursementStatusId: string;
   type: ReimbursementStatusType;
   user: User;
   dateCreated: Date;
@@ -57,7 +58,7 @@ export interface ReimbursementRequest {
   receiptPictures: Receipt[];
   reimbursementProducts: ReimbursementProduct[];
   dateDelivered?: Date;
-  expenseType: ExpenseType;
+  accountCode: AccountCode;
 }
 
 export enum OtherProductReason {
@@ -86,8 +87,8 @@ export interface Vendor {
   name: string;
 }
 
-export interface ExpenseType {
-  expenseTypeId: string;
+export interface AccountCode {
+  accountCodeId: string;
   name: string;
   code: number;
   allowed: boolean;
@@ -114,7 +115,7 @@ export interface WbsReimbursementProductCreateArgs extends ReimbursementProductC
 }
 
 export interface ValidatedWbsReimbursementProductCreateArgs extends ReimbursementProductCreateArgs {
-  wbsElementId: number;
+  wbsElementId: string;
   wbsNum: WbsNumber;
 }
 

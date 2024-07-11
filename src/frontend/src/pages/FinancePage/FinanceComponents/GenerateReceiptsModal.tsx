@@ -118,7 +118,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                     textField: {
                       error: !!errors.startDate,
                       helperText: errors.startDate?.message,
-                      onClick: (e) => setStartDatePickerOpen(true),
+                      onClick: () => setStartDatePickerOpen(true),
                       inputProps: { readOnly: true }
                     }
                   }}
@@ -144,7 +144,7 @@ const GenerateReceiptsModal = ({ open, setOpen, allReimbursementRequests }: Gene
                     textField: {
                       error: !!errors.endDate,
                       helperText: errors.endDate?.message,
-                      onClick: (e) => setEndDatePickerOpen(true),
+                      onClick: () => setEndDatePickerOpen(true),
                       inputProps: { readOnly: true }
                     }
                   }}

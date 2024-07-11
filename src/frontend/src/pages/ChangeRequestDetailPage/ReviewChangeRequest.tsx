@@ -33,7 +33,7 @@ const ReviewChangeRequest: React.FC<ReviewChangeRequestProps> = ({
     id: string;
   }
   const { id } = useParams<ParamTypes>();
-  const crId = parseInt(id);
+  const crId = id;
   const auth = useAuth();
   const { isLoading, isError, error, mutateAsync } = useReviewChangeRequest();
   const toast = useToast();

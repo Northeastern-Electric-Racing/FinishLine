@@ -4,7 +4,7 @@
  */
 
 import { FormEvent, useState } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory } from 'react-router-dom';
 import { useToggleTheme } from '../../hooks/theme.hooks';
 import { useAuth } from '../../hooks/auth.hooks';
 import { routes } from '../../utils/routes';
@@ -12,16 +12,18 @@ import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
 import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
+import { useOrganization } from '../../hooks/organization.hooks';
 
 /**
  * Page for unauthenticated users to do login.
  */
 const Login = () => {
-  const [devUserId, setDevUserId] = useState(1);
+  const [devUserId, setDevUserId] = useState('');
   const history = useHistory();
   const query = useQuery();
   const theme = useToggleTheme();
   const auth = useAuth();
+  const organizationContext = useOrganization();
 
   if (auth.isLoading) return <LoadingIndicator />;
 
@@ -59,6 +61,10 @@ const Login = () => {
     if (authedUser.defaultTheme && authedUser.defaultTheme.toLocaleLowerCase() !== theme.activeTheme) {
       theme.toggleTheme();
     }
+    if (authedUser.organizations.length > 0) {
+      const [defaultOrganization] = authedUser.organizations;
+      organizationContext.selectOrganization(defaultOrganization);
+    }
     redirectAfterLogin();
   };
 
@@ -71,6 +77,10 @@ const Login = () => {
     const authedUser = await auth.signin(id_token);
     if (authedUser.defaultTheme && authedUser.defaultTheme !== theme.activeTheme.toUpperCase()) {
       theme.toggleTheme();
+    }
+    if (authedUser.organizations.length > 0) {
+      const [defaultOrganization] = authedUser.organizations;
+      organizationContext.selectOrganization(defaultOrganization);
     }
     redirectAfterLogin();
   };

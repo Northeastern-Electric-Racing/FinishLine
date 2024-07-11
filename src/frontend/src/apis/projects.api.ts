@@ -4,17 +4,17 @@
  */
 
 import axios from '../utils/axios';
-import { LinkType, Project, WbsNumber, WorkPackageTemplate } from 'shared';
+import { Link, LinkType, LinkCreateArgs, LinkTypeCreatePayload, Project, WbsNumber, WorkPackageTemplate } from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { linkTypeTransformer, projectTransformer } from './transformers/projects.transformers';
-import { CreateSingleProjectPayload, EditSingleProjectPayload, LinkTypeCreatePayload } from '../utils/types';
+import { CreateSingleProjectPayload, EditSingleProjectPayload } from '../utils/types';
 
 /**
  * Fetches all projects.
  */
-export const getAllProjects = () => {
-  return axios.get<Project[]>(apiUrls.projects(), {
+export const getAllProjects = (includeDeleted: boolean) => {
+  return axios.get<Project[]>(apiUrls.allProjects(includeDeleted), {
     transformResponse: (data) => JSON.parse(data).map(projectTransformer)
   });
 };
@@ -117,4 +117,22 @@ export const getAllWorkPackageTemplates = () => {
  */
 export const editLinkType = async (name: string, linkTypeData: LinkTypeCreatePayload) => {
   return axios.post(apiUrls.projectsEditLinkTypes(name), linkTypeData);
+};
+
+/**
+ * gets all the useful links from the database
+ * @returns gets all the useful links
+ */
+export const getAllUsefulLinks = () => {
+  return axios.get<Link[]>(apiUrls.organizationsUsefulLinks(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+/**
+ * sets all the useful links
+ * @returns gets all the link types
+ */
+export const setUsefulLinks = (linksObject: { links: LinkCreateArgs[] }) => {
+  return axios.post<Link[]>(apiUrls.organizationsSetUsefulLinks(), linksObject);
 };

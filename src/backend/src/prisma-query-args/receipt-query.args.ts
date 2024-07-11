@@ -1,9 +1,11 @@
 import { Prisma } from '@prisma/client';
+import { getUserQueryArgs } from './user.query-args';
 
-const receiptQueryArgs = Prisma.validator<Prisma.ReceiptArgs>()({
-  include: {
-    deletedBy: true
-  }
-});
+export type ReceiptQueryArgs = ReturnType<typeof getReceiptQueryArgs>;
 
-export default receiptQueryArgs;
+export const getReceiptQueryArgs = (organizationId: string) =>
+  Prisma.validator<Prisma.ReceiptDefaultArgs>()({
+    include: {
+      deletedBy: getUserQueryArgs(organizationId)
+    }
+  });

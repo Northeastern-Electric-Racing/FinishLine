@@ -35,8 +35,8 @@ const AdminToolsAttendeeDesignReviewInfo: React.FC = () => {
     setSearchQuery(event.target.value);
   };
 
-  const attendanceDict: Map<number, number> = new Map();
-  const missedDict: Map<number, number> = new Map();
+  const attendanceDict: Map<string, number> = new Map();
+  const missedDict: Map<string, number> = new Map();
 
   allDesignReviews.forEach((review) => {
     if (review.status === DesignReviewStatus.DONE) {

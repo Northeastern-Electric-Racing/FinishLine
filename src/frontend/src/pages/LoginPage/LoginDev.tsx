@@ -14,8 +14,10 @@ import { useAllUsers } from '../../hooks/users.hooks';
 import { fullNamePipe } from '../../utils/pipes';
 import { rankUserRole } from 'shared';
 import { FormEvent } from 'react';
+import { Typography } from '@mui/material';
+
 interface LoginDevProps {
-  devSetUser: (userId: number) => void;
+  devSetUser: (userId: string) => void;
   devFormSubmit: (e: FormEvent) => void;
 }
 
@@ -30,6 +32,8 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
 
   if (!usersList || isLoading) return <LoadingIndicator />;
 
+  if (usersList.length === 0) return <Typography>No Users Available</Typography>;
+
   const sortedUsers = usersList
     .sort((a, b) => a.firstName.localeCompare(b.firstName))
     .sort((a, b) => a.lastName.localeCompare(b.lastName))
@@ -43,7 +47,7 @@ const LoginDev: React.FC<LoginDevProps> = ({ devSetUser, devFormSubmit }) => {
           label="Local Dev User"
           labelId="localDevUser"
           onChange={(e: any) => devSetUser(e.target.value)}
-          defaultValue={sortedUsers[0].userId}
+          defaultValue={''}
           endAdornment={
             <IconButton type="submit" color="success" sx={{ marginRight: 2 }}>
               <LoginIcon />

@@ -2,6 +2,7 @@ import { Task_Priority, Task_Status, User } from '@prisma/client';
 import { isHead, Task, TaskPriority, TaskStatus } from 'shared';
 import prisma from '../prisma/prisma';
 import { sendSlackTaskAssignedNotification } from './slack.utils';
+import { userHasPermission } from './users.utils';
 
 export const convertTaskPriority = (priority: Task_Priority): TaskPriority =>
   ({
@@ -18,53 +19,30 @@ export const convertTaskStatus = (status: Task_Status): TaskStatus =>
   }[status]);
 
 export const hasPermissionToEditTask = async (user: User, taskId: string): Promise<boolean> => {
-  if (isHead(user.role)) return true;
-
   const task = await prisma.task.findUnique({
     where: { taskId },
-    select: {
-      createdByUserId: true,
+    include: {
       assignees: true,
       wbsElement: {
-        select: {
-          leadId: true,
-          managerId: true,
+        include: {
           project: {
-            select: {
+            include: {
               teams: {
-                select: {
-                  headId: true,
-                  members: {
-                    select: {
-                      userId: true
-                    }
-                  },
-                  leads: {
-                    select: {
-                      userId: true
-                    }
-                  }
+                include: {
+                  members: true,
+                  leads: true
                 }
               }
             }
           },
           workPackage: {
-            select: {
+            include: {
               project: {
-                select: {
+                include: {
                   teams: {
-                    select: {
-                      headId: true,
-                      members: {
-                        select: {
-                          userId: true
-                        }
-                      },
-                      leads: {
-                        select: {
-                          userId: true
-                        }
-                      }
+                    include: {
+                      members: true,
+                      leads: true
                     }
                   }
                 }
@@ -78,10 +56,12 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
 
   if (!task) return false;
 
+  if (await userHasPermission(user.userId, task.wbsElement.organizationId, isHead)) return true;
+
   // Check if the user created the task
   if (task.createdByUserId === user.userId) return true;
 
-  // Check if the task's wbsElement's projectLead or projectManager created the task
+  // Check if the task's wbsElement's lead or manager created the task
   if (task.wbsElement.leadId === user.userId) return true;
   if (task.wbsElement.managerId === user.userId) return true;
 
@@ -109,12 +89,17 @@ export const hasPermissionToEditTask = async (user: User, taskId: string): Promi
  * Sends a task assigned notification to the specified users on Slack
  * @param task the task the users are assigned to
  * @param assigneeIds the user ids of the users assigned to the task
+ * @param orgainzationId the organization id of the current user
  */
-export const sendSlackTaskAssignedNotificationToUsers = async (task: Task, assigneeIds: number[]) => {
+export const sendSlackTaskAssignedNotificationToUsers = async (
+  task: Task,
+  assigneeIds: string[],
+  orgainzationId: string
+) => {
   const assigneeSettings = await prisma.user_Settings.findMany({ where: { userId: { in: assigneeIds } } });
   assigneeSettings.forEach(async (settings) => {
     if (settings.slackId) {
-      await sendSlackTaskAssignedNotification(settings.slackId, task);
+      await sendSlackTaskAssignedNotification(settings.slackId, task, orgainzationId);
     }
   });
 };

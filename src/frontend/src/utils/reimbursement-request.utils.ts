@@ -45,6 +45,7 @@ export const descendingComparator = <T>(a: T, b: T, orderBy: keyof T) => {
 
 export const statusDescendingComparator = (a: ReimbursementStatusType, b: ReimbursementStatusType) => {
   const statusOrder = new Map<ReimbursementStatusType, number>([
+    [ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL, 0],
     [ReimbursementStatusType.PENDING_FINANCE, 1],
     [ReimbursementStatusType.SABO_SUBMITTED, 2],
     [ReimbursementStatusType.ADVISOR_APPROVED, 3],
@@ -123,6 +124,8 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
     case ReimbursementStatusType.DENIED: {
       return 'Denied';
     }
+    default:
+      return 'Pending Leadership Approval';
   }
 };
 
@@ -140,6 +143,12 @@ export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: Reimbu
   return reimbursementRequest.reimbursementStatuses
     .map((status) => status.type)
     .includes(ReimbursementStatusType.SABO_SUBMITTED);
+};
+
+export const isReimbursementRequestLeadershipApproved = (reimbursementRequest: ReimbursementRequest) => {
+  return !reimbursementRequest.reimbursementStatuses
+    .map((status) => status.type)
+    .includes(ReimbursementStatusType.PENDING_FINANCE);
 };
 
 export const isReimbursementRequestDenied = (reimbursementRequest: ReimbursementRequest) => {
@@ -166,7 +175,7 @@ export const imageFileUrl = (googleFileId: string) => `https://drive.google.com/
 export const imageDownloadUrl = (googleFileId: string) => `https://drive.google.com/uc?export=download&id=${googleFileId}`;
 
 export const getRefundRowData = (refund: Reimbursement) => {
-  return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted };
+  return { date: refund.dateCreated, amount: refund.amount, recipient: refund.userSubmitted, id: refund.reimbursementId };
 };
 
 export const createReimbursementRequestRowData = (reimbursementRequest: ReimbursementRequest): ReimbursementRequestRow => {

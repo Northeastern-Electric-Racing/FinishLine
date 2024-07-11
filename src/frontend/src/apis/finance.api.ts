@@ -5,8 +5,9 @@
 import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
-  ExpenseTypePayload,
-  EditVendorPayload
+  EditVendorPayload,
+  AccountCodePayload,
+  RefundPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -17,7 +18,7 @@ import {
 } from './transformers/reimbursement-requests.transformer';
 import { saveAs } from 'file-saver';
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { ExpenseType, ReimbursementRequest } from 'shared';
+import { AccountCode, ReimbursementRequest } from 'shared';
 
 enum AllowedFileType {
   JPEG = 'image/jpeg',
@@ -88,14 +89,14 @@ export const deleteReimbursementRequest = (id: string) => {
 };
 
 /**
- * Gets all the expense types
+ * Gets all the account codes
  *
- * @returns all the expense types
+ * @returns all the account codes
  */
-export const getAllExpenseTypes = () => {
-  return axios.get(apiUrls.getAllExpenseTypes(), {
+export const getAllAccountCodes = () => {
+  return axios.get(apiUrls.getAllAccountCodes(), {
     transformResponse: (data) => {
-      return JSON.parse(data) as ExpenseType[];
+      return JSON.parse(data) as AccountCode[];
     }
   });
 };
@@ -167,6 +168,16 @@ export const getAllReimbursements = () => {
  */
 export const approveReimbursementRequest = (id: string) => {
   return axios.post(apiUrls.financeApproveReimbursementRequest(id));
+};
+
+/**
+ * Leadership approve Reimbursement Request (set it to Pending Finance)
+ *
+ * @param id of the reimbursement request being approved by finance
+ * @returns the pending finance reimbursement status
+ */
+export const leadershipApproveReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeLeadershipApprove(id));
 };
 
 /**
@@ -303,13 +314,24 @@ export const reportRefund = (amount: number, dateReceived: string) => {
 };
 
 /**
+ * Edits a refund in the database
+ *
+ * @param id the reimbursement id
+ * @param formData the amount and date to edit the refund with
+ * @returns the updated reimbursement
+ */
+export const editRefund = (id: string, formData: RefundPayload) => {
+  return axios.post(apiUrls.financeEditRefund(id), formData);
+};
+
+/**
  * Edits an expense type in the database
  * @param id id of the expense type
  * @param accountCodeData the edited data of the expense type
  * @returns the updated expense type
  */
-export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePayload) => {
-  return axios.post(apiUrls.financeEditExpenseType(id), accountCodeData);
+export const editAccountCode = async (id: string, accountCodeData: AccountCodePayload) => {
+  return axios.post(apiUrls.financeEditAccountCode(id), accountCodeData);
 };
 
 /**
@@ -317,8 +339,8 @@ export const editAccountCode = async (id: string, accountCodeData: ExpenseTypePa
  * @param accountCodeData the data for the expense type
  * @returns the new expense type
  */
-export const createAccountCode = async (accountCodeData: ExpenseTypePayload) => {
-  return axios.post(apiUrls.financeCreateExpenseType(), accountCodeData);
+export const createAccountCode = async (accountCodeData: AccountCodePayload) => {
+  return axios.post(apiUrls.financeCreateAccountCode(), accountCodeData);
 };
 
 /**

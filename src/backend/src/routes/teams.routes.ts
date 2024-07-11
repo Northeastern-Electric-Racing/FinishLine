@@ -1,8 +1,7 @@
 import express from 'express';
 import TeamsController from '../controllers/teams.controllers';
 import { body } from 'express-validator';
-import { validateInputs } from '../utils/utils';
-import { intMinZero, nonEmptyString } from '../utils/validation.utils';
+import { nonEmptyString, validateInputs } from '../utils/validation.utils';
 
 const teamsRouter = express.Router();
 
@@ -11,14 +10,14 @@ teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
 teamsRouter.post(
   '/:teamId/set-members',
   body('userIds').isArray(),
-  intMinZero(body('userIds.*')),
+  nonEmptyString(body('userIds.*')),
   validateInputs,
   TeamsController.setTeamMembers
 );
 teamsRouter.post(
   '/:teamId/set-leads',
   body('userIds').isArray(),
-  intMinZero(body('userIds.*')),
+  nonEmptyString(body('userIds.*')),
   validateInputs,
   TeamsController.setTeamLeads
 );
@@ -28,14 +27,16 @@ teamsRouter.post(
   validateInputs,
   TeamsController.editDescription
 );
-teamsRouter.post('/:teamId/set-head', intMinZero(body('userId')), validateInputs, TeamsController.setTeamHead);
+teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
 teamsRouter.post(
   '/create',
   nonEmptyString(body('teamName')),
-  intMinZero(body('headId')),
+  nonEmptyString(body('headId')),
   nonEmptyString(body('slackId')),
   nonEmptyString(body('description')),
+  body('isFinanceTeam').isBoolean(),
+  validateInputs,
   TeamsController.createTeam
 );
 teamsRouter.post('/:teamId/archive');

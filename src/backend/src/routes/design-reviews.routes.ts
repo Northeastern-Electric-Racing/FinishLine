@@ -1,8 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { intMinZero, nonEmptyString, isDate, isDesignReviewStatus } from '../utils/validation.utils';
+import { intMinZero, nonEmptyString, isDate, isDesignReviewStatus, validateInputs } from '../utils/validation.utils';
 import DesignReviewsController from '../controllers/design-reviews.controllers';
-import { validateInputs } from '../utils/utils';
 const designReviewsRouter = express.Router();
 
 designReviewsRouter.get('/', DesignReviewsController.getAllDesignReviews);
@@ -15,9 +14,9 @@ designReviewsRouter.post(
   isDate(body('dateScheduled')),
   nonEmptyString(body('teamTypeId')),
   body('requiredMemberIds').isArray(),
-  intMinZero(body('requiredMemberIds.*')),
+  nonEmptyString(body('requiredMemberIds.*')),
   body('optionalMemberIds').isArray(),
-  intMinZero(body('optionalMemberIds.*')),
+  nonEmptyString(body('optionalMemberIds.*')),
   intMinZero(body('wbsNum.carNumber')),
   intMinZero(body('wbsNum.projectNumber')),
   intMinZero(body('wbsNum.workPackageNumber')),
@@ -32,17 +31,17 @@ designReviewsRouter.post(
   isDate(body('dateScheduled')),
   nonEmptyString(body('teamTypeId')),
   body('requiredMembersIds').isArray(),
-  intMinZero(body('requiredMembersIds.*')),
+  nonEmptyString(body('requiredMembersIds.*')),
   body('optionalMembersIds').isArray(),
-  intMinZero(body('optionalMembersIds.*')),
+  nonEmptyString(body('optionalMembersIds.*')),
   body('isOnline').isBoolean(),
   body('isInPerson').isBoolean(),
   nonEmptyString(body('zoomLink')).isURL().optional(),
   nonEmptyString(body('location')).optional(),
-  nonEmptyString(body('docTemplateLink')).isURL().optional(),
+  nonEmptyString(body('docTemplateLink')).optional(),
   isDesignReviewStatus(body('status')),
   body('attendees').isArray(),
-  intMinZero(body('attendees.*')),
+  nonEmptyString(body('attendees.*')),
   body('meetingTimes').isArray(),
   intMinZero(body('meetingTimes.*')),
   validateInputs,
@@ -55,6 +54,13 @@ designReviewsRouter.post(
   intMinZero(body('availability.*')),
   validateInputs,
   DesignReviewsController.markUserConfirmed
+);
+
+designReviewsRouter.post(
+  '/:designReviewId/set-status',
+  isDesignReviewStatus(body('status')),
+  validateInputs,
+  DesignReviewsController.setStatus
 );
 
 export default designReviewsRouter;
