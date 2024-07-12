@@ -174,6 +174,13 @@ export const downloadImageFile = async (fileId: string) => {
   }
 };
 
+/**
+ * Creates A Google Calendar Event on the NER Google Calendar
+ * @param members required and optional members
+ * @param teamType
+ * @param designReview
+ * @returns the id of the calendar event
+ */
 export const createCalendarEvent = async (
   members: User[],
   teamType: TeamType,
@@ -186,7 +193,6 @@ export const createCalendarEvent = async (
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
-
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const calendarIds = (await calendar.calendarList.list()).data.items?.map((calendar) => calendar.id);
     if (!calendarIds) throw Error('no calendar ids');
@@ -219,6 +225,83 @@ export const createCalendarEvent = async (
       requestBody: eventInput
     });
 
+    return calendarEvent.data.id;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * Updates a Google Calendar Event
+ * @param calendarId Id of the calendar the event is on
+ * @param eventId Id of the calendar event
+ * @param members required and optional members
+ * @param designReview
+ * @returns the id of the updated calendar event
+ */
+export const updateCalendarEvent = async (
+  calendarId: string,
+  eventId: string,
+  members: User[],
+  designReview: Design_Review & {
+    wbsElement: WBS_Element;
+  }
+) => {
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const startTime = transformStartTime(designReview.meetingTimes);
+    const eventInput = {
+      location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
+      summary: `Design Review - ${designReview.wbsElement.projectNumber} ${designReview.wbsElement.name}`,
+      start: {
+        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime}:00:00-04:00`,
+        timeZone: 'America/New_York'
+      },
+      end: {
+        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime + 1}:00:00-04:00`,
+        timeZone: 'America/New_York'
+      },
+      attendees: members.map((user) => {
+        return { email: user.email };
+      }),
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'email', minutes: 24 * 60 },
+          { method: 'popup', minutes: 10 }
+        ]
+      }
+    };
+    const calendarEvent = await calendar.events.update({
+      calendarId,
+      eventId,
+      requestBody: eventInput
+    });
+    return calendarEvent.data.id;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
+/**
+ * deletes a Google Calendar Event
+ * @param calendarId id of the calendar the event is on
+ * @param eventId the id of the calendar event
+ * @returns the deleted calendar event
+ */
+export const deleteCalendarEvent = async (calendarId: string, eventId: string) => {
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const calendarEvent = await calendar.events.delete({
+      calendarId,
+      eventId
+    });
     return calendarEvent;
   } catch (error: unknown) {
     throw error;

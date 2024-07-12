@@ -8,6 +8,11 @@ enum NER_TEAM_NAMES {
   ELECTRICAL = 'Electrical'
 }
 
+/**
+ * gets the id of a google calendar based on the specified team type
+ * @param teamType
+ * @returns the calendar id
+ */
 export const getCalendarByTeamName = (teamType: TeamType) => {
   switch (teamType.name) {
     case NER_TEAM_NAMES.MECHANICAL:

@@ -17,6 +17,7 @@ export interface DesignReview {
   isOnline: boolean;
   isInPerson: boolean;
   zoomLink?: string;
+  calendarEventId?: string;
   attendees: User[];
   dateDeleted?: Date;
   userDeleted?: User;

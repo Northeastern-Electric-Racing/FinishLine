@@ -734,6 +734,7 @@ model Design_Review {
   wbsElementId             String
   wbsElement               WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
   notificationSlackThreads Message_Info[]
+  calendarEventId          String?
 }
 
 model Availability {
