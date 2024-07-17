@@ -14,7 +14,7 @@ const FillerCalendarDayCard: React.FC<FillerCalendarDayCardProps> = ({ day }) =>
         borderRadius: 2,
         width: { xs: '95%', md: '80%' },
         height: { xs: '10vh', sm: '15vh' },
-        backgroundColor: theme.palette.grey[900]
+        backgroundColor: theme.palette.grey[300]
       }}
     >
       <CardContent sx={{ padding: 0 }}>
