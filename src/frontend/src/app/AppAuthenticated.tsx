@@ -62,32 +62,36 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           height: '100vh',
           position: 'fixed',
           width: 15,
-          borderRight: 2,
+          borderRight: !isGuest(userRole) ? 2 : 0,
           borderRightColor: theme.palette.background.paper
         }}
       />
-      <IconButton
-        onClick={() => {
-          setDrawerOpen(true);
-          setMoveContent(true);
-        }}
-        sx={{ position: 'fixed', left: -8, top: '3%' }}
-      >
-        <ArrowCircleRightTwoToneIcon
-          sx={{
-            fontSize: '30px',
-            zIndex: 1,
-            '& path:first-of-type': { color: '#000000' },
-            '& path:last-of-type': { color: '#ef4345' }
-          }}
-        />
-      </IconButton>
-      <Sidebar
-        drawerOpen={drawerOpen}
-        setDrawerOpen={setDrawerOpen}
-        moveContent={moveContent}
-        setMoveContent={setMoveContent}
-      />
+      {!isGuest(userRole) && (
+        <>
+          <IconButton
+            onClick={() => {
+              setDrawerOpen(true);
+              setMoveContent(true);
+            }}
+            sx={{ position: 'fixed', left: -8, top: '3%' }}
+          >
+            <ArrowCircleRightTwoToneIcon
+              sx={{
+                fontSize: '30px',
+                zIndex: 1,
+                '& path:first-of-type': { color: '#000000' },
+                '& path:last-of-type': { color: '#ef4345' }
+              }}
+            />
+          </IconButton>
+          <Sidebar
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+            moveContent={moveContent}
+            setMoveContent={setMoveContent}
+          />
+        </>
+      )}
       <Box display={'flex'}>
         <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
