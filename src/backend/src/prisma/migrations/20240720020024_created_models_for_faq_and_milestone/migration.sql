@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "FrequentlyAskedQuestion" (
-    "faqId" TEXT NOT NULL,
+    "frequentlyAskedQuestionId" TEXT NOT NULL,
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
     "userCreatedId" TEXT NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE "FrequentlyAskedQuestion" (
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),
 
-    CONSTRAINT "FrequentlyAskedQuestion_pkey" PRIMARY KEY ("faqId")
+    CONSTRAINT "FrequentlyAskedQuestion_pkey" PRIMARY KEY ("frequentlyAskedQuestionId")
 );
 
 -- CreateTable
