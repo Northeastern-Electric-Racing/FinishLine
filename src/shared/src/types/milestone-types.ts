@@ -6,12 +6,12 @@
 import { User } from './user-types';
 
 export interface Milestone {
-  milestoneId: string
-  name: string
-  dateOfEvent: Date
-  description?: string
-  userCreated: User
-  userDeleted?: User
-  dateCreated: Date
-  dateDeleted?: Date
+  milestoneId: string;
+  name: string;
+  dateOfEvent: Date;
+  description?: string;
+  userCreated: User;
+  userDeleted?: User;
+  dateCreated: Date;
+  dateDeleted?: Date;
 }
