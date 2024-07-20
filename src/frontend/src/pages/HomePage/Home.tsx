@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
+import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
 import GuestHomePage from './GuestHomePage';
 import MemberHomePage from './MemberHomePage';
