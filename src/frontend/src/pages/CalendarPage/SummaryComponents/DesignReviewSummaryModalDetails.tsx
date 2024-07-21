@@ -41,9 +41,9 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
         cancelText="No"
         submitText="Yes"
         onSubmit={async () => {
+          setShowMarkCompleteModal(false);
           await mutateAsync({ status: DesignReviewStatus.DONE });
           setMarkedStatus(DesignReviewStatus.DONE);
-          setShowMarkCompleteModal(false);
         }}
       >
         <Typography>Are you sure you want to mark this design review as complete?</Typography>
@@ -60,9 +60,9 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
         cancelText="No"
         submitText="Yes"
         onSubmit={async () => {
+          setShowUnmarkCompleteModal(false);
           await mutateAsync({ status: DesignReviewStatus.SCHEDULED });
           setMarkedStatus(DesignReviewStatus.SCHEDULED);
-          setShowUnmarkCompleteModal(false);
         }}
       >
         <Typography>
