@@ -152,7 +152,7 @@ export default class ChangeRequestsService {
     await sendCRSubmitterReviewedNotification(foundCR);
 
     // send a reply to a CR's notifications of its updated status
-    await sendSlackCRStatusToThread(updated.notificationSlackThreads, foundCR.crId, accepted);
+    await sendSlackCRStatusToThread(updated.notificationSlackThreads, foundCR.crId, foundCR.identifier, accepted);
 
     return updated.crId;
   }
