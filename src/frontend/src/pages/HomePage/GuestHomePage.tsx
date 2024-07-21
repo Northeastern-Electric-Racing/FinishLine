@@ -16,7 +16,7 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => (
     <Box sx={{ display: 'flex', mt: 4 }}>
       <Box sx={{ display: 'flex', padding: '50px', gap: 5 }}>
         <ImageWithButton
-          title="Spring 2025 Applications are Open!"
+          title="Interested in applying"
           imageSrc={`/Apply.png`}
           buttonText="Learn More"
           onClick={() => console.log('Apply Now clicked')}
