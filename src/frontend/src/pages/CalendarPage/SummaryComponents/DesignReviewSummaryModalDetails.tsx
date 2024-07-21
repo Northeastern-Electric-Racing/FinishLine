@@ -16,10 +16,16 @@ import { useSetDesignReviewStatus } from '../../../hooks/design-reviews.hooks';
 interface DesignReviewSummaryModalDetailsProps {
   designReview: DesignReview;
   teamTypes: TeamType[];
+  markedStatus: DesignReviewStatus;
+  setMarkedStatus: (_: DesignReviewStatus) => void;
 }
 
-const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsProps> = ({ designReview, teamTypes }) => {
-  const [markCompleteChecked, setMarkCompleteChecked] = useState<boolean>(designReview.status === DesignReviewStatus.DONE);
+const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsProps> = ({
+  designReview,
+  teamTypes,
+  markedStatus,
+  setMarkedStatus
+}) => {
   const [showStageGateModal, setShowStageGateModal] = useState<boolean>(false);
   const [showDelayModal, setShowDelayModal] = useState<boolean>(false);
   const [showMarkCompleteModal, setShowMarkCompleteModal] = useState<boolean>(false);
@@ -36,7 +42,7 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
         submitText="Yes"
         onSubmit={async () => {
           await mutateAsync({ status: DesignReviewStatus.DONE });
-          setMarkCompleteChecked(true);
+          setMarkedStatus(DesignReviewStatus.DONE);
           setShowMarkCompleteModal(false);
         }}
       >
@@ -55,7 +61,7 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
         submitText="Yes"
         onSubmit={async () => {
           await mutateAsync({ status: DesignReviewStatus.SCHEDULED });
-          setMarkCompleteChecked(false);
+          setMarkedStatus(DesignReviewStatus.SCHEDULED);
           setShowUnmarkCompleteModal(false);
         }}
       >
@@ -93,14 +99,15 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
                 </Typography>
               </Link>
             </Box>
+
             <FormControlLabel
               label="Mark Design Review as complete"
               control={
                 <Checkbox
-                  checked={markCompleteChecked}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    if (event.target.checked) setShowMarkCompleteModal(true);
-                    else setShowUnmarkCompleteModal(true);
+                  checked={markedStatus === DesignReviewStatus.DONE}
+                  onChange={() => {
+                    if (markedStatus === DesignReviewStatus.DONE) setShowUnmarkCompleteModal(true);
+                    else setShowMarkCompleteModal(true);
                   }}
                   sx={{
                     color: 'inherit',
@@ -117,7 +124,7 @@ const DesignReviewSummaryModalDetails: React.FC<DesignReviewSummaryModalDetailsP
                 <Typography fontSize={18}>{designReview.zoomLink ? 'Zoom Link' : 'No Zoom'}</Typography>
               </Link>
             </Box>
-            {markCompleteChecked && (
+            {markedStatus === DesignReviewStatus.DONE && (
               <DesignReviewSummaryModalButtons
                 designReview={designReview}
                 handleStageGateClick={() => setShowStageGateModal(true)}
