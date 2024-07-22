@@ -28,11 +28,7 @@ export type ThemeName = 'DARK' | 'LIGHT';
 
 export type OrganizationPreview = Pick<
   Organization,
-  | 'organizationId'
-  | 'name'
-  | 'dateCreated'
-  | 'dateDeleted'
-  | 'description'
+  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description'
 >;
 
 export interface Organization {
