@@ -4,16 +4,13 @@ import prisma from '../prisma/prisma';
 import {
   AccessDeniedAdminOnlyException,
   AccessDeniedGuestException,
-  DeletedException,
   HttpException,
-  InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
-import { isUserLeadOrHeadOfFinanceTeam } from '../utils/reimbursement-requests.utils';
 import { uploadFile } from '../utils/google-integration.utils';
 
 export default class OrganizationsService {
