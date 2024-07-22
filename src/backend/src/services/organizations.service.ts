@@ -1,11 +1,20 @@
 import { User } from '@prisma/client';
-import { LinkCreateArgs, isAdmin } from 'shared';
+import { LinkCreateArgs, isAdmin, isGuest } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedGuestException,
+  DeletedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
+import { isUserLeadOrHeadOfFinanceTeam } from '../utils/reimbursement-requests.utils';
+import { uploadFile } from '../utils/google-integration.utils';
 
 export default class OrganizationsService {
   /**
@@ -54,6 +63,23 @@ export default class OrganizationsService {
     });
 
     return newLinks;
+  }
+
+  static async setImages(images: Express.Multer.File[], submitter: User, organizationId: string) {
+    if (await userHasPermission(submitter.userId, organizationId, isGuest))
+      throw new AccessDeniedGuestException('Guests cannot upload receipts');
+
+    const imageData = await Promise.all(images.map((file: Express.Multer.File) => uploadFile(file)));
+
+    const newImages = await prisma.organization.update({
+      where: { organizationId },
+      data: {
+        interestedinApplyingImage: imageData[0].id,
+        exploreAsGuestImage: imageData[1].id
+      }
+    });
+
+    return newImages;
   }
 
   /**

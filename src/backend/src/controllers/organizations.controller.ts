@@ -17,6 +17,19 @@ export default class OrganizationsController {
     }
   }
 
+  static async setImages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { images } = req.body;
+      const submitter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const newImages = await OrganizationsService.setImages(images, submitter, organizationId);
+      res.status(200).json(newImages);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const organizationId = getOrganizationId(req.headers);
