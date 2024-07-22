@@ -26,6 +26,27 @@ export enum RoleEnum {
 
 export type ThemeName = 'DARK' | 'LIGHT';
 
+export type OrganizationPreview = Pick<
+  Organization,
+  | 'organizationId'
+  | 'name'
+  | 'dateCreated'
+  | 'dateDeleted'
+  | 'description'
+>;
+
+export interface Organization {
+  organizationId: String;
+  name: String;
+  dateCreated: Date | null;
+  userCreated: UserPreview;
+  dateDeleted?: Date | null;
+  userDeleted?: UserPreview;
+  treasurer?: UserPreview;
+  advisor?: UserPreview;
+  description: String;
+}
+
 /**
  * User object used purely for authentication purposes.
  */
@@ -44,6 +65,7 @@ export interface AuthenticatedUser {
   isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
+  currentOrganization?: OrganizationPreview;
 }
 
 export interface UserSettings {

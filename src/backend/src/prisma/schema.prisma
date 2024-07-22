@@ -109,15 +109,16 @@ enum Design_Review_Status {
 }
 
 model User {
-  userId                     String                    @id @default(uuid())
-  firstName                  String
-  lastName                   String
-  googleAuthId               String                    @unique
-  email                      String                    @unique
-  emailId                    String?                   @unique
-  roles                      Role[]
-  userSettings               User_Settings?
-  userSecureSettings         User_Secure_Settings?
+  userId             String                @id @default(uuid())
+  firstName          String
+  lastName           String
+  googleAuthId       String                @unique
+  email              String                @unique
+  emailId            String?               @unique
+  roles              Role[]
+  userSettings       User_Settings?
+  userSecureSettings User_Secure_Settings?
+
   // Relation references
   submittedChangeRequests    Change_Request[]          @relation(name: "submittedChangeRequests")
   reviewedChangeRequests     Change_Request[]          @relation(name: "reviewedChangeRequests")
@@ -854,6 +855,7 @@ model Organization {
   treasurer      User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
   advisor        User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
   advisorId      String?
+  description    String
 
   // Relation references
   wbsElements            WBS_Element[]
