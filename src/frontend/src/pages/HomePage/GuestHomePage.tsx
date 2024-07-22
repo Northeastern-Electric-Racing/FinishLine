@@ -1,7 +1,7 @@
 import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
-import ImageWithButton from './ImageWithButton';
+import ImageWithButton from './components/ImageWithButton';
 import React from 'react';
 
 interface GuestHomePageProps {

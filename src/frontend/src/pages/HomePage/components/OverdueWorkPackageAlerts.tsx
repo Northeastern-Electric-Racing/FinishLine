@@ -1,12 +1,12 @@
 import React from 'react';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
 import { WbsElementStatus } from 'shared';
-import { useCurrentUser } from '../../hooks/users.hooks';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 import { wbsPipe } from 'shared';
 import { Box, Alert, Typography, AlertTitle, Grid } from '@mui/material';
-import { routes } from '../../utils/routes';
-import { datePipe } from '../../utils/pipes';
-import { NERButton } from '../../components/NERButton';
+import { routes } from '../../../utils/routes';
+import { datePipe } from '../../../utils/pipes';
+import { NERButton } from '../../../components/NERButton';
 import { useHistory } from 'react-router-dom';
 
 const OverdueWorkPackageAlerts: React.FC = () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography, Box } from '@mui/material';
-import { NERButton } from '../../components/NERButton';
+import { NERButton } from '../../../components/NERButton';
 
 interface ImageWithButtonProps {
   title: string;

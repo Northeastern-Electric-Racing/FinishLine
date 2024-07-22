@@ -19,7 +19,7 @@ import AppContextUser from './AppContextUser';
 import { useSingleUserSettings } from '../hooks/users.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SessionTimeoutAlert from './SessionTimeoutAlert';
-import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
+import SetUserPreferences from '../pages/HomePage/components/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';

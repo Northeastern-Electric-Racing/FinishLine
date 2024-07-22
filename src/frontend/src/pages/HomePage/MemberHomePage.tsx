@@ -4,10 +4,10 @@
  */
 
 import { Typography } from '@mui/material';
-import OverdueWorkPackageAlerts from './OverdueWorkPackageAlerts';
-import UsefulLinks from './UsefulLinks';
-import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
-import UpcomingDeadlines from './UpcomingDeadlines';
+import OverdueWorkPackageAlerts from './components/OverdueWorkPackageAlerts';
+import UsefulLinks from './components/UsefulLinks';
+import WorkPackagesByTimelineStatus from './components/WorkPackagesByTimelineStatus';
+import UpcomingDeadlines from './components/UpcomingDeadlines';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';

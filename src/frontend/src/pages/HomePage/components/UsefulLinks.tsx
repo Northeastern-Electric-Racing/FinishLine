@@ -8,11 +8,11 @@ import { Icon, useTheme } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { Grid } from '@mui/material';
-import PageBlock from '../../layouts/PageBlock';
+import PageBlock from '../../../layouts/PageBlock';
 import React from 'react';
-import { useAllUsefulLinks } from '../../hooks/projects.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
+import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 const UsefulLinks: React.FC = () => {
   const theme = useTheme();
