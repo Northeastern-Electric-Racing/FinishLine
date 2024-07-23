@@ -75,10 +75,7 @@ const schema = yup.object().shape({
     // in src/frontend/.env and set it to 'enabled'.
     import.meta.env.MODE === 'development' && RECEIPTS_REQUIRED !== 'enabled'
       ? yup.array()
-      : yup
-          .array()
-          .required('receipt files required')
-          .max(7, 'At most 7 Receipts are allowed')
+      : yup.array().required('receipt files required').max(7, 'At most 7 Receipts are allowed')
 });
 
 const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
