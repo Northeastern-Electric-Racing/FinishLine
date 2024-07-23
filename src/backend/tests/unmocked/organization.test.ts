@@ -5,7 +5,6 @@ import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
-import { uploadFile } from '../../src/utils/google-integration.utils';
 
 describe('Team Type Tests', () => {
   let orgId: string;
