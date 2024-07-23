@@ -1,5 +1,10 @@
 import TeamsService from '../../src/services/teams.services';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  HttpException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
@@ -17,7 +22,13 @@ describe('Team Type Tests', () => {
     it('Create team type fails if user is not an admin', async () => {
       await expect(
         async () =>
-          await TeamsService.createTeamType(await createTestUser(wonderwomanGuest, orgId), 'Team 2', 'Warning icon', '', orgId)
+          await TeamsService.createTeamType(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Team 2',
+            'Warning icon',
+            '',
+            orgId
+          )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
     });
 
@@ -25,7 +36,13 @@ describe('Team Type Tests', () => {
       await TeamsService.createTeamType(await createTestUser(supermanAdmin, orgId), 'teamType1', 'YouTubeIcon', '', orgId);
       await expect(
         async () =>
-          await TeamsService.createTeamType(await createTestUser(batmanAppAdmin, orgId), 'teamType1', 'Warning icon', '', orgId)
+          await TeamsService.createTeamType(
+            await createTestUser(batmanAppAdmin, orgId),
+            'teamType1',
+            'Warning icon',
+            '',
+            orgId
+          )
       ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
     });
 
@@ -41,6 +58,7 @@ describe('Team Type Tests', () => {
       expect(result).toEqual({
         name: 'teamType3',
         iconName: 'YouTubeIcon',
+        image: null,
         description: '',
         organizationId: orgId,
         teamTypeId: result.teamTypeId
@@ -87,6 +105,49 @@ describe('Team Type Tests', () => {
       await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId, orgId)).rejects.toThrow(
         new NotFoundException('Team Type', nonExistingTeamTypeId)
       );
+    });
+  });
+
+  describe('Edit team type description', () => {
+    it('fails if user is not an admin', async () => {
+      await expect(
+        async () =>
+          await TeamsService.editTeamTypeDescription(
+            await createTestUser(wonderwomanGuest, orgId),
+            'id',
+            'new description',
+            orgId
+          )
+      ).rejects.toThrow(new AccessDeniedException('you must be an admin to edit the team types description'));
+    });
+
+    it('fails if the new description is over 300 workds', async () => {
+      await expect(
+        async () =>
+          await TeamsService.editTeamTypeDescription(
+            await createTestUser(supermanAdmin, orgId),
+            'id',
+            'a '.repeat(301),
+            orgId
+          )
+      ).rejects.toThrow(new HttpException(400, 'Description must be less than 300 words'));
+    });
+
+    it('succeds and updates the description', async () => {
+      const teamType = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        '',
+        orgId
+      );
+      const updatedTeamType = await TeamsService.editTeamTypeDescription(
+        await createTestUser(batmanAppAdmin, orgId),
+        teamType.teamTypeId,
+        'new description',
+        orgId
+      );
+      expect(updatedTeamType.description).toBe('new description');
     });
   });
 });

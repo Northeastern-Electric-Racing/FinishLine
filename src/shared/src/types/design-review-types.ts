@@ -36,4 +36,6 @@ export interface TeamType {
   teamTypeId: string;
   name: string;
   iconName: string;
+  description: string;
+  image?: string | null;
 }
