@@ -27,7 +27,7 @@ const ImageWithButton: React.FC<ImageWithButtonProps> = ({ title, imageSrc, butt
           textAlign: 'center'
         }}
       >
-        <Typography variant="h4" sx={{ mb: 2 }}>
+        <Typography variant="h3" sx={{ mb: 2 }}>
           {title}
         </Typography>
         <NERButton onClick={onClick} sx={{ mt: 1, width: 'auto' }}>
