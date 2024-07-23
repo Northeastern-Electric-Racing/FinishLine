@@ -134,11 +134,11 @@ export default class TeamsController {
 
   static async createTeamType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, iconName } = req.body;
+      const { name, iconName, description } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
-      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, organizationId);
+      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, description, organizationId);
       res.status(200).json(createdTeamType);
     } catch (error: unknown) {
       next(error);
@@ -168,6 +168,20 @@ export default class TeamsController {
       next(error);
     }
   }
+
+  static async editTeamTypeDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { newDescription } = req.body;
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const teamType = await TeamsService.editTeamTypeDescription(user, req.params.teamTypeId, newDescription, organizationId);
+      res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
 
   static async setTeamType(req: Request, res: Response, next: NextFunction) {
     try {

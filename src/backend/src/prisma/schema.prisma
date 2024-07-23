@@ -701,6 +701,8 @@ model Team_Type {
   iconName       String
   designReviews  Design_Review[]
   team           Team[]
+  description    String
+  image          String?
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
 

@@ -17,15 +17,15 @@ describe('Team Type Tests', () => {
     it('Create team type fails if user is not an admin', async () => {
       await expect(
         async () =>
-          await TeamsService.createTeamType(await createTestUser(wonderwomanGuest, orgId), 'Team 2', 'Warning icon', orgId)
+          await TeamsService.createTeamType(await createTestUser(wonderwomanGuest, orgId), 'Team 2', 'Warning icon', '', orgId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
     });
 
     it('Create team type fails if there is already another team type with the same name', async () => {
-      await TeamsService.createTeamType(await createTestUser(supermanAdmin, orgId), 'teamType1', 'YouTubeIcon', orgId);
+      await TeamsService.createTeamType(await createTestUser(supermanAdmin, orgId), 'teamType1', 'YouTubeIcon', '', orgId);
       await expect(
         async () =>
-          await TeamsService.createTeamType(await createTestUser(batmanAppAdmin, orgId), 'teamType1', 'Warning icon', orgId)
+          await TeamsService.createTeamType(await createTestUser(batmanAppAdmin, orgId), 'teamType1', 'Warning icon', '', orgId)
       ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
     });
 
@@ -34,6 +34,7 @@ describe('Team Type Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'teamType3',
         'YouTubeIcon',
+        '',
         orgId
       );
 
@@ -52,12 +53,14 @@ describe('Team Type Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
         'YouTubeIcon',
+        '',
         orgId
       );
       const teamType2 = await TeamsService.createTeamType(
         await createTestUser(batmanAppAdmin, orgId),
         'teamType2',
         'WarningIcon',
+        '',
         orgId
       );
       const result = await TeamsService.getAllTeamTypes(orgId);
@@ -71,6 +74,7 @@ describe('Team Type Tests', () => {
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
         'YouTubeIcon',
+        '',
         orgId
       );
       const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId, orgId);

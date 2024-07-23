@@ -366,7 +366,13 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns the created team
    */
-  static async createTeamType(submitter: User, name: string, iconName: string, organizationId: string): Promise<TeamType> {
+  static async createTeamType(
+    submitter: User,
+    name: string,
+    iconName: string,
+    description: string,
+    organizationId: string
+  ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a team type');
     }
@@ -383,6 +389,7 @@ export default class TeamsService {
       data: {
         name,
         iconName,
+        description,
         organizationId
       }
     });
@@ -416,6 +423,35 @@ export default class TeamsService {
   static async getAllTeamTypes(organizationId: string): Promise<TeamType[]> {
     const teamTypes = await prisma.team_Type.findMany({ where: { organizationId } });
     return teamTypes;
+  }
+
+  /**
+   * Changes the description of the given teamType to be the new description
+   * @param user The user who is editing the description
+   * @param teamTypeId The id for the teamType that is being edited
+   * @param newDescription the new description for the team
+   * @param organizationId The organization the user is currently in
+   * @returns The team with the new description
+   */
+  static async editTeamTypeDescription(
+    user: User,
+    teamTypeId: string,
+    newDescription: string,
+    organizationId: string
+  ): Promise<TeamType> {
+    if (!isUnderWordCount(newDescription, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+
+    if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
+      throw new AccessDeniedException('you must be an admin to edit the team types description');
+
+    const updatedTeamType = await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: {
+        description: newDescription
+      }
+    });
+
+    return updatedTeamType;
   }
 
   /**
