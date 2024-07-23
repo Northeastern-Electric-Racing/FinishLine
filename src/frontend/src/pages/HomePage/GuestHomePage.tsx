@@ -6,9 +6,10 @@ import React from 'react';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
+  setClickedFinishline: (e: boolean) => void;
 }
 
-const GuestHomePage = ({ user }: GuestHomePageProps) => {
+const GuestHomePage = ({ user, setClickedFinishline }: GuestHomePageProps) => {
   return (
     <PageLayout title="Home" hidePageTitle>
       <Typography variant="h3" textAlign="center" sx={{ mt: 2, pt: 3 }}>
@@ -26,7 +27,9 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
             title="Explore Our Work as a Guest"
             imageSrc={`/Guest.png`}
             buttonText="FinishLine"
-            onClick={() => console.log('Explore button clicked')}
+            onClick={() => {
+              setClickedFinishline(true);
+            }}
           />
         </Box>
       </Box>

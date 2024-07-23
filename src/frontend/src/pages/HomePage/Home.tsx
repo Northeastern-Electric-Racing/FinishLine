@@ -8,10 +8,19 @@ import { isGuest } from 'shared';
 import GuestHomePage from './GuestHomePage';
 import MemberHomePage from './MemberHomePage';
 
-const Home = () => {
+interface HomeProps {
+  clickedFinishline: boolean;
+  setClickedFinishline: (value: boolean) => void;
+}
+
+const Home = ({ clickedFinishline, setClickedFinishline }: HomeProps) => {
   const user = useCurrentUser();
 
-  return isGuest(user.role) ? <GuestHomePage user={user} /> : <MemberHomePage user={user} />;
+  return isGuest(user.role) && !clickedFinishline ? (
+    <GuestHomePage user={user} setClickedFinishline={setClickedFinishline} />
+  ) : (
+    <MemberHomePage user={user} />
+  );
 };
 
 export default Home;
