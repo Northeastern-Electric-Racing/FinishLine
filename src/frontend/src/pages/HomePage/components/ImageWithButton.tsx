@@ -12,7 +12,7 @@ interface ImageWithButtonProps {
 const ImageWithButton: React.FC<ImageWithButtonProps> = ({ title, imageSrc, buttonText, onClick }) => {
   return (
     <Box sx={{ position: 'relative', display: 'inline-block', width: '100%', textAlign: 'center' }}>
-      <Box component="img" src={imageSrc} alt={buttonText} sx={{ width: '100%', height: 'auto' }} />
+      <Box component="img" src={imageSrc} alt={buttonText} sx={{ width: '100%', height: 'auto', opacity: 0.5 }} />
       <Box
         sx={{
           position: 'absolute',
