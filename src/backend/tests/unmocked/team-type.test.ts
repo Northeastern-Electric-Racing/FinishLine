@@ -41,6 +41,7 @@ describe('Team Type Tests', () => {
       expect(result).toEqual({
         name: 'teamType3',
         iconName: 'YouTubeIcon',
+        description: '',
         organizationId: orgId,
         teamTypeId: result.teamTypeId
       });
