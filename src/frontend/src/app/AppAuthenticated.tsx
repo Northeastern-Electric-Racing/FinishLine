@@ -47,8 +47,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   useEffect(() => {
     setIsGuestOnMemberPage(isGuest(userRole) && clickedFinishline);
-    console.log(isGuestOnMemberPage);
-  }, [userRole, clickedFinishline]);
+  }, [userRole, clickedFinishline, isGuestOnMemberPage]);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
