@@ -4,7 +4,8 @@
  */
 
 import prisma from './prisma';
-import { Role, WBS_Element_Status } from '@prisma/client';
+import { Reimbursement_Status, Role, WBS_Element_Status } from '@prisma/client';
+import { appendFileSync, writeFileSync } from 'fs';
 import { calculateEndDate } from 'shared';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -15,7 +16,9 @@ import { calculateEndDate } from 'shared';
  */
 
 /** Execute all given prisma database interaction scripts written in this function */
-const executeScripts = async () => {};
+const executeScripts = async () => {
+  await downloadReimbursementDataByProject();
+};
 
 /**
  * Update user's role given userId and new role
@@ -23,6 +26,124 @@ const executeScripts = async () => {};
  */
 const setUserRole = async (id: number, role: Role) => {
   await prisma.user.update({ where: { userId: id }, data: { role } });
+};
+
+const downloadReimbursementDataByProject = async () => {
+  const wbsElements = await prisma.wBS_Element.findMany({
+    include: {
+      reimbursementProductReasons: {
+        include: {
+          reimbursementProduct: {
+            include: {
+              reimbursementRequest: {
+                include: {
+                  reimbursementStatuses: true
+                }
+              },
+              reimbursementProductReason: {
+                include: {
+                  wbsElement: {
+                    include: {
+                      workPackage: {
+                        include: {
+                          project: {
+                            include: {
+                              wbsElement: true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  let products = wbsElements.reduce((acc, curr) => {
+    return acc.concat(curr.reimbursementProductReasons.map((reason) => reason.reimbursementProduct));
+  }, []);
+
+  products = products.filter((product) => {
+    return !product.reimbursementRequest.reimbursementStatuses.some(
+      (status: Reimbursement_Status) => status.type === 'DENIED'
+    ) && product.reimbursementRequest.dateDeleted === null && product.dateDeleted === null;
+  }); 
+
+  console.log(products[0]);
+
+  type ProductInfo = {
+    account: string;
+    totalAmount: number;
+  };
+
+  const productsByProjectOrReason = new Map<string, ProductInfo>();
+
+  products.forEach((product, i) => {
+    if (product.reimbursementProductReason.otherReason) {
+      const reason = product.reimbursementProductReason.otherReason;
+      if (productsByProjectOrReason.has(reason)) {
+        appendFileSync('debug.txt', `index: ${i}\n`);
+        const current = productsByProjectOrReason.get(reason);
+        productsByProjectOrReason.set(reason, {
+          account: current.account,
+          totalAmount: current.totalAmount + product.cost
+        });
+      } else {
+        appendFileSync('debug.txt', `index: ${i}\n`);
+        productsByProjectOrReason.set(reason, {
+          account: product.reimbursementProductReason.otherReason,
+          totalAmount: product.cost
+        });
+      }
+    } else {
+      let reason = product.reimbursementProductReason.wbsElement?.name || 'N/A';
+
+      if (product.reimbursementProductReason.wbsElement?.workPackage) {
+        reason = product.reimbursementProductReason.wbsElement.workPackage.project.wbsElement.name;
+      }
+
+      if (productsByProjectOrReason.has(reason)) {
+        appendFileSync('debug.txt', `index: ${i}\n`);
+        const current = productsByProjectOrReason.get(reason);
+        appendFileSync('debug.txt', `current: ${JSON.stringify(current)}\n`);
+        productsByProjectOrReason.set(reason, {
+          account: current.account,
+          totalAmount: current.totalAmount + product.cost
+        });
+        appendFileSync(
+          'debug.txt',
+          `amount: ${product.cost}, name: ${product.name}, identifier: ${product.reimbursementRequest.identifier}\n`
+        );
+        appendFileSync('debug.txt', `updated: ${JSON.stringify(productsByProjectOrReason.get(reason))}\n`);
+      } else {
+        appendFileSync('debug.txt', `current: 0\n`);
+        appendFileSync('debug.txt', `index: ${i}\n`);
+
+        productsByProjectOrReason.set(reason, {
+          account: reason,
+          totalAmount: product.cost
+        });
+        appendFileSync('debug.txt', `amount: ${product.cost}, name: ${product.name}\n`);
+        appendFileSync('debug.txt', `updated: ${JSON.stringify(productsByProjectOrReason.get(reason))}\n`);
+      }
+    }
+  });
+
+  const headers = ['Account', 'Total Amount'];
+  const data = Array.from(productsByProjectOrReason).map(([key, value]) => [value.account, value.totalAmount / 100.0]);
+
+  const totalAmount = data.reduce((acc, curr) => acc + (curr[1] as number), 0);
+
+  // write csv file
+  writeFileSync(
+    'reimbursementData.csv',
+    `${headers.join(',')}\n${data.map((row) => row.join(',')).join('\n')}\nTotal Amount,${totalAmount}`
+  );
 };
 
 /**
