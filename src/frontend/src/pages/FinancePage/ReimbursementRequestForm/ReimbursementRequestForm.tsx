@@ -78,7 +78,6 @@ const schema = yup.object().shape({
       : yup
           .array()
           .required('receipt files required')
-          .min(1, 'At least one Receipt is required')
           .max(7, 'At most 7 Receipts are allowed')
 });
 

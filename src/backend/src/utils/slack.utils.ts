@@ -337,7 +337,7 @@ export const sendDRScheduledSlackNotif = async (
   const { dateScheduled } = designReview;
   const drTime = `${addHours(dateScheduled, 12).toLocaleDateString()} at ${meetingStartTimePipe(designReview.meetingTimes)}`;
   const drSubmitter = `${designReview.userCreated.firstName} ${designReview.userCreated.lastName}`;
-  const zoomLink = designReview.isOnline && `on <${designReview.zoomLink}|Zoom>`;
+  const zoomLink = designReview.isOnline && designReview.zoomLink && `on [Zoom](${designReview.zoomLink})`;
   const location =
     zoomLink && designReview.isInPerson
       ? `in ${designReview.location} and ${zoomLink}`

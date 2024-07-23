@@ -1,4 +1,4 @@
-import { Team, Task as Prisma_Task, WBS_Element } from '@prisma/client';
+import { Team, Task as Prisma_Task, WBS_Element, Design_Review } from '@prisma/client';
 import { UserWithSettings } from './auth.utils';
 import { HttpException } from './errors.utils';
 import { UserWithTeams, getTeamsFromUsers } from './teams.utils';
@@ -7,6 +7,8 @@ export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;
   wbsElement: WBS_Element | null;
 };
+
+export type DesignReviewWithAttendees = Design_Review & { attendees: UserWithSettings[]; wbsElement: WBS_Element };
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {
   // https://api.slack.com/reference/surfaces/formatting#mentioning-users
