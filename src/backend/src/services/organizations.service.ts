@@ -1,12 +1,7 @@
 import { User } from '@prisma/client';
-import { LinkCreateArgs, isAdmin, isGuest } from 'shared';
+import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import {
-  AccessDeniedAdminOnlyException,
-  AccessDeniedGuestException,
-  HttpException,
-  NotFoundException
-} from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -63,8 +58,8 @@ export default class OrganizationsService {
   }
 
   static async setImages(images: Express.Multer.File[], submitter: User, organizationId: string) {
-    if (await userHasPermission(submitter.userId, organizationId, isGuest))
-      throw new AccessDeniedGuestException('Guests cannot upload receipts');
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update images');
 
     const imageData = await Promise.all(images.map((file: Express.Multer.File) => uploadFile(file)));
 

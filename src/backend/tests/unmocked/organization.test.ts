@@ -5,6 +5,11 @@ import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
+import { uploadFile } from '../../src/utils/google-integration.utils';
+
+jest.mock('../../src/utils/uploadFile', () => ({
+  uploadFile: jest.fn()
+}));
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -14,6 +19,44 @@ describe('Team Type Tests', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('Set Images', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () => await OrganizationsService.setImages([], await createTestUser(wonderwomanGuest, orgId), orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
+    });
+
+    it('Fails if a organization does not exist', async () => {
+      await expect(
+        async () => await OrganizationsService.setImages([], await createTestUser(batmanAppAdmin, orgId), '1')
+      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
+    });
+
+    it('Succeeds and updates all the images', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testFiles = [
+        { originalname: 'image1.png', buffer: Buffer.from('') },
+        { originalname: 'image2.png', buffer: Buffer.from('') }
+      ] as Express.Multer.File[];
+
+      (uploadFile as jest.Mock).mockImplementation((file) => {
+        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+      });
+
+      await OrganizationsService.setImages(testFiles, testBatman, orgId);
+
+      const organization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(organization).not.toBeNull();
+      expect(organization!.interestedinApplyingImage).toBe('uploaded-image1.png');
+      expect(organization!.exploreAsGuestImage).toBe('uploaded-image2.png');
+    });
   });
 
   describe('Set Useful Links', () => {
