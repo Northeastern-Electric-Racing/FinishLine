@@ -703,6 +703,7 @@ model Team_Type {
   team           Team[]
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
+  calendarId     String?
 
   @@unique([name, organizationId], name: "uniqueTeamType")
 }

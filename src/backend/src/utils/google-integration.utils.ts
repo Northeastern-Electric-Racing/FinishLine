@@ -174,6 +174,23 @@ export const downloadImageFile = async (fileId: string) => {
   }
 };
 
+export const createCalendar = async (teamType: TeamType) => {
+  if (process.env.NODE_ENV !== 'production') return;
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: CALENDAR_REFRESH_TOKEN
+    });
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const createdCalendar = await calendar.calendars.insert({
+      requestBody: { summary: `NER - ${teamType.name} Meetings`, description: `A TeamType Within NER` }
+    });
+
+    return createdCalendar;
+  } catch (error: unknown) {
+    throw error;
+  }
+};
+
 /**
  * Creates A Google Calendar Event on the NER Google Calendar
  * @param members required and optional members
