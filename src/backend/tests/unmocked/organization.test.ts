@@ -5,9 +5,16 @@ import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
+import { uploadFile } from '../../src/utils/google-integration.utils';
+
+// Mock uploadFile function from google-integration.utils
+jest.mock('../../src/utils/google-integration.utils', () => ({
+  uploadFile: jest.fn()
+}));
 
 describe('Team Type Tests', () => {
   let orgId: string;
+
   beforeEach(async () => {
     orgId = (await createTestOrganization()).organizationId;
   });
@@ -19,13 +26,13 @@ describe('Team Type Tests', () => {
   describe('Set Images', () => {
     it('Fails if user is not an admin', async () => {
       await expect(
-        async () => await OrganizationsService.setImages([], await createTestUser(wonderwomanGuest, orgId), orgId)
+        OrganizationsService.setImages([], await createTestUser(wonderwomanGuest, orgId), orgId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
     });
 
-    it('Fails if a organization does not exist', async () => {
+    it('Fails if an organization does not exist', async () => {
       await expect(
-        async () => await OrganizationsService.setImages([], await createTestUser(batmanAppAdmin, orgId), '1')
+        OrganizationsService.setImages([], await createTestUser(batmanAppAdmin, orgId), '1')
       ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
@@ -36,6 +43,11 @@ describe('Team Type Tests', () => {
         { originalname: 'image2.png', buffer: Buffer.from('') }
       ] as Express.Multer.File[];
 
+      // Mock the uploadFile function to return simulated file IDs
+      (uploadFile as jest.Mock).mockImplementation((file) => {
+        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+      });
+
       await OrganizationsService.setImages(testFiles, testBatman, orgId);
 
       const organization = await prisma.organization.findUnique({
@@ -45,31 +57,31 @@ describe('Team Type Tests', () => {
       });
 
       expect(organization).not.toBeNull();
-      expect(organization!.interestedinApplyingImage).toBeTruthy();
-      expect(organization!.exploreAsGuestImage).toBeTruthy();
+      expect(organization!.interestedinApplyingImage).toMatch(/^uploaded-image1\.png$/);
+      expect(organization!.exploreAsGuestImage).toMatch(/^uploaded-image2\.png$/);
     });
   });
 
   describe('Set Useful Links', () => {
     it('Fails if user is not an admin', async () => {
       await expect(
-        async () => await OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
+        OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update useful links'));
     });
 
-    it('Fails if a organization does not exist', async () => {
+    it('Fails if an organization does not exist', async () => {
       await expect(
-        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1', testLink1)
+        OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1', testLink1)
       ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
     it('Fails if a link type does not exist', async () => {
       await expect(
-        async () => await OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, testLink1)
+        OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, testLink1)
       ).rejects.toThrow(new HttpException(400, `Link type with name 'example link type' not found`));
     });
 
-    it('succeds and updates all the links', async () => {
+    it('Succeeds and updates all the links', async () => {
       const testLinks1: LinkCreateArgs[] = [
         {
           linkId: '-1',
@@ -132,13 +144,13 @@ describe('Team Type Tests', () => {
   });
 
   describe('Get all Useful Links', () => {
-    it('Fails if a organization does not exist', async () => {
+    it('Fails if an organization does not exist', async () => {
       await expect(async () => await OrganizationsService.getAllUsefulLinks('1')).rejects.toThrow(
         new NotFoundException('Organization', '1')
       );
     });
 
-    it('succeeds and gets all the links', async () => {
+    it('Succeeds and gets all the links', async () => {
       const testLinks1: LinkCreateArgs[] = [
         {
           linkId: '1',
