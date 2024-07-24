@@ -3,7 +3,7 @@ import { UserWithSettings } from './auth.utils';
 
 export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;
-  wbsElement: WBS_Element | null;
+  wbsElement: WBS_Element;
 };
 
 export type DesignReviewWithAttendees = Design_Review & { attendees: UserWithSettings[]; wbsElement: WBS_Element };

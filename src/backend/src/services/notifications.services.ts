@@ -6,7 +6,7 @@ import {
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
-import { daysBetween } from 'shared';
+import { daysBetween, wbsPipe } from 'shared';
 import { buildDueString } from '../utils/slack.utils';
 import WorkPackagesService from './work-packages.services';
 import { addWeeksToDate } from 'shared';
@@ -16,8 +16,8 @@ import { meetingStartTimePipe } from '../utils/design-reviews.utils';
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
     await NotificationsService.sendTaskDeadlineSlackNotifications();
-    await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
     await NotificationsService.sendDesignReviewSlackNotifications();
+    await NotificationsService.sendWorkPackageDeadlineSlackNotifications();
   }
 
   /**
@@ -71,21 +71,26 @@ export default class NotificationsService {
     });
 
     // send the notifications to each team for their respective tasks
-    teamTaskMap.forEach((tasks, slackId) => {
+    const promises = Array.from(teamTaskMap).map(async ([slackId, tasks]) => {
       const messageBlock = tasks
         .map((task) => {
           const daysUntilDeadline = daysBetween(task.deadline, new Date());
 
-          return `${usersToSlackPings(task.assignees ?? [])} ${task.title} ${buildDueString(daysUntilDeadline)} in project ${
-            task.wbsElement?.name
-          }`;
+          return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
+            task.wbsElement
+          )}/tasks|${task.title}> ${buildDueString(daysUntilDeadline)} in project ${task.wbsElement?.name}`;
         })
         .join('\n\n');
 
       // messageBlock will be empty if there are tasks with no assignees
       if (messageBlock !== '')
-        sendMessage(slackId, ':sparkles: :pepe-coop: UPCOMING TASK DEADLINES :pepe-coop: :sparkles: \n\n\n' + messageBlock);
+        await sendMessage(
+          slackId,
+          ':sparkles: :pepe-coop: UPCOMING TASK DEADLINES :pepe-coop: :sparkles: \n\n\n' + messageBlock
+        );
     });
+
+    await Promise.all(promises);
   }
 
   /**
@@ -163,18 +168,20 @@ export default class NotificationsService {
     });
 
     // send the notifications to each team for their respective design reviews
-    designReviewTeamMap.forEach((designReviews, slackId) => {
+    const promises = Array.from(designReviewTeamMap).map(async ([slackId, designReviews]) => {
       const messageBlock = designReviews
         .map((designReview) => {
           return `${usersToSlackPings(designReview.attendees ?? [])} ${
             designReview.wbsElement.name
-          } will be having a design review tomorrow at ${meetingStartTimePipe(designReview.meetingTimes)}!`;
+          } will be having a design review today at ${meetingStartTimePipe(designReview.meetingTimes)}!`;
         })
         .join('\n\n');
 
       // messageBlock will be empty if there are design reviews with no attendees
       if (messageBlock !== '')
-        sendMessage(slackId, ':calendar: :clock9: Upcoming Design Reviews! :clock9: :calendar: \n\n\n' + messageBlock);
+        await sendMessage(slackId, ':calendar: :clock9: Upcoming Design Reviews! :clock9: :calendar: \n\n\n' + messageBlock);
     });
+
+    await Promise.all(promises);
   }
 }

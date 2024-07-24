@@ -340,7 +340,7 @@ export const sendDRScheduledSlackNotif = async (
   const { dateScheduled } = designReview;
   const drTime = `${addHours(dateScheduled, 12).toLocaleDateString()} at ${meetingStartTimePipe(designReview.meetingTimes)}`;
   const drSubmitter = `${designReview.userCreated.firstName} ${designReview.userCreated.lastName}`;
-  const zoomLink = designReview.isOnline && designReview.zoomLink && `on [Zoom](${designReview.zoomLink})`;
+  const zoomLink = designReview.isOnline && designReview.zoomLink && `on <${designReview.zoomLink}|Zoom>`;
   const location =
     zoomLink && designReview.isInPerson
       ? `in ${designReview.location} and ${zoomLink}`
@@ -349,7 +349,8 @@ export const sendDRScheduledSlackNotif = async (
       : zoomLink;
 
   const msg = `:spiral_calendar_pad: Design Review for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
-  const threadMsg = `The Design Review has been Scheduled! \n <${designReview.docTemplateLink}|Doc Link>`;
+  const docLink = designReview.docTemplateLink ? `<${designReview.docTemplateLink}|Doc Link>` : '';
+  const threadMsg = `The Design Review has been Scheduled! \n` + docLink;
   try {
     if (threads && threads.length !== 0) {
       const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));
