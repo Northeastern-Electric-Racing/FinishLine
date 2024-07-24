@@ -57,6 +57,12 @@ export default class OrganizationsService {
     return newLinks;
   }
 
+  /**
+   * sets an organizations images
+   * @param submitter the user who is setting the images
+   * @param organizationId the organization which the images will be set up
+   * @param images the images which are being set
+   */
   static async setImages(images: Express.Multer.File[], submitter: User, organizationId: string) {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update images');
