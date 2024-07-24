@@ -3,7 +3,6 @@ import {
   DesignReviewWithAttendees,
   TaskWithAssignees,
   endOfDayTomorrow,
-  getTeamFromTaskAssignees,
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
@@ -58,15 +57,17 @@ export default class NotificationsService {
 
     // group tasks due by team in a map
     tasks.forEach((task) => {
-      const teamSlackId = getTeamFromTaskAssignees(task.assignees).slackId;
+      const teamSlackIds = task.wbsElement.project?.teams.map((team) => team.slackId) ?? [];
 
-      const currentTasks = teamTaskMap.get(teamSlackId);
-      if (currentTasks) {
-        currentTasks.push(task);
-        teamTaskMap.set(teamSlackId, currentTasks);
-      } else {
-        teamTaskMap.set(teamSlackId, [task]);
-      }
+      teamSlackIds.forEach((teamSlackId) => {
+        const currentTasks = teamTaskMap.get(teamSlackId);
+        if (currentTasks) {
+          currentTasks.push(task);
+          teamTaskMap.set(teamSlackId, currentTasks);
+        } else {
+          teamTaskMap.set(teamSlackId, [task]);
+        }
+      });
     });
 
     // send the notifications to each team for their respective tasks
@@ -138,10 +139,9 @@ export default class NotificationsService {
     const designReviewTeamMap = new Map<string, DesignReviewWithAttendees[]>();
 
     designReviews.forEach((designReview) => {
-      const teamSlackIds =
-        designReview.wbsElement.project?.teams.map((team) => team.slackId) ??
-        designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ??
-        [];
+      const teamSlackIds = designReview.wbsElement.project
+        ? designReview.wbsElement.project.teams.map((team) => team.slackId)
+        : designReview.wbsElement.workPackage?.project.teams.map((team) => team.slackId) ?? [];
 
       teamSlackIds.forEach((teamSlackId) => {
         const currentTasks = designReviewTeamMap.get(teamSlackId);
