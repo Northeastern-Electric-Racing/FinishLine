@@ -13,6 +13,7 @@ import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/use
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { uploadFile } from '../utils/google-integration.utils';
 
 export default class TeamsService {
   /**
@@ -26,6 +27,30 @@ export default class TeamsService {
       ...getTeamQueryArgs(organizationId)
     });
     return teams.map(teamTransformer);
+  }
+
+  /**
+   * Sets team type image
+   * @param organizationId The organization the user is currently in
+   * @param teamTypeId The team type that is being updated
+   * @param image The image that is being placed in the team type
+   * @param submitter The user that is making the change
+   * @returns the updated team type
+   */
+  static async setImage(image: Express.Multer.File, submitter: User, organizationId: string, teamTypeId: string) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update images');
+
+    const imageData = await uploadFile(image);
+
+    const newTeamType = await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: {
+        image: imageData.id
+      }
+    });
+
+    return newTeamType;
   }
 
   /**
