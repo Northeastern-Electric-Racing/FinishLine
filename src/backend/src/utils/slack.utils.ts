@@ -33,17 +33,20 @@ export const sendSlackUpcomingDeadlineNotification = async (
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const endDate = calculateEndDate(workPackage.startDate, workPackage.duration);
 
-  const { lead } = workPackage.wbsElement;
+  const { lead, manager } = workPackage.wbsElement;
   const slackId = await getUserSlackId(lead?.userId);
   const daysUntilDeadline = daysBetween(endDate, new Date());
 
   const userString = lead ? buildUserString(userTransformer(lead), slackId) : 'No Lead Set';
+  const managerString = manager
+    ? buildUserString(userTransformer(manager), await getUserSlackId(manager.userId))
+    : 'No Manager Set';
   const dueString = buildDueString(daysUntilDeadline);
 
   const wbsNumber: string = wbsPipe(workPackage.wbsElement);
   const wbsString = `<https://finishlinebyner.com/projects/${wbsNumber}|${wbsNumber}>`;
 
-  const fullMsg = `${userString} ${wbsString}: ${workPackage.project.wbsElement.name} - ${workPackage.wbsElement.name} ${dueString}`;
+  const fullMsg = `${userString} ${managerString} ${wbsString}: ${workPackage.project.wbsElement.name} - ${workPackage.wbsElement.name} ${dueString}`;
 
   const promises = workPackage.project.teams.map(async (team) => await sendMessage(team.slackId, fullMsg));
 
@@ -337,7 +340,7 @@ export const sendDRScheduledSlackNotif = async (
   const { dateScheduled } = designReview;
   const drTime = `${addHours(dateScheduled, 12).toLocaleDateString()} at ${meetingStartTimePipe(designReview.meetingTimes)}`;
   const drSubmitter = `${designReview.userCreated.firstName} ${designReview.userCreated.lastName}`;
-  const zoomLink = designReview.isOnline && `on <${designReview.zoomLink}|Zoom>`;
+  const zoomLink = designReview.isOnline && designReview.zoomLink && `on <${designReview.zoomLink}|Zoom>`;
   const location =
     zoomLink && designReview.isInPerson
       ? `in ${designReview.location} and ${zoomLink}`
@@ -346,7 +349,8 @@ export const sendDRScheduledSlackNotif = async (
       : zoomLink;
 
   const msg = `:spiral_calendar_pad: Design Review for *${drName}* has been scheduled for *${drTime}* ${location} by ${drSubmitter}`;
-  const threadMsg = `The Design Review has been Scheduled! \n <${designReview.docTemplateLink}|Doc Link>`;
+  const docLink = designReview.docTemplateLink ? `<${designReview.docTemplateLink}|Doc Link>` : '';
+  const threadMsg = `The Design Review has been Scheduled! \n` + docLink;
   try {
     if (threads && threads.length !== 0) {
       const msgs = threads.map((thread) => editMessage(thread.channelId, thread.timestamp, msg));

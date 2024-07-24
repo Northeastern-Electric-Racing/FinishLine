@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { fireEvent, render, routerWrapperBuilder, screen } from '../test-support/test-utils';
+import { render, routerWrapperBuilder, screen } from '../test-support/test-utils';
 import AppAuthenticated from '../../app/AppAuthenticated';
 import { mockGetVersionNumberReturnValue, mockUseSingleUserSettings } from '../test-support/mock-hooks';
 import * as miscHooks from '../../hooks/misc.hooks';
@@ -49,15 +49,5 @@ describe.skip('App Authenticated', () => {
     expect(screen.queryByText('Home')).not.toBeInTheDocument();
     expect(screen.queryByText('Projects')).not.toBeInTheDocument();
     expect(screen.queryByText('Change Requests')).not.toBeInTheDocument();
-  });
-
-  it('can navigate to projects page', () => {
-    renderComponent();
-    const homeEle: HTMLElement = screen.getByText('Welcome', { exact: false });
-    expect(homeEle).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Projects'));
-
-    expect(homeEle).not.toBeInTheDocument();
-    expect(screen.getByText('projects page')).toBeInTheDocument();
   });
 });
