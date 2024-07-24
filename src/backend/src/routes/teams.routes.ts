@@ -32,7 +32,6 @@ teamsRouter.post(
 
 teamsRouter.post('/teamType/:teamTypeId/edit-image', upload.single('image'), TeamsController.setImage);
 
-
 teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
 teamsRouter.post(

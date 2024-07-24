@@ -30,10 +30,10 @@ export default class TeamsController {
 
   static async setImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const file = req.file as Express.Multer.File
+      const file = req.file as Express.Multer.File;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
-      const { teamTypeId } = req.params
+      const { teamTypeId } = req.params;
 
       const newImages = await TeamsService.setImage(file, submitter, organizationId, teamTypeId);
 
