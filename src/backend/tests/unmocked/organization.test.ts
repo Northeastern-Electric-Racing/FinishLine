@@ -38,10 +38,8 @@ describe('Team Type Tests', () => {
 
     it('Succeeds and updates all the images', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testFiles = [
-        { originalname: 'image1.png', buffer: Buffer.from('') },
-        { originalname: 'image2.png', buffer: Buffer.from('') }
-      ] as Express.Multer.File[];
+      const testFiles = [{ originalname: 'image1.png' }, { originalname: 'image2.png' }] as Express.Multer.File[];
+      const newFiles = [{ originalname: 'image1.png' }, { originalname: 'image3.png' }] as Express.Multer.File[];
 
       (uploadFile as Mock).mockImplementation((file) => {
         return Promise.resolve({ id: `uploaded-${file.originalname}` });
@@ -56,8 +54,18 @@ describe('Team Type Tests', () => {
       });
 
       expect(organization).not.toBeNull();
-      expect(organization!.interestedinApplyingImage).toMatch(/^uploaded-image1\.png$/);
-      expect(organization!.exploreAsGuestImage).toMatch(/^uploaded-image2\.png$/);
+      expect(organization?.interestedinApplyingImage).toBe('uploaded-image1.png');
+      expect(organization?.exploreAsGuestImage).toBe('uploaded-image2.png');
+
+      await OrganizationsService.setImages(newFiles, testBatman, orgId);
+
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(updatedOrganization?.exploreAsGuestImage).toBe('uploaded-image3.png');
     });
   });
 
