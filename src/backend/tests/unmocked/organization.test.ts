@@ -6,10 +6,10 @@ import { createTestLinkType, createTestOrganization, createTestUser, resetUsers 
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
 import { uploadFile } from '../../src/utils/google-integration.utils';
+import { Mock, vi } from 'vitest';
 
-// Mock uploadFile function from google-integration.utils
-jest.mock('../../src/utils/google-integration.utils', () => ({
-  uploadFile: jest.fn()
+vi.mock('../../src/utils/google-integration.utils', () => ({
+  uploadFile: vi.fn()
 }));
 
 describe('Team Type Tests', () => {
@@ -25,15 +25,15 @@ describe('Team Type Tests', () => {
 
   describe('Set Images', () => {
     it('Fails if user is not an admin', async () => {
-      await expect(
-        OrganizationsService.setImages([], await createTestUser(wonderwomanGuest, orgId), orgId)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
+      await expect(OrganizationsService.setImages([], await createTestUser(wonderwomanGuest, orgId), orgId)).rejects.toThrow(
+        new AccessDeniedAdminOnlyException('update images')
+      );
     });
 
     it('Fails if an organization does not exist', async () => {
-      await expect(
-        OrganizationsService.setImages([], await createTestUser(batmanAppAdmin, orgId), '1')
-      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
+      await expect(OrganizationsService.setImages([], await createTestUser(batmanAppAdmin, orgId), '1')).rejects.toThrow(
+        new HttpException(400, `Organization with id: 1 not found!`)
+      );
     });
 
     it('Succeeds and updates all the images', async () => {
@@ -43,8 +43,7 @@ describe('Team Type Tests', () => {
         { originalname: 'image2.png', buffer: Buffer.from('') }
       ] as Express.Multer.File[];
 
-      // Mock the uploadFile function to return simulated file IDs
-      (uploadFile as jest.Mock).mockImplementation((file) => {
+      (uploadFile as Mock).mockImplementation((file) => {
         return Promise.resolve({ id: `uploaded-${file.originalname}` });
       });
 
