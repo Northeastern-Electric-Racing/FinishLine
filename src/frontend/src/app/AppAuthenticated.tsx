@@ -42,12 +42,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const [clickedFinishline, setClickedFinishline] = useState(false);
-  const [isGuestOnMemberPage, setIsGuestOnMemberPage] = useState(false);
-
-  useEffect(() => {
-    setIsGuestOnMemberPage(isGuest(userRole) && clickedFinishline);
-  }, [userRole, clickedFinishline, isGuestOnMemberPage]);
+  const [onMemberHomepage, setOnMemberHomePage] = useState(false);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -68,11 +63,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           height: '100vh',
           position: 'fixed',
           width: 15,
-          borderRight: isGuestOnMemberPage ? 2 : 0,
+          borderRight: onMemberHomepage ? 2 : 0,
           borderRightColor: theme.palette.background.paper
         }}
       />
-      {isGuestOnMemberPage && (
+      {onMemberHomepage && (
         <>
           <IconButton
             onClick={() => {
@@ -116,7 +111,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route
               exact
               path={routes.HOME}
-              render={() => <Home clickedFinishline={clickedFinishline} setClickedFinishline={setClickedFinishline} />}
+              render={() => <Home onMemberHomePage={onMemberHomepage} setOnMemberHomePage={setOnMemberHomePage} />}
             />
             <Route path="*" component={PageNotFound} />
           </Switch>

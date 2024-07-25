@@ -9,15 +9,15 @@ import GuestHomePage from './GuestHomePage';
 import MemberHomePage from './MemberHomePage';
 
 interface HomeProps {
-  clickedFinishline: boolean;
-  setClickedFinishline: (value: boolean) => void;
+  onMemberHomePage: boolean;
+  setOnMemberHomePage: (value: boolean) => void;
 }
 
-const Home = ({ clickedFinishline, setClickedFinishline }: HomeProps) => {
+const Home = ({ onMemberHomePage, setOnMemberHomePage }: HomeProps) => {
   const user = useCurrentUser();
 
-  return isGuest(user.role) && !clickedFinishline ? (
-    <GuestHomePage user={user} setClickedFinishline={setClickedFinishline} />
+  return isGuest(user.role) && !onMemberHomePage ? (
+    <GuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
   ) : (
     <MemberHomePage user={user} />
   );
