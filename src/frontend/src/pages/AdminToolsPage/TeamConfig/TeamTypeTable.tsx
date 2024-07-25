@@ -34,13 +34,20 @@ const TeamTypeTable: React.FC = () => {
           </Typography>
         </Box>
       </TableCell>
+      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography variant="body1" sx={{ marginLeft: 1 }}>
+            {teamType.description}
+          </Typography>
+        </Box>
+      </TableCell>
     </TableRow>
   ));
 
   return (
     <Box>
       <CreateTeamTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable columns={[{ name: 'Team Type Name' }, { name: 'Icon' }]} rows={teamTypesTableRows} />
+      <AdminToolTable columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }]} rows={teamTypesTableRows} />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

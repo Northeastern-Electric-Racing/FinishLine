@@ -28,6 +28,7 @@ export interface CreateDesignReviewsPayload {
 export interface CreateTeamTypePayload {
   name: string;
   iconName: string;
+  description: string;
 }
 
 export const useCreateDesignReviews = () => {

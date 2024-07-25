@@ -12,7 +12,8 @@ import { CreateTeamTypePayload, useCreateTeamType } from '../../../hooks/design-
 
 const schema = yup.object().shape({
   name: yup.string().required('Material Type is Required'),
-  iconName: yup.string().required('Icon Name is Required')
+  iconName: yup.string().required('Icon Name is Required'),
+  description: yup.string().required('Description is Required')
 });
 
 interface CreateTeamTypeModalProps {
@@ -44,7 +45,8 @@ const CreateTeamTypeModal: React.FC<CreateTeamTypeModalProps> = ({ showModal, ha
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
-      iconName: ''
+      iconName: '',
+      description: ''
     }
   });
 
@@ -61,7 +63,7 @@ const CreateTeamTypeModal: React.FC<CreateTeamTypeModalProps> = ({ showModal, ha
       open={showModal}
       onHide={handleClose}
       title="New Team Type"
-      reset={() => reset({ name: '', iconName: '' })}
+      reset={() => reset({ name: '', iconName: '', description: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       formId="new-team-type-form"
@@ -88,6 +90,13 @@ const CreateTeamTypeModal: React.FC<CreateTeamTypeModalProps> = ({ showModal, ha
         </Box>
         <ReactHookTextField name="iconName" control={control} />
         <FormHelperText error>{errors.iconName?.message}</FormHelperText>
+      </FormControl>
+      <FormControl fullWidth>
+        <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
+          <FormLabel>Description</FormLabel>
+        </Box>
+        <ReactHookTextField name="description" control={control} />
+        <FormHelperText error>{errors.description?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>
   );

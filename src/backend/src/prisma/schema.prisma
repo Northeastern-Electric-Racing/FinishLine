@@ -702,7 +702,7 @@ model Team_Type {
   designReviews  Design_Review[]
   team           Team[]
   description    String
-  image          String?
+  imageFileId    String?
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
 
