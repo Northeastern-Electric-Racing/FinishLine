@@ -108,12 +108,8 @@ export const sendReimbursementRequestCreatedNotification = async (requestId: str
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
-  if (!process.env.FINANCE_TEAM_ID) {
-    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
-  }
-
-  const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID }
+  const financeTeam = await prisma.team.findFirst({
+    where: { financeTeam: true }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
