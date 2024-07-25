@@ -38,7 +38,7 @@ describe('Team Type Tests', () => {
       );
 
       await expect(
-        TeamsService.setImage(TEST_FILE, await createTestUser(wonderwomanGuest, orgId), orgId, teamType.teamTypeId)
+        TeamsService.setTeamTypeImage(TEST_FILE, await createTestUser(wonderwomanGuest, orgId), orgId, teamType.teamTypeId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
     });
 
@@ -52,7 +52,7 @@ describe('Team Type Tests', () => {
       );
 
       await expect(
-        TeamsService.setImage(TEST_FILE, await createTestUser(batmanAppAdmin, orgId), '1', teamType.teamTypeId)
+        TeamsService.setTeamTypeImage(TEST_FILE, await createTestUser(batmanAppAdmin, orgId), '1', teamType.teamTypeId)
       ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
@@ -71,7 +71,7 @@ describe('Team Type Tests', () => {
         return Promise.resolve({ id: `uploaded-${file.originalname}` });
       });
 
-      await TeamsService.setImage(TEST_FILE, testBatman, orgId, teamType.teamTypeId);
+      await TeamsService.setTeamTypeImage(TEST_FILE, testBatman, orgId, teamType.teamTypeId);
 
       const organization = await prisma.team_Type.findUnique({
         where: {
@@ -82,7 +82,7 @@ describe('Team Type Tests', () => {
       expect(organization).not.toBeNull();
       expect(organization?.imageFileId).toBe('uploaded-image1.png');
 
-      await TeamsService.setImage(OTHER_FILE, testBatman, orgId, teamType.teamTypeId);
+      await TeamsService.setTeamTypeImage(OTHER_FILE, testBatman, orgId, teamType.teamTypeId);
 
       const updatedTeamType = await prisma.team_Type.findUnique({
         where: {

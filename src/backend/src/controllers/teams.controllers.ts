@@ -28,21 +28,6 @@ export default class TeamsController {
     }
   }
 
-  static async setImage(req: Request, res: Response, next: NextFunction) {
-    try {
-      const file = req.file as Express.Multer.File;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-      const { teamTypeId } = req.params;
-
-      const newImages = await TeamsService.setImage(file, submitter, organizationId, teamTypeId);
-
-      res.status(200).json(newImages);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async setTeamMembers(req: Request, res: Response, next: NextFunction) {
     try {
       const { userIds } = req.body;
@@ -199,6 +184,21 @@ export default class TeamsController {
         organizationId
       );
       res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setTeamTypeImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const file = req.file as Express.Multer.File;
+      const submitter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+      const { teamTypeId } = req.params;
+
+      const newImages = await TeamsService.setTeamTypeImage(file, submitter, organizationId, teamTypeId);
+
+      res.status(200).json(newImages);
     } catch (error: unknown) {
       next(error);
     }

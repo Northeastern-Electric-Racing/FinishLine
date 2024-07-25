@@ -30,30 +30,6 @@ export default class TeamsService {
   }
 
   /**
-   * Sets team type image
-   * @param organizationId The organization the user is currently in
-   * @param teamTypeId The team type that is being updated
-   * @param image The image that is being placed in the team type
-   * @param submitter The user that is making the change
-   * @returns the updated team type
-   */
-  static async setImage(image: Express.Multer.File, submitter: User, organizationId: string, teamTypeId: string) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('update images');
-
-    const imageData = await uploadFile(image);
-
-    const newTeamType = await prisma.team_Type.update({
-      where: { teamTypeId },
-      data: {
-        imageFileId: imageData.id
-      }
-    });
-
-    return newTeamType;
-  }
-
-  /**
    * Gets a team with the given id
    * @param teamId - id of team to retrieve
    * @param organizationId The organization the user is currently in
@@ -484,6 +460,31 @@ export default class TeamsService {
 
     return updatedTeamType;
   }
+
+    /**
+   * Sets team type image
+   * @param organizationId The organization the user is currently in
+   * @param teamTypeId The team type that is being updated
+   * @param image The image that is being placed in the team type
+   * @param submitter The user that is making the change
+   * @returns the updated team type
+   */
+    static async setTeamTypeImage(image: Express.Multer.File, submitter: User, organizationId: string, teamTypeId: string) {
+      if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+        throw new AccessDeniedAdminOnlyException('update images');
+  
+      const imageData = await uploadFile(image);
+  
+      const newTeamType = await prisma.team_Type.update({
+        where: { teamTypeId },
+        data: {
+          imageFileId: imageData.id
+        }
+      });
+  
+      return newTeamType;
+    }
+  
 
   /**
    * Sets the teamType for a team

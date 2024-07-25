@@ -30,8 +30,6 @@ teamsRouter.post(
   TeamsController.editDescription
 );
 
-teamsRouter.post('/teamType/:teamTypeId/edit-image', upload.single('image'), TeamsController.setImage);
-
 teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
 teamsRouter.post(
@@ -70,5 +68,8 @@ teamsRouter.post(
   TeamsController.editTeamType
 );
 
+teamsRouter.post('/teamType/:teamTypeId/edit-image', upload.single('image'), TeamsController.setTeamTypeImage);
+
 teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
+
 export default teamsRouter;
