@@ -10,7 +10,7 @@ import {
   createDesignReviews,
   getAllDesignReviews,
   getSingleDesignReview,
-  markUserConfirmed,
+  markUserConfirmed
 } from '../apis/design-reviews.api';
 import { useCurrentUser } from './users.hooks';
 
