@@ -2,8 +2,10 @@ import express from 'express';
 import TeamsController from '../controllers/teams.controllers';
 import { body } from 'express-validator';
 import { nonEmptyString, validateInputs } from '../utils/validation.utils';
+import multer, { memoryStorage } from 'multer';
 
 const teamsRouter = express.Router();
+const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
 teamsRouter.get('/', TeamsController.getAllTeams);
 teamsRouter.get('/:teamId', TeamsController.getSingleTeam);
@@ -27,6 +29,9 @@ teamsRouter.post(
   validateInputs,
   TeamsController.editDescription
 );
+
+teamsRouter.post('/teamType/:teamTypeId/edit-image', upload.single('image'), TeamsController.setImage);
+
 teamsRouter.post('/:teamId/set-head', nonEmptyString(body('userId')), validateInputs, TeamsController.setTeamHead);
 teamsRouter.post('/:teamId/delete', TeamsController.deleteTeam);
 teamsRouter.post(

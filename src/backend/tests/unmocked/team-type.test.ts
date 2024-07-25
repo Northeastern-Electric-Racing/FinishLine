@@ -1,3 +1,4 @@
+import prisma from '../../src/prisma/prisma';
 import TeamsService from '../../src/services/teams.services';
 import {
   AccessDeniedAdminOnlyException,
@@ -5,8 +6,14 @@ import {
   HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
+import { uploadFile } from '../../src/utils/google-integration.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { Mock, vi } from 'vitest';
+
+vi.mock('../../src/utils/google-integration.utils', () => ({
+  uploadFile: vi.fn()
+}));
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -16,6 +23,75 @@ describe('Team Type Tests', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('Set Image', () => {
+    const TEST_FILE = { originalname: 'image1.png' } as Express.Multer.File;
+
+    it('Fails if user is not an admin', async () => {
+      const teamType = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        '',
+        orgId
+      );
+
+      await expect(
+        TeamsService.setImage(TEST_FILE, await createTestUser(wonderwomanGuest, orgId), orgId, teamType.teamTypeId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
+    });
+
+    it('Fails if an organization does not exist', async () => {
+      const teamType = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        '',
+        orgId
+      );
+
+      await expect(
+        TeamsService.setImage(TEST_FILE, await createTestUser(batmanAppAdmin, orgId), '1', teamType.teamTypeId)
+      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
+    });
+
+    it('Succeeds and updates all the images', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const OTHER_FILE = { originalname: 'image2.png' } as Express.Multer.File;
+      const teamType = await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        '',
+        orgId
+      );
+
+      (uploadFile as Mock).mockImplementation((file) => {
+        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+      });
+
+      await TeamsService.setImage(TEST_FILE, testBatman, orgId, teamType.teamTypeId);
+
+      const organization = await prisma.team_Type.findUnique({
+        where: {
+          teamTypeId: teamType.teamTypeId
+        }
+      });
+
+      expect(organization).not.toBeNull();
+      expect(organization?.image).toBe('uploaded-image1.png');
+
+      await TeamsService.setImage(OTHER_FILE, testBatman, orgId, teamType.teamTypeId);
+
+      const updatedTeamType = await prisma.team_Type.findUnique({
+        where: {
+          teamTypeId: teamType.teamTypeId
+        }
+      });
+
+      expect(updatedTeamType?.image).toBe('uploaded-image2.png');
+    });
   });
 
   describe('Create Team Type', () => {
