@@ -3,11 +3,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { TeamType } from 'shared';
+import { CreateTeamTypePayload } from '../hooks/design-reviews.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
 
 export const setTeamType = (id: string, teamTypeId: string) => {
   return axios.post<{ message: string }>(apiUrls.teamsSetTeamType(id), {
     teamTypeId
+  });
+};
+
+export const editTeamType = (id: string, payload: CreateTeamTypePayload) => {
+  return axios.post<TeamType>(apiUrls.teamTypeEdit(id), {
+    ...payload
   });
 };

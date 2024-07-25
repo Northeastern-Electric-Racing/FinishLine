@@ -62,10 +62,12 @@ teamsRouter.post(
 );
 
 teamsRouter.post(
-  '/teamType/:teamTypeId/edit-description',
-  body('newDescription').isString(),
+  '/teamType/:teamTypeId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('iconName')),
+  nonEmptyString(body('description')),
   validateInputs,
-  TeamsController.editTeamTypeDescription
+  TeamsController.editTeamType
 );
 
 teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);

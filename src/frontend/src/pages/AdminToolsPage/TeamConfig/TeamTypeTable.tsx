@@ -6,6 +6,8 @@ import { useState } from 'react';
 import AdminToolTable from '../AdminToolTable';
 import CreateTeamTypeModal from './CreateTeamTypeFormModal';
 import { useAllTeamTypes } from '../../../hooks/design-reviews.hooks';
+import { TeamType } from 'shared';
+import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -15,6 +17,7 @@ const TeamTypeTable: React.FC = () => {
     error: teamTypesError
   } = useAllTeamTypes();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
+  const [editingTeamType, setEditingTeamType] = useState<TeamType>();
 
   if (!teamTypes || teamTypesIsLoading) {
     return <LoadingIndicator />;
@@ -24,7 +27,7 @@ const TeamTypeTable: React.FC = () => {
   }
 
   const teamTypesTableRows = teamTypes.map((teamType) => (
-    <TableRow>
+    <TableRow onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer' }}>
       <TableCell sx={{ border: '2px solid black' }}>{teamType.name}</TableCell>
       <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -46,11 +49,19 @@ const TeamTypeTable: React.FC = () => {
 
   return (
     <Box>
-      <CreateTeamTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      <CreateTeamTypeModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      {editingTeamType && (
+        <EditTeamTypeFormModal
+          open={!!editingTeamType}
+          handleClose={() => setEditingTeamType(undefined)}
+          teamType={editingTeamType}
+        />
+      )}
       <AdminToolTable
         columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }]}
         rows={teamTypesTableRows}
       />
+
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

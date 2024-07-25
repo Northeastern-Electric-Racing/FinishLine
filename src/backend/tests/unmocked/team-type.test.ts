@@ -134,7 +134,7 @@ describe('Team Type Tests', () => {
       expect(result).toEqual({
         name: 'teamType3',
         iconName: 'YouTubeIcon',
-        image: null,
+        imageFileId: null,
         description: '',
         organizationId: orgId,
         teamTypeId: result.teamTypeId
@@ -188,9 +188,11 @@ describe('Team Type Tests', () => {
     it('fails if user is not an admin', async () => {
       await expect(
         async () =>
-          await TeamsService.editTeamTypeDescription(
+          await TeamsService.editTeamType(
             await createTestUser(wonderwomanGuest, orgId),
             'id',
+            'new name',
+            'new icon',
             'new description',
             orgId
           )
@@ -200,9 +202,11 @@ describe('Team Type Tests', () => {
     it('fails if the new description is over 300 workds', async () => {
       await expect(
         async () =>
-          await TeamsService.editTeamTypeDescription(
+          await TeamsService.editTeamType(
             await createTestUser(supermanAdmin, orgId),
             'id',
+            'new name',
+            'new icon',
             'a '.repeat(301),
             orgId
           )
@@ -217,12 +221,16 @@ describe('Team Type Tests', () => {
         '',
         orgId
       );
-      const updatedTeamType = await TeamsService.editTeamTypeDescription(
+      const updatedTeamType = await TeamsService.editTeamType(
         await createTestUser(batmanAppAdmin, orgId),
         teamType.teamTypeId,
+        'new name',
+        'new icon',
         'new description',
         orgId
       );
+      expect(updatedTeamType.name).toBe('new name');
+      expect(updatedTeamType.iconName).toBe('new icon');
       expect(updatedTeamType.description).toBe('new description');
     });
   });

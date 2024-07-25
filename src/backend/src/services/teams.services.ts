@@ -454,17 +454,21 @@ export default class TeamsService {
    * Changes the description of the given teamType to be the new description
    * @param user The user who is editing the description
    * @param teamTypeId The id for the teamType that is being edited
-   * @param newDescription the new description for the team
+   * @param name the new name for the team
+   * @param iconName the new icon name for the team
+   * @param description the new description for the team
    * @param organizationId The organization the user is currently in
    * @returns The team with the new description
    */
-  static async editTeamTypeDescription(
+  static async editTeamType(
     user: User,
     teamTypeId: string,
-    newDescription: string,
+    name: string,
+    iconName: string,
+    description: string,
     organizationId: string
   ): Promise<TeamType> {
-    if (!isUnderWordCount(newDescription, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+    if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
 
     if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
       throw new AccessDeniedException('you must be an admin to edit the team types description');
@@ -472,7 +476,9 @@ export default class TeamsService {
     const updatedTeamType = await prisma.team_Type.update({
       where: { teamTypeId },
       data: {
-        description: newDescription
+        name,
+        iconName,
+        description
       }
     });
 

@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useQueryClient, useMutation } from 'react-query';
-import { Team } from 'shared';
+import { Team, TeamType } from 'shared';
 import {
   getAllTeams,
   getSingleTeam,
@@ -15,6 +15,8 @@ import {
   createTeam,
   setTeamLeads
 } from '../apis/teams.api';
+import { CreateTeamTypePayload } from './design-reviews.hooks';
+import { editTeamType } from '../apis/team-types.api';
 
 export interface CreateTeamPayload {
   teamName: string;
@@ -129,6 +131,22 @@ export const useSetTeamLeads = (teamId: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['teams']);
+      }
+    }
+  );
+};
+
+export const useEditTeamType = (teamTypeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamType, Error, CreateTeamTypePayload>(
+    ['team-type', 'edit'],
+    async (formData: CreateTeamTypePayload) => {
+      const { data } = await editTeamType(teamTypeId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['team-type', 'teams']);
       }
     }
   );

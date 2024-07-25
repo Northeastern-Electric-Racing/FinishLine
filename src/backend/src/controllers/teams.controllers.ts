@@ -184,16 +184,18 @@ export default class TeamsController {
     }
   }
 
-  static async editTeamTypeDescription(req: Request, res: Response, next: NextFunction) {
+  static async editTeamType(req: Request, res: Response, next: NextFunction) {
     try {
-      const { newDescription } = req.body;
+      const { name, iconName, description } = req.body;
       const user = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
-      const teamType = await TeamsService.editTeamTypeDescription(
+      const teamType = await TeamsService.editTeamType(
         user,
         req.params.teamTypeId,
-        newDescription,
+        name,
+        iconName,
+        description,
         organizationId
       );
       res.status(200).json(teamType);
