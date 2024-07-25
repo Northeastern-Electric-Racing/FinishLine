@@ -1,4 +1,4 @@
-import { Link, LinkType, TeamType } from 'shared';
+import { TeamType } from 'shared';
 import { useEditTeamType } from '../../../hooks/teams.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';

@@ -3,12 +3,11 @@ import NERFormModal from '../../../components/NERFormModal';
 import { FormControl, FormLabel, FormHelperText, Tooltip, Typography } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
-import { CreateTeamTypePayload, useCreateTeamType } from '../../../hooks/design-reviews.hooks';
+import { CreateTeamTypePayload } from '../../../hooks/design-reviews.hooks';
 import { TeamType } from 'shared';
 
 interface TeamTypeFormModalProps {
