@@ -237,13 +237,44 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.proposedSolutions[0].id
   );
 
+  /** Gets the current content of the .env file */
+  const currentEnv = require('dotenv').config().parsed;
+
+  currentEnv.DEV_ORGANIZATION_ID = organizationId;
+
+  /** Write the new .env file with the organization ID */
+  let stringifiedEnv = '';
+  Object.keys(currentEnv).forEach((key) => {
+    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  });
+  writeFileSync('.env', stringifiedEnv);
+
   /**
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', organizationId);
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', organizationId);
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', organizationId);
+  const teamType1 = await TeamsService.createTeamType(
+    batman,
+    'Mechanical',
+    'YouTubeIcon',
+    organizationId,
+    currentEnv.MECHANICAL_CALENDAR
+  );
+  const teamType2 = await TeamsService.createTeamType(
+    thomasEmrax,
+    'Software',
+    'InstagramIcon',
+    organizationId,
+    currentEnv.SOFTWARE_CALENDAR
+  );
+  const teamType3 = await TeamsService.createTeamType(
+    cyborg,
+    'Electrical',
+    'SettingsIcon',
+    organizationId,
+    currentEnv.ELECTRICAL_CALENDAR
+  );
+  const teamType4 = await TeamsService.createTeamType(cyborg, 'Test', 'SettingsIcon', organizationId);
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
@@ -258,18 +289,6 @@ const performSeed: () => Promise<void> = async () => {
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
   const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
-
-  /** Gets the current content of the .env file */
-  const currentEnv = require('dotenv').config().parsed;
-
-  currentEnv.DEV_ORGANIZATION_ID = organizationId;
-
-  /** Write the new .env file with the organization ID */
-  let stringifiedEnv = '';
-  Object.keys(currentEnv).forEach((key) => {
-    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
-  });
-  writeFileSync('.env', stringifiedEnv);
 
   /** Setting Team Members */
   await TeamsService.setTeamMembers(

@@ -13,6 +13,7 @@ import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/use
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { createCalendar } from '../utils/google-integration.utils';
 
 export default class TeamsService {
   /**
@@ -366,7 +367,13 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns the created team
    */
-  static async createTeamType(submitter: User, name: string, iconName: string, organizationId: string): Promise<TeamType> {
+  static async createTeamType(
+    submitter: User,
+    name: string,
+    iconName: string,
+    organizationId: string,
+    calendarId?: string
+  ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a team type');
     }
@@ -379,13 +386,22 @@ export default class TeamsService {
       throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
 
-    const teamType = await prisma.team_Type.create({
+    let teamType = await prisma.team_Type.create({
       data: {
         name,
         iconName,
-        organizationId
+        organizationId,
+        calendarId
       }
     });
+
+    if (!calendarId) {
+      const calendarId = await createCalendar(teamType.name);
+      teamType = await prisma.team_Type.update({
+        where: { teamTypeId: teamType.teamTypeId },
+        data: { calendarId }
+      });
+    }
 
     return teamType;
   }

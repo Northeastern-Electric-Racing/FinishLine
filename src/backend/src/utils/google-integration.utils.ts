@@ -7,8 +7,6 @@ import concat from 'concat-stream';
 import { Design_Review, User, WBS_Element } from '@prisma/client';
 import { transformDate } from './datetime.utils';
 import { transformStartTime } from './design-reviews.utils';
-import { TeamType } from 'shared';
-import { getCalendarByTeamName } from './calendar.utils';
 
 const { OAuth2 } = google.auth;
 const {
@@ -174,7 +172,7 @@ export const downloadImageFile = async (fileId: string) => {
   }
 };
 
-export const createCalendar = async (teamType: TeamType) => {
+export const createCalendar = async (teamTypeName: string) => {
   if (process.env.NODE_ENV !== 'production') return;
   try {
     oauth2Client.setCredentials({
@@ -182,10 +180,10 @@ export const createCalendar = async (teamType: TeamType) => {
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const createdCalendar = await calendar.calendars.insert({
-      requestBody: { summary: `NER - ${teamType.name} Meetings`, description: `A TeamType Within NER` }
+      requestBody: { summary: `NER ${teamTypeName} Meetings`, description: `A Team Type Within NER` }
     });
 
-    return createdCalendar;
+    return createdCalendar.data.id;
   } catch (error: unknown) {
     throw error;
   }
@@ -200,19 +198,18 @@ export const createCalendar = async (teamType: TeamType) => {
  */
 export const createCalendarEvent = async (
   members: User[],
-  teamType: TeamType,
+  calendarId: string | null,
   designReview: Design_Review & {
     wbsElement: WBS_Element;
   }
 ) => {
-  if (process.env.NODE_ENV !== 'production') return;
+  //if (process.env.NODE_ENV !== 'production') return;
+  if (!calendarId) throw Error('no calendar id provided');
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const calendarIds = (await calendar.calendarList.list()).data.items?.map((calendar) => calendar.id);
-    if (!calendarIds) throw Error('no calendar ids');
     const startTime = transformStartTime(designReview.meetingTimes);
     const eventInput = {
       location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
@@ -238,7 +235,7 @@ export const createCalendarEvent = async (
     };
 
     const calendarEvent = await calendar.events.insert({
-      calendarId: getCalendarByTeamName(teamType),
+      calendarId,
       requestBody: eventInput
     });
 
@@ -257,13 +254,14 @@ export const createCalendarEvent = async (
  * @returns the id of the updated calendar event
  */
 export const updateCalendarEvent = async (
-  calendarId: string,
+  calendarId: string | null,
   eventId: string,
   members: User[],
   designReview: Design_Review & {
     wbsElement: WBS_Element;
   }
 ) => {
+  if (!calendarId) throw Error('no calendar id provided');
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
@@ -309,7 +307,8 @@ export const updateCalendarEvent = async (
  * @param eventId the id of the calendar event
  * @returns the deleted calendar event
  */
-export const deleteCalendarEvent = async (calendarId: string, eventId: string) => {
+export const deleteCalendarEvent = async (calendarId: string | null, eventId: string) => {
+  if (!calendarId) throw Error('No calendar id provided');
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN

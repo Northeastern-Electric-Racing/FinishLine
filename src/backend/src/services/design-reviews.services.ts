@@ -31,7 +31,6 @@ import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.quer
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils';
-import { getCalendarByTeamName } from '../utils/calendar.utils';
 
 export default class DesignReviewsService {
   /**
@@ -78,7 +77,7 @@ export default class DesignReviewsService {
     });
 
     if (deletedDesignReview.calendarEventId) {
-      await deleteCalendarEvent(getCalendarByTeamName(deletedDesignReview.teamType)!, deletedDesignReview.calendarEventId);
+      await deleteCalendarEvent(deletedDesignReview.teamType.calendarId, deletedDesignReview.calendarEventId);
     }
 
     return designReviewTransformer(deletedDesignReview);
@@ -346,7 +345,7 @@ export default class DesignReviewsService {
       await sendDRScheduledSlackNotif(updatedDesignReview.notificationSlackThreads, updatedDesignReview);
       if (updatedDesignReview.calendarEventId) {
         await updateCalendarEvent(
-          getCalendarByTeamName(updatedDesignReview.teamType)!,
+          updatedDesignReview.teamType.calendarId,
           updatedDesignReview.calendarEventId,
           [...updatedDesignReview.requiredMembers, ...updatedDesignReview.optionalMembers],
           updatedDesignReview
@@ -354,7 +353,7 @@ export default class DesignReviewsService {
       } else {
         const calendarEventId = await createCalendarEvent(
           [...updatedDesignReview.requiredMembers, ...updatedDesignReview.optionalMembers],
-          updatedDesignReview.teamType,
+          updatedDesignReview.teamType.calendarId,
           updatedDesignReview
         );
 
