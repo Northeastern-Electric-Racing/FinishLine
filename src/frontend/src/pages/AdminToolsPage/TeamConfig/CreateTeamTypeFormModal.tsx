@@ -1,7 +1,7 @@
 import TeamTypeFormModal from './TeamTypeFormModal';
-import { useCreateTeamType } from '../../../hooks/design-reviews.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useCreateTeamType } from '../../../hooks/team-types.hooks';
 
 interface CreateTeamTypeModalProps {
   open: boolean;

@@ -1,8 +1,8 @@
 import { TeamType } from 'shared';
-import { useEditTeamType } from '../../../hooks/teams.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import TeamTypeFormModal from './TeamTypeFormModal';
+import { useEditTeamType } from '../../../hooks/team-types.hooks';
 
 interface EditTeamTypeFormModalProps {
   open: boolean;

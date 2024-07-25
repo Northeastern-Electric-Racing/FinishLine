@@ -7,8 +7,8 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
-import { CreateTeamTypePayload } from '../../../hooks/design-reviews.hooks';
 import { TeamType } from 'shared';
+import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
 
 interface TeamTypeFormModalProps {
   open: boolean;

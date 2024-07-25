@@ -5,9 +5,9 @@ import { NERButton } from '../../../components/NERButton';
 import { useState } from 'react';
 import AdminToolTable from '../AdminToolTable';
 import CreateTeamTypeModal from './CreateTeamTypeFormModal';
-import { useAllTeamTypes } from '../../../hooks/design-reviews.hooks';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
+import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
 
 const TeamTypeTable: React.FC = () => {
   const {

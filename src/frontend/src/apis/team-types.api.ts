@@ -4,9 +4,19 @@
  */
 
 import { TeamType } from 'shared';
-import { CreateTeamTypePayload } from '../hooks/design-reviews.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
+import { CreateTeamTypePayload } from '../hooks/team-types.hooks';
+
+export const getAllTeamTypes = () => {
+  return axios.get(apiUrls.allTeamTypes(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const createTeamType = async (payload: CreateTeamTypePayload) => {
+  return axios.post(apiUrls.teamTypesCreate(), payload);
+};
 
 export const setTeamType = (id: string, teamTypeId: string) => {
   return axios.post<{ message: string }>(apiUrls.teamsSetTeamType(id), {
