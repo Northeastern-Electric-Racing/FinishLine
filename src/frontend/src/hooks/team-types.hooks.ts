@@ -48,7 +48,7 @@ export const useCreateTeamType = () => {
 
 /**
  * Custom react hook to set the team type of a team
- * 
+ *
  * @param teamId id of the team to set the team type
  * @returns the updated team
  */
@@ -70,7 +70,7 @@ export const useSetTeamType = (teamId: string) => {
 
 /**
  * Custome react hook to update a team type
- * 
+ *
  * @param teamTypeId id of the team type to edit
  * @returns the updated team type
  */
