@@ -47,7 +47,10 @@ const TeamTypeTable: React.FC = () => {
   return (
     <Box>
       <CreateTeamTypeModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} />
-      <AdminToolTable columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }]} rows={teamTypesTableRows} />
+      <AdminToolTable
+        columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }]}
+        rows={teamTypesTableRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"

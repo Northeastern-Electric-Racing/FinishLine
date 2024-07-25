@@ -80,7 +80,7 @@ describe('Team Type Tests', () => {
       });
 
       expect(organization).not.toBeNull();
-      expect(organization?.image).toBe('uploaded-image1.png');
+      expect(organization?.imageFileId).toBe('uploaded-image1.png');
 
       await TeamsService.setImage(OTHER_FILE, testBatman, orgId, teamType.teamTypeId);
 
@@ -90,7 +90,7 @@ describe('Team Type Tests', () => {
         }
       });
 
-      expect(updatedTeamType?.image).toBe('uploaded-image2.png');
+      expect(updatedTeamType?.imageFileId).toBe('uploaded-image2.png');
     });
   });
 

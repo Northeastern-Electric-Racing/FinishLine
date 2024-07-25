@@ -46,7 +46,7 @@ export default class TeamsService {
     const newTeamType = await prisma.team_Type.update({
       where: { teamTypeId },
       data: {
-        image: imageData.id
+        imageFileId: imageData.id
       }
     });
 
