@@ -27,7 +27,7 @@ import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import HiddenContentMargin from '../components/HiddenContentMargin';
 
