@@ -203,7 +203,7 @@ export const createCalendarEvent = async (
     wbsElement: WBS_Element;
   }
 ) => {
-  //if (process.env.NODE_ENV !== 'production') return;
+  if (process.env.NODE_ENV !== 'production') return;
   if (!calendarId) throw Error('no calendar id provided');
   try {
     oauth2Client.setCredentials({
