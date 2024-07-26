@@ -37,5 +37,5 @@ export interface TeamType {
   teamTypeId: string;
   name: string;
   iconName: string;
-  calendarId: string | null;
+  calendarId?: string | null;
 }

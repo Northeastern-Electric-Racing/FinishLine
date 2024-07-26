@@ -172,6 +172,11 @@ export const downloadImageFile = async (fileId: string) => {
   }
 };
 
+/**
+ * Creates a new google calendar on the NER google calendar
+ * @param teamTypeName
+ * @returns the calendar id
+ */
 export const createCalendar = async (teamTypeName: string) => {
   if (process.env.NODE_ENV !== 'production') return;
   try {
@@ -192,7 +197,7 @@ export const createCalendar = async (teamTypeName: string) => {
 /**
  * Creates A Google Calendar Event on the NER Google Calendar
  * @param members required and optional members
- * @param teamType
+ * @param calendarId the id of the calendar to add the event
  * @param designReview
  * @returns the id of the calendar event
  */

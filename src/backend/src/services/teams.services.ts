@@ -365,6 +365,7 @@ export default class TeamsService {
    * @param name the name of the team type
    * @param iconName the name of the icon
    * @param organizationId The organization the user is currently in
+   * @param calendarId The id of the google calendar associated with the Team Type
    * @returns the created team
    */
   static async createTeamType(
