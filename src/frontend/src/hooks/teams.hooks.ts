@@ -13,7 +13,8 @@ import {
   setTeamHead,
   deleteTeam,
   createTeam,
-  setTeamLeads
+  setTeamLeads,
+  archiveTeam
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -53,6 +54,17 @@ export const useSetTeamMembers = (teamId: string) => {
     }
   );
 };
+
+export const useArchiveTeam = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Team, Error, string>(
+    ['teams', 'edit'],
+    async () => {
+      const { data } = await archiveTeam(teamId);
+      return data;
+    }
+  )
+}
 
 export const useSetTeamHead = (teamId: string) => {
   const queryClient = useQueryClient();

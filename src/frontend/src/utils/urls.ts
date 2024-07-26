@@ -81,6 +81,7 @@ const teamsDelete = (id: string) => `${teamsById(id)}/delete`;
 const teamsSetMembers = (id: string) => `${teamsById(id)}/set-members`;
 const teamsSetTeamType = (id: string) => `${teamsById(id)}/set-team-type`;
 const teamsSetHead = (id: string) => `${teamsById(id)}/set-head`;
+const teamsArchive = (id: string) => `${teamsById(id)}/archive`;
 const teamsSetDescription = (id: string) => `${teamsById(id)}/edit-description`;
 const teamsCreate = () => `${teams()}/create`;
 const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
@@ -225,6 +226,7 @@ export const apiUrls = {
   teamsById,
   teamsDelete,
   teamsSetMembers,
+  teamsArchive,
   teamsSetHead,
   teamsSetDescription,
   teamsCreate,

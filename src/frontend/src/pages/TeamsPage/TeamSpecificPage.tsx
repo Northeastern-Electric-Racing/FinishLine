@@ -1,5 +1,5 @@
 import { Box, Grid, Menu, MenuItem, Stack } from '@mui/material';
-import { useSingleTeam } from '../../hooks/teams.hooks';
+import { useArchiveTeam, useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import TeamMembersPageBlock from './TeamMembersPageBlock';
 import LoadingIndicator from '../../components/LoadingIndicator';
@@ -18,6 +18,7 @@ import DeleteTeamModal from './DeleteTeamModal';
 import SetTeamTypeModal from './SetTeamTypeModal';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { TeamPill } from './TeamPill';
+import { useDeleteDesignReview } from '../../hooks/design-reviews.hooks';
 
 interface ParamTypes {
   teamId: string;
@@ -31,6 +32,7 @@ const TeamSpecificPage: React.FC = () => {
   const [showTeamTypeModal, setShowTeamTypeModal] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
+  const { mutateAsync: archiveTeam } = useArchiveTeam(teamId);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -64,11 +66,26 @@ const TeamSpecificPage: React.FC = () => {
     archive: boolean;
   }
 
+  const handleArchive = async () => {
+    try {
+      await archiveTeam(teamId);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
   const ArchiveTeamButton: React.FC<ArchiveTeamButtonProps> = ({ archive }) => (
-    <NERButton variant="contained" disabled={!isAdmin(user.role)}>
-      {archive ? 'Archive Team' : 'Unarchive Team'}
+    <NERButton 
+      variant="contained" 
+      onClick={() => handleArchive()} 
+      disabled={!isAdmin(user.role)}
+    >
+      {archive ? 'Unarchive Team' : 'Archive Team'}
     </NERButton>
   );
+  
 
   const TeamActionsDropdown = () => (
     <Box>
