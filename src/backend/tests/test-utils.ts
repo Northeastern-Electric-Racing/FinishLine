@@ -165,6 +165,7 @@ export const createTestOrganization = async () => {
   return await prisma.organization.create({
     data: {
       name: 'Joe mama',
+      description: 'Joe mama`s organization',
       userCreated: {
         connect: {
           userId: user.userId
