@@ -6,6 +6,7 @@ import { useState } from 'react';
 import AdminToolTable from '../AdminToolTable';
 import CreateTeamTypeModal from './CreateTeamTypeFormModal';
 import { useAllTeamTypes } from '../../../hooks/design-reviews.hooks';
+import { useHistoryState } from '../../../hooks/misc.hooks';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -14,7 +15,7 @@ const TeamTypeTable: React.FC = () => {
     isError: teamTypesIsError,
     error: teamTypesError
   } = useAllTeamTypes();
-  const [createModalShow, setCreateModalShow] = useState<boolean>(false);
+  const [createModalShow, setCreateModalShow] = useHistoryState<boolean>("", false);
 
   if (!teamTypes || teamTypesIsLoading) {
     return <LoadingIndicator />;
