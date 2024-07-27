@@ -1,6 +1,6 @@
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel, FormHelperText, Tooltip, Typography } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Button } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -8,13 +8,16 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { TeamType } from 'shared';
-import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
+import { CreateTeamTypePayload, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
+import React, { useEffect, useState } from 'react';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface TeamTypeFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaulValues?: TeamType;
-  onSubmit: (data: CreateTeamTypePayload) => void;
+  onSubmit: (data: CreateTeamTypePayload) => TeamType;
 }
 
 const schema = yup.object().shape({
@@ -25,10 +28,25 @@ const schema = yup.object().shape({
 
 const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaulValues, onSubmit }) => {
   const toast = useToast();
+  const { isLoading: setTeamTypeIsLoading, mutateAsync: setImage } = useSetTeamTypeImage();
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (defaulValues?.image) {
+      setImagePreview(defaulValues.image);
+    }
+  }, [defaulValues]);
+
+  if (setTeamTypeIsLoading) return <LoadingIndicator />;
 
   const onFormSubmit = async (data: CreateTeamTypePayload) => {
     try {
-      await onSubmit(data);
+      const { teamTypeId } = await onSubmit(data);
+
+      if (data.image) {
+        await setImage({ file: data.image, id: teamTypeId });
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -47,7 +65,8 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
     defaultValues: {
       name: defaulValues?.name ?? '',
       iconName: defaulValues?.iconName ?? '',
-      description: defaulValues?.description ?? ''
+      description: defaulValues?.description ?? '',
+      image: defaulValues?.image ?? undefined
     }
   });
 
@@ -96,6 +115,51 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
         </Box>
         <ReactHookTextField name="description" control={control} />
         <FormHelperText error>{errors.description?.message}</FormHelperText>
+      </FormControl>
+      <FormControl fullWidth>
+        <FormLabel>Image</FormLabel>
+        {imagePreview && (
+          <Box component="img" src={imagePreview} alt="Image Preview" sx={{ maxWidth: '100%', maxHeight: '200px', mb: 2 }} />
+        )}
+        <Button
+          variant="contained"
+          color="success"
+          component="label"
+          startIcon={<FileUploadIcon />}
+          sx={{
+            width: 'fit-content',
+            textTransform: 'none',
+            mt: '9.75px'
+          }}
+        >
+          Upload
+          <input
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                if (file.size < 1000000) {
+                  replace([
+                    {
+                      file,
+                      id: '',
+                      name: file.name,
+                      googleFileId: ''
+                    }
+                  ]);
+                  setImagePreview(URL.createObjectURL(file));
+                } else {
+                  toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+                }
+              }
+            }}
+            type="file"
+            id="team-type-image"
+            accept="image/png, image/jpeg, application/pdf"
+            name="image"
+            hidden
+          />
+        </Button>
+        <FormHelperText error>{errors.image?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>
   );

@@ -44,6 +44,16 @@ const TeamTypeTable: React.FC = () => {
           </Typography>
         </Box>
       </TableCell>
+      <TableCell sx={{ border: '2px solid black' }}>
+        {teamType.image && (
+          <Box
+            component="img"
+            src={teamType.image}
+            alt="Image Preview"
+            sx={{ maxWidth: '100%', maxHeight: '200px', mb: 2 }}
+          />
+        )}
+      </TableCell>
     </TableRow>
   ));
 
@@ -58,7 +68,7 @@ const TeamTypeTable: React.FC = () => {
         />
       )}
       <AdminToolTable
-        columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }]}
+        columns={[{ name: 'Team Type Name' }, { name: 'Icon' }, { name: 'Description' }, { name: 'Image' }]}
         rows={teamTypesTableRows}
       />
 

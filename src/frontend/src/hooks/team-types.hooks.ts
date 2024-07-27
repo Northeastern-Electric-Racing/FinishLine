@@ -4,13 +4,14 @@
  */
 
 import { useQueryClient, useMutation, useQuery } from 'react-query';
-import { createTeamType, editTeamType, getAllTeamTypes, setTeamType } from '../apis/team-types.api';
+import { createTeamType, editTeamType, getAllTeamTypes, setTeamType, setTeamTypeImage } from '../apis/team-types.api';
 import { TeamType } from 'shared';
 
 export interface CreateTeamTypePayload {
   name: string;
   iconName: string;
   description: string;
+  image?: File;
 }
 
 /**
@@ -86,6 +87,25 @@ export const useEditTeamType = (teamTypeId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['team types']);
       }
+    }
+  );
+};
+
+/**
+ * Custome react hook to update a team type
+ *
+ * @param teamTypeId id of the team type to edit
+ * @returns the updated team type
+ */
+/**
+ * Custom React Hook to upload a new picture.
+ */
+export const useSetTeamTypeImage = () => {
+  return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
+    ['team types', 'edit'],
+    async (formData: { file: File; id: string }) => {
+      const { data } = await setTeamTypeImage(formData.file, formData.id);
+      return data;
     }
   );
 };

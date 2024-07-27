@@ -29,3 +29,9 @@ export const editTeamType = (id: string, payload: CreateTeamTypePayload) => {
     ...payload
   });
 };
+
+export const setTeamTypeImage = (file: File, id: string) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return axios.post(apiUrls.teamTypeSetImage(id), formData);
+};

@@ -89,6 +89,7 @@ const teamTypes = () => `${teams()}/teamType`;
 const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
 const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
+const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/edit-image`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -243,7 +244,8 @@ export const apiUrls = {
   teamsSetTeamType,
   teamTypesCreate,
   teamTypeEdit,
-
+  teamTypeSetImage,
+  
   descriptionBulletsCheck,
   descriptionBulletTypes,
   editDescriptionBulletType,
