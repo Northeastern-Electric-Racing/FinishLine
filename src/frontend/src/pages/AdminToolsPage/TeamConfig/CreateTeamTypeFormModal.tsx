@@ -10,6 +10,7 @@ import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { CreateTeamTypePayload, useCreateTeamType } from '../../../hooks/design-reviews.hooks';
 import useFormPersist from 'react-hook-form-persist';
+import { FormStorageKey } from '../../../utils/form';
 
 const schema = yup.object().shape({
   name: yup.string().required('Material Type is Required'),
@@ -51,7 +52,7 @@ const CreateTeamTypeModal: React.FC<CreateTeamTypeModalProps> = ({ showModal, ha
     }
   });
 
-  useFormPersist('createTeamTypeForm', {
+  useFormPersist(FormStorageKey.CREATE_TEAM_TYPE, {
     watch,
     setValue
   });
