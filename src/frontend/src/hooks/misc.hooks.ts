@@ -6,8 +6,8 @@
 import { useQuery } from 'react-query';
 import { VersionObject } from '../utils/types';
 import { getReleaseInfo } from '../apis/misc.api';
-import { useHistory } from "react-router-dom";
-import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 export const useGetVersionNumber = () => {
   return useQuery<VersionObject, Error>(['version'], async () => {
@@ -15,7 +15,6 @@ export const useGetVersionNumber = () => {
     return data;
   });
 };
-
 
 export const useHistoryState = <T>(key: string, initialValue: T): [T, (t: T) => void] => {
   const history = useHistory();
@@ -28,10 +27,18 @@ export const useHistoryState = <T>(key: string, initialValue: T): [T, (t: T) => 
       ...history.location,
       state: {
         ...(history.location.state as object),
-        [key]: value,
-      },
+        [key]: value
+      }
     });
     rawSetState(value);
   }
   return [rawState, setState];
-}
+};
+
+export const usePersistForm = <T>(value: T, localStorageKey: string) => {
+  useEffect(() => {
+    localStorage.setItem(localStorageKey, JSON.stringify(value));
+  }, [value, localStorageKey]);
+
+  return;
+};

@@ -9,6 +9,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { CreateTeamTypePayload, useCreateTeamType } from '../../../hooks/design-reviews.hooks';
+import useFormPersist from 'react-hook-form-persist';
 
 const schema = yup.object().shape({
   name: yup.string().required('Material Type is Required'),
@@ -39,13 +40,20 @@ const CreateTeamTypeModal: React.FC<CreateTeamTypeModalProps> = ({ showModal, ha
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors },
+    watch,
+    setValue
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
       iconName: ''
     }
+  });
+
+  useFormPersist('storageKey', {
+    watch,
+    setValue
   });
 
   if (isLoading) return <LoadingIndicator />;
