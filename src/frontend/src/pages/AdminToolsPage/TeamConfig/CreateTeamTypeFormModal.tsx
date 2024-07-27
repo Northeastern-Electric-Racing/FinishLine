@@ -51,7 +51,7 @@ const CreateTeamTypeModal: React.FC<CreateTeamTypeModalProps> = ({ showModal, ha
     }
   });
 
-  useFormPersist('storageKey', {
+  useFormPersist('createTeamTypeForm', {
     watch,
     setValue
   });
