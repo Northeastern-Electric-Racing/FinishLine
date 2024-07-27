@@ -8,6 +8,13 @@ const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage()
 
 organizationRouter.post('/useful-links/set', ...linkValidators, validateInputs, OrganizationsController.setUsefulLinks);
 organizationRouter.get('/useful-links', OrganizationsController.getAllUsefulLinks);
-organizationRouter.post('/images/update', upload.array('image'), OrganizationsController.setImages);
+organizationRouter.post(
+  '/images/update',
+  upload.fields([
+    { name: 'applyInterestImage', maxCount: 1 },
+    { name: 'exploreAsGuestImage', maxCount: 1 }
+  ]),
+  OrganizationsController.setImages
+);
 
 export default organizationRouter;

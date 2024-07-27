@@ -63,17 +63,23 @@ export default class OrganizationsService {
    * @param organizationId the organization which the images will be set up
    * @param images the images which are being set
    */
-  static async setImages(images: Express.Multer.File[], submitter: User, organizationId: string) {
+  static async setImages(
+    applyInterestImage: Express.Multer.File,
+    exploreAsGuestImage: Express.Multer.File,
+    submitter: User,
+    organizationId: string
+  ) {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update images');
 
-    const imageData = await Promise.all(images.map((file: Express.Multer.File) => uploadFile(file)));
+    const applyInterestImageData = uploadFile(applyInterestImage);
+    const exploreAsGuestImageData = uploadFile(exploreAsGuestImage);
 
     const newImages = await prisma.organization.update({
       where: { organizationId },
       data: {
-        interestedinApplyingImage: imageData[0].id,
-        exploreAsGuestImage: imageData[1].id
+        applyInterestImageId: (await applyInterestImageData).id,
+        exploreAsGuestImageId: (await exploreAsGuestImageData).id
       }
     });
 

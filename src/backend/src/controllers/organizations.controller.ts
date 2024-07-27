@@ -19,18 +19,29 @@ export default class OrganizationsController {
 
   static async setImages(req: Request, res: Response, next: NextFunction) {
     try {
-      const files = req.files as Express.Multer.File[];
+      const { applyInterestImage = [], exploreAsGuestImage = [] } = req.files as {
+        applyInterestImage?: Express.Multer.File[];
+        exploreAsGuestImage?: Express.Multer.File[];
+      };
+
+      const applyInterestFile = applyInterestImage[0] || null;
+      const exploreAsGuestFile = exploreAsGuestImage[0] || null;
+
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
-      const newImages = await OrganizationsService.setImages(files, submitter, organizationId);
+      const newImages = await OrganizationsService.setImages(
+        applyInterestFile,
+        exploreAsGuestFile,
+        submitter,
+        organizationId
+      );
 
       res.status(200).json(newImages);
     } catch (error: unknown) {
       next(error);
     }
   }
-
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const organizationId = getOrganizationId(req.headers);
