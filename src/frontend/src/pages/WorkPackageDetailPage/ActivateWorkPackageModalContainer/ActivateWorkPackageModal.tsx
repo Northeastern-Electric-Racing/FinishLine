@@ -15,8 +15,6 @@ import { RadioGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import { Radio } from '@mui/material';
 import NERAutocomplete from '../../../components/NERAutocomplete';
-import { useState } from 'react';
-import { useToast } from '../../../hooks/toasts.hooks';
 import { startDateTester } from '../../../utils/form';
 import NERFormModal from '../../../components/NERFormModal';
 
@@ -36,7 +34,9 @@ const schema = yup.object().shape({
   confirmDetails: yup
     .boolean()
     .required('Please confirm project details are correct')
-    .test('is-true', 'Please confirm', (value) => value === true)
+    .test('is-true', 'Please confirm', (value) => value === true),
+  leadId: yup.string().required('Project Lead is required'),
+  managerId: yup.string().required('Project Manager is required')
 });
 
 const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
@@ -67,27 +67,18 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       startDate,
-      confirmDetails: false
+      confirmDetails: false,
+      leadId: '',
+      managerId: ''
     },
     mode: 'onChange'
   });
 
-  const [leadId, setLeadId] = useState<string>();
-  const [managerId, setManagerId] = useState<string>();
-  const toast = useToast();
   /**
    * Wrapper function for onSubmit so that form data is reset after submit
    */
   const onSubmitWrapper = async (data: FormInput) => {
-    const { startDate, confirmDetails } = data;
-    if (!leadId) {
-      toast.error('Please Select a Project Lead');
-      return;
-    }
-    if (!managerId) {
-      toast.error('Please Select a Project Manager');
-      return;
-    }
+    const { startDate, confirmDetails, leadId, managerId } = data;
     await onSubmit({
       startDate,
       confirmDetails,
@@ -112,35 +103,47 @@ const ActivateWorkPackageModal: React.FC<ActivateWorkPackageModalProps> = ({
       onFormSubmit={onSubmitWrapper}
       formId="activate-work-package-form"
       showCloseButton
-      disabled={leadId === undefined || managerId === undefined || !isValid}
+      disabled={!isValid}
     >
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <NERAutocomplete
-            id="project-lead-autocomplete"
-            onChange={(_event, value) => setLeadId(value?.id)}
-            errorMessage={errors.leadId}
-            options={allUsers.map((p) => ({
-              label: fullNamePipe(p),
-              id: p.userId.toString()
-            }))}
-            size="small"
-            placeholder="Project Lead"
-            listboxProps={{ style: { maxHeight: '150px' } }}
+          <Controller
+            control={control}
+            name="leadId"
+            render={({ field: { onChange } }) => (
+              <NERAutocomplete
+                id="project-lead-autocomplete"
+                onChange={(_event, value) => onChange(value?.id)}
+                errorMessage={errors.leadId}
+                options={allUsers.map((p) => ({
+                  label: fullNamePipe(p),
+                  id: p.userId.toString()
+                }))}
+                size="small"
+                placeholder="Project Lead"
+                listboxProps={{ style: { maxHeight: '150px' } }}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={6}>
-          <NERAutocomplete
-            id="project-manager-autocomplete"
-            onChange={(_event, value) => setManagerId(value?.id)}
-            errorMessage={errors.managerId}
-            options={allUsers.map((p) => ({
-              label: fullNamePipe(p),
-              id: p.userId.toString()
-            }))}
-            size="small"
-            placeholder="Project Manager"
-            listboxProps={{ style: { maxHeight: '150px' } }}
+          <Controller
+            control={control}
+            name="managerId"
+            render={({ field: { onChange } }) => (
+              <NERAutocomplete
+                id="project-manager-autocomplete"
+                onChange={(_event, value) => onChange(value?.id)}
+                errorMessage={errors.managerId}
+                options={allUsers.map((p) => ({
+                  label: fullNamePipe(p),
+                  id: p.userId.toString()
+                }))}
+                size="small"
+                placeholder="Project Manager"
+                listboxProps={{ style: { maxHeight: '150px' } }}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={6}>
