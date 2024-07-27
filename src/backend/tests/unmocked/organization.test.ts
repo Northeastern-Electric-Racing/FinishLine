@@ -24,28 +24,28 @@ describe('Team Type Tests', () => {
   });
 
   describe('Set Images', () => {
+    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
+    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
+    const file3 = { originalname: 'image3.png' } as Express.Multer.File;
     it('Fails if user is not an admin', async () => {
-      await expect(OrganizationsService.setImages([], await createTestUser(wonderwomanGuest, orgId), orgId)).rejects.toThrow(
-        new AccessDeniedAdminOnlyException('update images')
-      );
+      await expect(
+        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
     });
 
     it('Fails if an organization does not exist', async () => {
-      await expect(OrganizationsService.setImages([], await createTestUser(batmanAppAdmin, orgId), '1')).rejects.toThrow(
-        new HttpException(400, `Organization with id: 1 not found!`)
-      );
+      await expect(
+        OrganizationsService.setImages(file1, file2, await createTestUser(batmanAppAdmin, orgId), '1')
+      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
     it('Succeeds and updates all the images', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testFiles = [{ originalname: 'image1.png' }, { originalname: 'image2.png' }] as Express.Multer.File[];
-      const newFiles = [{ originalname: 'image1.png' }, { originalname: 'image3.png' }] as Express.Multer.File[];
-
       (uploadFile as Mock).mockImplementation((file) => {
         return Promise.resolve({ id: `uploaded-${file.originalname}` });
       });
 
-      await OrganizationsService.setImages(testFiles, testBatman, orgId);
+      await OrganizationsService.setImages(file1, file2, testBatman, orgId);
 
       const organization = await prisma.organization.findUnique({
         where: {
@@ -54,10 +54,10 @@ describe('Team Type Tests', () => {
       });
 
       expect(organization).not.toBeNull();
-      expect(organization?.interestedinApplyingImage).toBe('uploaded-image1.png');
-      expect(organization?.exploreAsGuestImage).toBe('uploaded-image2.png');
+      expect(organization?.applyInterestImageId).toBe('uploaded-image1.png');
+      expect(organization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
 
-      await OrganizationsService.setImages(newFiles, testBatman, orgId);
+      await OrganizationsService.setImages(file1, file3, testBatman, orgId);
 
       const updatedOrganization = await prisma.organization.findUnique({
         where: {
@@ -65,7 +65,7 @@ describe('Team Type Tests', () => {
         }
       });
 
-      expect(updatedOrganization?.exploreAsGuestImage).toBe('uploaded-image3.png');
+      expect(updatedOrganization?.exploreAsGuestImageId).toBe('uploaded-image3.png');
     });
   });
 
