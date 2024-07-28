@@ -7,7 +7,7 @@ import { useQuery } from 'react-query';
 import { VersionObject } from '../utils/types';
 import { getReleaseInfo } from '../apis/misc.api';
 import { useHistory } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export const useGetVersionNumber = () => {
   return useQuery<VersionObject, Error>(['version'], async () => {
