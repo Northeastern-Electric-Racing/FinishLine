@@ -34,11 +34,3 @@ export const useHistoryState = <T>(key: string, initialValue: T): [T, (t: T) => 
   }
   return [rawState, setState];
 };
-
-export const usePersistForm = <T>(value: T, localStorageKey: string) => {
-  useEffect(() => {
-    localStorage.setItem(localStorageKey, JSON.stringify(value));
-  }, [value, localStorageKey]);
-
-  return;
-};
