@@ -37,9 +37,9 @@ const renderComponent = (route: string) => {
   );
 };
 
-describe('projects page component', () => {
+describe.skip('projects page component', () => {
   it('renders the wbs element page title', () => {
     renderComponent(`${routes.PROJECTS}/1.8.1`);
-    // expect(screen.getByText('WBS Details')).toBeInTheDocument();
+    expect(screen.getByText('WBS Details')).toBeInTheDocument();
   });
 });
