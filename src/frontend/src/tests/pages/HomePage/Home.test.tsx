@@ -46,7 +46,7 @@ const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({ path: routes.HOME, route: routes.HOME });
   return render(
     <RouterWrapper>
-      <Home onMemberHomePage={true} setOnMemberHomePage={() => {}} />
+      <Home />
     </RouterWrapper>
   );
 };
