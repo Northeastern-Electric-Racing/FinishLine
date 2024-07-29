@@ -27,10 +27,9 @@ import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import HiddenContentMargin from '../components/HiddenContentMargin';
-import emitter from './EventBus';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -43,23 +42,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const [onMemberHomePage, setOnMemberHomePage] = useState(() => {
-    const savedState = localStorage.getItem('memberHomePage');
-    return savedState ? JSON.parse(savedState) : false;
-  });
-
-  useEffect(() => {
-    const handleMemberHomePage = (value: boolean) => {
-      setOnMemberHomePage(value);
-      localStorage.setItem('memberHomePage', JSON.stringify(value));
-    };
-
-    emitter.on('memberHomePage', handleMemberHomePage as (event: unknown) => void);
-
-    return () => {
-      emitter.off('memberHomePage', handleMemberHomePage as (event: unknown) => void);
-    };
-  }, []);
+  const [onMemberHomepage, setOnMemberHomePage] = useState(false);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -80,11 +63,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           height: '100vh',
           position: 'fixed',
           width: 15,
-          borderRight: onMemberHomePage ? 2 : 0,
+          borderRight: onMemberHomepage ? 2 : 0,
           borderRightColor: theme.palette.background.paper
         }}
       />
-      {onMemberHomePage && (
+      {onMemberHomepage && (
         <>
           <IconButton
             onClick={() => {
@@ -125,7 +108,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
-            <Route exact path={routes.HOME} component={Home} />
+            <Route
+              exact
+              path={routes.HOME}
+              render={() => <Home onMemberHomePage={onMemberHomepage} setOnMemberHomePage={setOnMemberHomePage} />}
+            />
             <Route path="*" component={PageNotFound} />
           </Switch>
         </Container>

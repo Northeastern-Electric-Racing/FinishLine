@@ -7,11 +7,14 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
 import GuestHomePage from './GuestHomePage';
 import MemberHomePage from './MemberHomePage';
-import { useHistoryState } from '../../hooks/misc.hooks';
 
-const Home = () => {
+interface HomeProps {
+  onMemberHomePage: boolean;
+  setOnMemberHomePage: (value: boolean) => void;
+}
+
+const Home = ({ onMemberHomePage, setOnMemberHomePage }: HomeProps) => {
   const user = useCurrentUser();
-  const [onMemberHomePage, setOnMemberHomePage] = useHistoryState('', false);
 
   return isGuest(user.role) && !onMemberHomePage ? (
     <GuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
