@@ -4,7 +4,7 @@
  */
 
 /**************** General Section ****************/
-const HOME = `/`;
+const HOME = `/home`;
 const LOGIN = `/login`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
