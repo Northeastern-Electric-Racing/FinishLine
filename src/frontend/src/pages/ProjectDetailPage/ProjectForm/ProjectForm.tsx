@@ -182,11 +182,13 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             </Typography>
             <LinksEditView
               watch={watch}
+              control={control}
               ls={links}
               register={register}
               append={appendLink}
               remove={removeLink}
               enforceRequired={!!project}
+              errors={errors}
             />
           </Box>
           <Box>
