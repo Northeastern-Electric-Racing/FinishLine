@@ -9,6 +9,8 @@ import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { TeamType } from 'shared';
 import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
+import useFormPersist from 'react-hook-form-persist';
+import { FormStorageKey } from '../../../utils/form';
 
 interface TeamTypeFormModalProps {
   open: boolean;
@@ -23,7 +25,7 @@ const schema = yup.object().shape({
   description: yup.string().required('Description is Required')
 });
 
-const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaulValues, onSubmit }) => {
+const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaulValues, onSubmit }) => {
   const toast = useToast();
 
   const onFormSubmit = async (data: CreateTeamTypePayload) => {
@@ -41,7 +43,9 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors },
+    watch,
+    setValue
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -51,21 +55,34 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
     }
   });
 
+  const formStorageKey = defaulValues ? FormStorageKey.EDIT_TEAM_TYPE : FormStorageKey.CREATE_TEAM_TYPE;
+
+  useFormPersist(formStorageKey, {
+    watch,
+    setValue
+  });
+
   const TooltipMessage = () => (
     <Typography sx={{ fontSize: 14 }}>
       Click to view possible icon names. For names with multiple words, seperate them with an _. AttachMoney = attach_money
     </Typography>
   );
 
+  const handleCancel = () => {
+    reset({ name: '', iconName: '', description: '' });
+    sessionStorage.removeItem(formStorageKey);
+    handleClose();
+  }
+
   return (
     <NERFormModal
       open={open}
-      onHide={handleClose}
+      onHide={handleCancel}
       title="New Team Type"
       reset={() => reset({ name: '', iconName: '', description: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId="new-team-type-form"
+      formId="team-type-form"
       showCloseButton
     >
       <FormControl>
@@ -101,4 +118,4 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
   );
 };
 
-export default CreateTeamTypeModal;
+export default TeamTypeFormModal;

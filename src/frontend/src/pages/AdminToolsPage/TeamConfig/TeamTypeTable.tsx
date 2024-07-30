@@ -7,7 +7,7 @@ import CreateTeamTypeModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
-import { useState } from 'react';
+import { useHistoryState } from '../../../hooks/misc.hooks';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -16,8 +16,8 @@ const TeamTypeTable: React.FC = () => {
     isError: teamTypesIsError,
     error: teamTypesError
   } = useAllTeamTypes();
-  const [createModalShow, setCreateModalShow] = useState<boolean>(false);
-  const [editingTeamType, setEditingTeamType] = useState<TeamType>();
+  const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
+  const [editingTeamType, setEditingTeamType] = useHistoryState<TeamType | undefined>('', undefined);
 
   if (!teamTypes || teamTypesIsLoading) {
     return <LoadingIndicator />;
