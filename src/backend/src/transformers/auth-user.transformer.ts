@@ -7,7 +7,10 @@ import {
 } from '../utils/reimbursement-requests.utils';
 import { Prisma } from '@prisma/client';
 
-const authenticatedUserTransformer = (user: Prisma.UserGetPayload<AuthUserQueryArgs>): AuthenticatedUser => {
+const authenticatedUserTransformer = (
+  user: Prisma.UserGetPayload<AuthUserQueryArgs>,
+  organizationId?: String
+): AuthenticatedUser => {
   return {
     userId: user.userId,
     firstName: user.firstName,
@@ -22,7 +25,8 @@ const authenticatedUserTransformer = (user: Prisma.UserGetPayload<AuthUserQueryA
     isHeadOfFinance: isAuthUserHeadOfFinance(user),
     isAtLeastFinanceLead: isAuthUserAtLeastLeadForFinance(user),
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
-    organizations: user.organizations.map((organization) => organization.organizationId)
+    organizations: user.organizations.map((organization) => organization.organizationId),
+    currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId)
   };
 };
 
