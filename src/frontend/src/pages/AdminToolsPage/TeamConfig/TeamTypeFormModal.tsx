@@ -72,7 +72,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
     reset({ name: '', iconName: '', description: '' });
     sessionStorage.removeItem(formStorageKey);
     handleClose();
-  }
+  };
 
   return (
     <NERFormModal
