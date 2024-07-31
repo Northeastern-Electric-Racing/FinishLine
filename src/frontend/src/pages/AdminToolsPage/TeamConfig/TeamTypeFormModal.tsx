@@ -1,4 +1,4 @@
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
 import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Button } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
@@ -12,21 +12,23 @@ import { CreateTeamTypePayload, useSetTeamTypeImage } from '../../../hooks/team-
 import React, { useEffect, useState } from 'react';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import useFormPersist from 'react-hook-form-persist';
+import { FormStorageKey } from '../../../utils/form';
 
 interface TeamTypeFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaulValues?: TeamType;
-  onSubmit: (data: CreateTeamTypePayload) => TeamType;
+  onSubmit: (data: CreateTeamTypePayload) => Promise<TeamType>;
 }
 
 const schema = yup.object().shape({
   name: yup.string().required('Material Type is Required'),
   iconName: yup.string().required('Icon Name is Required'),
-  description: yup.string().required('Description is Required')
+  description: yup.string().required('Description is Required'),
 });
 
-const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaulValues, onSubmit }) => {
+const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaulValues, onSubmit }) => {
   const toast = useToast();
   const { isLoading: setTeamTypeIsLoading, mutateAsync: setImage } = useSetTeamTypeImage();
 
@@ -59,15 +61,24 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors },
+    watch,
+    setValue
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       name: defaulValues?.name ?? '',
       iconName: defaulValues?.iconName ?? '',
       description: defaulValues?.description ?? '',
-      image: defaulValues?.image ?? undefined
+      image: defaulValues?.image ?? null
     }
+  });
+
+  const formStorageKey = defaulValues ? FormStorageKey.EDIT_TEAM_TYPE : FormStorageKey.CREATE_TEAM_TYPE;
+
+  useFormPersist(formStorageKey, {
+    watch,
+    setValue
   });
 
   const TooltipMessage = () => (
@@ -76,15 +87,21 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
     </Typography>
   );
 
+  const handleCancel = () => {
+    reset({ name: '', iconName: '', description: '' });
+    sessionStorage.removeItem(formStorageKey);
+    handleClose();
+  };
+
   return (
     <NERFormModal
       open={open}
-      onHide={handleClose}
+      onHide={handleCancel}
       title="New Team Type"
       reset={() => reset({ name: '', iconName: '', description: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId="new-team-type-form"
+      formId="team-type-form"
       showCloseButton
     >
       <FormControl>
@@ -138,14 +155,7 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
               const file = e.target.files?.[0];
               if (file) {
                 if (file.size < 1000000) {
-                  replace([
-                    {
-                      file,
-                      id: '',
-                      name: file.name,
-                      googleFileId: ''
-                    }
-                  ]);
+                  setValue('image', file);
                   setImagePreview(URL.createObjectURL(file));
                 } else {
                   toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
@@ -165,4 +175,4 @@ const CreateTeamTypeModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClo
   );
 };
 
-export default CreateTeamTypeModal;
+export default TeamTypeFormModal;
