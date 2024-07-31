@@ -444,12 +444,14 @@ export default class WorkPackagesService {
 
     const { wbsElementId, id: workPackageId } = workPackage;
 
+    // change this to match what is in projects.services
     const changeRequest = await prisma.change_Request.findFirst({
       where: {
         identifier: Number.parseInt(changeRequestIdentifier)
       }
     });
 
+    // throw error if changeRequest is null by checking in an if statement
     await validateChangeRequestAccepted(changeRequest!.crId);
 
     await prisma.change.create({
