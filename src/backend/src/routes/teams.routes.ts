@@ -50,11 +50,14 @@ teamsRouter.get('/teamType/all', TeamsController.getAllTeamTypes);
 
 teamsRouter.get('/teamType/:teamTypeId/single', TeamsController.getSingleTeamType);
 
+teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
+
 teamsRouter.post(
   '/teamType/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
   nonEmptyString(body('description')),
+  upload.single('image'),
   validateInputs,
   TeamsController.createTeamType
 );
@@ -64,12 +67,9 @@ teamsRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
   nonEmptyString(body('description')),
+  upload.single('image'),
   validateInputs,
   TeamsController.editTeamType
 );
-
-teamsRouter.post('/teamType/:teamTypeId/edit-image', upload.single('image'), TeamsController.setTeamTypeImage);
-
-teamsRouter.post('/:teamId/set-team-type', nonEmptyString(body('teamTypeId')), validateInputs, TeamsController.setTeamType);
 
 export default teamsRouter;

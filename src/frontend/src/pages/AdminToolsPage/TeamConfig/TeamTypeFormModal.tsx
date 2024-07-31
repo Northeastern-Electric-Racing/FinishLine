@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { TeamType } from 'shared';
-import { CreateTeamTypePayload, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
+import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
 import React, { useEffect, useState } from 'react';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -25,30 +25,16 @@ interface TeamTypeFormModalProps {
 const schema = yup.object().shape({
   name: yup.string().required('Material Type is Required'),
   iconName: yup.string().required('Icon Name is Required'),
-  description: yup.string().required('Description is Required'),
+  description: yup.string().required('Description is Required')
 });
 
 const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaulValues, onSubmit }) => {
   const toast = useToast();
-  const { isLoading: setTeamTypeIsLoading, mutateAsync: setImage } = useSetTeamTypeImage();
-
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (defaulValues?.image) {
-      setImagePreview(defaulValues.image);
-    }
-  }, [defaulValues]);
-
-  if (setTeamTypeIsLoading) return <LoadingIndicator />;
+  const [addedImage, setAddedImage] = useState<File>();
 
   const onFormSubmit = async (data: CreateTeamTypePayload) => {
     try {
-      const { teamTypeId } = await onSubmit(data);
-
-      if (data.image) {
-        await setImage({ file: data.image, id: teamTypeId });
-      }
+      await onSubmit(data);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -70,7 +56,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
       name: defaulValues?.name ?? '',
       iconName: defaulValues?.iconName ?? '',
       description: defaulValues?.description ?? '',
-      image: defaulValues?.image ?? null
+      image: defaulValues?.imageFileId ?? null
     }
   });
 
@@ -135,9 +121,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Image</FormLabel>
-        {imagePreview && (
-          <Box component="img" src={imagePreview} alt="Image Preview" sx={{ maxWidth: '100%', maxHeight: '200px', mb: 2 }} />
-        )}
+        {addedImage && <Typography variant="body1"> {addedImage.name}</Typography>}
         <Button
           variant="contained"
           color="success"
@@ -155,8 +139,8 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
               const file = e.target.files?.[0];
               if (file) {
                 if (file.size < 1000000) {
-                  setValue('image', file);
-                  setImagePreview(URL.createObjectURL(file));
+                  setAddedImage(file);
+                  console.log('set image');
                 } else {
                   toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
                 }
@@ -167,6 +151,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
             accept="image/png, image/jpeg, application/pdf"
             name="image"
             hidden
+            draggable
           />
         </Button>
         <FormHelperText error>{errors.image?.message}</FormHelperText>

@@ -372,7 +372,8 @@ export default class TeamsService {
     name: string,
     iconName: string,
     description: string,
-    organizationId: string
+    filePath: string | null,
+    organizationId: string,
   ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a team type');
@@ -391,6 +392,7 @@ export default class TeamsService {
         name,
         iconName,
         description,
+        imageFileId: filePath,
         organizationId
       }
     });
@@ -442,6 +444,7 @@ export default class TeamsService {
     name: string,
     iconName: string,
     description: string,
+    filePath: string | null,
     organizationId: string
   ): Promise<TeamType> {
     if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
@@ -449,40 +452,21 @@ export default class TeamsService {
     if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
       throw new AccessDeniedException('you must be an admin to edit the team types description');
 
+    const currentTeamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId }
+    });
+
     const updatedTeamType = await prisma.team_Type.update({
       where: { teamTypeId },
       data: {
         name,
         iconName,
-        description
+        description,
+        imageFileId: filePath ? filePath : currentTeamType?.imageFileId
       }
     });
 
     return updatedTeamType;
-  }
-
-  /**
-   * Sets team type image
-   * @param organizationId The organization the user is currently in
-   * @param teamTypeId The team type that is being updated
-   * @param image The image that is being placed in the team type
-   * @param submitter The user that is making the change
-   * @returns the updated team type
-   */
-  static async setTeamTypeImage(image: Express.Multer.File, submitter: User, organizationId: string, teamTypeId: string) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('update images');
-
-    const imageData = await uploadFile(image);
-
-    const newTeamType = await prisma.team_Type.update({
-      where: { teamTypeId },
-      data: {
-        imageFileId: imageData.id
-      }
-    });
-
-    return newTeamType;
   }
 
   /**

@@ -248,6 +248,7 @@ const performSeed: () => Promise<void> = async () => {
     'Mechanical',
     'YouTubeIcon',
     'Mechanical team',
+    null,
     organizationId
   );
   const teamType2 = await TeamsService.createTeamType(
@@ -255,6 +256,7 @@ const performSeed: () => Promise<void> = async () => {
     'Software',
     'InstagramIcon',
     'Software team',
+    null,
     organizationId
   );
   const teamType3 = await TeamsService.createTeamType(
@@ -262,6 +264,7 @@ const performSeed: () => Promise<void> = async () => {
     'Electrical',
     'SettingsIcon',
     'Electrical team',
+    null,
     organizationId
   );
 

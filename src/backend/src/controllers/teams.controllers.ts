@@ -132,13 +132,29 @@ export default class TeamsController {
     }
   }
 
+  static async setTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { teamTypeId } = req.body;
+      const { teamId } = req.params;
+      const submitter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const updatedTeam = await TeamsService.setTeamType(submitter, teamId, teamTypeId, organizationId);
+
+      res.status(200).json(updatedTeam);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, iconName, description } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
+      const file = req.file ? req.file as Express.Multer.File : null;
 
-      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, description, organizationId);
+      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, description, file ? file.path : null, organizationId);
       res.status(200).json(createdTeamType);
     } catch (error: unknown) {
       next(error);
@@ -174,6 +190,7 @@ export default class TeamsController {
       const { name, iconName, description } = req.body;
       const user = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
+      const file = req.file ? req.file as Express.Multer.File : null;
 
       const teamType = await TeamsService.editTeamType(
         user,
@@ -181,39 +198,10 @@ export default class TeamsController {
         name,
         iconName,
         description,
+        file ? file.path : null,
         organizationId
       );
       res.status(200).json(teamType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async setTeamTypeImage(req: Request, res: Response, next: NextFunction) {
-    try {
-      const file = req.file as Express.Multer.File;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-      const { teamTypeId } = req.params;
-
-      const newImages = await TeamsService.setTeamTypeImage(file, submitter, organizationId, teamTypeId);
-
-      res.status(200).json(newImages);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async setTeamType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { teamTypeId } = req.body;
-      const { teamId } = req.params;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const updatedTeam = await TeamsService.setTeamType(submitter, teamId, teamTypeId, organizationId);
-
-      res.status(200).json(updatedTeam);
     } catch (error: unknown) {
       next(error);
     }

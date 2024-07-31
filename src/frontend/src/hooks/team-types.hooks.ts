@@ -4,7 +4,7 @@
  */
 
 import { useQueryClient, useMutation, useQuery } from 'react-query';
-import { createTeamType, editTeamType, getAllTeamTypes, setTeamType, setTeamTypeImage } from '../apis/team-types.api';
+import { createTeamType, editTeamType, getAllTeamTypes, setTeamType } from '../apis/team-types.api';
 import { TeamType } from 'shared';
 
 export interface CreateTeamTypePayload {
@@ -27,27 +27,6 @@ export const useAllTeamTypes = () => {
 };
 
 /**
- * Custom react hook to create a team type
- *
- * @returns the team type created
- */
-export const useCreateTeamType = () => {
-  const queryClient = useQueryClient();
-  return useMutation<TeamType, Error, CreateTeamTypePayload>(
-    ['team types', 'create'],
-    async (teamTypePayload) => {
-      const { data } = await createTeamType(teamTypePayload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['team types']);
-      }
-    }
-  );
-};
-
-/**
  * Custom react hook to set the team type of a team
  *
  * @param teamId id of the team to set the team type
@@ -59,6 +38,27 @@ export const useSetTeamType = (teamId: string) => {
     ['team types', 'edit'],
     async (teamTypeId: string) => {
       const { data } = await setTeamType(teamId, teamTypeId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['team types']);
+      }
+    }
+  );
+};
+
+/**
+ * Custom react hook to create a team type
+ *
+ * @returns the team type created
+ */
+export const useCreateTeamType = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamType, Error, CreateTeamTypePayload>(
+    ['team types', 'create'],
+    async (teamTypePayload) => {
+      const { data } = await createTeamType(teamTypePayload);
       return data;
     },
     {
@@ -87,25 +87,6 @@ export const useEditTeamType = (teamTypeId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['team types']);
       }
-    }
-  );
-};
-
-/**
- * Custome react hook to update a team type
- *
- * @param teamTypeId id of the team type to edit
- * @returns the updated team type
- */
-/**
- * Custom React Hook to upload a new picture.
- */
-export const useSetTeamTypeImage = () => {
-  return useMutation<{ googleFileId: string; name: string }, Error, { file: File; id: string }>(
-    ['team types', 'edit'],
-    async (formData: { file: File; id: string }) => {
-      const { data } = await setTeamTypeImage(formData.file, formData.id);
-      return data;
     }
   );
 };

@@ -37,5 +37,5 @@ export interface TeamType {
   name: string;
   iconName: string;
   description: string;
-  image?: string | null;
+  imageFileId: string | null;
 }

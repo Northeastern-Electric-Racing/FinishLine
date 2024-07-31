@@ -25,75 +25,6 @@ describe('Team Type Tests', () => {
     await resetUsers();
   });
 
-  describe('Set Image', () => {
-    const TEST_FILE = { originalname: 'image1.png' } as Express.Multer.File;
-
-    it('Fails if user is not an admin', async () => {
-      const teamType = await TeamsService.createTeamType(
-        await createTestUser(supermanAdmin, orgId),
-        'teamType1',
-        'YouTubeIcon',
-        '',
-        orgId
-      );
-
-      await expect(
-        TeamsService.setTeamTypeImage(TEST_FILE, await createTestUser(wonderwomanGuest, orgId), orgId, teamType.teamTypeId)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
-    });
-
-    it('Fails if an organization does not exist', async () => {
-      const teamType = await TeamsService.createTeamType(
-        await createTestUser(supermanAdmin, orgId),
-        'teamType1',
-        'YouTubeIcon',
-        '',
-        orgId
-      );
-
-      await expect(
-        TeamsService.setTeamTypeImage(TEST_FILE, await createTestUser(batmanAppAdmin, orgId), '1', teamType.teamTypeId)
-      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
-    });
-
-    it('Succeeds and updates all the images', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const OTHER_FILE = { originalname: 'image2.png' } as Express.Multer.File;
-      const teamType = await TeamsService.createTeamType(
-        await createTestUser(supermanAdmin, orgId),
-        'teamType1',
-        'YouTubeIcon',
-        '',
-        orgId
-      );
-
-      (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
-      });
-
-      await TeamsService.setTeamTypeImage(TEST_FILE, testBatman, orgId, teamType.teamTypeId);
-
-      const organization = await prisma.team_Type.findUnique({
-        where: {
-          teamTypeId: teamType.teamTypeId
-        }
-      });
-
-      expect(organization).not.toBeNull();
-      expect(organization?.imageFileId).toBe('uploaded-image1.png');
-
-      await TeamsService.setTeamTypeImage(OTHER_FILE, testBatman, orgId, teamType.teamTypeId);
-
-      const updatedTeamType = await prisma.team_Type.findUnique({
-        where: {
-          teamTypeId: teamType.teamTypeId
-        }
-      });
-
-      expect(updatedTeamType?.imageFileId).toBe('uploaded-image2.png');
-    });
-  });
-
   describe('Create Team Type', () => {
     it('Create team type fails if user is not an admin', async () => {
       await expect(
@@ -103,13 +34,21 @@ describe('Team Type Tests', () => {
             'Team 2',
             'Warning icon',
             '',
+            null,
             orgId
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
     });
 
     it('Create team type fails if there is already another team type with the same name', async () => {
-      await TeamsService.createTeamType(await createTestUser(supermanAdmin, orgId), 'teamType1', 'YouTubeIcon', '', orgId);
+      await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        '',
+        null,
+        orgId
+      );
       await expect(
         async () =>
           await TeamsService.createTeamType(
@@ -117,6 +56,7 @@ describe('Team Type Tests', () => {
             'teamType1',
             'Warning icon',
             '',
+            null,
             orgId
           )
       ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
@@ -128,6 +68,7 @@ describe('Team Type Tests', () => {
         'teamType3',
         'YouTubeIcon',
         '',
+        null,
         orgId
       );
 
@@ -142,13 +83,14 @@ describe('Team Type Tests', () => {
     });
   });
 
-  describe('Get all team types works', () => {
+  describe('Get all team types', () => {
     it('Get all team types works', async () => {
       const teamType1 = await TeamsService.createTeamType(
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
         'YouTubeIcon',
         '',
+        null,
         orgId
       );
       const teamType2 = await TeamsService.createTeamType(
@@ -156,6 +98,7 @@ describe('Team Type Tests', () => {
         'teamType2',
         'WarningIcon',
         '',
+        null,
         orgId
       );
       const result = await TeamsService.getAllTeamTypes(orgId);
@@ -170,6 +113,7 @@ describe('Team Type Tests', () => {
         'teamType1',
         'YouTubeIcon',
         '',
+        null,
         orgId
       );
       const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId, orgId);
@@ -184,7 +128,7 @@ describe('Team Type Tests', () => {
     });
   });
 
-  describe('Edit team type description', () => {
+  describe('Edit team type', () => {
     it('fails if user is not an admin', async () => {
       await expect(
         async () =>
@@ -194,6 +138,7 @@ describe('Team Type Tests', () => {
             'new name',
             'new icon',
             'new description',
+            null,
             orgId
           )
       ).rejects.toThrow(new AccessDeniedException('you must be an admin to edit the team types description'));
@@ -208,17 +153,19 @@ describe('Team Type Tests', () => {
             'new name',
             'new icon',
             'a '.repeat(301),
+            null,
             orgId
           )
       ).rejects.toThrow(new HttpException(400, 'Description must be less than 300 words'));
     });
 
-    it('succeds and updates the description', async () => {
+    it('succeds and updates the team type', async () => {
       const teamType = await TeamsService.createTeamType(
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
         'YouTubeIcon',
         '',
+        null,
         orgId
       );
       const updatedTeamType = await TeamsService.editTeamType(
@@ -227,11 +174,13 @@ describe('Team Type Tests', () => {
         'new name',
         'new icon',
         'new description',
+        "imageUrl",
         orgId
       );
       expect(updatedTeamType.name).toBe('new name');
       expect(updatedTeamType.iconName).toBe('new icon');
       expect(updatedTeamType.description).toBe('new description');
+      expect(updatedTeamType.imageFileId).toBe("imageUrl");
     });
   });
 });
