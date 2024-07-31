@@ -13,7 +13,6 @@ import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/use
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
-import { uploadFile } from '../utils/google-integration.utils';
 
 export default class TeamsService {
   /**
@@ -373,7 +372,7 @@ export default class TeamsService {
     iconName: string,
     description: string,
     filePath: string | null,
-    organizationId: string,
+    organizationId: string
   ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a team type');

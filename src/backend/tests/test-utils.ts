@@ -334,6 +334,7 @@ export const createTestDesignReview = async () => {
     'Team1',
     'Software',
     'Software team',
+    null,
     organization.organizationId
   );
   const { designReviewId } = await DesignReviewsService.createDesignReview(

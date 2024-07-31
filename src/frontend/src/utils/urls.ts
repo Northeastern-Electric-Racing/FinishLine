@@ -245,7 +245,7 @@ export const apiUrls = {
   teamTypesCreate,
   teamTypeEdit,
   teamTypeSetImage,
-  
+
   descriptionBulletsCheck,
   descriptionBulletTypes,
   editDescriptionBulletType,

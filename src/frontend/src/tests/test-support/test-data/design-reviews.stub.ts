@@ -11,6 +11,7 @@ export const teamType1: TeamType = {
   teamTypeId: '1',
   iconName: 'YouTubeIcon',
   description: '',
+  imageFileId: null,
   name: 'teamType1'
 };
 

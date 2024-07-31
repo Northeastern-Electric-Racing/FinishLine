@@ -9,9 +9,8 @@ import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { TeamType } from 'shared';
 import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 

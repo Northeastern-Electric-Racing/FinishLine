@@ -45,10 +45,10 @@ const TeamTypeTable: React.FC = () => {
         </Box>
       </TableCell>
       <TableCell sx={{ border: '2px solid black' }}>
-        {teamType.image && (
+        {teamType.imageFileId && (
           <Box
             component="img"
-            src={teamType.image}
+            src={teamType.imageFileId}
             alt="Image Preview"
             sx={{ maxWidth: '100%', maxHeight: '200px', mb: 2 }}
           />

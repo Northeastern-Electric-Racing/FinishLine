@@ -152,9 +152,16 @@ export default class TeamsController {
       const { name, iconName, description } = req.body;
       const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
-      const file = req.file ? req.file as Express.Multer.File : null;
+      const file = req.file ? (req.file as Express.Multer.File) : null;
 
-      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, description, file ? file.path : null, organizationId);
+      const createdTeamType = await TeamsService.createTeamType(
+        submitter,
+        name,
+        iconName,
+        description,
+        file ? file.path : null,
+        organizationId
+      );
       res.status(200).json(createdTeamType);
     } catch (error: unknown) {
       next(error);
@@ -190,7 +197,7 @@ export default class TeamsController {
       const { name, iconName, description } = req.body;
       const user = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
-      const file = req.file ? req.file as Express.Multer.File : null;
+      const file = req.file ? (req.file as Express.Multer.File) : null;
 
       const teamType = await TeamsService.editTeamType(
         user,

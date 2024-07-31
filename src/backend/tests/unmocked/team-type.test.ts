@@ -1,4 +1,3 @@
-import prisma from '../../src/prisma/prisma';
 import TeamsService from '../../src/services/teams.services';
 import {
   AccessDeniedAdminOnlyException,
@@ -6,10 +5,9 @@ import {
   HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
-import { uploadFile } from '../../src/utils/google-integration.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import { Mock, vi } from 'vitest';
+import { vi } from 'vitest';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()
@@ -174,13 +172,13 @@ describe('Team Type Tests', () => {
         'new name',
         'new icon',
         'new description',
-        "imageUrl",
+        'imageUrl',
         orgId
       );
       expect(updatedTeamType.name).toBe('new name');
       expect(updatedTeamType.iconName).toBe('new icon');
       expect(updatedTeamType.description).toBe('new description');
-      expect(updatedTeamType.imageFileId).toBe("imageUrl");
+      expect(updatedTeamType.imageFileId).toBe('imageUrl');
     });
   });
 });
