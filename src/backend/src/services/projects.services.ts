@@ -364,6 +364,7 @@ export default class ProjectsService {
       throw new AccessDeniedAdminOnlyException('delete projects');
     }
 
+    // REVISED CODE
     const changeRequest = await prisma.change_Request.findUnique({
       where: {
         uniqueChangeRequest: {
@@ -373,8 +374,11 @@ export default class ProjectsService {
       }
     });
 
-    // throw error if changeRequest is null
-    await validateChangeRequestAccepted(changeRequest!.crId);
+    if(changeRequest == null) {
+      throw new DeletedException('Change Request', changeRequestIdentifier);
+    }
+    await validateChangeRequestAccepted(changeRequest.crId);
+    // ****************
 
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organizationId);
 
