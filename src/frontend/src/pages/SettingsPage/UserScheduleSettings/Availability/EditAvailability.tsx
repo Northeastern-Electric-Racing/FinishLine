@@ -1,73 +1,105 @@
 import { Grid } from '@mui/material';
 import { useState } from 'react';
-import { HeatmapColors, EnumToArray, DAY_NAMES, REVIEW_TIMES } from '../../../../utils/design-review.utils';
+import { HeatmapColors, EnumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
 import TimeSlot from '../../../../components/TimeSlot';
+import { addDaysToDate, Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
+import { datePipe } from '../../../../utils/pipes';
+import NERArrows from '../../../../components/NERArrows';
 
 interface EditAvailabilityProps {
-  selectedTimes: number[];
-  setSelectedTimes: (val: number[]) => void;
-  existingMeetingData: Map<number, string>;
+  selectedAvailabilities: Availability[];
+  setSelectedAvailabilities: (val: Availability[]) => void;
+  existingMeetingData: ExistingMeetingData;
+  totalAvailabilities: Availability[];
+  canChangeDateRange?: boolean;
 }
 
-const EditAvailability: React.FC<EditAvailabilityProps> = ({ selectedTimes, setSelectedTimes, existingMeetingData }) => {
+const EditAvailability: React.FC<EditAvailabilityProps> = ({
+  selectedAvailabilities,
+  setSelectedAvailabilities,
+  totalAvailabilities,
+  existingMeetingData,
+  canChangeDateRange = true
+}) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [isFirstItemSelected, setIsFirstItemSelected] = useState(false);
 
-  const handleMouseDown = (event: any, selectedTime: number) => {
+  const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
-    const isCurrentItemSelected = selectedTimes.includes(selectedTime);
-    setIsFirstItemSelected(isCurrentItemSelected);
-    setSelectedTimes(
-      isCurrentItemSelected ? selectedTimes.filter((time) => time !== selectedTime) : [...selectedTimes, selectedTime]
-    );
+
+    const isCurrentItemSelected = availability.availability.includes(selectedTime);
+    isCurrentItemSelected
+      ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
+      : availability.availability.push(selectedTime);
+    setSelectedAvailabilities([...selectedAvailabilities]);
     setIsDragging(true);
   };
 
-  const handleMouseEnter = (_event: any, selectedTime: number) => {
+  const increaseDateRange = () => {
+    const lastDate = selectedAvailabilities[selectedAvailabilities.length - 1].dateSet;
+    const newDate = addDaysToDate(lastDate, 1);
+    setSelectedAvailabilities(getMostRecentAvailabilities(totalAvailabilities, newDate));
+  };
+
+  const decreaseDateRange = () => {
+    const firstDate = selectedAvailabilities[0].dateSet;
+    const newDate = addDaysToDate(firstDate, -7);
+    console.log(newDate);
+    setSelectedAvailabilities(getMostRecentAvailabilities(totalAvailabilities, newDate));
+  };
+
+  const handleMouseEnter = (_event: any, availability: Availability, selectedTime: number) => {
     if (!isDragging) return;
-    toggleTimeSlot(selectedTime);
+    toggleTimeSlot(availability, selectedTime);
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
   };
 
-  const toggleTimeSlot = (selectedTime: number) => {
-    let newSelectedTimes: number[];
-
-    isFirstItemSelected
-      ? (newSelectedTimes = selectedTimes.filter((time) => time !== selectedTime))
-      : (newSelectedTimes = selectedTimes.includes(selectedTime) ? selectedTimes : [...selectedTimes, selectedTime]);
-
-    setSelectedTimes(newSelectedTimes);
+  const toggleTimeSlot = (availability: Availability, selectedTime: number) => {
+    availability.availability.includes(selectedTime)
+      ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
+      : availability.availability.push(selectedTime);
+    setSelectedAvailabilities([...selectedAvailabilities]);
   };
 
   return (
     <Grid container>
-      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} />
-      {EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot key={day} backgroundColor={HeatmapColors[0]} small={true} text={day} fontSize={'12px'} />
+      <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
+      {selectedAvailabilities.map((availability) => (
+        <TimeSlot
+          key={availability.dateSet.getTime()}
+          backgroundColor={HeatmapColors[0]}
+          small={true}
+          heightOverride="40px"
+          text={getDayOfWeek(availability.dateSet) + ' ' + datePipe(availability.dateSet)}
+          fontSize={'12px'}
+        />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
           <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
-          {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
-            const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
-            const backgroundColor = selectedTimes.includes(index) ? HeatmapColors[3] : HeatmapColors[0];
+          {selectedAvailabilities.map((availability, dayIndex) => {
+            const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot
-                key={index}
+                key={timeIndex * EnumToArray(REVIEW_TIMES).length + dayIndex}
                 backgroundColor={backgroundColor}
                 small={true}
-                onMouseDown={(e) => handleMouseDown(e, index)}
-                onMouseEnter={(e) => handleMouseEnter(e, index)}
+                onMouseDown={(e) => handleMouseDown(e, availability, timeIndex)}
+                onMouseEnter={(e) => handleMouseEnter(e, availability, timeIndex)}
                 onMouseUp={handleMouseUp}
-                icon={existingMeetingData.get(index)}
+                icon={existingMeetingData.get(dayIndex)?.iconMap.get(timeIndex)}
               />
             );
           })}
         </Grid>
       ))}
+      {canChangeDateRange && (
+        <Grid item xs={12}>
+          <NERArrows onLeftArrowPressed={decreaseDateRange} onRightArrowPressed={increaseDateRange} />
+        </Grid>
+      )}
     </Grid>
   );
 };

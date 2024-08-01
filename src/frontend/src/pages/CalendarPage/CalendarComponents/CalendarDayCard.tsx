@@ -165,7 +165,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   };
 
   return (
-    <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
+    <>
       <DesignReviewCreateModal
         showModal={isCreateModalOpen}
         handleClose={() => {
@@ -174,18 +174,20 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         teamTypes={teamTypes}
         defaultDate={cardDate}
       />
-      <CardContent sx={{ padding: 0 }}>
-        <DayCardTitle />
-        {events.length < 3 ? (
-          events.map((event) => <EventCard event={event} />)
-        ) : (
-          <>
-            <EventCard event={events[0]} />
-            <ExtraEventsCard extraEvents={events.slice(1)} />
-          </>
-        )}
-      </CardContent>
-    </Card>
+      <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
+        <CardContent sx={{ padding: 0 }}>
+          <DayCardTitle />
+          {events.length < 3 ? (
+            events.map((event) => <EventCard event={event} />)
+          ) : (
+            <>
+              <EventCard event={events[0]} />
+              <ExtraEventsCard extraEvents={events.slice(1)} />
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 };
 export default CalendarDayCard;

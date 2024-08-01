@@ -1,8 +1,9 @@
 import { Grid } from '@mui/material';
 import {
+  Availability,
   DesignReview,
   DesignReviewStatus,
-  getAvailabilityForGivenWeekOfDateOrMostRecent,
+  getMostRecentAvailabilities,
   User,
   UserWithScheduleSettings
 } from 'shared';
@@ -45,7 +46,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   const availableUsers = new Map<number, User[]>();
   const unavailableUsers = new Map<number, User[]>();
   const existingMeetingData = new Map<number, string>();
-  const usersToAvailabilities = new Map<User, number[]>();
+  const usersToAvailabilities = new Map<User, Availability[]>();
 
   const [currentAvailableUsers, setCurrentAvailableUsers] = useState<User[]>([]);
   const [currentUnavailableUsers, setCurrentUnavailableUsers] = useState<User[]>([]);
@@ -101,12 +102,9 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   allUsers
     .filter((user) => requiredUserIds.concat(optionalUserIds).includes(user.userId))
     .forEach((user: UserWithScheduleSettings) => {
-      const availability = getAvailabilityForGivenWeekOfDateOrMostRecent(
-        user.scheduleSettings?.availabilities ?? [],
-        selectedDate
-      );
+      const availability = getMostRecentAvailabilities(user.scheduleSettings?.availabilities ?? [], selectedDate);
 
-      usersToAvailabilities.set(user, availability?.availability ?? []);
+      usersToAvailabilities.set(user, availability ?? []);
     });
 
   return (
@@ -121,6 +119,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
           setCurrentUnavailableUsers={setCurrentUnavailableUsers}
           dateRangeTitle={dateRangePipe(startDateRange, endDateRange)}
           onSelectedTimeslotChanged={onSelectedTimeslotChanged}
+          designReview={designReview}
         />
       </Grid>
       <Grid item xs={3}>

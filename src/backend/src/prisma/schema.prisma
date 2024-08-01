@@ -109,15 +109,16 @@ enum Design_Review_Status {
 }
 
 model User {
-  userId                     String                    @id @default(uuid())
-  firstName                  String
-  lastName                   String
-  googleAuthId               String                    @unique
-  email                      String                    @unique
-  emailId                    String?                   @unique
-  roles                      Role[]
-  userSettings               User_Settings?
-  userSecureSettings         User_Secure_Settings?
+  userId             String                @id @default(uuid())
+  firstName          String
+  lastName           String
+  googleAuthId       String                @unique
+  email              String                @unique
+  emailId            String?               @unique
+  roles              Role[]
+  userSettings       User_Settings?
+  userSecureSettings User_Secure_Settings?
+
   // Relation references
   submittedChangeRequests    Change_Request[]          @relation(name: "submittedChangeRequests")
   reviewedChangeRequests     Change_Request[]          @relation(name: "reviewedChangeRequests")
@@ -710,8 +711,9 @@ model Team_Type {
 model Design_Review {
   designReviewId           String               @id @default(uuid())
   dateScheduled            DateTime             @db.Date
-  // Meeting times are an integer between 0 and 83 from 10am - 10pm (Monday - Sunday), eg. 0 = 10:00am Monday, 12 = 10:00am Tuesday
+  // Meeting times are an integer between 0 and 11 from 10am - 10pm for the date scheduled at hour intervals
   meetingTimes             Int[]
+  initialDateScheduled     DateTime             @db.Date
   dateCreated              DateTime             @default(now()) @db.Timestamp(3)
   userCreated              User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
   userCreatedId            String
@@ -741,9 +743,9 @@ model Availability {
   scheduleSettingsId String
   scheduleSettings   Schedule_Settings @relation(fields: [scheduleSettingsId], references: [drScheduleSettingsId])
 
-  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
+  // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
-  dateSet      DateTime @default(now())
+  dateSet      DateTime
 }
 
 model Schedule_Settings {
@@ -756,12 +758,15 @@ model Schedule_Settings {
 }
 
 model Meeting {
-  meetingId    String @id @default(uuid())
-  title        String
-  // meetingTimes are integers between 0 and 83 representing time after from 10am - 10pm (from Monday - Sunday) see meetingTime field in Design_Review
-  meetingTimes Int[]
-  team         Team?  @relation(fields: [teamId], references: [teamId])
-  teamId       String
+  meetingId String @id @default(uuid())
+  title     String
+
+  dateSet           DateTime
+  recurringInterval Int // the number of days between each meeting (0 = no recurring)
+  // meetingTimes are integers between 0 and 11 representing time from 10am - 10pm on the date the meeting is set for at hour intervals see meetingTime field in Design_Review
+  meetingTimes      Int[]
+  team              Team?    @relation(fields: [teamId], references: [teamId])
+  teamId            String
 }
 
 model Wbs_Proposed_Changes {

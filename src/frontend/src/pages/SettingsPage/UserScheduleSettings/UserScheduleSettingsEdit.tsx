@@ -11,12 +11,13 @@ import { NERButton } from '../../../components/NERButton';
 import { ScheduleSettingsFormInput, ScheduleSettingsPayload } from './UserScheduleSettings';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
 import { useState } from 'react';
-import { SetUserScheduleSettingsArgs } from 'shared';
+import { Availability, SetUserScheduleSettingsArgs } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 interface UserScheduleSettingsEditProps {
   onSubmit: (data: ScheduleSettingsPayload) => Promise<void>;
+  totalAvailabilities: Availability[];
   defaultValues?: SetUserScheduleSettingsArgs;
 }
 
@@ -25,9 +26,13 @@ const schema = yup.object().shape({
   personalZoomLink: yup.string().optional()
 });
 
-const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onSubmit, defaultValues }) => {
+const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
+  onSubmit,
+  defaultValues,
+  totalAvailabilities
+}) => {
   const [editAvailabilityOpen, setEditAvailability] = useState(false);
-  const [availabilities, setAvailabilities] = useState<number[]>(defaultValues?.availability || []);
+  const [availabilities, setAvailabilities] = useState<Availability[]>(defaultValues?.availability || []);
   const toast = useToast();
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
@@ -58,8 +63,9 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
           onHide={() => setEditAvailability(false)}
           onSubmit={() => setEditAvailability(false)}
           header="Edit Availability"
-          availabilites={availabilities}
-          setAvailabilities={setAvailabilities}
+          confirmedAvailabilities={availabilities}
+          totalAvailabilities={totalAvailabilities}
+          setConfirmedAvailabilities={setAvailabilities}
         />
         <Grid item sx={{ mb: 1 }} xs={12} sm={4}>
           <FormControl fullWidth>

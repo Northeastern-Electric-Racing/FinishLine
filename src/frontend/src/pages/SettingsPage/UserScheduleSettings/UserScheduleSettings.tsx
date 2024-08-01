@@ -10,7 +10,7 @@ import NERFailButton from '../../../components/NERFailButton';
 import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
-import { getMostRecentAvailability, SetUserScheduleSettingsArgs, User } from 'shared';
+import { AvailabilityCreateArgs, getMostRecentAvailabilities, SetUserScheduleSettingsArgs, User } from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -24,7 +24,7 @@ export interface ScheduleSettingsFormInput {
 }
 
 export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {
-  availability: number[];
+  availability: AvailabilityCreateArgs[];
 }
 
 const UserScheduleSettings = ({ user }: { user: User }) => {
@@ -73,7 +73,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
   const defaultValues: SetUserScheduleSettingsArgs = {
     personalGmail: data.personalGmail,
     personalZoomLink: data.personalZoomLink,
-    availability: getMostRecentAvailability(data.availabilities).availability
+    availability: getMostRecentAvailabilities(data.availabilities, new Date())
   };
 
   return (
@@ -115,7 +115,11 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
       {!edit ? (
         <UserScheduleSettingsView scheduleSettings={data} designReview={designReview} />
       ) : (
-        <UserScheduleSettingsEdit onSubmit={handleConfirm} defaultValues={defaultValues} />
+        <UserScheduleSettingsEdit
+          onSubmit={handleConfirm}
+          totalAvailabilities={data.availabilities}
+          defaultValues={defaultValues}
+        />
       )}
       {edit && (
         <Box

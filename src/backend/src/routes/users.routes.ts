@@ -2,7 +2,7 @@ import { Theme } from '@prisma/client';
 import express from 'express';
 import { body } from 'express-validator';
 import UsersController from '../controllers/users.controllers';
-import { isRole, nonEmptyString, intMinZero, validateInputs } from '../utils/validation.utils';
+import { isRole, nonEmptyString, intMinZero, validateInputs, isDate } from '../utils/validation.utils';
 
 const userRouter = express.Router();
 
@@ -36,8 +36,8 @@ userRouter.post(
   '/schedule-settings/set',
   body('personalGmail').isString(),
   body('personalZoomLink').isString(),
-  body('availability').isArray(),
-  intMinZero(body('availibility.*')),
+  intMinZero(body('availability.*.availability')),
+  isDate(body('availability.*.dateSet')),
   validateInputs,
   UsersController.setUserScheduleSettings
 );

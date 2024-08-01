@@ -79,10 +79,12 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
     data: allWorkPackages
   } = useAllWorkPackages();
 
+  console.log(defaultDate);
+
   const { mutateAsync, isLoading } = useCreateDesignReviews();
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
-    const day = data.date.getDay();
+    const day = new Date(data.date).getDay();
     const adjustedDay = day === 0 ? 6 : day - 1;
     const times: number[] = [];
     for (let i = adjustedDay * 12; i < adjustedDay * 12 + 1; i++) {

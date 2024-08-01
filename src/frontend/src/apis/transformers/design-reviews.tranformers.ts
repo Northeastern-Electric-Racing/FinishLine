@@ -5,6 +5,7 @@ export const designReviewTransformer = (designReview: DesignReview): DesignRevie
     ...designReview,
     dateCreated: new Date(designReview.dateCreated),
     dateDeleted: designReview.dateDeleted ? new Date(designReview.dateDeleted) : undefined,
-    dateScheduled: new Date(designReview.dateScheduled)
+    dateScheduled: new Date(designReview.dateScheduled),
+    initialDate: new Date(designReview.initialDate)
   };
 };

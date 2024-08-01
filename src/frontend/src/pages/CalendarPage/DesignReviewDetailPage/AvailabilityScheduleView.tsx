@@ -1,25 +1,26 @@
 import { Grid } from '@mui/material';
-import { User } from 'shared';
+import { Availability, DesignReview, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import {
-  NUMBER_OF_TIME_SLOTS,
   EnumToArray,
-  DAY_NAMES,
   REVIEW_TIMES,
   HeatmapColors,
-  getBackgroundColor
+  getBackgroundColor,
+  NUMBER_OF_TIME_SLOTS
 } from '../../../utils/design-review.utils';
 import TimeSlot from '../../../components/TimeSlot';
 import React, { useState } from 'react';
+import { datePipe } from '../../../utils/pipes';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
   unavailableUsers: Map<number, User[]>;
-  usersToAvailabilities: Map<User, number[]>;
+  usersToAvailabilities: Map<User, Availability[]>;
   existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
   onSelectedTimeslotChanged: (val: number | null) => void;
   dateRangeTitle: string;
+  designReview: DesignReview;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
@@ -30,10 +31,12 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
   dateRangeTitle,
-  onSelectedTimeslotChanged
+  onSelectedTimeslotChanged,
+  designReview
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
+  const potentialDays = getNextSevenDays(designReview.initialDate);
 
   const handleTimeslotClick = (index: number) => {
     if (selectedTimeslot === index) {
@@ -65,11 +68,13 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   for (let time = 0; time < NUMBER_OF_TIME_SLOTS; time++) {
     availableUsers.set(time, []);
   }
-  usersToAvailabilities.forEach((availableTimes, user) => {
-    availableTimes.forEach((time) => {
-      const usersAtTime = availableUsers.get(time) || [];
-      usersAtTime.push(user);
-      availableUsers.set(time, usersAtTime);
+  usersToAvailabilities.forEach((availabilities, user) => {
+    availabilities.forEach((availability) => {
+      availability.availability.forEach((time) => {
+        const usersAtTime = availableUsers.get(time) || [];
+        usersAtTime.push(user);
+        availableUsers.set(time, usersAtTime);
+      });
     });
   });
 
@@ -84,13 +89,17 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   return (
     <Grid container>
       <TimeSlot backgroundColor={HeatmapColors[0]} text={dateRangeTitle} />
-      {EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot backgroundColor={HeatmapColors[0]} text={day} fontSize={'1em'} />
+      {potentialDays.map((day) => (
+        <TimeSlot
+          backgroundColor={HeatmapColors[0]}
+          text={getDayOfWeek(day) + ' ' + datePipe(day)}
+          fontSize={'1em'}
+        />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container onMouseLeave={handleOnMouseLeave}>
           <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
-          {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
+          {potentialDays.map((_day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
             return (
               <TimeSlot
