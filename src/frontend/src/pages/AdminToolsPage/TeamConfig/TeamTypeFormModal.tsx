@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Button } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Button, Link } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
@@ -17,28 +17,23 @@ import { FormStorageKey } from '../../../utils/form';
 interface TeamTypeFormModalProps {
   open: boolean;
   handleClose: () => void;
-  defaulValues?: TeamType;
+  defaultValues?: TeamType;
   onSubmit: (data: CreateTeamTypePayload) => Promise<TeamType>;
 }
 
 const schema = yup.object().shape({
   name: yup.string().required('Material Type is Required'),
   iconName: yup.string().required('Icon Name is Required'),
-  description: yup.string().required('Description is Required')
+  description: yup.string().required('Description is Required'),
+  image: yup.mixed().notRequired()
 });
 
-const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaulValues, onSubmit }) => {
+const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaultValues, onSubmit }) => {
   const toast = useToast();
   const [addedImage, setAddedImage] = useState<File>();
 
   const onFormSubmit = async (data: CreateTeamTypePayload) => {
-    try {
-      await onSubmit(data);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
+    await onSubmit(data);
     handleClose();
   };
 
@@ -52,14 +47,14 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      name: defaulValues?.name ?? '',
-      iconName: defaulValues?.iconName ?? '',
-      description: defaulValues?.description ?? '',
-      image: defaulValues?.imageFileId ?? null
+      name: defaultValues?.name ?? '',
+      iconName: defaultValues?.iconName ?? '',
+      description: defaultValues?.description ?? '',
+      image: defaultValues?.imageFileId ?? null
     }
   });
 
-  const formStorageKey = defaulValues ? FormStorageKey.EDIT_TEAM_TYPE : FormStorageKey.CREATE_TEAM_TYPE;
+  const formStorageKey = defaultValues ? FormStorageKey.EDIT_TEAM_TYPE : FormStorageKey.CREATE_TEAM_TYPE;
 
   useFormPersist(formStorageKey, {
     watch,
@@ -76,6 +71,20 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
     reset({ name: '', iconName: '', description: '' });
     sessionStorage.removeItem(formStorageKey);
     handleClose();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('file change');
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('file is present');
+      if (file.size < 1000000) {
+        setAddedImage(file);
+        console.log('set image');
+      } else {
+        toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+      }
+    }
   };
 
   return (
@@ -98,14 +107,14 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
         <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
           <FormLabel>Icon Name</FormLabel>
           <Tooltip title={<TooltipMessage />} placement="right">
-            <a
+            <Link
               href="https://mui.com/components/material-icons/"
               target="_blank"
               rel="noopener noreferrer"
               style={{ textDecoration: 'none' }}
             >
               <HelpIcon style={{ marginBottom: '-0.2em', fontSize: 'medium', marginLeft: '5px', color: 'lightgray' }} />
-            </a>
+            </Link>
           </Tooltip>
         </Box>
         <ReactHookTextField name="iconName" control={control} />
@@ -120,7 +129,6 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
       </FormControl>
       <FormControl fullWidth>
         <FormLabel>Image</FormLabel>
-        {addedImage && <Typography variant="body1"> {addedImage.name}</Typography>}
         <Button
           variant="contained"
           color="success"
@@ -133,25 +141,8 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
           }}
         >
           Upload
-          <input
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                if (file.size < 1000000) {
-                  setAddedImage(file);
-                  console.log('set image');
-                } else {
-                  toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
-                }
-              }
-            }}
-            type="file"
-            id="team-type-image"
-            accept="image/png, image/jpeg, application/pdf"
-            name="image"
-            hidden
-            draggable
-          />
+          <input type="file" accept="image/*" name="image" hidden onChange={handleFileChange} />
+          <Typography sx={{ ml: 1 }}>{addedImage?.name}</Typography>
         </Button>
         <FormHelperText error>{errors.image?.message}</FormHelperText>
       </FormControl>

@@ -16,7 +16,7 @@ const EditTeamTypeFormModal = ({ open, handleClose, teamType }: EditTeamTypeForm
   if (isError) return <ErrorPage message={error?.message} />;
   if (isLoading) return <LoadingIndicator />;
 
-  return <TeamTypeFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} defaulValues={teamType} />;
+  return <TeamTypeFormModal open={open} handleClose={handleClose} onSubmit={mutateAsync} defaultValues={teamType} />;
 };
 
 export default EditTeamTypeFormModal;

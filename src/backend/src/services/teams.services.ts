@@ -371,7 +371,7 @@ export default class TeamsService {
     name: string,
     iconName: string,
     description: string,
-    filePath: string | null,
+    imageFileId: string | null,
     organizationId: string
   ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
@@ -391,7 +391,7 @@ export default class TeamsService {
         name,
         iconName,
         description,
-        imageFileId: filePath,
+        imageFileId: imageFileId,
         organizationId
       }
     });
@@ -434,6 +434,7 @@ export default class TeamsService {
    * @param name the new name for the team
    * @param iconName the new icon name for the team
    * @param description the new description for the team
+   * @param imageFileId the new image for the team
    * @param organizationId The organization the user is currently in
    * @returns The team with the new description
    */
@@ -443,7 +444,7 @@ export default class TeamsService {
     name: string,
     iconName: string,
     description: string,
-    filePath: string | null,
+    imageFileId: string | null,
     organizationId: string
   ): Promise<TeamType> {
     if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
@@ -455,13 +456,17 @@ export default class TeamsService {
       where: { teamTypeId }
     });
 
+    if (!currentTeamType) {
+      throw new NotFoundException('Team Type', teamTypeId);
+    }
+
     const updatedTeamType = await prisma.team_Type.update({
       where: { teamTypeId },
       data: {
         name,
         iconName,
         description,
-        imageFileId: filePath ? filePath : currentTeamType?.imageFileId
+        imageFileId: imageFileId ? imageFileId : currentTeamType.imageFileId
       }
     });
 

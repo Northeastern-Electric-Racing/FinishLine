@@ -3,7 +3,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
 import AdminToolTable from '../AdminToolTable';
-import CreateTeamTypeModal from './CreateTeamTypeFormModal';
+import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
@@ -59,7 +59,7 @@ const TeamTypeTable: React.FC = () => {
 
   return (
     <Box>
-      <CreateTeamTypeModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      <CreateTeamTypeFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
       {editingTeamType && (
         <EditTeamTypeFormModal
           open={!!editingTeamType}
