@@ -8,13 +8,17 @@ import { AvailabilityCreateArgs, DesignReview } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateDesignReviewsPayload } from '../hooks/design-reviews.hooks';
 import { designReviewTransformer } from './transformers/design-reviews.tranformers';
+import { datePipe } from '../utils/pipes';
 
 /**
  * Create a design review
  * @param payload all info needed to create a design review
  */
 export const createDesignReviews = async (payload: CreateDesignReviewsPayload) => {
-  return axios.post<DesignReview>(apiUrls.designReviewsCreate(), payload);
+  return axios.post<DesignReview>(apiUrls.designReviewsCreate(), {
+    ...payload,
+    dateScheduled: datePipe(payload.dateScheduled)
+  });
 };
 
 /**

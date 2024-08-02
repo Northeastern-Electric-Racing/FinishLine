@@ -4,6 +4,7 @@ import {
   DesignReview,
   DesignReviewStatus,
   getMostRecentAvailabilities,
+  isSameDay,
   User,
   UserWithScheduleSettings
 } from 'shared';
@@ -60,34 +61,23 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
     return drDate >= startRange && drDate <= endRange;
   });
 
-  const convertTimeSlotToDate = (index: number) => {
-    const day = Math.floor(index / 12);
-    const date = new Date(startDateRange);
-    date.setDate(date.getDate() + day);
-    return date;
-  };
-
-  const onSelectedTimeslotChanged = (index: number | null) => {
-    if (index === null) return;
-    const date = convertTimeSlotToDate(index);
-    const startTime = index % 12;
-    setStartTime(startTime);
-    setEndTime(startTime + 1);
-    setSelectDate(date);
+  const onSelectedTimeslotChanged = (index: number | null, day: Date | null) => {
+    if (index === null || day === null) return;
+    setStartTime(index + 1);
+    setEndTime(index + 1);
+    setSelectDate(day);
   };
 
   const conflictingDesignReviews = allDesignReviews.filter((currDr) => {
-    const day = selectedDate.getDay();
-    const adjustedDay = day === 0 ? 6 : day - 1;
     const times = [];
-    for (let i = adjustedDay * 12 + startTime; i < adjustedDay * 12 + endTime; i++) {
+    for (let i = startTime; i < endTime; i++) {
       times.push(i);
     }
     const cleanDate = new Date(currDr.dateScheduled.getTime() - currDr.dateScheduled.getTimezoneOffset() * -60000);
     return (
       currDr.status === DesignReviewStatus.SCHEDULED &&
       cleanDate.toLocaleDateString() === selectedDate.toLocaleDateString() &&
-      times.some((time) => currDr.meetingTimes.includes(time)) &&
+      times.some((time) => isSameDay(currDr.dateScheduled, selectedDate) && currDr.meetingTimes.includes(time)) &&
       currDr.designReviewId !== designReview.designReviewId
     );
   });
@@ -102,7 +92,10 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
   allUsers
     .filter((user) => requiredUserIds.concat(optionalUserIds).includes(user.userId))
     .forEach((user: UserWithScheduleSettings) => {
-      const availability = getMostRecentAvailabilities(user.scheduleSettings?.availabilities ?? [], selectedDate);
+      const availability = getMostRecentAvailabilities(
+        user.scheduleSettings?.availabilities ?? [],
+        designReview.initialDate
+      );
 
       usersToAvailabilities.set(user, availability ?? []);
     });

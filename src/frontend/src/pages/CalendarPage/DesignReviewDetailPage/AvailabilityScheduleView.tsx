@@ -18,7 +18,7 @@ interface AvailabilityScheduleViewProps {
   existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
-  onSelectedTimeslotChanged: (val: number | null) => void;
+  onSelectedTimeslotChanged: (val: number | null, day: Date | null) => void;
   dateRangeTitle: string;
   designReview: DesignReview;
 }
@@ -38,7 +38,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
   const potentialDays = getNextSevenDays(designReview.initialDate);
 
-  const handleTimeslotClick = (index: number) => {
+  const handleTimeslotClick = (index: number, day: Date) => {
     if (selectedTimeslot === index) {
       setSelectedTimeslot(null); // unselect
       setCurrentAvailableUsers([]);
@@ -49,7 +49,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
       setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
     }
 
-    onSelectedTimeslotChanged(index);
+    onSelectedTimeslotChanged(index, day);
   };
 
   const handleOnMouseOver = (index: number) => {
@@ -57,7 +57,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
   };
 
-  const handleOnMouseLeave = () => {
+  const handleOnMouseLeave = (): void => {
     if (selectedTimeslot === null) {
       setCurrentAvailableUsers([]);
       setCurrentUnavailableUsers([]);
@@ -69,12 +69,14 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     availableUsers.set(time, []);
   }
   usersToAvailabilities.forEach((availabilities, user) => {
+    let i = 0;
     availabilities.forEach((availability) => {
       availability.availability.forEach((time) => {
-        const usersAtTime = availableUsers.get(time) || [];
+        const usersAtTime = availableUsers.get(EnumToArray(REVIEW_TIMES).length * i + time) || [];
         usersAtTime.push(user);
-        availableUsers.set(time, usersAtTime);
+        availableUsers.set(EnumToArray(REVIEW_TIMES).length * i + time, usersAtTime);
       });
+      i++;
     });
   });
 
@@ -90,23 +92,19 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     <Grid container>
       <TimeSlot backgroundColor={HeatmapColors[0]} text={dateRangeTitle} />
       {potentialDays.map((day) => (
-        <TimeSlot
-          backgroundColor={HeatmapColors[0]}
-          text={getDayOfWeek(day) + ' ' + datePipe(day)}
-          fontSize={'1em'}
-        />
+        <TimeSlot backgroundColor={HeatmapColors[0]} text={getDayOfWeek(day) + ' ' + datePipe(day)} fontSize={'1em'} />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container onMouseLeave={handleOnMouseLeave}>
           <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
-          {potentialDays.map((_day, dayIndex) => {
+          {potentialDays.map((day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
             return (
               <TimeSlot
                 key={index}
                 backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                 selected={selectedTimeslot === index}
-                onClick={() => handleTimeslotClick(index)}
+                onClick={() => handleTimeslotClick(index, day)}
                 onMouseOver={() => handleOnMouseOver(index)}
                 icon={existingMeetingData.get(index)}
               />

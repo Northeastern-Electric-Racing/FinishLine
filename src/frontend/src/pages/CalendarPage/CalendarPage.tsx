@@ -158,7 +158,6 @@ const CalendarPage = () => {
               <Grid container>
                 {daysThisMonth.slice(week, week + 7).map((day) => {
                   const cardDate = new Date(displayMonthYear.getFullYear(), displayMonthYear.getMonth(), day);
-                  console.log(cardDate);
                   return (
                     <Grid item xs={12 / 7}>
                       <Box marginTop={2} sx={{ justifyContent: 'center', display: 'flex' }}>
