@@ -444,7 +444,6 @@ export default class WorkPackagesService {
 
     const { wbsElementId, id: workPackageId } = workPackage;
 
-    // REVISED CODE
     const changeRequest = await prisma.change_Request.findUnique({
       where: {
         uniqueChangeRequest: {
@@ -459,7 +458,6 @@ export default class WorkPackagesService {
     }
 
     await validateChangeRequestAccepted(changeRequest.crId);
-    // ***********
 
     await prisma.change.create({
       data: {
