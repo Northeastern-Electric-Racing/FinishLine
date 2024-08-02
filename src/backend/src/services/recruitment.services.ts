@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
 export default class RecruitmentServices {

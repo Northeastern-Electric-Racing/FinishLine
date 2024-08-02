@@ -1,5 +1,5 @@
 import RecruitmentServices from '../../src/services/recruitment.services';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
