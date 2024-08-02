@@ -13,7 +13,12 @@ import {
   UserWithScheduleSettings
 } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { authUserTransformer, userScheduleSettingsTransformer, userTransformer, userWithScheduleSettingsTransformer } from './transformers/users.transformers';
+import {
+  authUserTransformer,
+  userScheduleSettingsTransformer,
+  userTransformer,
+  userWithScheduleSettingsTransformer
+} from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 import { projectTransformer } from './transformers/projects.transformers';
 
