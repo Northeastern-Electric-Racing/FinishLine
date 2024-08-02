@@ -9,11 +9,18 @@
 -- AlterTable
 ALTER TABLE "Availability" ALTER COLUMN "dateSet" DROP DEFAULT;
 
+/* Drop all existing availabilities */
+DELETE FROM "Availability";
+
 -- AlterTable
-ALTER TABLE "Design_Review" ADD COLUMN     "initialDateScheduled" DATE NOT NULL;
+ALTER TABLE "Design_Review" ADD COLUMN "initialDateScheduled" DATE DEFAULT '2000-01-01';
 
 /* Insert Initial Date Scheduled to equal dateScheduled for all existing Design Reviews */
 UPDATE "Design_Review" SET "initialDateScheduled" = "dateScheduled";
+
+/* Drop the default value */
+ALTER TABLE "Design_Review" ALTER COLUMN "initialDateScheduled" SET NOT NULL;
+ALTER TABLE "Design_Review" ALTER COLUMN "initialDateScheduled" DROP DEFAULT;
 
 -- AlterTable
 ALTER TABLE "Meeting" ADD COLUMN     "dateSet" TIMESTAMP(3) NOT NULL,
