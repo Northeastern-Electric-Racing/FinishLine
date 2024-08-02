@@ -1,5 +1,5 @@
 import express from 'express';
-import { isDate, linkValidators, nonEmptyString, validateInputs } from '../utils/validation.utils';
+import { isDate, nonEmptyString, validateInputs } from '../utils/validation.utils';
 import { body } from 'express-validator';
 import RecruitmentController from '../controllers/recruitment.controllers';
 

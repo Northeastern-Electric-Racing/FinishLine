@@ -1,11 +1,8 @@
 import { User } from '@prisma/client';
-import { LinkCreateArgs, isAdmin } from 'shared';
+import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { createUsefulLinks } from '../utils/organizations.utils';
-import { linkTransformer } from '../transformers/links.transformer';
-import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 
 export default class RecruitmentServices {
   static async createMilestone(
