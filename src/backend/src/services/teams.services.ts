@@ -391,7 +391,7 @@ export default class TeamsService {
         name,
         iconName,
         description,
-        imageFileId: imageFileId,
+        imageFileId,
         organizationId
       }
     });
