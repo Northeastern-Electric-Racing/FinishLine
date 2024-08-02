@@ -129,8 +129,6 @@ const CalendarPage = () => {
           }}
           designReview={unconfirmedDesignReview as DesignReview}
           teamTypes={allTeamTypes}
-          markedStatus={DesignReviewStatus.UNCONFIRMED}
-          setMarkedStatus={() => {}}
         />
       )}
       <PageLayout

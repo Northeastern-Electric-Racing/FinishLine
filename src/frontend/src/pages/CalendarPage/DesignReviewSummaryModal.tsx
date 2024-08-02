@@ -22,8 +22,8 @@ interface DRCSummaryModalProps {
   onHide: () => void;
   designReview: DesignReview;
   teamTypes: TeamType[];
-  markedStatus: DesignReviewStatus;
-  setMarkedStatus: (_: DesignReviewStatus) => void;
+  markedStatus?: DesignReviewStatus;
+  setMarkedStatus?: (_: DesignReviewStatus) => void;
 }
 
 const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({
@@ -31,8 +31,8 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({
   onHide,
   designReview,
   teamTypes,
-  markedStatus,
-  setMarkedStatus
+  markedStatus = DesignReviewStatus.UNCONFIRMED,
+  setMarkedStatus = () => {}
 }: DRCSummaryModalProps) => {
   const user = useCurrentUser();
   const toast = useToast();
