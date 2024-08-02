@@ -154,6 +154,7 @@ const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${desi
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
+const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
 
 /******************* Work Package Template Endpoints ********************/
 
@@ -300,6 +301,7 @@ export const apiUrls = {
   designReviewsEdit,
   designReviewMarkUserConfirmed,
   designReviewDelete,
+  designReviewSetStatus,
 
   workPackageTemplates,
   workPackageTemplatesById,

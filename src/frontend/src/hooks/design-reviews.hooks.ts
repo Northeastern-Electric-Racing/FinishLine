@@ -12,7 +12,8 @@ import {
   getAllTeamTypes,
   getSingleDesignReview,
   markUserConfirmed,
-  createTeamType
+  createTeamType,
+  setDesignReviewStatus
 } from '../apis/design-reviews.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -175,6 +176,22 @@ export const useMarkUserConfirmed = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['design-reviews']);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
+};
+
+export const useSetDesignReviewStatus = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, { status: DesignReviewStatus }>(
+    ['design-reviews', id],
+    async (payload: { status: DesignReviewStatus }) => {
+      const { data } = await setDesignReviewStatus(id, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews', id]);
       }
     }
   );
