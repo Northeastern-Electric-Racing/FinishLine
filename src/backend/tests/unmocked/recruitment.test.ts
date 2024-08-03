@@ -1,3 +1,4 @@
+import { admin } from 'googleapis/build/src/apis/admin';
 import RecruitmentServices from '../../src/services/recruitment.services';
 import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
@@ -52,6 +53,27 @@ describe('Recruitment Tests', () => {
       expect(result.name).toEqual('name');
       expect(result.description).toEqual('description');
       expect(result.dateOfEvent).toEqual(new Date('11/12/24'));
+    });
+  });
+
+  describe('Get All Milestones', () => {
+    it('Gets all the milestones', async () => {
+      const milestone1 = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/11/24'),
+        orgId
+      );
+      const milestone2 = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name2',
+        'description2',
+        new Date('1/1/1'),
+        orgId
+      );
+      const result = await RecruitmentServices.getAllMilestones(orgId);
+      expect(result).toStrictEqual([milestone1, milestone2]);
     });
   });
 });

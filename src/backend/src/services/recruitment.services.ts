@@ -35,4 +35,11 @@ export default class RecruitmentServices {
 
     return milestone;
   }
+
+  static async getAllMilestones(organizationId: string) {
+    const allMilestones = await prisma.milestone.findMany({
+      where: { organizationId }
+    });
+    return allMilestones;
+  }
 }
