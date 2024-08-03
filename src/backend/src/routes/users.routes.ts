@@ -36,7 +36,9 @@ userRouter.post(
   '/schedule-settings/set',
   body('personalGmail').isString(),
   body('personalZoomLink').isString(),
-  intMinZero(body('availability.*.availability')),
+  body('availability').isArray(),
+  body('availability.*.availability').isArray(),
+  intMinZero(body('availability.*.availability.*')),
   isDate(body('availability.*.dateSet')),
   validateInputs,
   UsersController.setUserScheduleSettings

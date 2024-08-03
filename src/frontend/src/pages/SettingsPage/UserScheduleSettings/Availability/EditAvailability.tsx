@@ -7,21 +7,34 @@ import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
 
 interface EditAvailabilityProps {
-  selectedAvailabilities: Availability[];
-  setSelectedAvailabilities: (val: Availability[]) => void;
+  editedAvailabilities: Availability[];
+  setEditedAvailabilities: (val: Availability[]) => void;
   existingMeetingData: ExistingMeetingData;
   totalAvailabilities: Availability[];
   canChangeDateRange?: boolean;
 }
 
 const EditAvailability: React.FC<EditAvailabilityProps> = ({
-  selectedAvailabilities,
-  setSelectedAvailabilities,
+  editedAvailabilities,
+  setEditedAvailabilities,
   totalAvailabilities,
   existingMeetingData,
   canChangeDateRange = true
 }) => {
+  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(editedAvailabilities);
   const [isDragging, setIsDragging] = useState(false);
+
+  const setEditAvailabilitiesWrapper = (availabilities: Availability[]) => {
+    const uniqueAvailabilities: Availability[] = [];
+    for (const availability of availabilities) {
+      const existingIndex = uniqueAvailabilities.findIndex((a) => a.dateSet.getTime() === availability.dateSet.getTime());
+      if (existingIndex === -1) {
+        uniqueAvailabilities.push(availability);
+      } else {
+      }
+    }
+    setEditedAvailabilities(uniqueAvailabilities);
+  };
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
@@ -30,21 +43,31 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     isCurrentItemSelected
       ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
       : availability.availability.push(selectedTime);
-    setSelectedAvailabilities([...selectedAvailabilities]);
+    setEditAvailabilitiesWrapper([...editedAvailabilities]);
     setIsDragging(true);
   };
 
   const increaseDateRange = () => {
-    const lastDate = selectedAvailabilities[selectedAvailabilities.length - 1].dateSet;
+    const lastDate = currentlyDisplayedAvailabilities[currentlyDisplayedAvailabilities.length - 1].dateSet;
     const newDate = addDaysToDate(lastDate, 1);
-    setSelectedAvailabilities(getMostRecentAvailabilities(totalAvailabilities, newDate));
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(editedAvailabilities.concat(totalAvailabilities), newDate)
+    );
+    setEditAvailabilitiesWrapper(
+      editedAvailabilities.concat(
+        getMostRecentAvailabilities(currentlyDisplayedAvailabilities.concat(totalAvailabilities), newDate)
+      )
+    );
   };
 
   const decreaseDateRange = () => {
-    const firstDate = selectedAvailabilities[0].dateSet;
+    const firstDate = currentlyDisplayedAvailabilities[0].dateSet;
     const newDate = addDaysToDate(firstDate, -7);
-    console.log(newDate);
-    setSelectedAvailabilities(getMostRecentAvailabilities(totalAvailabilities, newDate));
+
+    setCurrentlyDisplayedAvailabilities(
+      getMostRecentAvailabilities(editedAvailabilities.concat(totalAvailabilities), newDate)
+    );
+    setEditAvailabilitiesWrapper(editedAvailabilities.concat(getMostRecentAvailabilities(totalAvailabilities, newDate)));
   };
 
   const handleMouseEnter = (_event: any, availability: Availability, selectedTime: number) => {
@@ -60,13 +83,18 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     availability.availability.includes(selectedTime)
       ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
       : availability.availability.push(selectedTime);
-    setSelectedAvailabilities([...selectedAvailabilities]);
+
+    const index = editedAvailabilities.findIndex((a) => a.dateSet.getTime() === availability.dateSet.getTime());
+    editedAvailabilities[index] = availability;
+
+    setCurrentlyDisplayedAvailabilities([...currentlyDisplayedAvailabilities]);
+    setEditAvailabilitiesWrapper([...editedAvailabilities]);
   };
 
   return (
     <Grid container>
       <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
-      {selectedAvailabilities.map((availability) => (
+      {currentlyDisplayedAvailabilities.map((availability) => (
         <TimeSlot
           key={availability.dateSet.getTime()}
           backgroundColor={HeatmapColors[0]}
@@ -79,7 +107,7 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container item>
           <TimeSlot backgroundColor={HeatmapColors[0]} small={true} text={time} fontSize={'13px'} />
-          {selectedAvailabilities.map((availability, dayIndex) => {
+          {currentlyDisplayedAvailabilities.map((availability, dayIndex) => {
             const backgroundColor = availability.availability.includes(timeIndex) ? HeatmapColors[3] : HeatmapColors[0];
             return (
               <TimeSlot

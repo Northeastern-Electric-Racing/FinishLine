@@ -114,7 +114,13 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} sm={2} display={'flex'} alignItems={'center'} justifyContent={'end'}>
-          <NERButton variant="contained" onClick={() => setEditAvailability(true)}>
+          <NERButton
+            variant="contained"
+            onClick={() => {
+              setAvailabilities(defaultValues?.availability || []);
+              setEditAvailability(true);
+            }}
+          >
             Edit Availability
           </NERButton>
         </Grid>
