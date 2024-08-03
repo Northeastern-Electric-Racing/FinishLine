@@ -1,4 +1,3 @@
-import { admin } from 'googleapis/build/src/apis/admin';
 import RecruitmentServices from '../../src/services/recruitment.services';
 import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
