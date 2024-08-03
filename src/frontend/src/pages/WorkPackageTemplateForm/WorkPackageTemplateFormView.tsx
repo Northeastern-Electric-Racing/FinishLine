@@ -1,7 +1,7 @@
 import React from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, TextField, Autocomplete, Typography, Stack, FormControl } from '@mui/material';
+import { Box, TextField, Autocomplete, Typography, Stack, FormControl, Grid, Tooltip } from '@mui/material';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
 import { useToast } from '../../hooks/toasts.hooks';
@@ -128,7 +128,20 @@ const WorkPackageTemplateFormView: React.FC<WorkPackageTemplateFormViewProps> = 
           <Box my={2}>
             <WorkPackageTemplateFormDetails control={control} errors={errors} />
           </Box>
-          <Typography variant="h5">Blocked By</Typography>
+          <Grid container columnGap={3}>
+            <Grid item>
+              <Typography variant="h5">Blocked By</Typography>
+            </Grid>
+            <Grid item>
+              <Tooltip
+                title="Adding blockers to this template will make it a project-level template. Using it to create a work package will also create its blockers."
+                arrow
+                placement="right"
+              >
+                <NERButton>Create Blocker</NERButton>
+              </Tooltip>
+            </Grid>
+          </Grid>
           <FormControl fullWidth>
             <Controller
               name="blockedBy"

@@ -10,7 +10,8 @@ export const getWorkPackageTemplateQueryArgs = (organizationId: string) =>
       userCreated: getUserQueryArgs(organizationId),
       userDeleted: getUserQueryArgs(organizationId),
       blockedBy: true,
-      descriptionBullets: getDescriptionBulletQueryArgs(organizationId)
+      descriptionBullets: getDescriptionBulletQueryArgs(organizationId),
+      blocking: true
     }
   });
 

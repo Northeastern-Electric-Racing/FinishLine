@@ -35,7 +35,7 @@ const WorkPackageTemplateForm: React.FC<WorkPackageTemplateFormProps> = ({
 
   const blockedByOptions =
     workPackageTemplates
-      ?.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId)
+      ?.filter((wp) => wp.workPackageTemplateId !== workPackageTemplateId && wp.blocking.length === 0)
       .map((wp) => ({
         id: wp.workPackageTemplateId,
         label: `${wp.templateName}`

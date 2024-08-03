@@ -39,4 +39,5 @@ export interface WorkPackageTemplate {
   userCreated: User;
   dateDeleted?: Date;
   userDeleted?: User;
+  blocking: WorkPackageTemplatePreview[];
 }
