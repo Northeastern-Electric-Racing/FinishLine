@@ -3,6 +3,7 @@ import {
   DesignReviewWithAttendees,
   TaskWithAssignees,
   endOfDayTomorrow,
+  startOfDayTomorrow,
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
@@ -114,13 +115,14 @@ export default class NotificationsService {
    * Sends the design review slack notifications for all design reviews scheduled for today
    */
   static async sendDesignReviewSlackNotifications() {
-    const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
-    const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+    const endOfDay = startOfDayTomorrow();
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
     const designReviews = await prisma.design_Review.findMany({
       where: {
         dateScheduled: {
-          lt: endOfDay,
+          lte: endOfDay,
           gte: startOfDay
         },
         status: {
