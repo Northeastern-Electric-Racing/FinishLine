@@ -1959,9 +1959,27 @@ const performSeed: () => Promise<void> = async () => {
     }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Milestone 1', 'This is milestone 1', new Date('11/12/24'), organizationId);
-  await RecruitmentServices.createMilestone(batman, 'Milestone 2', 'This is milestone 2', new Date('11/13/24'), organizationId);
-  await RecruitmentServices.createMilestone(batman, 'Milestone 3', 'This is milestone 3', new Date('11/23/24'), organizationId);
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Milestone 1',
+    'This is milestone 1',
+    new Date('11/12/24'),
+    organizationId
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Milestone 2',
+    'This is milestone 2',
+    new Date('11/13/24'),
+    organizationId
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Milestone 3',
+    'This is milestone 3',
+    new Date('11/23/24'),
+    organizationId
+  );
 };
 
 performSeed()
