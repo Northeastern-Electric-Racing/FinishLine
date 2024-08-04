@@ -16,4 +16,25 @@ export default class RecruitmentController {
       next(error);
     }
   }
+
+  static async editMilestone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { milestoneId } = req.params;
+      const { name, description, dateOfEvent } = req.body;
+      const submitter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const milestone = await RecruitmentServices.editMilestone(
+        submitter,
+        name,
+        description,
+        dateOfEvent,
+        milestoneId,
+        organizationId
+      );
+      res.status(200).json(milestone);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
