@@ -1,6 +1,6 @@
 import RecruitmentServices from '../../src/services/recruitment.services';
 import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
@@ -65,7 +65,7 @@ describe('Recruitment Tests', () => {
         orgId
       );
       const milestone2 = await RecruitmentServices.createMilestone(
-        await createTestUser(batmanAppAdmin, orgId),
+        await createTestUser(supermanAdmin, orgId),
         'name2',
         'description2',
         new Date('1/1/1'),
