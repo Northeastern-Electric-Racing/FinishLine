@@ -56,7 +56,20 @@ describe('Recruitment Tests', () => {
   });
 
   describe('Get All Milestones', () => {
-    it('Gets all the milestones', async () => {
+    it('Fails if the organization ID is wrong', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.createMilestone(
+            await createTestUser(batmanAppAdmin, orgId),
+            'name',
+            'description',
+            new Date(),
+            '55'
+          )
+      ).rejects.toThrow(new HttpException(400, `Organization with id 55 doesn't exist`));
+    });
+
+    it('Succeeds and gets all the milestones', async () => {
       const milestone1 = await RecruitmentServices.createMilestone(
         await createTestUser(batmanAppAdmin, orgId),
         'name',
@@ -73,19 +86,6 @@ describe('Recruitment Tests', () => {
       );
       const result = await RecruitmentServices.getAllMilestones(orgId);
       expect(result).toStrictEqual([milestone1, milestone2]);
-    });
-
-    it('Fails if the organization ID is wrong', async () => {
-      await expect(
-        async () =>
-          await RecruitmentServices.createMilestone(
-            await createTestUser(batmanAppAdmin, orgId),
-            'name',
-            'description',
-            new Date(),
-            '55'
-          )
-      ).rejects.toThrow(new HttpException(400, `Organization with id 55 doesn't exist`));
     });
   });
 });
