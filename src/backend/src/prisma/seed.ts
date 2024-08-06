@@ -1959,12 +1959,7 @@ const performSeed: () => Promise<void> = async () => {
     }
   ]);
 
-  await RecruitmentServices.createFaq(
-    batman,
-    'Who is the Chief Software Engineer?',
-    'Peyton McKee',
-    organizationId
-  );
+  await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', organizationId);
   await RecruitmentServices.createFaq(
     batman,
     'When was FinishLine created?',

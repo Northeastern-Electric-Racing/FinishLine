@@ -70,12 +70,7 @@ export default class RecruitmentServices {
    * @param organizationId the organization Id of the FAQ
    * @returns A newly created FAQ
    */
-  static async createFaq(
-    submitter: User,
-    question: string,
-    answer: string,
-    organizationId: string
-  ) {
+  static async createFaq(submitter: User, question: string, answer: string, organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
