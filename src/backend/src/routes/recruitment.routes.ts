@@ -14,7 +14,6 @@ recruitmentRouter.post(
   RecruitmentController.createMilestone
 );
 
-
 recruitmentRouter.post(
   '/milestone/:milestoneId/edit',
   nonEmptyString(body('name')),
@@ -25,6 +24,5 @@ recruitmentRouter.post(
 );
 
 recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
-
 
 export default recruitmentRouter;

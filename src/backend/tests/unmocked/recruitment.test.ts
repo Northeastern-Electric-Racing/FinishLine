@@ -1,7 +1,7 @@
 import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
 
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
