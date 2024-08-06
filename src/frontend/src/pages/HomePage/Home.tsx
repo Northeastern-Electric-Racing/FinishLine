@@ -12,7 +12,6 @@ import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
-import { useCreateMilestone } from '../../hooks/recruitment.hooks';
 
 const Home = () => {
   const user = useCurrentUser();
