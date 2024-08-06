@@ -89,7 +89,7 @@ export default class RecruitmentServices {
 
     return updatedMilestone;
   }
-  
+
   /**
    * Gets all Milestons for the given organization Id
    * @param organizationId organization Id of the milestone

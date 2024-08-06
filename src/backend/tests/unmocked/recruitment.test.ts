@@ -121,7 +121,7 @@ describe('Recruitment Tests', () => {
       expect(updatedMilestone.dateOfEvent).toEqual(new Date('11/14/24'));
     });
   });
-  
+
   describe('Get All Milestones', () => {
     it('Fails if the organization ID is wrong', async () => {
       await expect(

@@ -5,7 +5,6 @@ import { useHistoryState } from '../../hooks/misc.hooks';
 import CreateMilestoneFormModal from './RecruitmentConfig/CreateMilestoneFormModal';
 import EditMilestoneFormModal from './RecruitmentConfig/EditMilestoneFormModal';
 import MilestoneTable from './RecruitmentConfig/MilestoneTable';
-import FAQsTable from './RecruitmentConfig/FAQTable';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useAllMilestones } from '../../hooks/recruitment.hooks';

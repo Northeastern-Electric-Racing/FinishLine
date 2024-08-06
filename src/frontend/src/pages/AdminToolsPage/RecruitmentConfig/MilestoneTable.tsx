@@ -1,5 +1,4 @@
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
-import { CreateMilestonePayload } from '../../../hooks/recruitment.hooks';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Milestone } from 'shared/src/types/milestone-types';

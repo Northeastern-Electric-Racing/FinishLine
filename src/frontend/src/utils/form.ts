@@ -90,5 +90,5 @@ export const generateUUID = () => {
 export enum FormStorageKey {
   CREATE_TEAM_TYPE = 'CREATE_TEAM_TYPE',
   CREATE_MILESTONE = 'CREATE_MILESTONE',
-  EDIT_MILESTONE = 'EDIT_MILESTONE',
+  EDIT_MILESTONE = 'EDIT_MILESTONE'
 }
