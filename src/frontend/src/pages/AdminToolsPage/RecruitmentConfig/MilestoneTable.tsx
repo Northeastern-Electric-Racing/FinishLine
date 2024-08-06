@@ -9,7 +9,8 @@ interface MilestoneTableProps {
 }
 
 const MilestoneTable: React.FC<MilestoneTableProps> = ({ milestones, setEditingMilestone }) => {
-  const milestoneRows = milestones.map((milestone, index) => (
+  const sortedMilestones = milestones.sort((a, b) => new Date(a.dateOfEvent).getTime() - new Date(b.dateOfEvent).getTime());
+  const milestoneRows = sortedMilestones.map((milestone, index) => (
     <TableRow>
       <TableCell
         align="left"

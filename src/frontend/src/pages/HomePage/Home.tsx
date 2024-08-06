@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Button, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import OverdueWorkPackageAlerts from './OverdueWorkPackageAlerts';
 import UsefulLinks from './UsefulLinks';
 import WorkPackagesByTimelineStatus from './WorkPackagesByTimelineStatus';
@@ -17,12 +17,6 @@ import { useCreateMilestone } from '../../hooks/recruitment.hooks';
 const Home = () => {
   const user = useCurrentUser();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-  const { mutateAsync } = useCreateMilestone();
-  const milestonePayload = {
-    name: 'test milestone',
-    description: 'test milestone description',
-    dateOfEvent: new Date()
-  };
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
@@ -35,7 +29,6 @@ const Home = () => {
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
-      <Button onClick={() => mutateAsync(milestonePayload)}>Click to create milestone</Button>
     </PageLayout>
   );
 };
