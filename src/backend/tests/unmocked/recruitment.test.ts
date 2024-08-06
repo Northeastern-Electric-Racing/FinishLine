@@ -1,6 +1,6 @@
 import RecruitmentServices from '../../src/services/recruitment.services';
 import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data';
+import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
@@ -86,6 +86,33 @@ describe('Recruitment Tests', () => {
       );
       const result = await RecruitmentServices.getAllMilestones(orgId);
       expect(result).toStrictEqual([milestone1, milestone2]);
+    });
+  });
+
+  describe('Create FAQ', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () => await RecruitmentServices.createFaq(await createTestUser(member, orgId), 'question', 'answer', orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
+    });
+
+    it('Fails if organization doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question', 'answer', '5')
+      ).rejects.toThrow(new HttpException(400, `Organization with id 5 doesn't exist`));
+    });
+
+    it('Succeeds and creates an FAQ', async () => {
+      const result = await RecruitmentServices.createFaq(
+        await createTestUser(batmanAppAdmin, orgId),
+        'question',
+        'answer',
+        orgId
+      );
+
+      expect(result.question).toEqual('question');
+      expect(result.answer).toEqual('answer');
     });
   });
 });
