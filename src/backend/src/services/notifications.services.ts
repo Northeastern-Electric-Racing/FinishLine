@@ -27,6 +27,8 @@ export default class NotificationsService {
   static async sendTaskDeadlineSlackNotifications() {
     const endOfDay = endOfDayTomorrow();
 
+    if (endOfDay.getDay() !== 0 || endOfDay.getDay() !== 2 || endOfDay.getDay() !== 4) return;
+
     const tasks = await prisma.task.findMany({
       where: {
         deadline: {
@@ -122,12 +124,10 @@ export default class NotificationsService {
     const designReviews = await prisma.design_Review.findMany({
       where: {
         dateScheduled: {
-          lte: endOfDay,
+          lt: endOfDay,
           gte: startOfDay
         },
-        status: {
-          not: 'DONE'
-        },
+        status: 'SCHEDULED',
         dateDeleted: null
       },
       include: {

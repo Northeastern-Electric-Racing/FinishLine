@@ -1,5 +1,6 @@
 import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
+
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
@@ -148,6 +149,41 @@ describe('Recruitment Tests', () => {
       expect(updatedMilestone.name).toEqual('new name');
       expect(updatedMilestone.description).toEqual('new description');
       expect(updatedMilestone.dateOfEvent).toEqual(new Date('11/14/24'));
+    });
+  });
+
+  describe('Get All Milestones', () => {
+    it('Fails if the organization ID is wrong', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.createMilestone(
+            await createTestUser(batmanAppAdmin, orgId),
+            'name',
+            'description',
+            new Date('11/11/24'),
+            '55'
+          )
+      ).rejects.toThrow(new NotFoundException('Organization', 55));
+    });
+
+    it('Succeeds and gets all the milestones', async () => {
+      const milestone1 = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/11/24'),
+        orgId
+      );
+
+      const milestone2 = await RecruitmentServices.createMilestone(
+        await createTestUser(supermanAdmin, orgId),
+        'name2',
+        'description2',
+        new Date('1/1/1'),
+        orgId
+      );
+      const result = await RecruitmentServices.getAllMilestones(orgId);
+      expect(result).toStrictEqual([milestone1, milestone2]);
     });
   });
 });
