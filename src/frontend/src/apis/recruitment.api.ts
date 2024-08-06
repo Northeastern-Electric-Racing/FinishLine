@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../utils/axios';
 import { CreateMilestonePayload } from '../hooks/recruitment.hooks';
 import { apiUrls } from '../utils/urls';
 import { Milestone } from 'shared/src/types/milestone-types';

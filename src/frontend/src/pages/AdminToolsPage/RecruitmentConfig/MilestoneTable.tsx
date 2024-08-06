@@ -18,7 +18,7 @@ const MilestoneTable: React.FC<MilestoneTableProps> = ({ milestones, setEditingM
           borderBottom: index === milestones.length - 1 ? 'none' : '1px solid'
         }}
       >
-        <Typography>{milestone.dateOfEvent.toDateString()}</Typography>
+        <Typography>{new Date(milestone.dateOfEvent).toDateString()}</Typography>
       </TableCell>
       <TableCell
         sx={{
