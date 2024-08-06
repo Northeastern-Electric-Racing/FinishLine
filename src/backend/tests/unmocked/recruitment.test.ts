@@ -1,3 +1,4 @@
+import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
@@ -37,7 +38,7 @@ describe('Recruitment Tests', () => {
             new Date(),
             '1'
           )
-      ).rejects.toThrow(new HttpException(400, `Organization with id 1 doesn't exist`));
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
     });
 
     it('Succeeds and creates a milestone', async () => {
@@ -81,7 +82,7 @@ describe('Recruitment Tests', () => {
             '1',
             '1'
           )
-      ).rejects.toThrow(new HttpException(400, `Organization with id 1 doesn't exist`));
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
     });
 
     it('Fails if milestone doesn`t exist', async () => {
@@ -96,6 +97,34 @@ describe('Recruitment Tests', () => {
             orgId
           )
       ).rejects.toThrow(new NotFoundException('Milestone', 1));
+    });
+
+    it('Fails if milestone is deleted', async () => {
+      const milestone = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/12/24'),
+        orgId
+      );
+
+      await prisma.milestone.delete({
+        where: {
+          milestoneId: milestone.milestoneId
+        }
+      });
+
+      await expect(
+        async () =>
+          await RecruitmentServices.editMilestone(
+            await createTestUser(supermanAdmin, orgId),
+            'name',
+            'description',
+            new Date('11/12/24'),
+            milestone.milestoneId,
+            orgId
+          )
+      ).rejects.toThrow(new NotFoundException('Milestone', milestone.milestoneId));
     });
 
     it('Succeeds and creates a milestone', async () => {
