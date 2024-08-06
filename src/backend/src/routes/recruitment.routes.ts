@@ -23,4 +23,6 @@ recruitmentRouter.post(
   RecruitmentController.editMilestone
 );
 
+recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
+
 export default recruitmentRouter;

@@ -17,6 +17,7 @@ import { useState } from 'react';
 import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
+import AdminToolsRecruitmentTab from './AdminToolRecruitmentTab';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -38,6 +39,7 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration' });
   }
   if (isUserAdmin) {
+    tabs.push({ tabUrlValue: 'recruitment', tabName: 'Recruitment' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
@@ -87,6 +89,8 @@ const AdminToolsPage: React.FC = () => {
         <ProjectConfigurationTab />
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
+      ) : tabIndex === 3 ? (
+        <AdminToolsRecruitmentTab />
       ) : (
         <Box>
           <Box pb={2}>

@@ -847,19 +847,21 @@ model Car {
 }
 
 model Organization {
-  organizationId String    @id @default(uuid())
-  name           String
-  dateCreated    DateTime  @default(now())
-  userCreatedId  String
-  userCreated    User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
-  dateDeleted    DateTime?
-  userDeletedId  String?
-  userDeleted    User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
-  treasurerId    String?
-  treasurer      User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
-  advisor        User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
-  advisorId      String?
+  organizationId        String    @id @default(uuid())
+  name                  String
+  dateCreated           DateTime  @default(now())
+  userCreatedId         String
+  userCreated           User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
+  dateDeleted           DateTime?
+  userDeletedId         String?
+  userDeleted           User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
+  treasurerId           String?
+  treasurer             User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
+  advisor               User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
+  advisorId             String?
   description    String
+  applyInterestImageId  String?   @unique
+  exploreAsGuestImageId String?   @unique
 
   // Relation references
   wbsElements              WBS_Element[]

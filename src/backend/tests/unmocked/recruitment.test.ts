@@ -121,4 +121,38 @@ describe('Recruitment Tests', () => {
       expect(updatedMilestone.dateOfEvent).toEqual(new Date('11/14/24'));
     });
   });
+  
+  describe('Get All Milestones', () => {
+    it('Fails if the organization ID is wrong', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.createMilestone(
+            await createTestUser(batmanAppAdmin, orgId),
+            'name',
+            'description',
+            new Date('11/11/24'),
+            '55'
+          )
+      ).rejects.toThrow(new HttpException(400, `Organization with id 55 doesn't exist`));
+    });
+
+    it('Succeeds and gets all the milestones', async () => {
+      const milestone1 = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/11/24'),
+        orgId
+      );
+      const milestone2 = await RecruitmentServices.createMilestone(
+        await createTestUser(supermanAdmin, orgId),
+        'name2',
+        'description2',
+        new Date('1/1/1'),
+        orgId
+      );
+      const result = await RecruitmentServices.getAllMilestones(orgId);
+      expect(result).toStrictEqual([milestone1, milestone2]);
+    });
+  });
 });
