@@ -6,6 +6,7 @@ import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
+import { uploadFile } from '../utils/google-integration.utils';
 
 export default class OrganizationsService {
   /**
@@ -54,6 +55,35 @@ export default class OrganizationsService {
     });
 
     return newLinks;
+  }
+
+  /**
+   * sets an organizations images
+   * @param submitter the user who is setting the images
+   * @param organizationId the organization which the images will be set up
+   * @param images the images which are being set
+   */
+  static async setImages(
+    applyInterestImage: Express.Multer.File,
+    exploreAsGuestImage: Express.Multer.File,
+    submitter: User,
+    organizationId: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update images');
+
+    const applyInterestImageData = uploadFile(applyInterestImage);
+    const exploreAsGuestImageData = uploadFile(exploreAsGuestImage);
+
+    const newImages = await prisma.organization.update({
+      where: { organizationId },
+      data: {
+        applyInterestImageId: (await applyInterestImageData).id,
+        exploreAsGuestImageId: (await exploreAsGuestImageData).id
+      }
+    });
+
+    return newImages;
   }
 
   /**

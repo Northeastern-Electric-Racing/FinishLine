@@ -16,4 +16,6 @@ recruitmentRouter.post(
 
 recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController.deleteMilestone);
 
+recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
+
 export default recruitmentRouter;

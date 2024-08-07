@@ -25,6 +25,12 @@ export default class RecruitmentController {
 
       await RecruitmentServices.deleteMilestone(await deleter, milestoneId, organizationId);
       res.status(204).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
+
+  static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = getOrganizationId(req.headers);
+      const allMilestones = await RecruitmentServices.getAllMilestones(organizationId);
+      res.status(200).json(allMilestones);
     } catch (error: unknown) {
       next(error);
     }
