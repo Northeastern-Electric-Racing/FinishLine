@@ -45,19 +45,6 @@ export default class RecruitmentServices {
     return milestone;
   }
 
-  static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string): Promise<void> {
-    if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('delete milestone');
-
-    const milestone = await prisma.milestone.findUnique({ where: { milestoneId } });
-
-    if (!milestone) throw new NotFoundException('Milestone', milestoneId);
-    await prisma.milestone.delete({ where: { milestoneId } });
-
-    if (!organizationId) {
-      throw new HttpException(400, `Milestone with id ${milestoneId} doesn't exist`);
-    }
-
   /**
    * Gets all Milestons for the given organization Id
    * @param organizationId organization Id of the milestone
@@ -73,5 +60,17 @@ export default class RecruitmentServices {
     }
 
     return allMilestones;
+  }
+
+  static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string): Promise<void> {
+    if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete milestone');
+
+    const milestone = await prisma.milestone.findUnique({ where: { milestoneId } });
+
+    if (!milestone) throw new NotFoundException('Milestone', milestoneId);
+    await prisma.milestone.delete({ where: { milestoneId } });
+
+    if (!organizationId) throw new HttpException(400, `Milestone with id ${milestoneId} doesn't exist`);
   }
 }
