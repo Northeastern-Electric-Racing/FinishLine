@@ -72,5 +72,7 @@ export default class RecruitmentServices {
     await prisma.milestone.delete({ where: { milestoneId } });
 
     if (!organizationId) throw new HttpException(400, `Milestone with id ${milestoneId} doesn't exist`);
+
+    await prisma.milestone.delete({ where: { milestoneId } });
   }
 }
