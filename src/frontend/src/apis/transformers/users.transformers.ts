@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { AuthenticatedUser, User, UserScheduleSettings, UserWithScheduleSettings } from 'shared';
+import { AuthenticatedUser, Availability, User, UserScheduleSettings, UserWithScheduleSettings } from 'shared';
 
 /**
  * Transforms a user to ensure deep field transformation of date objects.
@@ -38,10 +38,7 @@ export const authUserTransformer = (authUser: AuthenticatedUser): AuthenticatedU
 export const userScheduleSettingsTransformer = (settings: UserScheduleSettings): UserScheduleSettings => {
   return {
     ...settings,
-    availabilities: settings.availabilities.map((availability) => ({
-      ...availability,
-      dateSet: new Date(availability.dateSet)
-    }))
+    availabilities: settings.availabilities.map(availabilityTransformer)
   };
 };
 
@@ -55,5 +52,18 @@ export const userWithScheduleSettingsTransformer = (user: UserWithScheduleSettin
   return {
     ...user,
     scheduleSettings: user.scheduleSettings ? userScheduleSettingsTransformer(user.scheduleSettings) : undefined
+  };
+};
+
+/**
+ * Transforms an availability to ensure deep field transformation of date objects.
+ *
+ * @param availability the availability to transform
+ * @returns the transformed availability
+ */
+export const availabilityTransformer = (availability: Availability): Availability => {
+  return {
+    ...availability,
+    dateSet: new Date(availability.dateSet)
   };
 };

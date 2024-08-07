@@ -7,34 +7,25 @@ import { datePipe } from '../../../../utils/pipes';
 import NERArrows from '../../../../components/NERArrows';
 
 interface EditAvailabilityProps {
-  editedAvailabilities: Availability[];
-  setEditedAvailabilities: (val: Availability[]) => void;
+  editedAvailabilities: Map<number, Availability>;
+  setEditedAvailabilities: (val: Map<number, Availability>) => void;
   existingMeetingData: ExistingMeetingData;
   totalAvailabilities: Availability[];
+  initialDate: Date;
   canChangeDateRange?: boolean;
 }
 
 const EditAvailability: React.FC<EditAvailabilityProps> = ({
   editedAvailabilities,
-  setEditedAvailabilities,
   totalAvailabilities,
   existingMeetingData,
+  initialDate,
   canChangeDateRange = true
 }) => {
-  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(editedAvailabilities);
+  const [currentlyDisplayedAvailabilities, setCurrentlyDisplayedAvailabilities] = useState(
+    getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), initialDate)
+  );
   const [isDragging, setIsDragging] = useState(false);
-
-  const setEditAvailabilitiesWrapper = (availabilities: Availability[]) => {
-    const uniqueAvailabilities: Availability[] = [];
-    for (const availability of availabilities) {
-      const existingIndex = uniqueAvailabilities.findIndex((a) => a.dateSet.getTime() === availability.dateSet.getTime());
-      if (existingIndex === -1) {
-        uniqueAvailabilities.push(availability);
-      } else {
-      }
-    }
-    setEditedAvailabilities(uniqueAvailabilities);
-  };
 
   const handleMouseDown = (event: any, availability: Availability, selectedTime: number) => {
     event.preventDefault();
@@ -43,31 +34,39 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     isCurrentItemSelected
       ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
       : availability.availability.push(selectedTime);
-    setEditAvailabilitiesWrapper([...editedAvailabilities]);
+
     setIsDragging(true);
   };
 
   const increaseDateRange = () => {
     const lastDate = currentlyDisplayedAvailabilities[currentlyDisplayedAvailabilities.length - 1].dateSet;
     const newDate = addDaysToDate(lastDate, 1);
-    setCurrentlyDisplayedAvailabilities(
-      getMostRecentAvailabilities(editedAvailabilities.concat(totalAvailabilities), newDate)
-    );
-    setEditAvailabilitiesWrapper(
-      editedAvailabilities.concat(
-        getMostRecentAvailabilities(currentlyDisplayedAvailabilities.concat(totalAvailabilities), newDate)
-      )
-    );
+
+    const newAvailabilities = getMostRecentAvailabilities(totalAvailabilities, newDate);
+    newAvailabilities.forEach((availability) => {
+      const existingAvailability = editedAvailabilities.get(availability.dateSet.getTime());
+      if (!existingAvailability) {
+        editedAvailabilities.set(availability.dateSet.getTime(), availability);
+      }
+    });
+
+    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), newDate));
   };
 
   const decreaseDateRange = () => {
     const firstDate = currentlyDisplayedAvailabilities[0].dateSet;
     const newDate = addDaysToDate(firstDate, -7);
 
-    setCurrentlyDisplayedAvailabilities(
-      getMostRecentAvailabilities(editedAvailabilities.concat(totalAvailabilities), newDate)
-    );
-    setEditAvailabilitiesWrapper(editedAvailabilities.concat(getMostRecentAvailabilities(totalAvailabilities, newDate)));
+    const newAvailabilities = getMostRecentAvailabilities(totalAvailabilities, newDate);
+    newAvailabilities.forEach((availability) => {
+      const existingAvailability = editedAvailabilities.get(availability.dateSet.getTime());
+      console.log(existingAvailability);
+      if (!existingAvailability) {
+        editedAvailabilities.set(availability.dateSet.getTime(), availability);
+      }
+    });
+
+    setCurrentlyDisplayedAvailabilities(getMostRecentAvailabilities(Array.from(editedAvailabilities.values()), newDate));
   };
 
   const handleMouseEnter = (_event: any, availability: Availability, selectedTime: number) => {
@@ -84,11 +83,9 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
       ? availability.availability.splice(availability.availability.indexOf(selectedTime), 1)
       : availability.availability.push(selectedTime);
 
-    const index = editedAvailabilities.findIndex((a) => a.dateSet.getTime() === availability.dateSet.getTime());
-    editedAvailabilities[index] = availability;
+    editedAvailabilities.set(availability.dateSet.getTime(), availability);
 
     setCurrentlyDisplayedAvailabilities([...currentlyDisplayedAvailabilities]);
-    setEditAvailabilitiesWrapper([...editedAvailabilities]);
   };
 
   return (

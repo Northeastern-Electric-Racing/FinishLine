@@ -10,13 +10,21 @@ import NERFailButton from '../../../components/NERFailButton';
 import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
-import { AvailabilityCreateArgs, getMostRecentAvailabilities, SetUserScheduleSettingsArgs, User } from 'shared';
+import {
+  Availability,
+  AvailabilityCreateArgs,
+  getMostRecentAvailabilities,
+  SetUserScheduleSettingsArgs,
+  User
+} from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useSingleDesignReview } from '../../../hooks/design-reviews.hooks';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { deeplyCopy } from 'shared/src/utils';
+import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 export interface ScheduleSettingsFormInput {
   personalGmail: string;
@@ -117,7 +125,7 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
       ) : (
         <UserScheduleSettingsEdit
           onSubmit={handleConfirm}
-          totalAvailabilities={data.availabilities}
+          totalAvailabilities={deeplyCopy(data.availabilities, availabilityTransformer) as Availability[]}
           defaultValues={defaultValues}
         />
       )}

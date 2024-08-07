@@ -5,11 +5,12 @@ import EditAvailability from './EditAvailability';
 interface DRCEditModalProps {
   open: boolean;
   header: string;
-  confirmedAvailabilities: Availability[];
+  confirmedAvailabilities: Map<number, Availability>;
   totalAvailabilities: Availability[];
-  setConfirmedAvailabilities: (availabilities: Availability[]) => void;
+  setConfirmedAvailabilities: (availabilities: Map<number, Availability>) => void;
   onHide: () => void;
   onSubmit: () => void;
+  initialDate: Date;
   canChangeDateRange?: boolean;
 }
 
@@ -21,11 +22,12 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
   setConfirmedAvailabilities,
   totalAvailabilities,
   onSubmit,
+  initialDate,
   canChangeDateRange = true
 }) => {
   const existingMeetingData = new Map<number, { iconMap: Map<number, string> }>();
   const onCancel = () => {
-    setConfirmedAvailabilities([]);
+    setConfirmedAvailabilities(new Map());
     onHide();
   };
 
@@ -37,6 +39,7 @@ const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
         existingMeetingData={existingMeetingData}
         totalAvailabilities={totalAvailabilities}
         canChangeDateRange={canChangeDateRange}
+        initialDate={initialDate}
       />
     </NERModal>
   );

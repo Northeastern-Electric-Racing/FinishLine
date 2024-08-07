@@ -73,7 +73,21 @@ const isWithinSameWeek = (date1: Date, date2: Date): boolean => {
   );
 };
 
+const getUniqueAvailabilities = (availabilities: Availability[]) => {
+  const uniqueAvailabilities: Availability[] = [];
+  for (const availability of availabilities) {
+    const existingIndex = uniqueAvailabilities.findIndex((a) => isSameDay(a.dateSet, availability.dateSet));
+    if (existingIndex === -1) {
+      uniqueAvailabilities.push(availability);
+    } else {
+      uniqueAvailabilities[existingIndex] = availability;
+    }
+  }
+  return uniqueAvailabilities;
+};
+
 const getMostRecentAvailabilities = (availabilities: Availability[], startDate: Date): Availability[] => {
+  availabilities = getUniqueAvailabilities(availabilities);
   const startDateObj = new Date(startDate);
 
   const getClosestDate = (availabilities: Availability[], targetDate: Date): Availability => {
@@ -135,5 +149,6 @@ export {
   getMostRecentAvailabilities,
   isSameDay,
   getDayOfWeek,
-  getNextSevenDays
+  getNextSevenDays,
+  getUniqueAvailabilities
 };
