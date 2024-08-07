@@ -1,7 +1,7 @@
-import { User } from '@prisma/client';
+import { Milestone, User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
 export default class RecruitmentServices {
@@ -63,16 +63,20 @@ export default class RecruitmentServices {
   }
 
   static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string): Promise<void> {
+    if (!organizationId) throw new NotFoundException('Organization', organizationId);
+
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete milestone');
 
     const milestone = await prisma.milestone.findUnique({ where: { milestoneId } });
 
     if (!milestone) throw new NotFoundException('Milestone', milestoneId);
-    await prisma.milestone.delete({ where: { milestoneId } });
 
-    if (!organizationId) throw new HttpException(400, `Milestone with id ${milestoneId} doesn't exist`);
+    if (milestone.dateDeleted) throw new DeletedException('Milestone', milestoneId)
 
-    await prisma.milestone.delete({ where: { milestoneId } });
+    await prisma.milestone.update({
+      where: { milestoneId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
   }
 }
