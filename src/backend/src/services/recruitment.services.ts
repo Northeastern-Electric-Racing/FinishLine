@@ -36,7 +36,7 @@ export default class RecruitmentServices {
     return milestone;
   }
 
-  static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string) {
+  static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string): Promise<void> {
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete milestone');
 
