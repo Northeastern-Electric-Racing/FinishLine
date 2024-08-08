@@ -61,4 +61,39 @@ export default class RecruitmentServices {
 
     return allMilestones;
   }
+
+  /**
+   * Edits the FAQ
+   * @param question the updated question value
+   * @param answer the updated answer value
+   * @param faqId the requested FAQ to be edited
+   * @param submitter the user editing the FAQ
+   * @param organizationId the organization the user is currently in
+   * @returns the updated FAQ
+   */
+  static async editFAQ(
+    question: string,
+    answer: string,
+    submitter: User,
+    organizationId: string,
+    frequentlyAskedQuestionId: string
+  ) {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
+
+    const oldFAQ = await prisma.frequentlyAskedQuestion.findUnique({
+      where: { frequentlyAskedQuestionId }
+    });
+
+    if (!oldFAQ) {
+      throw new HttpException(404, `FAQ with id ${frequentlyAskedQuestionId} doesn't exist`);
+    }
+
+    const updatedFAQ = await prisma.frequentlyAskedQuestion.update({
+      where: { frequentlyAskedQuestionId },
+      data: { question, answer }
+    });
+
+    return updatedFAQ;
+  }
 }
