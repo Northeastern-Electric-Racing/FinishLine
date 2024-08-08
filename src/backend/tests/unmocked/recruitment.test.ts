@@ -1,5 +1,5 @@
 import RecruitmentServices from '../../src/services/recruitment.services';
-import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
@@ -100,7 +100,7 @@ describe('Recruitment Tests', () => {
       await expect(
         async () =>
           await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question', 'answer', '5')
-      ).rejects.toThrow(new HttpException(400, `Organization with id 5 doesn't exist`));
+      ).rejects.toThrow(new NotFoundException('Organization', `5`));
     });
 
     it('Succeeds and creates an FAQ', async () => {
