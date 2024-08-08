@@ -2,7 +2,7 @@ import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data';
-import { createTestMileStone, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestMilestone, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
@@ -105,7 +105,7 @@ describe('Recruitment Tests', () => {
 
     it('Fails if milestone is already deleted', async () => {
       const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const testMilestone = await createTestMileStone(testSuperman, orgId);
+      const testMilestone = await createTestMilestone(testSuperman, orgId);
       await RecruitmentServices.deleteMilestone(testSuperman, testMilestone.milestoneId, orgId);
 
       await expect(
@@ -115,7 +115,7 @@ describe('Recruitment Tests', () => {
 
     it('Succeeds and deletes milestone', async () => {
       const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const [testMilestone1] = await Promise.all([createTestMileStone(testSuperman, orgId)]);
+      const testMilestone1 = await createTestMilestone(testSuperman, orgId);
 
       await RecruitmentServices.deleteMilestone(testSuperman, testMilestone1.milestoneId, orgId);
 
