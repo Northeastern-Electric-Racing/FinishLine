@@ -1,7 +1,8 @@
+import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
-import { AccessDeniedAdminOnlyException, HttpException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestMileStone, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
@@ -86,6 +87,49 @@ describe('Recruitment Tests', () => {
       );
       const result = await RecruitmentServices.getAllMilestones(orgId);
       expect(result).toStrictEqual([milestone1, milestone2]);
+    });
+  });
+
+  describe('Delete a single milestone', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () => await RecruitmentServices.deleteMilestone(await createTestUser(wonderwomanGuest, orgId), 'id', orgId)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete milestone'));
+    });
+
+    it('Fails if milestoneId is not found', async () => {
+      await expect(
+        async () => await RecruitmentServices.deleteMilestone(await createTestUser(batmanAppAdmin, orgId), 'id1', orgId)
+      ).rejects.toThrow(new HttpException(400, 'Milestone with id: id1 not found!'));
+    });
+
+    it('Fails if milestone is already deleted', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testMilestone = await createTestMileStone(testSuperman, orgId);
+      await RecruitmentServices.deleteMilestone(testSuperman, testMilestone.milestoneId, orgId);
+
+      await expect(
+        async () => await RecruitmentServices.deleteMilestone(testSuperman, testMilestone.milestoneId, orgId)
+      ).rejects.toThrow(new DeletedException('Milestone', testMilestone.milestoneId));
+    });
+
+    it('Succeeds and deletes milestone', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const [testMilestone1] = await Promise.all([
+        createTestMileStone(testSuperman, orgId),
+      ]);
+
+      await RecruitmentServices.deleteMilestone(
+        testSuperman,
+        testMilestone1.milestoneId,
+        orgId
+      );
+
+      const updatedTestMilestone1 = await prisma.milestone.findUnique({
+        where: { milestoneId: testMilestone1.milestoneId },
+      });
+
+      expect(updatedTestMilestone1?.dateDeleted).not.toBe(null);
     });
   });
 });
