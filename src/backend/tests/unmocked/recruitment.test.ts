@@ -115,18 +115,12 @@ describe('Recruitment Tests', () => {
 
     it('Succeeds and deletes milestone', async () => {
       const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const [testMilestone1] = await Promise.all([
-        createTestMileStone(testSuperman, orgId),
-      ]);
+      const [testMilestone1] = await Promise.all([createTestMileStone(testSuperman, orgId)]);
 
-      await RecruitmentServices.deleteMilestone(
-        testSuperman,
-        testMilestone1.milestoneId,
-        orgId
-      );
+      await RecruitmentServices.deleteMilestone(testSuperman, testMilestone1.milestoneId, orgId);
 
       const updatedTestMilestone1 = await prisma.milestone.findUnique({
-        where: { milestoneId: testMilestone1.milestoneId },
+        where: { milestoneId: testMilestone1.milestoneId }
       });
 
       expect(updatedTestMilestone1?.dateDeleted).not.toBe(null);
