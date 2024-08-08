@@ -111,6 +111,7 @@ export default class ProjectsController {
         changeRequestIdentifier,
         organizationId
       );
+      
       res.status(200).json(deletedProject);
     } catch (error: unknown) {
       next(error);

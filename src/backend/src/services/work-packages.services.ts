@@ -480,17 +480,6 @@ export default class WorkPackagesService {
         // Soft delete the given wp's wbs by setting crs to denied and soft deleting tasks
         wbsElement: {
           update: {
-            changeRequests: {
-              updateMany: {
-                where: {
-                  wbsElementId
-                },
-                data: {
-                  accepted: false,
-                  dateReviewed: dateDeleted
-                }
-              }
-            },
             tasks: {
               updateMany: {
                 where: {

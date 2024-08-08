@@ -382,6 +382,27 @@ export default class ProjectsService {
 
     const { projectId, wbsElementId } = project;
 
+    // need to delete each of the project's work packages as well
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        projectId
+      },
+      include: { wbsElement: true }
+    });
+
+    await Promise.all(
+      workPackages.map(
+        async (workPackage) => {
+          await WorkPackagesService.deleteWorkPackage(
+            user,
+            wbsNumOf(workPackage.wbsElement),
+            changeRequestIdentifier,
+            organizationId
+          )
+        }
+      )
+    );
+
     const dateDeleted: Date = new Date();
     const deletedByUserId = user.userId;
 
@@ -415,26 +436,6 @@ export default class ProjectsService {
       },
       ...getProjectQueryArgs(organizationId)
     });
-
-    // need to delete each of the project's work packages as well
-    const workPackages = await prisma.work_Package.findMany({
-      where: {
-        projectId
-      },
-      include: { wbsElement: true }
-    });
-
-    await Promise.all(
-      workPackages.map(
-        async (workPackage) =>
-          await WorkPackagesService.deleteWorkPackage(
-            user,
-            wbsNumOf(workPackage.wbsElement),
-            changeRequestIdentifier,
-            organizationId
-          )
-      )
-    );
 
     return projectTransformer(deletedProject);
   }
