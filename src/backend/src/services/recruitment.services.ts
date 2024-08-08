@@ -1,4 +1,4 @@
-import { Milestone, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
@@ -72,7 +72,7 @@ export default class RecruitmentServices {
 
     if (!milestone) throw new NotFoundException('Milestone', milestoneId);
 
-    if (milestone.dateDeleted) throw new DeletedException('Milestone', milestoneId)
+    if (milestone.dateDeleted) throw new DeletedException('Milestone', milestoneId);
 
     await prisma.milestone.update({
       where: { milestoneId },
