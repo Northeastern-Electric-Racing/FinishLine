@@ -62,6 +62,12 @@ export default class RecruitmentServices {
     return allMilestones;
   }
 
+  /**
+   * Deletes the milestone for the given milestoneId and organizationId
+   * @param deleter the name of the user deleting the milestone
+   * @param milestoneId milestone id for the specific milestone
+   * @param organizationId organization Id of the milestone
+   */
   static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string): Promise<void> {
     if (!organizationId) throw new NotFoundException('Organization', organizationId);
 
