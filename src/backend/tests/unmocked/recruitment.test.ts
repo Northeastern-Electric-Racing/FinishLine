@@ -7,7 +7,6 @@ describe('Recruitment Tests', () => {
   let orgId: string;
   beforeEach(async () => {
     orgId = (await createTestOrganization()).organizationId;
-    await createTestFAQ(orgId, 'faq123');
   });
 
   afterEach(async () => {
@@ -42,6 +41,7 @@ describe('Recruitment Tests', () => {
     });
 
     it('Succeeds and edits an FAQ', async () => {
+      await createTestFAQ(orgId, 'faq123');
       const result = await RecruitmentServices.editFAQ(
         'What is your return policy?',
         'You can return any item within 60 days of purchase.',

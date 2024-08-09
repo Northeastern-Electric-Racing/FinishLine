@@ -80,7 +80,7 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
-  await prisma.frequentlyAskedQuestion.deleteMany({});
+  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.work_Package.deleteMany();
   await prisma.project.deleteMany();
   await prisma.material.deleteMany();

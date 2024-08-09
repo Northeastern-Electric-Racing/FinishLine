@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
 export default class RecruitmentServices {
@@ -26,7 +26,7 @@ export default class RecruitmentServices {
     });
 
     if (!organization) {
-      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+      throw new HttpException(401, `Organization with id ${organizationId} doesn't exist`);
     }
 
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
@@ -78,6 +78,10 @@ export default class RecruitmentServices {
     organizationId: string,
     frequentlyAskedQuestionId: string
   ) {
+    if (!organizationId) {
+      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+    }
+
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
 
@@ -86,7 +90,7 @@ export default class RecruitmentServices {
     });
 
     if (!oldFAQ) {
-      throw new HttpException(404, `FAQ with id ${frequentlyAskedQuestionId} doesn't exist`);
+      throw new NotFoundException('FAQ', frequentlyAskedQuestionId);
     }
 
     const updatedFAQ = await prisma.frequentlyAskedQuestion.update({
