@@ -27,7 +27,7 @@ export default class NotificationsService {
   static async sendTaskDeadlineSlackNotifications() {
     const endOfDay = endOfDayTomorrow();
 
-    if (endOfDay.getDay() !== 0 || endOfDay.getDay() !== 2 || endOfDay.getDay() !== 4) return;
+    if (endOfDay.getDay() === 0 || endOfDay.getDay() === 2 || endOfDay.getDay() === 4) return;
 
     const tasks = await prisma.task.findMany({
       where: {
@@ -173,9 +173,17 @@ export default class NotificationsService {
     const promises = Array.from(designReviewTeamMap).map(async ([slackId, designReviews]) => {
       const messageBlock = designReviews
         .map((designReview) => {
-          return `${usersToSlackPings(designReview.attendees ?? [])} ${
-            designReview.wbsElement.name
-          } will be having a design review today at ${meetingStartTimePipe(designReview.meetingTimes)}!`;
+          const zoomLink = designReview.zoomLink ? `Zoom Link: ${designReview.zoomLink}\n` : '';
+          const questionDocLink = designReview.docTemplateLink
+            ? ` Question Doc Link: ${designReview.docTemplateLink}\n`
+            : '';
+          return (
+            `${usersToSlackPings(designReview.attendees ?? [])} ${
+              designReview.wbsElement.name
+            } will be having a design review today at ${meetingStartTimePipe(designReview.meetingTimes)}! ` +
+            zoomLink +
+            questionDocLink
+          );
         })
         .join('\n\n');
 
