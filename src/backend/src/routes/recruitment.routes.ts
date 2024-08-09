@@ -21,7 +21,7 @@ recruitmentRouter.post(
   RecruitmentController.editFAQ
 );
 
-recruitmentRouter.post('/');
+recruitmentRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),

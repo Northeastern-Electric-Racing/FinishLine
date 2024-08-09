@@ -36,6 +36,10 @@ export default class RecruitmentController {
       const user: User = await getCurrentUser(res);
       const editedFAQ = await RecruitmentServices.editFAQ(question, answer, user, organizationId, faqId);
       res.status(200).json(editedFAQ);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 
   static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
