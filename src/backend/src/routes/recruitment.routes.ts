@@ -14,6 +14,14 @@ recruitmentRouter.post(
   RecruitmentController.createMilestone
 );
 
+recruitmentRouter.post(
+  '/faq/create',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  validateInputs,
+  RecruitmentController.createFaq
+);
+
 recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
 
 export default recruitmentRouter;

@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
 export default class RecruitmentServices {
@@ -60,5 +60,37 @@ export default class RecruitmentServices {
     }
 
     return allMilestones;
+  }
+
+  /**
+   * Creates a new FAQ in the given organization Id
+   * @param submitter a user who is making this request
+   * @param question question to be displayed by the FAQ
+   * @param answer answer to the question of the FAQ
+   * @param organizationId the organization Id of the FAQ
+   * @returns A newly created FAQ
+   */
+  static async createFaq(submitter: User, question: string, answer: string, organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('create an faq');
+
+    const faq = await prisma.frequentlyAskedQuestion.create({
+      data: {
+        question,
+        answer,
+        organizationId,
+        userCreatedId: submitter.userId
+      }
+    });
+
+    return faq;
   }
 }
