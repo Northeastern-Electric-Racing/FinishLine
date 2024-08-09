@@ -80,12 +80,11 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
           control={control}
           render={({ field: { onChange, value } }) => (
             <DatePicker
-              value={value}
+              value={new Date(value)}
               open={datePickerOpen}
               onClose={() => setDatePickerOpen(false)}
               onOpen={() => setDatePickerOpen(true)}
               onChange={(newValue) => {
-                console.log('new value', newValue);
                 onChange(newValue ? newValue : new Date());
               }}
               slotProps={{

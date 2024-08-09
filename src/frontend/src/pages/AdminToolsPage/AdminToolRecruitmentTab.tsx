@@ -19,11 +19,8 @@ const AdminToolsRecruitmentTab: React.FC = () => {
     data: milestones
   } = useAllMilestones();
 
-  // const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFAQs();
-
   if (!milestones || milestonesIsLoading) return <LoadingIndicator />;
   if (milestonesIsError) return <ErrorPage message={milestonesError.message} />;
-  // if (faqsIsError) return <ErrorPage message={faqsError.message} />;
 
   return (
     <Box padding="5px">
