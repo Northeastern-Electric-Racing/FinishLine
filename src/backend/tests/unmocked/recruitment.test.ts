@@ -1,6 +1,6 @@
 import RecruitmentServices from '../../src/services/recruitment.services';
 
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException} from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
 import { createTestFAQ, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
@@ -38,7 +38,7 @@ describe('Recruitment Tests', () => {
             orgId,
             'nonExistentFaqId'
           )
-      ).rejects.toThrow(new HttpException(404, `FAQ with id nonExistentFaqId doesn't exist`));
+      ).rejects.toThrow(new NotFoundException('Faq', 'nonExistentFaqId'));
     });
 
     it('Succeeds and edits an FAQ', async () => {

@@ -99,7 +99,9 @@ export default class RecruitmentServices {
     });
 
     return updatedFAQ;
-      
+  }
+
+  /*
    * Creates a new FAQ in the given organization Id
    * @param submitter a user who is making this request
    * @param question question to be displayed by the FAQ
