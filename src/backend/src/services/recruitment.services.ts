@@ -45,6 +45,7 @@ export default class RecruitmentServices {
     return milestone;
   }
 
+
   /**
    * Gets all Milestons for the given organization Id
    * @param organizationId organization Id of the milestone
@@ -60,6 +61,23 @@ export default class RecruitmentServices {
     }
 
     return allMilestones;
+  }
+
+  /**
+   * Gets all FAQs for the given organization Id
+   * @param organizationId organization Id of the faq
+   * @returns all the faqs from the given organization
+   */
+  static async getAllFaqs(organizationId: string) {
+    const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { organizationId }
+    });
+
+    if (!organizationId) {
+      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+    }
+
+    return allFaqs;
   }
 
   /**

@@ -27,6 +27,16 @@ export default class RecruitmentController {
     }
   }
 
+  static async getAllFaqs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = getOrganizationId(req.headers);
+      const allFaqs = await RecruitmentServices.getAllFaqs(organizationId);
+      res.status(200).json(allFaqs);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;
