@@ -60,7 +60,7 @@ const UserScheduleSettingsView = ({
         open={availabilityOpen}
         onHide={() => setAvailabilityOpen(false)}
         header={'Availability'}
-        availabilites={getMostRecentAvailabilities(scheduleSettings.availabilities, new Date())}
+        availabilites={scheduleSettings.availabilities}
       />
       <AvailabilityEditModal
         open={confirmAvailabilityOpen}

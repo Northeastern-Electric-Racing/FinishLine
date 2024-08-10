@@ -1,15 +1,27 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { HeatmapColors, EnumToArray, REVIEW_TIMES, ExistingMeetingData } from '../../../../utils/design-review.utils';
 import TimeSlot from '../../../../components/TimeSlot';
-import { Availability, getDayOfWeek } from 'shared';
+import { Availability, getDayOfWeek, getMostRecentAvailabilities } from 'shared';
 import { datePipe } from '../../../../utils/pipes';
+import { useState } from 'react';
+import NERArrows from '../../../../components/NERArrows';
 
 interface SingleAvailabilityViewProps {
-  selectedTimes: Availability[];
+  totalAvailability: Availability[];
   existingMeetingData: ExistingMeetingData;
 }
 
-const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ selectedTimes, existingMeetingData }) => {
+const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ totalAvailability, existingMeetingData }) => {
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const selectedTimes = getMostRecentAvailabilities(totalAvailability, startDate);
+
+  const onArrowIncrease = () => {
+    setStartDate(new Date(startDate.setDate(startDate.getDate() + 7)));
+  };
+
+  const onArrowDecrease = () => {
+    setStartDate(new Date(startDate.setDate(startDate.getDate() - 7)));
+  };
   return (
     <Grid container>
       <TimeSlot backgroundColor={HeatmapColors[0]} small={true} heightOverride="40px" />
@@ -39,6 +51,9 @@ const SingleAvailabilityView: React.FC<SingleAvailabilityViewProps> = ({ selecte
           })}
         </Grid>
       ))}
+      <Box display={'flex'} justifyContent={'space-around'} width={'100%'}>
+        <NERArrows onRightArrowPressed={onArrowIncrease} onLeftArrowPressed={onArrowDecrease} />
+      </Box>
     </Grid>
   );
 };

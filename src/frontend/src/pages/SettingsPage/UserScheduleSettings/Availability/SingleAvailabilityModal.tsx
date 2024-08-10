@@ -14,7 +14,7 @@ const SingleAvailabilityModal: React.FC<SingleAvailabilityModalProps> = ({ open,
 
   return (
     <NERModal open={open} onHide={onHide} title={header} onSubmit={onHide} hideFormButtons showCloseButton>
-      <SingleAvailabilityView selectedTimes={availabilites} existingMeetingData={existingMeetingData} />
+      <SingleAvailabilityView totalAvailability={availabilites} existingMeetingData={existingMeetingData} />
     </NERModal>
   );
 };
