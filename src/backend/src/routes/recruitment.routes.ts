@@ -35,7 +35,7 @@ recruitmentRouter.post(
   RecruitmentController.createFaq
 );
 
-recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs)
+recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs);
 
 recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
 

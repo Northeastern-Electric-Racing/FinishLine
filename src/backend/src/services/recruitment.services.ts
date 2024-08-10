@@ -45,7 +45,6 @@ export default class RecruitmentServices {
     return milestone;
   }
 
-
   static async editMilestone(
     submitter: User,
     name: string,
