@@ -136,5 +136,6 @@ export type ExceptionObjectNames =
   | 'Work Package Template'
   | 'Description Bullet Type'
   | 'Organization'
-  | 'Faq'
-  | 'Car';
+  | 'Car'
+  | 'Milestone'
+  | 'Faq';
