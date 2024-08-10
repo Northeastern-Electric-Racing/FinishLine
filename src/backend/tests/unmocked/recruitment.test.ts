@@ -13,6 +13,32 @@ describe('Recruitment Tests', () => {
     await resetUsers();
   });
 
+  describe('Get All FAQs', () => {
+    it('Fails if organization doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question', 'answer', '5')
+      ).rejects.toThrow(new NotFoundException('Organization', `5`));
+    });
+
+    it('Succeeds and gets all the FAQs', async () => {
+      const faq1 = await RecruitmentServices.createFaq(
+        await createTestUser(batmanAppAdmin, orgId),
+        'question',
+        'answer',
+        orgId
+      );
+      const faq2 = await RecruitmentServices.createFaq(
+        await createTestUser(supermanAdmin, orgId),
+        'question2',
+        'answer2',
+        orgId
+      );
+      const result = await RecruitmentServices.getAllFaqs(orgId);
+      expect(result).toStrictEqual([faq1, faq2]);
+    });
+  });
+
   describe('Create Milestone', () => {
     it('Fails if user is not an admin', async () => {
       await expect(
@@ -52,21 +78,6 @@ describe('Recruitment Tests', () => {
       expect(result.name).toEqual('name');
       expect(result.description).toEqual('description');
       expect(result.dateOfEvent).toEqual(new Date('11/12/24'));
-    });
-  });
-
-  describe('Get All FAQs', () => {
-    it('Fails if the organization ID is wrong', async () => {
-      await expect(
-        async () => await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, '55'), 'question', 'answer', orgId)
-      ).rejects.toThrow(new NotFoundException('Organization', '55'));
-    });
-
-    it('Succeeds and gets all the FAQs', async () => {
-      const faq1 = await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question', 'answer', orgId);
-      const faq2 = await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question2', 'answer2', orgId);
-      const result = await RecruitmentServices.getAllFaqs(orgId);
-      expect(result).toStrictEqual([faq1, faq2]);
     });
   });
 
