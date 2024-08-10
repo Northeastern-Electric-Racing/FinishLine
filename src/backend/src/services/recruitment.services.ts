@@ -78,8 +78,12 @@ export default class RecruitmentServices {
     organizationId: string,
     frequentlyAskedQuestionId: string
   ) {
-    if (!organizationId) {
-      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new HttpException(401, `Organization with id ${organizationId} doesn't exist`);
     }
 
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
