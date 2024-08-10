@@ -55,6 +55,21 @@ describe('Recruitment Tests', () => {
     });
   });
 
+  describe('Get All FAQs', () => {
+    it('Fails if the organization ID is wrong', async () => {
+      await expect(
+        async () => await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, '55'), 'question', 'answer', orgId)
+      ).rejects.toThrow(new NotFoundException('Organization', '55'));
+    });
+
+    it('Succeeds and gets all the FAQs', async () => {
+      const faq1 = await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question', 'answer', orgId);
+      const faq2 = await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question2', 'answer2', orgId);
+      const result = await RecruitmentServices.getAllFaqs(orgId);
+      expect(result).toStrictEqual([faq1, faq2]);
+    });
+  });
+
   describe('Get All Milestones', () => {
     it('Fails if the organization ID is wrong', async () => {
       await expect(

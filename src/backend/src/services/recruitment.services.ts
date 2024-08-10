@@ -74,7 +74,7 @@ export default class RecruitmentServices {
     });
 
     if (!organizationId) {
-      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+      throw new NotFoundException('Organization', organizationId);
     }
 
     return allFaqs;
