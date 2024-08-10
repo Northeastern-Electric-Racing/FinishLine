@@ -83,7 +83,7 @@ export default class RecruitmentServices {
     });
 
     if (!organization) {
-      throw new HttpException(401, `Organization with id ${organizationId} doesn't exist`);
+      throw new NotFoundException('Organization', organizationId);
     }
 
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
