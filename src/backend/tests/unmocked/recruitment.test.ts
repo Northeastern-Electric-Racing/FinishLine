@@ -214,6 +214,19 @@ describe('Recruitment Tests', () => {
       ).rejects.toThrow(new DeletedException('Milestone', testMilestone.milestoneId));
     });
 
+    it('Fails if organization doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.createMilestone(
+            await createTestUser(batmanAppAdmin, orgId),
+            'name',
+            'description',
+            new Date(),
+            '1'
+          )
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
+    });
+
     it('Succeeds and deletes milestone', async () => {
       const testSuperman = await createTestUser(supermanAdmin, orgId);
       const testMilestone1 = await createTestMilestone(testSuperman, orgId);
