@@ -117,7 +117,7 @@ export default class RecruitmentServices {
    */
   static async getAllFaqs(organizationId: string) {
     const organization = await prisma.organization.findUnique({
-      where: { organizationId }
+      where: { organizationId, dateDeleted: null }
     });
 
     if (!organization) {
