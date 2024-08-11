@@ -1,7 +1,6 @@
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useHistoryState } from '../../../hooks/misc.hooks';
 import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
 import { exampleAppAdminUser } from '../../../tests/test-support/test-data/users.stub';
 import { NERButton } from '../../../components/NERButton';
