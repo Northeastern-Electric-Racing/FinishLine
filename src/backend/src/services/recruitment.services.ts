@@ -116,13 +116,17 @@ export default class RecruitmentServices {
    * @returns all the faqs from the given organization
    */
   static async getAllFaqs(organizationId: string) {
-    const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
+    const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
 
-    if (!organizationId) {
+    if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
+
+    const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { organizationId }
+    });
 
     return allFaqs;
   }

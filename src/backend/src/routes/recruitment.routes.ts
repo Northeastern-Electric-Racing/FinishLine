@@ -37,6 +37,4 @@ recruitmentRouter.post(
 
 recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs);
 
-recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
-
 export default recruitmentRouter;
