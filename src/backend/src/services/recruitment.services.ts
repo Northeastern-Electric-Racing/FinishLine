@@ -1,7 +1,13 @@
 import { User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  InvalidOrganizationException,
+  NotFoundException
+} from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
 export default class RecruitmentServices {
@@ -69,7 +75,12 @@ export default class RecruitmentServices {
    * @param organizationId organization Id of the milestone
    */
   static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string): Promise<void> {
-    if (!organizationId) throw new NotFoundException('Organization', organizationId);
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
 
     if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete milestone');
