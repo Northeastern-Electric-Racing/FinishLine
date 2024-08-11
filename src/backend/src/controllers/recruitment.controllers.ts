@@ -39,4 +39,17 @@ export default class RecruitmentController {
       next(error);
     }
   }
+
+  static async deleteFaq(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { faqId } = req.params;
+      const deleter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      await RecruitmentServices.deleteFaq(deleter, faqId, organizationId);
+      res.status(200).json({ message: `Successfully deleted FAQ with id ${faqId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

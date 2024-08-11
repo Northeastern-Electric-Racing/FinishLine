@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 
 export default class RecruitmentServices {
@@ -89,6 +89,37 @@ export default class RecruitmentServices {
         organizationId,
         userCreatedId: submitter.userId
       }
+    });
+
+    return faq;
+  }
+
+  /**
+   * Deletes an FAQ with the given organization Id and FAQ Id
+   * @param deleter a user who is making this request
+   * @param organizationId the organization Id of the FAQ
+   */
+  static async deleteFaq(deleter: User, frequentlyAskedQuestionId: string, organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete an faq');
+
+    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { frequentlyAskedQuestionId } });
+
+    if (!faq) throw new NotFoundException('Faq', frequentlyAskedQuestionId);
+
+    if (faq.dateDeleted) throw new DeletedException('Faq', frequentlyAskedQuestionId);
+
+    await prisma.frequentlyAskedQuestion.update({
+      where: { frequentlyAskedQuestionId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
 
     return faq;

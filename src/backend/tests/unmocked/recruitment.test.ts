@@ -1,7 +1,21 @@
+import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
+import {
+  batmanAppAdmin,
+  wonderwomanGuest,
+  supermanAdmin,
+  member,
+  theVisitorGuest,
+  flashAdmin,
+  alfred
+} from '../test-data/users.test-data';
+import { createTestFaq, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
@@ -113,6 +127,64 @@ describe('Recruitment Tests', () => {
 
       expect(result.question).toEqual('question');
       expect(result.answer).toEqual('answer');
+    });
+  });
+
+  describe('Delete FAQ', () => {
+    it('Fails if user is not an admin', async () => {
+      const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
+      await expect(
+        async () =>
+          await RecruitmentServices.deleteFaq(
+            await createTestUser(theVisitorGuest, orgId),
+            testFaq.frequentlyAskedQuestionId,
+            orgId
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete an faq'));
+    });
+
+    it('Fails if organization doesn`t exist', async () => {
+      const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
+      await expect(
+        async () =>
+          await RecruitmentServices.deleteFaq(
+            await createTestUser(supermanAdmin, orgId),
+            testFaq.frequentlyAskedQuestionId,
+            '2'
+          )
+      ).rejects.toThrow(new NotFoundException('Organization', `2`));
+    });
+
+    it('Fails if faq doesn`t exist', async () => {
+      await expect(
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(batmanAppAdmin, orgId), '1', orgId)
+      ).rejects.toThrow(new NotFoundException('Faq', '1'));
+    });
+
+    it('Fails if faq is already deleted', async () => {
+      const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
+      await RecruitmentServices.deleteFaq(await createTestUser(flashAdmin, orgId), testFaq.frequentlyAskedQuestionId, orgId);
+
+      await expect(
+        async () =>
+          await RecruitmentServices.deleteFaq(
+            await createTestUser(supermanAdmin, orgId),
+            testFaq.frequentlyAskedQuestionId,
+            orgId
+          )
+      ).rejects.toThrow(new DeletedException('Faq', testFaq.frequentlyAskedQuestionId));
+    });
+
+    it('Succeeds and deletes an FAQ', async () => {
+      const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
+
+      await RecruitmentServices.deleteFaq(await createTestUser(alfred, orgId), testFaq.frequentlyAskedQuestionId, orgId);
+
+      const deletedTestFaq = await prisma.frequentlyAskedQuestion.findUnique({
+        where: { frequentlyAskedQuestionId: testFaq.frequentlyAskedQuestionId }
+      });
+
+      expect(deletedTestFaq?.dateDeleted).not.toBe(null);
     });
   });
 });

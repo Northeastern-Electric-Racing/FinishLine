@@ -22,6 +22,8 @@ recruitmentRouter.post(
   RecruitmentController.createFaq
 );
 
+recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
+
 recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
 
 export default recruitmentRouter;
