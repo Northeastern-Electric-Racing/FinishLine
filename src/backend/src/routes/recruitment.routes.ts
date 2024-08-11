@@ -5,6 +5,9 @@ import RecruitmentController from '../controllers/recruitment.controllers';
 
 const recruitmentRouter = express.Router();
 
+/* Milestone Section */
+recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
+
 recruitmentRouter.post(
   '/milestone/create',
   nonEmptyString(body('name')),
@@ -24,5 +27,13 @@ recruitmentRouter.post(
 );
 
 recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
+/* FAQ Section */
+recruitmentRouter.post(
+  '/faq/create',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  validateInputs,
+  RecruitmentController.createFaq
+);
 
 export default recruitmentRouter;
