@@ -1,14 +1,42 @@
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { CreateFAQPayload } from '../../../hooks/recruitment.hooks';
+import { FaqPayload, useAllMilestones } from '../../../hooks/recruitment.hooks';
+import { useHistoryState } from '../../../hooks/misc.hooks';
+import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
+import { batmanAppAdmin } from '../../../../../backend/tests/test-data/users.test-data';
+import { exampleAppAdminUser } from '../../../tests/test-support/test-data/users.stub';
+import { NERButton } from '../../../components/NERButton';
 
-interface FAQsTableProps {
-  faqs: CreateFAQPayload[];
-}
+const FAQsTable = () => {
+  const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
+  const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
+  // const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFAQs();
 
-const FAQsTable: React.FC<FAQsTableProps> = ({ faqs }) => {
-  const FAQsRows = faqs.map((faq, index) => (
+  // placeholder until endpoints are completed
+  const faqs: FrequentlyAskedQuestion[] = [
+    {
+      faqId: '1',
+      userCreated: exampleAppAdminUser,
+      dateCreated: new Date(),
+      question: 'Test quesiton 1?',
+      answer: '1'
+    },
+    {
+      question: 'Test question 2?',
+      answer: '2',
+      userCreated: exampleAppAdminUser,
+      dateCreated: new Date(),
+      faqId: '2'
+    }
+  ];
+
+  // if (!faqs || faqsIsLoading) return <LoadingIndicator />;
+  // if (faqsIsError) return <ErrorPage message={faqsError.message} />;
+
+  const FAQsRows = faqs.map((faq: FrequentlyAskedQuestion, index: number) => (
     <TableRow>
       <TableCell
         align="left"
@@ -71,6 +99,16 @@ const FAQsTable: React.FC<FAQsTableProps> = ({ faqs }) => {
         </TableHead>
         <TableBody>{FAQsRows}</TableBody>
       </MuiTable>
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
+        <NERButton
+          variant="contained"
+          onClick={() => {
+            setCreateModalShow(true);
+          }}
+        >
+          Add FAQ
+        </NERButton>
+      </Box>
     </Box>
   );
 };

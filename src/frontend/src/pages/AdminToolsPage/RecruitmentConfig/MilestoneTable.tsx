@@ -2,13 +2,27 @@ import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typo
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Milestone } from 'shared/src/types/milestone-types';
+import CreateMilestoneFormModal from './CreateMilestoneFormModal';
+import EditMilestoneFormModal from './EditMilestoneFormModal';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useHistoryState } from '../../../hooks/misc.hooks';
+import { useAllMilestones } from '../../../hooks/recruitment.hooks';
+import ErrorPage from '../../ErrorPage';
+import { NERButton } from '../../../components/NERButton';
 
-interface MilestoneTableProps {
-  milestones: Milestone[];
-  setEditingMilestone: (value: Milestone | undefined) => void;
-}
+const MilestoneTable = () => {
+  const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
+  const [milestoneEditing, setMilestoneEditing] = useHistoryState<Milestone | undefined>('', undefined);
+  const {
+    isLoading: milestonesIsLoading,
+    isError: milestonesIsError,
+    error: milestonesError,
+    data: milestones
+  } = useAllMilestones();
 
-const MilestoneTable: React.FC<MilestoneTableProps> = ({ milestones, setEditingMilestone }) => {
+  if (!milestones || milestonesIsLoading) return <LoadingIndicator />;
+  if (milestonesIsError) return <ErrorPage message={milestonesError.message} />;
+
   const sortedMilestones = milestones.sort((a, b) => new Date(a.dateOfEvent).getTime() - new Date(b.dateOfEvent).getTime());
   const milestoneRows = sortedMilestones.map((milestone, index) => (
     <TableRow>
@@ -39,7 +53,7 @@ const MilestoneTable: React.FC<MilestoneTableProps> = ({ milestones, setEditingM
       >
         <Typography sx={{ maxWidth: 300 }}>{milestone.description}</Typography>
         <Box sx={{ display: 'flex' }}>
-          <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setEditingMilestone(milestone)}>
+          <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setMilestoneEditing(milestone)}>
             <EditIcon />
           </Button>
           <Button sx={{ p: 0.5, color: 'white' }}>
@@ -52,6 +66,14 @@ const MilestoneTable: React.FC<MilestoneTableProps> = ({ milestones, setEditingM
 
   return (
     <Box>
+      <CreateMilestoneFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      {milestoneEditing && (
+        <EditMilestoneFormModal
+          open={!!milestoneEditing}
+          handleClose={() => setMilestoneEditing(undefined)}
+          milestone={milestoneEditing}
+        />
+      )}
       <MuiTable>
         <TableHead>
           <TableRow>
@@ -84,6 +106,16 @@ const MilestoneTable: React.FC<MilestoneTableProps> = ({ milestones, setEditingM
         </TableHead>
         <TableBody>{milestoneRows}</TableBody>
       </MuiTable>
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
+        <NERButton
+          variant="contained"
+          onClick={() => {
+            setCreateModalShow(true);
+          }}
+        >
+          Add Milestone
+        </NERButton>
+      </Box>
     </Box>
   );
 };

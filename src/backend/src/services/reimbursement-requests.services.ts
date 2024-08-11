@@ -476,7 +476,7 @@ export default class ReimbursementRequestService {
 
     await sendMailToAdvisor(mailOptions.subject, mailOptions.text, organization.advisor);
 
-    reimbursementRequests.forEach((reimbursementRequest) => {
+    reimbursementRequests.forEach((reimbursementRequest) => { 
       prisma.reimbursement_Status.create({
         data: {
           type: Reimbursement_Status_Type.ADVISOR_APPROVED,

@@ -17,7 +17,7 @@ import { useState } from 'react';
 import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
-import AdminToolsRecruitmentTab from './AdminToolRecruitmentTab';
+import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -90,7 +90,7 @@ const AdminToolsPage: React.FC = () => {
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : tabIndex === 3 ? (
-        <AdminToolsRecruitmentTab />
+        <AdminToolsRecruitmentConfig />
       ) : (
         <Box>
           <Box pb={2}>

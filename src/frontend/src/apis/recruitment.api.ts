@@ -1,15 +1,15 @@
 import axios from '../utils/axios';
-import { CreateMilestonePayload } from '../hooks/recruitment.hooks';
+import { MilestonePayload } from '../hooks/recruitment.hooks';
 import { apiUrls } from '../utils/urls';
 import { Milestone } from 'shared/src/types/milestone-types';
 
-export const createMilestone = (payload: CreateMilestonePayload) => {
+export const createMilestone = (payload: MilestonePayload) => {
   return axios.post(apiUrls.milestoneCreate(), {
     ...payload
   });
 };
 
-export const editMilestone = (payload: CreateMilestonePayload, id: string) => {
+export const editMilestone = (payload: MilestonePayload, id: string) => {
   return axios.post(apiUrls.milestoneEdit(id), {
     ...payload
   });

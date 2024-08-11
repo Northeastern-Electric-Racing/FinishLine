@@ -8,7 +8,7 @@ import { Box } from '@mui/system';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 import { Milestone } from 'shared/src/types/milestone-types';
-import { CreateMilestonePayload } from '../../../hooks/recruitment.hooks';
+import { MilestonePayload } from '../../../hooks/recruitment.hooks';
 import { useState } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 
@@ -16,7 +16,7 @@ interface MilestoneFormModalProps {
   open: boolean;
   handleClose: () => void;
   defaultValues?: Milestone;
-  onSubmit: (data: CreateMilestonePayload) => Promise<Milestone>;
+  onSubmit: (data: MilestonePayload) => Promise<Milestone>;
 }
 
 const schema = yup.object().shape({
@@ -28,7 +28,7 @@ const schema = yup.object().shape({
 const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClose, defaultValues, onSubmit }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-  const onFormSubmit = async (data: CreateMilestonePayload) => {
+  const onFormSubmit = async (data: MilestonePayload) => {
     await onSubmit(data);
     handleClose();
   };
@@ -66,7 +66,7 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
     <NERFormModal
       open={open}
       onHide={handleCancel}
-      title="New Milestone"
+      title={defaultValues ? 'Edit Milestone' : 'New Milestone'}
       reset={() => reset({ name: '', description: '', dateOfEvent: new Date() })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
@@ -74,7 +74,7 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
       showCloseButton
     >
       <FormControl fullWidth>
-        <FormLabel sx={{ alignSelf: 'start' }}>Milestone Date</FormLabel>
+        <FormLabel sx={{ alignSelf: 'start' }}>Milestone Date*</FormLabel>
         <Controller
           name="dateOfEvent"
           control={control}
@@ -91,9 +91,7 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
                 textField: {
                   error: !!errors.dateOfEvent,
                   helperText: errors.dateOfEvent?.message,
-                  onClick: () => setDatePickerOpen(true),
-                  inputProps: { readOnly: true },
-                  fullWidth: true
+                  onClick: () => setDatePickerOpen(true)
                 }
               }}
             />
