@@ -5,7 +5,6 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   HttpException,
-  InvalidOrganizationException,
   NotFoundException
 } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
