@@ -1,6 +1,11 @@
 import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
 import { createTestMilestone, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
@@ -222,32 +227,31 @@ describe('Recruitment Tests', () => {
       expect(updatedTestMilestone1?.dateDeleted).not.toBe(null);
     });
 
-  describe('Create FAQ', () => {
-    it('Fails if user is not an admin', async () => {
-      await expect(
-        async () => await RecruitmentServices.createFaq(await createTestUser(member, orgId), 'question', 'answer', orgId)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
-    });
+    describe('Create FAQ', () => {
+      it('Fails if user is not an admin', async () => {
+        await expect(
+          async () => await RecruitmentServices.createFaq(await createTestUser(member, orgId), 'question', 'answer', orgId)
+        ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
+      });
 
-    it('Fails if organization doesn`t exist', async () => {
-      await expect(
-        async () =>
-          await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question', 'answer', '5')
-      ).rejects.toThrow(new NotFoundException('Organization', `5`));
-    });
+      it('Fails if organization doesn`t exist', async () => {
+        await expect(
+          async () =>
+            await RecruitmentServices.createFaq(await createTestUser(batmanAppAdmin, orgId), 'question', 'answer', '5')
+        ).rejects.toThrow(new NotFoundException('Organization', `5`));
+      });
 
-    it('Succeeds and creates an FAQ', async () => {
-      const result = await RecruitmentServices.createFaq(
-        await createTestUser(batmanAppAdmin, orgId),
-        'question',
-        'answer',
-        orgId
-      );
+      it('Succeeds and creates an FAQ', async () => {
+        const result = await RecruitmentServices.createFaq(
+          await createTestUser(batmanAppAdmin, orgId),
+          'question',
+          'answer',
+          orgId
+        );
 
-      expect(result.question).toEqual('question');
-      expect(result.answer).toEqual('answer');
+        expect(result.question).toEqual('question');
+        expect(result.answer).toEqual('answer');
+      });
     });
   });
-
-});
 });
