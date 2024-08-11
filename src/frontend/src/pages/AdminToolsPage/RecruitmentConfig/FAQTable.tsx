@@ -1,18 +1,14 @@
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FaqPayload, useAllMilestones } from '../../../hooks/recruitment.hooks';
 import { useHistoryState } from '../../../hooks/misc.hooks';
 import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
-import { batmanAppAdmin } from '../../../../../backend/tests/test-data/users.test-data';
 import { exampleAppAdminUser } from '../../../tests/test-support/test-data/users.stub';
 import { NERButton } from '../../../components/NERButton';
 
 const FAQsTable = () => {
-  const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
-  const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
+  // const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
+  // const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
   // const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFAQs();
 
   // placeholder until endpoints are completed
@@ -103,7 +99,7 @@ const FAQsTable = () => {
         <NERButton
           variant="contained"
           onClick={() => {
-            setCreateModalShow(true);
+            // setCreateModalShow(true);
           }}
         >
           Add FAQ
