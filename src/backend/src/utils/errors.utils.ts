@@ -137,4 +137,5 @@ export type ExceptionObjectNames =
   | 'Description Bullet Type'
   | 'Organization'
   | 'Car'
-  | 'Milestone';
+  | 'Milestone'
+  | 'Faq';
