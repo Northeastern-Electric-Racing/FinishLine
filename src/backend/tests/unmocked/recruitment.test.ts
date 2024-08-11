@@ -15,6 +15,18 @@ describe('Recruitment Tests', () => {
   });
 
   describe('Edit FAQ', () => {
+    it('Fails if organization doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editFAQ(
+            'What is your return policy?',
+            'You can return any item within 30 days of purchase.',
+            await createTestUser(wonderwomanGuest, orgId),
+            '1',
+            'faq123'
+          )
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
+    });
     it('Fails if user is not an admin', async () => {
       await expect(
         async () =>
