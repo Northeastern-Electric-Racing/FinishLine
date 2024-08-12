@@ -117,9 +117,10 @@ export default class RecruitmentServices {
    */
   static async getAllFaqs(organizationId: string) {
     const organization = await prisma.organization.findUnique({
-      where: { organizationId, dateDeleted: null }
-      
-       if (!organization) {
+      where: { organizationId }
+    });
+
+    if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
@@ -128,7 +129,7 @@ export default class RecruitmentServices {
 
     return allFaqs;
   }
-      
+
   /*
    * Edits the FAQ
    * @param question the updated question value
@@ -152,7 +153,7 @@ export default class RecruitmentServices {
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
-      
+
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
 
