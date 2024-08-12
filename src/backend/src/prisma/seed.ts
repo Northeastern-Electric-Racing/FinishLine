@@ -31,7 +31,7 @@ import UsersService from '../services/users.services';
 import { transformDate } from '../utils/datetime.utils';
 import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
-import OrganizationsService from '../services/organizations.service';
+import OrganizationsService from '../services/organizations.services';
 
 const prisma = new PrismaClient();
 

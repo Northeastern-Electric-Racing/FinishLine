@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { AvailabilityCreateArgs } from './design-review-types';
+
 export interface User {
   userId: string;
   firstName: string;
@@ -92,7 +94,7 @@ export interface UserWithScheduleSettings {
 export interface SetUserScheduleSettingsArgs {
   personalGmail: string;
   personalZoomLink: string;
-  availability: number[];
+  availability: AvailabilityCreateArgs[];
 }
 
 export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {
