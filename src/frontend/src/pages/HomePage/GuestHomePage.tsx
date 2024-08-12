@@ -2,7 +2,7 @@ import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import ImageWithButton from './components/ImageWithButton';
-import React from 'react';
+import React, { useEffect } from 'react';
 import emitter from '../../app/EventBus';
 
 interface GuestHomePageProps {
@@ -11,6 +11,12 @@ interface GuestHomePageProps {
 }
 
 const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
+  useEffect(() => {
+    emitter.emit('memberHomePage', false);
+    setOnMemberHomePage(false);
+    localStorage.setItem('memberHomePage', JSON.stringify(false));
+  }, []);
+
   const handleClick = () => {
     emitter.emit('memberHomePage', true);
     setOnMemberHomePage(true);
