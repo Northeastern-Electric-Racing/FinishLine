@@ -6,11 +6,8 @@ import {
   HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
+import { createTestMilestone, createTestFAQ, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
-import { createTestMilestone, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
-import { createTestFAQ, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
