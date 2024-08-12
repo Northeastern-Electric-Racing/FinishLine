@@ -31,6 +31,7 @@ import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { getLinkTypeQueryArgs } from '../prisma-query-args/link-types.query-args';
+import { validateOrganizationId } from '../../tests/test-utils';
 
 export default class ProjectsService {
   /**
@@ -495,13 +496,7 @@ export default class ProjectsService {
     if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
       throw new AccessDeniedException('Only admins can create link types');
 
-    const organization = await prisma.organization.findUnique({
-      where: {
-        organizationId
-      }
-    });
-
-    if (!organization) throw new NotFoundException('Organization', organizationId);
+    validateOrganizationId(organizationId);
 
     const existingLinkType = await prisma.link_Type.findUnique({
       where: { uniqueLinkType: { name, organizationId } }

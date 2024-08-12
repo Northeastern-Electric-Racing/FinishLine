@@ -3,6 +3,7 @@ import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
+import { validateOrganizationId } from '../../tests/test-utils';
 
 export default class RecruitmentServices {
   /**
@@ -21,13 +22,7 @@ export default class RecruitmentServices {
     dateOfEvent: Date,
     organizationId: string
   ) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
+    validateOrganizationId(organizationId);
 
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create a milestone');
@@ -53,13 +48,7 @@ export default class RecruitmentServices {
     milestoneId: string,
     organizationId: string
   ) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
+    validateOrganizationId(organizationId);
 
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create a milestone');
@@ -99,13 +88,11 @@ export default class RecruitmentServices {
    * @returns all the milestones from the given organization
    */
   static async getAllMilestones(organizationId: string) {
-    const allMilestones = await prisma.milestone.findMany({
-      where: { organizationId }
-    });
+    validateOrganizationId(organizationId);
 
-    if (!organizationId) {
-      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
-    }
+    const allMilestones = await prisma.milestone.findMany({
+      where: { organizationId, dateDeleted: null }
+    });
 
     return allMilestones;
   }
@@ -119,13 +106,7 @@ export default class RecruitmentServices {
    * @returns A newly created FAQ
    */
   static async createFaq(submitter: User, question: string, answer: string, organizationId: string) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
+    validateOrganizationId(organizationId);
 
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create an faq');

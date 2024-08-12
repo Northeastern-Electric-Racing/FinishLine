@@ -5,6 +5,7 @@ import prisma from '../prisma/prisma';
 import { carTransformer } from '../transformers/cars.transformer';
 import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
+import { validateOrganizationId } from '../../tests/test-utils';
 
 export default class CarsService {
   static async getAllCars(organizationId: string) {
@@ -24,15 +25,7 @@ export default class CarsService {
     if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create a car');
 
-    const organization = await prisma.organization.findUnique({
-      where: {
-        organizationId
-      }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
+    validateOrganizationId(organizationId);
 
     const numExistingCars = await prisma.car.count({
       where: {
