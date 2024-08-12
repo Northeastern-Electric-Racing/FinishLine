@@ -112,7 +112,7 @@ export default class RecruitmentServices {
 
   /**
    * Deletes the milestone for the given milestoneId and organizationId
-   * @param deleter the name of the user deleting the milestone
+   * @param deleter the user deleting the milestone
    * @param milestoneId milestone id for the specific milestone
    * @param organizationId organization Id of the milestone
    */
