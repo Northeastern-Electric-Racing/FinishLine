@@ -226,6 +226,22 @@ export const createTestWorkPackageTemplate = async (user: User, organizationId?:
   return workPackageTemplate;
 };
 
+export const createTestMilestone = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const milestone = await prisma.milestone.create({
+    data: {
+      name: 'Milestone 1',
+      description: 'Description',
+      dateOfEvent: new Date('03/03/2024'),
+      organizationId,
+      userCreatedId: user.userId
+    }
+  });
+  return milestone;
+};
+
 export const createTestLinkType = async (user: User, organizationId?: string) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
   if (!organizationId) throw new Error('Failed to create organization');

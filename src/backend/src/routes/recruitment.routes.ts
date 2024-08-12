@@ -17,6 +17,8 @@ recruitmentRouter.post(
   RecruitmentController.createMilestone
 );
 
+recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController.deleteMilestone);
+
 recruitmentRouter.post(
   '/milestone/:milestoneId/edit',
   nonEmptyString(body('name')),
