@@ -1,7 +1,7 @@
 import { Prisma, User, User_Settings } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { HttpException, NotFoundException } from './errors.utils';
-import { isWithinSameWeek, PermissionCheck, Role, RoleEnum } from 'shared';
+import { AvailabilityCreateArgs, isSameDay, PermissionCheck, Role, RoleEnum } from 'shared';
 import { UserWithId } from './teams.utils';
 import { UserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
@@ -110,39 +110,41 @@ export const areUsersinList = (users: User[], userList: User[]): boolean => {
 };
 
 export const updateUserAvailability = async (
-  availability: number[],
+  availabilities: AvailabilityCreateArgs[],
   userSettings: Prisma.Schedule_SettingsGetPayload<UserScheduleSettingsQueryArgs>,
-  submitter: User,
-  dateToCheckFor: Date
+  submitter: User
 ) => {
-  availability.forEach((time) => {
-    if (time < 0 || time > 83) {
-      throw new HttpException(400, 'Availability times have to be in range 0-83');
-    }
-  });
-  const availabilityInSameWeek = userSettings.availabilities.filter((availability) =>
-    isWithinSameWeek(availability.dateSet, dateToCheckFor)
-  );
+  await Promise.all(
+    availabilities.map(async (availability) => {
+      if (availability.availability.some((time) => time < 0 || time > 11)) {
+        throw new HttpException(400, 'Availability times have to be in range 0-11');
+      }
 
-  if (availabilityInSameWeek.length > 0) {
-    await prisma.availability.update({
-      where: { availabilityId: availabilityInSameWeek[0].availabilityId },
-      data: {
-        availability,
-        dateSet: dateToCheckFor
-      }
-    });
-  } else {
-    await prisma.availability.create({
-      data: {
-        availability,
-        dateSet: dateToCheckFor,
-        scheduleSettings: {
-          connect: {
-            userId: submitter.userId
+      const availabilityAlreadyExists = userSettings.availabilities.filter((existingAvailability) =>
+        isSameDay(existingAvailability.dateSet, availability.dateSet)
+      );
+
+      if (availabilityAlreadyExists.length > 0) {
+        await prisma.availability.update({
+          where: { availabilityId: availabilityAlreadyExists[0].availabilityId },
+          data: {
+            availability: availability.availability,
+            dateSet: availability.dateSet
           }
-        }
+        });
+      } else {
+        await prisma.availability.create({
+          data: {
+            availability: availability.availability,
+            dateSet: availability.dateSet,
+            scheduleSettings: {
+              connect: {
+                userId: submitter.userId
+              }
+            }
+          }
+        });
       }
-    });
-  }
+    })
+  );
 };

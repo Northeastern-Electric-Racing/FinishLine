@@ -10,13 +10,16 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { NERButton } from '../../../components/NERButton';
 import { ScheduleSettingsFormInput, ScheduleSettingsPayload } from './UserScheduleSettings';
 import AvailabilityEditModal from './Availability/AvailabilityEditModal';
-import { useState } from 'react';
-import { SetUserScheduleSettingsArgs } from 'shared';
+import { useEffect, useState } from 'react';
+import { Availability, SetUserScheduleSettingsArgs } from 'shared';
 import ExternalLink from '../../../components/ExternalLink';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { deeplyCopy } from 'shared/src/utils';
+import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 interface UserScheduleSettingsEditProps {
   onSubmit: (data: ScheduleSettingsPayload) => Promise<void>;
+  totalAvailabilities: Availability[];
   defaultValues?: SetUserScheduleSettingsArgs;
 }
 
@@ -25,9 +28,13 @@ const schema = yup.object().shape({
   personalZoomLink: yup.string().optional()
 });
 
-const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onSubmit, defaultValues }) => {
+const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
+  onSubmit,
+  defaultValues,
+  totalAvailabilities
+}) => {
   const [editAvailabilityOpen, setEditAvailability] = useState(false);
-  const [availabilities, setAvailabilities] = useState<number[]>(defaultValues?.availability || []);
+  const [availabilities, setAvailabilities] = useState<Map<number, Availability>>(new Map());
   const toast = useToast();
 
   const onFormSubmit = (data: ScheduleSettingsFormInput) => {
@@ -35,13 +42,27 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
       toast.error('Invalid Zoom Link Format. Must start with "https://zoom.us/j/"');
       return;
     }
-    onSubmit({ availability: availabilities, ...data });
+    onSubmit({ availability: Array.from(availabilities.values()), ...data });
   };
+
+  useEffect(() => {
+    if (defaultValues?.availability && availabilities.size === 0) {
+      const availabilityMap = new Map<number, Availability>();
+      defaultValues.availability.forEach((availability) => {
+        availabilityMap.set(
+          availability.dateSet.getTime(),
+          deeplyCopy(availability, availabilityTransformer) as Availability
+        );
+      });
+      setAvailabilities(availabilityMap);
+    }
+  }, [defaultValues?.availability, availabilities]);
 
   const {
     handleSubmit,
     control,
-    formState: { errors }
+    formState: { errors },
+    watch
   } = useForm<ScheduleSettingsFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -50,16 +71,27 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
     }
   });
 
+  const onAvailabilitySave = () => {
+    onSubmit({
+      availability: Array.from(availabilities.values()),
+      personalGmail: watch('personalGmail'),
+      personalZoomLink: watch('personalZoomLink')
+    });
+    setEditAvailability(false);
+  };
+
   return (
     <form id={'update-user-schedule-settings'} onSubmit={handleSubmit(onFormSubmit)}>
       <Grid container spacing={2}>
         <AvailabilityEditModal
           open={editAvailabilityOpen}
           onHide={() => setEditAvailability(false)}
-          onSubmit={() => setEditAvailability(false)}
+          onSubmit={onAvailabilitySave}
           header="Edit Availability"
-          availabilites={availabilities}
-          setAvailabilities={setAvailabilities}
+          confirmedAvailabilities={availabilities}
+          totalAvailabilities={totalAvailabilities}
+          setConfirmedAvailabilities={setAvailabilities}
+          initialDate={new Date()}
         />
         <Grid item sx={{ mb: 1 }} xs={12} sm={4}>
           <FormControl fullWidth>
@@ -108,7 +140,12 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({ onS
           </FormControl>
         </Grid>
         <Grid item xs={12} sm={2} display={'flex'} alignItems={'center'} justifyContent={'end'}>
-          <NERButton variant="contained" onClick={() => setEditAvailability(true)}>
+          <NERButton
+            variant="contained"
+            onClick={() => {
+              setEditAvailability(true);
+            }}
+          >
             Edit Availability
           </NERButton>
         </Grid>

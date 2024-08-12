@@ -9,8 +9,8 @@ import { User } from '@prisma/client';
  */
 export const validateMeetingTimes = (nums: number[]): number[] => {
   for (let i = 0; i < nums.length; i++) {
-    if (nums[i] < 0 || nums[i] > 83) {
-      throw new HttpException(400, 'Meeting times have to be in range 0-83');
+    if (nums[i] < 0 || nums[i] > 11) {
+      throw new HttpException(400, 'Meeting times have to be in range 0-11');
     }
     if (i > 0 && nums[i] !== nums[i - 1] + 1) {
       throw new HttpException(400, 'Meeting times have to be consecutive');
