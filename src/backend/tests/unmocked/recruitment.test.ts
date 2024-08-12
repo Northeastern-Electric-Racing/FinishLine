@@ -3,7 +3,6 @@ import RecruitmentServices from '../../src/services/recruitment.services';
 import {
   AccessDeniedAdminOnlyException,
   DeletedException,
-  HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
 import {
@@ -25,6 +24,60 @@ describe('Recruitment Tests', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('Edit FAQ', () => {
+    it('Fails if organization doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editFAQ(
+            'What is your return policy?',
+            'You can return any item within 30 days of purchase.',
+            await createTestUser(wonderwomanGuest, orgId),
+            '1',
+            'faq123'
+          )
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
+    });
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editFAQ(
+            'What is your return policy?',
+            'You can return any item within 30 days of purchase.',
+            await createTestUser(wonderwomanGuest, orgId),
+            orgId,
+            'faq123'
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit frequently asked questions'));
+    });
+
+    it('Fails if FAQ does not exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editFAQ(
+            'What is your return policy?',
+            'You can return any item within 30 days of purchase.',
+            await createTestUser(batmanAppAdmin, orgId),
+            orgId,
+            'nonExistentFaqId'
+          )
+      ).rejects.toThrow(new NotFoundException('Faq', 'nonExistentFaqId'));
+    });
+
+    it('Succeeds and edits an FAQ', async () => {
+      await createTestFAQ(orgId, 'faq123');
+      const result = await RecruitmentServices.editFAQ(
+        'What is your return policy?',
+        'You can return any item within 60 days of purchase.',
+        await createTestUser(batmanAppAdmin, orgId),
+        orgId,
+        'faq123'
+      );
+
+      expect(result.question).toEqual('What is your return policy?');
+      expect(result.answer).toEqual('You can return any item within 60 days of purchase.');
+    });
   });
 
   describe('Create Milestone', () => {
@@ -51,7 +104,7 @@ describe('Recruitment Tests', () => {
             new Date(),
             '1'
           )
-      ).rejects.toThrow(new HttpException(400, `Organization with id 1 doesn't exist`));
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
     });
 
     it('Succeeds and creates a milestone', async () => {
@@ -69,6 +122,101 @@ describe('Recruitment Tests', () => {
     });
   });
 
+  describe('Edit Milestone', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editMilestone(
+            await createTestUser(wonderwomanGuest, orgId),
+            'name',
+            'description',
+            new Date(),
+            '1',
+            orgId
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a milestone'));
+    });
+
+    it('Fails if organization doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editMilestone(
+            await createTestUser(batmanAppAdmin, orgId),
+            'name',
+            'description',
+            new Date(),
+            '1',
+            '1'
+          )
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
+    });
+
+    it('Fails if milestone doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editMilestone(
+            await createTestUser(batmanAppAdmin, orgId),
+            'name',
+            'description',
+            new Date('11/12/24'),
+            '1',
+            orgId
+          )
+      ).rejects.toThrow(new NotFoundException('Milestone', 1));
+    });
+
+    it('Fails if milestone is deleted', async () => {
+      const milestone = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/12/24'),
+        orgId
+      );
+
+      await prisma.milestone.delete({
+        where: {
+          milestoneId: milestone.milestoneId
+        }
+      });
+
+      await expect(
+        async () =>
+          await RecruitmentServices.editMilestone(
+            await createTestUser(supermanAdmin, orgId),
+            'name',
+            'description',
+            new Date('11/12/24'),
+            milestone.milestoneId,
+            orgId
+          )
+      ).rejects.toThrow(new NotFoundException('Milestone', milestone.milestoneId));
+    });
+
+    it('Succeeds and creates a milestone', async () => {
+      const milestone = await RecruitmentServices.createMilestone(
+        await createTestUser(batmanAppAdmin, orgId),
+        'name',
+        'description',
+        new Date('11/12/24'),
+        orgId
+      );
+
+      const updatedMilestone = await RecruitmentServices.editMilestone(
+        await createTestUser(supermanAdmin, orgId),
+        'new name',
+        'new description',
+        new Date('11/14/24'),
+        milestone.milestoneId,
+        orgId
+      );
+
+      expect(updatedMilestone.name).toEqual('new name');
+      expect(updatedMilestone.description).toEqual('new description');
+      expect(updatedMilestone.dateOfEvent).toEqual(new Date('11/14/24'));
+    });
+  });
+
   describe('Get All Milestones', () => {
     it('Fails if the organization ID is wrong', async () => {
       await expect(
@@ -77,10 +225,10 @@ describe('Recruitment Tests', () => {
             await createTestUser(batmanAppAdmin, orgId),
             'name',
             'description',
-            new Date(),
+            new Date('11/11/24'),
             '55'
           )
-      ).rejects.toThrow(new HttpException(400, `Organization with id 55 doesn't exist`));
+      ).rejects.toThrow(new NotFoundException('Organization', 55));
     });
 
     it('Succeeds and gets all the milestones', async () => {
@@ -91,6 +239,7 @@ describe('Recruitment Tests', () => {
         new Date('11/11/24'),
         orgId
       );
+
       const milestone2 = await RecruitmentServices.createMilestone(
         await createTestUser(supermanAdmin, orgId),
         'name2',

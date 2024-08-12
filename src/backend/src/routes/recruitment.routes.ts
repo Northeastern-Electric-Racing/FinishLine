@@ -5,6 +5,9 @@ import RecruitmentController from '../controllers/recruitment.controllers';
 
 const recruitmentRouter = express.Router();
 
+/* Milestone Section */
+recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
+
 recruitmentRouter.post(
   '/milestone/create',
   nonEmptyString(body('name')),
@@ -15,6 +18,16 @@ recruitmentRouter.post(
 );
 
 recruitmentRouter.post(
+  '/milestone/:milestoneId/edit',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('description')),
+  isDate(body('dateOfEvent')),
+  validateInputs,
+  RecruitmentController.editMilestone
+);
+
+/* FAQ Section */
+recruitmentRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
@@ -22,8 +35,13 @@ recruitmentRouter.post(
   RecruitmentController.createFaq
 );
 
-recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
+recruitmentRouter.post(
+  '/faq/:faqId/edit',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  RecruitmentController.editFAQ
+);
 
-recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
+recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
 
 export default recruitmentRouter;
