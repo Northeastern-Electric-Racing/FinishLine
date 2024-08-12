@@ -21,7 +21,7 @@ export default class OrganizationsService {
 
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      select: { usefulLinks: { select: { linkId: true } } }
+      include: { usefulLinks: true }
     });
 
     if (!organization) {
@@ -94,7 +94,7 @@ export default class OrganizationsService {
   static async getAllUsefulLinks(organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      select: { usefulLinks: { select: { linkId: true } } }
+      include: { usefulLinks: true }
     });
 
     if (!organization) {

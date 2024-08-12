@@ -1,7 +1,8 @@
-import { WBS_Element, WBS_Element_Status } from '@prisma/client';
-import { WbsElementStatus, WbsNumber } from 'shared';
-import { AccessDeniedException } from './errors.utils';
+import { Organization, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { OrganizationPreview, WbsElementStatus, WbsNumber } from 'shared';
+import { AccessDeniedException, NotFoundException } from './errors.utils';
 import { IncomingHttpHeaders } from 'http';
+import prisma from '../prisma/prisma';
 
 export const wbsNumOf = (element: WBS_Element): WbsNumber => ({
   carNumber: element.carNumber,
@@ -16,22 +17,30 @@ export const convertStatus = (status: WBS_Element_Status): WbsElementStatus =>
     COMPLETE: WbsElementStatus.Complete
   }[status]);
 
-export const getOrganizationId = (headers: IncomingHttpHeaders): string => {
-  let { organizationid } = headers;
+export const getOrganization = async (headers: IncomingHttpHeaders): Promise<OrganizationPreview> => {
+  let { organizationId } = headers;
 
   const isProd = process.env.NODE_ENV === 'production';
 
-  if (organizationid === undefined && !isProd) {
-    organizationid = process.env.DEV_ORGANIZATION_ID;
+  if (organizationId === undefined && !isProd) {
+    organizationId = process.env.DEV_ORGANIZATION_ID;
   }
 
-  if (organizationid === undefined) {
+  if (organizationId === undefined) {
     throw new AccessDeniedException('Organization not provided');
   }
 
-  if (typeof organizationid !== 'string') {
+  if (typeof organizationId !== 'string') {
     throw new AccessDeniedException('Invalid organization ID');
   }
 
-  return organizationid;
+  const organization = await prisma.organization.findUnique({
+    where: { organizationId }
+  });
+
+  if (!organization) {
+    throw new NotFoundException('Organization', organizationId);
+  }
+
+  return organization;
 };

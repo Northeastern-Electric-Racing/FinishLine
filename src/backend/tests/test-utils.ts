@@ -363,8 +363,8 @@ export const createTestDesignReview = async () => {
   return { dr, orgId };
 };
 
-export const validateOrganizationId = (organizationId: string) => {
-  const organization = prisma.organization.findUnique({
+export const validateOrganizationId = async (organizationId: string) => {
+  const organization = await prisma.organization.findUnique({
     where: { organizationId }
   });
 
