@@ -14,7 +14,7 @@ import {
   flashAdmin,
   alfred
 } from '../test-data/users.test-data';
-import { createTestFaq, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestFaq, createTestFAQ, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
