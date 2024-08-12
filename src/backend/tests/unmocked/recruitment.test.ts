@@ -1,9 +1,8 @@
 import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
-
 import { AccessDeniedAdminOnlyException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestFAQ, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
@@ -13,6 +12,60 @@ describe('Recruitment Tests', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('Edit FAQ', () => {
+    it('Fails if organization doesn`t exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editFAQ(
+            'What is your return policy?',
+            'You can return any item within 30 days of purchase.',
+            await createTestUser(wonderwomanGuest, orgId),
+            '1',
+            'faq123'
+          )
+      ).rejects.toThrow(new NotFoundException('Organization', 1));
+    });
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editFAQ(
+            'What is your return policy?',
+            'You can return any item within 30 days of purchase.',
+            await createTestUser(wonderwomanGuest, orgId),
+            orgId,
+            'faq123'
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit frequently asked questions'));
+    });
+
+    it('Fails if FAQ does not exist', async () => {
+      await expect(
+        async () =>
+          await RecruitmentServices.editFAQ(
+            'What is your return policy?',
+            'You can return any item within 30 days of purchase.',
+            await createTestUser(batmanAppAdmin, orgId),
+            orgId,
+            'nonExistentFaqId'
+          )
+      ).rejects.toThrow(new NotFoundException('Faq', 'nonExistentFaqId'));
+    });
+
+    it('Succeeds and edits an FAQ', async () => {
+      await createTestFAQ(orgId, 'faq123');
+      const result = await RecruitmentServices.editFAQ(
+        'What is your return policy?',
+        'You can return any item within 60 days of purchase.',
+        await createTestUser(batmanAppAdmin, orgId),
+        orgId,
+        'faq123'
+      );
+
+      expect(result.question).toEqual('What is your return policy?');
+      expect(result.answer).toEqual('You can return any item within 60 days of purchase.');
+    });
   });
 
   describe('Create Milestone', () => {

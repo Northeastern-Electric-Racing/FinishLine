@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import { getOrganizationId } from '../utils/utils';
 import RecruitmentServices from '../services/recruitment.services';
+import { User } from '@prisma/client';
 
 export default class RecruitmentController {
   static async createMilestone(req: Request, res: Response, next: NextFunction) {
@@ -43,6 +44,19 @@ export default class RecruitmentController {
       const organizationId = getOrganizationId(req.headers);
       const allMilestones = await RecruitmentServices.getAllMilestones(organizationId);
       res.status(200).json(allMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editFAQ(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = getOrganizationId(req.headers);
+      const { question, answer } = req.body;
+      const { faqId } = req.params;
+      const user: User = await getCurrentUser(res);
+      const editedFAQ = await RecruitmentServices.editFAQ(question, answer, user, organizationId, faqId);
+      res.status(200).json(editedFAQ);
     } catch (error: unknown) {
       next(error);
     }
