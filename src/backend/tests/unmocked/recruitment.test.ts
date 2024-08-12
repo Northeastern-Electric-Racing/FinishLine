@@ -1,10 +1,6 @@
 import prisma from '../../src/prisma/prisma';
 import RecruitmentServices from '../../src/services/recruitment.services';
-import {
-  AccessDeniedAdminOnlyException,
-  DeletedException,
-  NotFoundException
-} from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../../src/utils/errors.utils';
 import {
   batmanAppAdmin,
   wonderwomanGuest,
