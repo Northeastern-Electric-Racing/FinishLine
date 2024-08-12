@@ -54,9 +54,10 @@ export default class RecruitmentController {
       const organizationId = getOrganizationId(req.headers);
       const allFaqs = await RecruitmentServices.getAllFaqs(organizationId);
       res.status(200).json(allFaqs);
-      } catch (error: unknown) {
+    } catch (error: unknown) {
       next(error);
     }
+  }
 
   static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
     try {
@@ -70,7 +71,7 @@ export default class RecruitmentController {
       next(error);
     }
   }
-    
+
   static async editFAQ(req: Request, res: Response, next: NextFunction) {
     try {
       const organizationId = getOrganizationId(req.headers);
