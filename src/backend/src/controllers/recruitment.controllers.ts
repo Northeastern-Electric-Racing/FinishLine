@@ -49,6 +49,19 @@ export default class RecruitmentController {
     }
   }
 
+  static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { milestoneId } = req.params;
+      const deleter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      await RecruitmentServices.deleteMilestone(deleter, milestoneId, organizationId);
+      res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editFAQ(req: Request, res: Response, next: NextFunction) {
     try {
       const organizationId = getOrganizationId(req.headers);
