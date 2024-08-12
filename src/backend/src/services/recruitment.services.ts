@@ -118,20 +118,61 @@ export default class RecruitmentServices {
   static async getAllFaqs(organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId, dateDeleted: null }
-    });
-
-    if (!organization) {
+      
+       if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
-
     const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
       where: { organizationId }
     });
 
     return allFaqs;
   }
+      
+  /*
+   * Edits the FAQ
+   * @param question the updated question value
+   * @param answer the updated answer value
+   * @param faqId the requested FAQ to be edited
+   * @param submitter the user editing the FAQ
+   * @param organizationId the organization the user is currently in
+   * @returns the updated FAQ
+   */
+  static async editFAQ(
+    question: string,
+    answer: string,
+    submitter: User,
+    organizationId: string,
+    frequentlyAskedQuestionId: string
+  ) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
 
-  /**
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+      
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
+
+    const oldFAQ = await prisma.frequentlyAskedQuestion.findUnique({
+      where: { frequentlyAskedQuestionId }
+    });
+
+    if (!oldFAQ) {
+      throw new NotFoundException('Faq', frequentlyAskedQuestionId);
+    }
+
+    const updatedFAQ = await prisma.frequentlyAskedQuestion.update({
+      where: { frequentlyAskedQuestionId },
+      data: { question, answer }
+    });
+
+    return updatedFAQ;
+  }
+
+  /*
    * Creates a new FAQ in the given organization Id
    * @param submitter a user who is making this request
    * @param question question to be displayed by the FAQ

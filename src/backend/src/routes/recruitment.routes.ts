@@ -35,6 +35,15 @@ recruitmentRouter.post(
   RecruitmentController.createFaq
 );
 
+
 recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs);
+
+recruitmentRouter.post(
+  '/faq/:faqId/edit',
+  nonEmptyString(body('question')),
+  nonEmptyString(body('answer')),
+  RecruitmentController.editFAQ
+);
+
 
 export default recruitmentRouter;
