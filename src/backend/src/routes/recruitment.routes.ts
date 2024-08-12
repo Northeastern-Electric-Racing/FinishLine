@@ -35,7 +35,6 @@ recruitmentRouter.post(
   RecruitmentController.createFaq
 );
 
-
 recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs);
 
 recruitmentRouter.post(
@@ -44,6 +43,5 @@ recruitmentRouter.post(
   nonEmptyString(body('answer')),
   RecruitmentController.editFAQ
 );
-
 
 export default recruitmentRouter;

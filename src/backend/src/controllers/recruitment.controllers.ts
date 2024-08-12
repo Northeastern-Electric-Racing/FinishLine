@@ -49,7 +49,6 @@ export default class RecruitmentController {
     }
   }
 
-
   static async getAllFaqs(req: Request, res: Response, next: NextFunction) {
     try {
       const organizationId = getOrganizationId(req.headers);
