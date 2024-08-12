@@ -83,7 +83,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
     try {
-      console.log('DATE: ', data.date);
       await mutateAsync({
         dateScheduled: data.date,
         teamTypeId: data.teamTypeId,

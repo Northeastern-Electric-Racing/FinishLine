@@ -202,7 +202,6 @@ export const useUpdateUserScheduleSettings = () => {
   return useMutation<UserScheduleSettings, Error, SetUserScheduleSettingsPayload>(
     ['users', 'schedule-settings', 'update'],
     async (settings: SetUserScheduleSettingsPayload) => {
-      console.log(settings);
       const { data } = await updateUserScheduleSettings(settings);
       return data;
     },

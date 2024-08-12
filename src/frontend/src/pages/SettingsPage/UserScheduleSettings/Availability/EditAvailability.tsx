@@ -60,7 +60,6 @@ const EditAvailability: React.FC<EditAvailabilityProps> = ({
     const newAvailabilities = getMostRecentAvailabilities(totalAvailabilities, newDate);
     newAvailabilities.forEach((availability) => {
       const existingAvailability = editedAvailabilities.get(availability.dateSet.getTime());
-      console.log(existingAvailability);
       if (!existingAvailability) {
         editedAvailabilities.set(availability.dateSet.getTime(), availability);
       }
