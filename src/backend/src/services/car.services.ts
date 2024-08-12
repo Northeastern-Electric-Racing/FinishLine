@@ -3,7 +3,7 @@ import { isAdmin } from 'shared';
 import { getCarQueryArgs } from '../prisma-query-args/cars.query-args';
 import prisma from '../prisma/prisma';
 import { carTransformer } from '../transformers/cars.transformer';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { validateOrganizationId } from '../../tests/test-utils';
 
