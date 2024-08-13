@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { WorkPackageTemplate } from 'shared';
 import { getCurrentUser } from '../utils/auth.utils';
-import { getOrganizationId } from '../utils/utils';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 
 /** Controller for operations involving work packages templates. */
@@ -17,7 +16,9 @@ export default class WorkPackageTemplatesController {
       }
 
       const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const workPackageTemplate: WorkPackageTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
         user,
@@ -28,12 +29,12 @@ export default class WorkPackageTemplatesController {
         duration,
         descriptionBullets,
         blockedBy,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(workPackageTemplate);
+      return res.status(200).json(workPackageTemplate);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -42,33 +43,37 @@ export default class WorkPackageTemplatesController {
     try {
       const user = await getCurrentUser(res);
       const { workPackageTemplateId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const workPackageTemplate: WorkPackageTemplate = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         user,
         workPackageTemplateId,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(workPackageTemplate);
+      return res.status(200).json(workPackageTemplate);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
   // Get all work package templates
   static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
     try {
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const workPackageTemplates: WorkPackageTemplate[] = await WorkPackageTemplatesService.getAllWorkPackageTemplates(
         submitter,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(workPackageTemplates);
+      return res.status(200).json(workPackageTemplates);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -81,7 +86,9 @@ export default class WorkPackageTemplatesController {
       if (stage === 'NONE') {
         stage = null;
       }
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const updatedWorkPackageTemplate = await WorkPackageTemplatesService.editWorkPackageTemplate(
         user,
@@ -93,12 +100,12 @@ export default class WorkPackageTemplatesController {
         blockedBy,
         descriptionBullets,
         workPackageName,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(updatedWorkPackageTemplate);
+      return res.status(200).json(updatedWorkPackageTemplate);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -107,12 +114,14 @@ export default class WorkPackageTemplatesController {
     try {
       const user = await getCurrentUser(res);
       const { workPackageTemplateId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      await WorkPackageTemplatesService.deleteWorkPackageTemplate(user, workPackageTemplateId, organizationId);
-      res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
+      await WorkPackageTemplatesService.deleteWorkPackageTemplate(user, workPackageTemplateId, req.organization);
+      return res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }

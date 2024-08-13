@@ -2,48 +2,53 @@ import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-requests.services';
 import { getCurrentUser } from '../utils/auth.utils';
 import { User } from '@prisma/client';
-import { getOrganization } from '../utils/utils';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
       const { crId } = req.params;
-      const organization = await getOrganization(req.headers);
 
-      const cr = await ChangeRequestsService.getChangeRequestByID(crId, organization);
-      res.status(200).json(cr);
+      const cr = await ChangeRequestsService.getChangeRequestByID(crId, req.organization);
+      return res.status(200).json(cr);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const changeRequests = await ChangeRequestsService.getAllChangeRequests(organization);
-      res.status(200).json(changeRequests);
+      const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization);
+      return res.status(200).json(changeRequests);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async reviewChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId, reviewNotes, accepted, psId } = req.body;
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
       const reviewer = await getCurrentUser(res);
       const id = await ChangeRequestsService.reviewChangeRequest(
         reviewer,
         crId,
         reviewNotes,
         accepted,
-        organization,
+        req.organization,
         psId
       );
-      res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
+      return res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -51,7 +56,9 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, leadId, managerId, startDate, confirmDetails } = req.body;
       const submitter = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const id = await ChangeRequestsService.createActivationChangeRequest(
         submitter,
@@ -63,11 +70,11 @@ export default class ChangeRequestsController {
         managerId,
         startDate,
         confirmDetails,
-        organization
+        req.organization
       );
-      res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
+      return res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -75,7 +82,9 @@ export default class ChangeRequestsController {
     try {
       const { wbsNum, type, confirmDone } = req.body;
       const submitter = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
       const id = await ChangeRequestsService.createStageGateChangeRequest(
         submitter,
         wbsNum.carNumber,
@@ -83,11 +92,11 @@ export default class ChangeRequestsController {
         wbsNum.workPackageNumber,
         type,
         confirmDone,
-        organization
+        req.organization
       );
-      res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
+      return res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -98,7 +107,9 @@ export default class ChangeRequestsController {
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
         workPackageProposedChanges.stage = null;
       }
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const createdCR = await ChangeRequestsService.createStandardChangeRequest(
         submitter,
@@ -109,13 +120,13 @@ export default class ChangeRequestsController {
         what,
         why,
         proposedSolutions,
-        organization,
+        req.organization,
         projectProposedChanges,
         workPackageProposedChanges
       );
-      res.status(200).json(createdCR);
+      return res.status(200).json(createdCR);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -123,7 +134,9 @@ export default class ChangeRequestsController {
     try {
       const { crId, budgetImpact, description, timelineImpact, scopeImpact } = req.body;
       const submitter = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
       const id = await ChangeRequestsService.addProposedSolution(
         submitter,
         crId,
@@ -131,11 +144,11 @@ export default class ChangeRequestsController {
         description,
         timelineImpact,
         scopeImpact,
-        organization
+        req.organization
       );
-      res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
+      return res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -143,12 +156,14 @@ export default class ChangeRequestsController {
     try {
       const { crId } = req.params;
       const user: User = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      await ChangeRequestsService.deleteChangeRequest(user, crId, organization);
-      res.status(200).json({ message: `Successfully deleted change request #${crId}` });
+      await ChangeRequestsService.deleteChangeRequest(user, crId, req.organization);
+      return res.status(200).json({ message: `Successfully deleted change request #${crId}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -157,12 +172,14 @@ export default class ChangeRequestsController {
       const { userIds } = req.body;
       const { crId } = req.params;
       const submitter: User = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      await ChangeRequestsService.requestCRReview(submitter, userIds, crId, organization);
-      res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
+      await ChangeRequestsService.requestCRReview(submitter, userIds, crId, req.organization);
+      return res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }

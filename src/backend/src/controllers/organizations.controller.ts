@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
-import { getOrganizationId } from '../utils/utils';
 import OrganizationsService from '../services/organizations.service';
 
 export default class OrganizationsController {
@@ -8,12 +7,14 @@ export default class OrganizationsController {
     try {
       const { links } = req.body;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const newLinks = await OrganizationsService.setUsefulLinks(submitter, organizationId, links);
-      res.status(200).json(newLinks);
+      const newLinks = await OrganizationsService.setUsefulLinks(submitter, req.organization, links);
+      return res.status(200).json(newLinks);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -28,28 +29,32 @@ export default class OrganizationsController {
       const exploreAsGuestFile = exploreAsGuestImage[0] || null;
 
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const newImages = await OrganizationsService.setImages(
         applyInterestFile,
         exploreAsGuestFile,
         submitter,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(newImages);
+      return res.status(200).json(newImages);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const links = await OrganizationsService.getAllUsefulLinks(organizationId);
-      res.status(200).json(links);
+      const links = await OrganizationsService.getAllUsefulLinks(req.organization);
+      return res.status(200).json(links);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }

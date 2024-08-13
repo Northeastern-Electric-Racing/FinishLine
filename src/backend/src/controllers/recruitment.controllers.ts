@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
-import { getOrganization } from '../utils/utils';
 import RecruitmentServices from '../services/recruitment.services';
 
 export default class RecruitmentController {
@@ -8,12 +7,14 @@ export default class RecruitmentController {
     try {
       const { name, description, dateOfEvent } = req.body;
       const submitter = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const milestone = await RecruitmentServices.createMilestone(submitter, name, description, dateOfEvent, organization);
-      res.status(200).json(milestone);
+      const milestone = await RecruitmentServices.createMilestone(submitter, name, description, dateOfEvent, req.organization);
+      return res.status(200).json(milestone);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -22,7 +23,9 @@ export default class RecruitmentController {
       const { milestoneId } = req.params;
       const { name, description, dateOfEvent } = req.body;
       const submitter = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const milestone = await RecruitmentServices.editMilestone(
         submitter,
@@ -30,21 +33,23 @@ export default class RecruitmentController {
         description,
         dateOfEvent,
         milestoneId,
-        organization
+        req.organization
       );
-      res.status(200).json(milestone);
+      return res.status(200).json(milestone);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
     try {
-      const organization = await getOrganization(req.headers);
-      const allMilestones = await RecruitmentServices.getAllMilestones(organization);
-      res.status(200).json(allMilestones);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
+      const allMilestones = await RecruitmentServices.getAllMilestones(req.organization);
+      return res.status(200).json(allMilestones);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -52,12 +57,14 @@ export default class RecruitmentController {
     try {
       const { question, answer } = req.body;
       const submitter = await getCurrentUser(res);
-      const organization = await getOrganization(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const faq = await RecruitmentServices.createFaq(submitter, question, answer, organization);
-      res.status(200).json(faq);
+      const faq = await RecruitmentServices.createFaq(submitter, question, answer, req.organization);
+      return res.status(200).json(faq);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }

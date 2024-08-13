@@ -2,31 +2,34 @@ import { NextFunction, Request, Response } from 'express';
 import { getCurrentUser } from '../utils/auth.utils';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
-import { getOrganizationId } from '../utils/utils';
 
 export default class UsersController {
   static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const users = await UsersService.getAllUsers(organizationId);
+      const users = await UsersService.getAllUsers(req.organization);
 
-      res.status(200).json(users);
+      return res.status(200).json(users);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getSingleUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const requestedUser = await UsersService.getSingleUser(userId, organizationId);
+      const requestedUser = await UsersService.getSingleUser(userId, req.organization);
 
-      res.status(200).json(requestedUser);
+      return res.status(200).json(requestedUser);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -36,9 +39,9 @@ export default class UsersController {
 
       const settings = await UsersService.getUserSettings(user.userId);
 
-      res.status(200).json(settings);
+      return res.status(200).json(settings);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -47,22 +50,24 @@ export default class UsersController {
       const user = await getCurrentUser(res);
       const secureSettings = await UsersService.getCurrentUserSecureSettings(user);
 
-      res.status(200).json(secureSettings);
+      return res.status(200).json(secureSettings);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const projects = await UsersService.getUsersFavoriteProjects(user.userId, organizationId);
+      const projects = await UsersService.getUsersFavoriteProjects(user.userId, req.organization);
 
-      res.status(200).json(projects);
+      return res.status(200).json(projects);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -73,9 +78,9 @@ export default class UsersController {
 
       await UsersService.updateUserSettings(user, defaultTheme, slackId);
 
-      res.status(200).json({ message: `Successfully updated settings for user ${user.userId}.` });
+      return res.status(200).json({ message: `Successfully updated settings for user ${user.userId}.` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -87,9 +92,9 @@ export default class UsersController {
       const { user, token } = await UsersService.logUserIn(idToken, header!);
 
       res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
-      res.status(200).json(user);
+      return res.status(200).json(user);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -107,9 +112,9 @@ export default class UsersController {
 
       const user = await UsersService.logUserInDev(userId, header);
 
-      res.status(200).json(user);
+      return res.status(200).json(user);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -118,13 +123,15 @@ export default class UsersController {
       const { userId } = req.params;
       const { role } = req.body;
       const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const targetUser = await UsersService.updateUserRole(userId, user, role, organizationId);
+      const targetUser = await UsersService.updateUserRole(userId, user, role, req.organization);
 
-      res.status(200).json(targetUser);
+      return res.status(200).json(targetUser);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -132,13 +139,15 @@ export default class UsersController {
     try {
       const { userId } = req.params;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter, organizationId);
+      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter, req.organization);
 
-      res.status(200).json(userSecureSettings);
+      return res.status(200).json(userSecureSettings);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -149,9 +158,9 @@ export default class UsersController {
 
       await UsersService.setUserSecureSettings(user, nuid, street, city, state, zipcode, phoneNumber);
 
-      res.status(200).json({ message: `Successfully updated secure settings for user ${user.userId}.` });
+      return res.status(200).json({ message: `Successfully updated secure settings for user ${user.userId}.` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -167,9 +176,9 @@ export default class UsersController {
         availability
       );
 
-      res.status(200).json(updatedScheduleSettings);
+      return res.status(200).json(updatedScheduleSettings);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -179,9 +188,9 @@ export default class UsersController {
       const submitter = await getCurrentUser(res);
 
       const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, submitter);
-      res.status(200).json(userScheduleSettings);
+      return res.status(200).json(userScheduleSettings);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Prisma, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
+import { Organization, Prisma, User, WBS_Element, WBS_Element_Status } from '@prisma/client';
 import {
   calculateEndDate,
   DescriptionBulletPreview,
@@ -6,6 +6,7 @@ import {
   isAdmin,
   isGuest,
   isWorkPackage,
+  OrganizationPreview,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
@@ -49,11 +50,11 @@ export default class WorkPackagesService {
       status?: WbsElementStatus;
       daysUntilDeadline?: string;
     },
-    organizationId: string
+    organization: OrganizationPreview
   ): Promise<WorkPackage[]> {
     const workPackages = await prisma.work_Package.findMany({
-      where: { wbsElement: { dateDeleted: null, organizationId } },
-      ...getWorkPackageQueryArgs(organizationId)
+      where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     const outputWorkPackages = workPackages.map(workPackageTransformer).filter((wp) => {
@@ -78,7 +79,7 @@ export default class WorkPackagesService {
    * @returns the desired work package
    * @throws if the work package with the desired WBS number is not found, is deleted or is not part of the given organization
    */
-  static async getSingleWorkPackage(parsedWbs: WbsNumber, organizationId: string): Promise<WorkPackage> {
+  static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: OrganizationPreview): Promise<WorkPackage> {
     if (!isWorkPackage(parsedWbs)) {
       throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
     }
@@ -92,7 +93,7 @@ export default class WorkPackagesService {
           workPackageNumber: parsedWbs.workPackageNumber
         }
       },
-      ...getWorkPackageQueryArgs(organizationId)
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     if (!wp)
@@ -103,7 +104,7 @@ export default class WorkPackagesService {
 
     if (wp.wbsElement.dateDeleted) throw new DeletedException('Work Package', wp.wbsElementId);
 
-    if (wp.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Work Package');
+    if (wp.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Work Package');
 
     return workPackageTransformer(wp);
   }
@@ -115,7 +116,7 @@ export default class WorkPackagesService {
    * @returns the work packages with the given WBS numbers
    * @throws if any of the work packages are not found or are not part of the organization
    */
-  static async getManyWorkPackages(wbsNums: WbsNumber[], organizationId: string): Promise<WorkPackage[]> {
+  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: OrganizationPreview): Promise<WorkPackage[]> {
     wbsNums.forEach((wbsNum) => {
       if (!isWorkPackage(wbsNum)) {
         throw new HttpException(
@@ -126,7 +127,7 @@ export default class WorkPackagesService {
     });
 
     const workPackagePromises = wbsNums.map(async (wbsNum) => {
-      return WorkPackagesService.getSingleWorkPackage(wbsNum, organizationId);
+      return WorkPackagesService.getSingleWorkPackage(wbsNum, organization);
     });
 
     const resolvedWorkPackages = await Promise.all(workPackagePromises);
@@ -156,10 +157,10 @@ export default class WorkPackagesService {
     duration: number,
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
-    organizationId: string,
+    organization: OrganizationPreview,
     wbsElemId?: string
   ): Promise<Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>> {
-    if (await userHasPermission(user.userId, organizationId, isGuest))
+    if (await userHasPermission(user.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create work packages');
 
     const changeRequest = await validateChangeRequestAccepted(crId);
@@ -180,7 +181,7 @@ export default class WorkPackagesService {
     });
 
     if (!wbsElem) throw new NotFoundException('WBS Element', changeRequest.wbsElementId);
-    const blockedByElements: WBS_Element[] = await validateBlockedBys(blockedBy, organizationId);
+    const blockedByElements: WBS_Element[] = await validateBlockedBys(blockedBy, organization.organizationId);
 
     // get the corresponding project so we can find the next wbs number
     // and what number work package this should be
@@ -201,7 +202,7 @@ export default class WorkPackagesService {
     const { project } = wbsElem;
 
     if (!project) throw new NotFoundException('Project', `${wbsPipe(projectWbsNum)}`);
-    if (wbsElem.organizationId !== organizationId) throw new InvalidOrganizationException('Project');
+    if (wbsElem.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Project');
 
     const { projectId } = project;
 
@@ -240,7 +241,7 @@ export default class WorkPackagesService {
         orderInProject: project.workPackages.length + 1,
         blockedBy: { connect: blockedByElements.map((ele) => ({ wbsElementId: ele.wbsElementId })) }
       },
-      ...getWorkPackageQueryArgs(organizationId)
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     const changes = await getWorkPackageChanges(
@@ -304,11 +305,12 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     leadId: string | null,
     managerId: string | null,
-    organizationId: string
+    organization: OrganizationPreview
   ): Promise<WorkPackage> {
     const { userId } = user;
     // verify user is allowed to edit work packages
-    if (await userHasPermission(userId, organizationId, isGuest)) throw new AccessDeniedGuestException('edit work packages');
+    if (await userHasPermission(userId, organization.organizationId, isGuest))
+      throw new AccessDeniedGuestException('edit work packages');
 
     // get the original work package so we can compare things
     const originalWorkPackage = await prisma.work_Package.findUnique({
@@ -316,7 +318,7 @@ export default class WorkPackagesService {
       include: {
         wbsElement: {
           include: {
-            descriptionBullets: getDescriptionBulletQueryArgs(organizationId)
+            descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId)
           }
         },
         blockedBy: true
@@ -325,7 +327,7 @@ export default class WorkPackagesService {
 
     if (!originalWorkPackage) throw new NotFoundException('Work Package', workPackageId);
     if (originalWorkPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackageId);
-    if (originalWorkPackage.wbsElement.organizationId !== organizationId)
+    if (originalWorkPackage.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Work Package');
 
     // the crId must match a valid approved change request
@@ -333,7 +335,7 @@ export default class WorkPackagesService {
 
     const { wbsElementId } = originalWorkPackage;
 
-    const blockedByElems = await validateBlockedBys(blockedBy, organizationId);
+    const blockedByElems = await validateBlockedBys(blockedBy, organization.organizationId);
 
     const changes = await getWorkPackageChanges(
       originalWorkPackage.wbsElement.name,
@@ -387,7 +389,7 @@ export default class WorkPackagesService {
           connect: blockedByElems.map((ele) => ({ wbsElementId: ele.wbsElementId }))
         }
       },
-      ...getWorkPackageQueryArgs(organizationId)
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     // Transform Milliseconds to weeks
@@ -429,12 +431,12 @@ export default class WorkPackagesService {
    * @param wbsNum The work package number to be deleted
    * @param organizationId The organization id that the user is in
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, organizationId: string): Promise<void> {
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, organization: OrganizationPreview): Promise<void> {
     // Verify submitter is allowed to delete work packages
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work packages');
 
-    const workPackage = await WorkPackagesService.getSingleWorkPackage(wbsNum, organizationId);
+    const workPackage = await WorkPackagesService.getSingleWorkPackage(wbsNum, organization);
 
     const { wbsElementId, id: workPackageId } = workPackage;
 
@@ -496,7 +498,7 @@ export default class WorkPackagesService {
    * @param organizationId the id of the organization that the user is currently in
    * @returns the blocking work packages for the given work package
    */
-  static async getBlockingWorkPackages(wbsNum: WbsNumber, organizationId: string): Promise<WorkPackage[]> {
+  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: OrganizationPreview): Promise<WorkPackage[]> {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
     // is a project or car so just return empty array until we implement blocking projects/cars
@@ -508,11 +510,11 @@ export default class WorkPackagesService {
           carNumber,
           projectNumber,
           workPackageNumber,
-          organizationId
+          organizationId: organization.organizationId
         }
       },
       include: {
-        workPackage: getWorkPackageQueryArgs(organizationId)
+        workPackage: getWorkPackageQueryArgs(organization.organizationId)
       }
     });
 
@@ -520,7 +522,8 @@ export default class WorkPackagesService {
 
     if (!workPackage) throw new NotFoundException('Work Package', wbsPipe(wbsNum));
     if (workPackage.wbsElement.dateDeleted) throw new DeletedException('Work Package', workPackage.wbsElementId);
-    if (workPackage.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Work Package');
+    if (workPackage.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Work Package');
 
     const blockingWorkPackages = await getBlockingWorkPackages(workPackage);
 
@@ -535,13 +538,15 @@ export default class WorkPackagesService {
    * @param organizationId - the id of the organization that the user is currently in
    * @returns void
    */
-  static async slackMessageUpcomingDeadlines(user: User, deadline: Date, organizationId: string): Promise<void> {
-    if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
+  static async slackMessageUpcomingDeadlines(user: User, deadline: Date, organization: OrganizationPreview): Promise<void> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 
     const workPackages = await prisma.work_Package.findMany({
-      where: { wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE, organizationId } },
-      ...getWorkPackageQueryArgs(organizationId)
+      where: {
+        wbsElement: { dateDeleted: null, status: WBS_Element_Status.ACTIVE, organizationId: organization.organizationId }
+      },
+      ...getWorkPackageQueryArgs(organization.organizationId)
     });
 
     const upcomingWorkPackages = workPackages

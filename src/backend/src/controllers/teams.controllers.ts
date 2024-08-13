@@ -1,30 +1,33 @@
 import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
 import { getCurrentUser } from '../utils/auth.utils';
-import { getOrganizationId } from '../utils/utils';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
-      const teams = await TeamsService.getAllTeams(organizationId);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
+      const teams = await TeamsService.getAllTeams(req.organization);
 
-      res.status(200).json(teams);
+      return res.status(200).json(teams);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const team = await TeamsService.getSingleTeam(teamId, organizationId);
+      const team = await TeamsService.getSingleTeam(teamId, req.organization);
 
-      res.status(200).json(team);
+      return res.status(200).json(team);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -32,15 +35,17 @@ export default class TeamsController {
     try {
       const { userIds } = req.body;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       // update the team with the input fields
-      const updateTeam = await TeamsService.setTeamMembers(submitter, req.params.teamId, userIds, organizationId);
+      const updateTeam = await TeamsService.setTeamMembers(submitter, req.params.teamId, userIds, req.organization);
 
       //  the updated team
-      res.status(200).json(updateTeam);
+      return res.status(200).json(updateTeam);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -48,12 +53,14 @@ export default class TeamsController {
     try {
       const { newDescription } = req.body;
       const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const team = await TeamsService.editDescription(user, req.params.teamId, newDescription, organizationId);
-      res.status(200).json(team);
+      const team = await TeamsService.editDescription(user, req.params.teamId, newDescription, req.organization);
+      return res.status(200).json(team);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -62,12 +69,14 @@ export default class TeamsController {
       const { userId } = req.body;
       const { teamId } = req.params;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const team = await TeamsService.setTeamHead(submitter, teamId, userId, organizationId);
-      res.status(200).json(team);
+      const team = await TeamsService.setTeamHead(submitter, teamId, userId, req.organization);
+      return res.status(200).json(team);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -75,7 +84,9 @@ export default class TeamsController {
     try {
       const { teamName, headId, slackId, description, isFinanceTeam } = req.body;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
       const team = await TeamsService.createTeam(
         submitter,
@@ -84,11 +95,11 @@ export default class TeamsController {
         slackId,
         description,
         isFinanceTeam,
-        organizationId
+        req.organization
       );
-      res.status(200).json(team);
+      return res.status(200).json(team);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -97,12 +108,14 @@ export default class TeamsController {
       const { userIds } = req.body;
       const { teamId } = req.params;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const team = await TeamsService.setTeamLeads(submitter, teamId, userIds, organizationId);
-      res.status(200).json(team);
+      const team = await TeamsService.setTeamLeads(submitter, teamId, userIds, req.organization);
+      return res.status(200).json(team);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -110,12 +123,14 @@ export default class TeamsController {
     try {
       const { teamId } = req.params;
       const deleter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      await TeamsService.deleteTeam(deleter, teamId, organizationId);
+      await TeamsService.deleteTeam(deleter, teamId, req.organization);
       res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -123,12 +138,14 @@ export default class TeamsController {
     try {
       const { teamId } = req.params;
       const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const archivedTeam = await TeamsService.archiveTeam(user, teamId, organizationId);
-      res.status(200).json(archivedTeam);
+      const archivedTeam = await TeamsService.archiveTeam(user, teamId, req.organization);
+      return res.status(200).json(archivedTeam);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -136,36 +153,42 @@ export default class TeamsController {
     try {
       const { name, iconName } = req.body;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, organizationId);
-      res.status(200).json(createdTeamType);
+      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, req.organization);
+      return res.status(200).json(createdTeamType);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamTypeId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const teamType = await TeamsService.getSingleTeamType(teamTypeId, organizationId);
+      const teamType = await TeamsService.getSingleTeamType(teamTypeId, req.organization);
 
-      res.status(200).json(teamType);
+      return res.status(200).json(teamType);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const teamTypes = await TeamsService.getAllTeamTypes(organizationId);
-      res.status(200).json(teamTypes);
+      const teamTypes = await TeamsService.getAllTeamTypes(req.organization);
+      return res.status(200).json(teamTypes);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -174,13 +197,15 @@ export default class TeamsController {
       const { teamTypeId } = req.body;
       const { teamId } = req.params;
       const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
+      if (!req.organization) {
+        return res.status(400).json({ message: 'Organization not found' });
+      }
 
-      const updatedTeam = await TeamsService.setTeamType(submitter, teamId, teamTypeId, organizationId);
+      const updatedTeam = await TeamsService.setTeamType(submitter, teamId, teamTypeId, req.organization);
 
-      res.status(200).json(updatedTeam);
+      return res.status(200).json(updatedTeam);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }
