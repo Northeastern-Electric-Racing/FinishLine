@@ -106,7 +106,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   const handleEdit = async (data?: FinalizeReviewInformation) => {
     const times = [];
     for (let i = startTime; i < endTime; i++) {
-      times.push(i % 12);
+      times.push(i);
     }
     try {
       const payload: EditDesignReviewPayload = {
