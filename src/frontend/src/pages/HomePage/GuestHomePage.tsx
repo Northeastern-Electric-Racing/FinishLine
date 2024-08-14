@@ -11,11 +11,6 @@ interface GuestHomePageProps {
 }
 
 const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
-  useEffect(() => {
-    emitter.emit('memberHomePage', false);
-    setOnMemberHomePage(false);
-    localStorage.setItem('memberHomePage', JSON.stringify(false));
-  }, [setOnMemberHomePage]);
 
   const handleClick = () => {
     emitter.emit('memberHomePage', true);
