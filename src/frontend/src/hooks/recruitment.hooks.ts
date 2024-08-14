@@ -58,7 +58,7 @@ export const useAllFaqs = () => {
     const { data } = await getAllFaqs();
     return data;
   });
-}
+};
 
 export const useCreateFaq = () => {
   const queryClient = useQueryClient();

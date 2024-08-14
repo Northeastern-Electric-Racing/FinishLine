@@ -4,7 +4,6 @@ import { apiUrls } from '../utils/urls';
 import { Milestone } from 'shared/src/types/milestone-types';
 import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
 
-
 export const getAllMilestones = () => {
   return axios.get<Milestone[]>(apiUrls.allMilestones(), {
     transformResponse: (data) => JSON.parse(data)
