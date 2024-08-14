@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { DesignReview, TeamType, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
+import { DesignReview, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
 import {
   deleteDesignReview,
   editDesignReview,

@@ -1,16 +1,13 @@
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Button, Link } from '@mui/material';
+import { FormControl, FormLabel, FormHelperText, Tooltip, Typography, Link } from '@mui/material';
 import ReactHookTextField from '../../../components/ReactHookTextField';
-import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import HelpIcon from '@mui/icons-material/Help';
 import { TeamType } from 'shared';
 import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
-import React, { useState } from 'react';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 

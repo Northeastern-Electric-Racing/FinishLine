@@ -32,21 +32,13 @@ describe('Team Type Tests', () => {
             'Team 2',
             'Warning icon',
             '',
-            null,
             orgId
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
     });
 
     it('Create team type fails if there is already another team type with the same name', async () => {
-      await TeamsService.createTeamType(
-        await createTestUser(supermanAdmin, orgId),
-        'teamType1',
-        'YouTubeIcon',
-        '',
-        null,
-        orgId
-      );
+      await TeamsService.createTeamType(await createTestUser(supermanAdmin, orgId), 'teamType1', 'YouTubeIcon', '', orgId);
       await expect(
         async () =>
           await TeamsService.createTeamType(
@@ -54,7 +46,6 @@ describe('Team Type Tests', () => {
             'teamType1',
             'Warning icon',
             '',
-            null,
             orgId
           )
       ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
@@ -66,15 +57,14 @@ describe('Team Type Tests', () => {
         'teamType3',
         'YouTubeIcon',
         '',
-        null,
         orgId
       );
 
       expect(result).toEqual({
         name: 'teamType3',
         iconName: 'YouTubeIcon',
-        imageFileId: null,
         description: '',
+        imageFileId: null,
         organizationId: orgId,
         teamTypeId: result.teamTypeId
       });
@@ -88,7 +78,6 @@ describe('Team Type Tests', () => {
         'teamType1',
         'YouTubeIcon',
         '',
-        null,
         orgId
       );
       const teamType2 = await TeamsService.createTeamType(
@@ -96,7 +85,6 @@ describe('Team Type Tests', () => {
         'teamType2',
         'WarningIcon',
         '',
-        null,
         orgId
       );
       const result = await TeamsService.getAllTeamTypes(orgId);
@@ -111,7 +99,6 @@ describe('Team Type Tests', () => {
         'teamType1',
         'YouTubeIcon',
         '',
-        null,
         orgId
       );
       const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId, orgId);
@@ -136,7 +123,6 @@ describe('Team Type Tests', () => {
             'new name',
             'new icon',
             'new description',
-            null,
             orgId
           )
       ).rejects.toThrow(new AccessDeniedException('you must be an admin to edit the team types description'));
@@ -151,7 +137,6 @@ describe('Team Type Tests', () => {
             'new name',
             'new icon',
             'a '.repeat(301),
-            null,
             orgId
           )
       ).rejects.toThrow(new HttpException(400, 'Description must be less than 300 words'));
@@ -163,7 +148,6 @@ describe('Team Type Tests', () => {
         'teamType1',
         'YouTubeIcon',
         '',
-        null,
         orgId
       );
       const updatedTeamType = await TeamsService.editTeamType(
@@ -172,13 +156,11 @@ describe('Team Type Tests', () => {
         'new name',
         'new icon',
         'new description',
-        'imageUrl',
         orgId
       );
       expect(updatedTeamType.name).toBe('new name');
       expect(updatedTeamType.iconName).toBe('new icon');
       expect(updatedTeamType.description).toBe('new description');
-      expect(updatedTeamType.imageFileId).toBe('imageUrl');
     });
   });
 });

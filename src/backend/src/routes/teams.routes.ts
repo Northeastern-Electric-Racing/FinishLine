@@ -70,11 +70,6 @@ teamsRouter.post(
   TeamsController.editTeamType
 );
 
-teamsRouter.post(
-  'teamType/:teamTypeId/set-image',
-  upload.single('image'),
-  validateInputs,
-  TeamsController.setTeamTypeImage
-)
+teamsRouter.post('teamType/:teamTypeId/set-image', upload.single('image'), validateInputs, TeamsController.setTeamTypeImage);
 
 export default teamsRouter;

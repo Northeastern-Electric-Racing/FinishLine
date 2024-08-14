@@ -24,6 +24,8 @@ const TeamTypeTable: React.FC = () => {
   const [addedImage, setAddedImage] = useState<File>();
   const toast = useToast();
 
+  const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
+
   if (!teamTypes || teamTypesIsLoading) {
     return <LoadingIndicator />;
   }
@@ -33,8 +35,7 @@ const TeamTypeTable: React.FC = () => {
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
     if (addedImage) {
-      const { mutateAsync } = useSetTeamTypeImage(teamTypeId);
-      await mutateAsync(addedImage);
+      await setTeamTypeImage({ file: addedImage, id: teamTypeId });
       toast.success('Image uploaded successfully!', 5000);
       setAddedImage(undefined);
     } else {

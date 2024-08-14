@@ -91,12 +91,12 @@ export const useEditTeamType = (teamTypeId: string) => {
   );
 };
 
-export const useSetTeamTypeImage = (teamTypeId: string) => {
+export const useSetTeamTypeImage = () => {
   const queryClient = useQueryClient();
-  return useMutation<TeamType, Error, File>(
+  return useMutation<TeamType, Error, { file: File; id: string }>(
     ['team types', 'set image'],
-    async (image: File) => {
-      const { data } = await setTeamTypeImage(teamTypeId, image);
+    async (formData: { file: File; id: string }) => {
+      const { data } = await setTeamTypeImage(formData.id, formData.file);
       return data;
     },
     {
