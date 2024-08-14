@@ -4,9 +4,10 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { HttpException } from './errors.utils';
 import stream, { Readable } from 'stream';
 import concat from 'concat-stream';
-import { Design_Review, User, WBS_Element } from '@prisma/client';
+import { User, WBS_Element } from '@prisma/client';
 import { transformDate } from './datetime.utils';
 import { transformStartTime } from './design-reviews.utils';
+import { getUsers } from './users.utils';
 
 const { OAuth2 } = google.auth;
 const {
@@ -174,10 +175,10 @@ export const downloadImageFile = async (fileId: string) => {
 
 /**
  * Creates a new google calendar on the NER google calendar
- * @param teamTypeName
+ * @param name
  * @returns the calendar id
  */
-export const createCalendar = async (teamTypeName: string) => {
+export const createCalendar = async (name: string) => {
   if (process.env.NODE_ENV !== 'production') return;
   try {
     oauth2Client.setCredentials({
@@ -185,7 +186,7 @@ export const createCalendar = async (teamTypeName: string) => {
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const createdCalendar = await calendar.calendars.insert({
-      requestBody: { summary: `NER ${teamTypeName} Meetings`, description: `A Team Type Within NER` }
+      requestBody: { summary: `NER ${name} Meetings`, description: `A Team Type Within NER` }
     });
 
     return createdCalendar.data.id;
@@ -198,15 +199,23 @@ export const createCalendar = async (teamTypeName: string) => {
  * Creates A Google Calendar Event on the NER Google Calendar
  * @param members required and optional members
  * @param calendarId the id of the calendar to add the event
- * @param designReview
+ * @param dateScheduled
+ * @param isInPerson
+ * @param zoomLink
+ * @param location
+ * @param meetingTimes
+ * @param wbsElement
  * @returns the id of the calendar event
  */
 export const createCalendarEvent = async (
-  members: User[],
   calendarId: string | null,
-  designReview: Design_Review & {
-    wbsElement: WBS_Element;
-  }
+  memberIds: string[],
+  dateScheduled: Date,
+  isInPerson: boolean,
+  zoomLink: string | null,
+  location: string | null,
+  meetingTimes: number[],
+  wbsElement: WBS_Element
 ) => {
   if (process.env.NODE_ENV !== 'production') return;
   if (!calendarId) throw Error('no calendar id provided');
@@ -215,19 +224,19 @@ export const createCalendarEvent = async (
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const startTime = transformStartTime(designReview.meetingTimes);
+    const startTime = transformStartTime(meetingTimes);
     const eventInput = {
-      location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
-      summary: `Design Review - ${designReview.wbsElement.projectNumber} ${designReview.wbsElement.name}`,
+      location: isInPerson ? location : zoomLink,
+      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
       start: {
-        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime}:00:00-04:00`,
+        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime}:00:00-04:00`,
         timeZone: 'America/New_York'
       },
       end: {
-        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime + 1}:00:00-04:00`,
+        dateTime: `${transformDate(new Date(dateScheduled))}T${startTime + 1}:00:00-04:00`,
         timeZone: 'America/New_York'
       },
-      attendees: members.map((user) => {
+      attendees: (await getUsers(memberIds)).map((user) => {
         return { email: user.email };
       }),
       reminders: {
@@ -260,31 +269,35 @@ export const createCalendarEvent = async (
  */
 export const updateCalendarEvent = async (
   calendarId: string | null,
-  eventId: string,
-  members: User[],
-  designReview: Design_Review & {
-    wbsElement: WBS_Element;
-  }
+  eventId: string | null,
+  memberIds: string[],
+  dateScheduled: Date,
+  isInPerson: boolean,
+  zoomLink: string | null,
+  location: string | null,
+  meetingTimes: number[],
+  wbsElement: WBS_Element
 ) => {
   if (!calendarId) throw Error('no calendar id provided');
+  if (!eventId) throw Error('no event id provided');
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const startTime = transformStartTime(designReview.meetingTimes);
+    const startTime = transformStartTime(meetingTimes);
     const eventInput = {
-      location: designReview.isInPerson ? designReview.location : designReview.zoomLink,
-      summary: `Design Review - ${designReview.wbsElement.projectNumber} ${designReview.wbsElement.name}`,
+      location: isInPerson ? location : zoomLink,
+      summary: `Design Review - ${wbsElement.projectNumber} ${wbsElement.name}`,
       start: {
-        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime}:00:00-04:00`,
+        dateTime: `${transformDate(dateScheduled)}T${startTime}:00:00-04:00`,
         timeZone: 'America/New_York'
       },
       end: {
-        dateTime: `${transformDate(designReview.dateScheduled)}T${startTime + 1}:00:00-04:00`,
+        dateTime: `${transformDate(dateScheduled)}T${startTime + 1}:00:00-04:00`,
         timeZone: 'America/New_York'
       },
-      attendees: members.map((user) => {
+      attendees: (await getUsers(memberIds)).map((user) => {
         return { email: user.email };
       }),
       reminders: {

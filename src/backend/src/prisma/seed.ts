@@ -253,27 +253,9 @@ const performSeed: () => Promise<void> = async () => {
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(
-    batman,
-    'Mechanical',
-    'YouTubeIcon',
-    organizationId,
-    currentEnv.MECHANICAL_CALENDAR
-  );
-  const teamType2 = await TeamsService.createTeamType(
-    thomasEmrax,
-    'Software',
-    'InstagramIcon',
-    organizationId,
-    currentEnv.SOFTWARE_CALENDAR
-  );
-  const teamType3 = await TeamsService.createTeamType(
-    cyborg,
-    'Electrical',
-    'SettingsIcon',
-    organizationId,
-    currentEnv.ELECTRICAL_CALENDAR
-  );
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', organizationId);
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', organizationId);
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', organizationId);
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));

@@ -314,8 +314,20 @@ export default class DesignReviewsService {
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembersIds));
     const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
+    const calendarEventId =
+      originaldesignReview.calendarEventId ??
+      (await createCalendarEvent(
+        teamType.calendarId,
+        [...requiredMembersIds, ...optionalMembersIds],
+        dateScheduled,
+        isInPerson,
+        zoomLink,
+        location,
+        meetingTimes,
+        originaldesignReview.wbsElement
+      ));
     // actually try to update the design review
-    let updatedDesignReview = await prisma.design_Review.update({
+    const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
       data: {
         designReviewId,
@@ -336,7 +348,8 @@ export default class DesignReviewsService {
         docTemplateLink,
         attendees: {
           set: updatedAttendees
-        }
+        },
+        calendarEventId
       },
       ...getDesignReviewQueryArgs(organizationId)
     });
@@ -347,23 +360,14 @@ export default class DesignReviewsService {
         await updateCalendarEvent(
           updatedDesignReview.teamType.calendarId,
           updatedDesignReview.calendarEventId,
-          [...updatedDesignReview.requiredMembers, ...updatedDesignReview.optionalMembers],
-          updatedDesignReview
+          [...requiredMembersIds, ...optionalMembersIds],
+          updatedDesignReview.dateScheduled,
+          updatedDesignReview.isInPerson,
+          updatedDesignReview.zoomLink,
+          updatedDesignReview.location,
+          updatedDesignReview.meetingTimes,
+          updatedDesignReview.wbsElement
         );
-      } else {
-        const calendarEventId = await createCalendarEvent(
-          [...updatedDesignReview.requiredMembers, ...updatedDesignReview.optionalMembers],
-          updatedDesignReview.teamType.calendarId,
-          updatedDesignReview
-        );
-
-        updatedDesignReview = await prisma.design_Review.update({
-          where: { designReviewId },
-          data: {
-            calendarEventId
-          },
-          ...getDesignReviewQueryArgs(organizationId)
-        });
       }
     }
 

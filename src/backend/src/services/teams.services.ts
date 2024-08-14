@@ -387,22 +387,15 @@ export default class TeamsService {
       throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
 
-    let teamType = await prisma.team_Type.create({
+    const teamTypeCalendarId = calendarId ?? (await createCalendar(name));
+    const teamType = await prisma.team_Type.create({
       data: {
         name,
         iconName,
         organizationId,
-        calendarId
+        calendarId: teamTypeCalendarId
       }
     });
-
-    if (!calendarId) {
-      const calendarId = await createCalendar(teamType.name);
-      teamType = await prisma.team_Type.update({
-        where: { teamTypeId: teamType.teamTypeId },
-        data: { calendarId }
-      });
-    }
 
     return teamType;
   }
