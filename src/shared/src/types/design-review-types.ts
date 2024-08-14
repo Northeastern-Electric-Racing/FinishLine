@@ -23,6 +23,7 @@ export interface DesignReview {
   docTemplateLink?: string;
   wbsName: string;
   wbsNum: WbsNumber;
+  initialDate: Date;
 }
 
 export enum DesignReviewStatus {
@@ -36,4 +37,9 @@ export interface TeamType {
   teamTypeId: string;
   name: string;
   iconName: string;
+}
+
+export interface AvailabilityCreateArgs {
+  availability: number[];
+  dateSet: Date;
 }

@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Grid, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { DesignReview, TeamType } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
 import { meetingStartTimePipe } from '../../../utils/pipes';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -72,7 +72,15 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
             }}
           >
             <DynamicTooltip
-              title={name + (event.meetingTimes.length > 0 ? ' - ' + meetingStartTimePipe(event.meetingTimes) : '')}
+              title={
+                name +
+                ' - ' +
+                (event.status !== DesignReviewStatus.UNCONFIRMED
+                  ? event.meetingTimes.length > 0
+                    ? meetingStartTimePipe(event.meetingTimes)
+                    : ''
+                  : 'UNCONFIRMED! THIS TIME IS SUBJECT TO CHANGE')
+              }
             >
               <Typography marginX={0.5} marginY={0.2} lineHeight={'120%'} fontSize={14} fontWeight="bold" noWrap>
                 {name}
@@ -171,7 +179,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
   };
 
   return (
-    <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
+    <>
       <DesignReviewCreateModal
         showModal={isCreateModalOpen}
         handleClose={() => {
@@ -180,18 +188,20 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
         teamTypes={teamTypes}
         defaultDate={cardDate}
       />
-      <CardContent sx={{ padding: 0 }}>
-        <DayCardTitle />
-        {events.length < 3 ? (
-          events.map((event) => <EventCard event={event} />)
-        ) : (
-          <>
-            <EventCard event={events[0]} />
-            <ExtraEventsCard extraEvents={events.slice(1)} />
-          </>
-        )}
-      </CardContent>
-    </Card>
+      <Card sx={{ borderRadius: 2, width: { xs: '95%', md: '80%' }, height: { xs: '10vh', sm: '15vh' } }}>
+        <CardContent sx={{ padding: 0 }}>
+          <DayCardTitle />
+          {events.length < 3 ? (
+            events.map((event) => <EventCard event={event} />)
+          ) : (
+            <>
+              <EventCard event={events[0]} />
+              <ExtraEventsCard extraEvents={events.slice(1)} />
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 };
 export default CalendarDayCard;

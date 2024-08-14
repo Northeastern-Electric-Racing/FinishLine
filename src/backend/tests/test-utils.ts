@@ -80,6 +80,7 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
+  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.work_Package.deleteMany();
   await prisma.project.deleteMany();
   await prisma.material.deleteMany();
@@ -154,6 +155,35 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
   await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization.organizationId);
 };
 
+export const createTestFAQ = async (orgId: string, frequentlyAskedQuestionId: string) => {
+  const user = await prisma.user.create({
+    data: {
+      firstName: 'ADMIN',
+      lastName: 'FAQ',
+      email: 'FAQCREATOR@gmail.com',
+      googleAuthId: 'FAQCREATOR'
+    }
+  });
+
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      frequentlyAskedQuestionId,
+      question: 'Joe mama',
+      answer: 'Joe mama`s organization',
+      userCreated: {
+        connect: {
+          userId: user.userId
+        }
+      },
+      organization: {
+        connect: {
+          organizationId: orgId
+        }
+      }
+    }
+  });
+};
+
 export const createTestOrganization = async () => {
   const user = await prisma.user.create({
     data: {
@@ -194,6 +224,22 @@ export const createTestWorkPackageTemplate = async (user: User, organizationId?:
   });
 
   return workPackageTemplate;
+};
+
+export const createTestMilestone = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const milestone = await prisma.milestone.create({
+    data: {
+      name: 'Milestone 1',
+      description: 'Description',
+      dateOfEvent: new Date('03/03/2024'),
+      organizationId,
+      userCreatedId: user.userId
+    }
+  });
+  return milestone;
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {
