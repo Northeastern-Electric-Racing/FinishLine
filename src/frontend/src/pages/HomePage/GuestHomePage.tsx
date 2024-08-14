@@ -11,7 +11,6 @@ interface GuestHomePageProps {
 }
 
 const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
-
   const handleClick = () => {
     emitter.emit('memberHomePage', true);
     setOnMemberHomePage(true);
