@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { DesignReview, WbsNumber, DesignReviewStatus } from 'shared';
+import { DesignReview, TeamType, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
 import {
   deleteDesignReview,
   editDesignReview,
@@ -126,9 +126,9 @@ export const useSingleDesignReview = (id?: string) => {
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  return useMutation<DesignReview, Error, { availability: number[] }>(
+  return useMutation<DesignReview, Error, { availability: AvailabilityCreateArgs[] }>(
     ['design-reviews', 'mark-confirmed'],
-    async (designReviewPayload: { availability: number[] }) => {
+    async (designReviewPayload: { availability: AvailabilityCreateArgs[] }) => {
       const { data } = await markUserConfirmed(id, designReviewPayload);
       return data;
     },
