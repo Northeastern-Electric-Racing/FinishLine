@@ -63,7 +63,7 @@ const AvailabilityView: React.FC<AvailabilityViewProps> = ({
 
   const onSelectedTimeslotChanged = (index: number | null, day: Date | null) => {
     if (index === null || day === null) return;
-    setStartTime(index + 1);
+    setStartTime(index);
     setEndTime(index + 1);
     setSelectDate(day);
   };

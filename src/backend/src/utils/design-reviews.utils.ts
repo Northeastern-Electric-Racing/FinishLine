@@ -8,6 +8,10 @@ import { User } from '@prisma/client';
  * @returns the meeting times
  */
 export const validateMeetingTimes = (nums: number[]): number[] => {
+  if (nums.length === 0) {
+    throw new HttpException(400, 'There must be at least one meeting time');
+  }
+
   for (let i = 0; i < nums.length; i++) {
     if (nums[i] < 0 || nums[i] > 11) {
       throw new HttpException(400, 'Meeting times have to be in range 0-11');
