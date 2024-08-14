@@ -24,14 +24,10 @@ interface TeamTypeFormModalProps {
 const schema = yup.object().shape({
   name: yup.string().required('Material Type is Required'),
   iconName: yup.string().required('Icon Name is Required'),
-  description: yup.string().required('Description is Required'),
-  image: yup.mixed().notRequired()
+  description: yup.string().required('Description is Required')
 });
 
 const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose, defaultValues, onSubmit }) => {
-  const toast = useToast();
-  const [addedImage, setAddedImage] = useState<File>();
-
   const onFormSubmit = async (data: CreateTeamTypePayload) => {
     await onSubmit(data);
     handleClose();
@@ -49,8 +45,7 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
     defaultValues: {
       name: defaultValues?.name ?? '',
       iconName: defaultValues?.iconName ?? '',
-      description: defaultValues?.description ?? '',
-      image: defaultValues?.imageFileId ?? null
+      description: defaultValues?.description ?? ''
     }
   });
 
@@ -71,20 +66,6 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
     reset({ name: '', iconName: '', description: '' });
     sessionStorage.removeItem(formStorageKey);
     handleClose();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('file change');
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log('file is present');
-      if (file.size < 1000000) {
-        setAddedImage(file);
-        console.log('set image');
-      } else {
-        toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
-      }
-    }
   };
 
   return (
@@ -126,25 +107,6 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
         </Box>
         <ReactHookTextField name="description" control={control} />
         <FormHelperText error>{errors.description?.message}</FormHelperText>
-      </FormControl>
-      <FormControl fullWidth>
-        <FormLabel>Image</FormLabel>
-        <Button
-          variant="contained"
-          color="success"
-          component="label"
-          startIcon={<FileUploadIcon />}
-          sx={{
-            width: 'fit-content',
-            textTransform: 'none',
-            mt: '9.75px'
-          }}
-        >
-          Upload
-          <input type="file" accept="image/*" name="image" hidden onChange={handleFileChange} />
-          <Typography sx={{ ml: 1 }}>{addedImage?.name}</Typography>
-        </Button>
-        <FormHelperText error>{errors.image?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>
   );

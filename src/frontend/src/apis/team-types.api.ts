@@ -20,24 +20,16 @@ export const setTeamType = (id: string, teamTypeId: string) => {
   });
 };
 
-export const createTeamType = async (payload: CreateTeamTypePayload) => {
-  const formData = new FormData();
-  formData.append('name', payload.name);
-  formData.append('iconName', payload.iconName);
-  formData.append('description', payload.description);
-  if (payload.image) {
-    formData.append('image', payload.image);
-  }
-  return axios.post<TeamType>(apiUrls.teamTypesCreate(), formData);
+export const createTeamType = (payload: CreateTeamTypePayload) => {
+  return axios.post<TeamType>(apiUrls.teamTypesCreate(), payload);
 };
 
 export const editTeamType = (id: string, payload: CreateTeamTypePayload) => {
+  return axios.post<TeamType>(apiUrls.teamTypeEdit(id), payload);
+};
+
+export const setTeamTypeImage = (id: string, image: File) => {
   const formData = new FormData();
-  formData.append('name', payload.name);
-  formData.append('iconName', payload.iconName);
-  formData.append('description', payload.description);
-  if (payload.image) {
-    formData.append('image', payload.image);
-  }
-  return axios.post<TeamType>(apiUrls.teamTypeEdit(id), formData);
+  formData.append('image', image);
+  return axios.post(apiUrls.teamTypeSetImage(id), formData);
 };

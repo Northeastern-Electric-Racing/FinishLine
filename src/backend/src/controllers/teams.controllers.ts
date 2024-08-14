@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import TeamsService from '../services/teams.services';
 import { getCurrentUser } from '../utils/auth.utils';
 import { getOrganizationId } from '../utils/utils';
+import { HttpException } from '../utils/errors.utils';
 
 export default class TeamsController {
   static async getAllTeams(req: Request, res: Response, next: NextFunction) {
@@ -147,27 +148,6 @@ export default class TeamsController {
     }
   }
 
-  static async createTeamType(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { name, iconName, description } = req.body;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-      const file = req.file ? (req.file as Express.Multer.File) : null;
-
-      const createdTeamType = await TeamsService.createTeamType(
-        submitter,
-        name,
-        iconName,
-        description,
-        file ? file.path : null,
-        organizationId
-      );
-      res.status(200).json(createdTeamType);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
   static async getSingleTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamTypeId } = req.params;
@@ -192,12 +172,24 @@ export default class TeamsController {
     }
   }
 
+  static async createTeamType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, iconName, description } = req.body;
+      const submitter = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const createdTeamType = await TeamsService.createTeamType(submitter, name, iconName, description, organizationId);
+      res.status(200).json(createdTeamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async editTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, iconName, description } = req.body;
       const user = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
-      const file = req.file ? (req.file as Express.Multer.File) : null;
 
       const teamType = await TeamsService.editTeamType(
         user,
@@ -205,9 +197,22 @@ export default class TeamsController {
         name,
         iconName,
         description,
-        file ? file.path : null,
         organizationId
       );
+      res.status(200).json(teamType);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setTeamTypeImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { file } = req;
+      if (!file) throw new HttpException(400, 'Invalid or undefined image data');
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const teamType = await TeamsService.setTeamTypeImage(user, req.params.teamTypeId, file, organizationId);
       res.status(200).json(teamType);
     } catch (error: unknown) {
       next(error);

@@ -57,7 +57,6 @@ teamsRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
   nonEmptyString(body('description')),
-  upload.single('image'),
   validateInputs,
   TeamsController.createTeamType
 );
@@ -67,9 +66,15 @@ teamsRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('iconName')),
   nonEmptyString(body('description')),
-  upload.single('image'),
   validateInputs,
   TeamsController.editTeamType
 );
+
+teamsRouter.post(
+  'teamType/:teamTypeId/set-image',
+  upload.single('image'),
+  validateInputs,
+  TeamsController.setTeamTypeImage
+)
 
 export default teamsRouter;

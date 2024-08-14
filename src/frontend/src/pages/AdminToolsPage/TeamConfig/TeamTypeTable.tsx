@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Box, Typography, Icon } from '@mui/material';
+import { TableRow, TableCell, Box, Typography, Icon, Button } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
@@ -6,8 +6,10 @@ import AdminToolTable from '../AdminToolTable';
 import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
-import { useAllTeamTypes } from '../../../hooks/team-types.hooks';
-import { useHistoryState } from '../../../hooks/misc.hooks';
+import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
+import { useState } from 'react';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -16,8 +18,11 @@ const TeamTypeTable: React.FC = () => {
     isError: teamTypesIsError,
     error: teamTypesError
   } = useAllTeamTypes();
-  const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
-  const [editingTeamType, setEditingTeamType] = useHistoryState<TeamType | undefined>('', undefined);
+
+  const [createModalShow, setCreateModalShow] = useState<boolean>(false);
+  const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
+  const [addedImage, setAddedImage] = useState<File>();
+  const toast = useToast();
 
   if (!teamTypes || teamTypesIsLoading) {
     return <LoadingIndicator />;
@@ -26,10 +31,40 @@ const TeamTypeTable: React.FC = () => {
     return <ErrorPage message={teamTypesError?.message} />;
   }
 
+  const onSubmitTeamTypeImage = async (teamTypeId: string) => {
+    if (addedImage) {
+      const { mutateAsync } = useSetTeamTypeImage(teamTypeId);
+      await mutateAsync(addedImage);
+      toast.success('Image uploaded successfully!', 5000);
+      setAddedImage(undefined);
+    } else {
+      toast.error('No image selected for upload.', 5000);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('file change');
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('file is present');
+      if (file.size < 1000000) {
+        setAddedImage(file);
+        // console.log('Image uploaded:', file.name); // Debugging output
+      } else {
+        toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
+      }
+    }
+  };
+
   const teamTypesTableRows = teamTypes.map((teamType) => (
-    <TableRow onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer' }}>
-      <TableCell sx={{ border: '2px solid black' }}>{teamType.name}</TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+    <TableRow>
+      <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
+        {teamType.name}
+      </TableCell>
+      <TableCell
+        onClick={() => setEditingTeamType(teamType)}
+        sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Icon>{teamType.iconName}</Icon>
           <Typography variant="body1" sx={{ marginLeft: 1 }}>
@@ -37,7 +72,10 @@ const TeamTypeTable: React.FC = () => {
           </Typography>
         </Box>
       </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
+      <TableCell
+        onClick={() => setEditingTeamType(teamType)}
+        sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Typography variant="body1" sx={{ marginLeft: 1 }}>
             {teamType.description}
@@ -52,6 +90,47 @@ const TeamTypeTable: React.FC = () => {
             alt="Image Preview"
             sx={{ maxWidth: '100%', maxHeight: '200px', mb: 2 }}
           />
+        )}
+        <Button
+          variant="contained"
+          color="success"
+          component="label"
+          startIcon={<FileUploadIcon />}
+          sx={{
+            width: 'fit-content',
+            textTransform: 'none',
+            mt: '9.75px'
+          }}
+        >
+          Upload
+          <Box>
+            <input type="file" accept="image/*" name="image" hidden onChange={(e) => handleFileChange(e)} />
+          </Box>
+        </Button>
+        {addedImage && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2">{addedImage.name}</Typography>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setAddedImage(undefined)}
+              sx={{ textTransform: 'none', mt: 1, mr: 1 }}
+            >
+              Remove
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => onSubmitTeamTypeImage(teamType.teamTypeId)}
+              sx={{
+                width: 'fit-content',
+                textTransform: 'none',
+                mt: 1
+              }}
+            >
+              Submit
+            </Button>
+          </Box>
         )}
       </TableCell>
     </TableRow>

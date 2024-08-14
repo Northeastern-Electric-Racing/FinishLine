@@ -4,7 +4,7 @@
  */
 
 import { useQueryClient, useMutation, useQuery } from 'react-query';
-import { createTeamType, editTeamType, getAllTeamTypes, setTeamType } from '../apis/team-types.api';
+import { createTeamType, editTeamType, getAllTeamTypes, setTeamType, setTeamTypeImage } from '../apis/team-types.api';
 import { TeamType } from 'shared';
 
 export interface CreateTeamTypePayload {
@@ -81,6 +81,22 @@ export const useEditTeamType = (teamTypeId: string) => {
     ['team types', 'edit'],
     async (formData: CreateTeamTypePayload) => {
       const { data } = await editTeamType(teamTypeId, formData);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['team types']);
+      }
+    }
+  );
+};
+
+export const useSetTeamTypeImage = (teamTypeId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<TeamType, Error, File>(
+    ['team types', 'set image'],
+    async (image: File) => {
+      const { data } = await setTeamTypeImage(teamTypeId, image);
       return data;
     },
     {
