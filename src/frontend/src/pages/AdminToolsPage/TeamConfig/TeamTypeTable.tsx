@@ -50,7 +50,7 @@ const TeamTypeTable: React.FC = () => {
       console.log('file is present');
       if (file.size < 1000000) {
         setAddedImage(file);
-        // console.log('Image uploaded:', file.name); // Debugging output
+        // console.log('Image uploaded:', file.name);
       } else {
         toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
       }
