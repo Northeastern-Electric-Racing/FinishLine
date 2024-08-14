@@ -4,7 +4,7 @@
  */
 import { EditDesignReviewPayload } from '../hooks/design-reviews.hooks';
 import axios from '../utils/axios';
-import { DesignReview } from 'shared';
+import { DesignReview, DesignReviewStatus } from 'shared';
 import { apiUrls } from '../utils/urls';
 import { CreateDesignReviewsPayload } from '../hooks/design-reviews.hooks';
 import { designReviewTransformer } from './transformers/design-reviews.tranformers';
@@ -59,4 +59,10 @@ export const deleteDesignReview = async (id: string) => {
 
 export const markUserConfirmed = async (id: string, payload: { availability: number[] }) => {
   return axios.post<DesignReview>(apiUrls.designReviewMarkUserConfirmed(id), payload);
+};
+
+export const setDesignReviewStatus = async (id: string, payload: { status: DesignReviewStatus }) => {
+  return axios.post<DesignReview>(apiUrls.designReviewSetStatus(id), payload, {
+    transformResponse: (data) => designReviewTransformer(JSON.parse(data))
+  });
 };

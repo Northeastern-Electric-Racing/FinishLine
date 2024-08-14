@@ -48,6 +48,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const EventCard = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [markedStatus, setMarkedStatus] = useState(event.status);
     const name = event.wbsName;
 
     return (
@@ -57,11 +58,13 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           onHide={() => setIsSummaryModalOpen(false)}
           designReview={event}
           teamTypes={teamTypes}
+          markedStatus={markedStatus}
+          setMarkedStatus={setMarkedStatus}
         />
         <Box marginLeft={0.5} marginBottom={0.5} onClick={() => setIsSummaryModalOpen(true)} sx={{ cursor: 'pointer' }}>
           <Card
             sx={{
-              backgroundColor: designReviewStatusColor(event.status),
+              backgroundColor: designReviewStatusColor(markedStatus),
               borderRadius: 1,
               width: '100%',
               minHeight: 20,
@@ -83,6 +86,7 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
 
   const ExtraEventNote = ({ event }: { event: DesignReview }) => {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [markedStatus, setMarkedStatus] = useState(event.status);
 
     return (
       <>
@@ -91,6 +95,8 @@ const CalendarDayCard: React.FC<CalendarDayCardProps> = ({ cardDate, events, tea
           onHide={() => setIsSummaryModalOpen(false)}
           designReview={event}
           teamTypes={teamTypes}
+          markedStatus={markedStatus}
+          setMarkedStatus={setMarkedStatus}
         />
         <Link
           style={{ cursor: 'pointer' }}

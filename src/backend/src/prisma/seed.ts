@@ -32,6 +32,7 @@ import { transformDate } from '../utils/datetime.utils';
 import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import OrganizationsService from '../services/organizations.service';
+import RecruitmentServices from '../services/recruitment.services';
 
 const prisma = new PrismaClient();
 
@@ -1978,6 +1979,44 @@ const performSeed: () => Promise<void> = async () => {
       url: 'https://docs.google.com'
     }
   ]);
+
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Milestone 1',
+    'This is milestone 1',
+    new Date('11/12/24'),
+    organizationId
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Milestone 2',
+    'This is milestone 2',
+    new Date('11/13/24'),
+    organizationId
+  );
+  await RecruitmentServices.createMilestone(
+    batman,
+    'Milestone 3',
+    'This is milestone 3',
+    new Date('11/23/24'),
+    organizationId
+  );
+
+  await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', organizationId);
+
+  await RecruitmentServices.createFaq(
+    batman,
+    'When was FinishLine created?',
+    'FinishLine was created in 2019',
+    organizationId
+  );
+
+  await RecruitmentServices.createFaq(
+    batman,
+    'How many developers are working on FinishLine?',
+    '178 as of 2024',
+    organizationId
+  );
 };
 
 performSeed()
