@@ -28,6 +28,7 @@ recruitmentRouter.post(
   RecruitmentController.editMilestone
 );
 
+recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
 /* FAQ Section */
 recruitmentRouter.post(
   '/faq/create',
