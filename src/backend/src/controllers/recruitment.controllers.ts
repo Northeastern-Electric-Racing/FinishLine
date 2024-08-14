@@ -5,6 +5,16 @@ import RecruitmentServices from '../services/recruitment.services';
 import { User } from '@prisma/client';
 
 export default class RecruitmentController {
+  static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = getOrganizationId(req.headers);
+      const allMilestones = await RecruitmentServices.getAllMilestones(organizationId);
+      res.status(200).json(allMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMilestone(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, description, dateOfEvent } = req.body;
@@ -39,11 +49,14 @@ export default class RecruitmentController {
     }
   }
 
-  static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
+  static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
     try {
+      const { milestoneId } = req.params;
+      const deleter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
-      const allMilestones = await RecruitmentServices.getAllMilestones(organizationId);
-      res.status(200).json(allMilestones);
+
+      await RecruitmentServices.deleteMilestone(deleter, milestoneId, organizationId);
+      res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
     } catch (error: unknown) {
       next(error);
     }
@@ -59,14 +72,14 @@ export default class RecruitmentController {
     }
   }
 
-  static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
+  static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
-      const { milestoneId } = req.params;
-      const deleter = await getCurrentUser(res);
+      const { question, answer } = req.body;
+      const submitter = await getCurrentUser(res);
       const organizationId = getOrganizationId(req.headers);
 
-      await RecruitmentServices.deleteMilestone(deleter, milestoneId, organizationId);
-      res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
+      const faq = await RecruitmentServices.createFaq(submitter, question, answer, organizationId);
+      res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);
     }
@@ -80,19 +93,6 @@ export default class RecruitmentController {
       const user: User = await getCurrentUser(res);
       const editedFAQ = await RecruitmentServices.editFAQ(question, answer, user, organizationId, faqId);
       res.status(200).json(editedFAQ);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async createFaq(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { question, answer } = req.body;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const faq = await RecruitmentServices.createFaq(submitter, question, answer, organizationId);
-      res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);
     }

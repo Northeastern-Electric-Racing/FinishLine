@@ -2,34 +2,21 @@ import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typo
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
-import { exampleAppAdminUser } from '../../../tests/test-support/test-data/users.stub';
 import { NERButton } from '../../../components/NERButton';
+import { useAllFaqs } from '../../../hooks/recruitment.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useHistoryState } from '../../../hooks/misc.hooks';
+import ErrorPage from '../../ErrorPage';
+import CreateFaqFormModal from './CreateFaqFormModal';
+import EditFaqFormModal from './EditFaqFormModal';
 
 const FAQsTable = () => {
-  // const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
-  // const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
-  // const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFAQs();
+  const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
+  const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
+  const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFaqs();
 
-  // placeholder until endpoints are completed
-  const faqs: FrequentlyAskedQuestion[] = [
-    {
-      faqId: '1',
-      userCreated: exampleAppAdminUser,
-      dateCreated: new Date(),
-      question: 'Test quesiton 1?',
-      answer: '1'
-    },
-    {
-      question: 'Test question 2?',
-      answer: '2',
-      userCreated: exampleAppAdminUser,
-      dateCreated: new Date(),
-      faqId: '2'
-    }
-  ];
-
-  // if (!faqs || faqsIsLoading) return <LoadingIndicator />;
-  // if (faqsIsError) return <ErrorPage message={faqsError.message} />;
+  if (!faqs || faqsIsLoading) return <LoadingIndicator />;
+  if (faqsIsError) return <ErrorPage message={faqsError.message} />;
 
   const FAQsRows = faqs.map((faq: FrequentlyAskedQuestion, index: number) => (
     <TableRow>
@@ -52,9 +39,10 @@ const FAQsTable = () => {
       >
         <Typography sx={{ maxWidth: 300 }}>{faq.answer}</Typography>
         <Box sx={{ display: 'flex' }}>
-          <Button sx={{ p: 0.5, color: 'white' }}>
+          <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setFaqEditing(faq)}>
             <EditIcon />
           </Button>
+          {console.log(faq)}
           <Button sx={{ p: 0.5, color: 'white' }}>
             <DeleteIcon />
           </Button>
@@ -65,6 +53,9 @@ const FAQsTable = () => {
 
   return (
     <Box>
+      <CreateFaqFormModal open={createModalShow} handleClose={() => setCreateModalShow(false)} />
+      {faqEditing && <EditFaqFormModal open={!!faqEditing} handleClose={() => setFaqEditing(undefined)} faq={faqEditing} />}
+
       <MuiTable>
         <TableHead>
           <TableRow>
@@ -98,7 +89,7 @@ const FAQsTable = () => {
         <NERButton
           variant="contained"
           onClick={() => {
-            // setCreateModalShow(true);
+            setCreateModalShow(true);
           }}
         >
           Add FAQ

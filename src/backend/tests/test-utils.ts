@@ -155,7 +155,7 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
   await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization.organizationId);
 };
 
-export const createTestFAQ = async (orgId: string, frequentlyAskedQuestionId: string) => {
+export const createTestFAQ = async (orgId: string, faqId: string) => {
   const user = await prisma.user.create({
     data: {
       firstName: 'ADMIN',
@@ -167,7 +167,7 @@ export const createTestFAQ = async (orgId: string, frequentlyAskedQuestionId: st
 
   return await prisma.frequentlyAskedQuestion.create({
     data: {
-      frequentlyAskedQuestionId,
+      faqId,
       question: 'Joe mama',
       answer: 'Joe mama`s organization',
       userCreated: {
