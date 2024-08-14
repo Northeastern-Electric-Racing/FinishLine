@@ -111,6 +111,26 @@ export default class RecruitmentServices {
   }
 
   /**
+   * Gets all FAQs for the given organization Id
+   * @param organizationId organization Id of the faq
+   * @returns all the faqs from the given organization
+   */
+  static async getAllFaqs(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+    const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { organizationId }
+    });
+
+    return allFaqs;
+  }
+
+  /*
    * Deletes the milestone for the given milestoneId and organizationId
    * @param deleter the user deleting the milestone
    * @param milestoneId milestone id for the specific milestone
