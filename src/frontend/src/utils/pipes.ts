@@ -183,11 +183,12 @@ export const displayEnum = (enumString: string) => {
   return enumString;
 };
 
-export const meetingStartTimePipe = (times: number[]) => {
+export const meetingStartTimePipe = (times: number[], isEndTime = false) => {
+  if (isEndTime && times[0] % 12 === 0) return '10pm';
   const time = (times[0] % 12) + 10;
 
   return time === 12 ? time + 'pm' : time < 12 ? time + 'am' : time - 12 + 'pm';
-};
+};  
 
 // takes in a Date and returns it as a string in the form mm/dd/yy
 export const meetingDatePipe = (date?: Date) => {

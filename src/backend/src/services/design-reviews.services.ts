@@ -131,8 +131,6 @@ export default class DesignReviewsService {
     if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsNum.carNumber);
     if (wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('WBS Element');
 
-    if (meetingTimes.length === 0) throw new HttpException(400, 'There must be at least one meeting time');
-
     // checks if the meeting times are valid times and are all continous (ie. [1, 2, 3, 4])
     validateMeetingTimes(meetingTimes);
 

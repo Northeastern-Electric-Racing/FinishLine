@@ -104,11 +104,9 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
   };
 
   const handleEdit = async (data?: FinalizeReviewInformation) => {
-    const day = date.getDay();
-    const adjustedDay = day === 0 ? 6 : day - 1;
-    const times: number[] = [];
-    for (let i = adjustedDay * 12 + startTime; i < adjustedDay * 12 + endTime; i++) {
-      times.push(i);
+    const times = [];
+    for (let i = startTime; i < endTime; i++) {
+      times.push(i % 12);
     }
     try {
       const payload: EditDesignReviewPayload = {
@@ -225,7 +223,7 @@ const DesignReviewDetailPage: React.FC<DesignReviewDetailPageProps> = ({ designR
           <Select
             id="end-time-autocomplete"
             displayEmpty
-            renderValue={(value) => meetingStartTimePipe([value])}
+            renderValue={(value) => meetingStartTimePipe([value], true)}
             value={endTime}
             disabled={true}
             onChange={(event: SelectChangeEvent<number>) => setEndTime(Number(event.target.value))}
