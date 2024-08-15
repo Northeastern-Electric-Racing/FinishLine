@@ -31,6 +31,8 @@ export enum MONTH_NAMES {
   December
 }
 
+export type ExistingMeetingData = Map<number, { iconMap: Map<number, string> }>;
+
 export enum REVIEW_TIMES {
   '10-11 AM',
   '11-12 AM',

@@ -17,6 +17,8 @@ recruitmentRouter.post(
   RecruitmentController.createMilestone
 );
 
+recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController.deleteMilestone);
+
 recruitmentRouter.post(
   '/milestone/:milestoneId/edit',
   nonEmptyString(body('name')),
@@ -26,6 +28,7 @@ recruitmentRouter.post(
   RecruitmentController.editMilestone
 );
 
+recruitmentRouter.get('/milestones', RecruitmentController.getAllMilestones);
 /* FAQ Section */
 recruitmentRouter.post(
   '/faq/create',
@@ -34,6 +37,8 @@ recruitmentRouter.post(
   validateInputs,
   RecruitmentController.createFaq
 );
+
+recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs);
 
 recruitmentRouter.post(
   '/faq/:faqId/edit',

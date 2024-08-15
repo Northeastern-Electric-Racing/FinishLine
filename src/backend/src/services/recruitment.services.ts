@@ -111,6 +111,55 @@ export default class RecruitmentServices {
   }
 
   /**
+   * Gets all FAQs for the given organization Id
+   * @param organizationId organization Id of the faq
+   * @returns all the faqs from the given organization
+   */
+  static async getAllFaqs(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+    const allFaqs = await prisma.frequentlyAskedQuestion.findMany({
+      where: { organizationId }
+    });
+
+    return allFaqs;
+  }
+
+  /*
+   * Deletes the milestone for the given milestoneId and organizationId
+   * @param deleter the user deleting the milestone
+   * @param milestoneId milestone id for the specific milestone
+   * @param organizationId organization Id of the milestone
+   */
+  static async deleteMilestone(deleter: User, milestoneId: string, organizationId: string): Promise<void> {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete milestone');
+
+    const milestone = await prisma.milestone.findUnique({ where: { milestoneId } });
+
+    if (!milestone) throw new NotFoundException('Milestone', milestoneId);
+
+    if (milestone.dateDeleted) throw new DeletedException('Milestone', milestoneId);
+
+    await prisma.milestone.update({
+      where: { milestoneId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+  }
+
+  /**
    * Edits the FAQ
    * @param question the updated question value
    * @param answer the updated answer value
@@ -153,7 +202,7 @@ export default class RecruitmentServices {
     return updatedFAQ;
   }
 
-  /*
+  /**
    * Creates a new FAQ in the given organization Id
    * @param submitter a user who is making this request
    * @param question question to be displayed by the FAQ

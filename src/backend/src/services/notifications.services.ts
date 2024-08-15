@@ -173,9 +173,9 @@ export default class NotificationsService {
     const promises = Array.from(designReviewTeamMap).map(async ([slackId, designReviews]) => {
       const messageBlock = designReviews
         .map((designReview) => {
-          const zoomLink = designReview.zoomLink ? `Zoom Link: ${designReview.zoomLink}\n` : '';
+          const zoomLink = designReview.zoomLink ? `<${designReview.zoomLink}|Zoom Link>\n` : '';
           const questionDocLink = designReview.docTemplateLink
-            ? ` Question Doc Link: ${designReview.docTemplateLink}\n`
+            ? `<${designReview.docTemplateLink}|Question Doc Link>\n`
             : '';
           return (
             `${usersToSlackPings(designReview.attendees ?? [])} ${
