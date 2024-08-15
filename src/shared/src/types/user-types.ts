@@ -3,6 +3,8 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { AvailabilityCreateArgs } from './design-review-types';
+
 export interface User {
   userId: string;
   firstName: string;
@@ -26,6 +28,23 @@ export enum RoleEnum {
 
 export type ThemeName = 'DARK' | 'LIGHT';
 
+export type OrganizationPreview = Pick<
+  Organization,
+  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description'
+>;
+
+export interface Organization {
+  organizationId: String;
+  name: String;
+  dateCreated: Date | null;
+  userCreated: UserPreview;
+  dateDeleted?: Date | null;
+  userDeleted?: UserPreview;
+  treasurer?: UserPreview;
+  advisor?: UserPreview;
+  description: String;
+}
+
 /**
  * User object used purely for authentication purposes.
  */
@@ -44,6 +63,7 @@ export interface AuthenticatedUser {
   isHeadOfFinance?: boolean;
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
+  currentOrganization?: OrganizationPreview;
 }
 
 export interface UserSettings {
@@ -92,7 +112,7 @@ export interface UserWithScheduleSettings {
 export interface SetUserScheduleSettingsArgs {
   personalGmail: string;
   personalZoomLink: string;
-  availability: number[];
+  availability: AvailabilityCreateArgs[];
 }
 
 export interface SetUserScheduleSettingsPayload extends SetUserScheduleSettingsArgs {

@@ -23,7 +23,7 @@
     "prisma:generate": "cd src/backend; npx prisma generate",
     "prisma:manual": "yarn workspace backend prisma:manual",
     "prisma:studio": "cd src/backend; npx prisma studio",
-    "containerize": "cd containerization; docker-compose down && docker-compose build && docker-compose up -d && sleep 5 && cd ../ && yarn containerize:psql:init && yarn prisma:migrate",
+    "containerize": "cd containerization; docker compose down && docker compose build && docker compose up -d && sleep 5 && cd ../ && yarn containerize:psql:init && yarn prisma:migrate",
     "containerize:psql:init": "docker exec database psql -U postgres -c \"CREATE DATABASE nerpm;\" && yarn database:setup:script",
     "containerize:teste2e": "yarn containerize && yarn test:e2e",
     "lint": "npx eslint .",
@@ -51,6 +51,7 @@
     "@types/react-dom": "17.0.1"
   },
   "dependencies": {
+    "react-hook-form-persist": "^3.0.0",
     "typescript": "^4.1.5"
   },
   "devDependencies": {

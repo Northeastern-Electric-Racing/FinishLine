@@ -109,71 +109,76 @@ enum Design_Review_Status {
 }
 
 model User {
-  userId                     String                    @id @default(uuid())
-  firstName                  String
-  lastName                   String
-  googleAuthId               String                    @unique
-  email                      String                    @unique
-  emailId                    String?                   @unique
-  roles                      Role[]
-  userSettings               User_Settings?
-  userSecureSettings         User_Secure_Settings?
+  userId             String                @id @default(uuid())
+  firstName          String
+  lastName           String
+  googleAuthId       String                @unique
+  email              String                @unique
+  emailId            String?               @unique
+  roles              Role[]
+  userSettings       User_Settings?
+  userSecureSettings User_Secure_Settings?
+
   // Relation references
-  submittedChangeRequests    Change_Request[]          @relation(name: "submittedChangeRequests")
-  reviewedChangeRequests     Change_Request[]          @relation(name: "reviewedChangeRequests")
-  deletedChangeRequests      Change_Request[]          @relation(name: "deletedChangeRequests")
-  changeRequestsToReview     Change_Request[]          @relation(name: "requestedChangeRequestReviewers")
-  markedAslead               Activation_CR[]           @relation(name: "markAsLead")
-  markedAsmanager            Activation_CR[]           @relation(name: "markAsManager")
-  changes                    Change[]
-  lead                       WBS_Element[]             @relation(name: "lead")
-  manager                    WBS_Element[]             @relation(name: "manager")
-  Session                    Session[]
-  teamsAsMember              Team[]                    @relation(name: "teamsAsMember")
-  teamsAsHead                Team[]                    @relation(name: "teamsAsHead")
-  teamsAsLead                Team[]                    @relation(name: "teamsAsLead")
-  deletedWBSElements         WBS_Element[]             @relation(name: "deletedWbsElements")
-  checkedDescriptionBullets  Description_Bullet[]      @relation(name: "checkDescriptionBullets")
-  createdProposedSolutions   Proposed_Solution[]
-  createdTasks               Task[]                    @relation(name: "createdBy")
-  deletedTasks               Task[]                    @relation(name: "deletedBy")
-  assignedTasks              Task[]                    @relation(name: "assignedTo")
-  favoriteProjects           Project[]                 @relation(name: "favoritedBy")
-  reimbursementRequests      Reimbursement_Request[]   @relation(name: "reimbursementRequestRecipient")
-  reimbursementStatuses      Reimbursement_Status[]
-  reimbursements             Reimbursement[]           @relation(name: "purchaser")
-  submittedReimbursements    Reimbursement[]           @relation(name: "submitter")
-  createdLinks               Link[]                    @relation(name: "linkCreator")
-  createdLinkTypes           Link_Type[]               @relation(name: "linkTypeCreator")
-  deletedReceipts            Receipt[]                 @relation(name: "deletedReceipts")
-  createdReceipts            Receipt[]                 @relation(name: "receiptsCreatedBy")
-  deletedAssemblies          Assembly[]                @relation(name: "assemblyDeleter")
-  createdAssemblies          Assembly[]                @relation(name: "assemblyCreator")
-  deletedMaterials           Material[]                @relation(name: "materialDeleter")
-  createdMaterials           Material[]                @relation(name: "materialCreator")
-  archivedTeams              Team[]                    @relation(name: "userArchived")
-  createdMaterialTypes       Material_Type[]           @relation(name: "materialTypeCreator")
-  createdManufacturers       Manufacturer[]            @relation(name: "manufacturerCreator")
-  requiredDesignReviews      Design_Review[]           @relation(name: "requiredAttendee")
-  optionalDesignReviews      Design_Review[]           @relation(name: "optionalAttendee")
-  userConfirmedDesignReviews Design_Review[]           @relation(name: "confirmedAttendee")
-  userDeniedDesignReviews    Design_Review[]           @relation(name: "deniedAttendee")
-  attendedDesignReviews      Design_Review[]           @relation(name: "userAttended")
-  createdDesignReviews       Design_Review[]           @relation(name: "designReviewCreator")
-  deletedDesignReviews       Design_Review[]           @relation(name: "designReviewDeleter")
-  drScheduleSettings         Schedule_Settings?
-  createdWorkPackageTemplate Work_Package_Template[]   @relation(name: "workPackageTemplateCreator")
-  deletedWorkPackageTemplate Work_Package_Template[]   @relation(name: "workPackageTemplateDeleter")
-  wbsProposedlead            Wbs_Proposed_Changes[]    @relation(name: "wbslead")
-  wbsProposedmanager         Wbs_Proposed_Changes[]    @relation(name: "wbsmanager")
-  organizations              Organization[]            @relation(name: "organizationMembers")
-  deletedOrganizations       Organization[]            @relation(name: "organizationDeleter")
-  createdOrganizations       Organization[]            @relation(name: "organizationCreator")
-  createdDescriptionBullets  Description_Bullet_Type[] @relation(name: "descriptionBulletTypeCreator")
-  deletedDescriptionBullets  Description_Bullet_Type[] @relation(name: "descriptionBulletTypeDeleter")
-  createdUnits               Unit[]                    @relation(name: "unitCreator")
-  organizationsAsAdvisor     Organization[]            @relation(name: "advisor")
-  organizationsAsTreasurer   Organization[]            @relation(name: "treasurer")
+  submittedChangeRequests         Change_Request[]          @relation(name: "submittedChangeRequests")
+  reviewedChangeRequests          Change_Request[]          @relation(name: "reviewedChangeRequests")
+  deletedChangeRequests           Change_Request[]          @relation(name: "deletedChangeRequests")
+  changeRequestsToReview          Change_Request[]          @relation(name: "requestedChangeRequestReviewers")
+  markedAslead                    Activation_CR[]           @relation(name: "markAsLead")
+  markedAsmanager                 Activation_CR[]           @relation(name: "markAsManager")
+  changes                         Change[]
+  lead                            WBS_Element[]             @relation(name: "lead")
+  manager                         WBS_Element[]             @relation(name: "manager")
+  Session                         Session[]
+  teamsAsMember                   Team[]                    @relation(name: "teamsAsMember")
+  teamsAsHead                     Team[]                    @relation(name: "teamsAsHead")
+  teamsAsLead                     Team[]                    @relation(name: "teamsAsLead")
+  deletedWBSElements              WBS_Element[]             @relation(name: "deletedWbsElements")
+  checkedDescriptionBullets       Description_Bullet[]      @relation(name: "checkDescriptionBullets")
+  createdProposedSolutions        Proposed_Solution[]
+  createdTasks                    Task[]                    @relation(name: "createdBy")
+  deletedTasks                    Task[]                    @relation(name: "deletedBy")
+  assignedTasks                   Task[]                    @relation(name: "assignedTo")
+  favoriteProjects                Project[]                 @relation(name: "favoritedBy")
+  reimbursementRequests           Reimbursement_Request[]   @relation(name: "reimbursementRequestRecipient")
+  reimbursementStatuses           Reimbursement_Status[]
+  reimbursements                  Reimbursement[]           @relation(name: "purchaser")
+  submittedReimbursements         Reimbursement[]           @relation(name: "submitter")
+  createdLinks                    Link[]                    @relation(name: "linkCreator")
+  createdLinkTypes                Link_Type[]               @relation(name: "linkTypeCreator")
+  deletedReceipts                 Receipt[]                 @relation(name: "deletedReceipts")
+  createdReceipts                 Receipt[]                 @relation(name: "receiptsCreatedBy")
+  deletedAssemblies               Assembly[]                @relation(name: "assemblyDeleter")
+  createdAssemblies               Assembly[]                @relation(name: "assemblyCreator")
+  deletedMaterials                Material[]                @relation(name: "materialDeleter")
+  createdMaterials                Material[]                @relation(name: "materialCreator")
+  archivedTeams                   Team[]                    @relation(name: "userArchived")
+  createdMaterialTypes            Material_Type[]           @relation(name: "materialTypeCreator")
+  createdManufacturers            Manufacturer[]            @relation(name: "manufacturerCreator")
+  requiredDesignReviews           Design_Review[]           @relation(name: "requiredAttendee")
+  optionalDesignReviews           Design_Review[]           @relation(name: "optionalAttendee")
+  userConfirmedDesignReviews      Design_Review[]           @relation(name: "confirmedAttendee")
+  userDeniedDesignReviews         Design_Review[]           @relation(name: "deniedAttendee")
+  attendedDesignReviews           Design_Review[]           @relation(name: "userAttended")
+  createdDesignReviews            Design_Review[]           @relation(name: "designReviewCreator")
+  deletedDesignReviews            Design_Review[]           @relation(name: "designReviewDeleter")
+  drScheduleSettings              Schedule_Settings?
+  createdWorkPackageTemplate      Work_Package_Template[]   @relation(name: "workPackageTemplateCreator")
+  deletedWorkPackageTemplate      Work_Package_Template[]   @relation(name: "workPackageTemplateDeleter")
+  wbsProposedlead                 Wbs_Proposed_Changes[]    @relation(name: "wbslead")
+  wbsProposedmanager              Wbs_Proposed_Changes[]    @relation(name: "wbsmanager")
+  organizations                   Organization[]            @relation(name: "organizationMembers")
+  deletedOrganizations            Organization[]            @relation(name: "organizationDeleter")
+  createdOrganizations            Organization[]            @relation(name: "organizationCreator")
+  createdDescriptionBullets       Description_Bullet_Type[] @relation(name: "descriptionBulletTypeCreator")
+  deletedDescriptionBullets       Description_Bullet_Type[] @relation(name: "descriptionBulletTypeDeleter")
+  createdUnits                    Unit[]                    @relation(name: "unitCreator")
+  organizationsAsAdvisor          Organization[]            @relation(name: "advisor")
+  organizationsAsTreasurer        Organization[]            @relation(name: "treasurer")
+  createdFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionCreator")
+  deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
+  createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
+  deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
 }
 
 model Role {
@@ -710,8 +715,9 @@ model Team_Type {
 model Design_Review {
   designReviewId           String               @id @default(uuid())
   dateScheduled            DateTime             @db.Date
-  // Meeting times are an integer between 0 and 83 from 10am - 10pm (Monday - Sunday), eg. 0 = 10:00am Monday, 12 = 10:00am Tuesday
+  // Meeting times are an integer between 0 and 11 from 10am - 10pm for the date scheduled at hour intervals
   meetingTimes             Int[]
+  initialDateScheduled     DateTime             @db.Date
   dateCreated              DateTime             @default(now()) @db.Timestamp(3)
   userCreated              User                 @relation(fields: [userCreatedId], references: [userId], name: "designReviewCreator")
   userCreatedId            String
@@ -741,9 +747,9 @@ model Availability {
   scheduleSettingsId String
   scheduleSettings   Schedule_Settings @relation(fields: [scheduleSettingsId], references: [drScheduleSettingsId])
 
-  // Availibilies are integers between 0 and 83 from 10am - 10pm (Monday - Sunday) see meetingTime field in Design_Review
+  // Availibilies are integers between 0 and 11 from 10am - 10pm for a given day at hour intervals see meetingTime field in Design_Review
   availability Int[]
-  dateSet      DateTime @default(now())
+  dateSet      DateTime
 }
 
 model Schedule_Settings {
@@ -756,12 +762,15 @@ model Schedule_Settings {
 }
 
 model Meeting {
-  meetingId    String @id @default(uuid())
-  title        String
-  // meetingTimes are integers between 0 and 83 representing time after from 10am - 10pm (from Monday - Sunday) see meetingTime field in Design_Review
-  meetingTimes Int[]
-  team         Team?  @relation(fields: [teamId], references: [teamId])
-  teamId       String
+  meetingId String @id @default(uuid())
+  title     String
+
+  dateSet           DateTime
+  recurringInterval Int // the number of days between each meeting (0 = no recurring)
+  // meetingTimes are integers between 0 and 11 representing time from 10am - 10pm on the date the meeting is set for at hour intervals see meetingTime field in Design_Review
+  meetingTimes      Int[]
+  team              Team?    @relation(fields: [teamId], references: [teamId])
+  teamId            String
 }
 
 model Wbs_Proposed_Changes {
@@ -842,35 +851,69 @@ model Car {
 }
 
 model Organization {
-  organizationId String    @id @default(uuid())
-  name           String
-  dateCreated    DateTime  @default(now())
-  userCreatedId  String
-  userCreated    User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
-  dateDeleted    DateTime?
-  userDeletedId  String?
-  userDeleted    User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
-  treasurerId    String?
-  treasurer      User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
-  advisor        User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
-  advisorId      String?
+  organizationId        String    @id @default(uuid())
+  name                  String
+  dateCreated           DateTime  @default(now())
+  userCreatedId         String
+  userCreated           User      @relation(fields: [userCreatedId], references: [userId], name: "organizationCreator")
+  dateDeleted           DateTime?
+  userDeletedId         String?
+  userDeleted           User?     @relation(fields: [userDeletedId], references: [userId], name: "organizationDeleter")
+  treasurerId           String?
+  treasurer             User?     @relation(name: "treasurer", fields: [treasurerId], references: [userId])
+  advisor               User?     @relation(name: "advisor", fields: [advisorId], references: [userId])
+  advisorId             String?
+  description           String
+  applyInterestImageId  String?   @unique
+  exploreAsGuestImageId String?   @unique
 
   // Relation references
-  wbsElements            WBS_Element[]
-  users                  User[]                    @relation(name: "organizationMembers")
-  linkTypes              Link_Type[]
-  materialTypes          Material_Type[]
-  manufacturers          Manufacturer[]
-  teamTypes              Team_Type[]
-  teams                  Team[]
-  vendors                Vendor[]
-  expenseTypes           Account_Code[]
-  reimbursements         Reimbursement[]
-  units                  Unit[]
-  descriptionBulletTypes Description_Bullet_Type[]
-  workPackageTemplates   Work_Package_Template[]
-  roles                  Role[]
-  changeRequests         Change_Request[]
-  reimbursementReqeusts  Reimbursement_Request[]
-  usefulLinks            Link[]
+  wbsElements              WBS_Element[]
+  users                    User[]                    @relation(name: "organizationMembers")
+  linkTypes                Link_Type[]
+  materialTypes            Material_Type[]
+  manufacturers            Manufacturer[]
+  teamTypes                Team_Type[]
+  teams                    Team[]
+  vendors                  Vendor[]
+  expenseTypes             Account_Code[]
+  reimbursements           Reimbursement[]
+  units                    Unit[]
+  descriptionBulletTypes   Description_Bullet_Type[]
+  workPackageTemplates     Work_Package_Template[]
+  roles                    Role[]
+  changeRequests           Change_Request[]
+  reimbursementReqeusts    Reimbursement_Request[]
+  usefulLinks              Link[]
+  FrequentlyAskedQuestions FrequentlyAskedQuestion[]
+  Milestone                Milestone[]
+}
+
+model FrequentlyAskedQuestion {
+  frequentlyAskedQuestionId String       @id @default(uuid())
+  question                  String
+  answer                    String
+  userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId             String
+  userDeleted               User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId             String?
+  dateCreated               DateTime     @default(now())
+  dateDeleted               DateTime?
+  organizationId            String
+  organization              Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Milestone {
+  milestoneId    String       @id @default(uuid())
+  name           String
+  dateOfEvent    DateTime
+  description    String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "milestoneCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "milestoneDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }
