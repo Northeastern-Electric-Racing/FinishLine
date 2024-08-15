@@ -1,4 +1,4 @@
-import { WbsElement, wbsPipe } from 'shared';
+import { WbsElement, wbsPipe, WorkPackageTemplate } from 'shared';
 import { WPFormType } from './form';
 
 export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {
@@ -10,4 +10,21 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
     default:
       return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
   }
+};
+
+/**
+ * Returns only templates not belonging to a project-level template
+ * @param templates a list of work package templates
+ */
+export const getIndividualTemplates = (templates: WorkPackageTemplate[]): WorkPackageTemplate[] => {
+  const nameCounts = new Map<string, number>();
+
+  templates.forEach((template) =>
+    nameCounts.set(
+      template.templateName,
+      nameCounts.has(template.templateName) ? nameCounts.get(template.templateName)! + 1 : 1
+    )
+  );
+
+  return templates.filter((template) => nameCounts.get(template.templateName) === 1);
 };

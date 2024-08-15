@@ -12,13 +12,14 @@ import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../
 import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
+import { getIndividualTemplates } from '../../../utils/work-package.utils';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
   const history = useHistory();
 
   const {
-    data: workPackageTemplates,
+    data: allWorkPackageTemplates,
     isLoading: workPackageTemplatesIsLoading,
     isError: workPackageTemplatesIsError,
     error: workPackageTemplatesError
@@ -28,10 +29,12 @@ const WorkPackageTemplateTable = () => {
 
   const { mutateAsync } = useDeleteWorkPackageTemplate();
 
-  if (!workPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
+  if (!allWorkPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
-  const workPackageTemplateRows = workPackageTemplates.map((workPackageTemplate) => (
+  const individualTemplates = getIndividualTemplates(allWorkPackageTemplates);
+
+  const workPackageTemplateRows = individualTemplates.map((workPackageTemplate) => (
     <TableRow
       key={workPackageTemplate.workPackageTemplateId}
       onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`)}

@@ -106,6 +106,10 @@ export default class WorkPackageTemplatesService {
     if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create work package templates');
 
+    const foundTemplate = await prisma.work_Package_Template.findFirst({ where: { templateName } });
+
+    if (foundTemplate) throw new HttpException(400, 'A template with that name already exists!');
+
     // get the corresponding IDs of all work package templates in BlockedBy,
     // and throw an errror if the template doesn't exist
     await Promise.all(
@@ -304,13 +308,13 @@ export default class WorkPackageTemplatesService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create project-level templates');
 
-    smallTemplates.slice(0, smallTemplates.length - 1).map(
+    smallTemplates.map(
       async (template) =>
         await prisma.work_Package_Template.create({
           data: {
             workPackageTemplateId: template.id,
-            templateName: '',
-            templateNotes: '',
+            templateName,
+            templateNotes,
             duration: template.duration,
             workPackageName: template.workPackageName,
             blockedBy: {
@@ -321,21 +325,5 @@ export default class WorkPackageTemplatesService {
           }
         })
     );
-
-    const finalSmallTemplate = smallTemplates[smallTemplates.length - 1];
-
-    await prisma.work_Package_Template.create({
-      data: {
-        templateName,
-        templateNotes,
-        duration: finalSmallTemplate.duration,
-        workPackageName: finalSmallTemplate.workPackageName,
-        blockedBy: {
-          connect: (finalSmallTemplate.blockedByIds ?? []).map((blockedById) => ({ workPackageTemplateId: blockedById }))
-        },
-        userCreatedId: submitter.userId,
-        organizationId
-      }
-    });
   }
 }
