@@ -47,4 +47,13 @@ workPackageTemplatesRouter.delete(
   WorkPackageTemplatesController.deleteWorkPackageTemplate
 );
 
+workPackageTemplatesRouter.post(
+  '/project-level/create',
+  nonEmptyString(body('templateName')),
+  nonEmptyString(body('templateNotes')),
+  body('smallTemplates').isArray(),
+  validateInputs,
+  WorkPackageTemplatesController.createProjectLevelTemplate
+);
+
 export default workPackageTemplatesRouter;

@@ -20,7 +20,9 @@ import {
   getAllWorkPackageTemplates,
   deleteWorkPackageTemplate,
   getSingleWorkPackageTemplate,
-  createSingleWorkPackageTemplate
+  createSingleWorkPackageTemplate,
+  ProjectLevelTemplateApiInputs,
+  createSingleProjectLevelTemplate
 } from '../apis/work-packages.api';
 
 /**
@@ -198,6 +200,16 @@ export const useCreateSingleWorkPackageTemplate = () => {
     ['work package templates', 'create'],
     async (wptPayload: WorkPackageTemplateApiInputs) => {
       const { data } = await createSingleWorkPackageTemplate(wptPayload);
+      return data;
+    }
+  );
+};
+
+export const useCreateSingleProjectLevelTemplate = () => {
+  return useMutation<{ message: string }, Error, ProjectLevelTemplateApiInputs>(
+    ['work package templates', 'create'],
+    async (payload: ProjectLevelTemplateApiInputs) => {
+      const { data } = await createSingleProjectLevelTemplate(payload);
       return data;
     }
   );

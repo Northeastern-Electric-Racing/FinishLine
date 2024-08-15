@@ -293,4 +293,49 @@ export default class WorkPackageTemplatesService {
       }
     });
   }
+
+  static async createProjectLevelTemplate(
+    submitter: User,
+    templateName: string,
+    templateNotes: string,
+    smallTemplates: { workPackageName: string; duration: number; blockedByIds: string[]; id: string }[],
+    organizationId: string
+  ): Promise<void> {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('create project-level templates');
+
+    smallTemplates.slice(0, smallTemplates.length - 1).map(
+      async (template) =>
+        await prisma.work_Package_Template.create({
+          data: {
+            workPackageTemplateId: template.id,
+            templateName: '',
+            templateNotes: '',
+            duration: template.duration,
+            workPackageName: template.workPackageName,
+            blockedBy: {
+              connect: (template.blockedByIds ?? []).map((blockedById) => ({ workPackageTemplateId: blockedById }))
+            },
+            userCreatedId: submitter.userId,
+            organizationId
+          }
+        })
+    );
+
+    const finalSmallTemplate = smallTemplates[smallTemplates.length - 1];
+
+    await prisma.work_Package_Template.create({
+      data: {
+        templateName,
+        templateNotes,
+        duration: finalSmallTemplate.duration,
+        workPackageName: finalSmallTemplate.workPackageName,
+        blockedBy: {
+          connect: (finalSmallTemplate.blockedByIds ?? []).map((blockedById) => ({ workPackageTemplateId: blockedById }))
+        },
+        userCreatedId: submitter.userId,
+        organizationId
+      }
+    });
+  }
 }

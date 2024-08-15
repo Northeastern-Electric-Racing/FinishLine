@@ -1,7 +1,7 @@
 import { FormControl, FormLabel, Grid, IconButton, MenuItem, Select, Typography } from '@mui/material';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { ProjectLevelTemplateFormViewPayload } from './ProjectLevelTemplateFormView';
-import { Control, Controller, FieldErrors, UseFieldArrayAppend, UseFieldArrayRemove } from 'react-hook-form';
+import { Control, Controller, FieldErrors, UseFieldArrayAppend } from 'react-hook-form';
 import { WorkPackageStage } from 'shared';
 import { WorkPackageStageTextPipe } from '../../utils/enum-pipes';
 import { NERButton } from '../../components/NERButton';
@@ -15,7 +15,7 @@ interface ProjectLevelTemplateFormDetailsProps {
   firstTemplate?: boolean;
   lastTemplate?: boolean;
   smallTemplateAppend: UseFieldArrayAppend<ProjectLevelTemplateFormViewPayload, 'smallTemplates'>;
-  smallTemplateRemove: UseFieldArrayRemove;
+  onRemove: (index: number) => void;
   blockedByOptions: { id: string; label: string }[];
   isValid: boolean;
 }
@@ -27,7 +27,7 @@ const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsP
   firstTemplate,
   lastTemplate,
   smallTemplateAppend,
-  smallTemplateRemove,
+  onRemove,
   blockedByOptions,
   isValid
 }) => {
@@ -38,7 +38,7 @@ const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsP
           <Typography variant="h5">Work Package {index + 1}</Typography>
         </Grid>
         {!(firstTemplate && lastTemplate) && (
-          <IconButton color="error" onClick={() => smallTemplateRemove(index)}>
+          <IconButton color="error" onClick={() => onRemove(index)}>
             <Delete />
           </IconButton>
         )}
@@ -106,6 +106,7 @@ const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsP
       {lastTemplate && (
         <Grid item xs={12}>
           <NERButton
+            variant="contained"
             onClick={() => {
               smallTemplateAppend({
                 templateId: generateUUID(),

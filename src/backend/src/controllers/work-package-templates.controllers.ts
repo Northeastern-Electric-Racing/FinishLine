@@ -115,4 +115,24 @@ export default class WorkPackageTemplatesController {
       next(error);
     }
   }
+
+  static async createProjectLevelTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const { templateName, templateNotes, smallTemplates } = req.body;
+
+      await WorkPackageTemplatesService.createProjectLevelTemplate(
+        user,
+        templateName,
+        templateNotes,
+        smallTemplates,
+        organizationId
+      );
+      res.status(200).json({ message: `Project-level template ${templateName} successfully created` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

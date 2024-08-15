@@ -30,6 +30,19 @@ export interface WorkPackageTemplateApiInputs {
   workPackageName?: string;
 }
 
+interface SmallTemplateApiInputs {
+  id: string;
+  workPackageName: string;
+  duration: number;
+  blockedByIds: string[];
+}
+
+export interface ProjectLevelTemplateApiInputs {
+  templateName: string;
+  templateNotes: string;
+  smallTemplates: SmallTemplateApiInputs[];
+}
+
 /**
  * Fetch all work packages.
  */
@@ -165,4 +178,8 @@ export const createSingleWorkPackageTemplate = (payload: WorkPackageTemplateApiI
   return axios.post<{ message: string }>(apiUrls.workPackageTemplatesCreate(), {
     ...payload
   });
+};
+
+export const createSingleProjectLevelTemplate = (payload: ProjectLevelTemplateApiInputs) => {
+  return axios.post<{ message: string }>(apiUrls.projectLevelTemplatesCreate(), { ...payload });
 };

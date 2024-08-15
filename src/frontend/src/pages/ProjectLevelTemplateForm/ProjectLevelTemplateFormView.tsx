@@ -1,4 +1,4 @@
-import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
+import { ProjectLevelTemplateApiInputs } from '../../apis/work-packages.api';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -6,7 +6,7 @@ import PageLayout from '../../components/PageLayout';
 import { Box, Stack } from '@mui/system';
 import { NERButton } from '../../components/NERButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { FormControl, FormLabel, Grid, TextField, Typography } from '@mui/material';
+import { FormControl, FormLabel, Grid, Typography } from '@mui/material';
 import { useEffect } from 'react';
 import { WorkPackageStage } from 'shared';
 import ReactHookTextField from '../../components/ReactHookTextField';
@@ -15,10 +15,9 @@ import { generateUUID } from '../../utils/form';
 
 interface ProjectLevelTemplateFormViewProps {
   exitActiveMode: () => void;
-  mutateAsync: (_: WorkPackageTemplateApiInputs) => void;
+  mutateAsync: (_: ProjectLevelTemplateApiInputs) => void;
   defaultValues?: ProjectLevelTemplateFormViewPayload;
   schema: yup.AnyObjectSchema;
-  templateId?: string;
 }
 
 interface SmallTemplatePayload {
@@ -37,17 +36,16 @@ export interface ProjectLevelTemplateFormViewPayload {
 
 const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> = ({
   exitActiveMode,
-  mutateAsync,
   defaultValues,
   schema,
-  templateId
+  mutateAsync
 }) => {
   const {
-    register,
     handleSubmit,
     control,
     watch,
-    formState: { errors, isValid }
+    formState: { errors, isValid },
+    reset
   } = useForm<ProjectLevelTemplateFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -57,7 +55,7 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
         {
           templateId: generateUUID(),
           workPackageName: '',
-          durationWeeks: 0,
+          durationWeeks: 1,
           stage: 'NONE',
           blockedBy: []
         }
@@ -76,10 +74,15 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
 
   const watchedSmallTemplates = watch('smallTemplates');
 
-  useEffect(() => console.log(watchedSmallTemplates[0].stage));
+  useEffect(() => {}, [watchedSmallTemplates]);
+
+  const onSubmit = handleSubmit(async (data: any) => {
+    await mutateAsync(data);
+    reset();
+  });
 
   return (
-    <form id="project-level-template-form">
+    <form id="project-level-template-form" onSubmit={onSubmit}>
       <PageLayout
         stickyHeader
         title={defaultValues ? 'Edit Project-Level Template' : 'Create Project-Level Template'}
@@ -134,7 +137,7 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
               firstTemplate={index === 0}
               lastTemplate={index === smallTemplates.length - 1}
               smallTemplateAppend={smallTemplateAppend}
-              smallTemplateRemove={smallTemplateRemove}
+              onRemove={smallTemplateRemove}
               blockedByOptions={watchedSmallTemplates.slice(0, index).map((option, optionIndex) => {
                 return {
                   id: option.templateId,

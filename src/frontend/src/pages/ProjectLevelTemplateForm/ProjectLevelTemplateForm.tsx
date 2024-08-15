@@ -1,15 +1,15 @@
-import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
+import { ProjectLevelTemplateApiInputs } from '../../apis/work-packages.api';
 import * as yup from 'yup';
 import { useHistory } from 'react-router-dom';
 import ProjectLevelTemplateFormView, { ProjectLevelTemplateFormViewPayload } from './ProjectLevelTemplateFormView';
 
 interface ProjectLevelTemplateFormProps {
   templateId?: string;
-  mutateAsync: (_: WorkPackageTemplateApiInputs) => void;
+  mutateAsync: (_: ProjectLevelTemplateApiInputs) => void;
   defaultValues?: ProjectLevelTemplateFormViewPayload;
 }
 
-const ProjectLevelTemplateForm: React.FC<ProjectLevelTemplateFormProps> = ({ templateId, mutateAsync, defaultValues }) => {
+const ProjectLevelTemplateForm: React.FC<ProjectLevelTemplateFormProps> = ({ mutateAsync, defaultValues }) => {
   const smallTemplateSchema = yup.object().shape({
     workPackageName: yup.string().required('Work package name is required'),
     durationWeeks: yup.number().positive('Duration must be positive').required('Duration is required'),
@@ -27,7 +27,6 @@ const ProjectLevelTemplateForm: React.FC<ProjectLevelTemplateFormProps> = ({ tem
 
   return (
     <ProjectLevelTemplateFormView
-      templateId={templateId}
       mutateAsync={mutateAsync}
       defaultValues={defaultValues}
       schema={schema}
