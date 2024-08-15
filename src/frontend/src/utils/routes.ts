@@ -48,6 +48,9 @@ const ADMIN_TOOLS = `/admin-tools`;
 const WORK_PACKAGE_TEMPLATES = ADMIN_TOOLS + '/templates';
 const WORK_PACKAGE_TEMPLATE_NEW = WORK_PACKAGE_TEMPLATES + `/new`;
 const WORK_PACKAGE_TEMPLATE_EDIT = WORK_PACKAGE_TEMPLATES + '/edit';
+const PROJECT_LEVEL_TEMPLATES = WORK_PACKAGE_TEMPLATES + '/project-level';
+const PROJECT_LEVEL_TEMPLATE_NEW = PROJECT_LEVEL_TEMPLATES + '/new';
+
 /**************** Design Review Calendar ****************/
 const CALENDAR = `/design-review-calendar`;
 const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
@@ -95,6 +98,7 @@ export const routes = {
   WORK_PACKAGE_TEMPLATE_NEW,
   WORK_PACKAGE_TEMPLATE_EDIT,
   WORK_PACKAGE_TEMPLATES,
+  PROJECT_LEVEL_TEMPLATE_NEW,
 
   CALENDAR,
   DESIGN_REVIEW_BY_ID,

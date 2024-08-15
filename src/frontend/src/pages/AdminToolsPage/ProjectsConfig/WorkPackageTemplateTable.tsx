@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Box, IconButton, Typography } from '@mui/material';
+import { TableRow, TableCell, Box, IconButton, Typography, Tooltip } from '@mui/material';
 import AdminToolTable from '../AdminToolTable';
 import { NERButton } from '../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
@@ -57,13 +57,25 @@ const WorkPackageTemplateTable = () => {
   return (
     <Box>
       <AdminToolTable columns={[{ name: 'Name' }, { name: 'Description' }]} rows={workPackageTemplateRows} />
-      <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
-        {isAdmin(currentUser.role) && (
-          <NERButton variant="contained" size="small" onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}>
-            New Work Package Template
-          </NERButton>
-        )}
-      </Box>
+
+      {isAdmin(currentUser.role) && (
+        <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }} gap={1}>
+          <Tooltip title="A template used to create a single work package" placement="top" arrow>
+            <NERButton variant="contained" size="small" onClick={() => history.push(routes.WORK_PACKAGE_TEMPLATE_NEW)}>
+              New Work Package Template
+            </NERButton>
+          </Tooltip>
+          <Tooltip
+            title="A template used to create multiple work packages at once, including blockers"
+            placement="top"
+            arrow
+          >
+            <NERButton variant="contained" size="small" onClick={() => history.push(routes.PROJECT_LEVEL_TEMPLATE_NEW)}>
+              New Project-Level Template
+            </NERButton>
+          </Tooltip>
+        </Box>
+      )}
       <NERModal
         open={!!templateToDelete}
         title="Warning!"
