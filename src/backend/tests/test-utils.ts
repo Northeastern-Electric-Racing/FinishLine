@@ -254,6 +254,7 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
       userCreatedId: user.userId
     }
   });
+};
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
