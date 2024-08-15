@@ -39,7 +39,7 @@ teamsRouter.post(
   validateInputs,
   TeamsController.createTeam
 );
-teamsRouter.post('/:teamId/archive');
+teamsRouter.post('/:teamId/archive', TeamsController.archiveTeam);
 
 /**************** Team Type Section ****************/
 

@@ -62,6 +62,11 @@ export const useArchiveTeam = (teamId: string) => {
     async () => {
       const { data } = await archiveTeam(teamId);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['teams']);
+      }
     }
   )
 }

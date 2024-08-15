@@ -18,13 +18,14 @@ import DeleteTeamModal from './DeleteTeamModal';
 import SetTeamTypeModal from './SetTeamTypeModal';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { TeamPill } from './TeamPill';
-import { useDeleteDesignReview } from '../../hooks/design-reviews.hooks';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface ParamTypes {
   teamId: string;
 }
 
 const TeamSpecificPage: React.FC = () => {
+  const toast = useToast();
   const { teamId } = useParams<ParamTypes>();
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
   const user = useCurrentUser();
