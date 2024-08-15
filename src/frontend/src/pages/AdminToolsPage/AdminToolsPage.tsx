@@ -17,7 +17,7 @@ import { useState } from 'react';
 import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
-import AdminToolsRecruitment from './AdminToolsRecruitment';
+import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -31,8 +31,6 @@ const AdminToolsPage: React.FC = () => {
 
   const tabs = [];
 
-
-
   if (isUserHead || isUserAdmin) {
     tabs.push({ tabUrlValue: 'user-management', tabName: 'User Management' });
     tabs.push({ tabUrlValue: 'project-configuration', tabName: 'Project Configuration' });
@@ -44,7 +42,6 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'recruitment', tabName: 'Recruitment' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
-  
 
   const UserManagementTab = () => {
     return isUserAdmin ? (
@@ -68,20 +65,7 @@ const AdminToolsPage: React.FC = () => {
     ) : (
       <AdminToolsProjectsConfig />
     );
-  }; 
-
-  const RecruitmentTab = () => {
-    return isUserAdmin ? (
-      <>
-        <AdminToolsRecruitment />
-      </>
-    ) : (
-      <Box>
-        <p>You do not have access to this tab.</p>
-      </Box>
-    );
   };
-  
 
   return (
     <PageLayout
@@ -105,9 +89,8 @@ const AdminToolsPage: React.FC = () => {
         <ProjectConfigurationTab />
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
-      ) :
-      tabIndex === 3 ? (
-        <RecruitmentTab />
+      ) : tabIndex === 3 ? (
+        <AdminToolsRecruitmentConfig />
       ) : (
         <Box>
           <Box pb={2}>
