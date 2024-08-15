@@ -1,7 +1,7 @@
 import { WorkPackageTemplateApiInputs } from '../../apis/work-packages.api';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Controller, useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import PageLayout from '../../components/PageLayout';
 import { Box, Stack } from '@mui/system';
 import { NERButton } from '../../components/NERButton';
@@ -10,6 +10,8 @@ import { FormControl, FormLabel, Grid, TextField, Typography } from '@mui/materi
 import { useEffect } from 'react';
 import { WorkPackageStage } from 'shared';
 import ReactHookTextField from '../../components/ReactHookTextField';
+import ProjectLevelTemplateFormDetails from './ProjectLevelTemplateFormDetails';
+import { generateUUID } from '../../utils/form';
 
 interface ProjectLevelTemplateFormViewProps {
   exitActiveMode: () => void;
@@ -20,9 +22,11 @@ interface ProjectLevelTemplateFormViewProps {
 }
 
 interface SmallTemplatePayload {
+  templateId: string;
   workPackageName: string;
   durationWeeks: number;
-  stage: WorkPackageStage | undefined;
+  stage: WorkPackageStage | 'NONE';
+  blockedBy: string[];
 }
 
 export interface ProjectLevelTemplateFormViewPayload {
@@ -43,7 +47,7 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
     handleSubmit,
     control,
     watch,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm<ProjectLevelTemplateFormViewPayload>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -51,19 +55,28 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
       templateNotes: defaultValues?.templateNotes ?? '',
       smallTemplates: defaultValues?.smallTemplates ?? [
         {
+          templateId: generateUUID(),
           workPackageName: '',
           durationWeeks: 0,
-          stage: undefined
+          stage: 'NONE',
+          blockedBy: []
         }
       ]
     }
   });
 
-  const watchedName = watch('templateNotes');
+  const {
+    fields: smallTemplates,
+    append: smallTemplateAppend,
+    remove: smallTemplateRemove
+  } = useFieldArray({
+    control,
+    name: 'smallTemplates'
+  });
 
   const watchedSmallTemplates = watch('smallTemplates');
 
-  useEffect(() => console.log(watchedName));
+  useEffect(() => console.log(watchedSmallTemplates[0].stage));
 
   return (
     <form id="project-level-template-form">
@@ -76,19 +89,19 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
               <NERButton variant="contained" onClick={exitActiveMode} sx={{ mx: 1 }}>
                 Cancel
               </NERButton>
-              <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+              <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }} disabled={!isValid}>
                 Submit
               </NERSuccessButton>
             </Box>
           </Box>
         }
       >
-        <Stack rowGap={2}>
+        <Stack rowGap={4}>
           <Grid container rowSpacing={1} columnSpacing={2}>
             <Grid item xs={12}>
               <Typography variant="h5">Template Details</Typography>
             </Grid>
-            <Grid item md={6}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <FormLabel>Template Name</FormLabel>
                 <ReactHookTextField
@@ -100,7 +113,7 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
                 />
               </FormControl>
             </Grid>
-            <Grid item md={6}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <FormLabel>Template Notes</FormLabel>
                 <ReactHookTextField
@@ -113,8 +126,23 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
               </FormControl>
             </Grid>
           </Grid>
-          {watchedSmallTemplates.map((_, idx) => (
-            <p>Work Package #{idx + 1}</p>
+          {watchedSmallTemplates.map((_, index) => (
+            <ProjectLevelTemplateFormDetails
+              index={index}
+              control={control}
+              errors={errors}
+              firstTemplate={index === 0}
+              lastTemplate={index === smallTemplates.length - 1}
+              smallTemplateAppend={smallTemplateAppend}
+              smallTemplateRemove={smallTemplateRemove}
+              blockedByOptions={watchedSmallTemplates.slice(0, index).map((option, optionIndex) => {
+                return {
+                  id: option.templateId,
+                  label: option.workPackageName === '' ? `Work Package ${optionIndex + 1}` : option.workPackageName
+                };
+              })}
+              isValid={isValid}
+            />
           ))}
         </Stack>
       </PageLayout>

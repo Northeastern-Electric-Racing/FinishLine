@@ -13,7 +13,8 @@ const ProjectLevelTemplateForm: React.FC<ProjectLevelTemplateFormProps> = ({ tem
   const smallTemplateSchema = yup.object().shape({
     workPackageName: yup.string().required('Work package name is required'),
     durationWeeks: yup.number().positive('Duration must be positive').required('Duration is required'),
-    stage: yup.string().required('Work package stage is required')
+    stage: yup.string().required('Work package stage is required'),
+    blockedBy: yup.array().of(yup.string())
   });
 
   const schema = yup.object().shape({
