@@ -68,8 +68,8 @@ export const useArchiveTeam = (teamId: string) => {
         queryClient.invalidateQueries(['teams']);
       }
     }
-  )
-}
+  );
+};
 
 export const useSetTeamHead = (teamId: string) => {
   const queryClient = useQueryClient();

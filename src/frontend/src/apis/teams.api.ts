@@ -40,10 +40,9 @@ export const setTeamHead = (id: string, userId: string) => {
 };
 
 export const archiveTeam = (id: string) => {
-  console.log(apiUrls.teamsArchive(id))
+  console.log(apiUrls.teamsArchive(id));
   return axios.post<Team>(apiUrls.teamsArchive(id));
 };
-
 
 export const deleteTeam = (id: string) => {
   return axios.post<{ message: string }>(apiUrls.teamsDelete(id));

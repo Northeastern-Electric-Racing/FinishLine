@@ -78,15 +78,10 @@ const TeamSpecificPage: React.FC = () => {
   };
 
   const ArchiveTeamButton: React.FC<ArchiveTeamButtonProps> = ({ archive }) => (
-    <NERButton 
-      variant="contained" 
-      onClick={() => handleArchive()} 
-      disabled={!isAdmin(user.role)}
-    >
+    <NERButton variant="contained" onClick={() => handleArchive()} disabled={!isAdmin(user.role)}>
       {archive ? 'Unarchive Team' : 'Archive Team'}
     </NERButton>
   );
-  
 
   const TeamActionsDropdown = () => (
     <Box>
