@@ -6,10 +6,6 @@ import { AccessDeniedException } from '../utils/errors.utils';
 export default class UsersController {
   static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       const users = await UsersService.getAllUsers(req.organization);
 
       return res.status(200).json(users);
@@ -21,9 +17,6 @@ export default class UsersController {
   static async getSingleUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const requestedUser = await UsersService.getSingleUser(userId, req.organization);
 
@@ -33,11 +26,9 @@ export default class UsersController {
     }
   }
 
-  static async getUserSettings(_req: Request, res: Response, next: NextFunction) {
+  static async getUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-
-      const settings = await UsersService.getUserSettings(user.userId);
+      const settings = await UsersService.getUserSettings(req.currentUser.userId);
 
       return res.status(200).json(settings);
     } catch (error: unknown) {
@@ -45,10 +36,9 @@ export default class UsersController {
     }
   }
 
-  static async getCurrentUserSecureSettings(_req: Request, res: Response, next: NextFunction) {
+  static async getCurrentUserSecureSettings(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const secureSettings = await UsersService.getCurrentUserSecureSettings(user);
+      const secureSettings = await UsersService.getCurrentUserSecureSettings(req.currentUser);
 
       return res.status(200).json(secureSettings);
     } catch (error: unknown) {
@@ -58,12 +48,7 @@ export default class UsersController {
 
   static async getUsersFavoriteProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
-      const projects = await UsersService.getUsersFavoriteProjects(user.userId, req.organization);
+      const projects = await UsersService.getUsersFavoriteProjects(req.currentUser.userId, req.organization);
 
       return res.status(200).json(projects);
     } catch (error: unknown) {
@@ -74,7 +59,7 @@ export default class UsersController {
   static async updateUserSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { defaultTheme, slackId } = req.body;
-      const user = await getCurrentUser(res);
+      const user = req.currentUser;
 
       await UsersService.updateUserSettings(user, defaultTheme, slackId);
 
@@ -122,12 +107,8 @@ export default class UsersController {
     try {
       const { userId } = req.params;
       const { role } = req.body;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      const targetUser = await UsersService.updateUserRole(userId, user, role, req.organization);
+      const targetUser = await UsersService.updateUserRole(userId, req.currentUser, role, req.organization);
 
       return res.status(200).json(targetUser);
     } catch (error: unknown) {
@@ -138,12 +119,8 @@ export default class UsersController {
   static async getUserSecureSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params;
-      const submitter = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      const userSecureSettings = await UsersService.getUserSecureSetting(userId, submitter, req.organization);
+      const userSecureSettings = await UsersService.getUserSecureSetting(userId, req.currentUser, req.organization);
 
       return res.status(200).json(userSecureSettings);
     } catch (error: unknown) {
@@ -154,7 +131,7 @@ export default class UsersController {
   static async setUserSecureSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { nuid, street, city, state, zipcode, phoneNumber } = req.body;
-      const user = await getCurrentUser(res);
+      const user = req.currentUser;
 
       await UsersService.setUserSecureSettings(user, nuid, street, city, state, zipcode, phoneNumber);
 
@@ -167,10 +144,9 @@ export default class UsersController {
   static async setUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { personalGmail, personalZoomLink, availability } = req.body;
-      const user = await getCurrentUser(res);
 
       const updatedScheduleSettings = await UsersService.setUserScheduleSettings(
-        user,
+        req.currentUser,
         personalGmail,
         personalZoomLink,
         availability
@@ -185,9 +161,8 @@ export default class UsersController {
   static async getUserScheduleSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params;
-      const submitter = await getCurrentUser(res);
 
-      const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, submitter);
+      const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, req.currentUser);
       return res.status(200).json(userScheduleSettings);
     } catch (error: unknown) {
       return next(error);

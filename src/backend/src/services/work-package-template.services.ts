@@ -1,5 +1,5 @@
-import { User } from '@prisma/client';
-import { DescriptionBulletPreview, isAdmin, isGuest, OrganizationPreview, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import { User, Organization } from '@prisma/client';
+import { DescriptionBulletPreview, isAdmin, isGuest, WorkPackageStage, WorkPackageTemplate } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -37,7 +37,7 @@ export default class WorkPackageTemplatesService {
   static async getSingleWorkPackageTemplate(
     submitter: User,
     workPackageTemplateId: string,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<WorkPackageTemplate> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest)) {
       throw new AccessDeniedGuestException('get a work package template');
@@ -52,7 +52,8 @@ export default class WorkPackageTemplatesService {
 
     if (!template) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
 
-    if (template.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Work Package Template');
+    if (template.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Work Package Template');
 
     return workPackageTemplateTransformer(template);
   }
@@ -63,7 +64,7 @@ export default class WorkPackageTemplatesService {
    * @param organizationId - the id of the organization to get all work package templates for
    * @returns an array of all work package templates
    */
-  static async getAllWorkPackageTemplates(submitter: User, organization: OrganizationPreview): Promise<WorkPackageTemplate[]> {
+  static async getAllWorkPackageTemplates(submitter: User, organization: Organization): Promise<WorkPackageTemplate[]> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest)) {
       throw new AccessDeniedGuestException('get all work package templates.');
     }
@@ -101,7 +102,7 @@ export default class WorkPackageTemplatesService {
     duration: number,
     descriptionBullets: DescriptionBulletPreview[],
     blockedByIds: string[],
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<WorkPackageTemplate> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create work package templates');
@@ -176,7 +177,7 @@ export default class WorkPackageTemplatesService {
     blockedByIds: string[],
     descriptionBullets: DescriptionBulletPreview[],
     workPackageName: string | undefined,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<WorkPackageTemplate> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit work package templates');
@@ -245,7 +246,7 @@ export default class WorkPackageTemplatesService {
   static async deleteWorkPackageTemplate(
     submitter: User,
     workPackageTemplateId: string,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<void> {
     // Verify submitter is allowed to delete work packages
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))

@@ -1,16 +1,12 @@
 import { Manufacturer, MaterialType, Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
-import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 import BillOfMaterialsService from '../services/boms.services';
 
 export default class ProjectsController {
   static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const includeDeleted = req.params.deleted === 'true';
       const projects: Project[] = await ProjectsService.getAllProjects(req.organization, includeDeleted);
       return res.status(200).json(projects);
@@ -21,10 +17,6 @@ export default class ProjectsController {
 
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
 
       const project: Project = await ProjectsService.getSingleProject(wbsNumber, req.organization);
@@ -37,14 +29,10 @@ export default class ProjectsController {
 
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const user: User = await getCurrentUser(res);
       const { name, crId, carNumber, teamIds, budget, summary, leadId, managerId, links, descriptionBullets } = req.body;
 
       const createdProject = await ProjectsService.createProject(
-        user,
+        req.currentUser,
         crId,
         carNumber,
         name,
@@ -66,13 +54,9 @@ export default class ProjectsController {
 
   static async editProject(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const user = await getCurrentUser(res);
       const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
       const editedProject: Project = await ProjectsService.editProject(
-        user,
+        req.currentUser,
         projectId,
         crId,
         name,
@@ -93,14 +77,10 @@ export default class ProjectsController {
 
   static async setProjectTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
       const { teamId } = req.body;
 
-      await ProjectsService.setProjectTeam(user, wbsNumber, teamId, req.organization);
+      await ProjectsService.setProjectTeam(req.currentUser, wbsNumber, teamId, req.organization);
 
       return res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
     } catch (error: unknown) {
@@ -110,12 +90,8 @@ export default class ProjectsController {
 
   static async deleteProject(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-      const deletedProject: Project = await ProjectsService.deleteProject(user, wbsNumber, req.organization);
+      const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
       return res.status(200).json(deletedProject);
     } catch (error: unknown) {
       return next(error);
@@ -124,14 +100,9 @@ export default class ProjectsController {
 
   static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
-      const user = await getCurrentUser(res);
 
-      const targetProject = await ProjectsService.toggleFavorite(wbsNum, user, req.organization);
+      const targetProject = await ProjectsService.toggleFavorite(wbsNum, req.currentUser, req.organization);
 
       return res.status(200).json(targetProject);
     } catch (error: unknown) {
@@ -141,9 +112,6 @@ export default class ProjectsController {
 
   static async getAllLinkTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const linkTypes = await ProjectsService.getAllLinkTypes(req.organization);
       return res.status(200).json(linkTypes);
     } catch (error: unknown) {
@@ -153,13 +121,9 @@ export default class ProjectsController {
 
   static async createLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const user: User = await getCurrentUser(res);
       const { name, iconName, required } = req.body;
 
-      const newLinkType = await ProjectsService.createLinkType(user, name, iconName, required, req.organization);
+      const newLinkType = await ProjectsService.createLinkType(req.currentUser, name, iconName, required, req.organization);
       return res.status(200).json(newLinkType);
     } catch (error: unknown) {
       return next(error);
@@ -168,13 +132,15 @@ export default class ProjectsController {
 
   static async createAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
       const { name, pdmFileName } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const createAssembly = await BillOfMaterialsService.createAssembly(name, user, wbsNum, req.organization, pdmFileName);
+      const createAssembly = await BillOfMaterialsService.createAssembly(
+        name,
+        req.currentUser,
+        wbsNum,
+        req.organization,
+        pdmFileName
+      );
       return res.status(200).json(createAssembly);
     } catch (error: unknown) {
       return next(error);
@@ -198,13 +164,9 @@ export default class ProjectsController {
         linkUrl,
         notes
       } = req.body;
-      const creator = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const material = await BillOfMaterialsService.createMaterial(
-        creator,
+        req.currentUser,
         name,
         status,
         materialTypeName,
@@ -230,11 +192,7 @@ export default class ProjectsController {
   static async createManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const createdManufacturer = await BillOfMaterialsService.createManufacturer(user, name, req.organization);
+      const createdManufacturer = await BillOfMaterialsService.createManufacturer(req.currentUser, name, req.organization);
       return res.status(200).json(createdManufacturer);
     } catch (error: unknown) {
       return next(error);
@@ -243,12 +201,12 @@ export default class ProjectsController {
 
   static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const { manufacturerName } = req.params;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const deletedManufacturer = await BillOfMaterialsService.deleteManufacturer(user, manufacturerName, req.organization);
+      const deletedManufacturer = await BillOfMaterialsService.deleteManufacturer(
+        req.currentUser,
+        manufacturerName,
+        req.organization
+      );
       return res.status(200).json(deletedManufacturer);
     } catch (error: unknown) {
       return next(error);
@@ -257,12 +215,8 @@ export default class ProjectsController {
 
   static async deleteUnit(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const { unitId } = req.params;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const deletedUnit = await BillOfMaterialsService.deleteUnit(user, unitId, req.organization);
+      const deletedUnit = await BillOfMaterialsService.deleteUnit(req.currentUser, unitId, req.organization);
       return res.status(200).json(deletedUnit);
     } catch (error: unknown) {
       return next(error);
@@ -271,11 +225,10 @@ export default class ProjectsController {
 
   static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const manufacturers: Manufacturer[] = await BillOfMaterialsService.getAllManufacturers(user, req.organization);
+      const manufacturers: Manufacturer[] = await BillOfMaterialsService.getAllManufacturers(
+        req.currentUser,
+        req.organization
+      );
       return res.status(200).json(manufacturers);
     } catch (error: unknown) {
       return next(error);
@@ -284,11 +237,10 @@ export default class ProjectsController {
 
   static async getAllMaterialTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const materialTypes: MaterialType[] = await BillOfMaterialsService.getAllMaterialTypes(user, req.organization);
+      const materialTypes: MaterialType[] = await BillOfMaterialsService.getAllMaterialTypes(
+        req.currentUser,
+        req.organization
+      );
       return res.status(200).json(materialTypes);
     } catch (error: unknown) {
       return next(error);
@@ -298,11 +250,7 @@ export default class ProjectsController {
   static async createMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const createdMaterialType = await BillOfMaterialsService.createMaterialType(name, user, req.organization);
+      const createdMaterialType = await BillOfMaterialsService.createMaterialType(name, req.currentUser, req.organization);
       return res.status(200).json(createdMaterialType);
     } catch (error: unknown) {
       return next(error);
@@ -313,12 +261,8 @@ export default class ProjectsController {
     try {
       const { materialId } = req.params;
       const { assemblyId } = req.body;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const updatedMaterial = await BillOfMaterialsService.assignMaterialAssembly(
-        user,
+        req.currentUser,
         materialId,
         req.organization,
         assemblyId
@@ -332,11 +276,7 @@ export default class ProjectsController {
   static async deleteAssembly(req: Request, res: Response, next: NextFunction) {
     try {
       const { assemblyId } = req.params;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, user, req.organization);
+      const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, req.currentUser, req.organization);
       return res.status(200).json(deletedAssembly);
     } catch (error: unknown) {
       return next(error);
@@ -346,11 +286,11 @@ export default class ProjectsController {
   static async deleteMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { materialTypeName } = req.params;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const deletedMaterial = await BillOfMaterialsService.deleteMaterialType(user, materialTypeName, req.organization);
+      const deletedMaterial = await BillOfMaterialsService.deleteMaterialType(
+        req.currentUser,
+        materialTypeName,
+        req.organization
+      );
       return res.status(200).json(deletedMaterial);
     } catch (error: unknown) {
       return next(error);
@@ -360,11 +300,7 @@ export default class ProjectsController {
   static async deleteMaterial(req: Request, res: Response, next: NextFunction) {
     try {
       const { materialId } = req.params;
-      const user: User = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const updatedMaterial = await BillOfMaterialsService.deleteMaterial(user, materialId, req.organization);
+      const updatedMaterial = await BillOfMaterialsService.deleteMaterial(req.currentUser, materialId, req.organization);
       return res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
       return next(error);
@@ -373,7 +309,6 @@ export default class ProjectsController {
 
   static async editMaterial(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { materialId } = req.params;
       const {
         name,
@@ -390,11 +325,8 @@ export default class ProjectsController {
         linkUrl,
         notes
       } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
-        user,
+        req.currentUser,
         materialId,
         name,
         status,
@@ -419,11 +351,7 @@ export default class ProjectsController {
 
   static async getAllUnits(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const units = await BillOfMaterialsService.getAllUnits(user, req.organization);
+      const units = await BillOfMaterialsService.getAllUnits(req.currentUser, req.organization);
       return res.status(200).json(units);
     } catch (error: unknown) {
       return next(error);
@@ -433,11 +361,7 @@ export default class ProjectsController {
   static async createUnit(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const createdUnit = await BillOfMaterialsService.createUnit(name, user, req.organization);
+      const createdUnit = await BillOfMaterialsService.createUnit(name, req.currentUser, req.organization);
       return res.status(200).json(createdUnit);
     } catch (error: unknown) {
       return next(error);
@@ -446,14 +370,10 @@ export default class ProjectsController {
 
   static async editAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { assemblyId } = req.params;
       const { name, pdmFileName } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const updatedAssembly = await BillOfMaterialsService.editAssembly(
-        user,
+        req.currentUser,
         assemblyId,
         req.organization,
         name,
@@ -469,15 +389,11 @@ export default class ProjectsController {
     try {
       const { linkTypeName } = req.params;
       const { iconName, required } = req.body;
-      const submitter = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,
         iconName,
         required,
-        submitter,
+        req.currentUser,
         req.organization
       );
       return res.status(200).json(linkTypeUpdated);

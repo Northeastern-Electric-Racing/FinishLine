@@ -1,5 +1,5 @@
-import { Design_Review_Status, Team_Type, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership, DesignReviewStatus, OrganizationPreview } from 'shared';
+import { Design_Review_Status, Team_Type, User, Organization } from '@prisma/client';
+import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership, DesignReviewStatus } from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -37,7 +37,7 @@ export default class DesignReviewsService {
    * @param organizationId the organization id of the current user
    * @returns All of the design reviews
    */
-  static async getAllDesignReviews(organization: OrganizationPreview): Promise<DesignReview[]> {
+  static async getAllDesignReviews(organization: Organization): Promise<DesignReview[]> {
     const designReviews = await prisma.design_Review.findMany({
       where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId } },
       ...getDesignReviewQueryArgs(organization.organizationId)
@@ -51,7 +51,11 @@ export default class DesignReviewsService {
    * @param designReviewId the id of the design review to be deleted
    * @param organizationId the organization that the user is currently in
    */
-  static async deleteDesignReview(submitter: User, designReviewId: string, organization: OrganizationPreview): Promise<DesignReview> {
+  static async deleteDesignReview(
+    submitter: User,
+    designReviewId: string,
+    organization: Organization
+  ): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
       where: { designReviewId },
       ...getDesignReviewQueryArgs(organization.organizationId)
@@ -59,7 +63,8 @@ export default class DesignReviewsService {
 
     if (!designReview) throw new NotFoundException('Design Review', designReviewId);
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
-    if (designReview.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Design Review');
+    if (designReview.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Design Review');
 
     if (
       !(
@@ -98,7 +103,7 @@ export default class DesignReviewsService {
     optionalMemberIds: string[],
     wbsNum: WbsNumber,
     meetingTimes: number[],
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DesignReview> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
       throw new AccessDeniedException('create design review');
@@ -214,7 +219,7 @@ export default class DesignReviewsService {
   static async getSingleDesignReview(
     _submitter: User,
     designReviewId: string,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
       where: { designReviewId },
@@ -224,7 +229,8 @@ export default class DesignReviewsService {
     if (!designReview) throw new NotFoundException('Design Review', designReviewId);
 
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
-    if (designReview.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Design Review');
+    if (designReview.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Design Review');
 
     return designReviewTransformer(designReview);
   }
@@ -263,7 +269,7 @@ export default class DesignReviewsService {
     status: Design_Review_Status,
     attendees: string[],
     meetingTimes: number[],
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DesignReview> {
     // verify user is allowed to edit design review
     if (await userHasPermission(user.userId, organization.organizationId, isNotLeadership))
@@ -356,7 +362,7 @@ export default class DesignReviewsService {
     designReviewId: string,
     availability: number[],
     submitter: UserWithSettings,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
       where: { designReviewId },
@@ -365,7 +371,8 @@ export default class DesignReviewsService {
 
     if (!designReview) throw new NotFoundException('Design Review', designReviewId);
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
-    if (designReview.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Design Review');
+    if (designReview.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Design Review');
 
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
@@ -439,7 +446,7 @@ export default class DesignReviewsService {
     user: User,
     designReviewId: string,
     status: DesignReviewStatus,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DesignReview> {
     // validate the design review exists and is not deleted
     const originaldesignReview = await prisma.design_Review.findUnique({
@@ -477,7 +484,7 @@ export default class DesignReviewsService {
    * @param organizationId The organization that the user is currently in
    * @returns The retrieved Team Type
    */
-  static async getSingleTeamType(teamTypeId: string, organization: OrganizationPreview): Promise<Team_Type> {
+  static async getSingleTeamType(teamTypeId: string, organization: Organization): Promise<Team_Type> {
     const teamType = await prisma.team_Type.findUnique({
       where: { teamTypeId }
     });

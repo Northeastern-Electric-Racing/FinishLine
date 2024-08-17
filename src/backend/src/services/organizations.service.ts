@@ -1,5 +1,5 @@
-import { User } from '@prisma/client';
-import { LinkCreateArgs, OrganizationPreview, isAdmin } from 'shared';
+import { Organization, User } from '@prisma/client';
+import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
@@ -15,7 +15,7 @@ export default class OrganizationsService {
    * @param organizationId the organization which the links will be set up
    * @param links the links which are being set
    */
-  static async setUsefulLinks(submitter: User, organization: OrganizationPreview, links: LinkCreateArgs[]) {
+  static async setUsefulLinks(submitter: User, organization: Organization, links: LinkCreateArgs[]) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update useful links');
 
@@ -68,7 +68,7 @@ export default class OrganizationsService {
     applyInterestImage: Express.Multer.File,
     exploreAsGuestImage: Express.Multer.File,
     submitter: User,
-    organization: OrganizationPreview
+    organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update images');
@@ -92,7 +92,7 @@ export default class OrganizationsService {
     @param organizationId the organization to get the links for
     @returns the useful links for the organization
   */
-  static async getAllUsefulLinks(organization: OrganizationPreview) {
+  static async getAllUsefulLinks(organization: Organization) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: { usefulLinks: true }

@@ -1,4 +1,4 @@
-import { User, WBS_Element_Status } from '@prisma/client';
+import { User, WBS_Element_Status, Organization } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { hasBulletCheckingPermissions } from '../utils/description-bullets.utils';
 import { AccessDeniedException, HttpException, NotFoundException, DeletedException } from '../utils/errors.utils';
@@ -74,7 +74,7 @@ export default class DescriptionBulletsService {
    * @param organizationId organization id of the user
    * @returns all description bullet types
    */
-  static async getAllDescriptionBulletTypes(organization: OrganizationPreview): Promise<DescriptionBulletType[]> {
+  static async getAllDescriptionBulletTypes(organization: Organization): Promise<DescriptionBulletType[]> {
     const descriptionBulletTypes = await prisma.description_Bullet_Type.findMany({
       where: {
         organizationId: organization.organizationId
@@ -89,7 +89,7 @@ export default class DescriptionBulletsService {
     name: string,
     workPackageRequired: boolean,
     projectRequired: boolean,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DescriptionBulletType> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('create a description bullet type');
@@ -144,7 +144,7 @@ export default class DescriptionBulletsService {
     name: string,
     workPackageRequired: boolean,
     projectRequired: boolean,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<DescriptionBulletType> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('edit a description bullet type');

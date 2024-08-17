@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import {
   DescriptionBulletPreview,
   isAdmin,
@@ -6,7 +6,6 @@ import {
   isProject,
   LinkCreateArgs,
   LinkType,
-  OrganizationPreview,
   Project,
   WbsNumber,
   wbsPipe
@@ -32,7 +31,6 @@ import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { getDescriptionBulletQueryArgs } from '../prisma-query-args/description-bullets.query-args';
 import { getLinkTypeQueryArgs } from '../prisma-query-args/link-types.query-args';
-import { validateOrganizationId } from '../../tests/test-utils';
 
 export default class ProjectsService {
   /**
@@ -41,7 +39,7 @@ export default class ProjectsService {
    * @param includeDeleted whether or not to include deleted projects
    * @returns all the projects
    */
-  static async getAllProjects(organization: OrganizationPreview, includeDeleted: boolean): Promise<Project[]> {
+  static async getAllProjects(organization: Organization, includeDeleted: boolean): Promise<Project[]> {
     const projects = includeDeleted
       ? await prisma.project.findMany({
           where: { wbsElement: { organizationId: organization.organizationId } },
@@ -61,7 +59,7 @@ export default class ProjectsService {
    * @returns the request project
    * @throws if the wbsNumber is invalid, the project is not found, or the project is deleted
    */
-  static async getSingleProject(wbsNumber: WbsNumber, organization: OrganizationPreview): Promise<Project> {
+  static async getSingleProject(wbsNumber: WbsNumber, organization: Organization): Promise<Project> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
@@ -91,7 +89,7 @@ export default class ProjectsService {
     return projectTransformer(project);
   }
 
-  static async getSingleProjectWithQueryArgs(wbsNumber: WbsNumber, organization: OrganizationPreview) {
+  static async getSingleProjectWithQueryArgs(wbsNumber: WbsNumber, organization: Organization) {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     const { carNumber, projectNumber, workPackageNumber } = wbsNumber;
@@ -151,7 +149,7 @@ export default class ProjectsService {
     descriptionBullets: DescriptionBulletPreview[],
     leadId: string | null,
     managerId: string | null,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<Project> {
     const { userId } = user;
     if (await userHasPermission(userId, organization.organizationId, isGuest))
@@ -259,7 +257,7 @@ export default class ProjectsService {
     linkCreateArgs: LinkCreateArgs[],
     leadId: string | null,
     managerId: string | null,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<Project> {
     const { userId } = user;
     if (await userHasPermission(userId, organization.organizationId, isGuest))
@@ -315,12 +313,7 @@ export default class ProjectsService {
    * @param organizationId the id of the organization the user is currently in
    * @throws if the project isn't found, the team isn't found, or the user doesn't have access
    */
-  static async setProjectTeam(
-    user: User,
-    wbsNumber: WbsNumber,
-    teamId: string,
-    organization: OrganizationPreview
-  ): Promise<void> {
+  static async setProjectTeam(user: User, wbsNumber: WbsNumber, teamId: string, organization: Organization): Promise<void> {
     if (!isProject(wbsNumber)) throw new HttpException(400, `${wbsPipe(wbsNumber)} is not a valid project WBS #!`);
 
     // find the associated project
@@ -370,7 +363,7 @@ export default class ProjectsService {
    * delete the project is not admin/app-admin, or the project is not found.
    * @returns the project that is deleted.
    */
-  static async deleteProject(user: User, wbsNumber: WbsNumber, organization: OrganizationPreview): Promise<Project> {
+  static async deleteProject(user: User, wbsNumber: WbsNumber, organization: Organization): Promise<Project> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete projects');
     }
@@ -424,7 +417,7 @@ export default class ProjectsService {
     await Promise.all(
       workPackages.map(
         async (workPackage) =>
-          await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement), organization.organizationId)
+          await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement), organization)
       )
     );
 
@@ -439,7 +432,7 @@ export default class ProjectsService {
    * @returns the project that the user has favorited/unfavorited
    * @throws if the project wbs doesn't exist or is not corresponding to a project
    */
-  static async toggleFavorite(wbsNumber: WbsNumber, user: User, organization: OrganizationPreview): Promise<Project> {
+  static async toggleFavorite(wbsNumber: WbsNumber, user: User, organization: Organization): Promise<Project> {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
     const favorited = project.favoritedBy.some((currUser) => currUser.userId === user.userId);
@@ -474,7 +467,7 @@ export default class ProjectsService {
    * @param organizationId The organization the user is currently in
    * @returns all the link types in the users organization
    */
-  static async getAllLinkTypes(organization: OrganizationPreview): Promise<LinkType[]> {
+  static async getAllLinkTypes(organization: Organization): Promise<LinkType[]> {
     return (
       await prisma.link_Type.findMany({
         where: {
@@ -502,7 +495,7 @@ export default class ProjectsService {
     name: string,
     iconName: string,
     required: boolean,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<LinkType> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only admins can create link types');
@@ -541,7 +534,7 @@ export default class ProjectsService {
     iconName: string,
     required: boolean,
     submitter: User,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<LinkType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('Only an admin can update the linkType');

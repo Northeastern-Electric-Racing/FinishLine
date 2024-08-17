@@ -1,4 +1,4 @@
-import { User_Settings, User as PrismaUser, User } from '@prisma/client';
+import { User_Settings, User as PrismaUser, User, Organization } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import {
   Role,
@@ -12,7 +12,7 @@ import {
   UserScheduleSettings,
   UserWithScheduleSettings,
   AuthenticatedUser,
-  OrganizationPreview
+  Organization
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -43,7 +43,7 @@ export default class UsersService {
    * @param organizationId the id of the organization to get the users for
    * @returns a list of all the users
    */
-  static async getAllUsers(organization?: OrganizationPreview): Promise<UserWithScheduleSettings[]> {
+  static async getAllUsers(organization?: Organization): Promise<UserWithScheduleSettings[]> {
     if (!organizationId) {
       const users = await prisma.user.findMany({
         include: {
@@ -79,8 +79,11 @@ export default class UsersService {
    * @returns the user with the specified id
    * @throws if the given user doesn't exist
    */
-  static async getSingleUser(userId: string, organization: OrganizationPreview): Promise<SharedUser> {
-    const requestedUser = await prisma.user.findUnique({ where: { userId }, ...getUserQueryArgs(organization.organizationId) });
+  static async getSingleUser(userId: string, organization: Organization): Promise<SharedUser> {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      ...getUserQueryArgs(organization.organizationId)
+    });
     if (!requestedUser) throw new NotFoundException('User', userId);
     if (!requestedUser.organizations.map((org) => org.organizationId).includes(organization.organizationId))
       throw new AccessDeniedException('User not in organization');
@@ -127,7 +130,7 @@ export default class UsersService {
    * @param organizationId the id of the organization the user is in
    * @returns the user's favorite projects
    */
-  static async getUsersFavoriteProjects(userId: string, organization: OrganizationPreview): Promise<Project[]> {
+  static async getUsersFavoriteProjects(userId: string, organization: Organization): Promise<Project[]> {
     const requestedUser = await prisma.user.findUnique({ where: { userId } });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
@@ -350,7 +353,7 @@ export default class UsersService {
     targetUserId: string,
     user: PrismaUser,
     role: Role,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<SharedUser> {
     const targetUser = await prisma.user.findUnique({
       where: { userId: targetUserId },
@@ -400,7 +403,7 @@ export default class UsersService {
   static async getUserSecureSetting(
     userId: string,
     submitter: PrismaUser,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<UserSecureSettings> {
     await validateUserIsPartOfFinanceTeam(submitter, organization.organizationId);
     const secureSettings = await prisma.user_Secure_Settings.findUnique({

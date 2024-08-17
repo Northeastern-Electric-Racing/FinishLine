@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { WorkPackageTemplate } from 'shared';
-import { getCurrentUser } from '../utils/auth.utils';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 
 /** Controller for operations involving work packages templates. */
@@ -15,13 +14,8 @@ export default class WorkPackageTemplatesController {
         stage = null;
       }
 
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       const workPackageTemplate: WorkPackageTemplate = await WorkPackageTemplatesService.createWorkPackageTemplate(
-        user,
+        req.currentUser,
         templateName,
         templateNotes,
         workPackageName,
@@ -41,14 +35,10 @@ export default class WorkPackageTemplatesController {
   // Get a single work package template that corresponds to the given work package template id
   static async getSingleWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { workPackageTemplateId } = req.params;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const workPackageTemplate: WorkPackageTemplate = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
-        user,
+        req.currentUser,
         workPackageTemplateId,
         req.organization
       );
@@ -61,13 +51,8 @@ export default class WorkPackageTemplatesController {
   // Get all work package templates
   static async getAllWorkPackageTemplates(req: Request, res: Response, next: NextFunction) {
     try {
-      const submitter = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       const workPackageTemplates: WorkPackageTemplate[] = await WorkPackageTemplatesService.getAllWorkPackageTemplates(
-        submitter,
+        req.currentUser,
         req.organization
       );
 
@@ -81,17 +66,13 @@ export default class WorkPackageTemplatesController {
     try {
       const { workpackageTemplateId } = req.params;
       const { templateName, templateNotes, duration, blockedBy, descriptionBullets, workPackageName } = req.body;
-      const user = await getCurrentUser(res);
       let { stage } = req.body;
       if (stage === 'NONE') {
         stage = null;
       }
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const updatedWorkPackageTemplate = await WorkPackageTemplatesService.editWorkPackageTemplate(
-        user,
+        req.currentUser,
         workpackageTemplateId,
         templateName,
         templateNotes,
@@ -112,14 +93,12 @@ export default class WorkPackageTemplatesController {
   // Delete a work package template that corresponds to the given workPackageTemplateId
   static async deleteWorkPackageTemplate(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { workPackageTemplateId } = req.params;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      await WorkPackageTemplatesService.deleteWorkPackageTemplate(user, workPackageTemplateId, req.organization);
-      return res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
+      await WorkPackageTemplatesService.deleteWorkPackageTemplate(req.currentUser, workPackageTemplateId, req.organization);
+      return res
+        .status(200)
+        .json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
     } catch (error: unknown) {
       return next(error);
     }

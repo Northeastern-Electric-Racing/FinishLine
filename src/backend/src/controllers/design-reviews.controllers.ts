@@ -1,14 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import DesignReviewsService from '../services/design-reviews.services';
-import { getCurrentUser, getCurrentUserWithUserSettings } from '../utils/auth.utils';
+import { getCurrentUserWithUserSettings } from '../utils/auth.utils';
 import { User } from '@prisma/client';
 
 export default class DesignReviewsController {
   static async getAllDesignReviews(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const designReviews = await DesignReviewsService.getAllDesignReviews(req.organization);
       return res.status(200).json(designReviews);
     } catch (error: unknown) {
@@ -19,11 +16,7 @@ export default class DesignReviewsController {
   static async deleteDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const drId: string = req.params.designReviewId;
-      const user: User = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const deletedDesignReview = await DesignReviewsService.deleteDesignReview(user, drId, req.organization);
+      const deletedDesignReview = await DesignReviewsService.deleteDesignReview(req.currentUser, drId, req.organization);
       return res.status(200).json(deletedDesignReview);
     } catch (error: unknown) {
       return next(error);
@@ -32,14 +25,10 @@ export default class DesignReviewsController {
 
   static async createDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const submitter: User = await getCurrentUser(res);
       const { dateScheduled, teamTypeId, requiredMemberIds, optionalMemberIds, wbsNum, meetingTimes } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const createdDesignReview = await DesignReviewsService.createDesignReview(
-        submitter,
+        req.currentUser,
         dateScheduled,
         teamTypeId,
         requiredMemberIds,
@@ -57,12 +46,8 @@ export default class DesignReviewsController {
   static async getSingleDesignReview(req: Request, res: Response, next: NextFunction) {
     try {
       const drId: string = req.params.designReviewId;
-      const user: User = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      const designReview = await DesignReviewsService.getSingleDesignReview(user, drId, req.organization);
+      const designReview = await DesignReviewsService.getSingleDesignReview(req.currentUser, drId, req.organization);
       return res.status(200).json(designReview);
     } catch (error: unknown) {
       return next(error);
@@ -89,14 +74,8 @@ export default class DesignReviewsController {
 
       const { designReviewId } = req.params;
 
-      // get the user from the submitter
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       await DesignReviewsService.editDesignReview(
-        user,
+        req.currentUser,
         designReviewId,
         dateScheduled,
         teamTypeId,
@@ -123,9 +102,6 @@ export default class DesignReviewsController {
     try {
       const { availability } = req.body;
       const { designReviewId } = req.params;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
       const user = await getCurrentUserWithUserSettings(res);
 
       const updatedDesignReview = await DesignReviewsService.markUserConfirmed(
@@ -145,12 +121,13 @@ export default class DesignReviewsController {
     try {
       const { designReviewId } = req.params;
       const { status } = req.body;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      const updatedDesignReview = await DesignReviewsService.setStatus(user, designReviewId, status, req.organization);
+      const updatedDesignReview = await DesignReviewsService.setStatus(
+        req.currentUser,
+        designReviewId,
+        status,
+        req.organization
+      );
       return res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
       return next(error);

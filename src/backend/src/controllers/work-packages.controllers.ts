@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
-import { getCurrentUser } from '../utils/auth.utils';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -9,9 +8,6 @@ export default class WorkPackagesController {
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { query } = req;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
 
@@ -25,9 +21,6 @@ export default class WorkPackagesController {
   static async getSingleWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
       const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
 
@@ -40,9 +33,6 @@ export default class WorkPackagesController {
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNums } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
       return res.status(200).json(workPackages);
@@ -59,13 +49,8 @@ export default class WorkPackagesController {
       if (stage === 'NONE') {
         stage = null;
       }
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       const workPackage = await WorkPackagesService.createWorkPackage(
-        user,
+        req.currentUser,
         name,
         crId,
         stage,
@@ -90,13 +75,8 @@ export default class WorkPackagesController {
       if (stage === 'NONE') {
         stage = null;
       }
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       await WorkPackagesService.editWorkPackage(
-        user,
+        req.currentUser,
         workPackageId,
         name,
         crId,
@@ -118,13 +98,9 @@ export default class WorkPackagesController {
   // Delete a work package that corresponds to the given wbs number
   static async deleteWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      await WorkPackagesService.deleteWorkPackage(user, wbsNum, req.organization);
+      await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
       return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
       return next(error);
@@ -135,11 +111,11 @@ export default class WorkPackagesController {
   static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNum = validateWBS(req.params.wbsNum);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum, req.organization);
+      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
+        wbsNum,
+        req.organization
+      );
 
       return res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {
@@ -150,13 +126,9 @@ export default class WorkPackagesController {
   // Send reminder message to project lead of every work package that is due before/on given deadline
   static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { deadline } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline), req.organization);
+      await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
     } catch (error: unknown) {
       return next(error);
     }

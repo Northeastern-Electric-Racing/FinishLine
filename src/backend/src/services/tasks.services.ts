@@ -1,5 +1,5 @@
-import { Task_Priority, Task_Status, User } from '@prisma/client';
-import { isAdmin, isLeadership, isUnderWordCount, OrganizationPreview, Task, WbsNumber, wbsPipe } from 'shared';
+import { Task_Priority, Task_Status, User, Organization } from '@prisma/client';
+import { isAdmin, isLeadership, isUnderWordCount, Task, WbsNumber, wbsPipe } from 'shared';
 import prisma from '../prisma/prisma';
 import taskTransformer from '../transformers/tasks.transformer';
 import { NotFoundException, AccessDeniedException, HttpException, DeletedException } from '../utils/errors.utils';
@@ -35,7 +35,7 @@ export default class TasksService {
     priority: Task_Priority,
     status: Task_Status,
     assignees: string[],
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: {
@@ -192,7 +192,12 @@ export default class TasksService {
    * @returns the updated task
    * @throws if the task does not exist, the task is already deleted, any of the assignees don't exist, or if the user does not have permissions
    */
-  static async editTaskAssignees(user: User, taskId: string, assignees: string[], organization: OrganizationPreview): Promise<Task> {
+  static async editTaskAssignees(
+    user: User,
+    taskId: string,
+    assignees: string[],
+    organization: Organization
+  ): Promise<Task> {
     // Get the original task and check if it exists
     const originalTask = await prisma.task.findUnique({
       where: { taskId },
@@ -260,7 +265,7 @@ export default class TasksService {
    * @returns the deleted task
    * @throws if the user does not have permission
    */
-  static async deleteTask(currentUser: User, taskId: string, organization: OrganizationPreview): Promise<string> {
+  static async deleteTask(currentUser: User, taskId: string, organization: Organization): Promise<string> {
     const task = await prisma.task.findUnique({ where: { taskId }, ...getTaskQueryArgs(organization.organizationId) });
     if (!task) throw new NotFoundException('Task', taskId);
     if (task.dateDeleted) throw new DeletedException('Task', taskId);

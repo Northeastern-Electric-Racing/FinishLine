@@ -6,7 +6,6 @@ import {
   isAdmin,
   isGuest,
   isWorkPackage,
-  OrganizationPreview,
   WbsElementStatus,
   WbsNumber,
   wbsPipe,
@@ -50,7 +49,7 @@ export default class WorkPackagesService {
       status?: WbsElementStatus;
       daysUntilDeadline?: string;
     },
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<WorkPackage[]> {
     const workPackages = await prisma.work_Package.findMany({
       where: { wbsElement: { dateDeleted: null, organizationId: organization.organizationId } },
@@ -79,7 +78,7 @@ export default class WorkPackagesService {
    * @returns the desired work package
    * @throws if the work package with the desired WBS number is not found, is deleted or is not part of the given organization
    */
-  static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: OrganizationPreview): Promise<WorkPackage> {
+  static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: Organization): Promise<WorkPackage> {
     if (!isWorkPackage(parsedWbs)) {
       throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
     }
@@ -116,7 +115,7 @@ export default class WorkPackagesService {
    * @returns the work packages with the given WBS numbers
    * @throws if any of the work packages are not found or are not part of the organization
    */
-  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: OrganizationPreview): Promise<WorkPackage[]> {
+  static async getManyWorkPackages(wbsNums: WbsNumber[], organization: Organization): Promise<WorkPackage[]> {
     wbsNums.forEach((wbsNum) => {
       if (!isWorkPackage(wbsNum)) {
         throw new HttpException(
@@ -157,7 +156,7 @@ export default class WorkPackagesService {
     duration: number,
     blockedBy: WbsNumber[],
     descriptionBullets: DescriptionBulletPreview[],
-    organization: OrganizationPreview,
+    organization: Organization,
     wbsElemId?: string
   ): Promise<Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>> {
     if (await userHasPermission(user.userId, organization.organizationId, isGuest))
@@ -305,7 +304,7 @@ export default class WorkPackagesService {
     descriptionBullets: DescriptionBulletPreview[],
     leadId: string | null,
     managerId: string | null,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<WorkPackage> {
     const { userId } = user;
     // verify user is allowed to edit work packages
@@ -431,7 +430,7 @@ export default class WorkPackagesService {
    * @param wbsNum The work package number to be deleted
    * @param organizationId The organization id that the user is in
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, organization: OrganizationPreview): Promise<void> {
+  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, organization: Organization): Promise<void> {
     // Verify submitter is allowed to delete work packages
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work packages');
@@ -498,7 +497,7 @@ export default class WorkPackagesService {
    * @param organizationId the id of the organization that the user is currently in
    * @returns the blocking work packages for the given work package
    */
-  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: OrganizationPreview): Promise<WorkPackage[]> {
+  static async getBlockingWorkPackages(wbsNum: WbsNumber, organization: Organization): Promise<WorkPackage[]> {
     const { carNumber, projectNumber, workPackageNumber } = wbsNum;
 
     // is a project or car so just return empty array until we implement blocking projects/cars
@@ -538,7 +537,7 @@ export default class WorkPackagesService {
    * @param organizationId - the id of the organization that the user is currently in
    * @returns void
    */
-  static async slackMessageUpcomingDeadlines(user: User, deadline: Date, organization: OrganizationPreview): Promise<void> {
+  static async slackMessageUpcomingDeadlines(user: User, deadline: Date, organization: Organization): Promise<void> {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('send the upcoming deadlines slack messages');
 

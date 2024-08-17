@@ -1,17 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import DescriptionBulletsService from '../services/description-bullets.services';
-import { getCurrentUser } from '../utils/auth.utils';
 
 export default class DescriptionBulletsController {
   static async checkDescriptionBullet(req: Request, res: Response, next: NextFunction) {
     try {
       const { descriptionId } = req.body;
-      const user = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
-      const updatedDB = await DescriptionBulletsService.checkDescriptionBullet(user, descriptionId, req.organization);
+      const updatedDB = await DescriptionBulletsService.checkDescriptionBullet(
+        req.currentUser,
+        descriptionId,
+        req.organization
+      );
       return res.status(200).json(updatedDB);
     } catch (error: unknown) {
       return next(error);
@@ -20,10 +18,6 @@ export default class DescriptionBulletsController {
 
   static async getAllDescriptionBulletTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-
       const descriptionBulletTypes = await DescriptionBulletsService.getAllDescriptionBulletTypes(req.organization);
       return res.status(200).json(descriptionBulletTypes);
     } catch (error: unknown) {
@@ -34,13 +28,8 @@ export default class DescriptionBulletsController {
   static async createDescriptionBulletType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, workPackageRequired, projectRequired } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const user = await getCurrentUser(res);
-
       const newDescriptionBulletType = await DescriptionBulletsService.createDescriptionBulletType(
-        user,
+        req.currentUser,
         name,
         workPackageRequired,
         projectRequired,
@@ -55,13 +44,9 @@ export default class DescriptionBulletsController {
   static async editDescriptionBulletType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, workPackageRequired, projectRequired } = req.body;
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
-      const user = await getCurrentUser(res);
 
       const updatedDescriptionBulletType = await DescriptionBulletsService.editDescriptionBulletType(
-        user,
+        req.currentUser,
         name,
         workPackageRequired,
         projectRequired,

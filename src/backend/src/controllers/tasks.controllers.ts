@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/auth.utils';
 import TasksService from '../services/tasks.services';
 import { validateWBS, WbsNumber } from 'shared';
 import { User } from '@prisma/client';
@@ -9,13 +8,9 @@ export default class TasksController {
     try {
       const { title, deadline, priority, status, assignees, notes } = req.body;
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
-      const createdBy: User = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
       const task = await TasksService.createTask(
-        createdBy,
+        req.currentUser,
         wbsNum,
         title,
         notes,
@@ -36,9 +31,8 @@ export default class TasksController {
     try {
       const { title, notes, priority, deadline } = req.body;
       const { taskId } = req.params;
-      const user: User = await getCurrentUser(res);
 
-      const updateTask = await TasksService.editTask(user, taskId, title, notes, priority, deadline);
+      const updateTask = await TasksService.editTask(req.currentUser, taskId, title, notes, priority, deadline);
 
       return res.status(200).json(updateTask);
     } catch (error: unknown) {
@@ -50,9 +44,8 @@ export default class TasksController {
     try {
       const { status } = req.body;
       const { taskId } = req.params;
-      const user: User = await getCurrentUser(res);
 
-      const updatedTask = await TasksService.editTaskStatus(user, taskId, status);
+      const updatedTask = await TasksService.editTaskStatus(req.currentUser, taskId, status);
 
       return res.status(200).json(updatedTask);
     } catch (error: unknown) {
@@ -64,12 +57,8 @@ export default class TasksController {
     try {
       const { assignees } = req.body;
       const { taskId } = req.params;
-      const user: User = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      const updatedTask = await TasksService.editTaskAssignees(user, taskId, assignees, req.organization);
+      const updatedTask = await TasksService.editTaskAssignees(req.currentUser, taskId, assignees, req.organization);
 
       return res.status(200).json(updatedTask);
     } catch (error: unknown) {
@@ -80,12 +69,8 @@ export default class TasksController {
   static async deleteTask(req: Request, res: Response, next: NextFunction) {
     try {
       const { taskId } = req.params;
-      const user: User = await getCurrentUser(res);
-      if (!req.organization) {
-        return res.status(400).json({ message: 'Organization not found' });
-      }
 
-      const updatedTask = await TasksService.deleteTask(user, taskId, req.organization);
+      const updatedTask = await TasksService.deleteTask(req.currentUser, taskId, req.organization);
 
       return res.status(200).json(updatedTask);
     } catch (error: unknown) {

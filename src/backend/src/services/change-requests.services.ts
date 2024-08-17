@@ -5,7 +5,6 @@ import {
   isLeadership,
   isNotLeadership,
   isProject,
-  OrganizationPreview,
   ProjectProposedChangesCreateArgs,
   ProposedSolution,
   ProposedSolutionCreateArgs,
@@ -34,7 +33,7 @@ import {
   reviewProposedSolution,
   sendCRSubmitterReviewedNotification
 } from '../utils/change-requests.utils';
-import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma } from '@prisma/client';
+import { CR_Type, WBS_Element_Status, User, Scope_CR_Why_Type, Prisma, Organization } from '@prisma/client';
 import { getUserFullName, getUsersWithSettings, userHasPermission } from '../utils/users.utils';
 import { throwIfUncheckedDescriptionBullets } from '../utils/description-bullets.utils';
 import { buildChangeDetail } from '../utils/changes.utils';
@@ -56,7 +55,7 @@ export default class ChangeRequestsService {
    * @returns The change request with the given id
    * @throws if the change request does not exist
    */
-  static async getChangeRequestByID(crId: string, organization: OrganizationPreview): Promise<ChangeRequest> {
+  static async getChangeRequestByID(crId: string, organization: Organization): Promise<ChangeRequest> {
     const changeRequest = await prisma.change_Request.findUnique({
       where: { crId },
       ...getChangeRequestQueryArgs(organization.organizationId)
@@ -75,7 +74,7 @@ export default class ChangeRequestsService {
    * @param organization The organization the user is currently in
    * @returns All of the change requests
    */
-  static async getAllChangeRequests(organization: OrganizationPreview): Promise<ChangeRequest[]> {
+  static async getAllChangeRequests(organization: Organization): Promise<ChangeRequest[]> {
     const changeRequests = await prisma.change_Request.findMany({
       where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId ?? null } },
       ...getChangeRequestQueryArgs(organization.organizationId)
@@ -100,7 +99,7 @@ export default class ChangeRequestsService {
     crId: string,
     reviewNotes: string,
     accepted: boolean,
-    organization: OrganizationPreview,
+    organization: Organization,
     psId: string | null
   ): Promise<string> {
     // verify that the user is allowed review change requests
@@ -170,7 +169,7 @@ export default class ChangeRequestsService {
     foundCR: Prisma.Change_RequestGetPayload<ChangeRequestQueryArgs>,
     reviewer: User,
     psId: string | null,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<void> {
     if (!foundCR.scopeChangeRequest) throw new HttpException(400, 'No scope change request found!');
     if (!foundCR.scopeChangeRequest.wbsProposedChanges && !psId) {
@@ -421,7 +420,7 @@ export default class ChangeRequestsService {
     managerId: string,
     startDate: Date,
     confirmDetails: boolean,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<string> {
     // verify user is allowed to create activation change requests
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
@@ -528,7 +527,7 @@ export default class ChangeRequestsService {
     workPackageNumber: number,
     type: CR_Type,
     confirmDone: boolean,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<string> {
     // verify user is allowed to create stage gate change requests
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
@@ -643,7 +642,7 @@ export default class ChangeRequestsService {
     what: string,
     why: { type: Scope_CR_Why_Type; explain: string }[],
     proposedSolutions: ProposedSolutionCreateArgs[],
-    organization: OrganizationPreview,
+    organization: Organization,
     projectProposedChanges: ProjectProposedChangesCreateArgs | null,
     workPackageProposedChanges: WorkPackageProposedChangesCreateArgs | null
   ): Promise<StandardChangeRequest> {
@@ -943,7 +942,7 @@ export default class ChangeRequestsService {
     description: string,
     timelineImpact: number,
     scopeImpact: string,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<ProposedSolution> {
     // verify user is allowed to add proposed solutions
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
@@ -984,7 +983,7 @@ export default class ChangeRequestsService {
    * @param crId the change request to be deleted
    * @param organization the organization the user is currently in
    */
-  static async deleteChangeRequest(submitter: User, crId: string, organization: OrganizationPreview): Promise<void> {
+  static async deleteChangeRequest(submitter: User, crId: string, organization: Organization): Promise<void> {
     // ensure existence of change request
     const foundCR = await prisma.change_Request.findUnique({
       where: { crId },
@@ -1023,12 +1022,7 @@ export default class ChangeRequestsService {
    * @param crId The change request that will be reviewed
    * @param organization The organization the user is currently in
    */
-  static async requestCRReview(
-    submitter: User,
-    userIds: string[],
-    crId: string,
-    organization: OrganizationPreview
-  ): Promise<void> {
+  static async requestCRReview(submitter: User, userIds: string[], crId: string, organization: Organization): Promise<void> {
     const reviewers = await getUsersWithSettings(userIds);
 
     // check if any reviewers' role is below leadership

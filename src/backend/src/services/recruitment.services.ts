@@ -1,9 +1,8 @@
-import { User } from '@prisma/client';
-import { Organization, OrganizationPreview, isAdmin } from 'shared';
+import { User, Organization } from '@prisma/client';
+import { isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { validateOrganizationId } from '../../tests/test-utils';
 
 export default class RecruitmentServices {
   /**
@@ -20,7 +19,7 @@ export default class RecruitmentServices {
     name: string,
     description: string,
     dateOfEvent: Date,
-    organization: OrganizationPreview
+    organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create a milestone');
@@ -44,7 +43,7 @@ export default class RecruitmentServices {
     description: string,
     dateOfEvent: Date,
     milestoneId: string,
-    organization: OrganizationPreview
+    organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create a milestone');
@@ -83,7 +82,7 @@ export default class RecruitmentServices {
    * @param organizationId organization Id of the milestone
    * @returns all the milestones from the given organization
    */
-  static async getAllMilestones(organization: OrganizationPreview) {
+  static async getAllMilestones(organization: Organization) {
     const allMilestones = await prisma.milestone.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null }
     });
@@ -99,7 +98,7 @@ export default class RecruitmentServices {
    * @param organizationId the organization Id of the FAQ
    * @returns A newly created FAQ
    */
-  static async createFaq(submitter: User, question: string, answer: string, organization: OrganizationPreview) {
+  static async createFaq(submitter: User, question: string, answer: string, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create an faq');
 

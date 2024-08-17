@@ -39,7 +39,7 @@ export interface Organization {
   dateDeleted?: Date | null;
   userDeleted?: UserPreview;
   treasurer?: UserPreview;
-  advisor?: User;
+  advisor?: UserPreview;
   description: string;
 }
 

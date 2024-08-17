@@ -3,9 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, HttpException, NotFoundException } from './errors.utils';
-import { User, User_Secure_Settings, User_Settings } from '@prisma/client';
+import { Organization, User, User_Secure_Settings, User_Settings } from '@prisma/client';
 import { IncomingHttpHeaders } from 'http';
-import { OrganizationPreview } from 'shared';
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'i<3security';
 
@@ -105,10 +104,9 @@ export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
 
   const user = await prisma.user.findUnique({
-    where: { userId },
+    where: { userId }
   });
   if (!user) throw new NotFoundException('User', userId);
-  console.log('user', user);
   return user;
 };
 
@@ -120,7 +118,7 @@ export type UserWithSecureSettings = UserWithSettings & {
   userSecureSettings: User_Secure_Settings | null;
 };
 
-export const getOrganization = async (headers: IncomingHttpHeaders): Promise<OrganizationPreview> => {
+export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Organization> => {
   let { organizationid } = headers;
 
   const isProd = process.env.NODE_ENV === 'production';
@@ -170,7 +168,7 @@ export const getCurrentUserWithUserSettings = async (res: Response): Promise<Use
 export const getUserandOrganization = async (req: Request, res: Response, next: NextFunction) => {
   const user = await getCurrentUser(res);
   const organization = await getOrganization(req.headers);
-  req.user = user;
+  req.currentUser = user;
   req.organization = organization;
   return next();
 };
