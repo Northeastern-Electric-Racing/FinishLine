@@ -12,7 +12,7 @@ import {
   UserScheduleSettings,
   UserWithScheduleSettings,
   AuthenticatedUser,
-  Organization
+  AvailabilityCreateArgs
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -501,14 +501,14 @@ export default class UsersService {
    * @param user the user to set the schedule settings for
    * @param personalGmail the user's personal gmail
    * @param personalZoomLink the user's personal zoom link
-   * @param availability the user's availibility
+   * @param availabilities the user's availibility
    * @returns the id of the user's schedule settings
    */
   static async setUserScheduleSettings(
     user: User,
     personalGmail: string,
     personalZoomLink: string,
-    availability: number[]
+    availabilities: AvailabilityCreateArgs[]
   ): Promise<UserScheduleSettings> {
     if (personalGmail !== '') {
       const existingUser = await prisma.schedule_Settings.findFirst({
@@ -534,7 +534,7 @@ export default class UsersService {
       ...getUserScheduleSettingsQueryArgs()
     });
 
-    await updateUserAvailability(availability, newUserScheduleSettings, user, new Date());
+    await updateUserAvailability(availabilities, newUserScheduleSettings, user);
 
     return userScheduleSettingsTransformer(newUserScheduleSettings);
   }

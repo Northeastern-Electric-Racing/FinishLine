@@ -47,6 +47,37 @@ export default class RecruitmentController {
     }
   }
 
+  static async getAllFaqs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allFaqs = await RecruitmentServices.getAllFaqs(req.organization);
+      res.status(200).json(allFaqs);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { milestoneId } = req.params;
+
+      await RecruitmentServices.deleteMilestone(req.currentUser, milestoneId, req.organization);
+      res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editFAQ(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { question, answer } = req.body;
+      const { faqId } = req.params;
+      const editedFAQ = await RecruitmentServices.editFAQ(question, answer, req.currentUser, req.organization, faqId);
+      res.status(200).json(editedFAQ);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
       const { question, answer } = req.body;

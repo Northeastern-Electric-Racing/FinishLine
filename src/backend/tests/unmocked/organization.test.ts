@@ -1,5 +1,4 @@
 import { LinkCreateArgs } from 'shared';
-import OrganizationsService from '../../src/services/organizations.service';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
@@ -7,6 +6,7 @@ import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
 import { uploadFile } from '../../src/utils/google-integration.utils';
 import { Mock, vi } from 'vitest';
+import OrganizationsService from '../../src/services/organizations.services';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()

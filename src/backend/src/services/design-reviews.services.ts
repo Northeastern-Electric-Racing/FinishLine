@@ -1,5 +1,13 @@
 import { Design_Review_Status, Team_Type, User, Organization } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership, DesignReviewStatus } from 'shared';
+import {
+  DesignReview,
+  WbsNumber,
+  isAdmin,
+  isLeadership,
+  isNotLeadership,
+  DesignReviewStatus,
+  AvailabilityCreateArgs
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -86,7 +94,7 @@ export default class DesignReviewsService {
   /**
    * Create a design review
    * @param submitter User submitting the design review
-   * @param dateScheduled when the design review is scheduled for
+   * @param initialDate what initial date to base the meeting times off of
    * @param teamTypeId team type id
    * @param requiredMemberIds ids of members who are required to go
    * @param optionalMemberIds ids of members who do not have to go
@@ -97,7 +105,7 @@ export default class DesignReviewsService {
    */
   static async createDesignReview(
     submitter: User,
-    dateScheduled: string,
+    initialDate: string,
     teamTypeId: string,
     requiredMemberIds: string[],
     optionalMemberIds: string[],
@@ -128,28 +136,18 @@ export default class DesignReviewsService {
     if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsNum.carNumber);
     if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('WBS Element');
 
-    if (meetingTimes.length === 0) throw new HttpException(400, 'There must be at least one meeting time');
-
     // checks if the meeting times are valid times and are all continous (ie. [1, 2, 3, 4])
-    for (let i = 0; i < meetingTimes.length; i++) {
-      if (i === meetingTimes.length - 1) {
-        if (meetingTimes[i] < 0 || meetingTimes[i] > 83) {
-          throw new HttpException(400, 'Meeting times have to be in range 0-83');
-        }
-        continue;
-      }
-      if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 83) {
-        throw new HttpException(400, 'Meeting times have to be continous and in range 0-83');
-      }
-    }
+    validateMeetingTimes(meetingTimes);
 
-    const date = new Date(dateScheduled);
-    if (new Date(date.toDateString()) < new Date(new Date().toDateString())) {
-      throw new HttpException(400, 'Design review cannot be scheduled for a past day');
+    const date = new Date(initialDate);
+
+    if (date.getTime() < new Date().getTime()) {
+      throw new HttpException(400, 'Design review cannot be initially set for a past day');
     }
 
     const designReview = await prisma.design_Review.create({
       data: {
+        initialDateScheduled: date,
         dateScheduled: date,
         dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
@@ -289,7 +287,7 @@ export default class DesignReviewsService {
       throw new HttpException(400, 'location is required for in person design reviews');
     }
 
-    // throws if meeting times are not: consecutive and between 0-83
+    // throws if meeting times are not: consecutive and between 0-11
     meetingTimes = validateMeetingTimes(meetingTimes);
 
     // docTemplateLink is required if the status is scheduled or done
@@ -354,13 +352,13 @@ export default class DesignReviewsService {
    * Edits a design review by confirming a given user's availability and also updating their schedule settings with the given availability
    * @param submitter the member that is being confirmed
    * @param designReviewId the id of the design review
-   * @param availability the given member's availabilities
+   * @param availabilities the given member's availabilities
    * @param organizationId the organization that the user is currently in
    * @returns the modified design review with its updated confirmedMembers
    */
   static async markUserConfirmed(
     designReviewId: string,
-    availability: number[],
+    availabilities: AvailabilityCreateArgs[],
     submitter: UserWithSettings,
     organization: Organization
   ): Promise<DesignReview> {
@@ -387,8 +385,11 @@ export default class DesignReviewsService {
         data: {
           userId: submitter.userId,
           availabilities: {
-            create: {
-              availability
+            createMany: {
+              data: availabilities.map((availability) => ({
+                availability: availability.availability,
+                dateSet: availability.dateSet
+              }))
             }
           },
           personalGmail: '',
@@ -398,7 +399,7 @@ export default class DesignReviewsService {
       });
     }
 
-    await updateUserAvailability(availability, userSettings, submitter, designReview.dateScheduled);
+    await updateUserAvailability(availabilities, userSettings, submitter);
 
     // set submitter as confirmed if they're not already
     if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
