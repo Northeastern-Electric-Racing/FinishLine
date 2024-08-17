@@ -25,7 +25,7 @@ import { generateAccessToken } from '../utils/auth.utils';
 import projectTransformer from '../transformers/projects.transformer';
 import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 import userSecureSettingsTransformer from '../transformers/user-secure-settings.transformer';
-import { validateUserIsPartOfFinanceTeam } from '../utils/reimbursement-requests.utils';
+import { validateUserIsPartOfFinanceTeamOrAdmin } from '../utils/reimbursement-requests.utils';
 import userScheduleSettingsTransformer from '../transformers/user-schedule-settings.transformer';
 import { userTransformer, userWithScheduleSettingsTransformer } from '../transformers/user.transformer';
 import { getUserRole, updateUserAvailability } from '../utils/users.utils';
@@ -402,7 +402,7 @@ export default class UsersService {
     submitter: PrismaUser,
     organizationId: string
   ): Promise<UserSecureSettings> {
-    await validateUserIsPartOfFinanceTeam(submitter, organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organizationId);
     const secureSettings = await prisma.user_Secure_Settings.findUnique({
       where: { userId },
       include: {
