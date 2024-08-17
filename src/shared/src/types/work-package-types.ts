@@ -40,3 +40,9 @@ export interface WorkPackageTemplate {
   dateDeleted?: Date;
   userDeleted?: User;
 }
+
+export interface ProjectLevelTemplate {
+  templateName: string;
+  templateNotes: string;
+  smallTemplates: WorkPackageTemplate[];
+}

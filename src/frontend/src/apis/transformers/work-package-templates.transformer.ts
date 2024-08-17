@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { WorkPackageTemplate } from 'shared';
+import { ProjectLevelTemplate, WorkPackageTemplate } from 'shared';
 import { descriptionBulletTransformer } from './projects.transformers';
 
 /**
@@ -18,5 +18,17 @@ export const workPackageTemplateTransformer = (workPackageTemplate: WorkPackageT
     dateCreated: new Date(workPackageTemplate.dateCreated),
     dateDeleted: workPackageTemplate.dateDeleted ? new Date(workPackageTemplate.dateDeleted) : undefined,
     descriptionBullets: workPackageTemplate.descriptionBullets.map(descriptionBulletTransformer)
+  };
+};
+
+/**
+ * Transforms a project-level template to ensure deep field transformation of date objects.
+ * @param projectLevelTemplate the template to tranform
+ * @returns tranformed object
+ */
+export const projectLevelTemplateTransformer = (projectLevelTemplate: ProjectLevelTemplate): ProjectLevelTemplate => {
+  return {
+    ...projectLevelTemplate,
+    smallTemplates: projectLevelTemplate.smallTemplates.map(workPackageTemplateTransformer)
   };
 };

@@ -78,6 +78,8 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
 
   const onSubmit = handleSubmit(async (data: any) => {
     await mutateAsync(data);
+
+    exitActiveMode();
     reset();
   });
 

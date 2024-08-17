@@ -135,4 +135,39 @@ export default class WorkPackageTemplatesController {
       next(error);
     }
   }
+
+  static async getProjectLevelTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+      const { templateName } = req.params;
+
+      const template = await WorkPackageTemplatesService.getProjectLevelTemplate(user, templateName, organizationId);
+      res.status(200).json(template);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async editProjectLevelTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+      const { templateName } = req.params;
+
+      const { newName, templateNotes, smallTemplates } = req.body;
+
+      const template = await WorkPackageTemplatesService.editProjectLevelTemplate(
+        user,
+        templateName,
+        newName,
+        templateNotes,
+        smallTemplates,
+        organizationId
+      );
+      res.status(200).json(template);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

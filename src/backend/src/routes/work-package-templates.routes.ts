@@ -56,4 +56,15 @@ workPackageTemplatesRouter.post(
   WorkPackageTemplatesController.createProjectLevelTemplate
 );
 
+workPackageTemplatesRouter.get('/project-level/:templateName', WorkPackageTemplatesController.getProjectLevelTemplate);
+
+workPackageTemplatesRouter.post(
+  '/project-level/:templateName/edit',
+  nonEmptyString(body('newName')),
+  nonEmptyString(body('templateNotes')),
+  body('smallTemplates').isArray(),
+  validateInputs,
+  WorkPackageTemplatesController.editProjectLevelTemplate
+);
+
 export default workPackageTemplatesRouter;

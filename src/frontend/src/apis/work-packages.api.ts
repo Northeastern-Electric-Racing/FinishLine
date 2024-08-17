@@ -4,11 +4,21 @@
  */
 
 import axios from '../utils/axios';
-import { DescriptionBulletPreview, WbsNumber, WorkPackage, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import {
+  DescriptionBulletPreview,
+  ProjectLevelTemplate,
+  WbsNumber,
+  WorkPackage,
+  WorkPackageStage,
+  WorkPackageTemplate
+} from 'shared';
 import { wbsPipe } from '../utils/pipes';
 import { apiUrls } from '../utils/urls';
 import { workPackageTransformer } from './transformers/work-packages.transformers';
-import { workPackageTemplateTransformer } from './transformers/work-package-templates.transformer';
+import {
+  projectLevelTemplateTransformer,
+  workPackageTemplateTransformer
+} from './transformers/work-package-templates.transformer';
 
 export interface WorkPackageApiInputs {
   name: string;
@@ -180,6 +190,27 @@ export const createSingleWorkPackageTemplate = (payload: WorkPackageTemplateApiI
   });
 };
 
+/**
+ * Creates a project-level template by creating individual work package templates
+ * @param payload the data required to produce the template
+ * @returns success message
+ */
 export const createSingleProjectLevelTemplate = (payload: ProjectLevelTemplateApiInputs) => {
   return axios.post<{ message: string }>(apiUrls.projectLevelTemplatesCreate(), { ...payload });
+};
+
+export const getProjectLevelTemplateByName = (templateName: string) => {
+  return axios.get<ProjectLevelTemplate>(apiUrls.projectLevelTemplatesByName(templateName), {
+    transformResponse: (data) => projectLevelTemplateTransformer(JSON.parse(data))
+  });
+};
+
+export const editProjectLevelTemplate = (templateName: string, payload: ProjectLevelTemplateApiInputs) => {
+  return axios.post<ProjectLevelTemplate>(
+    apiUrls.projectLevelTemplatesEdit(templateName),
+    { ...payload, templateName, newName: payload.templateName },
+    {
+      transformResponse: (data) => projectLevelTemplateTransformer(JSON.parse(data))
+    }
+  );
 };

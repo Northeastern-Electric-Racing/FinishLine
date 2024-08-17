@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { WorkPackage, WbsNumber, WorkPackageTemplate } from 'shared';
+import { WorkPackage, WbsNumber, WorkPackageTemplate, ProjectLevelTemplate } from 'shared';
 import {
   createSingleWorkPackage,
   deleteWorkPackage,
@@ -22,7 +22,9 @@ import {
   getSingleWorkPackageTemplate,
   createSingleWorkPackageTemplate,
   ProjectLevelTemplateApiInputs,
-  createSingleProjectLevelTemplate
+  createSingleProjectLevelTemplate,
+  getProjectLevelTemplateByName,
+  editProjectLevelTemplate
 } from '../apis/work-packages.api';
 
 /**
@@ -206,11 +208,41 @@ export const useCreateSingleWorkPackageTemplate = () => {
 };
 
 export const useCreateSingleProjectLevelTemplate = () => {
+  const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, ProjectLevelTemplateApiInputs>(
     ['work package templates', 'create'],
     async (payload: ProjectLevelTemplateApiInputs) => {
       const { data } = await createSingleProjectLevelTemplate(payload);
       return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work package templates']);
+      }
+    }
+  );
+};
+
+export const useProjectLevelTemplateByName = (templateName: string) => {
+  return useQuery<ProjectLevelTemplate, Error>(['work package templates', templateName], async () => {
+    const { data } = await getProjectLevelTemplateByName(templateName);
+
+    return data;
+  });
+};
+
+export const useEditProjectLevelTemplate = (templateName: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ProjectLevelTemplate, Error, ProjectLevelTemplateApiInputs>(
+    ['work package templates', 'edit', templateName],
+    async (payload: ProjectLevelTemplateApiInputs) => {
+      const { data } = await editProjectLevelTemplate(templateName, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['work package templates']);
+      }
     }
   );
 };

@@ -1,5 +1,12 @@
-import { User } from '@prisma/client';
-import { DescriptionBulletPreview, isAdmin, isGuest, WorkPackageStage, WorkPackageTemplate } from 'shared';
+import { User, Work_Package_Stage } from '@prisma/client';
+import {
+  DescriptionBulletPreview,
+  isAdmin,
+  isGuest,
+  ProjectLevelTemplate,
+  WorkPackageStage,
+  WorkPackageTemplate
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -302,28 +309,150 @@ export default class WorkPackageTemplatesService {
     submitter: User,
     templateName: string,
     templateNotes: string,
-    smallTemplates: { workPackageName: string; duration: number; blockedByIds: string[]; id: string }[],
+    smallTemplates: {
+      workPackageName: string;
+      durationWeeks: number;
+      blockedBy: string[];
+      templateId: string;
+      stage: Work_Package_Stage | 'NONE';
+    }[],
     organizationId: string
   ): Promise<void> {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create project-level templates');
 
-    smallTemplates.map(
-      async (template) =>
+    smallTemplates.forEach(async (template, index) => {
+      console.log(template);
+
+      await prisma.work_Package_Template.create({
+        data: {
+          workPackageTemplateId: template.templateId,
+          stage: template.stage === 'NONE' ? null : template.stage,
+          templateName,
+          templateNotes,
+          duration: template.durationWeeks,
+          workPackageName: template.workPackageName,
+          blockedBy: {
+            connect: template.blockedBy.map((blockedById) => ({ workPackageTemplateId: blockedById }))
+          },
+          userCreatedId: submitter.userId,
+          organizationId,
+          dateCreated: new Date(Date.now() + index)
+        }
+      });
+    });
+  }
+
+  static async getProjectLevelTemplate(
+    submitter: User,
+    templateName: string,
+    organizationId: string
+  ): Promise<ProjectLevelTemplate> {
+    if (await userHasPermission(submitter.userId, organizationId, isGuest))
+      throw new AccessDeniedGuestException('get a project-level template');
+
+    const smallTemplates = await prisma.work_Package_Template.findMany({
+      where: { templateName, organizationId, dateDeleted: null },
+      ...getWorkPackageTemplateQueryArgs(organizationId)
+    });
+
+    if (!smallTemplates || smallTemplates.length === 0) throw new NotFoundException('Project-Level Template', templateName);
+
+    smallTemplates.sort((a, b) => a.dateCreated.getTime() - b.dateCreated.getTime());
+
+    console.log(smallTemplates[0].dateCreated.getTime());
+    console.log(smallTemplates[1].dateCreated.getTime());
+
+    return {
+      templateName,
+      templateNotes: smallTemplates[0].templateNotes,
+      smallTemplates: smallTemplates.map(workPackageTemplateTransformer)
+    };
+  }
+
+  static async editProjectLevelTemplate(
+    submitter: User,
+    templateName: string,
+    newName: string,
+    templateNotes: string,
+    smallTemplates: {
+      workPackageName: string;
+      durationWeeks: number;
+      blockedBy: string[];
+      templateId: string;
+      stage: Work_Package_Stage | 'NONE';
+    }[],
+    organizationId: string
+  ): Promise<ProjectLevelTemplate> {
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit project-level templates');
+
+    smallTemplates.forEach(async (template) => {
+      const existingTemplate = await prisma.work_Package_Template.findUnique({
+        where: { workPackageTemplateId: template.templateId, organizationId }
+      });
+      if (!existingTemplate) {
         await prisma.work_Package_Template.create({
           data: {
-            workPackageTemplateId: template.id,
-            templateName,
+            workPackageTemplateId: template.templateId,
+            stage: template.stage === 'NONE' ? null : template.stage,
+            templateName: newName,
             templateNotes,
-            duration: template.duration,
+            duration: template.durationWeeks,
             workPackageName: template.workPackageName,
             blockedBy: {
-              connect: (template.blockedByIds ?? []).map((blockedById) => ({ workPackageTemplateId: blockedById }))
+              connect: template.blockedBy.map((blockedById) => ({ workPackageTemplateId: blockedById }))
             },
             userCreatedId: submitter.userId,
             organizationId
           }
-        })
-    );
+        });
+      } else {
+        await prisma.work_Package_Template.update({
+          where: { workPackageTemplateId: template.templateId },
+          data: {
+            stage: template.stage === 'NONE' ? null : template.stage,
+            templateName: newName,
+            templateNotes,
+            duration: template.durationWeeks,
+            workPackageName: template.workPackageName,
+            blockedBy: {
+              connect: template.blockedBy.map((blockedById) => ({ workPackageTemplateId: blockedById }))
+            }
+          }
+        });
+      }
+    });
+
+    const undeletedIds = smallTemplates.map((template) => template.templateId);
+
+    const deletedTemplates = (
+      await prisma.work_Package_Template.findMany({ where: { templateName, dateDeleted: null, organizationId } })
+    ).filter((template) => !undeletedIds.includes(template.workPackageTemplateId));
+
+    deletedTemplates.forEach(async (template) => {
+      await prisma.work_Package_Template.update({
+        where: { workPackageTemplateId: template.workPackageTemplateId },
+        data: {
+          dateDeleted: new Date(),
+          userDeleted: {
+            connect: {
+              userId: submitter.userId
+            }
+          }
+        }
+      });
+    });
+
+    const updatedSmallTemplates = await prisma.work_Package_Template.findMany({
+      where: { dateDeleted: null, templateName, organizationId },
+      ...getWorkPackageTemplateQueryArgs(organizationId)
+    });
+
+    return {
+      templateName: newName,
+      templateNotes,
+      smallTemplates: updatedSmallTemplates.map(workPackageTemplateTransformer)
+    };
   }
 }

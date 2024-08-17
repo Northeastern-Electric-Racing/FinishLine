@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Box, IconButton, Typography, Tooltip } from '@mui/material';
+import { TableRow, TableCell, Box, IconButton, Typography, Tooltip, Grid } from '@mui/material';
 import AdminToolTable from '../AdminToolTable';
 import { NERButton } from '../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
@@ -7,12 +7,12 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { WorkPackageTemplate } from 'shared';
 import { routes } from '../../../utils/routes';
-import { Delete } from '@mui/icons-material';
+import { Delete, Folder } from '@mui/icons-material';
 import { useAllWorkPackageTemplates, useDeleteWorkPackageTemplate } from '../../../hooks/work-packages.hooks';
 import { useHistory } from 'react-router-dom';
 import { useState } from 'react';
 import NERModal from '../../../components/NERModal';
-import { getIndividualTemplates } from '../../../utils/work-package.utils';
+import { groupProjectLevelTemplates } from '../../../utils/work-package.utils';
 
 const WorkPackageTemplateTable = () => {
   const currentUser = useCurrentUser();
@@ -32,23 +32,38 @@ const WorkPackageTemplateTable = () => {
   if (!allWorkPackageTemplates || workPackageTemplatesIsLoading) return <LoadingIndicator />;
   if (workPackageTemplatesIsError) return <ErrorPage message={workPackageTemplatesError.message} />;
 
-  const individualTemplates = getIndividualTemplates(allWorkPackageTemplates);
+  const individualTemplates = groupProjectLevelTemplates(allWorkPackageTemplates);
 
   const workPackageTemplateRows = individualTemplates.map((workPackageTemplate) => (
     <TableRow
-      key={workPackageTemplate.workPackageTemplateId}
-      onClick={() => history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`)}
+      key={workPackageTemplate.templateName} // REVISIT
+      onClick={() => {
+        if ('workPackageTemplateId' in workPackageTemplate)
+          history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`);
+        else history.push(`${routes.PROJECT_LEVEL_TEMPLATE_EDIT}?templateName=${workPackageTemplate.templateName}`);
+      }}
       sx={{ cursor: 'pointer' }}
     >
       <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {workPackageTemplate.templateName}
+        <Grid container gap={1}>
+          <Grid item>
+            <Typography>{workPackageTemplate.templateName}</Typography>
+          </Grid>
+          <Grid item>
+            {'smallTemplates' in workPackageTemplate && (
+              <Tooltip title="Project-Level Template">
+                <Folder />
+              </Tooltip>
+            )}
+          </Grid>
+        </Grid>
       </TableCell>
       <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>{workPackageTemplate.templateNotes}</TableCell>
       <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
         <IconButton
           onClick={(event) => {
             event.stopPropagation();
-            setTemplateToDelete(workPackageTemplate);
+            //setTemplateToDelete(workPackageTemplate); REVISIT
           }}
         >
           <Delete />

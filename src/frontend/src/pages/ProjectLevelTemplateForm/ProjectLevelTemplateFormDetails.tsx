@@ -111,7 +111,7 @@ const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsP
               smallTemplateAppend({
                 templateId: generateUUID(),
                 workPackageName: '',
-                durationWeeks: 0,
+                durationWeeks: 1,
                 stage: 'NONE',
                 blockedBy: []
               });
