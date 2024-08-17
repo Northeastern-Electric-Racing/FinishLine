@@ -321,9 +321,7 @@ export default class WorkPackageTemplatesService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create project-level templates');
 
-    smallTemplates.forEach(async (template, index) => {
-      console.log(template);
-
+    smallTemplates.forEach(async (template) => {
       await prisma.work_Package_Template.create({
         data: {
           workPackageTemplateId: template.templateId,
@@ -336,8 +334,7 @@ export default class WorkPackageTemplatesService {
             connect: template.blockedBy.map((blockedById) => ({ workPackageTemplateId: blockedById }))
           },
           userCreatedId: submitter.userId,
-          organizationId,
-          dateCreated: new Date(Date.now() + index)
+          organizationId
         }
       });
     });
