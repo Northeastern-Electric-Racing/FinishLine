@@ -6,12 +6,13 @@ import PageLayout from '../../components/PageLayout';
 import { Box, Stack } from '@mui/system';
 import { NERButton } from '../../components/NERButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { FormControl, FormLabel, Grid, Typography } from '@mui/material';
+import { FormControl, FormLabel, Grid, Tooltip, Typography } from '@mui/material';
 import { useEffect } from 'react';
 import { WorkPackageStage } from 'shared';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import ProjectLevelTemplateFormDetails from './ProjectLevelTemplateFormDetails';
 import { generateUUID } from '../../utils/form';
+import { useToast } from '../../hooks/toasts.hooks';
 
 interface ProjectLevelTemplateFormViewProps {
   exitActiveMode: () => void;
@@ -74,8 +75,6 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
 
   const watchedSmallTemplates = watch('smallTemplates');
 
-  useEffect(() => {}, [watchedSmallTemplates]);
-
   const onSubmit = handleSubmit(async (data: any) => {
     await mutateAsync(data);
 
@@ -83,8 +82,20 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
     reset();
   });
 
+  const toast = useToast();
+
   return (
-    <form id="project-level-template-form" onSubmit={onSubmit}>
+    <form
+      id="project-level-template-form"
+      onSubmit={async (e) => {
+        try {
+          await onSubmit(e);
+          toast.success(`Template successfully ${defaultValues ? 'edited' : 'created'}!`);
+        } catch (e) {
+          if (e instanceof Error) toast.error(e.message);
+        }
+      }}
+    >
       <PageLayout
         stickyHeader
         title={defaultValues ? 'Edit Project-Level Template' : 'Create Project-Level Template'}

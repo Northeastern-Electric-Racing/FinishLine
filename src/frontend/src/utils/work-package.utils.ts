@@ -47,3 +47,11 @@ export const groupProjectLevelTemplates = (
 
   return returnArray;
 };
+
+export const getProjectLevelTemplates = (allTemplates: WorkPackageTemplate[]): ProjectLevelTemplate[] => {
+  return groupProjectLevelTemplates(allTemplates).filter((template) => 'smallTemplates' in template);
+};
+
+export const getIndividualTemplates = (allTemplates: WorkPackageTemplate[]): WorkPackageTemplate[] => {
+  return groupProjectLevelTemplates(allTemplates).filter((template) => 'workPackageTemplateId' in template);
+};

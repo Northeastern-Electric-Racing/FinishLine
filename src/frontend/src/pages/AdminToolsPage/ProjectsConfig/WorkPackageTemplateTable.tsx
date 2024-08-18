@@ -36,7 +36,7 @@ const WorkPackageTemplateTable = () => {
 
   const workPackageTemplateRows = individualTemplates.map((workPackageTemplate) => (
     <TableRow
-      key={workPackageTemplate.templateName} // REVISIT
+      key={workPackageTemplate.templateName}
       onClick={() => {
         if ('workPackageTemplateId' in workPackageTemplate)
           history.push(`${routes.WORK_PACKAGE_TEMPLATE_EDIT}?id=${workPackageTemplate.workPackageTemplateId}`);

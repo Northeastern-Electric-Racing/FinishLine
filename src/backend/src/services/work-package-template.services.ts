@@ -321,7 +321,11 @@ export default class WorkPackageTemplatesService {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create project-level templates');
 
-    smallTemplates.forEach(async (template) => {
+    const foundTemplate = await prisma.work_Package_Template.findFirst({ where: { templateName } });
+
+    if (foundTemplate) throw new HttpException(400, 'A template with that name already exists!');
+
+    for (const [index, template] of smallTemplates.entries()) {
       await prisma.work_Package_Template.create({
         data: {
           workPackageTemplateId: template.templateId,
@@ -334,10 +338,11 @@ export default class WorkPackageTemplatesService {
             connect: template.blockedBy.map((blockedById) => ({ workPackageTemplateId: blockedById }))
           },
           userCreatedId: submitter.userId,
-          organizationId
+          organizationId,
+          dateCreated: new Date(Date.now() + index) // insures that templates will have different times created
         }
       });
-    });
+    }
   }
 
   static async getProjectLevelTemplate(
@@ -356,9 +361,6 @@ export default class WorkPackageTemplatesService {
     if (!smallTemplates || smallTemplates.length === 0) throw new NotFoundException('Project-Level Template', templateName);
 
     smallTemplates.sort((a, b) => a.dateCreated.getTime() - b.dateCreated.getTime());
-
-    console.log(smallTemplates[0].dateCreated.getTime());
-    console.log(smallTemplates[1].dateCreated.getTime());
 
     return {
       templateName,

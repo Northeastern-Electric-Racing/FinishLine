@@ -31,6 +31,7 @@ import { useAllWorkPackageTemplates } from '../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
+import { getIndividualTemplates } from '../../utils/work-package.utils';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -110,7 +111,7 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
 
   const { userId } = user;
   const {
-    data: workPackageTemplates,
+    data: allWorkPackageTemplates,
     isLoading: workPackageTemplateisLoading,
     isError: workPackageTemplateisError,
     error: workPackageTemplateError
@@ -137,8 +138,10 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     }
   }, [currentWorkPackageTemplate, watchedName, watchedStage, watchedDuration, watchedDescriptionBullets]);
 
-  if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
+  if (workPackageTemplateisLoading || !allWorkPackageTemplates) return <LoadingIndicator />;
   if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
+
+  const workPackageTemplates = getIndividualTemplates(allWorkPackageTemplates);
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
