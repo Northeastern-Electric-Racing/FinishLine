@@ -453,7 +453,11 @@ export default class WorkPackagesService {
       }
     });
 
-    if (changeRequest == null) {
+    if (!changeRequest) {
+      throw new NotFoundException('Change Request', changeRequestIdentifier);
+    }
+
+    if (changeRequest.dateDeleted) {
       throw new DeletedException('Change Request', changeRequestIdentifier);
     }
 

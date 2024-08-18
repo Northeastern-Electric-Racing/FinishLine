@@ -373,9 +373,14 @@ export default class ProjectsService {
       }
     });
 
-    if (changeRequest == null) {
+    if (!changeRequest) {
+      throw new NotFoundException('Change Request', changeRequestIdentifier);
+    }
+
+    if (changeRequest.dateDeleted) {
       throw new DeletedException('Change Request', changeRequestIdentifier);
     }
+
     await validateChangeRequestAccepted(changeRequest.crId);
 
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organizationId);
