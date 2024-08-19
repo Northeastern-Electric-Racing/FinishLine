@@ -24,7 +24,8 @@ const FAQsTable = () => {
         align="left"
         sx={{
           borderRight: '1px solid',
-          borderBottom: index === faqs.length - 1 ? 'none' : '1px solid'
+          borderBottom: index === faqs.length - 1 ? 'none' : '1px solid',
+          alignItems: 'center'
         }}
       >
         <Typography>{faq.question}</Typography>
@@ -34,7 +35,8 @@ const FAQsTable = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderBottom: index === faqs.length - 1 ? 'none' : '1px solid'
+          borderBottom: index === faqs.length - 1 ? 'none' : '1px solid',
+          minHeight: '70px'
         }}
       >
         <Typography sx={{ maxWidth: 300 }}>{faq.answer}</Typography>
@@ -42,7 +44,6 @@ const FAQsTable = () => {
           <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setFaqEditing(faq)}>
             <EditIcon />
           </Button>
-          {console.log(faq)}
           <Button sx={{ p: 0.5, color: 'white' }}>
             <DeleteIcon />
           </Button>

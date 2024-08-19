@@ -9,7 +9,7 @@ import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 import { Milestone } from 'shared/src/types/milestone-types';
 import { MilestonePayload } from '../../../hooks/recruitment.hooks';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
 
 interface MilestoneFormModalProps {
@@ -55,6 +55,14 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
     watch,
     setValue
   });
+
+  useEffect(() => {
+    reset({
+      name: defaultValues?.name ?? '',
+      description: defaultValues?.description ?? '',
+      dateOfEvent: defaultValues?.dateOfEvent ?? new Date()
+    });
+  }, [defaultValues]);
 
   const handleCancel = () => {
     reset({ name: '', description: '', dateOfEvent: new Date() });

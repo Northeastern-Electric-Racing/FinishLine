@@ -9,6 +9,7 @@ import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 import { FaqPayload } from '../../../hooks/recruitment.hooks';
 import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
+import { useEffect } from 'react';
 
 interface FaqFormModalProps {
   open: boolean;
@@ -49,6 +50,13 @@ const FaqFormModal: React.FC<FaqFormModalProps> = ({ open, handleClose, defaultV
     watch,
     setValue
   });
+
+  useEffect(() => {
+    reset({
+      question: defaultValues?.question ?? '',
+      answer: defaultValues?.answer ?? ''
+    });
+  }, [defaultValues]);
 
   const handleCancel = () => {
     reset({ question: '', answer: '' });
