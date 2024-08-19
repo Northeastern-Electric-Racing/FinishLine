@@ -426,9 +426,16 @@ export default class WorkPackagesService {
    * Deletes the Work Package
    * @param submitter The user who deleted the work package
    * @param wbsNum The work package number to be deleted
+   * @param changeRequestIdentifier The id of the change request whose change is
+   * to be implemented by this deletion
    * @param organizationId The organization id that the user is in
    */
-  static async deleteWorkPackage(submitter: User, wbsNum: WbsNumber, organizationId: string): Promise<void> {
+  static async deleteWorkPackage(
+    submitter: User,
+    wbsNum: WbsNumber,
+    changeRequestIdentifier: string,
+    organizationId: string
+  ): Promise<void> {
     // Verify submitter is allowed to delete work packages
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work packages');
@@ -436,6 +443,34 @@ export default class WorkPackagesService {
     const workPackage = await WorkPackagesService.getSingleWorkPackage(wbsNum, organizationId);
 
     const { wbsElementId, id: workPackageId } = workPackage;
+
+    const changeRequest = await prisma.change_Request.findUnique({
+      where: {
+        uniqueChangeRequest: {
+          identifier: Number.parseInt(changeRequestIdentifier),
+          organizationId
+        }
+      }
+    });
+
+    if (!changeRequest) {
+      throw new NotFoundException('Change Request', changeRequestIdentifier);
+    }
+
+    if (changeRequest.dateDeleted) {
+      throw new DeletedException('Change Request', changeRequestIdentifier);
+    }
+
+    await validateChangeRequestAccepted(changeRequest.crId);
+
+    await prisma.change.create({
+      data: {
+        changeRequestId: changeRequest!.crId,
+        implementerId: submitter.userId,
+        wbsElementId,
+        detail: 'Work Package Deleted'
+      }
+    });
 
     const dateDeleted = new Date();
     const deletedByUserId = submitter.userId;
@@ -449,17 +484,6 @@ export default class WorkPackagesService {
         // Soft delete the given wp's wbs by setting crs to denied and soft deleting tasks
         wbsElement: {
           update: {
-            changeRequests: {
-              updateMany: {
-                where: {
-                  wbsElementId
-                },
-                data: {
-                  accepted: false,
-                  dateReviewed: dateDeleted
-                }
-              }
-            },
             tasks: {
               updateMany: {
                 where: {

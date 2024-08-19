@@ -347,19 +347,68 @@ export default class ProjectsService {
    * Delete the the project in the database along with all its dependencies.
    * @param user the user who is trying to delete the project
    * @param wbsNumber the wbsNumber of the project
+   * @param changeRequestIdentifier the id for the change request whose changes are to be
+   * implemented by the deletions of each work package in this project
    * @param organizationId the id of the organization the user is currently in
    * @throws if the wbs number does not correspond to a project, the user trying to
    * delete the project is not admin/app-admin, or the project is not found.
    * @returns the project that is deleted.
    */
-  static async deleteProject(user: User, wbsNumber: WbsNumber, organizationId: string): Promise<Project> {
+  static async deleteProject(
+    user: User,
+    wbsNumber: WbsNumber,
+    changeRequestIdentifier: string,
+    organizationId: string
+  ): Promise<Project> {
     if (!(await userHasPermission(user.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('delete projects');
     }
 
+    const changeRequest = await prisma.change_Request.findUnique({
+      where: {
+        uniqueChangeRequest: {
+          identifier: Number.parseInt(changeRequestIdentifier),
+          organizationId
+        }
+      }
+    });
+
+    if (!changeRequest) {
+      throw new NotFoundException('Change Request', changeRequestIdentifier);
+    }
+
+    if (changeRequest.dateDeleted) {
+      throw new DeletedException('Change Request', changeRequestIdentifier);
+    }
+
+    await validateChangeRequestAccepted(changeRequest.crId);
+
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organizationId);
 
     const { projectId, wbsElementId } = project;
+
+    // need to delete each of the project's work packages as well
+    const workPackages = await prisma.work_Package.findMany({
+      where: {
+        projectId
+      },
+      include: { wbsElement: true }
+    });
+
+    await Promise.all(
+      workPackages.map(async (workPackage) => {
+        try {
+          await WorkPackagesService.deleteWorkPackage(
+            user,
+            wbsNumOf(workPackage.wbsElement),
+            changeRequestIdentifier,
+            organizationId
+          );
+        } catch (error) {
+          // do nothing
+        }
+      })
+    );
 
     const dateDeleted: Date = new Date();
     const deletedByUserId = user.userId;
@@ -394,21 +443,6 @@ export default class ProjectsService {
       },
       ...getProjectQueryArgs(organizationId)
     });
-
-    // need to delete each of the project's work packages as well
-    const workPackages = await prisma.work_Package.findMany({
-      where: {
-        projectId
-      },
-      include: { wbsElement: true }
-    });
-
-    await Promise.all(
-      workPackages.map(
-        async (workPackage) =>
-          await WorkPackagesService.deleteWorkPackage(user, wbsNumOf(workPackage.wbsElement), organizationId)
-      )
-    );
 
     return projectTransformer(deletedProject);
   }

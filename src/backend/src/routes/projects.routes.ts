@@ -53,7 +53,12 @@ projectRouter.post(
 
 projectRouter.get('/:wbsNum', ProjectsController.getSingleProject);
 projectRouter.post('/:wbsNum/set-team', nonEmptyString(body('teamId')), validateInputs, ProjectsController.setProjectTeam);
-projectRouter.delete('/:wbsNum/delete', ProjectsController.deleteProject);
+projectRouter.delete(
+  '/:wbsNum/delete',
+  intMinZero(body('changeRequestIdentifier')),
+  validateInputs,
+  ProjectsController.deleteProject
+);
 projectRouter.post('/:wbsNum/favorite', ProjectsController.toggleFavorite);
 
 /**************** BOM Section ****************/

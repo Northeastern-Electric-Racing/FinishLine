@@ -102,9 +102,16 @@ export default class ProjectsController {
     try {
       const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
+      const { changeRequestIdentifier } = req.body;
       const organizationId = getOrganizationId(req.headers);
 
-      const deletedProject: Project = await ProjectsService.deleteProject(user, wbsNumber, organizationId);
+      const deletedProject: Project = await ProjectsService.deleteProject(
+        user,
+        wbsNumber,
+        changeRequestIdentifier,
+        organizationId
+      );
+
       res.status(200).json(deletedProject);
     } catch (error: unknown) {
       next(error);
