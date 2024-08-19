@@ -56,7 +56,7 @@ const FaqFormModal: React.FC<FaqFormModalProps> = ({ open, handleClose, defaultV
       question: defaultValues?.question ?? '',
       answer: defaultValues?.answer ?? ''
     });
-  }, [defaultValues]);
+  }, [defaultValues, reset]);
 
   const handleCancel = () => {
     reset({ question: '', answer: '' });

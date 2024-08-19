@@ -62,7 +62,7 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
       description: defaultValues?.description ?? '',
       dateOfEvent: defaultValues?.dateOfEvent ?? new Date()
     });
-  }, [defaultValues]);
+  }, [defaultValues, reset]);
 
   const handleCancel = () => {
     reset({ name: '', description: '', dateOfEvent: new Date() });
