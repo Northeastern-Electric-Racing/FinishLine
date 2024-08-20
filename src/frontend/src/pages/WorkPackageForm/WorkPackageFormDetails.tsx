@@ -13,6 +13,7 @@ import NERAutocomplete from '../../components/NERAutocomplete';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import { fullNamePipe } from '../../utils/pipes';
 import { WorkPackageFormViewPayload } from './WorkPackageFormView';
+import { shouldDisableStartDate } from '../../utils/work-package.utils';
 
 interface Props {
   lead?: string;
@@ -42,10 +43,6 @@ const WorkPackageFormDetails: React.FC<Props> = ({
   const userToOption = (user?: User): { label: string; id: string } => {
     if (!user) return { label: '', id: '' };
     return { label: `${fullNamePipe(user)} (${user.email}) - ${user.role}`, id: user.userId.toString() };
-  };
-
-  const disableStartDate = (startDate: Date) => {
-    return startDate.getDay() !== 1;
   };
 
   const StageSelect = () => (
@@ -105,7 +102,7 @@ const WorkPackageFormDetails: React.FC<Props> = ({
                     onChange={(date) => onChange(date ?? new Date())}
                     className={'padding: 10'}
                     value={value}
-                    shouldDisableDate={disableStartDate}
+                    shouldDisableDate={shouldDisableStartDate}
                     slotProps={{
                       textField: { autoComplete: 'off', error: !!errors.startDate, helperText: errors.startDate?.message }
                     }}

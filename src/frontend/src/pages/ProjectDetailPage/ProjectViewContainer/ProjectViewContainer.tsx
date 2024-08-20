@@ -34,7 +34,6 @@ import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
 import ChangeRequestTab from './ChangeRequestTab';
 import { TaskList } from './TaskList/v2';
-import { NoteAdd } from '@mui/icons-material';
 
 interface ProjectViewContainerProps {
   project: Project;
@@ -168,15 +167,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
     </MenuItem>
   );
 
-  const ApplyTemplateButton = () => (
-    <MenuItem>
-      <ListItemIcon>
-        <NoteAdd fontSize="small" />
-      </ListItemIcon>
-      Apply Project-Level Template
-    </MenuItem>
-  );
-
   const projectActionsDropdown = (
     <Box ml={2}>
       <NERButton
@@ -206,7 +196,6 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
         <SuggestBudgetIncreaseButton />
         {teamAsHeadId && <AssignToMyTeamButton />}
         <CreateWorkPackageButton />
-        <ApplyTemplateButton />
         <DeleteButton />
       </Menu>
     </Box>

@@ -2,7 +2,7 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-import { DescriptionBulletPreview, LinkCreateArgs, Project } from 'shared';
+import { DescriptionBulletPreview, LinkCreateArgs, Project, WorkPackageStage } from 'shared';
 import { wbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -25,6 +25,16 @@ import { FormInput as ChangeRequestFormInput } from '../../CreateChangeRequestPa
 import { NERButton } from '../../../components/NERButton';
 import HelpIcon from '@mui/icons-material/Help';
 import DescriptionBulletsEditView from '../../../components/DescriptionBulletEditView';
+import ProjectLevelTemplateSection from './ProjectLevelTemplateSection';
+
+export interface ProjectFormWorkPackageInput {
+  id: string;
+  name: string;
+  stage: WorkPackageStage;
+  duration: number;
+  startDate: Date;
+  blockedByIds: string[];
+}
 
 export interface ProjectFormInput {
   name: string;
@@ -35,6 +45,7 @@ export interface ProjectFormInput {
   carNumber: number | undefined;
   teamIds: string[];
   descriptionBullets: DescriptionBulletPreview[];
+  workPackages: ProjectFormWorkPackageInput[];
 }
 
 interface ProjectFormContainerProps {
@@ -83,7 +94,8 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
       carNumber: defaultValues?.carNumber,
       links: defaultValues?.links,
       descriptionBullets: defaultValues?.descriptionBullets,
-      teamIds: defaultValues?.teamIds
+      teamIds: defaultValues?.teamIds,
+      workPackages: defaultValues?.workPackages ?? []
     }
   });
 
@@ -94,6 +106,10 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
   } = useFieldArray({ control, name: 'descriptionBullets' });
 
   const { fields: links, append: appendLink, remove: removeLink } = useFieldArray({ control, name: 'links' });
+
+  const { append: appendWorkPackage, remove: removeWorkPackage } = useFieldArray({ control, name: 'workPackages' });
+
+  const watchedWorkPackages = watch('workPackages');
 
   if (allUsers.isLoading || !allUsers.data) return <LoadingIndicator />;
   if (allUsers.isError) {
@@ -202,6 +218,14 @@ const ProjectFormContainer: React.FC<ProjectFormContainerProps> = ({
             />
           </Box>
         </Stack>
+        {!project && (
+          <ProjectLevelTemplateSection
+            control={control}
+            appendWorkPackage={appendWorkPackage}
+            removeWorkPackage={removeWorkPackage}
+            workPackages={watchedWorkPackages}
+          />
+        )}
       </PageLayout>
       {onSubmitChangeRequest && (
         <CreateChangeRequestModal

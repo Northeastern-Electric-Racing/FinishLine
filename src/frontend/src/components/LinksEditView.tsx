@@ -104,7 +104,7 @@ const LinksEditView: React.FC<{
         variant="contained"
         color="primary"
         onClick={() => append({ linkId: '-1', url: '', linkTypeName: '-1' })}
-        sx={{ my: 2, width: 'max-content' }}
+        sx={{ mt: 2, width: 'max-content' }}
       >
         + Add Link
       </NERButton>

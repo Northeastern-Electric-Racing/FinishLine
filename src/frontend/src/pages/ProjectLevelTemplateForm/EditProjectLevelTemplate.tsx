@@ -1,10 +1,6 @@
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
-import {
-  useCreateSingleProjectLevelTemplate,
-  useEditProjectLevelTemplate,
-  useProjectLevelTemplateByName
-} from '../../hooks/work-packages.hooks';
+import { useEditProjectLevelTemplate, useProjectLevelTemplateByName } from '../../hooks/work-packages.hooks';
 import ErrorPage from '../ErrorPage';
 import ProjectLevelTemplateForm from './ProjectLevelTemplateForm';
 import { ProjectLevelTemplateFormViewPayload } from './ProjectLevelTemplateFormView';

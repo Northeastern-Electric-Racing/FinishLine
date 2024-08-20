@@ -43,6 +43,13 @@ const ProjectCreateContainer: React.FC = () => {
 
   const requiredLinkTypeNames = getRequiredLinkTypeNames(allLinkTypes);
 
+  const workPackageSchema = yup.object().shape({
+    name: yup.string(),
+    stage: yup.string(),
+    startDate: yup.date().required('Start date is required!'),
+    duration: yup.number()
+  });
+
   const defaultValues = {
     name: '',
     budget: 0,
@@ -53,7 +60,8 @@ const ProjectCreateContainer: React.FC = () => {
     crId: query.get('crId') || '',
     descriptionBullets: [],
     leadId,
-    managerId
+    managerId,
+    workPackages: []
   };
 
   const schema = yup.object().shape({
@@ -73,7 +81,8 @@ const ProjectCreateContainer: React.FC = () => {
           linkTypeName: yup.string(),
           url: yup.string().url('Invalid URL')
         })
-      )
+      ),
+    workPackages: yup.array().of(workPackageSchema)
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {

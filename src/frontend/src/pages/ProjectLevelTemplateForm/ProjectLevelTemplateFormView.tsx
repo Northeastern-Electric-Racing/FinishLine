@@ -6,8 +6,7 @@ import PageLayout from '../../components/PageLayout';
 import { Box, Stack } from '@mui/system';
 import { NERButton } from '../../components/NERButton';
 import NERSuccessButton from '../../components/NERSuccessButton';
-import { FormControl, FormLabel, Grid, Tooltip, Typography } from '@mui/material';
-import { useEffect } from 'react';
+import { FormControl, FormLabel, Grid, Typography } from '@mui/material';
 import { WorkPackageStage } from 'shared';
 import ReactHookTextField from '../../components/ReactHookTextField';
 import ProjectLevelTemplateFormDetails from './ProjectLevelTemplateFormDetails';
@@ -21,7 +20,7 @@ interface ProjectLevelTemplateFormViewProps {
   schema: yup.AnyObjectSchema;
 }
 
-interface SmallTemplatePayload {
+export interface SmallTemplatePayload {
   templateId: string;
   workPackageName: string;
   durationWeeks: number;
@@ -142,8 +141,9 @@ const ProjectLevelTemplateFormView: React.FC<ProjectLevelTemplateFormViewProps> 
               </FormControl>
             </Grid>
           </Grid>
-          {watchedSmallTemplates.map((_, index) => (
+          {watchedSmallTemplates.map((template, index) => (
             <ProjectLevelTemplateFormDetails
+              template={template}
               index={index}
               control={control}
               errors={errors}

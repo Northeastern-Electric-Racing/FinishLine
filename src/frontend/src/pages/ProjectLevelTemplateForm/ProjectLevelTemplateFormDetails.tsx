@@ -1,5 +1,4 @@
-import { FormControl, FormLabel, Grid, IconButton, MenuItem, Select, Typography } from '@mui/material';
-import ReactHookTextField from '../../components/ReactHookTextField';
+import { FormControl, FormLabel, Grid, IconButton, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { ProjectLevelTemplateFormViewPayload } from './ProjectLevelTemplateFormView';
 import { Control, Controller, FieldErrors, UseFieldArrayAppend } from 'react-hook-form';
 import { WorkPackageStage } from 'shared';
@@ -7,8 +6,10 @@ import { WorkPackageStageTextPipe } from '../../utils/enum-pipes';
 import { NERButton } from '../../components/NERButton';
 import { generateUUID } from '../../utils/form';
 import { Delete } from '@mui/icons-material';
+import { SmallTemplatePayload } from './ProjectLevelTemplateFormView';
 
 interface ProjectLevelTemplateFormDetailsProps {
+  template: SmallTemplatePayload;
   index: number;
   control: Control<ProjectLevelTemplateFormViewPayload, any>;
   errors: FieldErrors<ProjectLevelTemplateFormViewPayload>;
@@ -21,6 +22,7 @@ interface ProjectLevelTemplateFormDetailsProps {
 }
 
 const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsProps> = ({
+  template,
   index,
   control,
   errors,
@@ -46,24 +48,37 @@ const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsP
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
           <FormLabel>Work Package Name</FormLabel>
-          <ReactHookTextField
+          <Controller
             name={`smallTemplates.${index}.workPackageName`}
-            required
             control={control}
-            placeholder="Enter work package name..."
-            errorMessage={errors.smallTemplates && errors.smallTemplates[index]?.workPackageName}
+            render={({ field: { onChange } }) => (
+              <TextField
+                required
+                placeholder="Enter work package name..."
+                error={!!errors.smallTemplates}
+                helperText={errors.smallTemplates && errors.smallTemplates[index]?.workPackageName}
+                onChange={onChange}
+                value={template.workPackageName}
+              />
+            )}
           />
         </FormControl>
       </Grid>
       <Grid item xs={12} md={4}>
         <FormControl fullWidth>
           <FormLabel>Duration (weeks)</FormLabel>
-          <ReactHookTextField
+          <Controller
             name={`smallTemplates.${index}.durationWeeks`}
-            required
             control={control}
-            type="number"
-            errorMessage={errors.smallTemplates && errors.smallTemplates[index]?.durationWeeks}
+            render={({ field: { onChange } }) => (
+              <TextField
+                required
+                onChange={onChange}
+                value={template.durationWeeks}
+                error={!!errors.smallTemplates}
+                helperText={errors.smallTemplates && errors.smallTemplates[index]?.durationWeeks}
+              />
+            )}
           />
         </FormControl>
       </Grid>
@@ -73,8 +88,8 @@ const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsP
           <Controller
             name={`smallTemplates.${index}.stage`}
             control={control}
-            render={({ field: { onChange, value } }) => (
-              <Select value={value} onChange={onChange}>
+            render={({ field: { onChange } }) => (
+              <Select value={template.stage} onChange={onChange}>
                 {[...Object.values(WorkPackageStage), 'NONE'].map((stage) => (
                   <MenuItem value={stage}>
                     {WorkPackageStageTextPipe(stage === 'NONE' ? undefined : (stage as WorkPackageStage))}
@@ -92,8 +107,8 @@ const ProjectLevelTemplateFormDetails: React.FC<ProjectLevelTemplateFormDetailsP
             <Controller
               name={`smallTemplates.${index}.blockedBy`}
               control={control}
-              render={({ field: { onChange, value } }) => (
-                <Select multiple value={value} onChange={onChange}>
+              render={({ field: { onChange } }) => (
+                <Select multiple value={template.blockedBy} onChange={onChange}>
                   {blockedByOptions.map((option) => (
                     <MenuItem value={option.id}>{option.label}</MenuItem>
                   ))}
