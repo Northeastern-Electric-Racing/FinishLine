@@ -47,4 +47,6 @@ recruitmentRouter.post(
   RecruitmentController.editFAQ
 );
 
+recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
+
 export default recruitmentRouter;
