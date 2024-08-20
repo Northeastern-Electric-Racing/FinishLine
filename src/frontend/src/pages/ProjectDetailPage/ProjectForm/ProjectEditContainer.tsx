@@ -84,7 +84,8 @@ const ProjectEditContainer: React.FC<ProjectEditContainerProps> = ({ project, ex
     crId: query.get('crId') || '',
     descriptionBullets,
     leadId,
-    managerId
+    managerId,
+    workPackages: []
   };
 
   const schema = yup.object().shape({

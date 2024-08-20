@@ -86,7 +86,7 @@ const ProjectCreateContainer: React.FC = () => {
   });
 
   const onSubmitChangeRequest = async (data: ProjectCreateChangeRequestFormInput) => {
-    const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, type, what, why } = data;
+    const { name, budget, summary, links, teamIds, carNumber, descriptionBullets, workPackages, type, what, why } = data;
 
     // Car number could be zero and a truthy check would fail
     if (carNumber === undefined) throw new Error('Car number is required!');
@@ -102,7 +102,19 @@ const ProjectCreateContainer: React.FC = () => {
         leadId,
         managerId,
         carNumber,
-        workPackageProposedChanges: []
+        workPackageProposedChanges: workPackages.map((workPackage) => {
+          return {
+            name: workPackage.name,
+            stage: workPackage.stage,
+            duration: workPackage.duration,
+            startDate: workPackage.startDate.toLocaleDateString(),
+            blockedBy: [],
+            descriptionBullets: [],
+            leadId: undefined,
+            managerId: undefined,
+            links: []
+          };
+        })
       };
       const changeRequestPayload: CreateStandardChangeRequestPayload = {
         wbsNum: {
