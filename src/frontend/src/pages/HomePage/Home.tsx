@@ -16,7 +16,6 @@ import PageLayout from '../../components/PageLayout';
 const Home = () => {
   const user = useCurrentUser();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
-
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 

@@ -82,12 +82,6 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
   const { mutateAsync, isLoading } = useCreateDesignReviews();
 
   const onSubmit = async (data: CreateDesignReviewFormInput) => {
-    const day = data.date.getDay();
-    const adjustedDay = day === 0 ? 6 : day - 1;
-    const times: number[] = [];
-    for (let i = adjustedDay * 12; i < adjustedDay * 12 + 1; i++) {
-      times.push(i);
-    }
     try {
       await mutateAsync({
         dateScheduled: data.date,
@@ -95,7 +89,7 @@ export const DesignReviewCreateModal: React.FC<DesignReviewCreateModalProps> = (
         requiredMemberIds: requiredMembers.map((member) => member.id),
         optionalMemberIds: optionalMembers.map((member) => member.id),
         wbsNum: validateWBS(data.wbsNum),
-        meetingTimes: times
+        meetingTimes: [0]
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
