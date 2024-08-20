@@ -48,7 +48,7 @@ import {
   reimbursementTransformer,
   vendorTransformer
 } from '../transformers/reimbursement-requests.transformer';
-import { UserWithSecureSettings } from '../utils/auth.utils';
+import { OrganizationWithAdvisor, UserWithSecureSettings } from '../utils/auth.utils';
 import {
   sendReimbursementRequestCreatedNotification,
   sendReimbursementRequestDeniedNotification
@@ -429,7 +429,7 @@ export default class ReimbursementRequestService {
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    * @param organizationId the organization the user is currently in
    */
-  static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organization: Organization) {
+  static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organization: OrganizationWithAdvisor) {
     await validateUserIsPartOfFinanceTeam(sender, organization.organizationId);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');

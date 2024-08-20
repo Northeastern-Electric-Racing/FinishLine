@@ -149,6 +149,14 @@ export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Org
   return organization;
 };
 
+export type OrganizationWithAdvisor = Organization & {
+  advisor: User;
+};
+
+export type OrganizationWithUsefulLinks = Organization & {
+  usefulLinks: { linkId: string; name: string; url: string }[];
+};
+
 /**
  * Gets the user making the request and includes their user settings
  * @param res - we use the response because that's where we stored the userId data during jwt validation
@@ -166,6 +174,13 @@ export const getCurrentUserWithUserSettings = async (res: Response): Promise<Use
 };
 
 export const getUserandOrganization = async (req: Request, res: Response, next: NextFunction) => {
+  if (
+    req.path === '/users/auth/login' || // logins dont have cookies yet
+    req.path === '/' || // base route is available so aws can listen and check the health
+    req.method === 'OPTIONS' // this is a pre-flight request and those don't send cookies
+  ) {
+    return next();
+  }
   const user = await getCurrentUser(res);
   const organization = await getOrganization(req.headers);
   req.currentUser = user;

@@ -7,6 +7,7 @@ import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
+import { OrganizationWithUsefulLinks } from '../utils/auth.utils';
 
 export default class OrganizationsService {
   /**
@@ -15,20 +16,11 @@ export default class OrganizationsService {
    * @param organizationId the organization which the links will be set up
    * @param links the links which are being set
    */
-  static async setUsefulLinks(submitter: User, organization: Organization, links: LinkCreateArgs[]) {
+  static async setUsefulLinks(submitter: User, organization: OrganizationWithUsefulLinks, links: LinkCreateArgs[]) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update useful links');
 
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId },
-      include: { usefulLinks: true }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    const currentLinkIds = organization?.usefulLinks.map((link) => link.linkId);
+    const currentLinkIds = organization.usefulLinks.map((link) => link.linkId);
 
     // deleting all current useful links so they are empty before repopulating
     await prisma.link.deleteMany({
@@ -92,16 +84,7 @@ export default class OrganizationsService {
     @param organizationId the organization to get the links for
     @returns the useful links for the organization
   */
-  static async getAllUsefulLinks(organization: Organization) {
-    const organization = await prisma.organization.findUnique({
-      where: { organizationId },
-      include: { usefulLinks: true }
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
+  static async getAllUsefulLinks(organization: OrganizationWithUsefulLinks) {
     const links = await prisma.link.findMany({
       where: {
         linkId: { in: organization.usefulLinks.map((link) => link.linkId) }

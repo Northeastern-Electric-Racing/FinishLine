@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import OrganizationsService from '../services/organizations.services';
 
-
 export default class OrganizationsController {
   static async setUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {

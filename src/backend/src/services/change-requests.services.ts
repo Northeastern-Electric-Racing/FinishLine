@@ -262,7 +262,7 @@ export default class ChangeRequestsService {
           associatedWorkPackage,
           reviewer,
           foundCR.crId,
-          organization.organizationId
+          organization
         );
       } else if (projectProposedChanges) {
         await applyProjectProposedChanges(
@@ -272,7 +272,7 @@ export default class ChangeRequestsService {
           reviewer,
           foundCR.crId,
           foundCR.wbsElement.carNumber,
-          organization.organizationId
+          organization
         );
       }
     }

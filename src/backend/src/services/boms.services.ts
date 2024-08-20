@@ -1,4 +1,4 @@
-import { Material, Material_Status, Material_Type, User } from '@prisma/client';
+import { Material, Material_Status, Material_Type, Organization, User } from '@prisma/client';
 import Decimal from 'decimal.js';
 import {
   Manufacturer,
@@ -10,8 +10,7 @@ import {
   wbsPipe,
   isHead,
   MaterialType,
-  Unit,
-  OrganizationPreview
+  Unit
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -65,7 +64,7 @@ export default class BillOfMaterialsService {
     subtotal: number,
     linkUrl: string,
     wbsNumber: WbsNumber,
-    organization: OrganizationPreview,
+    organization: Organization,
     notes?: string,
     assemblyId?: string,
     pdmFileName?: string,
@@ -101,7 +100,8 @@ export default class BillOfMaterialsService {
     }
 
     const perms =
-      (await userHasPermission(creator.userId, organization.organizationId, isLeadership)) || isUserPartOfTeams(project.teams, creator);
+      (await userHasPermission(creator.userId, organization.organizationId, isLeadership)) ||
+      isUserPartOfTeams(project.teams, creator);
 
     if (!perms) throw new AccessDeniedException('create materials');
 
@@ -143,14 +143,17 @@ export default class BillOfMaterialsService {
     name: string,
     userCreated: User,
     wbsNumber: WbsNumber,
-    organization: OrganizationPreview,
+    organization: Organization,
     pdmFileName?: string
   ): Promise<Assembly> {
     const project = await ProjectsService.getSingleProjectWithQueryArgs(wbsNumber, organization);
 
     const { teams, wbsElementId } = project;
 
-    if (!(await userHasPermission(userCreated.userId, organization.organizationId, isAdmin)) && !isUserPartOfTeams(teams, userCreated))
+    if (
+      !(await userHasPermission(userCreated.userId, organization.organizationId, isAdmin)) &&
+      !isUserPartOfTeams(teams, userCreated)
+    )
       throw new AccessDeniedException('Users must be admin, or assigned to the team to create assemblies');
 
     const userCreatedId = userCreated.userId;
@@ -177,13 +180,13 @@ export default class BillOfMaterialsService {
    * @returns the newly created manufacturer
    * @throws if the submitter is a guest or the given manufacturer name already exists
    */
-  static async createManufacturer(submitter: User, name: string, organization: OrganizationPreview): Promise<Manufacturer> {
+  static async createManufacturer(submitter: User, name: string, organization: Organization): Promise<Manufacturer> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create manufacturers');
 
     const manufacturer = await prisma.manufacturer.findUnique({
       where: {
-        uniqueManufacturer: { name, organizationId: organization.organizationId}
+        uniqueManufacturer: { name, organizationId: organization.organizationId }
       }
     });
 
@@ -220,7 +223,7 @@ export default class BillOfMaterialsService {
    * @throws if the user is not at least a head, or if the provided name isn't a unit
    * @returns the deleted unit
    */
-  static async deleteUnit(user: User, name: string, organization: OrganizationPreview) {
+  static async deleteUnit(user: User, name: string, organization: Organization) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads and above can delete a unit');
     }
@@ -250,7 +253,7 @@ export default class BillOfMaterialsService {
    * @throws if the user is not at least a head, or if the provided name isn't a manufacturer, or if the manufacturer has already been soft-deleted
    * @returns the deleted manufacturer
    */
-  static async deleteManufacturer(user: User, name: string, organization: OrganizationPreview) {
+  static async deleteManufacturer(user: User, name: string, organization: Organization) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only heads and above can delete a manufacturer');
     }
@@ -274,7 +277,7 @@ export default class BillOfMaterialsService {
    * @param organizationId the id of the organization the manufacturers are associated with
    * @returns all the manufacturers
    */
-  static async getAllManufacturers(submitter: User, organization: OrganizationPreview): Promise<Manufacturer[]> {
+  static async getAllManufacturers(submitter: User, organization: Organization): Promise<Manufacturer[]> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest)) {
       throw new AccessDeniedGuestException('Get Manufacturers');
     }
@@ -293,7 +296,7 @@ export default class BillOfMaterialsService {
    * @param organizationId the id of the organization the material types are associated with
    * @returns all the material types
    */
-  static async getAllMaterialTypes(submitter: User, organization: OrganizationPreview): Promise<MaterialType[]> {
+  static async getAllMaterialTypes(submitter: User, organization: Organization): Promise<MaterialType[]> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest)) {
       throw new AccessDeniedGuestException('Get Material Types');
     }
@@ -313,7 +316,7 @@ export default class BillOfMaterialsService {
    * @param organizationId the id of the organization the material type is associated with
    * @throws if the submitter is not a leader or the material type with the given name already exists
    */
-  static async createMaterialType(name: string, submitter: User, organization: OrganizationPreview): Promise<MaterialType> {
+  static async createMaterialType(name: string, submitter: User, organization: Organization): Promise<MaterialType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
       throw new AccessDeniedException('Only leadership or above can create a material type');
 
@@ -357,7 +360,7 @@ export default class BillOfMaterialsService {
    * @throws if the submitter does not have the relevant positions
    * @returns the updated material
    */
-  static async assignMaterialAssembly(submitter: User, materialId: string, organization: OrganizationPreview, assemblyId?: string) {
+  static async assignMaterialAssembly(submitter: User, materialId: string, organization: Organization, assemblyId?: string) {
     const material = await BillOfMaterialsService.getSingleMaterialWithQueryArgs(materialId, organization);
 
     const project = await ProjectsService.getSingleProjectWithQueryArgs(material.wbsElement, organization);
@@ -417,7 +420,7 @@ export default class BillOfMaterialsService {
    * @throws if the user is not an admin/head, the assembly does not exist, or has already been deleted
    * @returns
    */
-  static async deleteAssembly(assemblyId: string, submitter: User, organization: OrganizationPreview): Promise<Assembly> {
+  static async deleteAssembly(assemblyId: string, submitter: User, organization: Organization): Promise<Assembly> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead)))
       throw new AccessDeniedException('Only an Admin or a head can delete an Assembly');
 
@@ -463,7 +466,7 @@ export default class BillOfMaterialsService {
   static async deleteMaterialType(
     submitter: User,
     materialTypeName: string,
-    organization: OrganizationPreview
+    organization: Organization
   ): Promise<Material_Type> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isHead))) {
       throw new AccessDeniedException('Only an admin or head can delete a material type');
@@ -491,7 +494,7 @@ export default class BillOfMaterialsService {
    * @returns the deleted material
    * @throws if the user does not have permission, or materidal already deleted
    */
-  static async deleteMaterial(currentUser: User, materialId: string, organization: OrganizationPreview): Promise<Material> {
+  static async deleteMaterial(currentUser: User, materialId: string, organization: Organization): Promise<Material> {
     if (!(await userHasPermission(currentUser.userId, organization.organizationId, isLeadership))) {
       throw new AccessDeniedException('Only Leadership can delete materials');
     }
@@ -539,7 +542,7 @@ export default class BillOfMaterialsService {
     price: number,
     subtotal: number,
     linkUrl: string,
-    organization: OrganizationPreview,
+    organization: Organization,
     notes?: string,
     unitName?: string,
     assemblyId?: string,
@@ -604,8 +607,9 @@ export default class BillOfMaterialsService {
    * @param organizationId the id of the organization the units are associated with
    * @returns all the units in the database
    */
-  static async getAllUnits(user: User, organization: OrganizationPreview): Promise<Unit[]> {
-    if (await userHasPermission(user.userId, organization.organizationId, isGuest)) throw new AccessDeniedGuestException('get units');
+  static async getAllUnits(user: User, organization: Organization): Promise<Unit[]> {
+    if (await userHasPermission(user.userId, organization.organizationId, isGuest))
+      throw new AccessDeniedGuestException('get units');
 
     const units = await prisma.unit.findMany({
       where: {
@@ -628,7 +632,7 @@ export default class BillOfMaterialsService {
    * @param organizationId the id of the organization the unit is associated with
    * @throws if the submitter is a guest or the given unit name already exists
    */
-  static async createUnit(name: string, submitter: User, organization: OrganizationPreview): Promise<Unit> {
+  static async createUnit(name: string, submitter: User, organization: Organization): Promise<Unit> {
     if (await userHasPermission(submitter.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('create units');
 
@@ -660,7 +664,7 @@ export default class BillOfMaterialsService {
   static async editAssembly(
     submitter: User,
     assemblyId: string,
-    organization: OrganizationPreview,
+    organization: Organization,
     name?: string,
     pdmFileName?: string
   ): Promise<Assembly> {
@@ -692,10 +696,14 @@ export default class BillOfMaterialsService {
    * @param organizationId The id of the organization the user is currently in
    * @returns The found assembly
    */
-  static async getSingleAssemblyWithQueryArgs(assemblyId: string, organization: OrganizationPreview) {
-    const assembly = await prisma.assembly.findUnique({ where: { assemblyId }, ...getAssemblyQueryArgs(organization.organizationId) });
+  static async getSingleAssemblyWithQueryArgs(assemblyId: string, organization: Organization) {
+    const assembly = await prisma.assembly.findUnique({
+      where: { assemblyId },
+      ...getAssemblyQueryArgs(organization.organizationId)
+    });
     if (!assembly) throw new NotFoundException('Assembly', assemblyId);
-    if (assembly.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Assembly');
+    if (assembly.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Assembly');
     if (assembly.dateDeleted) throw new DeletedException('Assembly', assemblyId);
 
     return assembly;
@@ -707,7 +715,7 @@ export default class BillOfMaterialsService {
    * @param organizationId The id of the organization the user is currently in
    * @returns The found material type
    */
-  static async getSingleMaterialTypeWithQueryArgs(materialTypeName: string, organization: OrganizationPreview) {
+  static async getSingleMaterialTypeWithQueryArgs(materialTypeName: string, organization: Organization) {
     const materialType = await prisma.material_Type.findUnique({
       where: { uniqueMaterialType: { name: materialTypeName, organizationId: organization.organizationId } },
       ...getMaterialTypeQueryArgs(organization.organizationId)
@@ -725,7 +733,7 @@ export default class BillOfMaterialsService {
    * @param organizationId The id of the organization the user is currently in
    * @returns The manufacturer with the given name
    */
-  static async getSingleManufacturerWithQueryArgs(manufacturerName: string, organization: OrganizationPreview) {
+  static async getSingleManufacturerWithQueryArgs(manufacturerName: string, organization: Organization) {
     const manufacturer = await prisma.manufacturer.findUnique({
       where: { uniqueManufacturer: { name: manufacturerName, organizationId: organization.organizationId } },
       ...getManufacturerQueryArgs(organization.organizationId)
@@ -743,14 +751,15 @@ export default class BillOfMaterialsService {
    * @param organizationId The id of the organization the user is currently in
    * @returns The found material
    */
-  static async getSingleMaterialWithQueryArgs(materialId: string, organization: OrganizationPreview) {
+  static async getSingleMaterialWithQueryArgs(materialId: string, organization: Organization) {
     const material = await prisma.material.findUnique({
       where: { materialId },
       include: { wbsElement: true }
     });
 
     if (!material) throw new NotFoundException('Material', materialId);
-    if (material.wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Material');
+    if (material.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Material');
     if (material.dateDeleted) throw new DeletedException('Material', materialId);
 
     return material;

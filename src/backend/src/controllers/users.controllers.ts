@@ -6,7 +6,7 @@ import { AccessDeniedException } from '../utils/errors.utils';
 export default class UsersController {
   static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await UsersService.getAllUsers(req.organization);
+      const users = await UsersService.getAllUsers(req.organization.organizationId);
 
       return res.status(200).json(users);
     } catch (error: unknown) {

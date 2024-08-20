@@ -43,7 +43,7 @@ export default class UsersService {
    * @param organizationId the id of the organization to get the users for
    * @returns a list of all the users
    */
-  static async getAllUsers(organization?: Organization): Promise<UserWithScheduleSettings[]> {
+  static async getAllUsers(organizationId?: string): Promise<UserWithScheduleSettings[]> {
     if (!organizationId) {
       const users = await prisma.user.findMany({
         include: {
@@ -60,7 +60,7 @@ export default class UsersService {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
       include: {
-        users: getUserWithSettingsQueryArgs(organization.organizationId)
+        users: getUserWithSettingsQueryArgs(organizationId)
       }
     });
 
