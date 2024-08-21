@@ -126,8 +126,8 @@ export default class OrganizationsService {
     }
 
     return {
-      applyInterestImage: organization?.applyInterestImageId,
-      exploreAsGuestImage: organization?.exploreAsGuestImageId
+      applyInterestImage: organization.applyInterestImageId,
+      exploreAsGuestImage: organization.exploreAsGuestImageId
     };
   }
 }
