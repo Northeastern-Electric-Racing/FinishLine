@@ -383,24 +383,14 @@ describe('Recruitment Tests', () => {
     it('Fails if user is not an admin', async () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
       await expect(
-        async () =>
-          await RecruitmentServices.deleteFaq(
-            await createTestUser(theVisitorGuest, orgId),
-            testFaq.faqId,
-            orgId
-          )
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(theVisitorGuest, orgId), testFaq.faqId, orgId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete an faq'));
     });
 
     it('Fails if organization doesn`t exist', async () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
       await expect(
-        async () =>
-          await RecruitmentServices.deleteFaq(
-            await createTestUser(supermanAdmin, orgId),
-            testFaq.faqId,
-            '2'
-          )
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, '2')
       ).rejects.toThrow(new NotFoundException('Organization', `2`));
     });
 
@@ -415,12 +405,7 @@ describe('Recruitment Tests', () => {
       await RecruitmentServices.deleteFaq(await createTestUser(flashAdmin, orgId), testFaq.faqId, orgId);
 
       await expect(
-        async () =>
-          await RecruitmentServices.deleteFaq(
-            await createTestUser(supermanAdmin, orgId),
-            testFaq.faqId,
-            orgId
-          )
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, orgId)
       ).rejects.toThrow(new DeletedException('Faq', testFaq.faqId));
     });
 
