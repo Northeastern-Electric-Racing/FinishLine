@@ -148,12 +148,12 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
     'Finance Team',
     '',
     true,
-    organization.organizationId
+    organization
   );
 
-  await TeamsService.setTeamLeads(head, team.teamId, [lead.userId], organization.organizationId);
+  await TeamsService.setTeamLeads(head, team.teamId, [lead.userId], organization);
 
-  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization.organizationId);
+  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization);
 };
 
 export const createTestFAQ = async (orgId: string, frequentlyAskedQuestionId: string) => {
@@ -326,7 +326,7 @@ export const createTestReimbursementRequest = async () => {
 
   await createTestProject(user, organization.organizationId);
 
-  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization.organizationId);
+  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,
@@ -334,7 +334,7 @@ export const createTestReimbursementRequest = async () => {
     123,
     true,
     [Club_Accounts.CASH, Club_Accounts.BUDGET],
-    organization.organizationId
+    organization
   );
 
   const rr = await ReimbursementRequestService.createReimbursementRequest(
@@ -356,7 +356,7 @@ export const createTestReimbursementRequest = async () => {
     ],
     accountCode.accountCodeId,
     100,
-    organization.organizationId
+    organization
   );
 
   if (!rr) throw new Error('Failed to create reimbursement request');
@@ -378,7 +378,7 @@ export const createTestDesignReview = async () => {
   if (!head) throw new Error('Failed to find user');
   if (!lead) throw new Error('Failed to find user');
   await createTestProject(head, organization.organizationId);
-  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization.organizationId);
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization);
   const { designReviewId } = await DesignReviewsService.createDesignReview(
     lead,
     '03/25/2027',
@@ -391,7 +391,7 @@ export const createTestDesignReview = async () => {
       workPackageNumber: 0
     },
     [0, 1],
-    organization.organizationId
+    organization
   );
 
   const dr = await prisma.design_Review.findUnique({

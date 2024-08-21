@@ -1,19 +1,22 @@
 import { financeMember, supermanAdmin } from '../test-data/users.test-data';
 import DesignReviewsService from '../../src/services/design-reviews.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
-import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
+import { createTestDesignReview, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { getUserQueryArgs } from '../../src/prisma-query-args/user.query-args';
 import { DesignReviewStatus } from 'shared';
-import { Design_Review } from '@prisma/client';
+import { Design_Review, Organization } from '@prisma/client';
 
 describe('Design Reviews', () => {
   let designReview: Design_Review;
   let organizationId: string;
+  let organization: Organization
   beforeEach(async () => {
     const { dr, orgId } = await createTestDesignReview();
+    const testOrganization = await createTestOrganization();
     designReview = dr;
     organizationId = orgId;
+    organization = testOrganization;
   });
 
   afterEach(async () => {
@@ -23,7 +26,7 @@ describe('Design Reviews', () => {
   // change with admin who is not creator
   test('Set status works when an admin who is not the creator sets', async () => {
     const user = await createTestUser(supermanAdmin, organizationId);
-    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organizationId);
+    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organization);
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
         designReviewId: designReview.designReviewId
@@ -48,7 +51,7 @@ describe('Design Reviews', () => {
       drCreator,
       designReview.designReviewId,
       DesignReviewStatus.CONFIRMED,
-      organizationId
+      organization
     );
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
@@ -65,7 +68,7 @@ describe('Design Reviews', () => {
         await createTestUser(financeMember, organizationId),
         designReview.designReviewId,
         DesignReviewStatus.CONFIRMED,
-        organizationId
+        organization
       )
     ).rejects.toThrow(
       new AccessDeniedException('admin and app-admin only have the ability to set the status of a design review')

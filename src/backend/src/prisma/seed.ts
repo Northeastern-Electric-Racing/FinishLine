@@ -1869,18 +1869,18 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await OrganizationsService.setUsefulLinks(batman, ner, [
-    {
-      linkId: '1',
-      linkTypeName: 'Confluence',
-      url: 'https://confluence.com'
-    },
-    {
-      linkId: '2',
-      linkTypeName: 'Bill of Materials',
-      url: 'https://docs.google.com'
-    }
-  ]);
+  // await OrganizationsService.setUsefulLinks(batman, ner, [
+  //   {
+  //     linkId: '1',
+  //     linkTypeName: 'Confluence',
+  //     url: 'https://confluence.com'
+  //   },
+  //   {
+  //     linkId: '2',
+  //     linkTypeName: 'Bill of Materials',
+  //     url: 'https://docs.google.com'
+  //   }
+  // ]);
 
   await RecruitmentServices.createMilestone(batman, 'Milestone 1', 'This is milestone 1', new Date('11/12/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Milestone 2', 'This is milestone 2', new Date('11/13/24'), ner);

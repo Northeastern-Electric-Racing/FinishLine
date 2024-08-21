@@ -8,5 +8,5 @@
     "esModuleInterop": true
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["./index.ts", "./src/**/*.ts", "../frontend/src/**/*.ts"]
+  "include": ["./index.ts", "./src/**/*.ts", "../frontend/src/**/*.ts", "./src/types"]
 }
