@@ -76,7 +76,11 @@ export default class DesignReviewsService {
       ...getDesignReviewQueryArgs(organizationId)
     });
 
-    if (deletedDesignReview.calendarEventId) {
+    if (
+      deletedDesignReview.calendarEventId &&
+      deletedDesignReview.teamType.calendarId &&
+      deletedDesignReview.calendarEventId
+    ) {
       await deleteCalendarEvent(deletedDesignReview.teamType.calendarId, deletedDesignReview.calendarEventId);
     }
 
@@ -316,16 +320,17 @@ export default class DesignReviewsService {
 
     const calendarEventId =
       originaldesignReview.calendarEventId ??
-      (await createCalendarEvent(
-        teamType.calendarId,
-        [...requiredMembersIds, ...optionalMembersIds],
-        dateScheduled,
-        isInPerson,
-        zoomLink,
-        location,
-        meetingTimes,
-        originaldesignReview.wbsElement
-      ));
+      (teamType.calendarId &&
+        (await createCalendarEvent(
+          teamType.calendarId,
+          [...requiredMembersIds, ...optionalMembersIds],
+          dateScheduled,
+          isInPerson,
+          zoomLink,
+          location,
+          meetingTimes,
+          originaldesignReview.wbsElement
+        )));
     // actually try to update the design review
     const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
@@ -356,7 +361,7 @@ export default class DesignReviewsService {
 
     if (status === Design_Review_Status.SCHEDULED) {
       await sendDRScheduledSlackNotif(updatedDesignReview.notificationSlackThreads, updatedDesignReview);
-      if (updatedDesignReview.calendarEventId) {
+      if (updatedDesignReview.calendarEventId && updatedDesignReview.teamType.calendarId) {
         await updateCalendarEvent(
           updatedDesignReview.teamType.calendarId,
           updatedDesignReview.calendarEventId,

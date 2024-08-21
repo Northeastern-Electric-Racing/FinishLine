@@ -186,7 +186,7 @@ export const createCalendar = async (name: string) => {
     });
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const createdCalendar = await calendar.calendars.insert({
-      requestBody: { summary: `NER ${name} Meetings`, description: `A Team Type Within NER` }
+      requestBody: { summary: `${name} System Meetings` }
     });
 
     return createdCalendar.data.id;
@@ -208,7 +208,7 @@ export const createCalendar = async (name: string) => {
  * @returns the id of the calendar event
  */
 export const createCalendarEvent = async (
-  calendarId: string | null,
+  calendarId: string,
   memberIds: string[],
   dateScheduled: Date,
   isInPerson: boolean,
@@ -218,7 +218,6 @@ export const createCalendarEvent = async (
   wbsElement: WBS_Element
 ) => {
   if (process.env.NODE_ENV !== 'production') return;
-  if (!calendarId) throw Error('no calendar id provided');
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
@@ -268,8 +267,8 @@ export const createCalendarEvent = async (
  * @returns the id of the updated calendar event
  */
 export const updateCalendarEvent = async (
-  calendarId: string | null,
-  eventId: string | null,
+  calendarId: string,
+  eventId: string,
   memberIds: string[],
   dateScheduled: Date,
   isInPerson: boolean,
@@ -278,8 +277,6 @@ export const updateCalendarEvent = async (
   meetingTimes: number[],
   wbsElement: WBS_Element
 ) => {
-  if (!calendarId) throw Error('no calendar id provided');
-  if (!eventId) throw Error('no event id provided');
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
@@ -325,8 +322,7 @@ export const updateCalendarEvent = async (
  * @param eventId the id of the calendar event
  * @returns the deleted calendar event
  */
-export const deleteCalendarEvent = async (calendarId: string | null, eventId: string) => {
-  if (!calendarId) throw Error('No calendar id provided');
+export const deleteCalendarEvent = async (calendarId: string, eventId: string) => {
   try {
     oauth2Client.setCredentials({
       refresh_token: CALENDAR_REFRESH_TOKEN
