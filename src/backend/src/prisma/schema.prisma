@@ -890,7 +890,7 @@ model Organization {
 }
 
 model FrequentlyAskedQuestion {
-  frequentlyAskedQuestionId String       @id @default(uuid())
+  faqId String       @id @default(uuid())
   question                  String
   answer                    String
   userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")

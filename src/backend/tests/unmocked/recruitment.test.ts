@@ -383,24 +383,14 @@ describe('Recruitment Tests', () => {
     it('Fails if user is not an admin', async () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
       await expect(
-        async () =>
-          await RecruitmentServices.deleteFaq(
-            await createTestUser(theVisitorGuest, orgId),
-            testFaq.frequentlyAskedQuestionId,
-            orgId
-          )
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(theVisitorGuest, orgId), testFaq.faqId, orgId)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete an faq'));
     });
 
     it('Fails if organization doesn`t exist', async () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
       await expect(
-        async () =>
-          await RecruitmentServices.deleteFaq(
-            await createTestUser(supermanAdmin, orgId),
-            testFaq.frequentlyAskedQuestionId,
-            '2'
-          )
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, '2')
       ).rejects.toThrow(new NotFoundException('Organization', `2`));
     });
 
@@ -412,25 +402,20 @@ describe('Recruitment Tests', () => {
 
     it('Fails if faq is already deleted', async () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
-      await RecruitmentServices.deleteFaq(await createTestUser(flashAdmin, orgId), testFaq.frequentlyAskedQuestionId, orgId);
+      await RecruitmentServices.deleteFaq(await createTestUser(flashAdmin, orgId), testFaq.faqId, orgId);
 
       await expect(
-        async () =>
-          await RecruitmentServices.deleteFaq(
-            await createTestUser(supermanAdmin, orgId),
-            testFaq.frequentlyAskedQuestionId,
-            orgId
-          )
-      ).rejects.toThrow(new DeletedException('Faq', testFaq.frequentlyAskedQuestionId));
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, orgId)
+      ).rejects.toThrow(new DeletedException('Faq', testFaq.faqId));
     });
 
     it('Succeeds and deletes an FAQ', async () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
 
-      await RecruitmentServices.deleteFaq(await createTestUser(alfred, orgId), testFaq.frequentlyAskedQuestionId, orgId);
+      await RecruitmentServices.deleteFaq(await createTestUser(alfred, orgId), testFaq.faqId, orgId);
 
       const deletedTestFaq = await prisma.frequentlyAskedQuestion.findUnique({
-        where: { frequentlyAskedQuestionId: testFaq.frequentlyAskedQuestionId }
+        where: { faqId: testFaq.faqId }
       });
 
       expect(deletedTestFaq?.dateDeleted).not.toBe(null);
