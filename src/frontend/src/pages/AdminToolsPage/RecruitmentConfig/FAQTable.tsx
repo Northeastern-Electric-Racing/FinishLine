@@ -36,7 +36,7 @@ const FAQsTable = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           borderBottom: index === faqs.length - 1 ? 'none' : '1px solid',
-          minHeight: '70px'
+          minHeight: '50px'
         }}
       >
         <Typography sx={{ maxWidth: 300 }}>{faq.answer}</Typography>

@@ -68,7 +68,7 @@ const FaqFormModal: React.FC<FaqFormModalProps> = ({ open, handleClose, defaultV
     <NERFormModal
       open={open}
       onHide={handleCancel}
-      title={defaultValues ? 'Edit Faq' : 'New Faq'}
+      title={defaultValues ? 'Edit FAQ' : 'New FAQ'}
       reset={() => reset({ question: '', answer: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
@@ -84,7 +84,7 @@ const FaqFormModal: React.FC<FaqFormModalProps> = ({ open, handleClose, defaultV
         <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
           <FormLabel>Answer*</FormLabel>
         </Box>
-        <ReactHookTextField name="answer" control={control} placeholder="Write the answer here." />
+        <ReactHookTextField name="answer" control={control} placeholder="Write the answer here" />
         <FormHelperText error>{errors.answer?.message}</FormHelperText>
       </FormControl>
     </NERFormModal>

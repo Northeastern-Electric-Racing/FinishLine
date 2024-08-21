@@ -124,7 +124,7 @@ const MilestoneFormModal: React.FC<MilestoneFormModalProps> = ({ open, handleClo
         <ReactHookTextField
           name="description"
           control={control}
-          placeholder="Add additional information about or related to the milestone here."
+          placeholder="Add additional information about or related to the milestone here"
         />
         <FormHelperText error>{errors.description?.message}</FormHelperText>
       </FormControl>
