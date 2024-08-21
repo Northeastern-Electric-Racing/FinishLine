@@ -118,7 +118,7 @@ export default class OrganizationsService {
 
   static async getOrganizationImages(organizationId: string) {
     const organization = await prisma.organization.findUnique({
-      where: { organizationId },
+      where: { organizationId }
     });
 
     if (!organization) {
