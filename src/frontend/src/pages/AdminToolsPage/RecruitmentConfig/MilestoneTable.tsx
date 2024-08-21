@@ -30,7 +30,7 @@ const MilestoneTable = () => {
         align="left"
         sx={{
           borderRight: '1px solid',
-          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid',
+          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid'
         }}
       >
         <Typography>{new Date(milestone.dateOfEvent).toDateString()}</Typography>
@@ -38,7 +38,7 @@ const MilestoneTable = () => {
       <TableCell
         sx={{
           borderRight: '1px solid',
-          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid',
+          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid'
         }}
       >
         <Typography>{milestone.name}</Typography>
