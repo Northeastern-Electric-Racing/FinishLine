@@ -236,4 +236,27 @@ export default class RecruitmentServices {
 
     return updatedFAQ;
   }
+
+  /**
+   * Deletes an FAQ with the given organization Id and FAQ Id
+   * @param deleter a user who is making this request
+   * @param organizationId the organization Id of the FAQ
+   */
+  static async deleteFaq(deleter: User, faqId: string, organizationId: string) {
+    if (!(await userHasPermission(deleter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete an faq');
+
+    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId } });
+
+    if (!faq) throw new NotFoundException('Faq', faqId);
+
+    if (faq.dateDeleted) throw new DeletedException('Faq', faqId);
+
+    await prisma.frequentlyAskedQuestion.update({
+      where: { faqId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+
+    return faq;
+  }
 }
