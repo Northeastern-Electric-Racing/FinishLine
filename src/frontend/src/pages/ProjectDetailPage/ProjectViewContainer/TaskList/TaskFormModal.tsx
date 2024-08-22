@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Autocomplete, FormControl, FormLabel, Grid, MenuItem, TextField, useTheme } from '@mui/material';
+import { Autocomplete, FormControl, FormLabel, Grid, MenuItem, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import { countWords, isGuest, isUnderWordCount, Task, TaskPriority, TeamPreview } from 'shared';
