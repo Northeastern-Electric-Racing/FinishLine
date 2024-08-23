@@ -7,12 +7,11 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
 import GuestHomePage from './GuestHomePage';
 import MemberHomePage from './MemberHomePage';
-import { useHistoryState } from '../../hooks/misc.hooks';
+import { useState } from 'react';
 
 const Home = () => {
   const user = useCurrentUser();
-  const [onMemberHomePage, setOnMemberHomePage] = useHistoryState('', false);
-
+  const [onMemberHomePage, setOnMemberHomePage] = useState(false);
   return isGuest(user.role) && !onMemberHomePage ? (
     <GuestHomePage user={user} setOnMemberHomePage={setOnMemberHomePage} />
   ) : (

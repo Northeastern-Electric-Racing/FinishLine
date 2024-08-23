@@ -43,15 +43,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const [onMemberHomePage, setOnMemberHomePage] = useState(() => {
-    const savedState = localStorage.getItem('memberHomePage');
-    return savedState ? JSON.parse(savedState) : false;
-  });
+  const [onMemberHomePage, setOnMemberHomePage] = useState(userRole !== 'GUEST');
 
   useEffect(() => {
     const handleMemberHomePage = (value: boolean) => {
       setOnMemberHomePage(value);
-      localStorage.setItem('memberHomePage', JSON.stringify(value));
     };
 
     emitter.on('memberHomePage', handleMemberHomePage as (event: unknown) => void);
