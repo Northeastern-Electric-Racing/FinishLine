@@ -53,7 +53,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
     const handlePNMHomePage = (value: boolean) => {
       setonPNMHomePage(value);
-    }
+    };
 
     emitter.on('guestHomePage', handleGuestHomePage as (event: unknown) => void);
     emitter.on('pnmHomePage', handlePNMHomePage as (event: unknown) => void);
