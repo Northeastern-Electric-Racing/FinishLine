@@ -1,25 +1,26 @@
 import { Grid } from '@mui/material';
-import { User } from 'shared';
+import { Availability, DesignReview, getDayOfWeek, getNextSevenDays, User } from 'shared';
 import {
-  NUMBER_OF_TIME_SLOTS,
   EnumToArray,
-  DAY_NAMES,
   REVIEW_TIMES,
   HeatmapColors,
-  getBackgroundColor
+  getBackgroundColor,
+  NUMBER_OF_TIME_SLOTS
 } from '../../../utils/design-review.utils';
 import TimeSlot from '../../../components/TimeSlot';
 import React, { useState } from 'react';
+import { datePipe } from '../../../utils/pipes';
 
 interface AvailabilityScheduleViewProps {
   availableUsers: Map<number, User[]>;
   unavailableUsers: Map<number, User[]>;
-  usersToAvailabilities: Map<User, number[]>;
+  usersToAvailabilities: Map<User, Availability[]>;
   existingMeetingData: Map<number, string>;
   setCurrentAvailableUsers: (val: User[]) => void;
   setCurrentUnavailableUsers: (val: User[]) => void;
-  onSelectedTimeslotChanged: (val: number | null) => void;
+  onSelectedTimeslotChanged: (val: number | null, day: Date | null) => void;
   dateRangeTitle: string;
+  designReview: DesignReview;
 }
 
 const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
@@ -30,12 +31,14 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   setCurrentAvailableUsers,
   setCurrentUnavailableUsers,
   dateRangeTitle,
-  onSelectedTimeslotChanged
+  onSelectedTimeslotChanged,
+  designReview
 }) => {
   const totalUsers = usersToAvailabilities.size;
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
+  const potentialDays = getNextSevenDays(designReview.initialDate);
 
-  const handleTimeslotClick = (index: number) => {
+  const handleTimeslotClick = (index: number, day: Date) => {
     if (selectedTimeslot === index) {
       setSelectedTimeslot(null); // unselect
       setCurrentAvailableUsers([]);
@@ -46,7 +49,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
       setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
     }
 
-    onSelectedTimeslotChanged(index);
+    onSelectedTimeslotChanged(index, day);
   };
 
   const handleOnMouseOver = (index: number) => {
@@ -54,7 +57,7 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
     setCurrentUnavailableUsers(unavailableUsers.get(index) || []);
   };
 
-  const handleOnMouseLeave = () => {
+  const handleOnMouseLeave = (): void => {
     if (selectedTimeslot === null) {
       setCurrentAvailableUsers([]);
       setCurrentUnavailableUsers([]);
@@ -65,11 +68,15 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   for (let time = 0; time < NUMBER_OF_TIME_SLOTS; time++) {
     availableUsers.set(time, []);
   }
-  usersToAvailabilities.forEach((availableTimes, user) => {
-    availableTimes.forEach((time) => {
-      const usersAtTime = availableUsers.get(time) || [];
-      usersAtTime.push(user);
-      availableUsers.set(time, usersAtTime);
+  usersToAvailabilities.forEach((availabilities, user) => {
+    let i = 0;
+    availabilities.forEach((availability) => {
+      availability.availability.forEach((time) => {
+        const usersAtTime = availableUsers.get(EnumToArray(REVIEW_TIMES).length * i + time) || [];
+        usersAtTime.push(user);
+        availableUsers.set(EnumToArray(REVIEW_TIMES).length * i + time, usersAtTime);
+      });
+      i++;
     });
   });
 
@@ -84,20 +91,20 @@ const AvailabilityScheduleView: React.FC<AvailabilityScheduleViewProps> = ({
   return (
     <Grid container>
       <TimeSlot backgroundColor={HeatmapColors[0]} text={dateRangeTitle} />
-      {EnumToArray(DAY_NAMES).map((day) => (
-        <TimeSlot backgroundColor={HeatmapColors[0]} text={day} fontSize={'1em'} />
+      {potentialDays.map((day) => (
+        <TimeSlot backgroundColor={HeatmapColors[0]} text={getDayOfWeek(day) + ' ' + datePipe(day)} fontSize={'1em'} />
       ))}
       {EnumToArray(REVIEW_TIMES).map((time, timeIndex) => (
         <Grid container onMouseLeave={handleOnMouseLeave}>
           <TimeSlot backgroundColor={HeatmapColors[0]} text={time} fontSize={'1em'} />
-          {EnumToArray(DAY_NAMES).map((_day, dayIndex) => {
+          {potentialDays.map((day, dayIndex) => {
             const index = dayIndex * EnumToArray(REVIEW_TIMES).length + timeIndex;
             return (
               <TimeSlot
                 key={index}
                 backgroundColor={getBackgroundColor(availableUsers.get(index)?.length, totalUsers)}
                 selected={selectedTimeslot === index}
-                onClick={() => handleTimeslotClick(index)}
+                onClick={() => handleTimeslotClick(index, day)}
                 onMouseOver={() => handleOnMouseOver(index)}
                 icon={existingMeetingData.get(index)}
               />
