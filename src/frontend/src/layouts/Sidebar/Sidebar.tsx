@@ -26,10 +26,11 @@ interface SidebarProps {
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
+  onPNMHomePage: boolean;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
-  const linkItems: LinkItem[] = [
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, onPNMHomePage }: SidebarProps) => {
+  const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
       icon: <HomeIcon />,
@@ -71,6 +72,21 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       route: routes.INFO
     }
   ];
+
+  const pnmLinkItems: LinkItem[] = [
+    {
+      name: 'Home',
+      icon: <HomeIcon />,
+      route: routes.HOME
+    },
+    {
+      name: 'Teams',
+      icon: <GroupIcon />,
+      route: routes.TEAMS
+    }
+  ];
+
+  const linkItems = onPNMHomePage ? pnmLinkItems : memberLinkItems;
 
   const handleMoveContent = () => {
     if (moveContent) {

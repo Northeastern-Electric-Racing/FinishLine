@@ -6,13 +6,23 @@ import emitter from '../../app/EventBus';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
-  setOnMemberHomePage: (e: boolean) => void;
+  setOnGuestHomePage: (e: boolean) => void;
+  setOnPNMHomePage: (e: boolean) => void;
 }
 
-const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
-  const handleClick = () => {
-    emitter.emit('memberHomePage', true);
-    setOnMemberHomePage(true);
+const GuestHomePage = ({ user, setOnGuestHomePage, setOnPNMHomePage }: GuestHomePageProps) => {
+  const handleClickFinishline = () => {
+    emitter.emit('pnmHomePage', false);
+    setOnPNMHomePage(false);
+    emitter.emit('guestHomePage', false);
+    setOnGuestHomePage(false);
+  };
+
+  const handleClickLearnMore = () => {
+    emitter.emit('guestHomePage', false);
+    setOnGuestHomePage(false);
+    emitter.emit('pnmHomePage', true);
+    setOnPNMHomePage(true);
   };
 
   return (
@@ -26,13 +36,13 @@ const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
             title="Interested in applying"
             imageSrc={`/Apply.png`}
             buttonText="Learn More"
-            onClick={() => {}}
+            onClick={handleClickLearnMore}
           />
           <ImageWithButton
             title="Explore Our Work as a Guest"
             imageSrc={`/Guest.png`}
             buttonText="FinishLine"
-            onClick={handleClick}
+            onClick={handleClickFinishline}
           />
         </Box>
       </Box>

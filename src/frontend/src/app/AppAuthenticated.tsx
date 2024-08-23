@@ -43,17 +43,24 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const [onMemberHomePage, setOnMemberHomePage] = useState(userRole !== 'GUEST');
+  const [onGuestHomePage, setOnGuestHomePage] = useState(userRole === 'GUEST');
+  const [onPNMHomePage, setonPNMHomePage] = useState(false);
 
   useEffect(() => {
-    const handleMemberHomePage = (value: boolean) => {
-      setOnMemberHomePage(value);
+    const handleGuestHomePage = (value: boolean) => {
+      setOnGuestHomePage(value);
     };
 
-    emitter.on('memberHomePage', handleMemberHomePage as (event: unknown) => void);
+    const handlePNMHomePage = (value: boolean) => {
+      setonPNMHomePage(value);
+    }
+
+    emitter.on('guestHomePage', handleGuestHomePage as (event: unknown) => void);
+    emitter.on('pnmHomePage', handlePNMHomePage as (event: unknown) => void);
 
     return () => {
-      emitter.off('memberHomePage', handleMemberHomePage as (event: unknown) => void);
+      emitter.off('guestHomePage', handleGuestHomePage as (event: unknown) => void);
+      emitter.off('pnmHomePage', handlePNMHomePage as (event: unknown) => void);
     };
   }, []);
 
@@ -76,11 +83,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           height: '100vh',
           position: 'fixed',
           width: 15,
-          borderRight: onMemberHomePage ? 2 : 0,
+          borderRight: !onGuestHomePage ? 2 : 0,
           borderRightColor: theme.palette.background.paper
         }}
       />
-      {onMemberHomePage && (
+      {!onGuestHomePage && (
         <>
           <IconButton
             onClick={() => {
@@ -103,6 +110,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             setDrawerOpen={setDrawerOpen}
             moveContent={moveContent}
             setMoveContent={setMoveContent}
+            onPNMHomePage={onPNMHomePage}
           />
         </>
       )}
