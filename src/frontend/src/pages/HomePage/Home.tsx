@@ -19,9 +19,8 @@ const Home = () => {
     return <GuestHomePage user={user} setOnGuestHomePage={setOnGuestHomePage} setOnPNMHomePage={setOnPMNHomePage} />;
   } else if (isGuest(user.role) && onPMNHomePage) {
     return <PNMHomePage />;
-  } else {
-    return <MemberHomePage user={user} />;
   }
+  return <MemberHomePage user={user} />;
 };
 
 export default Home;
