@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { FormInput } from './ReviewChangeRequest';
@@ -30,7 +30,7 @@ import ChangeRequestBlockerWarning from '../../components/ChangeRequestBlockerWa
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { hasProposedChanges } from '../../utils/change-request.utils';
-
+import NERFormModal from '../../components/NERFormModal';
 interface ReviewChangeRequestViewProps {
   cr: ChangeRequest;
   modalShow: boolean;
@@ -119,7 +119,26 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
     standardChangeRequest: StandardChangeRequest
   ) => {
     return (
-      <Dialog fullWidth maxWidth={dialogWidth} open={modalShow} onClose={onHide} style={{ color: 'black' }}>
+      <NERFormModal
+        open={modalShow}
+        onHide={() => {
+          onHide();
+          handleAcceptDeny(false);
+        }}
+        formId={'proposed-solutions-modal'}
+        title={`Review Change Request #${cr.identifier}`}
+        reset={reset}
+        handleUseFormSubmit={handleSubmit}
+        onFormSubmit={() => {
+          console.log('onFormSubmit');
+
+          selected > -1 || hasProposedChanges(standardChangeRequest)
+            ? handleAcceptDeny(true)
+            : toast.error('Please select a proposed solution!', 4500);
+        }}
+        submitText="Accept"
+        cancelText="Deny"
+      >
         <IconButton
           aria-label="close"
           onClick={onHide}
@@ -196,7 +215,7 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
             />
           </form>
         </DialogContent>
-        <DialogActions>
+        {/* <DialogActions>
           <NERFailButton
             variant="contained"
             type="submit"
@@ -219,8 +238,8 @@ const ReviewChangeRequestsView: React.FC<ReviewChangeRequestViewProps> = ({
           >
             Accept
           </NERSuccessButton>
-        </DialogActions>
-      </Dialog>
+        </DialogActions> */}
+      </NERFormModal>
     );
   };
 

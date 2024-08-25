@@ -42,6 +42,7 @@ export type SubmitText =
   | 'Schedule'
   | 'Send To Advisor'
   | 'Submit to SABO'
-  | 'Update';
+  | 'Update'
+  | 'Accept';
 
-export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No';
+export type CancelText = 'Cancel' | 'Delete' | 'Exit' | 'No' | 'Deny';
