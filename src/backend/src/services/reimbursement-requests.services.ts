@@ -28,7 +28,7 @@ import {
   updateReimbursementProducts,
   validateReimbursementProducts,
   validateUserEditRRPermissions,
-  validateUserIsPartOfFinanceTeam,
+  validateUserIsPartOfFinanceTeamOrAdmin,
   validateRefund
 } from '../utils/reimbursement-requests.utils';
 import {
@@ -182,12 +182,16 @@ export default class ReimbursementRequestService {
       }
     });
 
-    await sendReimbursementRequestCreatedNotification(createdReimbursementRequest.reimbursementRequestId, recipient.userId);
-
     await createReimbursementProducts(
       validatedReimbursementProducts.validatedOtherReimbursementProducts,
       validatedReimbursementProducts.validatedWbsReimbursementProducts,
       createdReimbursementRequest.reimbursementRequestId
+    );
+
+    await sendReimbursementRequestCreatedNotification(
+      createdReimbursementRequest.reimbursementRequestId,
+      recipient.userId,
+      organization.organizationId
     );
 
     return createdReimbursementRequest;
@@ -402,7 +406,7 @@ export default class ReimbursementRequestService {
    * @returns reimbursement requests with no advisor approved reimbursement status
    */
   static async getPendingAdvisorList(requester: User, organization: Organization): Promise<ReimbursementRequest[]> {
-    await validateUserIsPartOfFinanceTeam(requester, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(requester, organization.organizationId);
 
     const requestsPendingAdvisors = await prisma.reimbursement_Request.findMany({
       where: {
@@ -430,7 +434,7 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    */
   static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organization: OrganizationWithAdvisor) {
-    await validateUserIsPartOfFinanceTeam(sender, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(sender, organization.organizationId);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
 
@@ -471,13 +475,6 @@ export default class ReimbursementRequestService {
       text: `The following reimbursement requests need to be approved by you: ${saboNumbers.join(', ')}`
     };
 
-    // const organization = await prisma.organization.findUnique({
-    //   where: { organizationId },
-    //   include: { advisor: true }
-    // });
-
-    // if (!organization) throw new NotFoundException('Organization', organizationId);
-
     if (!organization.advisor) throw new HttpException(400, 'Organization does not have an advisor');
 
     await sendMailToAdvisor(mailOptions.subject, mailOptions.text, organization.advisor);
@@ -502,14 +499,14 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns the reimbursement request with the sabo number
    */
+
   static async setSaboNumber(
     reimbursementRequestId: string,
     saboNumber: number,
     submitter: User,
     organization: Organization
   ) {
-    await validateUserIsPartOfFinanceTeam(submitter, organization.organizationId);
-
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });
@@ -790,7 +787,7 @@ export default class ReimbursementRequestService {
     submitter: User,
     organization: Organization
   ) {
-    await validateUserIsPartOfFinanceTeam(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -847,7 +844,7 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Reimbursement Request');
 
     try {
-      await validateUserIsPartOfFinanceTeam(user, organization.organizationId);
+      await validateUserIsPartOfFinanceTeamOrAdmin(user, organization.organizationId);
     } catch {
       if (user.userId !== reimbursementRequest.recipientId)
         throw new AccessDeniedException('You do not have access to this reimbursement request');
@@ -912,7 +909,7 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursment status
    */
   static async approveReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeam(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -964,7 +961,8 @@ export default class ReimbursementRequestService {
    * @returns the created reimbursment status
    */
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeam(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -1016,7 +1014,7 @@ export default class ReimbursementRequestService {
    * @returns a buffer of the image data and the image type
    */
   static async downloadReceiptImage(fileId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeam(submitter, organization.organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
 
     const fileData = await downloadImageFile(fileId);
 

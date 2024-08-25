@@ -1,4 +1,5 @@
 import prisma from '../../src/prisma/prisma';
+import { Organization } from '@prisma/client';
 import RecruitmentServices from '../../src/services/recruitment.services';
 import {
   AccessDeniedAdminOnlyException,
@@ -6,13 +7,27 @@ import {
   HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
-import { createTestMilestone, createTestFAQ, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
-import { batmanAppAdmin, wonderwomanGuest, supermanAdmin, member } from '../test-data/users.test-data';
-import { Organization } from '@prisma/client';
+import {
+  createTestMilestone,
+  createTestFaq,
+  createTestFAQ,
+  createTestOrganization,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
+import {
+  batmanAppAdmin,
+  wonderwomanGuest,
+  supermanAdmin,
+  member,
+  theVisitorGuest,
+  flashAdmin,
+  alfred
+} from '../test-data/users.test-data';
 
 describe('Recruitment Tests', () => {
   let orgId: string;
-  let organization: Organization
+  let organization: Organization;
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
@@ -217,20 +232,23 @@ describe('Recruitment Tests', () => {
     describe('Create FAQ', () => {
       it('Fails if user is not an admin', async () => {
         await expect(
-          async () => await RecruitmentServices.createFaq(await createTestUser(member, orgId), 'question', 'answer', organization)
+          async () =>
+            await RecruitmentServices.createFaq(await createTestUser(member, orgId), 'question', 'answer', organization)
         ).rejects.toThrow(new AccessDeniedAdminOnlyException('create an faq'));
       });
 
       describe('Delete a single milestone', () => {
         it('Fails if user is not admin', async () => {
           await expect(
-            async () => await RecruitmentServices.deleteMilestone(await createTestUser(wonderwomanGuest, orgId), 'id', organization)
+            async () =>
+              await RecruitmentServices.deleteMilestone(await createTestUser(wonderwomanGuest, orgId), 'id', organization)
           ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete milestone'));
         });
 
         it('Fails if milestoneId is not found', async () => {
           await expect(
-            async () => await RecruitmentServices.deleteMilestone(await createTestUser(batmanAppAdmin, orgId), 'id1', organization)
+            async () =>
+              await RecruitmentServices.deleteMilestone(await createTestUser(batmanAppAdmin, orgId), 'id1', organization)
           ).rejects.toThrow(new HttpException(400, 'Milestone with id: id1 not found!'));
         });
 
@@ -278,6 +296,42 @@ describe('Recruitment Tests', () => {
           });
         });
       });
+    });
+  });
+
+  describe('Delete FAQ', () => {
+    it('Fails if user is not an admin', async () => {
+      const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
+      await expect(
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(theVisitorGuest, orgId), testFaq.faqId, organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete an faq'));
+    });
+
+    it('Fails if faq doesn`t exist', async () => {
+      await expect(
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(batmanAppAdmin, orgId), '1', organization)
+      ).rejects.toThrow(new NotFoundException('Faq', '1'));
+    });
+
+    it('Fails if faq is already deleted', async () => {
+      const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
+      await RecruitmentServices.deleteFaq(await createTestUser(flashAdmin, orgId), testFaq.faqId, organization);
+
+      await expect(
+        async () => await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, organization)
+      ).rejects.toThrow(new DeletedException('Faq', testFaq.faqId));
+    });
+
+    it('Succeeds and deletes an FAQ', async () => {
+      const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
+
+      await RecruitmentServices.deleteFaq(await createTestUser(alfred, orgId), testFaq.faqId, organization);
+
+      const deletedTestFaq = await prisma.frequentlyAskedQuestion.findUnique({
+        where: { faqId: testFaq.faqId }
+      });
+
+      expect(deletedTestFaq?.dateDeleted).not.toBe(null);
     });
   });
 });

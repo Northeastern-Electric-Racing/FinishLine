@@ -417,8 +417,11 @@ export default class DesignReviewsService {
 
       await sendDRUserConfirmationToThread(updatedDesignReview.notificationSlackThreads, submitter);
 
-      // If all required attendees have confirmed their schedule, mark design review as confirmed
-      if (areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers)) {
+      // If all required attendees have confirmed their schedule and this member was a required attendee, mark design review as confirmed
+      if (
+        areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers) &&
+        areUsersinList([submitter], designReview.requiredMembers)
+      ) {
         await prisma.design_Review.update({
           where: { designReviewId },
           ...getDesignReviewQueryArgs(organization.organizationId),

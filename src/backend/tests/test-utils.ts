@@ -156,7 +156,7 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
   await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization);
 };
 
-export const createTestFAQ = async (orgId: string, frequentlyAskedQuestionId: string) => {
+export const createTestFAQ = async (orgId: string, faqId: string) => {
   const user = await prisma.user.create({
     data: {
       firstName: 'ADMIN',
@@ -168,7 +168,7 @@ export const createTestFAQ = async (orgId: string, frequentlyAskedQuestionId: st
 
   return await prisma.frequentlyAskedQuestion.create({
     data: {
-      frequentlyAskedQuestionId,
+      faqId,
       question: 'Joe mama',
       answer: 'Joe mama`s organization',
       userCreated: {
@@ -225,6 +225,21 @@ export const createTestWorkPackageTemplate = async (user: User, organizationId?:
   });
 
   return workPackageTemplate;
+};
+
+export const createTestFaq = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const faq = await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question: 'Who is Chief Software Engineer of NER?',
+      answer: 'Peyton McKee!',
+      organizationId,
+      userCreatedId: user.userId
+    }
+  });
+  return faq;
 };
 
 export const createTestMilestone = async (user: User, organizationId: string) => {

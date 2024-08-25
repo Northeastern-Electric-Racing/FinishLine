@@ -42,4 +42,14 @@ export default class OrganizationsController {
       return next(error);
     }
   }
+
+  static async getOrganizationImages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = getOrganizationId(req.headers);
+      const images = await OrganizationsService.getOrganizationImages(organizationId);
+      res.status(200).json(images);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

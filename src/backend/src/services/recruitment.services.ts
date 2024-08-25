@@ -6,7 +6,20 @@ import { userHasPermission } from '../utils/users.utils';
 
 export default class RecruitmentServices {
   /**
-   * Creates a new milestone in the given organization Id
+   * Gets all Milestons for the given organization Id
+   * @param organizationId organization Id of the milestone
+   * @returns all the milestones from the given organization
+   */
+  static async getAllMilestones(organization: Organization) {
+    const allMilestones = await prisma.milestone.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null }
+    });
+
+    return allMilestones;
+  }
+
+  /**
+   * Creates a new milestone in the given organization
    * @param submitter a user who is making this request
    * @param name the name of the user
    * @param description description of the milestone
@@ -37,6 +50,15 @@ export default class RecruitmentServices {
     return milestone;
   }
 
+  /**
+   * Edits a new milestone with the given id
+   * @param submitter a user who is making this request
+   * @param name the name of the user
+   * @param description description of the milestone
+   * @param dateOfEvent date of the event of the milestone
+   * @param organizationId the organization Id of the milestone
+   * @returns the edited milestone
+   */
   static async editMilestone(
     submitter: User,
     name: string,
@@ -78,19 +100,6 @@ export default class RecruitmentServices {
   }
 
   /**
-   * Gets all Milestons for the given organization Id
-   * @param organizationId organization Id of the milestone
-   * @returns all the milestones from the given organization
-   */
-  static async getAllMilestones(organization: Organization) {
-    const allMilestones = await prisma.milestone.findMany({
-      where: { organizationId: organization.organizationId, dateDeleted: null }
-    });
-
-    return allMilestones;
-  }
-
-  /**
    * Gets all FAQs for the given organization Id
    * @param organizationId organization Id of the faq
    * @returns all the faqs from the given organization
@@ -110,7 +119,6 @@ export default class RecruitmentServices {
    * @param organizationId organization Id of the milestone
    */
   static async deleteMilestone(deleter: User, milestoneId: string, organization: Organization): Promise<void> {
-
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete milestone');
 
@@ -124,41 +132,6 @@ export default class RecruitmentServices {
       where: { milestoneId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
-  }
-
-  /**
-   * Edits the FAQ
-   * @param question the updated question value
-   * @param answer the updated answer value
-   * @param faqId the requested FAQ to be edited
-   * @param submitter the user editing the FAQ
-   * @param organizationId the organization the user is currently in
-   * @returns the updated FAQ
-   */
-  static async editFAQ(
-    question: string,
-    answer: string,
-    submitter: User,
-    organization: Organization,
-    frequentlyAskedQuestionId: string
-  ) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
-
-    const oldFAQ = await prisma.frequentlyAskedQuestion.findUnique({
-      where: { frequentlyAskedQuestionId }
-    });
-
-    if (!oldFAQ) {
-      throw new NotFoundException('Faq', frequentlyAskedQuestionId);
-    }
-
-    const updatedFAQ = await prisma.frequentlyAskedQuestion.update({
-      where: { frequentlyAskedQuestionId },
-      data: { question, answer }
-    });
-
-    return updatedFAQ;
   }
 
   /**
@@ -180,6 +153,58 @@ export default class RecruitmentServices {
         organizationId: organization.organizationId,
         userCreatedId: submitter.userId
       }
+    });
+
+    return faq;
+  }
+
+  /**
+   * Edits the FAQ
+   * @param question the updated question value
+   * @param answer the updated answer value
+   * @param faqId the requested FAQ to be edited
+   * @param submitter the user editing the FAQ
+   * @param organizationId the organization the user is currently in
+   * @returns the updated FAQ
+   */
+  static async editFAQ(question: string, answer: string, submitter: User, organization: Organization, faqId: string) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('edit frequently asked questions');
+
+    const oldFAQ = await prisma.frequentlyAskedQuestion.findUnique({
+      where: { faqId }
+    });
+
+    if (!oldFAQ) {
+      throw new NotFoundException('Faq', faqId);
+    }
+
+    const updatedFAQ = await prisma.frequentlyAskedQuestion.update({
+      where: { faqId },
+      data: { question, answer }
+    });
+
+    return updatedFAQ;
+  }
+
+  /**
+   * Deletes an FAQ with the given organization Id and FAQ Id
+   * @param deleter a user who is making this request
+   * @param organizationId the organization Id of the FAQ
+   */
+  static async deleteFaq(deleter: User, faqId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete an faq');
+
+    const faq = await prisma.frequentlyAskedQuestion.findUnique({ where: { faqId } });
+
+    if (!faq) throw new NotFoundException('Faq', faqId);
+
+    if (faq.dateDeleted) throw new DeletedException('Faq', faqId);
+
+    await prisma.frequentlyAskedQuestion.update({
+      where: { faqId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
 
     return faq;

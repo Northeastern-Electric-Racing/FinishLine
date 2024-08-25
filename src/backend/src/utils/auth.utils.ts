@@ -138,7 +138,8 @@ export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Org
   const organization = await prisma.organization.findUnique({
     where: { organizationId: organizationid },
     include: {
-      advisor: true
+      advisor: true,
+      usefulLinks: true
     }
   });
 
@@ -150,7 +151,7 @@ export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Org
 };
 
 export type OrganizationWithAdvisor = Organization & {
-  advisor: User;
+  advisor?: User;
 };
 
 export type OrganizationWithUsefulLinks = Organization & {

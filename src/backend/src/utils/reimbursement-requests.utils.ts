@@ -291,8 +291,9 @@ export const createReimbursementProducts = async (
  * @throws {AccessDeniedException} Fails validation when user is not on the
  * finance team.
  */
-export const validateUserIsPartOfFinanceTeam = async (user: User, organizationId: string) => {
-  const isUserAuthorized = await isUserOnFinanceTeam(user, organizationId);
+export const validateUserIsPartOfFinanceTeamOrAdmin = async (user: User, organizationId: string) => {
+  const isUserAuthorized =
+    (await isUserOnFinanceTeam(user, organizationId)) || (await userHasPermission(user.userId, organizationId, isAdmin));
 
   if (!isUserAuthorized) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
@@ -365,7 +366,7 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<AuthUserQuer
 
 export const isUserAdminOrOnFinance = async (submitter: User, organizationId: string) => {
   try {
-    await validateUserIsPartOfFinanceTeam(submitter, organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organizationId);
   } catch (error) {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors');
@@ -389,7 +390,7 @@ export const validateUserEditRRPermissions = async (
   organizationId: string
 ) => {
   try {
-    await validateUserIsPartOfFinanceTeam(user, organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(user, organizationId);
   } catch {
     if (reimbursementRequest.recipientId !== user.userId)
       throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');

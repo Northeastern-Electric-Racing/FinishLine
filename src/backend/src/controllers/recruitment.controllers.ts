@@ -2,6 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import RecruitmentServices from '../services/recruitment.services';
 
 export default class RecruitmentController {
+  static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allMilestones = await RecruitmentServices.getAllMilestones(req.organization);
+      res.status(200).json(allMilestones);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createMilestone(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, description, dateOfEvent } = req.body;
@@ -38,10 +47,11 @@ export default class RecruitmentController {
     }
   }
 
-  static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
+  static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
     try {
-      const allMilestones = await RecruitmentServices.getAllMilestones(req.organization);
-      return res.status(200).json(allMilestones);
+      const { milestoneId } = req.params;
+      await RecruitmentServices.deleteMilestone(req.currentUser, milestoneId, req.organization);
+      res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
     } catch (error: unknown) {
       return next(error);
     }
@@ -56,12 +66,11 @@ export default class RecruitmentController {
     }
   }
 
-  static async deleteMilestone(req: Request, res: Response, next: NextFunction) {
+  static async createFaq(req: Request, res: Response, next: NextFunction) {
     try {
-      const { milestoneId } = req.params;
-
-      await RecruitmentServices.deleteMilestone(req.currentUser, milestoneId, req.organization);
-      res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
+      const { question, answer } = req.body;
+      const faq = await RecruitmentServices.createFaq(req.currentUser, question, answer, req.organization);
+      res.status(200).json(faq);
     } catch (error: unknown) {
       next(error);
     }
@@ -78,12 +87,11 @@ export default class RecruitmentController {
     }
   }
 
-  static async createFaq(req: Request, res: Response, next: NextFunction) {
+  static async deleteFaq(req: Request, res: Response, next: NextFunction) {
     try {
-      const { question, answer } = req.body;
-
-      const faq = await RecruitmentServices.createFaq(req.currentUser, question, answer, req.organization);
-      return res.status(200).json(faq);
+      const { faqId } = req.params;
+      await RecruitmentServices.deleteFaq(req.currentUser, faqId, req.organization);
+      res.status(200).json({ message: `Successfully deleted FAQ with id ${faqId}` });
     } catch (error: unknown) {
       return next(error);
     }
