@@ -101,7 +101,7 @@ export default class OrganizationsService {
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
-    
+
     const links = await prisma.link.findMany({
       where: {
         linkId: { in: organization.usefulLinks.map((link) => link.linkId) }

@@ -11,10 +11,10 @@ describe('Reimbursement Requests', () => {
   let organization: Organization;
   let reimbursementRequest: Reimbursement_Request;
   beforeEach(async () => {
-    const result = await createTestReimbursementRequest();
-    organization = result.organization;
-    orgId = result.organization.organizationId;
-    reimbursementRequest = result.rr;
+    const { organization: org, rr } = await createTestReimbursementRequest();
+    organization = org;
+    orgId = organization.organizationId;
+    reimbursementRequest = rr;
   });
 
   afterEach(async () => {
