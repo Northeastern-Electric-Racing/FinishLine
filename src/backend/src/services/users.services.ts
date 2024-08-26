@@ -405,11 +405,7 @@ export default class UsersService {
     submitter: PrismaUser,
     organization: Organization
   ): Promise<UserSecureSettings> {
-<<<<<<< HEAD
-    await validateUserIsPartOfFinanceTeam(submitter, organization.organizationId);
-=======
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organizationId);
->>>>>>> develop
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
     const secureSettings = await prisma.user_Secure_Settings.findUnique({
       where: { userId },
       include: {
