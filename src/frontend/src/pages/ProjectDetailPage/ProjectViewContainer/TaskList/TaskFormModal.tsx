@@ -61,7 +61,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       open={modalShow}
       onHide={onHide}
       formId={'edit-task-form'}
-      title={title ? title : task?.title ?? ''}
+      title={title ?? task?.title ?? ''}
       reset={() => reset()}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}

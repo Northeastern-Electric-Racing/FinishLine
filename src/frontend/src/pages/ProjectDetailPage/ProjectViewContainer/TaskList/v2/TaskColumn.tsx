@@ -50,7 +50,11 @@ export const TaskColumn = ({
   };
 
   const taskTitle =
-    status === 'IN_BACKLOG' ? 'New Backlog Task' : status === 'IN_PROGRESS' ? 'New In Progress Task' : 'New Done Task';
+    status === TaskStatus.IN_BACKLOG
+      ? 'New Backlog Task'
+      : status === TaskStatus.IN_PROGRESS
+      ? 'New In Progress Task'
+      : 'New Done Task';
 
   return (
     <>
