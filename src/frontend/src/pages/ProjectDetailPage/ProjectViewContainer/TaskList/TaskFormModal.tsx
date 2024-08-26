@@ -151,14 +151,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
           </Grid>
           <Grid item xs={12} md={4}>
             <FormControl fullWidth>
-              <FormLabel>Deadline (YYYY-MM-DD)</FormLabel>
+              <FormLabel>Deadline (MM-DD-YYYY)</FormLabel>
               <Controller
                 name="deadline"
                 control={control}
                 rules={{ required: true }}
                 render={({ field: { onChange, value } }) => (
                   <DatePicker
-                    format="yyyy-MM-dd"
+                    format="MM-dd-yyyy"
                     onChange={(event) => onChange(event ?? new Date())}
                     className={'padding: 10'}
                     value={value}
