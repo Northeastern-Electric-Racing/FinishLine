@@ -31,7 +31,6 @@ interface TaskFormModalProps {
   modalShow: boolean;
   onHide: () => void;
   onSubmit: (data: EditTaskFormInput) => Promise<void>;
-  title?: string;
   onReset?: () => void;
 }
 

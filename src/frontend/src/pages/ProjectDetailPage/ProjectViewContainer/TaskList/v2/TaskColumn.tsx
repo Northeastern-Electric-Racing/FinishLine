@@ -49,13 +49,6 @@ export const TaskColumn = ({
     setShowCreateTaskModal(false);
   };
 
-  const taskTitle =
-    status === TaskStatus.IN_BACKLOG
-      ? 'New Backlog Task'
-      : status === TaskStatus.IN_PROGRESS
-      ? 'New In Progress Task'
-      : 'New Done Task';
-
   return (
     <>
       <TaskFormModal
@@ -63,7 +56,6 @@ export const TaskColumn = ({
         onHide={() => setShowCreateTaskModal(false)}
         modalShow={showCreateTaskModal}
         teams={project.teams}
-        title={taskTitle}
       />
       <Box
         sx={{
