@@ -56,6 +56,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
     }
   });
 
+  const unUpperCase = (str: string) => str.charAt(0) + str.slice(1).toLowerCase();
+
   return (
     <NERFormModal
       open={modalShow}
@@ -115,7 +117,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
                   <TextField select onChange={onChange} value={value} error={!!errors.priority}>
                     {Object.values(TaskPriority).map((p) => (
                       <MenuItem key={p} value={p}>
-                        {p}
+                        {unUpperCase(p)}
                       </MenuItem>
                     ))}
                   </TextField>
