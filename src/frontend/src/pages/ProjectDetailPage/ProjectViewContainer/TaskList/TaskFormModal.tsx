@@ -35,7 +35,7 @@ interface TaskFormModalProps {
   onReset?: () => void;
 }
 
-const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, teams, title, onReset }) => {
+const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow, onHide, teams, onReset }) => {
   const user = useCurrentUser();
 
   const options: { label: string; id: string }[] = getTaskAssigneeOptions(teams).map(taskUserToAutocompleteOption);
@@ -62,7 +62,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
       open={modalShow}
       onHide={onHide}
       formId={'edit-task-form'}
-      title={title ?? task?.title ?? ''}
+      title={task?.title ? 'Edit Task' : 'New Task'}
       reset={() => {
         if (onReset) onReset();
         reset();
