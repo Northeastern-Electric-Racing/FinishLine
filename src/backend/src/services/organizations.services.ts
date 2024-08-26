@@ -1,13 +1,12 @@
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
-import { OrganizationWithUsefulLinks } from '../utils/auth.utils';
 
 export default class OrganizationsService {
   /**
@@ -16,8 +15,17 @@ export default class OrganizationsService {
    * @param organizationId the organization which the links will be set up
    * @param links the links which are being set
    */
-  static async setUsefulLinks(submitter: User, organization: OrganizationWithUsefulLinks, links: LinkCreateArgs[]) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+  static async setUsefulLinks(submitter: User, organizationId: string, links: LinkCreateArgs[]) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { usefulLinks: true }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update useful links');
 
     const currentLinkIds = organization.usefulLinks.map((link) => link.linkId);
@@ -84,7 +92,16 @@ export default class OrganizationsService {
     @param organizationId the organization to get the links for
     @returns the useful links for the organization
   */
-  static async getAllUsefulLinks(organization: OrganizationWithUsefulLinks) {
+  static async getAllUsefulLinks(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { usefulLinks: true }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+    
     const links = await prisma.link.findMany({
       where: {
         linkId: { in: organization.usefulLinks.map((link) => link.linkId) }

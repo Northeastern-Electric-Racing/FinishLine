@@ -5,7 +5,7 @@ export default class OrganizationsController {
   static async setUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const { links } = req.body;
-      const newLinks = await OrganizationsService.setUsefulLinks(req.currentUser, req.organization, links);
+      const newLinks = await OrganizationsService.setUsefulLinks(req.currentUser, req.organization.organizationId, links);
       return res.status(200).json(newLinks);
     } catch (error: unknown) {
       return next(error);
@@ -36,7 +36,7 @@ export default class OrganizationsController {
   }
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
-      const links = await OrganizationsService.getAllUsefulLinks(req.organization);
+      const links = await OrganizationsService.getAllUsefulLinks(req.organization.organizationId);
       return res.status(200).json(links);
     } catch (error: unknown) {
       return next(error);
@@ -45,8 +45,7 @@ export default class OrganizationsController {
 
   static async getOrganizationImages(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
-      const images = await OrganizationsService.getOrganizationImages(organizationId);
+      const images = await OrganizationsService.getOrganizationImages(req.organization.organizationId);
       res.status(200).json(images);
     } catch (error: unknown) {
       next(error);

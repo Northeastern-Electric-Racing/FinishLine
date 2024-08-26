@@ -124,7 +124,7 @@ export default class WorkPackagesController {
   }
 
   // Send reminder message to project lead of every work package that is due before/on given deadline
-  static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
+  static async slackMessageUpcomingDeadlines(req: Request, _res: Response, next: NextFunction) {
     try {
       const { deadline } = req.body;
 

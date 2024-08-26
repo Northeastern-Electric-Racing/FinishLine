@@ -176,7 +176,7 @@ export default class ReimbursementRequestsController {
   static async sendPendingAdvisorList(req: Request, res: Response, next: NextFunction) {
     try {
       const { saboNumbers } = req.body;
-      await ReimbursementRequestService.sendPendingAdvisorList(req.currentUser, saboNumbers, req.organization);
+      await ReimbursementRequestService.sendPendingAdvisorList(req.currentUser, saboNumbers, req.organization.organizationId);
       return res.status(200).json({ message: 'Successfully sent pending advisor list' });
     } catch (error: unknown) {
       return next(error);

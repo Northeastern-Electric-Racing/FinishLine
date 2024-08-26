@@ -150,14 +150,6 @@ export const getOrganization = async (headers: IncomingHttpHeaders): Promise<Org
   return organization;
 };
 
-export type OrganizationWithAdvisor = Organization & {
-  advisor?: User;
-};
-
-export type OrganizationWithUsefulLinks = Organization & {
-  usefulLinks: { linkId: string; name: string; url: string }[];
-};
-
 /**
  * Gets the user making the request and includes their user settings
  * @param res - we use the response because that's where we stored the userId data during jwt validation

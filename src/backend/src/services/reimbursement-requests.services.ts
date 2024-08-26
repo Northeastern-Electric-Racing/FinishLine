@@ -48,7 +48,7 @@ import {
   reimbursementTransformer,
   vendorTransformer
 } from '../transformers/reimbursement-requests.transformer';
-import { OrganizationWithAdvisor, UserWithSecureSettings } from '../utils/auth.utils';
+import { UserWithSecureSettings } from '../utils/auth.utils';
 import {
   sendReimbursementRequestCreatedNotification,
   sendReimbursementRequestDeniedNotification
@@ -433,8 +433,15 @@ export default class ReimbursementRequestService {
    * @param saboNumbers the sabo numbers of the reimbursement requests to send
    * @param organizationId the organization the user is currently in
    */
-  static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organization: OrganizationWithAdvisor) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(sender, organization.organizationId);
+  static async sendPendingAdvisorList(sender: User, saboNumbers: number[], organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { advisor: true }
+    });
+
+    if (!organization) throw new NotFoundException('Organization', organizationId);
+
+    await validateUserIsPartOfFinanceTeamOrAdmin(sender, organizationId);
 
     if (saboNumbers.length === 0) throw new HttpException(400, 'Need to send at least one Sabo #!');
 

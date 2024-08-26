@@ -69,13 +69,13 @@ describe('Team Type Tests', () => {
   describe('Set Useful Links', () => {
     it('Fails if user is not an admin', async () => {
       await expect(
-        OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), organization, [])
+        OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update useful links'));
     });
 
     it('Fails if a link type does not exist', async () => {
       await expect(
-        OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), organization, testLink1)
+        OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), orgId, testLink1)
       ).rejects.toThrow(new HttpException(400, `Link type with name 'example link type' not found`));
     });
 
@@ -94,7 +94,7 @@ describe('Team Type Tests', () => {
       ];
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await createTestLinkType(testBatman, orgId);
-      await OrganizationsService.setUsefulLinks(testBatman, organization, testLinks1);
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks1);
 
       const organization = await prisma.organization.findUnique({
         where: {
@@ -123,7 +123,7 @@ describe('Team Type Tests', () => {
           url: 'link 4'
         }
       ];
-      await OrganizationsService.setUsefulLinks(testBatman, organization, testLinks2);
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks2);
 
       const updatedOrganization = await prisma.organization.findUnique({
         where: {
@@ -157,8 +157,8 @@ describe('Team Type Tests', () => {
       ];
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await createTestLinkType(testBatman, orgId);
-      await OrganizationsService.setUsefulLinks(testBatman, organization, testLinks1);
-      const links = await OrganizationsService.getAllUsefulLinks(organization);
+      await OrganizationsService.setUsefulLinks(testBatman, orgId, testLinks1);
+      const links = await OrganizationsService.getAllUsefulLinks(orgId);
 
       expect(links).not.toBeNull();
       expect(links.length).toBe(2);
@@ -181,7 +181,7 @@ describe('Team Type Tests', () => {
         { originalname: 'image1.png' } as Express.Multer.File,
         { originalname: 'image2.png' } as Express.Multer.File,
         testBatman,
-        orgId
+        organization
       );
       const images = await OrganizationsService.getOrganizationImages(orgId);
 
