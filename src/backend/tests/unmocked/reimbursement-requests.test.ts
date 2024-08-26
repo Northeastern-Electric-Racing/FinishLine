@@ -8,7 +8,7 @@ import { Organization, Reimbursement_Request } from '@prisma/client';
 
 describe('Reimbursement Requests', () => {
   let orgId: string;
-  let organization: Organization
+  let organization: Organization;
   let reimbursementRequest: Reimbursement_Request;
   beforeEach(async () => {
     const result = await createTestReimbursementRequest();

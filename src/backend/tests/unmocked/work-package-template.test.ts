@@ -13,7 +13,7 @@ import { Organization } from '@prisma/client';
 
 describe('Work Package Template Tests', () => {
   let orgId: string;
-  let organization: Organization
+  let organization: Organization;
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;

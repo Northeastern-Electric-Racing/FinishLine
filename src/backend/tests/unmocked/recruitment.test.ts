@@ -303,7 +303,8 @@ describe('Recruitment Tests', () => {
     it('Fails if user is not an admin', async () => {
       const testFaq = await createTestFaq(await createTestUser(batmanAppAdmin, orgId), orgId);
       await expect(
-        async () => await RecruitmentServices.deleteFaq(await createTestUser(theVisitorGuest, orgId), testFaq.faqId, organization)
+        async () =>
+          await RecruitmentServices.deleteFaq(await createTestUser(theVisitorGuest, orgId), testFaq.faqId, organization)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete an faq'));
     });
 
@@ -318,7 +319,8 @@ describe('Recruitment Tests', () => {
       await RecruitmentServices.deleteFaq(await createTestUser(flashAdmin, orgId), testFaq.faqId, organization);
 
       await expect(
-        async () => await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, organization)
+        async () =>
+          await RecruitmentServices.deleteFaq(await createTestUser(supermanAdmin, orgId), testFaq.faqId, organization)
       ).rejects.toThrow(new DeletedException('Faq', testFaq.faqId));
     });
 

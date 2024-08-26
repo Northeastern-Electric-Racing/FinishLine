@@ -963,7 +963,6 @@ export default class ReimbursementRequestService {
   static async denyReimbursementRequest(reimbursementRequestId: string, submitter: User, organization: Organization) {
     await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
 
-
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {

@@ -10,7 +10,7 @@ import { Design_Review, Organization } from '@prisma/client';
 describe('Design Reviews', () => {
   let designReview: Design_Review;
   let organizationId: string;
-  let organization: Organization
+  let organization: Organization;
   beforeEach(async () => {
     const { dr, orgId } = await createTestDesignReview();
     const testOrganization = await createTestOrganization();
@@ -47,12 +47,7 @@ describe('Design Reviews', () => {
     if (!drCreator) {
       throw new Error('User not found in database');
     }
-    await DesignReviewsService.setStatus(
-      drCreator,
-      designReview.designReviewId,
-      DesignReviewStatus.CONFIRMED,
-      organization
-    );
+    await DesignReviewsService.setStatus(drCreator, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organization);
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
         designReviewId: designReview.designReviewId

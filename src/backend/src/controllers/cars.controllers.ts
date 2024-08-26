@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import CarsService from '../services/car.services';
-import { getCurrentUser } from '../utils/auth.utils';
 
 export default class CarsController {
   static async getAllCars(req: Request, res: Response, next: NextFunction) {

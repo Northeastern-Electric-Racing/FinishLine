@@ -1,6 +1,5 @@
 import { Manufacturer, MaterialType, Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@prisma/client';
 import ProjectsService from '../services/projects.services';
 import BillOfMaterialsService from '../services/boms.services';
 

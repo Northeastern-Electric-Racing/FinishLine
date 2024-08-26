@@ -31,7 +31,7 @@ export const getProjectQueryArgs = (organizationId: string) =>
             where: { dateDeleted: null },
             ...getAssemblyQueryArgs(organizationId)
           },
-          organization: true,
+          organization: true
         }
       },
       teams: getTeamQueryArgs(organizationId),

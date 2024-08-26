@@ -141,15 +141,7 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
     organization.organizationId
   );
 
-  const team = await TeamsService.createTeam(
-    head,
-    'Finance Team',
-    head.userId,
-    'Finance Team',
-    '',
-    true,
-    organization
-  );
+  const team = await TeamsService.createTeam(head, 'Finance Team', head.userId, 'Finance Team', '', true, organization);
 
   await TeamsService.setTeamLeads(head, team.teamId, [lead.userId], organization);
 

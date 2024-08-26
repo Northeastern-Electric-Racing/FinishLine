@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import TasksService from '../services/tasks.services';
 import { validateWBS, WbsNumber } from 'shared';
-import { User } from '@prisma/client';
 
 export default class TasksController {
   static async createTask(req: Request, res: Response, next: NextFunction) {

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-requests.services';
-import { User } from '@prisma/client';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {

@@ -6,7 +6,7 @@ import { createTestOrganization, createTestUser, resetUsers } from '../test-util
 
 describe('Team Type Tests', () => {
   let orgId: string;
-  let organization: Organization
+  let organization: Organization;
   beforeEach(async () => {
     organization = await createTestOrganization();
     orgId = organization.organizationId;
@@ -20,15 +20,30 @@ describe('Team Type Tests', () => {
     it('Create team type fails if user is not an admin', async () => {
       await expect(
         async () =>
-          await TeamsService.createTeamType(await createTestUser(wonderwomanGuest, orgId), 'Team 2', 'Warning icon', organization)
+          await TeamsService.createTeamType(
+            await createTestUser(wonderwomanGuest, orgId),
+            'Team 2',
+            'Warning icon',
+            organization
+          )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
     });
 
     it('Create team type fails if there is already another team type with the same name', async () => {
-      await TeamsService.createTeamType(await createTestUser(supermanAdmin, orgId), 'teamType1', 'YouTubeIcon', organization);
+      await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        organization
+      );
       await expect(
         async () =>
-          await TeamsService.createTeamType(await createTestUser(batmanAppAdmin, orgId), 'teamType1', 'Warning icon', organization)
+          await TeamsService.createTeamType(
+            await createTestUser(batmanAppAdmin, orgId),
+            'teamType1',
+            'Warning icon',
+            organization
+          )
       ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
     });
 
