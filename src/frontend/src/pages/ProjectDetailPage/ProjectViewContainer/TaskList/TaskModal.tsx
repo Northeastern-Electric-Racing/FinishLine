@@ -75,7 +75,16 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, teams, modalShow, onHide, o
   };
 
   return isEditMode ? (
-    <TaskFormModal task={task} teams={teams} onHide={onHide} modalShow={modalShow} onSubmit={handleEditSubmit} />
+    <TaskFormModal
+      task={task}
+      teams={teams}
+      onHide={onHide}
+      modalShow={modalShow}
+      onSubmit={handleEditSubmit}
+      onReset={() => {
+        setIsEditMode(false);
+      }}
+    />
   ) : (
     <ViewModal />
   );
