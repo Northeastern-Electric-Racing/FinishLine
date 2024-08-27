@@ -102,7 +102,6 @@ const notificationEndpointAuth = (req: Request, res: Response, next: NextFunctio
  */
 export const getCurrentUser = async (res: Response): Promise<User> => {
   const { userId } = res.locals;
-
   const user = await prisma.user.findUnique({
     where: { userId }
   });
@@ -170,7 +169,8 @@ export const getUserandOrganization = async (req: Request, res: Response, next: 
   if (
     req.path === '/users/auth/login' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
-    req.method === 'OPTIONS' // this is a pre-flight request and those don't send cookies
+    req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
+    req.path === '/users' // dev login needs the list of users to log in
   ) {
     return next();
   }
