@@ -165,9 +165,10 @@ export const getCurrentUserWithUserSettings = async (res: Response): Promise<Use
   return user;
 };
 
-export const getUserandOrganization = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserAndOrganization = async (req: Request, res: Response, next: NextFunction) => {
   if (
     req.path === '/users/auth/login' || // logins dont have cookies yet
+    req.path === '/users/auth/login/dev' ||
     req.path === '/' || // base route is available so aws can listen and check the health
     req.method === 'OPTIONS' || // this is a pre-flight request and those don't send cookies
     req.path === '/users' // dev login needs the list of users to log in
