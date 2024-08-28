@@ -411,17 +411,6 @@ export const createTestDesignReview = async () => {
   });
 
   if (!dr) throw new Error('Failed to create design review');
-  const orgId = organization.organizationId;
 
-  return { dr, orgId };
-};
-
-export const validateOrganizationId = async (organizationId: string) => {
-  const organization = await prisma.organization.findUnique({
-    where: { organizationId }
-  });
-
-  if (!organization) {
-    throw new NotFoundException('Organization', organizationId);
-  }
+  return { dr, organization };
 };
