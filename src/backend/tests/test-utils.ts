@@ -16,7 +16,6 @@ import { ClubAccount, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
-import { NotFoundException } from '../src/utils/errors.utils';
 
 export interface CreateTestUserParams {
   firstName: string;
