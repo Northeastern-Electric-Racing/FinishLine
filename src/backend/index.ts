@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
+import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
 import { errorHandler } from './src/utils/errors.utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
@@ -48,6 +48,9 @@ app.use(cors(options));
 
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);
+
+// get user and organization
+app.use(getUserAndOrganization);
 
 // routes
 app.use('/users', userRouter);
