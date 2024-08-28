@@ -1,7 +1,7 @@
 import { financeMember, supermanAdmin } from '../test-data/users.test-data';
 import DesignReviewsService from '../../src/services/design-reviews.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
-import { createTestDesignReview, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestDesignReview, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { getUserQueryArgs } from '../../src/prisma-query-args/user.query-args';
 import { DesignReviewStatus } from 'shared';
