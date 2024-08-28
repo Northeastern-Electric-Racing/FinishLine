@@ -411,5 +411,6 @@ export const createTestDesignReview = async () => {
 
   if (!dr) throw new Error('Failed to create design review');
 
-  return { dr, organization };
+  const orgId = organization.organizationId;
+  return { dr, organization, orgId };
 };

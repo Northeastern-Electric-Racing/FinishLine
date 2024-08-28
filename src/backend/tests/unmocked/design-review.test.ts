@@ -12,10 +12,10 @@ describe('Design Reviews', () => {
   let organizationId: string;
   let organization: Organization;
   beforeEach(async () => {
-    const { dr, organization: org } = await createTestDesignReview();
+    const { dr, organization: org, orgId } = await createTestDesignReview();
     designReview = dr;
     organization = org;
-    organizationId = org.organizationId;
+    organizationId = orgId;
   });
 
   afterEach(async () => {
