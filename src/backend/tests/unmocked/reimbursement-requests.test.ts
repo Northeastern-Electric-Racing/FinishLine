@@ -4,15 +4,17 @@ import { AccessDeniedException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { Reimbursement_Request } from '@prisma/client';
+import { Organization, Reimbursement_Request } from '@prisma/client';
 
 describe('Reimbursement Requests', () => {
   let orgId: string;
+  let organization: Organization;
   let reimbursementRequest: Reimbursement_Request;
   beforeEach(async () => {
-    const result = await createTestReimbursementRequest();
-    orgId = result.organization.organizationId;
-    reimbursementRequest = result.rr;
+    const { organization: org, rr } = await createTestReimbursementRequest();
+    organization = org;
+    orgId = organization.organizationId;
+    reimbursementRequest = rr;
   });
 
   afterEach(async () => {
@@ -24,7 +26,7 @@ describe('Reimbursement Requests', () => {
       ReimbursementRequestService.deleteReimbursementRequest(
         reimbursementRequest.reimbursementRequestId,
         await createTestUser(alfred, orgId),
-        orgId
+        organization
       )
     ).rejects.toThrow(
       new AccessDeniedException(
@@ -48,7 +50,7 @@ describe('Reimbursement Requests', () => {
     await ReimbursementRequestService.deleteReimbursementRequest(
       reimbursementRequest.reimbursementRequestId,
       financeLead,
-      orgId
+      organization
     );
   });
 
@@ -67,7 +69,7 @@ describe('Reimbursement Requests', () => {
     await ReimbursementRequestService.deleteReimbursementRequest(
       reimbursementRequest.reimbursementRequestId,
       financeHead,
-      orgId
+      organization
     );
   });
 });

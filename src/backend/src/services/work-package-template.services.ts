@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { User, Organization } from '@prisma/client';
 import { DescriptionBulletPreview, isAdmin, isGuest, WorkPackageStage, WorkPackageTemplate } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -37,9 +37,9 @@ export default class WorkPackageTemplatesService {
   static async getSingleWorkPackageTemplate(
     submitter: User,
     workPackageTemplateId: string,
-    organizationId: string
+    organization: Organization
   ): Promise<WorkPackageTemplate> {
-    if (await userHasPermission(submitter.userId, organizationId, isGuest)) {
+    if (await userHasPermission(submitter.userId, organization.organizationId, isGuest)) {
       throw new AccessDeniedGuestException('get a work package template');
     }
 
@@ -47,12 +47,13 @@ export default class WorkPackageTemplatesService {
       where: {
         workPackageTemplateId
       },
-      ...getWorkPackageTemplateQueryArgs(organizationId)
+      ...getWorkPackageTemplateQueryArgs(organization.organizationId)
     });
 
     if (!template) throw new HttpException(400, `Work package template with id ${workPackageTemplateId} not found`);
 
-    if (template.organizationId !== organizationId) throw new InvalidOrganizationException('Work Package Template');
+    if (template.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Work Package Template');
 
     return workPackageTemplateTransformer(template);
   }
@@ -63,14 +64,14 @@ export default class WorkPackageTemplatesService {
    * @param organizationId - the id of the organization to get all work package templates for
    * @returns an array of all work package templates
    */
-  static async getAllWorkPackageTemplates(submitter: User, organizationId: string): Promise<WorkPackageTemplate[]> {
-    if (await userHasPermission(submitter.userId, organizationId, isGuest)) {
+  static async getAllWorkPackageTemplates(submitter: User, organization: Organization): Promise<WorkPackageTemplate[]> {
+    if (await userHasPermission(submitter.userId, organization.organizationId, isGuest)) {
       throw new AccessDeniedGuestException('get all work package templates.');
     }
 
     const workPackageTemplates = await prisma.work_Package_Template.findMany({
-      where: { dateDeleted: null, organizationId },
-      ...getWorkPackageTemplateQueryArgs(organizationId)
+      where: { dateDeleted: null, organizationId: organization.organizationId },
+      ...getWorkPackageTemplateQueryArgs(organization.organizationId)
     });
 
     return workPackageTemplates.map(workPackageTemplateTransformer);
@@ -101,9 +102,9 @@ export default class WorkPackageTemplatesService {
     duration: number,
     descriptionBullets: DescriptionBulletPreview[],
     blockedByIds: string[],
-    organizationId: string
+    organization: Organization
   ): Promise<WorkPackageTemplate> {
-    if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('create work package templates');
 
     // get the corresponding IDs of all work package templates in BlockedBy,
@@ -121,7 +122,7 @@ export default class WorkPackageTemplatesService {
       })
     );
 
-    await validateDescriptionBullets(descriptionBullets, organizationId);
+    await validateDescriptionBullets(descriptionBullets, organization.organizationId);
 
     // add to the db
     const created = await prisma.work_Package_Template.create({
@@ -132,13 +133,13 @@ export default class WorkPackageTemplatesService {
         stage,
         duration,
         userCreatedId: user.userId,
-        organizationId,
+        organizationId: organization.organizationId,
         blockedBy: {
           connect: blockedByIds.map((blockedById) => ({ workPackageTemplateId: blockedById }))
         }
       },
 
-      ...getWorkPackageTemplateQueryArgs(organizationId)
+      ...getWorkPackageTemplateQueryArgs(organization.organizationId)
     });
 
     await addRawDescriptionBullets(
@@ -176,19 +177,19 @@ export default class WorkPackageTemplatesService {
     blockedByIds: string[],
     descriptionBullets: DescriptionBulletPreview[],
     workPackageName: string | undefined,
-    organizationId: string
+    organization: Organization
   ): Promise<WorkPackageTemplate> {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('edit work package templates');
 
     const originalWorkPackageTemplate = await prisma.work_Package_Template.findUnique({
       where: { workPackageTemplateId },
-      include: { blockedBy: true, descriptionBullets: getDescriptionBulletQueryArgs(organizationId) }
+      include: { blockedBy: true, descriptionBullets: getDescriptionBulletQueryArgs(organization.organizationId) }
     });
 
     if (!originalWorkPackageTemplate) throw new NotFoundException('Work Package Template', workPackageTemplateId);
     if (originalWorkPackageTemplate.dateDeleted) throw new DeletedException('Work Package Template', workPackageTemplateId);
-    if (originalWorkPackageTemplate.organizationId !== organizationId)
+    if (originalWorkPackageTemplate.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Work Package Template');
 
     await validateBlockedByTemplates(blockedByIds, workPackageTemplateId);
@@ -218,7 +219,7 @@ export default class WorkPackageTemplatesService {
           connect: blockedByIds.map((blockedById) => ({ workPackageTemplateId: blockedById }))
         }
       },
-      ...getWorkPackageTemplateQueryArgs(organizationId)
+      ...getWorkPackageTemplateQueryArgs(organization.organizationId)
     });
 
     await editDescriptionBullets(descriptionBulletsChanges.editedElements, originalWorkPackageTemplate.organizationId);
@@ -245,10 +246,10 @@ export default class WorkPackageTemplatesService {
   static async deleteWorkPackageTemplate(
     submitter: User,
     workPackageTemplateId: string,
-    organizationId: string
+    organization: Organization
   ): Promise<void> {
     // Verify submitter is allowed to delete work packages
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete work package template');
 
     const workPackageTemplate = await prisma.work_Package_Template.findUnique({
@@ -268,7 +269,7 @@ export default class WorkPackageTemplatesService {
       throw new DeletedException('Work Package Template', workPackageTemplateId);
     }
 
-    if (workPackageTemplate.organizationId !== organizationId) {
+    if (workPackageTemplate.organizationId !== organization.organizationId) {
       throw new InvalidOrganizationException('Work Package Template');
     }
 

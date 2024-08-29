@@ -7,6 +7,7 @@ import { testLink1 } from '../test-data/organizations.test-data';
 import { uploadFile } from '../../src/utils/google-integration.utils';
 import { Mock, vi } from 'vitest';
 import OrganizationsService from '../../src/services/organizations.services';
+import { Organization } from '@prisma/client';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()
@@ -14,9 +15,11 @@ vi.mock('../../src/utils/google-integration.utils', () => ({
 
 describe('Team Type Tests', () => {
   let orgId: string;
+  let organization: Organization;
 
   beforeEach(async () => {
-    orgId = (await createTestOrganization()).organizationId;
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
   });
 
   afterEach(async () => {
@@ -29,14 +32,8 @@ describe('Team Type Tests', () => {
     const file3 = { originalname: 'image3.png' } as Express.Multer.File;
     it('Fails if user is not an admin', async () => {
       await expect(
-        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), orgId)
+        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), organization)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
-    });
-
-    it('Fails if an organization does not exist', async () => {
-      await expect(
-        OrganizationsService.setImages(file1, file2, await createTestUser(batmanAppAdmin, orgId), '1')
-      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
     it('Succeeds and updates all the images', async () => {
@@ -45,19 +42,19 @@ describe('Team Type Tests', () => {
         return Promise.resolve({ id: `uploaded-${file.originalname}` });
       });
 
-      await OrganizationsService.setImages(file1, file2, testBatman, orgId);
+      await OrganizationsService.setImages(file1, file2, testBatman, organization);
 
-      const organization = await prisma.organization.findUnique({
+      const oldOrganization = await prisma.organization.findUnique({
         where: {
           organizationId: orgId
         }
       });
 
-      expect(organization).not.toBeNull();
-      expect(organization?.applyInterestImageId).toBe('uploaded-image1.png');
-      expect(organization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.applyInterestImageId).toBe('uploaded-image1.png');
+      expect(oldOrganization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
 
-      await OrganizationsService.setImages(file1, file3, testBatman, orgId);
+      await OrganizationsService.setImages(file1, file3, testBatman, organization);
 
       const updatedOrganization = await prisma.organization.findUnique({
         where: {
@@ -74,12 +71,6 @@ describe('Team Type Tests', () => {
       await expect(
         OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update useful links'));
-    });
-
-    it('Fails if an organization does not exist', async () => {
-      await expect(
-        OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1', testLink1)
-      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
     it('Fails if a link type does not exist', async () => {
@@ -151,12 +142,6 @@ describe('Team Type Tests', () => {
   });
 
   describe('Get all Useful Links', () => {
-    it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getAllUsefulLinks('1')).rejects.toThrow(
-        new NotFoundException('Organization', '1')
-      );
-    });
-
     it('Succeeds and gets all the links', async () => {
       const testLinks1: LinkCreateArgs[] = [
         {
@@ -196,7 +181,7 @@ describe('Team Type Tests', () => {
         { originalname: 'image1.png' } as Express.Multer.File,
         { originalname: 'image2.png' } as Express.Multer.File,
         testBatman,
-        orgId
+        organization
       );
       const images = await OrganizationsService.getOrganizationImages(orgId);
 
