@@ -168,6 +168,7 @@ const workPackageTemplateDelete = (workPackageTemplateId: string) =>
 
 /******************* Organizations Endpoints ********************/
 const organizations = () => `${API_URL}/organizations`;
+const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 
@@ -318,6 +319,7 @@ export const apiUrls = {
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
 
+  currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
 

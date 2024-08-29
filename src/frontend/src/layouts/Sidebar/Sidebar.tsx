@@ -119,7 +119,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, onPNM
           {linkItems.map((linkItem) => (
             <NavPageLink {...linkItem} />
           ))}
-          {<NavUserMenu open={drawerOpen} />}
+          {!onPNMHomePage && <NavUserMenu open={drawerOpen} />}
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
           <Box marginLeft={1.1}>
