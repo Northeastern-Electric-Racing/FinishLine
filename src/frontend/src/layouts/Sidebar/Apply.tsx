@@ -1,4 +1,4 @@
-import { Button, IconButton, Typography } from '@mui/material';
+import { IconButton, Typography } from '@mui/material';
 import { useTheme } from '@mui/system';
 import React from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
