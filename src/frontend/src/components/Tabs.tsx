@@ -9,7 +9,7 @@ const Tabs = ({
   tabs,
   tabValue,
   setTabValue,
-  isFinance = false,
+  isFinance = false
 }: {
   tabs: TabData[];
   tabValue: number;
@@ -27,7 +27,7 @@ const Tabs = ({
       sx={{
         backgroundColor: isFinance ? 'inherit' : 'transparent',
         boxShadow: isFinance ? 'default' : 'none',
-        borderRadius: isFinance ? '8px 8px 0 0' : 0,
+        borderRadius: isFinance ? '8px 8px 0 0' : 0
       }}
     >
       <MUITabs
@@ -45,7 +45,7 @@ const Tabs = ({
             sx={{
               fontWeight: 700,
               pointerEvents: tabs.length === 1 ? 'none' : 'auto',
-              borderRadius: isFinance ? '8px 8px 0 0' : 0,
+              borderRadius: isFinance ? '8px 8px 0 0' : 0
             }}
           />
         ))}
