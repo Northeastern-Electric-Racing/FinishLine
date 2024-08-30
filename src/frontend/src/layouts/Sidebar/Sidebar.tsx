@@ -20,6 +20,7 @@ import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import Apply from './Apply';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -120,6 +121,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, onPNM
             <NavPageLink {...linkItem} />
           ))}
           {!onPNMHomePage && <NavUserMenu open={drawerOpen} />}
+          {onPNMHomePage && <Apply />}
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
           <Box marginLeft={1.1}>
