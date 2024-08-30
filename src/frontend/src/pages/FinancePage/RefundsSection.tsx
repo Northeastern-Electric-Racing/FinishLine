@@ -20,9 +20,9 @@ import { Reimbursement, ReimbursementRequest, ReimbursementStatusType, isAdmin }
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { centsToDollar, datePipe, fullNamePipe } from '../../utils/pipes';
 import NERProgressBar from '../../components/NERProgressBar';
-import FinanceTabs from './FinanceComponents/FinanceTabs';
 import { getRefundRowData } from '../../utils/reimbursement-request.utils';
 import EditRefundModal from './FinanceComponents/EditRefundModal';
+import Tabs from '../../components/Tabs';
 
 type Order = 'asc' | 'desc'; // ascending or descending
 type OrderBy = 'amount' | 'date';
@@ -151,7 +151,7 @@ const Refunds = ({ userReimbursementRequests, allReimbursementRequests }: Refund
   return (
     <>
       <Box sx={{ bgcolor: theme.palette.background.paper, width: '100%', borderRadius: '8px 8px 8px 8px', boxShadow: 1 }}>
-        <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
+        <Tabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} isFinance />
         <Box
           sx={{
             backgroundColor: theme.palette.background.paper,

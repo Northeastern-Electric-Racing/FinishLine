@@ -8,7 +8,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import ChangeRequestsOverview from './ChangeRequestsOverview';
 import ChangeRequestsTable from './ChangeRequestsTable';
 import PageLayout from '../../components/PageLayout';
-import NERTabs from '../../components/Tabs';
+import NERTabs from '../../components/NERTabs';
 
 const ChangeRequestsView: React.FC = () => {
   const history = useHistory();

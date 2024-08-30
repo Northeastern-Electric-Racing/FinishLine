@@ -14,7 +14,7 @@ import TeamsTools from './TeamConfig/TeamsTools';
 import AdminToolsBOMConfig from './AdminToolsBOMConfig';
 import AdminToolsProjectsConfig from './AdminToolsProjectsConfig';
 import { useState } from 'react';
-import NERTabs from '../../components/Tabs';
+import NERTabs from '../../components/NERTabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';

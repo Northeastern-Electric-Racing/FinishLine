@@ -8,7 +8,7 @@ import ProjectsTable from './ProjectsTable';
 import { routes } from '../../utils/routes';
 import ProjectsOverview from './ProjectsOverview';
 import PageLayout from '../../components/PageLayout';
-import NERTabs from '../../components/Tabs';
+import NERTabs from '../../components/NERTabs';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';

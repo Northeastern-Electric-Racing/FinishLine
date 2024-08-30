@@ -11,7 +11,7 @@ import {
   fullNamePipe,
   undefinedPipe
 } from '../../utils/pipes';
-import FinanceTabs from './FinanceComponents/FinanceTabs';
+import Tabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import {
   descendingComparator,
@@ -116,7 +116,7 @@ const ReimbursementRequestTable = ({
 
   return (
     <Box sx={{ bgcolor: theme.palette.background.default, width: '100%', borderRadius: '8px 8px 0 0' }}>
-      <FinanceTabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} />
+      <Tabs tabValue={tabValue} setTabValue={setTabValue} tabs={tabs} isFinance />
       <TableContainer component={Paper} sx={{ borderRadius: '0 0 8px 8px' }}>
         <Table aria-label="simple table">
           <TableHead>

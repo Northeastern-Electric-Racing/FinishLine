@@ -8,7 +8,7 @@ import PageLayout from '../../components/PageLayout';
 import SettingsPreferences from './SettingsPreferences';
 import SettingsDetails from './SettingsDetails';
 import { routes } from '../../utils/routes';
-import NERTabs from '../../components/Tabs';
+import NERTabs from '../../components/NERTabs';
 import { Box } from '@mui/material';
 
 const SettingsPage: React.FC = () => {
