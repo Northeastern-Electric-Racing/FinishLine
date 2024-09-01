@@ -29,8 +29,8 @@ describe('Change Request Overview', () => {
     cy.get(CR_ROW('My Un-reviewed Change Requests')).children().should('have.length.greaterThan', 1);
   });
 
-  it('My Aproved Change Requests Should Display No Change Request Message', () => {
-    cy.contains('No approved change requests').should('exist');
+  it('My Aproved Change Requests Should Display At Least Three CRs', () => {
+    cy.get(CR_ROW('My Approved Change Requests')).children().should('have.length.greaterThan', 2);
   });
 
   it('New Change Request Button Redirects to New Change Requeest Form', () => {
