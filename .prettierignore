@@ -32,7 +32,6 @@ yarn-debug.log*
 yarn-error.log*
 /.vscode
 
-system-tests/*
 docker-compose.yml
 .github/*
 tsconfig.build.json

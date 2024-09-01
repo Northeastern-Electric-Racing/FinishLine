@@ -44,6 +44,7 @@ const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeReques
                 backgroundClip: 'content-box'
               }
             }}
+            data-testid={title + 'crRow'}
           >
             {changeRequests.map((cr: ChangeRequest) => (
               <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
