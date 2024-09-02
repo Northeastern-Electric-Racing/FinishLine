@@ -14,9 +14,7 @@ export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [onPNMHomePage, setOnPNMHomePage] = useState(false);
 
   return (
-    <HomePageContext.Provider
-      value={{ onGuestHomePage, setOnGuestHomePage, onPNMHomePage, setOnPNMHomePage }}
-    >
+    <HomePageContext.Provider value={{ onGuestHomePage, setOnGuestHomePage, onPNMHomePage, setOnPNMHomePage }}>
       {children}
     </HomePageContext.Provider>
   );
