@@ -1,7 +1,7 @@
 import { IconButton, Typography } from '@mui/material';
 import { useTheme } from '@mui/system';
 import React from 'react';
-import SettingsIcon from '@mui/icons-material/Settings';
+import ArticleIcon from '@mui/icons-material/Article';
 
 const Apply = () => {
   const theme = useTheme();
@@ -18,7 +18,7 @@ const Apply = () => {
       sx={{ padding: 0.5, marginLeft: 1.2, '&:hover': { backgroundColor: 'transparent' } }}
       style={{ borderRadius: 0, width: '100%', justifyContent: 'flex-start' }}
     >
-      <SettingsIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />
+      <ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />
       <Typography
         variant="body1"
         marginBottom={0.2}

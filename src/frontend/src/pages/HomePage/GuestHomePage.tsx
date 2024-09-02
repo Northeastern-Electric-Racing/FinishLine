@@ -12,16 +12,12 @@ interface GuestHomePageProps {
 
 const GuestHomePage = ({ user, setOnGuestHomePage, setOnPNMHomePage }: GuestHomePageProps) => {
   const handleClickFinishline = () => {
-    emitter.emit('pnmHomePage', false);
     setOnPNMHomePage(false);
-    emitter.emit('guestHomePage', false);
     setOnGuestHomePage(false);
   };
 
   const handleClickLearnMore = () => {
-    emitter.emit('guestHomePage', false);
     setOnGuestHomePage(false);
-    emitter.emit('pnmHomePage', true);
     setOnPNMHomePage(true);
   };
 
