@@ -28,7 +28,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import FavoriteProjectButton from '../../../components/FavoriteProjectButton';
 import PageLayout from '../../../components/PageLayout';
-import NERTabs from '../../../components/NERTabs';
+import FullPageTabs from '../../../components/FullPageTabs';
 import ChangesList from '../../../components/ChangesList';
 import BOMTab, { addMaterialCosts } from './BOMTab';
 import SavingsIcon from '@mui/icons-material/Savings';
@@ -217,7 +217,7 @@ const ProjectViewContainer: React.FC<ProjectViewContainerProps> = ({ project, en
       title={pageTitle}
       headerRight={headerRight}
       tabs={
-        <NERTabs
+        <FullPageTabs
           setTab={setTab}
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },

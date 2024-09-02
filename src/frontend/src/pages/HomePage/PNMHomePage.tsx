@@ -5,13 +5,18 @@ import { useState } from 'react';
 import FAQsList from './FAQsList';
 import Timeline from './components/Timeline';
 import Tabs from '../../components/Tabs';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const PNMHomePage = () => {
-  const { data: organization } = useCurrentOrganization();
+  const { data: organization, isError, error, isLoading } = useCurrentOrganization();
+
+  // if (!organization) return <LoadingIndicator />;
+
   const [tabValue, setTabValue] = useState(0);
   const tabs = [
-    { label: 'FAQs', value: 0 },
-    { label: 'Timeline', value: 1 }
+    { label: 'FAQs', component: <FAQsList /> },
+    { label: 'Timeline', component: <Timeline /> }
   ];
 
   return (
@@ -38,7 +43,6 @@ const PNMHomePage = () => {
               <Box sx={{ mt: 4, mb: 2 }}>
                 <Tabs tabs={tabs} tabValue={tabValue} setTabValue={setTabValue} />
               </Box>
-              {tabValue === 0 ? <FAQsList /> : <Timeline />}
             </Box>
           </Grid>
         </Grid>

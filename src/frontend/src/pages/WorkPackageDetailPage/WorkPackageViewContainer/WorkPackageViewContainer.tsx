@@ -27,7 +27,7 @@ import PageLayout from '../../../components/PageLayout';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScopeTab from './ScopeTab';
-import NERTabs from '../../../components/NERTabs';
+import FullPageTabs from '../../../components/FullPageTabs';
 import PageBreadcrumbs from '../../../layouts/PageTitle/PageBreadcrumbs';
 import ChangeRequestsTab from './ChangeRequestsTab';
 
@@ -177,7 +177,7 @@ const WorkPackageViewContainer: React.FC<WorkPackageViewContainerProps> = ({
         ]}
         headerRight={projectActionsDropdown}
         tabs={
-          <NERTabs
+          <FullPageTabs
             setTab={setTabValue}
             tabsLabels={[
               { tabUrlValue: 'overview', tabName: 'Overview' },

@@ -16,7 +16,7 @@ interface TabProps {
   noUnderline?: boolean;
 }
 
-const NERTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id, noUnderline = false }: TabProps) => {
+const FullPageTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id, noUnderline = false }: TabProps) => {
   const tabUrlValues = tabsLabels.map((tab) => tab.tabUrlValue);
   const match = useRouteMatch<{ tabValueString: string }>(`${baseUrl}/:tabValueString`);
   const tabValueString = match?.params?.tabValueString;
@@ -53,4 +53,4 @@ const NERTabs = ({ setTab, tabsLabels, baseUrl, defaultTab, id, noUnderline = fa
   );
 };
 
-export default NERTabs;
+export default FullPageTabs;
