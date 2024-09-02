@@ -1,7 +1,4 @@
-import {
-  Box,
-  useTheme
-} from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { Reimbursement, ReimbursementRequest, isAdmin } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';

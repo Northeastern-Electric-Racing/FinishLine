@@ -14,12 +14,10 @@ const ReimbursementRequestTable = ({
   userReimbursementRequests,
   allReimbursementRequests
 }: ReimbursementRequestTableProps) => {
-
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
   const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
-
 
   const tabs = [
     {

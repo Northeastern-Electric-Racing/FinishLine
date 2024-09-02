@@ -13,7 +13,7 @@ import {
   useTheme
 } from '@mui/material';
 import { useState } from 'react';
-import { Reimbursement, ReimbursementRequest, ReimbursementStatusType, isAdmin } from 'shared';
+import { Reimbursement, ReimbursementRequest, ReimbursementStatusType } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import NERProgressBar from '../../../components/NERProgressBar';
 import { useCurrentUserReimbursements, useAllReimbursements } from '../../../hooks/finance.hooks';

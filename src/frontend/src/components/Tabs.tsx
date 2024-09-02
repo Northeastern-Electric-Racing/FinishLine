@@ -11,7 +11,7 @@ const Tabs = ({
   tabs,
   tabValue,
   setTabValue,
-  greyscale = false,
+  greyscale = false
 }: {
   tabs: TabData[];
   tabValue: number;
@@ -30,7 +30,7 @@ const Tabs = ({
         sx={{
           backgroundColor: greyscale ? 'inherit' : 'transparent',
           boxShadow: greyscale ? 'default' : 'none',
-          borderRadius: greyscale ? '8px 8px 0 0' : 0,
+          borderRadius: greyscale ? '8px 8px 0 0' : 0
         }}
       >
         <MUITabs
@@ -48,16 +48,14 @@ const Tabs = ({
               sx={{
                 fontWeight: 700,
                 pointerEvents: tabs.length === 1 ? 'none' : 'auto',
-                borderRadius: greyscale ? '8px 8px 0 0' : 0,
+                borderRadius: greyscale ? '8px 8px 0 0' : 0
               }}
             />
           ))}
         </MUITabs>
       </AppBar>
 
-      <Box sx={{ mt: 2 }}>
-        {tabs[tabValue] && tabs[tabValue].component}
-      </Box>
+      <Box sx={{ mt: 2 }}>{tabs[tabValue] && tabs[tabValue].component}</Box>
     </>
   );
 };
