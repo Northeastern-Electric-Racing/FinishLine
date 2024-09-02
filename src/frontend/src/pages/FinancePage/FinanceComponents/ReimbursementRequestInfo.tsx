@@ -1,9 +1,8 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
 import { ReimbursementRequest } from 'shared';
 import { ReimbursementRequestRow } from 'shared/src/types/reimbursement-requests-types';
-import { useCurrentUser } from '../../../hooks/users.hooks';
 import {
   undefinedPipe,
   fullNamePipe,
@@ -44,7 +43,7 @@ const ReimbursementRequestInfo = ({
   const [orderBy, setOrderBy] = useState<keyof ReimbursementRequestRow>('dateSubmittedToSabo');
 
   const displayedReimbursementRequests =
-    tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
+    canViewAllReimbursementRequests && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
 
   const rows = displayedReimbursementRequests.map(createReimbursementRequestRowData).sort((a, b) => {
     if (orderBy === 'vendor') {

@@ -10,10 +10,11 @@ import ErrorPage from '../ErrorPage';
 
 const PNMHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
-
-  // if (!organization) return <LoadingIndicator />;
-
   const [tabValue, setTabValue] = useState(0);
+
+  if (!organization || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
   const tabs = [
     { label: 'FAQs', component: <FAQsList /> },
     { label: 'Timeline', component: <Timeline /> }
@@ -26,7 +27,7 @@ const PNMHomePage = () => {
           <Grid item xs={8}>
             <Box>
               <Typography variant="h3">About NER</Typography>
-              <Typography sx={{ mt: 4, fontSize: '1.2em' }}>{organization?.description}</Typography>
+              <Typography sx={{ mt: 4, fontSize: '1.2em' }}>{organization.description}</Typography>
             </Box>
           </Grid>
 
