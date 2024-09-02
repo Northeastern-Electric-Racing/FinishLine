@@ -30,7 +30,6 @@ import Calendar from '../pages/CalendarPage/Calendar';
 import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import HiddenContentMargin from '../components/HiddenContentMargin';
-import emitter from './EventBus';
 import { useHomePageContext } from './HomePageContext';
 
 interface AppAuthenticatedProps {

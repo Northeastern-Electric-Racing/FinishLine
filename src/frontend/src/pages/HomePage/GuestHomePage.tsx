@@ -2,7 +2,6 @@ import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import ImageWithButton from './components/ImageWithButton';
-import emitter from '../../app/EventBus';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
