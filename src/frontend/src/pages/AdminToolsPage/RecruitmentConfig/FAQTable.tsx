@@ -1,22 +1,26 @@
+import React, { useState } from 'react';
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
 import { exampleAppAdminUser } from '../../../tests/test-support/test-data/users.stub';
 import { NERButton } from '../../../components/NERButton';
+import { useHistoryState } from '../../../hooks/misc.hooks';
+import NERDeleteModal from '../../../components/NERDeleteModal';
+import { useDeleteFAQ } from '../../../hooks/recruitment.hooks';
 
 const FAQsTable = () => {
-  // const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
-  // const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
-  // const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFAQs();
+  // State to manage the deletion modal and the selected FAQ
+  const [deleteModalShow, setDeleteModalShow] = useHistoryState<boolean>('', false);
+  const [faqToDelete, setFaqToDelete] = useState<FrequentlyAskedQuestion | null>(null);
 
-  // placeholder until endpoints are completed
+  // Placeholder data until endpoints are completed
   const faqs: FrequentlyAskedQuestion[] = [
     {
       faqId: '1',
       userCreated: exampleAppAdminUser,
       dateCreated: new Date(),
-      question: 'Test quesiton 1?',
+      question: 'Test question 1?',
       answer: '1'
     },
     {
@@ -28,11 +32,9 @@ const FAQsTable = () => {
     }
   ];
 
-  // if (!faqs || faqsIsLoading) return <LoadingIndicator />;
-  // if (faqsIsError) return <ErrorPage message={faqsError.message} />;
-
+  // Map over the FAQs and create rows
   const FAQsRows = faqs.map((faq: FrequentlyAskedQuestion, index: number) => (
-    <TableRow>
+    <TableRow key={faq.faqId}>
       <TableCell
         align="left"
         sx={{
@@ -55,7 +57,13 @@ const FAQsTable = () => {
           <Button sx={{ p: 0.5, color: 'white' }}>
             <EditIcon />
           </Button>
-          <Button sx={{ p: 0.5, color: 'white' }}>
+          <Button
+            sx={{ p: 0.5, color: 'white' }}
+            onClick={() => {
+              setFaqToDelete(faq);
+              setDeleteModalShow(true);
+            }}
+          >
             <DeleteIcon />
           </Button>
         </Box>
@@ -98,12 +106,25 @@ const FAQsTable = () => {
         <NERButton
           variant="contained"
           onClick={() => {
-            // setCreateModalShow(true);
+            // Handle adding a new FAQ
           }}
         >
           Add FAQ
         </NERButton>
       </Box>
+      {deleteModalShow && faqToDelete && (
+        <NERDeleteModal
+        open={deleteModalShow}
+        onHide={closeModal}
+        formId="delete-item-form"
+        title="Item"
+        reset={reset}
+        onFormSubmit={handleFormSubmit}
+        deleteHook={handleDelete}
+        item={itemToDelete} // Pass the item to be deleted
+        disabled={!isValid}
+      />
+      )}
     </Box>
   );
 };

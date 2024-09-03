@@ -9,6 +9,14 @@ export const createMilestone = (payload: MilestonePayload) => {
   });
 };
 
+export const deleteMilestone = (milestoneId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.milestoneDelete(milestoneId));
+};
+
+export const deleteFaq = (faqId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.faqDelete(faqId));
+};
+
 export const editMilestone = (payload: MilestonePayload, id: string) => {
   return axios.post(apiUrls.milestoneEdit(id), {
     ...payload
