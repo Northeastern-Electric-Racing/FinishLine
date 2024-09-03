@@ -154,6 +154,7 @@ const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${desi
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
+const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
 
 /******************* Work Package Template Endpoints ********************/
 
@@ -173,6 +174,15 @@ const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
+
+/************** Recruitment Endpoints ***************/
+const recruitment = () => `${API_URL}/recruitment`;
+const allMilestones = () => `${recruitment()}/milestones`;
+const milestoneCreate = () => `${recruitment()}/milestone/create`;
+const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
+const allFaqs = () => `${recruitment()}/faqs`;
+const faqCreate = () => `${recruitment()}/faq/create`;
+const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -300,6 +310,7 @@ export const apiUrls = {
   designReviewsEdit,
   designReviewMarkUserConfirmed,
   designReviewDelete,
+  designReviewSetStatus,
 
   workPackageTemplates,
   workPackageTemplatesById,
@@ -312,5 +323,13 @@ export const apiUrls = {
 
   cars,
   carsCreate,
+  recruitment,
+  allMilestones,
+  milestoneCreate,
+  milestoneEdit,
+  allFaqs,
+  faqCreate,
+  faqEdit,
+
   version
 };

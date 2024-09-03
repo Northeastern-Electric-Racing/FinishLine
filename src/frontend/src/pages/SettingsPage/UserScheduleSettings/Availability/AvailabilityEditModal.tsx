@@ -1,31 +1,45 @@
+import { Availability } from 'shared';
 import NERModal from '../../../../components/NERModal';
 import EditAvailability from './EditAvailability';
 
 interface DRCEditModalProps {
   open: boolean;
   header: string;
-  availabilites: number[];
-  setAvailabilities: (availabilities: number[]) => void;
+  confirmedAvailabilities: Map<number, Availability>;
+  totalAvailabilities: Availability[];
+  setConfirmedAvailabilities: (availabilities: Map<number, Availability>) => void;
   onHide: () => void;
   onSubmit: () => void;
+  initialDate: Date;
+  canChangeDateRange?: boolean;
 }
 
 const AvailabilityEditModal: React.FC<DRCEditModalProps> = ({
   open,
   onHide,
   header,
-  availabilites,
-  setAvailabilities,
-  onSubmit
+  confirmedAvailabilities,
+  setConfirmedAvailabilities,
+  totalAvailabilities,
+  onSubmit,
+  initialDate,
+  canChangeDateRange = true
 }) => {
-  const existingMeetingData = new Map<number, string>();
+  const existingMeetingData = new Map<number, { iconMap: Map<number, string> }>();
+  const onCancel = () => {
+    setConfirmedAvailabilities(new Map());
+    onHide();
+  };
 
   return (
-    <NERModal open={open} onHide={onHide} title={header} onSubmit={onSubmit} submitText="Save">
+    <NERModal open={open} onHide={onCancel} title={header} onSubmit={onSubmit} submitText="Save">
       <EditAvailability
-        selectedTimes={availabilites}
-        setSelectedTimes={setAvailabilities}
+        editedAvailabilities={confirmedAvailabilities}
+        setEditedAvailabilities={setConfirmedAvailabilities}
         existingMeetingData={existingMeetingData}
+        totalAvailabilities={totalAvailabilities}
+        canChangeDateRange={canChangeDateRange}
+        initialDate={initialDate}
       />
     </NERModal>
   );

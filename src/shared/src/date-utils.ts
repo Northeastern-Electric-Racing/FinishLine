@@ -48,6 +48,16 @@ const getSaturday = (d: Date): Date => {
   return new Date(d.setDate(diff));
 };
 
+const isSameDay = (date1: Date, date2: Date): boolean => {
+  date1 = new Date(date1);
+  date2 = new Date(date2);
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+};
+
 const isWithinSameWeek = (date1: Date, date2: Date): boolean => {
   // Function to find the Saturday of the week for a given date
 
@@ -63,24 +73,70 @@ const isWithinSameWeek = (date1: Date, date2: Date): boolean => {
   );
 };
 
-const getMostRecentAvailability = (availabilities: Availability[]): Availability => {
-  if (availabilities.length === 0)
-    return {
-      availability: [],
-      dateSet: new Date()
-    };
-
-  return availabilities.reduce((prev, current) => (prev.dateSet > current.dateSet ? prev : current));
+const getUniqueAvailabilities = (availabilities: Availability[]) => {
+  const uniqueAvailabilities: Availability[] = [];
+  for (const availability of availabilities) {
+    const existingIndex = uniqueAvailabilities.findIndex((a) => isSameDay(a.dateSet, availability.dateSet));
+    if (existingIndex === -1) {
+      uniqueAvailabilities.push(availability);
+    } else {
+      uniqueAvailabilities[existingIndex] = availability;
+    }
+  }
+  return uniqueAvailabilities;
 };
 
-const getAvailabilityForGivenWeekOfDateOrMostRecent = (availabilities: Availability[], date: Date): Availability => {
-  const availabilityForWeekOfDesignReview = availabilities.filter((availability) => {
-    return isWithinSameWeek(availability.dateSet, date);
-  });
+const getMostRecentAvailabilities = (availabilities: Availability[], startDate: Date): Availability[] => {
+  availabilities = getUniqueAvailabilities(availabilities);
+  const startDateObj = new Date(startDate);
 
-  return availabilityForWeekOfDesignReview.length > 0
-    ? availabilityForWeekOfDesignReview[0]
-    : getMostRecentAvailability(availabilities);
+  const getClosestDate = (availabilities: Availability[], targetDate: Date): Availability => {
+    if (availabilities.length < 1)
+      return {
+        dateSet: targetDate,
+        availability: []
+      };
+    return availabilities.reduce((closest, current) => {
+      return Math.abs(current.dateSet.getTime() - targetDate.getTime()) <
+        Math.abs(closest.dateSet.getTime() - targetDate.getTime())
+        ? current
+        : closest;
+    }, availabilities[0]);
+  };
+
+  const result: Availability[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const targetDate = addDaysToDate(startDateObj, i);
+
+    const sameDayAvailability = availabilities.filter((avail) => avail.dateSet.getDay() === targetDate.getDay());
+
+    const closestAvailability = getClosestDate(sameDayAvailability, targetDate);
+    const deepCopy = JSON.parse(JSON.stringify({ ...closestAvailability, dateSet: targetDate })) as Availability; // Deeply copy availability
+
+    result.push({ ...deepCopy, dateSet: new Date(deepCopy.dateSet) });
+  }
+
+  return result;
+};
+
+const getDayOfWeek = (date: Date) => {
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayIndex = new Date(date).getDay();
+  return daysOfWeek[dayIndex];
+};
+
+const getNextSevenDays = (startDate: Date) => {
+  const startDateObj = new Date(startDate);
+  const dates = [];
+
+  for (let i = 0; i < 7; i++) {
+    const nextDate = new Date(startDateObj);
+    nextDate.setDate(startDateObj.getDate() + i);
+    dates.push(nextDate);
+  }
+
+  return dates;
 };
 
 export {
@@ -90,6 +146,9 @@ export {
   daysBetween,
   isWithinSameWeek,
   getSaturday,
-  getAvailabilityForGivenWeekOfDateOrMostRecent,
-  getMostRecentAvailability
+  getMostRecentAvailabilities,
+  isSameDay,
+  getDayOfWeek,
+  getNextSevenDays,
+  getUniqueAvailabilities
 };

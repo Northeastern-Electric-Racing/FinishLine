@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Prisma, User } from '@prisma/client';
+import { Organization, Prisma, User } from '@prisma/client';
 import { DescriptionBulletPreview, WbsElementStatus, WbsNumber } from 'shared';
 import { WorkPackageStage } from 'shared';
 import WorkPackagesService from '../../services/work-packages.services';
@@ -27,7 +27,7 @@ export const seedWorkPackage = async (
   _status: WbsElementStatus,
   lead: string,
   manager: string,
-  organizationId: string
+  organization: Organization
 ): Promise<{
   workPackageWbsNumber: WbsNumber;
   workPackage: Prisma.Work_PackageGetPayload<WorkPackageQueryArgs>;
@@ -41,7 +41,7 @@ export const seedWorkPackage = async (
     duration,
     blockedBy,
     descriptionBullets,
-    organizationId
+    organization
   );
 
   await WorkPackagesService.editWorkPackage(
@@ -56,7 +56,7 @@ export const seedWorkPackage = async (
     descriptionBullets,
     lead,
     manager,
-    organizationId
+    organization
   );
 
   return { workPackageWbsNumber: { ...workPackage.wbsElement }, workPackage };

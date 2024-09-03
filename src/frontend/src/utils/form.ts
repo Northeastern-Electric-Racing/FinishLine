@@ -86,3 +86,11 @@ export const generateUUID = () => {
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
 };
+
+export enum FormStorageKey {
+  CREATE_TEAM_TYPE = 'CREATE_TEAM_TYPE',
+  CREATE_MILESTONE = 'CREATE_MILESTONE',
+  EDIT_MILESTONE = 'EDIT_MILESTONE',
+  CREATE_FAQ = 'CREATE_FAQ',
+  EDIT_FAQ = 'EDIT_FAQ'
+}

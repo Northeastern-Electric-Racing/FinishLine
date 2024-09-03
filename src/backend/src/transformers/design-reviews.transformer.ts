@@ -29,6 +29,7 @@ export const designReviewTransformer = (
     status: designReview.status as DesignReviewStatus,
     teamType: designReview.teamType,
     wbsName: designReview.wbsElement.name,
-    wbsNum: wbsNumOf(designReview.wbsElement)
+    wbsNum: wbsNumOf(designReview.wbsElement),
+    initialDate: designReview.initialDateScheduled
   };
 };

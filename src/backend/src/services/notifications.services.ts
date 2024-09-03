@@ -3,6 +3,7 @@ import {
   DesignReviewWithAttendees,
   TaskWithAssignees,
   endOfDayTomorrow,
+  startOfDayTomorrow,
   usersToSlackPings
 } from '../utils/notifications.utils';
 import { sendMessage } from '../integrations/slack';
@@ -25,6 +26,8 @@ export default class NotificationsService {
    */
   static async sendTaskDeadlineSlackNotifications() {
     const endOfDay = endOfDayTomorrow();
+
+    if (endOfDay.getDay() === 0 || endOfDay.getDay() === 2 || endOfDay.getDay() === 4) return;
 
     const tasks = await prisma.task.findMany({
       where: {
@@ -105,7 +108,7 @@ export default class NotificationsService {
       if (!admin) throw new HttpException(404, 'Admin user not found');
       const organizations = await prisma.organization.findMany();
       for (const organization of organizations) {
-        await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization.organizationId);
+        await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization);
       }
     }
   }
@@ -114,8 +117,9 @@ export default class NotificationsService {
    * Sends the design review slack notifications for all design reviews scheduled for today
    */
   static async sendDesignReviewSlackNotifications() {
-    const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
-    const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+    const endOfDay = startOfDayTomorrow();
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
     const designReviews = await prisma.design_Review.findMany({
       where: {
@@ -123,9 +127,7 @@ export default class NotificationsService {
           lt: endOfDay,
           gte: startOfDay
         },
-        status: {
-          not: 'DONE'
-        },
+        status: 'SCHEDULED',
         dateDeleted: null
       },
       include: {
@@ -171,9 +173,17 @@ export default class NotificationsService {
     const promises = Array.from(designReviewTeamMap).map(async ([slackId, designReviews]) => {
       const messageBlock = designReviews
         .map((designReview) => {
-          return `${usersToSlackPings(designReview.attendees ?? [])} ${
-            designReview.wbsElement.name
-          } will be having a design review today at ${meetingStartTimePipe(designReview.meetingTimes)}!`;
+          const zoomLink = designReview.zoomLink ? `<${designReview.zoomLink}|Zoom Link>\n` : '';
+          const questionDocLink = designReview.docTemplateLink
+            ? `<${designReview.docTemplateLink}|Question Doc Link>\n`
+            : '';
+          return (
+            `${usersToSlackPings(designReview.attendees ?? [])} ${
+              designReview.wbsElement.name
+            } will be having a design review today at ${meetingStartTimePipe(designReview.meetingTimes)}! ` +
+            zoomLink +
+            questionDocLink
+          );
         })
         .join('\n\n');
 

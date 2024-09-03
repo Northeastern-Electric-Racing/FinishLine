@@ -80,6 +80,7 @@ export const createTestUser = async (
 };
 
 export const resetUsers = async () => {
+  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.work_Package.deleteMany();
   await prisma.project.deleteMany();
   await prisma.material.deleteMany();
@@ -113,6 +114,8 @@ export const resetUsers = async () => {
   await prisma.design_Review.deleteMany();
   await prisma.team_Type.deleteMany();
   await prisma.wBS_Element.deleteMany();
+  await prisma.milestone.deleteMany();
+  await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -137,19 +140,40 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
     organization.organizationId
   );
 
-  const team = await TeamsService.createTeam(
-    head,
-    'Finance Team',
-    head.userId,
-    'Finance Team',
-    '',
-    true,
-    organization.organizationId
-  );
+  const team = await TeamsService.createTeam(head, 'Finance Team', head.userId, 'Finance Team', '', true, organization);
 
-  await TeamsService.setTeamLeads(head, team.teamId, [lead.userId], organization.organizationId);
+  await TeamsService.setTeamLeads(head, team.teamId, [lead.userId], organization);
 
-  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization.organizationId);
+  await TeamsService.setTeamMembers(head, team.teamId, [financeMember.userId], organization);
+};
+
+export const createTestFAQ = async (orgId: string, faqId: string) => {
+  const user = await prisma.user.create({
+    data: {
+      firstName: 'ADMIN',
+      lastName: 'FAQ',
+      email: 'FAQCREATOR@gmail.com',
+      googleAuthId: 'FAQCREATOR'
+    }
+  });
+
+  return await prisma.frequentlyAskedQuestion.create({
+    data: {
+      faqId,
+      question: 'Joe mama',
+      answer: 'Joe mama`s organization',
+      userCreated: {
+        connect: {
+          userId: user.userId
+        }
+      },
+      organization: {
+        connect: {
+          organizationId: orgId
+        }
+      }
+    }
+  });
 };
 
 export const createTestOrganization = async () => {
@@ -165,6 +189,7 @@ export const createTestOrganization = async () => {
   return await prisma.organization.create({
     data: {
       name: 'Joe mama',
+      description: 'Joe mama`s organization',
       userCreated: {
         connect: {
           userId: user.userId
@@ -191,6 +216,37 @@ export const createTestWorkPackageTemplate = async (user: User, organizationId?:
   });
 
   return workPackageTemplate;
+};
+
+export const createTestFaq = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const faq = await prisma.frequentlyAskedQuestion.create({
+    data: {
+      question: 'Who is Chief Software Engineer of NER?',
+      answer: 'Peyton McKee!',
+      organizationId,
+      userCreatedId: user.userId
+    }
+  });
+  return faq;
+};
+
+export const createTestMilestone = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const milestone = await prisma.milestone.create({
+    data: {
+      name: 'Milestone 1',
+      description: 'Description',
+      dateOfEvent: new Date('03/03/2024'),
+      organizationId,
+      userCreatedId: user.userId
+    }
+  });
+  return milestone;
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {
@@ -276,7 +332,7 @@ export const createTestReimbursementRequest = async () => {
 
   await createTestProject(user, organization.organizationId);
 
-  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization.organizationId);
+  const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization);
 
   const accountCode = await ReimbursementRequestService.createAccountCode(
     user,
@@ -284,7 +340,7 @@ export const createTestReimbursementRequest = async () => {
     123,
     true,
     [Club_Accounts.CASH, Club_Accounts.BUDGET],
-    organization.organizationId
+    organization
   );
 
   const rr = await ReimbursementRequestService.createReimbursementRequest(
@@ -306,7 +362,7 @@ export const createTestReimbursementRequest = async () => {
     ],
     accountCode.accountCodeId,
     100,
-    organization.organizationId
+    organization
   );
 
   if (!rr) throw new Error('Failed to create reimbursement request');
@@ -328,7 +384,7 @@ export const createTestDesignReview = async () => {
   if (!head) throw new Error('Failed to find user');
   if (!lead) throw new Error('Failed to find user');
   await createTestProject(head, organization.organizationId);
-  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization.organizationId);
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization);
   const { designReviewId } = await DesignReviewsService.createDesignReview(
     lead,
     '03/25/2027',
@@ -341,7 +397,7 @@ export const createTestDesignReview = async () => {
       workPackageNumber: 0
     },
     [0, 1],
-    organization.organizationId
+    organization
   );
 
   const dr = await prisma.design_Review.findUnique({
@@ -354,7 +410,7 @@ export const createTestDesignReview = async () => {
   });
 
   if (!dr) throw new Error('Failed to create design review');
-  const orgId = organization.organizationId;
 
-  return { dr, orgId };
+  const orgId = organization.organizationId;
+  return { dr, organization, orgId };
 };

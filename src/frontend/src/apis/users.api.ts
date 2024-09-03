@@ -13,7 +13,12 @@ import {
   UserWithScheduleSettings
 } from 'shared';
 import { apiUrls } from '../utils/urls';
-import { authUserTransformer, userTransformer } from './transformers/users.transformers';
+import {
+  authUserTransformer,
+  userScheduleSettingsTransformer,
+  userTransformer,
+  userWithScheduleSettingsTransformer
+} from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 import { projectTransformer } from './transformers/projects.transformers';
 
@@ -22,7 +27,7 @@ import { projectTransformer } from './transformers/projects.transformers';
  */
 export const getAllUsers = () => {
   return axios.get<UserWithScheduleSettings[]>(apiUrls.users(), {
-    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+    transformResponse: (data) => JSON.parse(data).map(userWithScheduleSettingsTransformer)
   });
 };
 
@@ -107,7 +112,9 @@ export const getUserSecureSettings = (id: string) => {
  * @returns the schedule settings
  */
 export const getUserScheduleSettings = (userId: string) => {
-  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(userId));
+  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(userId), {
+    transformResponse: (data) => userScheduleSettingsTransformer(JSON.parse(data))
+  });
 };
 
 /**

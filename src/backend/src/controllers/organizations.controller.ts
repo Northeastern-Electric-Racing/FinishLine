@@ -1,28 +1,52 @@
 import { NextFunction, Request, Response } from 'express';
-import { getCurrentUser } from '../utils/auth.utils';
-import { getOrganizationId } from '../utils/utils';
-import OrganizationsService from '../services/organizations.service';
+import OrganizationsService from '../services/organizations.services';
 
 export default class OrganizationsController {
   static async setUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const { links } = req.body;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const newLinks = await OrganizationsService.setUsefulLinks(submitter, organizationId, links);
-      res.status(200).json(newLinks);
+      const newLinks = await OrganizationsService.setUsefulLinks(req.currentUser, req.organization.organizationId, links);
+      return res.status(200).json(newLinks);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
+  static async setImages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { applyInterestImage = [], exploreAsGuestImage = [] } = req.files as {
+        applyInterestImage?: Express.Multer.File[];
+        exploreAsGuestImage?: Express.Multer.File[];
+      };
+
+      const applyInterestFile = applyInterestImage[0] || null;
+      const exploreAsGuestFile = exploreAsGuestImage[0] || null;
+
+      const newImages = await OrganizationsService.setImages(
+        applyInterestFile,
+        exploreAsGuestFile,
+        req.currentUser,
+        req.organization
+      );
+
+      return res.status(200).json(newImages);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
+      const links = await OrganizationsService.getAllUsefulLinks(req.organization.organizationId);
+      return res.status(200).json(links);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 
-      const links = await OrganizationsService.getAllUsefulLinks(organizationId);
-      res.status(200).json(links);
+  static async getOrganizationImages(req: Request, res: Response, next: NextFunction) {
+    try {
+      const images = await OrganizationsService.getOrganizationImages(req.organization.organizationId);
+      res.status(200).json(images);
     } catch (error: unknown) {
       next(error);
     }

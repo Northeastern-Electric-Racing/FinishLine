@@ -101,19 +101,19 @@ export const sendSlackTaskAssignedNotification = async (
  * @param requestId the id if the reimbursement request
  * @param submitterId the id of the user who created the reimbursement request
  */
-export const sendReimbursementRequestCreatedNotification = async (requestId: string, submitterId: string): Promise<void> => {
+export const sendReimbursementRequestCreatedNotification = async (
+  requestId: string,
+  submitterId: string,
+  organizationId: string
+): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
   const linkButtonText = 'View Reimbursement Request';
 
-  if (!process.env.FINANCE_TEAM_ID) {
-    throw new HttpException(500, 'FINANCE_TEAM_ID not in env');
-  }
-
-  const financeTeam = await prisma.team.findUnique({
-    where: { teamId: process.env.FINANCE_TEAM_ID }
+  const financeTeam = await prisma.team.findFirst({
+    where: { financeTeam: true, organizationId }
   });
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');

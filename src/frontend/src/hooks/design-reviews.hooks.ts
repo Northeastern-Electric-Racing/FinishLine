@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { DesignReview, TeamType, WbsNumber, DesignReviewStatus } from 'shared';
+import { DesignReview, TeamType, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
 import {
   deleteDesignReview,
   editDesignReview,
@@ -12,7 +12,8 @@ import {
   getAllTeamTypes,
   getSingleDesignReview,
   markUserConfirmed,
-  createTeamType
+  createTeamType,
+  setDesignReviewStatus
 } from '../apis/design-reviews.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -165,9 +166,9 @@ export const useSingleDesignReview = (id?: string) => {
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  return useMutation<DesignReview, Error, { availability: number[] }>(
+  return useMutation<DesignReview, Error, { availability: AvailabilityCreateArgs[] }>(
     ['design-reviews', 'mark-confirmed'],
-    async (designReviewPayload: { availability: number[] }) => {
+    async (designReviewPayload: { availability: AvailabilityCreateArgs[] }) => {
       const { data } = await markUserConfirmed(id, designReviewPayload);
       return data;
     },
@@ -175,6 +176,22 @@ export const useMarkUserConfirmed = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['design-reviews']);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
+};
+
+export const useSetDesignReviewStatus = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, { status: DesignReviewStatus }>(
+    ['design-reviews', id],
+    async (payload: { status: DesignReviewStatus }) => {
+      const { data } = await setDesignReviewStatus(id, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews', id]);
       }
     }
   );
