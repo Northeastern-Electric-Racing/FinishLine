@@ -78,6 +78,7 @@ enum Club_Accounts {
 
 enum Reimbursement_Status_Type {
   PENDING_LEADERSHIP_APPROVAL
+  LEADERSHIP_APPROVED
   PENDING_FINANCE
   SABO_SUBMITTED
   ADVISOR_APPROVED
@@ -262,10 +263,12 @@ model Message_Info {
   channelId     String
   timestamp     String
 
-  changeRequestId String?
-  changeRequest   Change_Request? @relation(fields: [changeRequestId], references: [crId])
-  designReviewId  String?
-  designReview    Design_Review?  @relation(fields: [designReviewId], references: [designReviewId])
+  changeRequestId        String?
+  changeRequest          Change_Request?        @relation(fields: [changeRequestId], references: [crId])
+  designReviewId         String?
+  designReview           Design_Review?         @relation(fields: [designReviewId], references: [designReviewId])
+  reimbursementRequestId String?
+  reimbursementRequest   Reimbursement_Request? @relation(fields: [reimbursementRequestId], references: [reimbursementRequestId])
 }
 
 model Scope_CR {
@@ -516,26 +519,27 @@ model Receipt {
 }
 
 model Reimbursement_Request {
-  reimbursementRequestId String                  @id @default(uuid())
-  identifier             Int
-  saboId                 Int?                    @unique
-  dateCreated            DateTime                @default(now())
-  dateDeleted            DateTime?
-  dateOfExpense          DateTime
-  reimbursementStatuses  Reimbursement_Status[]
-  recipientId            String
-  recipient              User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
-  vendorId               String
-  vendor                 Vendor                  @relation(fields: [vendorId], references: [vendorId])
-  account                Club_Accounts
-  totalCost              Int
-  receiptPictures        Receipt[]
-  reimbursementProducts  Reimbursement_Product[]
-  dateDelivered          DateTime?
-  accountCodeId          String
-  accountCode            Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
-  organizationId         String
-  organization           Organization            @relation(fields: [organizationId], references: [organizationId])
+  reimbursementRequestId   String                  @id @default(uuid())
+  identifier               Int
+  saboId                   Int?                    @unique
+  dateCreated              DateTime                @default(now())
+  dateDeleted              DateTime?
+  dateOfExpense            DateTime
+  reimbursementStatuses    Reimbursement_Status[]
+  recipientId              String
+  recipient                User                    @relation(name: "reimbursementRequestRecipient", fields: [recipientId], references: [userId])
+  vendorId                 String
+  vendor                   Vendor                  @relation(fields: [vendorId], references: [vendorId])
+  account                  Club_Accounts
+  totalCost                Int
+  receiptPictures          Receipt[]
+  reimbursementProducts    Reimbursement_Product[]
+  dateDelivered            DateTime?
+  accountCodeId            String
+  accountCode              Account_Code            @relation(fields: [accountCodeId], references: [accountCodeId])
+  organizationId           String
+  organization             Organization            @relation(fields: [organizationId], references: [organizationId])
+  notificationSlackThreads Message_Info[]
 
   @@unique([identifier, organizationId], name: "uniqueReimbursementRequest")
 }

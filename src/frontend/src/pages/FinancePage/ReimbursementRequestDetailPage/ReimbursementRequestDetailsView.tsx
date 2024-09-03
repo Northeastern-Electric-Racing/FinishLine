@@ -4,7 +4,7 @@
  */
 
 import { accountCodePipe } from '../../../utils/pipes';
-import { Assignment, Edit } from '@mui/icons-material';
+import { Assignment, ChangeCircle, Edit, Pending } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -24,8 +24,10 @@ import {
   useDeleteReimbursementRequest,
   useDenyReimbursementRequest,
   useLeadershipApproveReimbursementRequest,
+  useMarkPendingFinance,
   useMarkReimbursementRequestAsDelivered,
-  useMarkReimbursementRequestAsReimbursed
+  useMarkReimbursementRequestAsReimbursed,
+  useRequestReimbursementRequestChanges
 } from '../../../hooks/finance.hooks';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
@@ -43,7 +45,9 @@ import {
   isReimbursementRequestAdvisorApproved,
   isReimbursementRequestReimbursed,
   isReimbursementRequestSaboSubmitted,
-  isReimbursementRequestDenied
+  isReimbursementRequestDenied,
+  isReimbursementRequestLeadershipApproved,
+  isReimbursementRequestPendingFinance
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import AddSABONumberModal from './AddSABONumberModal';
@@ -69,6 +73,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const [showMarkDelivered, setShowMarkDelivered] = useState(false);
   const [showMarkReimbursed, setShowMarkReimbursed] = useState(false);
   const [showSubmitToSaboModal, setShowSubmitToSaboModal] = useState(false);
+  const [showMarkPendingFinanceModal, setShowMarkPendingFinanceModal] = useState(false);
+  const [showRequestChangesModal, setShowRequestChangesModal] = useState(false);
   const { mutateAsync: deleteReimbursementRequest } = useDeleteReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
@@ -80,9 +86,15 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   const { mutateAsync: leadershipApproveReimbursementRequest } = useLeadershipApproveReimbursementRequest(
     reimbursementRequest.reimbursementRequestId
   );
+  const { mutateAsync: requestReimbursementRequestChanges } = useRequestReimbursementRequestChanges(
+    reimbursementRequest.reimbursementRequestId
+  );
+
+  const { mutateAsync: markPendingFinance } = useMarkPendingFinance(reimbursementRequest.reimbursementRequestId);
 
   const isSaboSubmitted = isReimbursementRequestSaboSubmitted(reimbursementRequest);
-  const isLeadershipApproved = isReimbursementRequestAdvisorApproved(reimbursementRequest);
+  const isLeadershipApproved = isReimbursementRequestLeadershipApproved(reimbursementRequest);
+  const isPendingFinance = isReimbursementRequestPendingFinance(reimbursementRequest);
 
   const handleDelete = async () => {
     try {
@@ -132,6 +144,28 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     try {
       await leadershipApproveReimbursementRequest();
       setShowLeadershipApproveModal(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    try {
+      await requestReimbursementRequestChanges();
+      setShowRequestChangesModal(false);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const handleMarkPendingFinance = async () => {
+    try {
+      await markPendingFinance();
+      setShowMarkPendingFinanceModal(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -207,6 +241,32 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       onSubmit={handleMarkReimbursed}
     >
       <Typography>Are you sure you want to mark this reimbursement request as reimbursed?</Typography>
+    </NERModal>
+  );
+
+  const RequestChangesModal = () => (
+    <NERModal
+      open={showRequestChangesModal}
+      onHide={() => setShowRequestChangesModal(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleRequestChanges}
+    >
+      <Typography>Are you sure you want to request changes on this reimbursement request?</Typography>
+    </NERModal>
+  );
+
+  const MarkPendingFinanceModal = () => (
+    <NERModal
+      open={showMarkPendingFinanceModal}
+      onHide={() => setShowMarkPendingFinanceModal(false)}
+      title="Warning!"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={handleMarkPendingFinance}
+    >
+      <Typography>Are you sure you want to mark this reimbursement request as pending finance?</Typography>
     </NERModal>
   );
 
@@ -334,7 +394,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: isSaboSubmitted ? 'SABO Info' : 'Submit to SABO',
       onClick: () => setShowSubmitToSaboModal(true),
       icon: isSaboSubmitted ? <Assignment /> : <CheckIcon />,
-      disabled: !user.isFinance
+      disabled: !user.isFinance || !isPendingFinance
     },
     {
       title: 'Leadership Approve',
@@ -345,6 +405,21 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         isReimbursementRequestDenied(reimbursementRequest) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
         isLeadershipApproved
+    },
+    {
+      title: 'Mark Pending Finance',
+      onClick: () => setShowMarkPendingFinanceModal(true),
+      icon: <Pending />,
+      disabled: user.userId !== reimbursementRequest.recipient.userId || isPendingFinance
+    },
+    {
+      title: 'Request Changes',
+      onClick: () => setShowRequestChangesModal(true),
+      icon: <ChangeCircle />,
+      disabled:
+        !user.isFinance ||
+        isReimbursementRequestReimbursed(reimbursementRequest) ||
+        isReimbursementRequestDenied(reimbursementRequest)
     },
     {
       title: 'Deny',
@@ -381,6 +456,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       <MarkDeliveredModal />
       <MarkReimbursedModal />
       <LeadershipApproveModal />
+      <MarkPendingFinanceModal />
+      <RequestChangesModal />
       <SubmitToSaboModal
         open={showSubmitToSaboModal}
         setOpen={setShowSubmitToSaboModal}

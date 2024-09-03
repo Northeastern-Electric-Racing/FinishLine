@@ -156,4 +156,14 @@ reimbursementRequestsRouter.post(
 
 reimbursementRequestsRouter.get('/receipt-image/:fileId', ReimbursementRequestController.downloadReceiptImage);
 
+reimbursementRequestsRouter.post(
+  '/:requestId/request-changes',
+  ReimbursementRequestController.requestReimbursementRequestChanges
+);
+
+reimbursementRequestsRouter.post(
+  '/:requestId/pending-finance',
+  ReimbursementRequestController.markReimbursementRequestAsPendingFinance
+);
+
 export default reimbursementRequestsRouter;
