@@ -1,5 +1,5 @@
 import { isAdmin, isHead, Team, TeamType } from 'shared';
-import { User, WBS_Element_Status } from '@prisma/client';
+import { Organization, User, WBS_Element_Status } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import teamTransformer from '../transformers/teams.transformer';
 import {
@@ -20,13 +20,18 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
-  static async getAllTeams(organizationId: string, onlyArchive: boolean): Promise<Team[]> {
+  static async getAllArchivedTeams(organization: Organization): Promise<Team[]> {
     const teams = await prisma.team.findMany({
-      where: {
-        organizationId,
-        ...(onlyArchive ? { dateArchived: { not: null } } : { dateArchived: null })
-      },
-      ...getTeamQueryArgs(organizationId)
+      where: { dateArchived: { not: null }, organizationId: organization.organizationId },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
+    return teams.map(teamTransformer);
+  }
+
+  static async getAllTeams(organization: Organization): Promise<Team[]> {
+    const teams = await prisma.team.findMany({
+      where: { dateArchived: null, organizationId: organization.organizationId },
+      ...getTeamQueryArgs(organization.organizationId)
     });
     return teams.map(teamTransformer);
   }

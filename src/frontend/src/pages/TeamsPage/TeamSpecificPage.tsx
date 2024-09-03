@@ -120,9 +120,11 @@ const TeamSpecificPage: React.FC = () => {
       }
       title={`Team ${data.teamName}`}
       chips={
-        <Box display="flex" gap="20px">
-          <TeamPill displayText={data.dateArchived ? 'Archived' : 'Unarchived'} />
-        </Box>
+        data.dateArchived ? (
+          <Box display="flex" gap="20px">
+            <TeamPill displayText="Archived" />
+          </Box>
+        ) : null
       }
       previousPages={[{ name: 'Teams', route: routes.TEAMS }]}
     >
