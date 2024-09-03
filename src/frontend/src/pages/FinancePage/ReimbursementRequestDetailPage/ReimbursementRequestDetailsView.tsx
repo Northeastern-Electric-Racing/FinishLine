@@ -419,7 +419,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled:
         !user.isFinance ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
-        isReimbursementRequestDenied(reimbursementRequest)
+        isReimbursementRequestDenied(reimbursementRequest) ||
+        isSaboSubmitted
     },
     {
       title: 'Deny',
