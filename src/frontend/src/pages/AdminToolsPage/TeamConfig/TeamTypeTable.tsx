@@ -21,7 +21,7 @@ const TeamTypeTable: React.FC = () => {
 
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
-  const [addedImage, setAddedImage] = useState<File>();
+  const [addedImages, setAddedImages] = useState<Record<string, File | undefined>>({});
   const toast = useToast();
 
   const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
@@ -34,23 +34,21 @@ const TeamTypeTable: React.FC = () => {
   }
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
-    if (addedImage) {
-      await setTeamTypeImage({ file: addedImage, id: teamTypeId });
+    const image = addedImages[teamTypeId];
+    if (image) {
+      await setTeamTypeImage({ file: image, id: teamTypeId });
       toast.success('Image uploaded successfully!', 5000);
-      setAddedImage(undefined);
+      setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
     } else {
       toast.error('No image selected for upload.', 5000);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('file change');
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, teamTypeId: string) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log('file is present');
       if (file.size < 1000000) {
-        setAddedImage(file);
-        // console.log('Image uploaded:', file.name);
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: file }));
       } else {
         toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
       }
@@ -104,17 +102,25 @@ const TeamTypeTable: React.FC = () => {
           }}
         >
           Upload
-          <Box>
-            <input type="file" accept="image/*" name="image" hidden onChange={(e) => handleFileChange(e)} />
-          </Box>
+          <input
+            onChange={(e) => {
+              console.log(e);
+              handleFileChange(e, teamType.teamTypeId);
+            }}
+            type="file"
+            id="team-type-image"
+            accept="image/*"
+            name="addedImage"
+            hidden
+          />
         </Button>
-        {addedImage && (
+        {addedImages[teamType.teamTypeId] && (
           <Box sx={{ mt: 2 }}>
-            <Typography variant="body2">{addedImage.name}</Typography>
+            <Typography variant="body2">{addedImages[teamType.teamTypeId]?.name}</Typography>
             <Button
               variant="contained"
               color="error"
-              onClick={() => setAddedImage(undefined)}
+              onClick={() => setAddedImages((prev) => ({ ...prev, [teamType.teamTypeId]: undefined }))}
               sx={{ textTransform: 'none', mt: 1, mr: 1 }}
             >
               Remove
