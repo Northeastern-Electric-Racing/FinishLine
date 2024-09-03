@@ -58,6 +58,10 @@ export const isDate = (validationObject: ValidationChain): ValidationChain => {
   return validationObject.custom((value) => !isNaN(Date.parse(value)));
 };
 
+export const isOptionalDate = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.optional().custom((value) => !isNaN(Date.parse(value)));
+};
+
 export const validateReimbursementProducts = () => {
   return [
     body('otherReimbursementProducts').isArray(),

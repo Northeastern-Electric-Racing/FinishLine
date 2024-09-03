@@ -75,14 +75,14 @@ export default class ReimbursementRequestsController {
 
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
-        dateOfExpense,
         vendorId,
         account,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
         totalCost,
-        organizationId
+        organizationId,
+        dateOfExpense
       );
       res.status(200).json(createdReimbursementRequest);
     } catch (error: unknown) {
@@ -121,7 +121,6 @@ export default class ReimbursementRequestsController {
 
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
-        dateOfExpense,
         vendorId,
         account,
         accountCodeId,
@@ -130,7 +129,8 @@ export default class ReimbursementRequestsController {
         wbsReimbursementProducts,
         receiptPictures,
         user,
-        organizationId
+        organizationId,
+        dateOfExpense
       );
       res.status(200).json(updatedReimbursementRequestId);
     } catch (error: unknown) {

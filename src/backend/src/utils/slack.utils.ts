@@ -1,4 +1,4 @@
-import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate, ReimbursementRequest } from 'shared';
+import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate } from 'shared';
 import { User } from '@prisma/client';
 import { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
 import { getUserFullName, getUserSlackId } from './users.utils';
@@ -113,7 +113,7 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
   submitterId: string,
   organizationId: string
 ): Promise<void> => {
-  // if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
 
   const msg = `${await getUserFullName(submitterId)} created a reimbursement request 💲`;
   const link = `https://finishlinebyner.com/finance/reimbursement-requests/${requestId}`;
@@ -167,7 +167,7 @@ export const sendReimbursementRequestDeniedNotification = async (slackId: string
 };
 
 const sendThreadResponse = async (threads: SlackMessageThread[], message: string) => {
-  // if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
+  if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   try {
     if (threads && threads.length !== 0) {
       const msgs = threads.map((thread) => replyToMessageInThread(thread.channelId, thread.timestamp, message));

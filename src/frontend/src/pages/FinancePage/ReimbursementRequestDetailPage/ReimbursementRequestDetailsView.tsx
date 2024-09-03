@@ -275,7 +275,9 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       <>
         <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: '5px' }}>
           <Typography variant="h5">Details</Typography>
-          <Typography variant="h5" fontSize={24}>{`${datePipe(new Date(reimbursementRequest.dateOfExpense))}`}</Typography>
+          <Typography variant="h5" fontSize={24}>{`${
+            reimbursementRequest.dateOfExpense ? datePipe(new Date(reimbursementRequest.dateOfExpense)) : '-'
+          }`}</Typography>
         </Box>
         <Grid container spacing={2}>
           <Grid item sm={6} xs={12}>

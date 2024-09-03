@@ -9,6 +9,7 @@ import {
   intMinZero,
   isAccount,
   isDate,
+  isOptionalDate,
   nonEmptyString,
   validateInputs,
   validateReimbursementProducts
@@ -41,7 +42,7 @@ reimbursementRequestsRouter.post('/:vendorId/vendors/delete', ReimbursementReque
 
 reimbursementRequestsRouter.post(
   '/create',
-  isDate(body('dateOfExpense')),
+  isOptionalDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
   nonEmptyString(body('accountCodeId')),
@@ -57,7 +58,7 @@ reimbursementRequestsRouter.get('/:requestId', ReimbursementRequestController.ge
 
 reimbursementRequestsRouter.post(
   '/:requestId/edit',
-  isDate(body('dateOfExpense')),
+  isOptionalDate(body('dateOfExpense')),
   nonEmptyString(body('vendorId')),
   isAccount(body('account')),
   body('receiptPictures').isArray(),

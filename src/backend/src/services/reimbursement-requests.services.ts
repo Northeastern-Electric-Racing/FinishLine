@@ -135,15 +135,15 @@ export default class ReimbursementRequestService {
    */
   static async createReimbursementRequest(
     recipient: UserWithSecureSettings,
-    dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     acccountCodeId: string,
     totalCost: number,
-    organizationId: string
-  ): Promise<Reimbursement_Request> {
+    organizationId: string,
+    dateOfExpense?: Date
+  ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organizationId, isGuest))
       throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
 
@@ -170,7 +170,7 @@ export default class ReimbursementRequestService {
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
         recipient: { connect: { userId: recipient.userId } },
-        dateOfExpense,
+        dateOfExpense: dateOfExpense ?? null,
         vendor: { connect: { vendorId: vendor.vendorId } },
         account,
         accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
@@ -198,7 +198,16 @@ export default class ReimbursementRequestService {
       organizationId
     );
 
-    return createdReimbursementRequest;
+    const finalizedReimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: {
+        reimbursementRequestId: createdReimbursementRequest.reimbursementRequestId
+      },
+      ...getReimbursementRequestQueryArgs(organizationId)
+    });
+
+    if (!finalizedReimbursementRequest) throw new HttpException(500, 'Unable to retrieve created reimbursement request');
+
+    return reimbursementRequestTransformer(finalizedReimbursementRequest);
   }
 
   /**
@@ -258,7 +267,6 @@ export default class ReimbursementRequestService {
    */
   static async editReimbursementRequest(
     requestId: string,
-    dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
     accountCodeId: string,
@@ -267,7 +275,8 @@ export default class ReimbursementRequestService {
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
-    organizationId: string
+    organizationId: string,
+    dateOfExpense?: Date
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
@@ -304,7 +313,7 @@ export default class ReimbursementRequestService {
     const updatedReimbursementRequest = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
-        dateOfExpense,
+        dateOfExpense: dateOfExpense ?? null,
         account,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
@@ -549,7 +558,7 @@ export default class ReimbursementRequestService {
     if (existingVendor && existingVendor.dateDeleted) {
       await prisma.vendor.update({
         where: { vendorId: existingVendor.vendorId },
-        data: { dateDeleted: null }
+        data: { dateDeleted: null },
       });
       return existingVendor;
     } else if (existingVendor) throw new HttpException(400, 'This vendor already exists');

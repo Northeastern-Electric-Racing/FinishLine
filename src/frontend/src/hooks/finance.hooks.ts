@@ -50,7 +50,7 @@ import { fullNamePipe } from '../utils/pipes';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
-  dateOfExpense: Date;
+  dateOfExpense?: Date;
   accountCodeId: string;
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
