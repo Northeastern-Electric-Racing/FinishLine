@@ -241,6 +241,18 @@ const performSeed: () => Promise<void> = async () => {
     changeRequest1.proposedSolutions[0].id
   );
 
+  /** Gets the current content of the .env file */
+  const currentEnv = require('dotenv').config().parsed;
+
+  currentEnv.DEV_ORGANIZATION_ID = organizationId;
+
+  /** Write the new .env file with the organization ID */
+  let stringifiedEnv = '';
+  Object.keys(currentEnv).forEach((key) => {
+    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
+  });
+  writeFileSync('.env', stringifiedEnv);
+
   /**
    * TEAMS
    */
@@ -262,18 +274,6 @@ const performSeed: () => Promise<void> = async () => {
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
   const slackBotTeam: Team = await prisma.team.create(dbSeedAllTeams.meanGirls(regina.userId, organizationId));
-
-  /** Gets the current content of the .env file */
-  const currentEnv = require('dotenv').config().parsed;
-
-  currentEnv.DEV_ORGANIZATION_ID = organizationId;
-
-  /** Write the new .env file with the organization ID */
-  let stringifiedEnv = '';
-  Object.keys(currentEnv).forEach((key) => {
-    stringifiedEnv += `${key}=${currentEnv[key]}\n`;
-  });
-  writeFileSync('.env', stringifiedEnv);
 
   /** Setting Team Members */
   await TeamsService.setTeamMembers(

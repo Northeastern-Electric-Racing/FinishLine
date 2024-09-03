@@ -59,7 +59,8 @@ describe('Team Type Tests', () => {
         name: 'teamType3',
         iconName: 'YouTubeIcon',
         organizationId: orgId,
-        teamTypeId: result.teamTypeId
+        teamTypeId: result.teamTypeId,
+        calendarId: null
       });
     });
   });
