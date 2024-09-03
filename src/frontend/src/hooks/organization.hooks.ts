@@ -25,9 +25,9 @@ export const useProvideOrganization = (): OrganizationProvider => {
 export const useSetOrganizationImages = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<any, Error, Express.Multer.File[]>(
-    async (images: Express.Multer.File[]) => {
-      const { data } = await setOrganizationImages(images); 
+  return useMutation<any, unknown, File[]>(
+    async (images: File[]) => {
+      const { data } = await setOrganizationImages(images);
       return data;
     },
     {
@@ -37,6 +37,7 @@ export const useSetOrganizationImages = () => {
     }
   );
 };
+
 
 // Hook for child components to get the auth object
 export const useOrganization = () => {
