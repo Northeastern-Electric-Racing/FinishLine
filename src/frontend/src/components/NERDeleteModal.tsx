@@ -1,43 +1,21 @@
-import { ReactNode } from 'react';
-import { FieldValues, UseFormReset, useForm, SubmitHandler } from 'react-hook-form';
-import NERModal, { NERModalProps } from './NERModal';
-import NERFormModal from './NERFormModal';
+import React from 'react';
+import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import { Typography } from '@mui/material';
-import schema from 'yup/lib/schema';
+import NERFormModal from './NERFormModal';
+import NERModal, { NERModalProps } from './NERModal';
 
 interface NERDeleteModalProps<T extends FieldValues> extends NERModalProps {
-  reset: UseFormReset<T>;
   onFormSubmit: (data: T) => void;
-  deleteHook: () => Promise<void>;
-  children?: ReactNode;
+  children?: React.ReactNode;
   title: string;
-  item: any;
 }
 
-const NERDeleteModal = ({
-  open,
-  onHide,
-  title,
-  reset,
-  onFormSubmit,
-  deleteHook,
-  disabled,
-}: NERDeleteModalProps<any>) => {
-  // Initialize useForm
-  const {
-    handleSubmit,
-    control,
-    formState: { errors, isValid }
-  } = useForm({
+const NERDeleteModal = ({ open, onHide, title, onFormSubmit }: NERDeleteModalProps<any>) => {
+  const { handleSubmit, reset } = useForm({
     mode: 'onChange'
   });
 
-  /**
-   * Wrapper function for onSubmit so that form data is reset after submit
-   */
   const onSubmitWrapper: SubmitHandler<any> = async (data: any) => {
-    await deleteHook();
-
     await onFormSubmit(data);
   };
 
@@ -46,16 +24,12 @@ const NERDeleteModal = ({
       open={open}
       onHide={onHide}
       title={`Delete ${title}`}
-      reset={reset}
       onFormSubmit={onSubmitWrapper}
       handleUseFormSubmit={handleSubmit}
+      reset={reset}
       formId="delete-cr-form"
-      disabled={disabled}
-      showCloseButton
     >
-      <Typography sx={{ marginBottom: '1rem' }}>
-        Are you sure you want to delete {title}?
-      </Typography>
+      <Typography sx={{ marginBottom: '1rem' }}>Are you sure you want to delete this {title}?</Typography>
       <Typography sx={{ fontWeight: 'bold' }}>This action cannot be undone!</Typography>
     </NERFormModal>
   );

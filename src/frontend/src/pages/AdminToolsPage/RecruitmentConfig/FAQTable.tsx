@@ -8,11 +8,26 @@ import { NERButton } from '../../../components/NERButton';
 import { useHistoryState } from '../../../hooks/misc.hooks';
 import NERDeleteModal from '../../../components/NERDeleteModal';
 import { useDeleteFAQ } from '../../../hooks/recruitment.hooks';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const FAQsTable = () => {
   // State to manage the deletion modal and the selected FAQ
   const [deleteModalShow, setDeleteModalShow] = useHistoryState<boolean>('', false);
-  const [faqToDelete, setFaqToDelete] = useState<FrequentlyAskedQuestion | null>(null);
+  const [faqToDelete, setFaqToDelete] = useState<FrequentlyAskedQuestion | undefined>(undefined);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { mutateAsync: deleteFaq } = useDeleteFAQ();
+  const toast = useToast();
+
+
+  const handleDelete = (id: string) => {
+    try {
+      deleteFaq(id);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
 
   // Placeholder data until endpoints are completed
   const faqs: FrequentlyAskedQuestion[] = [
@@ -112,18 +127,20 @@ const FAQsTable = () => {
           Add FAQ
         </NERButton>
       </Box>
-      {deleteModalShow && faqToDelete && (
-        <NERDeleteModal
-        open={deleteModalShow}
-        onHide={closeModal}
-        formId="delete-item-form"
-        title="Item"
-        reset={reset}
-        onFormSubmit={handleFormSubmit}
-        deleteHook={handleDelete}
-        item={itemToDelete} // Pass the item to be deleted
-        disabled={!isValid}
-      />
+      {faqToDelete && (
+       <NERDeleteModal
+       open={deleteModalShow}
+       onHide={() => setFaqToDelete(undefined)}
+       formId="delete-item-form"
+       title="FAQ"
+       onFormSubmit={() => {
+        console.log(faqToDelete)
+         if (faqToDelete) {
+           handleDelete(faqToDelete.faqId);
+         }
+       }}
+     />
+     
       )}
     </Box>
   );

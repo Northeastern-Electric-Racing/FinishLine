@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Milestone } from 'shared/src/types/milestone-types';
-import { createMilestone, deleteMilestone, editMilestone, getAllMilestones } from '../apis/recruitment.api';
+import { createMilestone, deleteFaq, deleteMilestone, editMilestone, getAllMilestones } from '../apis/recruitment.api';
 
 export interface MilestonePayload {
   name: string;
@@ -33,8 +33,8 @@ export const useDeleteFAQ = () => {
   const queryClient = useQueryClient();
   return useMutation<{ message: string }, Error, any>(
     ['faqs', 'delete'],
-    async (milestoneId: string) => {
-      const { data } = await deleteFaq(milestoneId);
+    async (faqId: string) => {
+      const { data } = await deleteFaq(faqId);
       return data;
     },
     {
