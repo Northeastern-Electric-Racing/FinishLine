@@ -30,22 +30,6 @@ export const useAllMilestones = () => {
   });
 };
 
-export const useDeleteMilestone = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
-    ['milestones', 'delete'],
-    async (milestoneId: string) => {
-      const { data } = await deleteMilestone(milestoneId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['milestones']);
-      }
-    }
-  );
-};
-
 export const useCreateMilestone = () => {
   const queryClient = useQueryClient();
   return useMutation<Milestone, Error, MilestonePayload>(
@@ -68,6 +52,22 @@ export const useEditMilestone = (id: string) => {
     ['milestones', 'edit'],
     async (payload) => {
       const { data } = await editMilestone(payload, id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['milestones']);
+      }
+    }
+  );
+};
+
+export const useDeleteMilestone = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['milestones', 'delete'],
+    async (milestoneId: string) => {
+      const { data } = await deleteMilestone(milestoneId);
       return data;
     },
     {
