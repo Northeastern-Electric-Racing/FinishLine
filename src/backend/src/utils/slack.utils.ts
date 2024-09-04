@@ -125,8 +125,6 @@ export const sendReimbursementRequestCreatedNotificationAndCreateMessageInfo = a
 
   if (!financeTeam) throw new HttpException(500, 'Finance team does not exist!');
 
-  console.log(financeTeam.slackId);
-
   try {
     const messageInfo = await sendMessage(financeTeam.slackId, msg, link, linkButtonText);
     if (!messageInfo) return; // Not on prod
