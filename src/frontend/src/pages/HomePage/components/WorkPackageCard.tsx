@@ -12,8 +12,8 @@ import {
   useTheme
 } from '@mui/material';
 import { wbsPipe, WorkPackage } from 'shared';
-import { datePipe, fullNamePipe, projectWbsPipe } from '../../utils/pipes';
-import { routes } from '../../utils/routes';
+import { datePipe, fullNamePipe, projectWbsPipe } from '../../../utils/pipes';
+import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 
 export const CircularProgressWithLabel = (props: CircularProgressProps & { value: number }) => {

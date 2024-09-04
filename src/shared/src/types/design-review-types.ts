@@ -17,6 +17,7 @@ export interface DesignReview {
   isOnline: boolean;
   isInPerson: boolean;
   zoomLink?: string;
+  calendarEventId?: string;
   attendees: User[];
   dateDeleted?: Date;
   userDeleted?: User;
@@ -37,6 +38,7 @@ export interface TeamType {
   teamTypeId: string;
   name: string;
   iconName: string;
+  calendarId?: string | null;
 }
 
 export interface AvailabilityCreateArgs {

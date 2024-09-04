@@ -10,7 +10,7 @@ import { datePipe, fullNamePipe } from '../../../utils/pipes';
 import { mockUseQueryResult } from '../../test-support/test-data/test-utils.stub';
 import { exampleAllWorkPackages } from '../../test-support/test-data/work-packages.stub';
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
-import WorkPackagesByTimelineStatus from '../../../pages/HomePage/WorkPackagesByTimelineStatus';
+import WorkPackagesByTimelineStatus from '../../../pages/HomePage/components/WorkPackagesByTimelineStatus';
 
 vi.mock('../../../hooks/work-packages.hooks');
 
