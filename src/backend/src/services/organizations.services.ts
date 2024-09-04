@@ -1,7 +1,7 @@
-import { User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -16,18 +16,19 @@ export default class OrganizationsService {
    * @param links the links which are being set
    */
   static async setUsefulLinks(submitter: User, organizationId: string, links: LinkCreateArgs[]) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('update useful links');
-
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      select: { usefulLinks: { select: { linkId: true } } }
+      include: { usefulLinks: true }
     });
 
     if (!organization) {
-      throw new HttpException(400, `Organization with id ${organizationId} doesn't exist`);
+      throw new NotFoundException('Organization', organizationId);
     }
-    const currentLinkIds = organization?.usefulLinks.map((link) => link.linkId);
+
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update useful links');
+
+    const currentLinkIds = organization.usefulLinks.map((link) => link.linkId);
 
     // deleting all current useful links so they are empty before repopulating
     await prisma.link.deleteMany({
@@ -36,7 +37,7 @@ export default class OrganizationsService {
       }
     });
 
-    const newLinks = await createUsefulLinks(links, organizationId, submitter);
+    const newLinks = await createUsefulLinks(links, organization.organizationId, submitter);
 
     const newLinkIds = newLinks.map((link) => {
       return { linkId: link.linkId };
@@ -45,7 +46,7 @@ export default class OrganizationsService {
     // setting the useful links to the newly created ones
     await prisma.organization.update({
       where: {
-        organizationId
+        organizationId: organization.organizationId
       },
       data: {
         usefulLinks: {
@@ -67,16 +68,16 @@ export default class OrganizationsService {
     applyInterestImage: Express.Multer.File,
     exploreAsGuestImage: Express.Multer.File,
     submitter: User,
-    organizationId: string
+    organization: Organization
   ) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update images');
 
     const applyInterestImageData = uploadFile(applyInterestImage);
     const exploreAsGuestImageData = uploadFile(exploreAsGuestImage);
 
     const newImages = await prisma.organization.update({
-      where: { organizationId },
+      where: { organizationId: organization.organizationId },
       data: {
         applyInterestImageId: (await applyInterestImageData).id,
         exploreAsGuestImageId: (await exploreAsGuestImageData).id
@@ -94,7 +95,7 @@ export default class OrganizationsService {
   static async getAllUsefulLinks(organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      select: { usefulLinks: { select: { linkId: true } } }
+      include: { usefulLinks: true }
     });
 
     if (!organization) {
@@ -105,8 +106,29 @@ export default class OrganizationsService {
       where: {
         linkId: { in: organization.usefulLinks.map((link) => link.linkId) }
       },
-      ...getLinkQueryArgs(organizationId)
+      ...getLinkQueryArgs(organization.organizationId)
     });
     return links.map(linkTransformer);
+  }
+
+  /**
+   * Gets all organization Images for the given organization Id
+   * @param organizationId organization Id of the milestone
+   * @returns all the milestones from the given organization
+   */
+
+  static async getOrganizationImages(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return {
+      applyInterestImage: organization.applyInterestImageId,
+      exploreAsGuestImage: organization.exploreAsGuestImageId
+    };
   }
 }

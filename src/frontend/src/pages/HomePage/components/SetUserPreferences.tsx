@@ -10,13 +10,13 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { useForm } from 'react-hook-form';
 import { UserSettings } from 'shared';
-import ExternalLink from '../../components/ExternalLink';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import NERSuccessButton from '../../components/NERSuccessButton';
-import ReactHookTextField from '../../components/ReactHookTextField';
-import { useToast } from '../../hooks/toasts.hooks';
-import { useUpdateUserSettings } from '../../hooks/users.hooks';
-import ErrorPage from '../ErrorPage';
+import ExternalLink from '../../../components/ExternalLink';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import NERSuccessButton from '../../../components/NERSuccessButton';
+import ReactHookTextField from '../../../components/ReactHookTextField';
+import { useToast } from '../../../hooks/toasts.hooks';
+import { useUpdateUserSettings } from '../../../hooks/users.hooks';
+import ErrorPage from '../../ErrorPage';
 
 interface SetUserPreferencesProps {
   userSettings: UserSettings;

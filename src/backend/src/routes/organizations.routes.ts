@@ -17,4 +17,5 @@ organizationRouter.post(
   OrganizationsController.setImages
 );
 
+organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
 export default organizationRouter;

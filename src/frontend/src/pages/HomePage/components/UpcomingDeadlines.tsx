@@ -10,10 +10,10 @@ import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import { WbsElementStatus, wbsPipe } from 'shared';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import PageBlock from '../../layouts/PageBlock';
-import ErrorPage from '../ErrorPage';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import PageBlock from '../../../layouts/PageBlock';
+import ErrorPage from '../../ErrorPage';
 import { Typography, useTheme } from '@mui/material';
 import WorkPackageCard from './WorkPackageCard';
 

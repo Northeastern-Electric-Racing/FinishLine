@@ -708,6 +708,7 @@ model Team_Type {
   team           Team[]
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
+  calendarId     String?
 
   @@unique([name, organizationId], name: "uniqueTeamType")
 }
@@ -740,6 +741,7 @@ model Design_Review {
   wbsElementId             String
   wbsElement               WBS_Element          @relation(fields: [wbsElementId], references: [wbsElementId])
   notificationSlackThreads Message_Info[]
+  calendarEventId          String?
 }
 
 model Availability {
@@ -890,7 +892,7 @@ model Organization {
 }
 
 model FrequentlyAskedQuestion {
-  frequentlyAskedQuestionId String       @id @default(uuid())
+  faqId String       @id @default(uuid())
   question                  String
   answer                    String
   userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
