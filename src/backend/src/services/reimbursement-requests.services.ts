@@ -558,7 +558,7 @@ export default class ReimbursementRequestService {
     if (existingVendor && existingVendor.dateDeleted) {
       await prisma.vendor.update({
         where: { vendorId: existingVendor.vendorId },
-        data: { dateDeleted: null },
+        data: { dateDeleted: null }
       });
       return existingVendor;
     } else if (existingVendor) throw new HttpException(400, 'This vendor already exists');
@@ -1132,7 +1132,8 @@ export default class ReimbursementRequestService {
       where: { reimbursementRequestId },
       include: {
         reimbursementStatuses: true,
-        notificationSlackThreads: true
+        notificationSlackThreads: true,
+        receiptPictures: true
       }
     });
 
@@ -1157,6 +1158,17 @@ export default class ReimbursementRequestService {
 
     if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
       throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    if (reimbursementRequest.receiptPictures.length === 0) {
+      throw new HttpException(
+        400,
+        'At least one receipt picture is required to mark a reimbursement request as pending finance'
+      );
+    }
+
+    if (!reimbursementRequest.dateOfExpense) {
+      throw new HttpException(400, 'Date of expense is required to mark a reimbursement request as pending finance');
     }
 
     const updatedReimbursementStatus = await prisma.reimbursement_Status.create({

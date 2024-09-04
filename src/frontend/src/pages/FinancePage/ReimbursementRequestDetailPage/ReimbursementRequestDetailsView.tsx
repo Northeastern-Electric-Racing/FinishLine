@@ -55,6 +55,7 @@ import ReimbursementProductsView from './ReimbursementProductsView';
 import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
+import CheckList from '../../../components/CheckList';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -164,6 +165,12 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
 
   const handleMarkPendingFinance = async () => {
     try {
+      if (reimbursementRequest.receiptPictures.length === 0) {
+        throw new Error('Please upload at least one receipt before marking as pending finance');
+      }
+      if (!reimbursementRequest.dateOfExpense) {
+        throw new Error('Please enter a date of expense before marking as pending finance');
+      }
       await markPendingFinance();
       setShowMarkPendingFinanceModal(false);
     } catch (e: unknown) {
@@ -266,6 +273,50 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       submitText="Yes"
       onSubmit={handleMarkPendingFinance}
     >
+      <CheckList
+        title="Finance Checklist"
+        items={[
+          {
+            resolved: false,
+            detail:
+              'I certify my receipts with expenses greater than $75 include an itemixed description of goods or service purchased.',
+            id: '1'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the vendor's name (for ex. Amazon, stop and shop, Target).`,
+            id: '2'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts includes a Transaction Date for each expense.`,
+            id: '3'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the amount paid for each expense.`,
+            id: '4'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the form of payment for each expense (Cash, check or last four digits of credit card).`,
+            id: '5'
+          },
+          {
+            resolved: false,
+            detail: `This reimbursement request is "NOT" for a faculty or full-time staff member.`,
+            id: '6'
+          },
+          {
+            resolved: false,
+            detail: `The reimbursement does not include sales tax unless it is for a prepared meal or hotel.`,
+            id: '7'
+          }
+        ]}
+        isDisabled={false}
+        checkDescriptionBullets={false}
+      />
+
       <Typography>Are you sure you want to mark this reimbursement request as pending finance?</Typography>
     </NERModal>
   );
@@ -412,7 +463,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Mark Pending Finance',
       onClick: () => setShowMarkPendingFinanceModal(true),
       icon: <Pending />,
-      disabled: user.userId !== reimbursementRequest.recipient.userId || isPendingFinance
+      disabled: user.userId !== reimbursementRequest.recipient.userId || isPendingFinance || !isLeadershipApproved
     },
     {
       title: 'Request Changes',

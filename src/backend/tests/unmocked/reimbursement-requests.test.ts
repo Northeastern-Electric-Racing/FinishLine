@@ -1,17 +1,12 @@
 import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
 import { AccessDeniedException } from '../../src/utils/errors.utils';
-import {
-  createTestReimbursementRequest,
-  createTestUser,
-  resetUsers
-} from '../test-utils';
+import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
 import { ClubAccount, ReimbursementRequest } from 'shared';
 import { Account_Code, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
-
 
 describe('Reimbursement Requests', () => {
   let orgId: string;
@@ -126,6 +121,7 @@ describe('Reimbursement Requests', () => {
       expect(rr.totalCost).toEqual(100);
       expect(rr.reimbursementStatuses).toHaveLength(1);
       expect(rr.reimbursementStatuses[0].type).toEqual('PENDING_LEADERSHIP_APPROVAL');
+      expect(rr.identifier).toEqual(2);
     });
 
     test('Creating a Reimbursement Request Succeeds with a date', async () => {
@@ -167,6 +163,7 @@ describe('Reimbursement Requests', () => {
       expect(rr.totalCost).toEqual(100);
       expect(rr.reimbursementStatuses).toHaveLength(1);
       expect(rr.reimbursementStatuses[0].type).toEqual('PENDING_LEADERSHIP_APPROVAL');
+      expect(rr.identifier).toEqual(2);
     });
   });
 });
