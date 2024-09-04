@@ -10,6 +10,7 @@ import { TeamType } from 'shared';
 import { CreateTeamTypePayload } from '../../../hooks/team-types.hooks';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
+import { useEffect } from 'react';
 
 interface TeamTypeFormModalProps {
   open: boolean;
@@ -52,6 +53,14 @@ const TeamTypeFormModal: React.FC<TeamTypeFormModalProps> = ({ open, handleClose
     watch,
     setValue
   });
+
+  useEffect(() => {
+    reset({
+      name: defaultValues?.name ?? '',
+      iconName: defaultValues?.iconName ?? '',
+      description: defaultValues?.description ?? ''
+    });
+  }, [defaultValues, reset]);
 
   const TooltipMessage = () => (
     <Typography sx={{ fontSize: 14 }}>

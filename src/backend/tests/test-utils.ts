@@ -385,13 +385,7 @@ export const createTestDesignReview = async () => {
   if (!lead) throw new Error('Failed to find user');
   await createTestProject(head, organization.organizationId);
 
-  const teamType = await TeamsService.createTeamType(
-    head,
-    'Team1',
-    'Software',
-    'Software team',
-    organization
-  );
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', 'Software team', organization);
 
   const { designReviewId } = await DesignReviewsService.createDesignReview(
     lead,
