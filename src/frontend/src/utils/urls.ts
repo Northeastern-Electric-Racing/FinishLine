@@ -117,6 +117,8 @@ const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/deli
 const financeMarkAsReimbursed = (id: string) => `${financeEndpoints()}/${id}/reimbursed`;
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
+const financeMarkPending = (id: string) => `${financeEndpoints()}/${id}/pending-finance`;
+const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/request-changes`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
@@ -267,6 +269,8 @@ export const apiUrls = {
   financeMarkAsReimbursed,
   financeApproveReimbursementRequest,
   financeDenyReimbursementRequest,
+  financeMarkPending,
+  financeRequestChanges,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditAccountCode,

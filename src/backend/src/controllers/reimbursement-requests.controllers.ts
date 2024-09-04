@@ -75,14 +75,14 @@ export default class ReimbursementRequestsController {
 
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
-        dateOfExpense,
         vendorId,
         account,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
         totalCost,
-        organizationId
+        organizationId,
+        dateOfExpense
       );
       res.status(200).json(createdReimbursementRequest);
     } catch (error: unknown) {
@@ -121,7 +121,6 @@ export default class ReimbursementRequestsController {
 
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
-        dateOfExpense,
         vendorId,
         account,
         accountCodeId,
@@ -130,7 +129,8 @@ export default class ReimbursementRequestsController {
         wbsReimbursementProducts,
         receiptPictures,
         user,
-        organizationId
+        organizationId,
+        dateOfExpense
       );
       res.status(200).json(updatedReimbursementRequestId);
     } catch (error: unknown) {
@@ -460,6 +460,36 @@ export default class ReimbursementRequestsController {
 
       const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, submitter, organizationId);
       res.status(200).json(deletedVendor);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsPendingFinance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const updatedRequest = await ReimbursementRequestService.markPendingFinance(user, requestId, organizationId);
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async requestReimbursementRequestChanges(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+      const user = await getCurrentUser(res);
+      const organizationId = getOrganizationId(req.headers);
+
+      const updatedRequest = await ReimbursementRequestService.financeRequestReimbursementRequestChanges(
+        user,
+        requestId,
+        organizationId
+      );
+      res.status(200).json(updatedRequest);
     } catch (error: unknown) {
       next(error);
     }
