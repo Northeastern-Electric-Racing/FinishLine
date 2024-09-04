@@ -6,11 +6,11 @@
 import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import { TimelineStatus, WbsElementStatus, wbsPipe } from 'shared';
-import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
-import { timelinePipe } from '../../utils/pipes';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import PageBlock from '../../layouts/PageBlock';
-import ErrorPage from '../ErrorPage';
+import { useAllWorkPackages } from '../../../hooks/work-packages.hooks';
+import { timelinePipe } from '../../../utils/pipes';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import PageBlock from '../../../layouts/PageBlock';
+import ErrorPage from '../../ErrorPage';
 import { FormControl, InputLabel, MenuItem, Select, useTheme } from '@mui/material';
 import WorkPackageCard from './WorkPackageCard';
 

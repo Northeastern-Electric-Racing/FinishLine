@@ -177,6 +177,15 @@ const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
 
+/************** Recruitment Endpoints ***************/
+const recruitment = () => `${API_URL}/recruitment`;
+const allMilestones = () => `${recruitment()}/milestones`;
+const milestoneCreate = () => `${recruitment()}/milestone/create`;
+const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
+const allFaqs = () => `${recruitment()}/faqs`;
+const faqCreate = () => `${recruitment()}/faq/create`;
+const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -318,5 +327,13 @@ export const apiUrls = {
 
   cars,
   carsCreate,
+  recruitment,
+  allMilestones,
+  milestoneCreate,
+  milestoneEdit,
+  allFaqs,
+  faqCreate,
+  faqEdit,
+
   version
 };

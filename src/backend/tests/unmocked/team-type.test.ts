@@ -1,3 +1,4 @@
+import { Organization } from '@prisma/client';
 import TeamsService from '../../src/services/teams.services';
 import {
   AccessDeniedAdminOnlyException,
@@ -15,8 +16,10 @@ vi.mock('../../src/utils/google-integration.utils', () => ({
 
 describe('Team Type Tests', () => {
   let orgId: string;
+  let organization: Organization;
   beforeEach(async () => {
-    orgId = (await createTestOrganization()).organizationId;
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
   });
 
   afterEach(async () => {
@@ -32,13 +35,21 @@ describe('Team Type Tests', () => {
             'Team 2',
             'Warning icon',
             '',
-            orgId
+            organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a team type'));
     });
 
     it('Create team type fails if there is already another team type with the same name', async () => {
-      await TeamsService.createTeamType(await createTestUser(supermanAdmin, orgId), 'teamType1', 'YouTubeIcon', '', orgId);
+
+      await TeamsService.createTeamType(
+        await createTestUser(supermanAdmin, orgId),
+        'teamType1',
+        'YouTubeIcon',
+        '',
+        organization
+      );
+
       await expect(
         async () =>
           await TeamsService.createTeamType(
@@ -46,7 +57,7 @@ describe('Team Type Tests', () => {
             'teamType1',
             'Warning icon',
             '',
-            orgId
+            organization
           )
       ).rejects.toThrow(new HttpException(400, 'Cannot create a teamType with a name that already exists'));
     });
@@ -57,7 +68,7 @@ describe('Team Type Tests', () => {
         'teamType3',
         'YouTubeIcon',
         '',
-        orgId
+        organization
       );
 
       expect(result).toEqual({
@@ -66,7 +77,8 @@ describe('Team Type Tests', () => {
         description: '',
         imageFileId: null,
         organizationId: orgId,
-        teamTypeId: result.teamTypeId
+        teamTypeId: result.teamTypeId,
+        calendarId: null
       });
     });
   });
@@ -78,16 +90,16 @@ describe('Team Type Tests', () => {
         'teamType1',
         'YouTubeIcon',
         '',
-        orgId
+        organization
       );
       const teamType2 = await TeamsService.createTeamType(
         await createTestUser(batmanAppAdmin, orgId),
         'teamType2',
         'WarningIcon',
         '',
-        orgId
+        organization
       );
-      const result = await TeamsService.getAllTeamTypes(orgId);
+      const result = await TeamsService.getAllTeamTypes(organization);
       expect(result).toStrictEqual([teamType1, teamType2]);
     });
   });
@@ -99,15 +111,15 @@ describe('Team Type Tests', () => {
         'teamType1',
         'YouTubeIcon',
         '',
-        orgId
+        organization
       );
-      const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId, orgId);
+      const result = await TeamsService.getSingleTeamType(teamType1.teamTypeId, organization);
       expect(result).toStrictEqual(teamType1);
     });
 
     it('Get a single team type fails', async () => {
       const nonExistingTeamTypeId = 'nonExistingId';
-      await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId, orgId)).rejects.toThrow(
+      await expect(async () => TeamsService.getSingleTeamType(nonExistingTeamTypeId, organization)).rejects.toThrow(
         new NotFoundException('Team Type', nonExistingTeamTypeId)
       );
     });
@@ -148,7 +160,7 @@ describe('Team Type Tests', () => {
         'teamType1',
         'YouTubeIcon',
         '',
-        orgId
+        organization
       );
       const updatedTeamType = await TeamsService.editTeamType(
         await createTestUser(batmanAppAdmin, orgId),
@@ -156,7 +168,7 @@ describe('Team Type Tests', () => {
         'new name',
         'new icon',
         'new description',
-        orgId
+        organization
       );
       expect(updatedTeamType.name).toBe('new name');
       expect(updatedTeamType.iconName).toBe('new icon');

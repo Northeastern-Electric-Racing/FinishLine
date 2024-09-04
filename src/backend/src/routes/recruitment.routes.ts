@@ -17,8 +17,6 @@ recruitmentRouter.post(
   RecruitmentController.createMilestone
 );
 
-recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController.deleteMilestone);
-
 recruitmentRouter.post(
   '/milestone/:milestoneId/edit',
   nonEmptyString(body('name')),
@@ -28,7 +26,12 @@ recruitmentRouter.post(
   RecruitmentController.editMilestone
 );
 
+recruitmentRouter.delete('/milestone/:milestoneId/delete', RecruitmentController.deleteMilestone);
+
 /* FAQ Section */
+
+recruitmentRouter.get('/faqs', RecruitmentController.getAllFaqs);
+
 recruitmentRouter.post(
   '/faq/create',
   nonEmptyString(body('question')),
@@ -41,7 +44,10 @@ recruitmentRouter.post(
   '/faq/:faqId/edit',
   nonEmptyString(body('question')),
   nonEmptyString(body('answer')),
+  validateInputs,
   RecruitmentController.editFAQ
 );
+
+recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
 
 export default recruitmentRouter;
