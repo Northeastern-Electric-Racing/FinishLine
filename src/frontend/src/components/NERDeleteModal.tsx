@@ -2,7 +2,7 @@ import React from 'react';
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import { Typography } from '@mui/material';
 import NERFormModal from './NERFormModal';
-import NERModal, { NERModalProps } from './NERModal';
+import { NERModalProps } from './NERModal';
 
 interface NERDeleteModalProps<T extends FieldValues> extends NERModalProps {
   onFormSubmit: (data: T) => void;
