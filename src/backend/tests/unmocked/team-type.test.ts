@@ -10,9 +10,14 @@ import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/us
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import { vi } from 'vitest';
 
-vi.mock('../../src/utils/google-integration.utils', () => ({
-  uploadFile: vi.fn()
-}));
+vi.mock('../../src/utils/google-integration.utils', async () => {
+  const actual = await vi.importActual('../../src/utils/google-integration.utils');
+  return {
+    actual,
+    uploadFile: vi.fn(),
+    createCalendar: vi.fn().mockResolvedValue('mocked-calendar-id')
+  };
+});
 
 describe('Team Type Tests', () => {
   let orgId: string;
@@ -77,7 +82,7 @@ describe('Team Type Tests', () => {
         imageFileId: null,
         organizationId: orgId,
         teamTypeId: result.teamTypeId,
-        calendarId: null
+        calendarId: 'mocked-calendar-id'
       });
     });
   });
