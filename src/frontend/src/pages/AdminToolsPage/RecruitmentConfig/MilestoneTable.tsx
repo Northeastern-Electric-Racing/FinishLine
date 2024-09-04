@@ -34,7 +34,6 @@ const MilestoneTable = () => {
   };
 
   const [milestoneToDelete, setMilestoneToDelete] = useState<Milestone | undefined>(undefined);
-  const [deleteModalShow, setDeleteModalShow] = useHistoryState<boolean>('', false);
   const { mutateAsync: deleteMilestone } = useDeleteMilestone();
   const toast = useToast();
 
@@ -79,7 +78,6 @@ const MilestoneTable = () => {
             sx={{ p: 0.5, color: 'white' }}
             onClick={() => {
               setMilestoneToDelete(milestone);
-              setDeleteModalShow(true);
             }}
           >
             <DeleteIcon />
@@ -142,14 +140,14 @@ const MilestoneTable = () => {
         </NERButton>
       </Box>
       <NERDeleteModal
-        open={deleteModalShow}
+        open={milestoneToDelete !== undefined}
         onHide={() => setMilestoneToDelete(undefined)}
         formId="delete-item-form"
         title="Milestone"
         onFormSubmit={() => {
           if (milestoneToDelete) {
             handleDelete(milestoneToDelete.milestoneId);
-            setDeleteModalShow(false);
+            setMilestoneToDelete(undefined);
           }
         }}
       />

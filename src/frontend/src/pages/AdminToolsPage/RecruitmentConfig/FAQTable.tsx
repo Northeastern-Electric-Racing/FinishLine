@@ -17,7 +17,6 @@ const FAQsTable = () => {
   const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
   const [faqEditing, setFaqEditing] = useHistoryState<FrequentlyAskedQuestion | undefined>('', undefined);
   const [faqToDelete, setFaqToDelete] = useState<FrequentlyAskedQuestion | undefined>(undefined);
-  const [deleteModalShow, setDeleteModalShow] = useHistoryState<boolean>('', false);
   const { mutateAsync: deleteFaq } = useDeleteFAQ();
   const toast = useToast();
 
@@ -65,7 +64,6 @@ const FAQsTable = () => {
             sx={{ p: 0.5, color: 'white' }}
             onClick={() => {
               setFaqToDelete(faq);
-              setDeleteModalShow(true);
             }}
           >
             <DeleteIcon />
@@ -113,7 +111,7 @@ const FAQsTable = () => {
         <NERButton
           variant="contained"
           onClick={() => {
-            // setCreateModalShow(true);
+            setCreateModalShow(true);
           }}
         >
           Add FAQ
@@ -121,14 +119,14 @@ const FAQsTable = () => {
       </Box>
       {faqToDelete && (
         <NERDeleteModal
-          open={deleteModalShow}
+          open={faqToDelete !== undefined}
           onHide={() => setFaqToDelete(undefined)}
           formId="delete-item-form"
           title="FAQ"
           onFormSubmit={() => {
             if (faqToDelete) {
               handleDelete(faqToDelete.faqId);
-              setDeleteModalShow(false);
+              setFaqToDelete(undefined);
             }
           }}
         />

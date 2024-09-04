@@ -46,22 +46,6 @@ export const useDeleteMilestone = () => {
   );
 };
 
-export const useDeleteFAQ = () => {
-  const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, any>(
-    ['faqs', 'delete'],
-    async (faqId: string) => {
-      const { data } = await deleteFaq(faqId);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['faqs']);
-      }
-    }
-  );
-};
-
 export const useCreateMilestone = () => {
   const queryClient = useQueryClient();
   return useMutation<Milestone, Error, MilestonePayload>(
@@ -123,6 +107,22 @@ export const useEditFaq = (id: string) => {
     ['faqs', 'edit'],
     async (payload) => {
       const { data } = await editFaq(payload, id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['faqs']);
+      }
+    }
+  );
+};
+
+export const useDeleteFAQ = () => {
+  const queryClient = useQueryClient();
+  return useMutation<{ message: string }, Error, any>(
+    ['faqs', 'delete'],
+    async (faqId: string) => {
+      const { data } = await deleteFaq(faqId);
       return data;
     },
     {

@@ -6,7 +6,6 @@ import { NERModalProps } from './NERModal';
 
 interface NERDeleteModalProps<T extends FieldValues> extends NERModalProps {
   onFormSubmit: (data: T) => void;
-  children?: React.ReactNode;
   title: string;
 }
 
