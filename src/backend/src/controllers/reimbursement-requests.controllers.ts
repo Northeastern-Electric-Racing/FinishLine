@@ -416,7 +416,11 @@ export default class ReimbursementRequestsController {
     try {
       const { requestId } = req.params;
 
-      const updatedRequest = await ReimbursementRequestService.markPendingFinance(req.currentUser, requestId, req.organization);
+      const updatedRequest = await ReimbursementRequestService.markPendingFinance(
+        req.currentUser,
+        requestId,
+        req.organization
+      );
       res.status(200).json(updatedRequest);
     } catch (error: unknown) {
       next(error);

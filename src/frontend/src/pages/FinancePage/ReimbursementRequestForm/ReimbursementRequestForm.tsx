@@ -95,7 +95,7 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
       account: defaultValues?.account,
-      dateOfExpense: defaultValues?.dateOfExpense ,
+      dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])

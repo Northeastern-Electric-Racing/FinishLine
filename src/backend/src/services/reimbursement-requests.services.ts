@@ -1142,7 +1142,7 @@ export default class ReimbursementRequestService {
   static async markPendingFinance(
     user: User,
     reimbursementRequestId: string,
-    organizationId: string
+    organization: Organization
   ): Promise<ReimbursementStatus> {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -1157,10 +1157,10 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
-    if (reimbursementRequest.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
-    await validateUserEditRRPermissions(user, reimbursementRequest, organizationId);
+    await validateUserEditRRPermissions(user, reimbursementRequest, organization.organizationId);
 
     if (
       reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
@@ -1193,7 +1193,7 @@ export default class ReimbursementRequestService {
         type: ReimbursementStatusType.PENDING_FINANCE,
         userId: user.userId
       },
-      ...getReimbursementStatusQueryArgs(organizationId)
+      ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
     await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads);
@@ -1204,7 +1204,7 @@ export default class ReimbursementRequestService {
   static async financeRequestReimbursementRequestChanges(
     user: User,
     reimbursementRequestId: string,
-    organizationId: string
+    organization: Organization
   ): Promise<ReimbursementStatus> {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
@@ -1218,10 +1218,10 @@ export default class ReimbursementRequestService {
     if (reimbursementRequest.dateDeleted) {
       throw new DeletedException('Reimbursement Request', reimbursementRequestId);
     }
-    if (reimbursementRequest.organizationId !== organizationId)
+    if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
 
-    await validateUserEditRRPermissions(user, reimbursementRequest, organizationId);
+    await validateUserEditRRPermissions(user, reimbursementRequest, organization.organizationId);
 
     if (
       reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
@@ -1247,7 +1247,7 @@ export default class ReimbursementRequestService {
       where: {
         reimbursementStatusId: pendingFinanceStatus.reimbursementStatusId
       },
-      ...getReimbursementStatusQueryArgs(organizationId)
+      ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
 
     await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads);

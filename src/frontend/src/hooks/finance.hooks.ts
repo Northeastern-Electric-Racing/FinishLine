@@ -543,7 +543,7 @@ export const useCreateVendor = () => {
 
 /**
  * Custom React Hook to mark a reimbursement request as pending finance
- * 
+ *
  * @param id The id of the reimbursement request to mark pending finance
  * @returns Mutation function with the ability to mark a rr as pending finance
  */
@@ -565,7 +565,7 @@ export const useMarkPendingFinance = (id: string) => {
 
 /**
  * Custom React Hook to request changes on a reimbursement request
- * 
+ *
  * @param id The id of the reimbursement request to request changes on
  * @returns Mutation function with the ability to mark a rr as requested changes
  */
