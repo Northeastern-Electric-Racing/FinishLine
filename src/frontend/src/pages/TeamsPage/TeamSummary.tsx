@@ -20,9 +20,13 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
 
   const projectsList = team.projects.map((project, idx) => (
     <React.Fragment key={project.name}>
-      <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
-        {project.name}
-      </Link>
+      {onPNMHomePage ? (
+        <Typography component="span">{project.name}</Typography>
+      ) : (
+        <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
+          {project.name}
+        </Link>
+      )}
       {idx + 1 !== team.projects.length ? ', ' : ''}
     </React.Fragment>
   ));
