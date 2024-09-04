@@ -463,11 +463,11 @@ export default class TeamsService {
     name: string,
     iconName: string,
     description: string,
-    organizationId: string
+    organization: Organization
   ): Promise<TeamType> {
     if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
 
-    if (!(await userHasPermission(user.userId, organizationId, isAdmin)))
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedException('you must be an admin to edit the team types description');
 
     const currentTeamType = await prisma.team_Type.findUnique({
@@ -531,7 +531,7 @@ export default class TeamsService {
     return teamTransformer(updatedTeam);
   }
 
-  static async setTeamTypeImage(submitter: User, teamTypeId: string, image: Express.Multer.File, organizationId: string) {
+  static async setTeamTypeImage(submitter: User, teamTypeId: string, image: Express.Multer.File, organization: ) {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('set a team types image');
     }

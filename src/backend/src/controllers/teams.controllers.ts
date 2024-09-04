@@ -169,16 +169,14 @@ export default class TeamsController {
   static async editTeamType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, iconName, description } = req.body;
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
 
       const teamType = await TeamsService.editTeamType(
-        user,
+        req.currentUser,
         req.params.teamTypeId,
         name,
         iconName,
         description,
-        organizationId
+        req.organization
       );
       res.status(200).json(teamType);
     } catch (error: unknown) {
@@ -190,10 +188,8 @@ export default class TeamsController {
     try {
       const { file } = req;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
 
-      const teamType = await TeamsService.setTeamTypeImage(user, req.params.teamTypeId, file, organizationId);
+      const teamType = await TeamsService.setTeamTypeImage(req.currentUser, req.params.teamTypeId, file, req.organization);
       res.status(200).json(teamType);
     } catch (error: unknown) {
       return next(error);
