@@ -390,7 +390,8 @@ export default class TeamsService {
     name: string,
     iconName: string,
     description: string,
-    organization: Organization
+    organization: Organization,
+    calendarId?: string
   ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a team type');
@@ -531,8 +532,13 @@ export default class TeamsService {
     return teamTransformer(updatedTeam);
   }
 
-  static async setTeamTypeImage(submitter: User, teamTypeId: string, image: Express.Multer.File, organization: ) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+  static async setTeamTypeImage(
+    submitter: User,
+    teamTypeId: string,
+    image: Express.Multer.File,
+    organization: Organization
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('set a team types image');
     }
 

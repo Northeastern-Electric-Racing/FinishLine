@@ -41,7 +41,6 @@ describe('Team Type Tests', () => {
     });
 
     it('Create team type fails if there is already another team type with the same name', async () => {
-
       await TeamsService.createTeamType(
         await createTestUser(supermanAdmin, orgId),
         'teamType1',
@@ -135,7 +134,7 @@ describe('Team Type Tests', () => {
             'new name',
             'new icon',
             'new description',
-            orgId
+            organization
           )
       ).rejects.toThrow(new AccessDeniedException('you must be an admin to edit the team types description'));
     });
@@ -149,7 +148,7 @@ describe('Team Type Tests', () => {
             'new name',
             'new icon',
             'a '.repeat(301),
-            orgId
+            organization
           )
       ).rejects.toThrow(new HttpException(400, 'Description must be less than 300 words'));
     });
