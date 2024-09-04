@@ -65,14 +65,14 @@ export default class ReimbursementRequestsController {
 
       const createdReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
         user,
-        dateOfExpense,
         vendorId,
         account,
         otherReimbursementProducts,
         wbsReimbursementProducts,
         accountCodeId,
         totalCost,
-        req.organization
+        req.organization,
+        dateOfExpense
       );
       return res.status(200).json(createdReimbursementRequest);
     } catch (error: unknown) {
@@ -111,7 +111,6 @@ export default class ReimbursementRequestsController {
 
       const updatedReimbursementRequestId = await ReimbursementRequestService.editReimbursementRequest(
         requestId,
-        dateOfExpense,
         vendorId,
         account,
         accountCodeId,
@@ -120,7 +119,8 @@ export default class ReimbursementRequestsController {
         wbsReimbursementProducts,
         receiptPictures,
         req.currentUser,
-        req.organization
+        req.organization,
+        dateOfExpense
       );
       return res.status(200).json(updatedReimbursementRequestId);
     } catch (error: unknown) {
@@ -409,6 +409,32 @@ export default class ReimbursementRequestsController {
       return res.status(200).json(deletedVendor);
     } catch (error: unknown) {
       return next(error);
+    }
+  }
+
+  static async markReimbursementRequestAsPendingFinance(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+
+      const updatedRequest = await ReimbursementRequestService.markPendingFinance(req.currentUser, requestId, req.organization);
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async requestReimbursementRequestChanges(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { requestId } = req.params;
+
+      const updatedRequest = await ReimbursementRequestService.financeRequestReimbursementRequestChanges(
+        req.currentUser,
+        requestId,
+        req.organization
+      );
+      res.status(200).json(updatedRequest);
+    } catch (error: unknown) {
+      next(error);
     }
   }
 }

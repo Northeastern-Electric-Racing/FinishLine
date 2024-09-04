@@ -226,7 +226,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
               <Box style={{ display: 'flex', verticalAlign: 'middle', alignItems: 'center' }}>
                 <FormLabel>Date of Expense</FormLabel>
                 <Tooltip
-                  title="Reimbursements with Different Purchase Dates Should be on Different Requests"
+                  title="Reimbursements with Different Purchase Dates Should be on Different Requests. Leave Empty for Not Yet Purchased Items"
                   placement="right"
                 >
                   <HelpIcon style={{ fontSize: 'medium', marginLeft: '5px' }} />
