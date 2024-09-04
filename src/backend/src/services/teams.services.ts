@@ -381,15 +381,13 @@ export default class TeamsService {
    * @param name the name of the team type
    * @param iconName the name of the icon
    * @param organizationId The organization the user is currently in
-   * @param calendarId The id of the google calendar associated with the Team Type
    * @returns the created team
    */
   static async createTeamType(
     submitter: User,
     name: string,
     iconName: string,
-    organization: Organization,
-    calendarId?: string
+    organization: Organization
   ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a team type');
@@ -403,7 +401,7 @@ export default class TeamsService {
       throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
 
-    const teamTypeCalendarId = calendarId ?? (await createCalendar(name));
+    const teamTypeCalendarId = await createCalendar(name);
     const teamType = await prisma.team_Type.create({
       data: {
         name,
