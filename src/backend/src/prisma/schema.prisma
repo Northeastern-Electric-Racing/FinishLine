@@ -931,6 +931,7 @@ model Milestone {
 
 model Checklist {
   checklistId    String       @id @default(uuid())
+  name           String
   subtasks       String[]
   description    String
   users          User[]       @relation(name: "checklistUsers")

@@ -1,6 +1,7 @@
 -- CreateTable
 CREATE TABLE "Checklist" (
     "checklistId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "subtasks" TEXT[],
     "description" TEXT NOT NULL,
     "teamTypeId" TEXT,
