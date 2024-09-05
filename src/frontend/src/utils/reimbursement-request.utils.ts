@@ -124,8 +124,10 @@ export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType)
     case ReimbursementStatusType.DENIED: {
       return 'Denied';
     }
-    default:
+    case ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL:
       return 'Pending Leadership Approval';
+    case ReimbursementStatusType.LEADERSHIP_APPROVED:
+      return 'Leadership Approved';
   }
 };
 
