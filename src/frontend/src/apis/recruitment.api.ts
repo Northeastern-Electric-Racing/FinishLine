@@ -16,18 +16,14 @@ export const createMilestone = (payload: MilestonePayload) => {
   });
 };
 
-export const deleteMilestone = (milestoneId: string) => {
-  return axios.delete<{ message: string }>(apiUrls.milestoneDelete(milestoneId));
-};
-
-export const deleteFaq = (faqId: string) => {
-  return axios.delete<{ message: string }>(apiUrls.faqDelete(faqId));
-};
-
 export const editMilestone = (payload: MilestonePayload, id: string) => {
   return axios.post(apiUrls.milestoneEdit(id), {
     ...payload
   });
+};
+
+export const deleteMilestone = (milestoneId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.milestoneDelete(milestoneId));
 };
 
 export const getAllFaqs = () => {
@@ -46,4 +42,8 @@ export const editFaq = (payload: FaqPayload, id: string) => {
   return axios.post(apiUrls.faqEdit(id), {
     ...payload
   });
+};
+
+export const deleteFaq = (faqId: string) => {
+  return axios.delete<{ message: string }>(apiUrls.faqDelete(faqId));
 };

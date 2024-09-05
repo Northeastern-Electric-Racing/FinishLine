@@ -26,6 +26,7 @@ const MilestoneTable = () => {
   const handleDelete = (id: string) => {
     try {
       deleteMilestone(id);
+      setMilestoneToDelete(undefined);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -147,7 +148,6 @@ const MilestoneTable = () => {
         onFormSubmit={() => {
           if (milestoneToDelete) {
             handleDelete(milestoneToDelete.milestoneId);
-            setMilestoneToDelete(undefined);
           }
         }}
       />

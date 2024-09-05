@@ -328,12 +328,12 @@ export const apiUrls = {
   recruitment,
   allMilestones,
   milestoneCreate,
-  faqDelete,
   milestoneDelete,
   milestoneEdit,
   allFaqs,
   faqCreate,
   faqEdit,
+  faqDelete,
 
   version
 };

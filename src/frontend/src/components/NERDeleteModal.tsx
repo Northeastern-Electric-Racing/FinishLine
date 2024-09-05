@@ -14,16 +14,12 @@ const NERDeleteModal = ({ open, onHide, title, onFormSubmit }: NERDeleteModalPro
     mode: 'onChange'
   });
 
-  const onSubmitWrapper: SubmitHandler<any> = async (data: any) => {
-    await onFormSubmit(data);
-  };
-
   return (
     <NERFormModal
       open={open}
       onHide={onHide}
       title={`Delete ${title}`}
-      onFormSubmit={onSubmitWrapper}
+      onFormSubmit={onFormSubmit}
       handleUseFormSubmit={handleSubmit}
       reset={reset}
       formId="delete-cr-form"

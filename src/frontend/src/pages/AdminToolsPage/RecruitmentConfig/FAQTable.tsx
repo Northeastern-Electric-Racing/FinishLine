@@ -24,6 +24,7 @@ const FAQsTable = () => {
   const handleDelete = (id: string) => {
     try {
       deleteFaq(id);
+      setFaqToDelete(undefined);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -126,7 +127,6 @@ const FAQsTable = () => {
           onFormSubmit={() => {
             if (faqToDelete) {
               handleDelete(faqToDelete.faqId);
-              setFaqToDelete(undefined);
             }
           }}
         />
