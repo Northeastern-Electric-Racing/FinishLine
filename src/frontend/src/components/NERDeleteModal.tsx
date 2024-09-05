@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
+import { FieldValues, useForm } from 'react-hook-form';
 import { Typography } from '@mui/material';
 import NERFormModal from './NERFormModal';
 import { NERModalProps } from './NERModal';
