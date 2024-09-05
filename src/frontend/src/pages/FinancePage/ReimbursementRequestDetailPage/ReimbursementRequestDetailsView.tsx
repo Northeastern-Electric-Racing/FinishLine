@@ -407,7 +407,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
   };
 
   const allowEdit =
-    user.userId === reimbursementRequest.recipient.userId && !isReimbursementRequestAdvisorApproved(reimbursementRequest);
+    user.userId === reimbursementRequest.recipient.userId &&
+    !isReimbursementRequestAdvisorApproved(reimbursementRequest) &&
+    !isPendingFinance &&
+    !isSaboSubmitted &&
+    !isReimbursementRequestReimbursed(reimbursementRequest);
 
   const buttons: ButtonInfo[] = [
     {
@@ -457,7 +461,8 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
         !isHead(user.role) ||
         isReimbursementRequestDenied(reimbursementRequest) ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
-        isLeadershipApproved
+        isLeadershipApproved ||
+        isPendingFinance
     },
     {
       title: 'Mark Pending Finance',
@@ -472,8 +477,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled:
         !user.isFinance ||
         isReimbursementRequestReimbursed(reimbursementRequest) ||
-        isReimbursementRequestDenied(reimbursementRequest) ||
-        isSaboSubmitted
+        isReimbursementRequestDenied(reimbursementRequest)
     },
     {
       title: 'Deny',

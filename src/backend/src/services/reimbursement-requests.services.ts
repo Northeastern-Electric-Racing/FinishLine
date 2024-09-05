@@ -283,7 +283,8 @@ export default class ReimbursementRequestService {
       include: {
         reimbursementProducts: true,
         receiptPictures: true,
-        accountCode: true
+        accountCode: true,
+        reimbursementStatuses: true
       }
     });
 

@@ -41,6 +41,8 @@ import { wbsNumComparator } from 'shared/src/validate-wbs';
 import { codeAndRefundSourceName, accountCodePipe } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import NERModal from '../../../components/NERModal';
+import CheckList from '../../../components/CheckList';
 
 interface ReimbursementRequestFormViewProps {
   allVendors: Vendor[];
@@ -95,6 +97,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
   const refundSources = selectedAccountCode?.allowedRefundSources || [];
 
   const calculatedTotalCost = products.reduce((acc, product) => acc + Number(product.cost), 0).toFixed(2);
+  const [showReimbursementGuidelinesModal, setShowReimbursementGuidelinesModal] = useState(true);
 
   const wbsElementAutocompleteOptions = allWbsElements.map((wbsElement) => ({
     label: wbsPipe(wbsElement.wbsNum) + ' - ' + wbsElement.wbsName,
@@ -118,6 +121,61 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         ))}
       </ul>
     </FormControl>
+  );
+
+  const ReimbursementGuidelinesModal = () => (
+    <NERModal
+      open={showReimbursementGuidelinesModal}
+      onHide={() => setShowReimbursementGuidelinesModal(false)}
+      title="Finance Checklist"
+      cancelText="No"
+      submitText="Yes"
+      onSubmit={() => setShowReimbursementGuidelinesModal(false)}
+    >
+      <CheckList
+        title="Receipts must have the following: "
+        items={[
+          {
+            resolved: false,
+            detail:
+              'I certify my receipts with expenses greater than $75 include an itemixed description of goods or service purchased.',
+            id: '1'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the vendor's name (for ex. Amazon, stop and shop, Target).`,
+            id: '2'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts includes a Transaction Date for each expense.`,
+            id: '3'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the amount paid for each expense.`,
+            id: '4'
+          },
+          {
+            resolved: false,
+            detail: `I certify my receipts include the form of payment for each expense (Cash, check or last four digits of credit card).`,
+            id: '5'
+          },
+          {
+            resolved: false,
+            detail: `This reimbursement request is "NOT" for a faculty or full-time staff member.`,
+            id: '6'
+          },
+          {
+            resolved: false,
+            detail: `The reimbursement does not include sales tax unless it is for a prepared meal or hotel.`,
+            id: '7'
+          }
+        ]}
+        isDisabled={false}
+        checkDescriptionBullets={false}
+      />
+    </NERModal>
   );
 
   const accountCodesToAutocomplete = (accountCode: AccountCode): { label: string; id: string } => {
@@ -144,6 +202,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
         justifyContent: 'space-between'
       }}
     >
+      <ReimbursementGuidelinesModal />
       {!hasSecureSettingsSet && (
         <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={true}>
           <Alert variant="filled" severity="warning">
