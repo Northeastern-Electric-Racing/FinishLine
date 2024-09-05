@@ -1,7 +1,7 @@
 import { TableRow, TableCell, Box, Table as MuiTable, TableHead, TableBody, Typography, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
+import { FrequentlyAskedQuestion } from 'shared';
 import { NERButton } from '../../../components/NERButton';
 import { useAllFaqs } from '../../../hooks/recruitment.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';

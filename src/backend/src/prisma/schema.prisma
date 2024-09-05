@@ -180,6 +180,9 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
+  createdChecklists               Checklist[]               @relation(name: "checklistCreator")
+  deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
+  oboardingChecklists             Checklist[]               @relation(name: "checklistUsers")
 }
 
 model Role {
@@ -713,6 +716,7 @@ model Team_Type {
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
   calendarId     String?
+  checklists     Checklist[]
 
   @@unique([name, organizationId], name: "uniqueTeamType")
 }
@@ -893,20 +897,21 @@ model Organization {
   usefulLinks              Link[]
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
+  checklists               Checklist[]
 }
 
 model FrequentlyAskedQuestion {
-  faqId String       @id @default(uuid())
-  question                  String
-  answer                    String
-  userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId             String
-  userDeleted               User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId             String?
-  dateCreated               DateTime     @default(now())
-  dateDeleted               DateTime?
-  organizationId            String
-  organization              Organization @relation(fields: [organizationId], references: [organizationId])
+  faqId          String       @id @default(uuid())
+  question       String
+  answer         String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }
 
 model Milestone {
@@ -920,6 +925,23 @@ model Milestone {
   userDeletedId  String?
   dateCreated    DateTime     @default(now())
   dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Checklist {
+  checklistId    String       @id @default(uuid())
+  subtasks       String[]
+  description    String
+  users          User[]       @relation(name: "checklistUsers")
+  teamType       Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId     String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
+  userDeletedId  String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }

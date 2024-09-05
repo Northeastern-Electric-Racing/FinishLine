@@ -8,7 +8,7 @@ import { Box } from '@mui/system';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
 import { FaqPayload } from '../../../hooks/recruitment.hooks';
-import { FrequentlyAskedQuestion } from 'shared/src/types/frequently-asked-questions-types';
+import { FrequentlyAskedQuestion } from 'shared';
 import { useEffect } from 'react';
 
 interface FaqFormModalProps {
