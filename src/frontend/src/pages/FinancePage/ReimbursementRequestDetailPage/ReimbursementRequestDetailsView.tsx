@@ -413,7 +413,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     !isSaboSubmitted &&
     !isReimbursementRequestReimbursed(reimbursementRequest);
 
-  const buttons: ButtonInfo[] = [
+  const buttons: ButtonInfo[] = [ 
     {
       title: 'Edit',
       onClick: () => history.push(`${routes.REIMBURSEMENT_REQUESTS}/${reimbursementRequest.reimbursementRequestId}/edit`),
