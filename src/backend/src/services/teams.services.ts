@@ -389,8 +389,7 @@ export default class TeamsService {
     name: string,
     iconName: string,
     description: string,
-    organization: Organization,
-    calendarId?: string
+    organization: Organization
   ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('create a team type');
