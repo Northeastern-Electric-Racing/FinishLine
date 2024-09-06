@@ -24,9 +24,10 @@ const MilestoneTable = () => {
   } = useAllMilestones();
 
   const handleDelete = (id: string) => {
+    setMilestoneToDelete(undefined);
     try {
       deleteMilestone(id);
-      setMilestoneToDelete(undefined);
+      toast.success('Milestone deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -141,10 +142,11 @@ const MilestoneTable = () => {
         </NERButton>
       </Box>
       <NERDeleteModal
-        open={milestoneToDelete !== undefined}
+        open={!!milestoneToDelete}
         onHide={() => setMilestoneToDelete(undefined)}
+        title="Warning"
         formId="delete-item-form"
-        title="Milestone"
+        dataType="Milestone"
         onFormSubmit={() => {
           if (milestoneToDelete) {
             handleDelete(milestoneToDelete.milestoneId);

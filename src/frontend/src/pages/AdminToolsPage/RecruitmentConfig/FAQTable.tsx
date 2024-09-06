@@ -22,9 +22,10 @@ const FAQsTable = () => {
 
   const { isLoading: faqsIsLoading, isError: faqsIsError, error: faqsError, data: faqs } = useAllFaqs();
   const handleDelete = (id: string) => {
+    setFaqToDelete(undefined);
     try {
       deleteFaq(id);
-      setFaqToDelete(undefined);
+      toast.success('Faq deleted successfully');
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -118,19 +119,18 @@ const FAQsTable = () => {
           Add FAQ
         </NERButton>
       </Box>
-      {faqToDelete && (
-        <NERDeleteModal
-          open={faqToDelete !== undefined}
-          onHide={() => setFaqToDelete(undefined)}
-          formId="delete-item-form"
-          title="FAQ"
-          onFormSubmit={() => {
-            if (faqToDelete) {
-              handleDelete(faqToDelete.faqId);
-            }
-          }}
-        />
-      )}
+      <NERDeleteModal
+        open={!!faqToDelete}
+        onHide={() => setFaqToDelete(undefined)}
+        formId="delete-item-form"
+        dataType="FAQ"
+        title="Warning"
+        onFormSubmit={() => {
+          if (faqToDelete) {
+            handleDelete(faqToDelete.faqId);
+          }
+        }}
+      />
     </Box>
   );
 };
