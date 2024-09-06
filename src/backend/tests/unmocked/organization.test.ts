@@ -190,4 +190,20 @@ describe('Team Type Tests', () => {
       expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
     });
   });
+
+  describe('Update General Description', () => {
+    it('Succeeds and updates the general description', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const newDescription: string = 'new description';
+      await OrganizationsService.updateGeneralDescription(orgId, newDescription);
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization?.generalDescription).toBe(newDescription);
+    });
+  });
 });

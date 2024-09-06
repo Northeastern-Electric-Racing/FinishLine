@@ -51,4 +51,17 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async updateGeneralDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { generalDescription } = req.body;
+      const updatedOrganization = await OrganizationsService.updateGeneralDescription(
+        req.organization.organizationId,
+        generalDescription
+      );
+      res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

@@ -131,4 +131,32 @@ export default class OrganizationsService {
       exploreAsGuestImage: organization.exploreAsGuestImageId
     };
   }
+
+  /**
+   * Sets the organization general description
+   * @param organizationId organization Id of the milestone
+   * @param generalDescription the new general description
+   * @returns all the milestones from the given organization
+   */
+
+  static async updateGeneralDescription(organizationId: string, generalDescription: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    await prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        generalDescription
+      }
+    });
+
+    return organization;
+  }
 }
