@@ -49,11 +49,15 @@ export const groupProjectLevelTemplates = (
 };
 
 export const getProjectLevelTemplates = (allTemplates: WorkPackageTemplate[]): ProjectLevelTemplate[] => {
-  return groupProjectLevelTemplates(allTemplates).filter((template) => 'smallTemplates' in template);
+  return groupProjectLevelTemplates(allTemplates).filter(
+    (template) => 'smallTemplates' in template
+  ) as ProjectLevelTemplate[];
 };
 
 export const getIndividualTemplates = (allTemplates: WorkPackageTemplate[]): WorkPackageTemplate[] => {
-  return groupProjectLevelTemplates(allTemplates).filter((template) => 'workPackageTemplateId' in template);
+  return groupProjectLevelTemplates(allTemplates).filter(
+    (template) => 'workPackageTemplateId' in template
+  ) as WorkPackageTemplate[];
 };
 
 export const shouldDisableStartDate = (startDate: Date) => {

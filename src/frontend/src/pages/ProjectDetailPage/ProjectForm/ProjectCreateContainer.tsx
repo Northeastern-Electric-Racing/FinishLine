@@ -104,6 +104,7 @@ const ProjectCreateContainer: React.FC = () => {
         carNumber,
         workPackageProposedChanges: workPackages.map((workPackage) => {
           return {
+            id: workPackage.id,
             name: workPackage.name,
             stage: workPackage.stage,
             duration: workPackage.duration,

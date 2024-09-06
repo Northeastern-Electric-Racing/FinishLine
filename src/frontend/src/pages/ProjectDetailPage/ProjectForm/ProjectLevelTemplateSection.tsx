@@ -76,7 +76,6 @@ const ProjectLevelTemplateSection: React.FC<ProjectLevelTemplateSectionProps> = 
               const idMap = new Map<string, string>();
 
               currentTemplate?.smallTemplates.forEach((_template, _index) => removeWorkPackage(0));
-              console.log(template.smallTemplates);
               template.smallTemplates
                 .sort((a, b) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime())
                 .forEach((smallTemplate) => {
@@ -88,7 +87,7 @@ const ProjectLevelTemplateSection: React.FC<ProjectLevelTemplateSectionProps> = 
                     stage: smallTemplate.stage,
                     duration: smallTemplate.duration,
                     startDate: new Date(),
-                    id: workPackageId,
+                    id: workPackageId + 'skibidi',
                     blockedByIds: smallTemplate.blockedBy.map((blockedBy) => idMap.get(blockedBy.workPackageTemplateId))
                   });
                 });

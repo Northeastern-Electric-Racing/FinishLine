@@ -135,6 +135,7 @@ export interface ProjectProposedChangesCreateArgs extends WBSProposedChangesCrea
 }
 
 export interface WorkPackageProposedChangesCreateArgs extends WBSProposedChangesCreateArgs {
+  wbsElementId?: string;
   duration: number;
   startDate: string;
   stage?: WorkPackageStage;
