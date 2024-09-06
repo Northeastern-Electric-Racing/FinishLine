@@ -361,3 +361,23 @@ export const createVendor = async (vendorData: { name: string }) => {
 export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
   return axios.post(apiUrls.financeEditVendor(id), vendorData);
 };
+
+/**
+ * Marks a reimbursement request as pending finance
+ *
+ * @param id The id of the reimbursement request
+ * @returns The created Pending Finance status
+ */
+export const markPendingFinance = async (id: string) => {
+  return axios.post(apiUrls.financeMarkPending(id));
+};
+
+/**
+ * Removes the pending finance status from a reimbursement request
+ *
+ * @param id The id of the reimbursement Request
+ * @returns The removed pending finance status
+ */
+export const requestReimbursementRequestChanges = async (id: string) => {
+  return axios.post(apiUrls.financeRequestChanges(id));
+};

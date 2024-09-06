@@ -146,7 +146,13 @@ export const isReimbursementRequestSaboSubmitted = (reimbursementRequest: Reimbu
 };
 
 export const isReimbursementRequestLeadershipApproved = (reimbursementRequest: ReimbursementRequest) => {
-  return !reimbursementRequest.reimbursementStatuses
+  return reimbursementRequest.reimbursementStatuses
+    .map((status) => status.type)
+    .includes(ReimbursementStatusType.LEADERSHIP_APPROVED);
+};
+
+export const isReimbursementRequestPendingFinance = (reimbursementRequest: ReimbursementRequest) => {
+  return reimbursementRequest.reimbursementStatuses
     .map((status) => status.type)
     .includes(ReimbursementStatusType.PENDING_FINANCE);
 };

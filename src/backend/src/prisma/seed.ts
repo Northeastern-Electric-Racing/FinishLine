@@ -1632,7 +1632,6 @@ const performSeed: () => Promise<void> = async () => {
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
-    new Date(),
     vendor.vendorId,
     ClubAccount.CASH,
     [],
@@ -1654,7 +1653,6 @@ const performSeed: () => Promise<void> = async () => {
 
   await ReimbursementRequestService.createReimbursementRequest(
     thomasEmrax,
-    new Date(),
     vendor.vendorId,
     ClubAccount.BUDGET,
     [],
@@ -1671,7 +1669,8 @@ const performSeed: () => Promise<void> = async () => {
     ],
     accountCode.accountCodeId,
     200,
-    ner
+    ner,
+    new Date()
   );
 
   /**
