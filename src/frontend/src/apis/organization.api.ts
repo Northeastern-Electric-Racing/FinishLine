@@ -3,6 +3,7 @@ import { apiUrls } from "../utils/urls";
 
 export const setOrganizationImages = (images: File[]) => {
     return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), {
-      images
+      applyInterestImageId: images[0],
+      exploreAsGuestImageId: images[1]
     });
   };
