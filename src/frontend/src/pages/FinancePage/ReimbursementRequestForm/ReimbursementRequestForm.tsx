@@ -26,7 +26,7 @@ import { useCurrentUserSecureSettings } from '../../../hooks/users.hooks';
 
 export interface ReimbursementRequestInformation {
   vendorId: string;
-  dateOfExpense: Date;
+  dateOfExpense?: Date;
   accountCodeId: string;
   receiptFiles: ReimbursementReceiptUploadArgs[];
   account: ClubAccount | undefined;
@@ -53,7 +53,7 @@ const RECEIPTS_REQUIRED = import.meta.env.VITE_RR_RECEIPT_REQUIREMENT || 'disabl
 const schema = yup.object().shape({
   vendorId: yup.string().required('Vendor is required'),
   account: yup.string().required('Account is required'),
-  dateOfExpense: yup.date().required('Date of Expense is required'),
+  dateOfExpense: yup.date().optional(),
   accountCodeId: yup.string().required('Account code is required'),
   reimbursementProducts: yup
     .array()
@@ -90,12 +90,12 @@ const ReimbursementRequestForm: React.FC<ReimbursementRequestFormProps> = ({
     formState: { errors },
     watch,
     setValue
-  } = useForm({
+  } = useForm<ReimbursementRequestFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
       vendorId: defaultValues?.vendorId ?? '',
       account: defaultValues?.account,
-      dateOfExpense: defaultValues?.dateOfExpense ?? new Date(),
+      dateOfExpense: defaultValues?.dateOfExpense,
       accountCodeId: defaultValues?.accountCodeId ?? '',
       reimbursementProducts: defaultValues?.reimbursementProducts ?? ([] as ReimbursementProductFormArgs[]),
       receiptFiles: defaultValues?.receiptFiles ?? ([] as ReimbursementReceiptUploadArgs[])

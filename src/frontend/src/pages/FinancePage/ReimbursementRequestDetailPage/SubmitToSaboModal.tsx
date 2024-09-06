@@ -132,7 +132,7 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
               <CopyToClipboardButton msg={'Brody Pearlman'} />
             </Box>
             <Box display="flex" alignItems="center">
-              <Typography>pearlman.br@northeastern.edu</Typography>
+              <Typography>leblang.a@northeastern.edu</Typography>
               <CopyToClipboardButton msg={'pearlman.br@northeastern.edu'} />
             </Box>
           </Stack>

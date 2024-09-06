@@ -32,7 +32,7 @@ const EditReimbursementRequestRenderedDefaultValues: React.FC<{
         defaultValues={{
           vendorId: reimbursementRequest.vendor.vendorId,
           account: reimbursementRequest.account,
-          dateOfExpense: new Date(reimbursementRequest.dateOfExpense),
+          dateOfExpense: reimbursementRequest.dateOfExpense ? new Date(reimbursementRequest.dateOfExpense) : undefined,
           accountCodeId: reimbursementRequest.accountCode.accountCodeId,
           reimbursementProducts: reimbursementRequest.reimbursementProducts.map((product) => ({
             reason: (product.reimbursementProductReason as WBSElementData).wbsNum

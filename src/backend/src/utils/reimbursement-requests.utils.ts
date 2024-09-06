@@ -397,9 +397,7 @@ export const validateUserEditRRPermissions = async (
       reimbursementRequest.recipientId !== user.userId ||
       reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.PENDING_FINANCE)
     )
-      throw new AccessDeniedException(
-        'Only the creator or finance team can edit a reimbursement request. A request that has been pending finance cannot be edited.'
-      );
+      throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request. A request that has been pending finance cannot be edited.');
   }
 };
 

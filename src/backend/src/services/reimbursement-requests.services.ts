@@ -17,7 +17,8 @@ import {
   isHead,
   WbsReimbursementProductCreateArgs,
   OtherReimbursementProductCreateArgs,
-  AccountCode
+  AccountCode,
+  ReimbursementStatus
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -50,8 +51,12 @@ import {
 } from '../transformers/reimbursement-requests.transformer';
 import { UserWithSecureSettings } from '../utils/auth.utils';
 import {
-  sendReimbursementRequestCreatedNotification,
-  sendReimbursementRequestDeniedNotification
+  sendReimbursementRequestChangesRequestedNotification,
+  sendReimbursementRequestCreatedNotificationAndCreateMessageInfo,
+  sendReimbursementRequestDeniedNotification,
+  sendReimbursementRequestLeadershipApprovedNotification,
+  sendReimbursementRequestPendingFinanceNotification,
+  sendSubmittedToSaboNotification
 } from '../utils/slack.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { getReimbursementRequestQueryArgs } from '../prisma-query-args/reimbursement-requests.query-args';
@@ -131,15 +136,15 @@ export default class ReimbursementRequestService {
    */
   static async createReimbursementRequest(
     recipient: UserWithSecureSettings,
-    dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
     otherReimbursementProducts: OtherReimbursementProductCreateArgs[],
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     acccountCodeId: string,
     totalCost: number,
-    organization: Organization
-  ): Promise<Reimbursement_Request> {
+    organization: Organization,
+    dateOfExpense?: Date
+  ): Promise<ReimbursementRequest> {
     if (await userHasPermission(recipient.userId, organization.organizationId, isGuest))
       throw new AccessDeniedGuestException('Guests cannot create a reimbursement request');
 
@@ -166,7 +171,7 @@ export default class ReimbursementRequestService {
     const createdReimbursementRequest = await prisma.reimbursement_Request.create({
       data: {
         recipient: { connect: { userId: recipient.userId } },
-        dateOfExpense,
+        dateOfExpense: dateOfExpense ?? null,
         vendor: { connect: { vendorId: vendor.vendorId } },
         account,
         accountCode: { connect: { accountCodeId: accountCode.accountCodeId } },
@@ -188,13 +193,22 @@ export default class ReimbursementRequestService {
       createdReimbursementRequest.reimbursementRequestId
     );
 
-    await sendReimbursementRequestCreatedNotification(
+    await sendReimbursementRequestCreatedNotificationAndCreateMessageInfo(
       createdReimbursementRequest.reimbursementRequestId,
       recipient.userId,
       organization.organizationId
     );
 
-    return createdReimbursementRequest;
+    const finalizedReimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: {
+        reimbursementRequestId: createdReimbursementRequest.reimbursementRequestId
+      },
+      ...getReimbursementRequestQueryArgs(organization.organizationId)
+    });
+
+    if (!finalizedReimbursementRequest) throw new HttpException(500, 'Unable to retrieve created reimbursement request');
+
+    return reimbursementRequestTransformer(finalizedReimbursementRequest);
   }
 
   /**
@@ -254,7 +268,6 @@ export default class ReimbursementRequestService {
    */
   static async editReimbursementRequest(
     requestId: string,
-    dateOfExpense: Date,
     vendorId: string,
     account: ClubAccount,
     accountCodeId: string,
@@ -263,14 +276,16 @@ export default class ReimbursementRequestService {
     wbsReimbursementProducts: WbsReimbursementProductCreateArgs[],
     receiptPictures: ReimbursementReceiptCreateArgs[],
     submitter: User,
-    organization: Organization
+    organization: Organization,
+    dateOfExpense?: Date
   ): Promise<Reimbursement_Request> {
     const oldReimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId: requestId },
       include: {
         reimbursementProducts: true,
         receiptPictures: true,
-        accountCode: true
+        accountCode: true,
+        reimbursementStatuses: true
       }
     });
 
@@ -300,7 +315,7 @@ export default class ReimbursementRequestService {
     const updatedReimbursementRequest = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId: oldReimbursementRequest.reimbursementRequestId },
       data: {
-        dateOfExpense,
+        dateOfExpense: dateOfExpense ?? null,
         account,
         totalCost,
         accountCodeId: accountCode.accountCodeId,
@@ -879,7 +894,8 @@ export default class ReimbursementRequestService {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
-        reimbursementStatuses: true
+        reimbursementStatuses: true,
+        notificationSlackThreads: true
       }
     });
 
@@ -897,12 +913,14 @@ export default class ReimbursementRequestService {
 
     const reimbursementStatus = await prisma.reimbursement_Status.create({
       data: {
-        type: ReimbursementStatusType.PENDING_FINANCE,
+        type: ReimbursementStatusType.LEADERSHIP_APPROVED,
         userId: submitter.userId,
         reimbursementRequestId: reimbursementRequest.reimbursementRequestId
       },
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
+
+    await sendReimbursementRequestLeadershipApprovedNotification(reimbursementRequest.notificationSlackThreads);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -921,7 +939,8 @@ export default class ReimbursementRequestService {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId },
       include: {
-        reimbursementStatuses: true
+        reimbursementStatuses: true,
+        notificationSlackThreads: true
       }
     });
 
@@ -955,6 +974,8 @@ export default class ReimbursementRequestService {
       },
       ...getReimbursementStatusQueryArgs(organization.organizationId)
     });
+
+    await sendSubmittedToSaboNotification(reimbursementRequest.notificationSlackThreads);
 
     return reimbursementStatusTransformer(reimbursementStatus);
   }
@@ -1004,7 +1025,11 @@ export default class ReimbursementRequestService {
       where: { userId: reimbursementRequest.recipientId }
     });
 
-    if (!recipientSettings) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    if (!recipientSettings)
+      throw new HttpException(
+        400,
+        'Reimbursement Request successfully updated, however no slack message was sent as recipient is missing their settings!'
+      );
 
     await sendReimbursementRequestDeniedNotification(recipientSettings.slackId, reimbursementRequestId);
 
@@ -1113,5 +1138,121 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedException('You do not have access to this Account Code');
 
     return accountCodeTransformer(accountCode);
+  }
+
+  static async markPendingFinance(
+    user: User,
+    reimbursementRequestId: string,
+    organization: Organization
+  ): Promise<ReimbursementStatus> {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true,
+        notificationSlackThreads: true,
+        receiptPictures: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+    if (reimbursementRequest.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Reimbursement Request');
+
+    await validateUserEditRRPermissions(user, reimbursementRequest, organization.organizationId);
+
+    if (
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has already been submitted to sabo!');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
+      throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    if (reimbursementRequest.receiptPictures.length === 0) {
+      throw new HttpException(
+        400,
+        'At least one receipt picture is required to mark a reimbursement request as pending finance'
+      );
+    }
+
+    if (!reimbursementRequest.dateOfExpense) {
+      throw new HttpException(400, 'Date of expense is required to mark a reimbursement request as pending finance');
+    }
+
+    const updatedReimbursementStatus = await prisma.reimbursement_Status.create({
+      data: {
+        reimbursementRequestId: reimbursementRequest.reimbursementRequestId,
+        type: ReimbursementStatusType.PENDING_FINANCE,
+        userId: user.userId
+      },
+      ...getReimbursementStatusQueryArgs(organization.organizationId)
+    });
+
+    await sendReimbursementRequestPendingFinanceNotification(reimbursementRequest.notificationSlackThreads);
+
+    return reimbursementStatusTransformer(updatedReimbursementStatus);
+  }
+
+  static async financeRequestReimbursementRequestChanges(
+    user: User,
+    reimbursementRequestId: string,
+    organization: Organization
+  ): Promise<ReimbursementStatus> {
+    const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
+      where: { reimbursementRequestId },
+      include: {
+        reimbursementStatuses: true,
+        notificationSlackThreads: true
+      }
+    });
+
+    if (!reimbursementRequest) throw new NotFoundException('Reimbursement Request', reimbursementRequestId);
+    if (reimbursementRequest.dateDeleted) {
+      throw new DeletedException('Reimbursement Request', reimbursementRequestId);
+    }
+    if (reimbursementRequest.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Reimbursement Request');
+
+    await validateUserEditRRPermissions(user, reimbursementRequest, organization.organizationId);
+
+    if (
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.SABO_SUBMITTED)
+    ) {
+      throw new HttpException(400, 'This reimbursement request has already been submitted to sabo!');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.DENIED)) {
+      throw new HttpException(400, 'This reimbursement request has already been denied');
+    }
+
+    if (reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.REIMBURSED)) {
+      throw new HttpException(400, 'This reimbursement request has already been reimbursed');
+    }
+
+    const pendingFinanceStatus = reimbursementRequest.reimbursementStatuses.find(
+      (status) => status.type === ReimbursementStatusType.PENDING_FINANCE
+    );
+
+    if (!pendingFinanceStatus) throw new HttpException(400, 'Reimbursement Request Must Be Pending Finance');
+
+    const deletedStatus = await prisma.reimbursement_Status.delete({
+      where: {
+        reimbursementStatusId: pendingFinanceStatus.reimbursementStatusId
+      },
+      ...getReimbursementStatusQueryArgs(organization.organizationId)
+    });
+
+    await sendReimbursementRequestChangesRequestedNotification(reimbursementRequest.notificationSlackThreads);
+
+    return reimbursementStatusTransformer(deletedStatus);
   }
 }

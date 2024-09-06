@@ -330,7 +330,7 @@ export const createTestReimbursementRequest = async () => {
 
   if (!user || !user.userSecureSettings || !user.userSettings) throw new Error('Failed to find user');
 
-  await createTestProject(user, organization.organizationId);
+  const project = await createTestProject(user, organization.organizationId);
 
   const vendor = await ReimbursementRequestService.createVendor(user, 'Tesla', organization);
 
@@ -345,7 +345,6 @@ export const createTestReimbursementRequest = async () => {
 
   const rr = await ReimbursementRequestService.createReimbursementRequest(
     user,
-    new Date(),
     vendor.vendorId,
     ClubAccount.CASH,
     [],
@@ -362,12 +361,13 @@ export const createTestReimbursementRequest = async () => {
     ],
     accountCode.accountCodeId,
     100,
-    organization
+    organization,
+    new Date()
   );
 
   if (!rr) throw new Error('Failed to create reimbursement request');
 
-  return { rr, organization };
+  return { rr, organization, vendor, accountCode, project, user };
 };
 
 // Always creates a new design review
