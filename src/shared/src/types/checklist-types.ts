@@ -8,7 +8,8 @@ import { User } from './user-types';
 
 export interface Checklist {
   checklistId: string;
-  subtasks: string[];
+  subtasks: Checklist[];
+  parentChecklist?: Checklist;
   description: string;
   teamType: TeamType;
   userCreated: User;

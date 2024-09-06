@@ -930,19 +930,21 @@ model Milestone {
 }
 
 model Checklist {
-  checklistId    String       @id @default(uuid())
-  name           String
-  subtasks       String[]
-  description    String
-  users          User[]       @relation(name: "checklistUsers")
-  teamType       Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
-  teamTypeId     String?
-  dateCreated    DateTime     @default(now())
-  dateDeleted    DateTime?
-  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
-  userCreatedId  String
-  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
-  userDeletedId  String?
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+  checklistId       String       @id @default(uuid())
+  name              String
+  parentChecklist   Checklist?   @relation("Subtasks", fields: [parentChecklistId], references: [checklistId])
+  parentChecklistId String?
+  subtasks          Checklist[]  @relation("Subtasks")
+  description       String
+  users             User[]       @relation(name: "checklistUsers")
+  teamType          Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
+  teamTypeId        String?
+  dateCreated       DateTime     @default(now())
+  dateDeleted       DateTime?
+  userCreated       User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
+  userCreatedId     String
+  userDeleted       User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
+  userDeletedId     String?
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [organizationId])
 }

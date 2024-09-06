@@ -2,7 +2,7 @@
 CREATE TABLE "Checklist" (
     "checklistId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "subtasks" TEXT[],
+    "parentChecklistId" TEXT,
     "description" TEXT NOT NULL,
     "teamTypeId" TEXT,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -25,6 +25,9 @@ CREATE UNIQUE INDEX "_checklistUsers_AB_unique" ON "_checklistUsers"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_checklistUsers_B_index" ON "_checklistUsers"("B");
+
+-- AddForeignKey
+ALTER TABLE "Checklist" ADD CONSTRAINT "Checklist_parentChecklistId_fkey" FOREIGN KEY ("parentChecklistId") REFERENCES "Checklist"("checklistId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Checklist" ADD CONSTRAINT "Checklist_teamTypeId_fkey" FOREIGN KEY ("teamTypeId") REFERENCES "Team_Type"("teamTypeId") ON DELETE SET NULL ON UPDATE CASCADE;
