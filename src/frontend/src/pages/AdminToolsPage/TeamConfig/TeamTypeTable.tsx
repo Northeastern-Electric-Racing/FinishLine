@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Box, Typography, Icon, Button } from '@mui/material';
+import { TableRow, TableCell, Box, Typography, Icon, Button, FormControl, FormLabel } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
@@ -8,8 +8,8 @@ import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
 import { useState } from 'react';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { useToast } from '../../../hooks/toasts.hooks';
+import NERUploadButton from '../../../components/NERUploadButton';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -21,7 +21,7 @@ const TeamTypeTable: React.FC = () => {
 
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
-  const [addedImages, setAddedImages] = useState<Record<string, File | undefined>>({});
+  const [addedImage, setAddedImage] = useState<File | undefined>(undefined);
   const toast = useToast();
 
   const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
@@ -34,21 +34,20 @@ const TeamTypeTable: React.FC = () => {
   }
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
-    const image = addedImages[teamTypeId];
-    if (image) {
-      await setTeamTypeImage({ file: image, id: teamTypeId });
+    if (addedImage) {
+      await setTeamTypeImage({ file: addedImage, id: teamTypeId });
       toast.success('Image uploaded successfully!', 5000);
-      setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      setAddedImage(undefined);
     } else {
       toast.error('No image selected for upload.', 5000);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, teamTypeId: string) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size < 1000000) {
-        setAddedImages((prev) => ({ ...prev, [teamTypeId]: file }));
+        setAddedImage(file);
       } else {
         toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
       }
@@ -90,55 +89,13 @@ const TeamTypeTable: React.FC = () => {
             sx={{ maxWidth: '100%', maxHeight: '200px', mb: 2 }}
           />
         )}
-        <Button
-          variant="contained"
-          color="success"
-          component="label"
-          startIcon={<FileUploadIcon />}
-          sx={{
-            width: 'fit-content',
-            textTransform: 'none',
-            mt: '9.75px'
-          }}
-        >
-          Upload
-          <input
-            onChange={(e) => {
-              console.log(e);
-              handleFileChange(e, teamType.teamTypeId);
-            }}
-            type="file"
-            id="team-type-image"
-            accept="image/*"
-            name="addedImage"
-            hidden
-          />
-        </Button>
-        {addedImages[teamType.teamTypeId] && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body2">{addedImages[teamType.teamTypeId]?.name}</Typography>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => setAddedImages((prev) => ({ ...prev, [teamType.teamTypeId]: undefined }))}
-              sx={{ textTransform: 'none', mt: 1, mr: 1 }}
-            >
-              Remove
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => onSubmitTeamTypeImage(teamType.teamTypeId)}
-              sx={{
-                width: 'fit-content',
-                textTransform: 'none',
-                mt: 1
-              }}
-            >
-              Submit
-            </Button>
-          </Box>
-        )}
+        <NERUploadButton
+          dataTypeId={teamType.teamTypeId}
+          handleFileChange={handleFileChange}
+          onSubmit={onSubmitTeamTypeImage}
+          addedImage={addedImage}
+          setAddedImage={setAddedImage}
+        />
       </TableCell>
     </TableRow>
   ));
