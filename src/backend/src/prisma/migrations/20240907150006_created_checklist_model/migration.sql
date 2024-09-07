@@ -2,8 +2,9 @@
 CREATE TABLE "Checklist" (
     "checklistId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "parentChecklistId" TEXT,
     "description" TEXT NOT NULL,
+    "checked" BOOLEAN NOT NULL DEFAULT false,
+    "parentChecklistId" TEXT,
     "teamTypeId" TEXT,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateDeleted" TIMESTAMP(3),

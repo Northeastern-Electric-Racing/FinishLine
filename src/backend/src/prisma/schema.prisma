@@ -932,10 +932,11 @@ model Milestone {
 model Checklist {
   checklistId       String       @id @default(uuid())
   name              String
-  parentChecklist   Checklist?   @relation("Subtasks", fields: [parentChecklistId], references: [checklistId])
-  parentChecklistId String?
   subtasks          Checklist[]  @relation("Subtasks")
   description       String
+  checked           Boolean      @default(false)
+  parentChecklist   Checklist?   @relation("Subtasks", fields: [parentChecklistId], references: [checklistId])
+  parentChecklistId String?
   users             User[]       @relation(name: "checklistUsers")
   teamType          Team_Type?   @relation(fields: [teamTypeId], references: [teamTypeId])
   teamTypeId        String?
