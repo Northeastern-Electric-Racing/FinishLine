@@ -68,6 +68,7 @@
     "eslint": "^7.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-cypress": "latest",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
