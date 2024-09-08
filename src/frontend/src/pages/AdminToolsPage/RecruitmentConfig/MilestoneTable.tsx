@@ -144,7 +144,6 @@ const MilestoneTable = () => {
       <NERDeleteModal
         open={!!milestoneToDelete}
         onHide={() => setMilestoneToDelete(undefined)}
-        title="Warning"
         formId="delete-item-form"
         dataType="Milestone"
         onFormSubmit={() => {

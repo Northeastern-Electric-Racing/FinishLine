@@ -124,7 +124,6 @@ const FAQsTable = () => {
         onHide={() => setFaqToDelete(undefined)}
         formId="delete-item-form"
         dataType="FAQ"
-        title="Warning"
         onFormSubmit={() => {
           if (faqToDelete) {
             handleDelete(faqToDelete.faqId);
