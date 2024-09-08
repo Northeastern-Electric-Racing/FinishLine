@@ -22,7 +22,6 @@ const renderComponent = () => {
         setDrawerOpen={() => {}}
         moveContent={true}
         setMoveContent={() => {}}
-        onPNMHomePage={false}
       />
     </RouterWrapper>
   );
