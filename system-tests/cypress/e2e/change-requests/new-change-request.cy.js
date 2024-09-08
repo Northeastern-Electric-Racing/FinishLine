@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /// <reference types="cypress" />
 import {
   PROJECT_OR_WORKPACKAGE_PLACEHOLDER,
