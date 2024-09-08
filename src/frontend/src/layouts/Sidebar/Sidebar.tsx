@@ -16,7 +16,7 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ArticleIcon from '@mui/icons-material/Article';
-import FirstPageIcon from '@mui/icons-material/FirstPage';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
@@ -146,7 +146,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
                 setOnPNMHomePage(false);
                 window.location.reload();
               }}
-              icon={<FirstPageIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
+              icon={<ArrowBackIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
               label={'Guest Home'}
             />
           </Box>
