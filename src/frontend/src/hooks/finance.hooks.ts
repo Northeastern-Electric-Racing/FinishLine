@@ -30,7 +30,9 @@ import {
   editVendor,
   getAllAccountCodes,
   editRefund,
-  leadershipApproveReimbursementRequest
+  leadershipApproveReimbursementRequest,
+  requestReimbursementRequestChanges,
+  markPendingFinance
 } from '../apis/finance.api';
 import {
   ClubAccount,
@@ -48,7 +50,7 @@ import { fullNamePipe } from '../utils/pipes';
 
 export interface CreateReimbursementRequestPayload {
   vendorId: string;
-  dateOfExpense: Date;
+  dateOfExpense?: Date;
   accountCodeId: string;
   otherReimbursementProducts: OtherReimbursementProductCreateArgs[];
   wbsReimbursementProducts: WbsReimbursementProductCreateArgs[];
@@ -537,4 +539,48 @@ export const useCreateVendor = () => {
     queryClient.invalidateQueries(['vendors']);
     return data;
   });
+};
+
+/**
+ * Custom React Hook to mark a reimbursement request as pending finance
+ *
+ * @param id The id of the reimbursement request to mark pending finance
+ * @returns Mutation function with the ability to mark a rr as pending finance
+ */
+export const useMarkPendingFinance = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'pending finance'],
+    async () => {
+      const { data } = await markPendingFinance(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
+};
+
+/**
+ * Custom React Hook to request changes on a reimbursement request
+ *
+ * @param id The id of the reimbursement request to request changes on
+ * @returns Mutation function with the ability to mark a rr as requested changes
+ */
+export const useRequestReimbursementRequestChanges = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<ReimbursementStatus, Error>(
+    ['reimbursement-requests', 'request changes'],
+    async () => {
+      const { data } = await requestReimbursementRequestChanges(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['reimbursement-requests', id]);
+      }
+    }
+  );
 };

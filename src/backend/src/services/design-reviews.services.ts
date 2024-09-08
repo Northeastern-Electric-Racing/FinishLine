@@ -38,6 +38,7 @@ import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.qu
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils';
 
 export default class DesignReviewsService {
   /**
@@ -88,6 +89,14 @@ export default class DesignReviewsService {
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
+    if (
+      deletedDesignReview.calendarEventId &&
+      deletedDesignReview.teamType.calendarId &&
+      deletedDesignReview.calendarEventId
+    ) {
+      await deleteCalendarEvent(deletedDesignReview.teamType.calendarId, deletedDesignReview.calendarEventId);
+    }
+
     return designReviewTransformer(deletedDesignReview);
   }
 
@@ -117,7 +126,6 @@ export default class DesignReviewsService {
       throw new AccessDeniedException('create design review');
 
     const teamType = await DesignReviewsService.getSingleTeamType(teamTypeId, organization);
-
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
@@ -314,6 +322,19 @@ export default class DesignReviewsService {
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembersIds));
     const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
+    const calendarEventId =
+      originaldesignReview.calendarEventId ??
+      (teamType.calendarId &&
+        (await createCalendarEvent(
+          teamType.calendarId,
+          [...requiredMembersIds, ...optionalMembersIds],
+          dateScheduled,
+          isInPerson,
+          zoomLink,
+          location,
+          meetingTimes,
+          originaldesignReview.wbsElement
+        )));
     // actually try to update the design review
     const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
@@ -336,13 +357,27 @@ export default class DesignReviewsService {
         docTemplateLink,
         attendees: {
           set: updatedAttendees
-        }
+        },
+        calendarEventId
       },
       ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
     if (status === Design_Review_Status.SCHEDULED) {
       await sendDRScheduledSlackNotif(updatedDesignReview.notificationSlackThreads, updatedDesignReview);
+      if (updatedDesignReview.calendarEventId && updatedDesignReview.teamType.calendarId) {
+        await updateCalendarEvent(
+          updatedDesignReview.teamType.calendarId,
+          updatedDesignReview.calendarEventId,
+          [...requiredMembersIds, ...optionalMembersIds],
+          updatedDesignReview.dateScheduled,
+          updatedDesignReview.isInPerson,
+          updatedDesignReview.zoomLink,
+          updatedDesignReview.location,
+          updatedDesignReview.meetingTimes,
+          updatedDesignReview.wbsElement
+        );
+      }
     }
 
     return designReviewTransformer(updatedDesignReview);

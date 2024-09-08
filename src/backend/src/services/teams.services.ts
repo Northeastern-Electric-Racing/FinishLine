@@ -13,6 +13,7 @@ import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/use
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { createCalendar } from '../utils/google-integration.utils';
 
 export default class TeamsService {
   /**
@@ -400,11 +401,13 @@ export default class TeamsService {
       throw new HttpException(400, 'Cannot create a teamType with a name that already exists');
     }
 
+    const teamTypeCalendarId = await createCalendar(name);
     const teamType = await prisma.team_Type.create({
       data: {
         name,
         iconName,
-        organizationId: organization.organizationId
+        organizationId: organization.organizationId,
+        calendarId: teamTypeCalendarId
       }
     });
 

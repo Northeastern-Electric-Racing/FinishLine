@@ -7,14 +7,14 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { useCheckDescriptionBullet } from '../hooks/description-bullets.hooks';
-import { useAuth } from '../hooks/auth.hooks';
 import { Tooltip } from '@mui/material';
 import { User } from 'shared';
 import NERModal from './NERModal';
 import { fullNamePipe } from '../utils/pipes';
 import { useToast } from '../hooks/toasts.hooks';
+import { useCurrentUser } from '../hooks/users.hooks';
 
 export type CheckListItem = {
   id: string;
@@ -28,14 +28,16 @@ interface CheckListProps {
   title: string;
   items: CheckListItem[];
   isDisabled: boolean;
+  checkDescriptionBullets?: boolean;
 }
 
-const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
-  const auth = useAuth();
+const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled, checkDescriptionBullets = true }) => {
+  const user = useCurrentUser();
   const { isLoading, mutateAsync } = useCheckDescriptionBullet();
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [currIdx, setCurrIdx] = useState<number>(-1);
   const toast = useToast();
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const handleUncheck = async (idx: number) => {
     await handleCheck(idx);
@@ -43,8 +45,17 @@ const CheckList: React.FC<CheckListProps> = ({ title, items, isDisabled }) => {
   };
 
   const handleCheck = async (idx: number) => {
+    if (!checkDescriptionBullets) {
+      items[idx].resolved = !items[idx].resolved;
+      if (items[idx].resolved) {
+        items[idx].user = user;
+        items[idx].dateChecked = new Date();
+      }
+      forceUpdate(); // Unfortunately this is necessary to force re-render when changing a property of an object without changing the object reference for a functional component
+      return;
+    }
     try {
-      await mutateAsync({ userId: auth.user!.userId, descriptionId: items[idx].id });
+      await mutateAsync({ userId: user.userId, descriptionId: items[idx].id });
     } catch (e) {
       if (e instanceof Error) {
         toast.error(e.message);
