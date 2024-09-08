@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /// <reference types="cypress" />
 import {
   PROJECT_OR_WORKPACKAGE_PLACEHOLDER,
@@ -35,7 +36,7 @@ describe('New Change Request', () => {
     cy.contains(ADD_PROPOSED_SOLUTION_BUTTON).should(VISIBLE);
   });
 
-  [{ }].forEach((args) => {
+  [{}].forEach((args) => {
     it('Creating a Change Request Works', () => {
       createChangeRequest(args);
     });
