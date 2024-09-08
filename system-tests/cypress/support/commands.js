@@ -11,7 +11,7 @@ import { LOADING_INDICATOR, LOGIN_ICON, DEV_LOGIN_TEXT } from '../utils/selector
 //
 //
 // -- This is a parent command --
-Cypress.Commands.add('login', (username, redirect = '/home') => {
+Cypress.Commands.add('login', (username = 'Thomas Emrax', redirect = '/home') => {
   cy.visit(Cypress.env('base_url') + '/login');
   cy.waitForLoading();
   cy.contains(DEV_LOGIN_TEXT).parent().click();
