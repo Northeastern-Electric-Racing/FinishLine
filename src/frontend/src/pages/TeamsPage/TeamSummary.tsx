@@ -47,11 +47,13 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         </Typography>
       </CardContent>
       <CardActions>
-        <Button variant="outlined" size="small" disabled={onPNMHomePage}>
-          <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`}>
-            See More
-          </Link>
-        </Button>
+        {!onPNMHomePage && (
+          <Button variant="outlined" size="small">
+            <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`}>
+              See More
+            </Link>
+          </Button>
+        )}
       </CardActions>
     </Card>
   );

@@ -21,7 +21,6 @@ import {
 } from '../../../utils/reimbursement-request.utils';
 import { routes } from '../../../utils/routes';
 import ColumnHeader from './ColumnHeader';
-// import TableSortLabel from '@mui/material/TableSortLabel';
 
 interface ReimbursementRequestInfoProps {
   userReimbursementRequests: ReimbursementRequest[];
@@ -66,9 +65,6 @@ const ReimbursementRequestInfo = ({
     }
     return !isAscendingOrder ? descendingComparator(a, b, orderBy) : -descendingComparator(a, b, orderBy);
   });
-
-  const tabs = [{ label: 'My Requests', value: 0 }];
-  if (canViewAllReimbursementRequests) tabs.push({ label: 'All Club Requests', value: 1 });
 
   const headCells: readonly ReimbursementTableHeadCell[] = [
     {
