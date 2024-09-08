@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface HomePageContextProps {
   onPNMHomePage: boolean;
@@ -10,8 +10,20 @@ interface HomePageContextProps {
 const HomePageContext = createContext<HomePageContextProps | undefined>(undefined);
 
 export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [onGuestHomePage, setOnGuestHomePage] = useState(true);
-  const [onPNMHomePage, setOnPNMHomePage] = useState(false);
+  const [onGuestHomePage, setOnGuestHomePage] = useState<boolean>(() =>
+    JSON.parse(localStorage.getItem('onGuestHomePage') || 'true')
+  );
+  const [onPNMHomePage, setOnPNMHomePage] = useState<boolean>(() =>
+    JSON.parse(localStorage.getItem('onPNMHomePage') || 'false')
+  );
+
+  useEffect(() => {
+    localStorage.setItem('onGuestHomePage', JSON.stringify(onGuestHomePage));
+  }, [onGuestHomePage]);
+
+  useEffect(() => {
+    localStorage.setItem('onPNMHomePage', JSON.stringify(onPNMHomePage));
+  }, [onPNMHomePage]);
 
   return (
     <HomePageContext.Provider value={{ onGuestHomePage, setOnGuestHomePage, onPNMHomePage, setOnPNMHomePage }}>

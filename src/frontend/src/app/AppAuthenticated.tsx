@@ -43,7 +43,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const { onPNMHomePage, onGuestHomePage } = useHomePageContext();
+  const { onGuestHomePage } = useHomePageContext();
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -91,7 +91,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             setDrawerOpen={setDrawerOpen}
             moveContent={moveContent}
             setMoveContent={setMoveContent}
-            onPNMHomePage={onPNMHomePage}
           />
         </>
       )}

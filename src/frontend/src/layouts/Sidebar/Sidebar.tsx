@@ -6,7 +6,7 @@
 import { routes } from '../../utils/routes';
 import { LinkItem } from '../../utils/types';
 import styles from '../../stylesheets/layouts/sidebar/sidebar.module.css';
-import { Typography, Box, IconButton, Divider } from '@mui/material';
+import { Typography, Box, IconButton, Divider, useTheme } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AlignHorizontalLeftIcon from '@mui/icons-material/AlignHorizontalLeft';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -15,22 +15,27 @@ import GroupIcon from '@mui/icons-material/Group';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ArticleIcon from '@mui/icons-material/Article';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
 import NavPageLink from './NavPageLink';
 import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import Apply from './Apply';
+import { useHomePageContext } from '../../app/HomePageContext';
+import SidebarButton from './SidebarButton';
 
 interface SidebarProps {
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
-  onPNMHomePage: boolean;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, onPNMHomePage }: SidebarProps) => {
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
+  const { onPNMHomePage, setOnGuestHomePage, setOnPNMHomePage } = useHomePageContext();
+  const theme = useTheme();
+
   const memberLinkItems: LinkItem[] = [
     {
       name: 'Home',
@@ -120,9 +125,31 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, onPNM
           {linkItems.map((linkItem) => (
             <NavPageLink {...linkItem} />
           ))}
-          {onPNMHomePage ? <Apply /> : <NavUserMenu open={drawerOpen} />}
+          {onPNMHomePage ? (
+            // Apply button
+            <SidebarButton
+              onClick={() => window.open('https://google.com', '_blank')}
+              label={'Apply'}
+              icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
+            />
+          ) : (
+            <NavUserMenu open={drawerOpen} />
+          )}
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
+          <Box marginBottom={2}>
+            {/* Return to guest mode button */}
+            <SidebarButton
+              onClick={() => {
+                setDrawerOpen(false);
+                setOnGuestHomePage(true);
+                setOnPNMHomePage(false);
+                window.location.reload();
+              }}
+              icon={<FirstPageIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
+              label={'Guest Home'}
+            />
+          </Box>
           <Box marginLeft={1.1}>
             <Typography marginLeft={1.1}>Sponsored By:</Typography>
             <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
