@@ -2,24 +2,23 @@
  * This file is part of NER's FinishLine and licensed under GNU AGPLv3.
  * See the LICENSE file in the repository root folder for details.
  */
-
-import { useCurrentUser } from '../../hooks/users.hooks';
-import { isGuest } from 'shared';
-import GuestHomePage from './GuestHomePage';
+import { Redirect, Route, Switch } from 'react-router-dom';
+import { routes } from '../../utils/routes';
 import MemberHomePage from './MemberHomePage';
+import GuestHomePage from './GuestHomePage';
 import PNMHomePage from './PNMHomePage';
-import { useHomePageContext } from '../../app/HomePageContext';
+import { isGuest } from 'shared';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
-const Home = () => {
+const Home: React.FC = () => {
   const user = useCurrentUser();
-  const { onGuestHomePage, setOnGuestHomePage, onPNMHomePage, setOnPNMHomePage } = useHomePageContext();
-
-  if (isGuest(user.role) && onGuestHomePage) {
-    return <GuestHomePage user={user} setOnGuestHomePage={setOnGuestHomePage} setOnPNMHomePage={setOnPNMHomePage} />;
-  } else if (isGuest(user.role) && onPNMHomePage) {
-    return <PNMHomePage />;
-  }
-  return <MemberHomePage user={user} />;
+  return (
+    <Switch>
+      <Route path={routes.HOME_PNM} component={PNMHomePage} />
+      <Route path={routes.HOME_GUEST} component={GuestHomePage} />
+      <Route path={routes.HOME} component={MemberHomePage} />
+    </Switch>
+  );
 };
 
 export default Home;

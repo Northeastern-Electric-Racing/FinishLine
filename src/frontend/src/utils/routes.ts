@@ -4,11 +4,15 @@
  */
 
 /**************** General Section ****************/
-const HOME = `/home`;
 const LOGIN = `/login`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
+
+/**************** Home Section ****************/
+const HOME = `/home`;
+const HOME_GUEST = HOME + `/guest`;
+const HOME_PNM = HOME + `/pnm`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
@@ -56,11 +60,14 @@ const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 const ORGANIZATIONS = `/organizations`;
 
 export const routes = {
-  HOME,
   LOGIN,
   INFO,
   CREDITS,
 
+  HOME,
+  HOME_GUEST,
+  HOME_PNM,
+  
   TEAMS,
   TEAMS_BY_ID,
 

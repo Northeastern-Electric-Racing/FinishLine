@@ -2,23 +2,13 @@ import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import ImageWithButton from './components/ImageWithButton';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
+import { useCurrentUser } from '../../hooks/users.hooks';
 
-interface GuestHomePageProps {
-  user: AuthenticatedUser;
-  setOnGuestHomePage: (e: boolean) => void;
-  setOnPNMHomePage: (e: boolean) => void;
-}
-
-const GuestHomePage = ({ user, setOnGuestHomePage, setOnPNMHomePage }: GuestHomePageProps) => {
-  const handleClickFinishline = () => {
-    setOnPNMHomePage(false);
-    setOnGuestHomePage(false);
-  };
-
-  const handleClickLearnMore = () => {
-    setOnGuestHomePage(false);
-    setOnPNMHomePage(true);
-  };
+const GuestHomePage = () => {
+  const user = useCurrentUser();
+  const history = useHistory();
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -31,13 +21,13 @@ const GuestHomePage = ({ user, setOnGuestHomePage, setOnPNMHomePage }: GuestHome
             title="Interested in applying"
             imageSrc={`/Apply.png`}
             buttonText="Learn More"
-            onClick={handleClickLearnMore}
+            onClick={() => history.push(routes.HOME_PNM)}
           />
           <ImageWithButton
             title="Explore Our Work as a Guest"
             imageSrc={`/Guest.png`}
             buttonText="FinishLine"
-            onClick={handleClickFinishline}
+            onClick={() => history.push(routes.HOME)}
           />
         </Box>
       </Box>

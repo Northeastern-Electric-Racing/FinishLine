@@ -68,32 +68,32 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           borderRightColor: theme.palette.background.paper
         }}
       />
-      {!onGuestHomePage && (
-        <>
-          <IconButton
-            onClick={() => {
-              setDrawerOpen(true);
-              setMoveContent(true);
+      {/* {!onGuestHomePage && ( */}
+      <>
+        <IconButton
+          onClick={() => {
+            setDrawerOpen(true);
+            setMoveContent(true);
+          }}
+          sx={{ position: 'fixed', left: -8, top: '3%' }}
+        >
+          <ArrowCircleRightTwoToneIcon
+            sx={{
+              fontSize: '30px',
+              zIndex: 1,
+              '& path:first-of-type': { color: '#000000' },
+              '& path:last-of-type': { color: '#ef4345' }
             }}
-            sx={{ position: 'fixed', left: -8, top: '3%' }}
-          >
-            <ArrowCircleRightTwoToneIcon
-              sx={{
-                fontSize: '30px',
-                zIndex: 1,
-                '& path:first-of-type': { color: '#000000' },
-                '& path:last-of-type': { color: '#ef4345' }
-              }}
-            />
-          </IconButton>
-          <Sidebar
-            drawerOpen={drawerOpen}
-            setDrawerOpen={setDrawerOpen}
-            moveContent={moveContent}
-            setMoveContent={setMoveContent}
           />
-        </>
-      )}
+        </IconButton>
+        <Sidebar
+          drawerOpen={drawerOpen}
+          setDrawerOpen={setDrawerOpen}
+          moveContent={moveContent}
+          setMoveContent={setMoveContent}
+        />
+      </>
+      {/* )} */}
       <Box display={'flex'}>
         <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
@@ -109,7 +109,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
-            <Route exact path={routes.HOME} component={Home} />
+            <Route exact path={routes.HOME_GUEST} component={Home} />
             <Route path="*" component={PageNotFound} />
           </Switch>
         </Container>

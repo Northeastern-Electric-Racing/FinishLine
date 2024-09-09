@@ -2,8 +2,8 @@ import { Typography, Box, Grid } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import { useState } from 'react';
-import FAQsList from './FAQsList';
-import Timeline from './components/Timeline';
+import FAQsSection from './components/FAQsSection';
+import TimelineSection from './components/TimelineSection';
 import Tabs from '../../components/Tabs';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -16,8 +16,8 @@ const PNMHomePage = () => {
   if (isError) return <ErrorPage message={error?.message} />;
 
   const tabs = [
-    { label: 'FAQs', component: <FAQsList /> },
-    { label: 'Timeline', component: <Timeline /> }
+    { label: 'FAQs', component: <FAQsSection /> },
+    { label: 'Timeline', component: <TimelineSection /> }
   ];
 
   return (
