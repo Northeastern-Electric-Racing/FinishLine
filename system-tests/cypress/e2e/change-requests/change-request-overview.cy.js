@@ -6,6 +6,8 @@ import {
   CHANGE_REQUEST_TABLE
 } from '../../utils/selectors.utils';
 
+import { LENGTH_GREATER_THAN, INCLUDE } from '../../utils/cypress-actions.utils';
+
 // To learn more about how Cypress works and
 // what makes it such an awesome testing tool,
 // please read our getting started guide:
@@ -22,26 +24,26 @@ describe('Change Request Overview', () => {
 
   it('Change Requests to Review Should Display At Least One CR', () => {
     // We use the `cy.get()` command to get all elements that match the selector.
-    cy.get(CR_ROW('Change Requests To Review')).children().should('have.length.greaterThan', 0);
+    cy.get(CR_ROW('Change Requests To Review')).children().should(LENGTH_GREATER_THAN, 0);
   });
 
   it('My Un-reviewed Change Requests Should Display At Least Two CRs', () => {
-    cy.get(CR_ROW('My Un-reviewed Change Requests')).children().should('have.length.greaterThan', 1);
+    cy.get(CR_ROW('My Un-reviewed Change Requests')).children().should(LENGTH_GREATER_THAN, 1);
   });
 
   it('My Aproved Change Requests Should Display At Least Three CRs', () => {
-    cy.get(CR_ROW('My Approved Change Requests')).children().should('have.length.greaterThan', 2);
+    cy.get(CR_ROW('My Approved Change Requests')).children().should(LENGTH_GREATER_THAN, 2);
   });
 
   it('New Change Request Button Redirects to New Change Requeest Form', () => {
     cy.contains(NEW_CHANGE_REQUEST_BUTTON).click();
 
-    cy.url().should('include', '/change-requests/new');
+    cy.url().should(INCLUDE, '/change-requests/new');
   });
 
   it('Can Switch to All Change Requests Table', () => {
     cy.contains(ALL_CHANGE_REQUESTS_TAB).click();
-    cy.url().should('include', '/change-requests/all');
+    cy.url().should(INCLUDE, '/change-requests/all');
     cy.get(CHANGE_REQUEST_TABLE);
   });
 });

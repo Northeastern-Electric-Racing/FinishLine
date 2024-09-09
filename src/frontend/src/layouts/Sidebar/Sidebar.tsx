@@ -25,6 +25,9 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
 import { useHistory } from 'react-router-dom';
+import { userComparator } from '../../utils/teams.utils';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { isGuest } from 'shared';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -35,6 +38,7 @@ interface SidebarProps {
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const { onPNMHomePage } = useHomePageContext();
+  const user = useCurrentUser();
   const theme = useTheme();
   const history = useHistory();
 
@@ -139,17 +143,19 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           )}
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
-          <Box marginBottom={2}>
-            {/* Return to guest mode button */}
-            <SidebarButton
-              onClick={() => {
-                history.push(routes.HOME_GUEST);
-                window.location.reload();
-              }}
-              icon={<ArrowBackIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
-              label={'Guest Home'}
-            />
-          </Box>
+          {isGuest(user.role) && (
+            <Box marginBottom={2}>
+              {/* Return to guest mode button */}
+              <SidebarButton
+                onClick={() => {
+                  history.push(routes.HOME_GUEST);
+                  window.location.reload();
+                }}
+                icon={<ArrowBackIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
+                label={'Guest Home'}
+              />
+            </Box>
+          )}
           <Box marginLeft={1.1}>
             <Typography marginLeft={1.1}>Sponsored By:</Typography>
             <Box component="img" sx={{ height: 40 }} alt="Kaleidoscope Logo" src="/kaleidoscope-logo-lockup.svg" />
