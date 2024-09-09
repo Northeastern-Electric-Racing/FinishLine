@@ -1,6 +1,5 @@
 import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { AuthenticatedUser } from 'shared';
 import ImageWithButton from './components/ImageWithButton';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
@@ -16,8 +15,7 @@ const GuestHomePage = () => {
   useEffect(() => {
     setOnGuestHomePage(true);
     setOnPNMHomePage(false);
-    console.log('test');
-  }, []);
+  }, [setOnGuestHomePage, setOnPNMHomePage]);
 
   return (
     <PageLayout title="Home" hidePageTitle>

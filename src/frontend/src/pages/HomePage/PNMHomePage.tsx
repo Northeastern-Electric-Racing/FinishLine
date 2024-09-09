@@ -17,7 +17,7 @@ const PNMHomePage = () => {
   useEffect(() => {
     setOnPNMHomePage(true);
     setOnGuestHomePage(false);
-  }, []);
+  }, [setOnPNMHomePage, setOnGuestHomePage]);
 
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;

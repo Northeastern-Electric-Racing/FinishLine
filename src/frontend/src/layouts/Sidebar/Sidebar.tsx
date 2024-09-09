@@ -34,7 +34,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
-  const { onPNMHomePage, setOnGuestHomePage, setOnPNMHomePage } = useHomePageContext();
+  const { onPNMHomePage } = useHomePageContext();
   const theme = useTheme();
   const history = useHistory();
 
