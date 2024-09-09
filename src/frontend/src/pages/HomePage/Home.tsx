@@ -7,7 +7,6 @@ import { routes } from '../../utils/routes';
 import MemberHomePage from './MemberHomePage';
 import GuestHomePage from './GuestHomePage';
 import PNMHomePage from './PNMHomePage';
-import { isGuest } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 const Home: React.FC = () => {

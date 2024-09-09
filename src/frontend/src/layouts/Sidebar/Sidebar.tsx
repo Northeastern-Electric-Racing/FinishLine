@@ -24,6 +24,7 @@ import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
+import { useHistory } from 'react-router-dom';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -35,6 +36,7 @@ interface SidebarProps {
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
   const { onPNMHomePage, setOnGuestHomePage, setOnPNMHomePage } = useHomePageContext();
   const theme = useTheme();
+  const history = useHistory();
 
   const memberLinkItems: LinkItem[] = [
     {
@@ -83,7 +85,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     {
       name: 'Home',
       icon: <HomeIcon />,
-      route: routes.HOME
+      route: routes.HOME_PNM
     },
     {
       name: 'Teams',
@@ -141,9 +143,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
             {/* Return to guest mode button */}
             <SidebarButton
               onClick={() => {
-                setDrawerOpen(false);
-                setOnGuestHomePage(true);
-                setOnPNMHomePage(false);
+                history.push(routes.HOME_GUEST);
                 window.location.reload();
               }}
               icon={<ArrowBackIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}

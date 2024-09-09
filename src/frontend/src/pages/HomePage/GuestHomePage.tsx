@@ -5,10 +5,19 @@ import ImageWithButton from './components/ImageWithButton';
 import { useHistory } from 'react-router-dom';
 import { routes } from '../../utils/routes';
 import { useCurrentUser } from '../../hooks/users.hooks';
+import { useEffect } from 'react';
+import { useHomePageContext } from '../../app/HomePageContext';
 
 const GuestHomePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
+  const { setOnGuestHomePage, setOnPNMHomePage } = useHomePageContext();
+
+  useEffect(() => {
+    setOnGuestHomePage(true);
+    setOnPNMHomePage(false);
+    console.log('test');
+  }, []);
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -27,7 +36,10 @@ const GuestHomePage = () => {
             title="Explore Our Work as a Guest"
             imageSrc={`/Guest.png`}
             buttonText="FinishLine"
-            onClick={() => history.push(routes.HOME)}
+            onClick={() => {
+              setOnGuestHomePage(false);
+              history.push(routes.HOME);
+            }}
           />
         </Box>
       </Box>

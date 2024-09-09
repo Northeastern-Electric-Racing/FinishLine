@@ -67,7 +67,7 @@ export const routes = {
   HOME,
   HOME_GUEST,
   HOME_PNM,
-  
+
   TEAMS,
   TEAMS_BY_ID,
 
