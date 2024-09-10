@@ -13,6 +13,7 @@ const CREDITS = `/credits`;
 const HOME = `/home`;
 const HOME_GUEST = HOME + `/guest`;
 const HOME_PNM = HOME + `/pnm`;
+const HOME_MEMBER = HOME + `/member`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
@@ -67,6 +68,7 @@ export const routes = {
   HOME,
   HOME_GUEST,
   HOME_PNM,
+  HOME_MEMBER,
 
   TEAMS,
   TEAMS_BY_ID,

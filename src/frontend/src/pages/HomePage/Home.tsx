@@ -15,6 +15,7 @@ const Home: React.FC = () => {
     <Switch>
       <Route path={routes.HOME_PNM} component={PNMHomePage} />
       <Route path={routes.HOME_GUEST} component={GuestHomePage} />
+      <Route path={routes.HOME_MEMBER} component={MemberHomePage} />
       <Route path={routes.HOME} component={MemberHomePage} />
     </Switch>
   );

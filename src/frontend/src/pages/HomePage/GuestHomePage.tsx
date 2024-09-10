@@ -36,7 +36,7 @@ const GuestHomePage = () => {
             buttonText="FinishLine"
             onClick={() => {
               setOnGuestHomePage(false);
-              history.push(routes.HOME);
+              history.push(routes.HOME_MEMBER);
             }}
           />
         </Box>

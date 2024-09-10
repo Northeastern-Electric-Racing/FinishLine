@@ -76,6 +76,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
               setMoveContent(true);
             }}
             sx={{ position: 'fixed', left: -8, top: '3%' }}
+            id="sidebar-button"
           >
             <ArrowCircleRightTwoToneIcon
               sx={{
@@ -98,6 +99,9 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
         <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
+            {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
+            {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
+            {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
