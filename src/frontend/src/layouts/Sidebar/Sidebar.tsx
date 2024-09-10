@@ -25,7 +25,6 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
 import { useHistory } from 'react-router-dom';
-import { userComparator } from '../../utils/teams.utils';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
 

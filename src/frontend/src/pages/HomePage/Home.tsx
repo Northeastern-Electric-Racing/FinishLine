@@ -10,7 +10,6 @@ import PNMHomePage from './PNMHomePage';
 import { useCurrentUser } from '../../hooks/users.hooks';
 
 const Home: React.FC = () => {
-  const user = useCurrentUser();
   return (
     <Switch>
       <Route path={routes.HOME_PNM} component={PNMHomePage} />
