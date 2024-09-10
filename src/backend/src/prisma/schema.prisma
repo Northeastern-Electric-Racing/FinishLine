@@ -382,16 +382,18 @@ model WBS_Element {
 }
 
 model Project {
-  projectId    String         @id @default(uuid())
-  wbsElementId String         @unique
-  wbsElement   WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
-  budget       Int            @default(0)
-  summary      String
-  workPackages Work_Package[]
-  carId        String
-  car          Car            @relation(fields: [carId], references: [carId])
-  teams        Team[]         @relation(name: "assignedBy")
-  favoritedBy  User[]         @relation(name: "favoritedBy")
+  projectId      String         @id @default(uuid())
+  wbsElementId   String         @unique
+  wbsElement     WBS_Element    @relation(fields: [wbsElementId], references: [wbsElementId])
+  budget         Int            @default(0)
+  summary        String
+  workPackages   Work_Package[]
+  carId          String
+  car            Car            @relation(fields: [carId], references: [carId])
+  teams          Team[]         @relation(name: "assignedBy")
+  favoritedBy    User[]         @relation(name: "favoritedBy")
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [organizationId])
 }
 
 model Work_Package {
@@ -872,6 +874,7 @@ model Organization {
   description           String
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
+  logoImage             String?
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -893,20 +896,21 @@ model Organization {
   usefulLinks              Link[]
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
+  featuredProjects         Project[]
 }
 
 model FrequentlyAskedQuestion {
-  faqId String       @id @default(uuid())
-  question                  String
-  answer                    String
-  userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId             String
-  userDeleted               User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId             String?
-  dateCreated               DateTime     @default(now())
-  dateDeleted               DateTime?
-  organizationId            String
-  organization              Organization @relation(fields: [organizationId], references: [organizationId])
+  faqId          String       @id @default(uuid())
+  question       String
+  answer         String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }
 
 model Milestone {
