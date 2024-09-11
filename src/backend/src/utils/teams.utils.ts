@@ -1,7 +1,6 @@
 import { Prisma, User, Team, Project } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { UserWithSettings } from './auth.utils';
-import { TeamQueryArgs, getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { NotFoundException } from './errors.utils';
 
 const teamQueryArgsMembersOnly = Prisma.validator<Prisma.TeamArgs>()({
@@ -100,7 +99,7 @@ export const removeUsersFromList = (currentUsers: UserWithId[], usersToRemove: U
 export const getTeamProjects = async (teamId: string): Promise<Project[]> => {
   const team = await prisma.team.findUnique({
     where: {
-      teamId: teamId
+      teamId
     },
     include: {
       projects: true
