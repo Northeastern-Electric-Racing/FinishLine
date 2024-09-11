@@ -874,7 +874,7 @@ model Organization {
   description           String
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
-  logoImage             String?
+  logoImageId           String?
 
   // Relation references
   wbsElements              WBS_Element[]
