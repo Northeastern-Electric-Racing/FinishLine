@@ -102,6 +102,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
+            <Redirect exact path={'/'} to={routes.HOME} />
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
