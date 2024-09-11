@@ -21,7 +21,7 @@ const TeamTypeTable: React.FC = () => {
 
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
-  const [addedImage, setAddedImage] = useState<File | undefined>(undefined);
+  const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
 
   const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
@@ -34,20 +34,21 @@ const TeamTypeTable: React.FC = () => {
   }
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
+    const addedImage = addedImages[teamTypeId];
     if (addedImage) {
       await setTeamTypeImage({ file: addedImage, id: teamTypeId });
       toast.success('Image uploaded successfully!', 5000);
-      setAddedImage(undefined);
+      setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
     } else {
       toast.error('No image selected for upload.', 5000);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, teamTypeId: string) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size < 1000000) {
-        setAddedImage(file);
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: file }));
       } else {
         toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
       }
@@ -91,10 +92,14 @@ const TeamTypeTable: React.FC = () => {
         )}
         <NERUploadButton
           dataTypeId={teamType.teamTypeId}
-          handleFileChange={handleFileChange}
+          handleFileChange={(e) => handleFileChange(e, teamType.teamTypeId)}
           onSubmit={onSubmitTeamTypeImage}
-          addedImage={addedImage}
-          setAddedImage={setAddedImage}
+          addedImage={addedImages[teamType.teamTypeId]}
+          setAddedImage={(newImage) =>
+            setAddedImages((prev) => {
+              return { ...prev, [teamType.teamTypeId]: newImage } as { [key: string]: File | undefined };
+            })
+          }
         />
       </TableCell>
     </TableRow>

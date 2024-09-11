@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material';
+import { Button } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -28,7 +28,6 @@ const NERUploadButton = ({ dataTypeId, handleFileChange, onSubmit, addedImage, s
         Upload
         <input
           onChange={(e) => {
-            console.log('e', e);
             handleFileChange(e);
           }}
           type="file"
@@ -38,28 +37,40 @@ const NERUploadButton = ({ dataTypeId, handleFileChange, onSubmit, addedImage, s
         />
       </Button>
       {addedImage && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="body2">{addedImage.name}</Typography>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => setAddedImage(undefined)}
-            sx={{ textTransform: 'none', mt: 1, mr: 1 }}
-          >
-            Remove
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => onSubmit(dataTypeId)}
-            sx={{
-              width: 'fit-content',
-              textTransform: 'none',
-              mt: 1
-            }}
-          >
-            Submit
-          </Button>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            mt: 2
+          }}
+        >
+          <Box
+            component="img"
+            src={addedImage ? URL.createObjectURL(addedImage) : ''}
+            alt="Image Preview"
+            sx={{ maxWidth: '300px', maxHeight: '300px', mb: 1 }}
+          />
+          <Box sx={{ display: 'flex', width: 'fit-content' }}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setAddedImage(undefined)}
+              sx={{ textTransform: 'none', mt: 1, mr: 1 }}
+            >
+              Remove
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => onSubmit(dataTypeId)}
+              sx={{
+                textTransform: 'none',
+                mt: 1
+              }}
+            >
+              Submit
+            </Button>
+          </Box>
         </Box>
       )}
     </>
