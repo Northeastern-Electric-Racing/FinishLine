@@ -8,7 +8,10 @@ import { useToast } from '../../../hooks/toasts.hooks';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const { isLoading: organizationImagesIsLoading, mutateAsync: organizationImages } = useSetOrganizationImages();
-  const [addedImages, setAddedImages] = useState<{ exploreAsGuest: File[], applyInterest: File[] }>({ exploreAsGuest: [], applyInterest: [] });
+  const [addedImages, setAddedImages] = useState<{ exploreAsGuest: File[]; applyInterest: File[] }>({
+    exploreAsGuest: [],
+    applyInterest: []
+  });
   const toast = useToast();
 
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
@@ -18,7 +21,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         validFiles.push(file);
         setAddedImages((prevImages) => ({
           ...prevImages,
-          [type]: [...prevImages[type], file],
+          [type]: [...prevImages[type], file]
         }));
       } else {
         toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
@@ -27,7 +30,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
 
     if (validFiles.length > 0) {
       try {
-        await organizationImages(validFiles); // Upload valid files
+        await organizationImages(validFiles);
       } catch (error) {
         console.error('Error uploading images:', error);
       }
@@ -63,7 +66,6 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
           <input
             type="file"
             accept="image/png, image/jpeg"
-            multiple
             hidden
             onChange={async (e) => {
               if (e.target.files) {
@@ -88,7 +90,6 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
           <input
             type="file"
             accept="image/png, image/jpeg"
-            multiple
             hidden
             onChange={async (e) => {
               if (e.target.files) {

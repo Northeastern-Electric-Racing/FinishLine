@@ -1,9 +1,12 @@
-import axios from "axios";
-import { apiUrls } from "../utils/urls";
+import axios from '../utils/axios';
+import { apiUrls } from '../utils/urls';
 
 export const setOrganizationImages = (images: File[]) => {
-    return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), {
-      applyInterestImageId: images[0],
-      exploreAsGuestImageId: images[1]
-    });
-  };
+  const formData = new FormData();
+
+  formData.append('applyInterestImage', images[0]);
+  formData.append('exploreAsGuestImage', images[1]);
+
+  return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), formData, {
+  });
+};
