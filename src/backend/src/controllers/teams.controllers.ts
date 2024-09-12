@@ -188,7 +188,6 @@ export default class TeamsController {
     try {
       const { file } = req;
       if (!file) throw new HttpException(400, 'Invalid or undefined image data');
-
       const teamType = await TeamsService.setTeamTypeImage(req.currentUser, req.params.teamTypeId, file, req.organization);
       res.status(200).json(teamType);
     } catch (error: unknown) {
