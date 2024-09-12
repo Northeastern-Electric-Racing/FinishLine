@@ -115,6 +115,8 @@ reimbursementRequestsRouter.post(
   ReimbursementRequestController.editAccountCode
 );
 
+reimbursementRequestsRouter.post('/account-codes/:accountCodeId/delete', ReimbursementRequestController.deleteAccountCode);
+
 reimbursementRequestsRouter.post(
   '/reimburse',
   intMinZero(body('amount')),
