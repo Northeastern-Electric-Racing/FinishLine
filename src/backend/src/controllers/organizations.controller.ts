@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import OrganizationsService from '../services/organizations.services';
+import { HttpException } from '../utils/errors.utils';
 
 export default class OrganizationsController {
   static async setUsefulLinks(req: Request, res: Response, next: NextFunction) {
@@ -49,6 +50,20 @@ export default class OrganizationsController {
       res.status(200).json(images);
     } catch (error: unknown) {
       next(error);
+    }
+  }
+
+  static async setLogoImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const logoFile = req.file || null;
+      if (!logoFile) {
+        throw new HttpException(400, 'Invalid or undefined image data');
+      }
+      const updatedOrg = await OrganizationsService.setLogoImage(logoFile, req.currentUser, req.organization);
+
+      return res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      return next(error);
     }
   }
 }
