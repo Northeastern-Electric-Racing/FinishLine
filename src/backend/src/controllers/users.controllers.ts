@@ -167,4 +167,16 @@ export default class UsersController {
       return next(error);
     }
   }
+
+  static async getUserTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const { organization } = req;
+
+      const userTasks = await UsersService.getUserTasks(userId, organization);
+      return res.status(200).json(userTasks);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }
