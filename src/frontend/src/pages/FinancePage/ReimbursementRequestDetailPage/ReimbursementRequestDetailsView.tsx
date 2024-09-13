@@ -25,7 +25,6 @@ import {
   useDenyReimbursementRequest,
   useLeadershipApproveReimbursementRequest,
   useMarkPendingFinance,
-  useMarkReimbursementRequestAsDelivered,
   useMarkReimbursementRequestAsReimbursed,
   useRequestReimbursementRequestChanges
 } from '../../../hooks/finance.hooks';
@@ -56,6 +55,7 @@ import SubmitToSaboModal from './SubmitToSaboModal';
 import DownloadIcon from '@mui/icons-material/Download';
 import ReimbursementRequestStatusPill from '../../../components/ReimbursementRequestStatusPill';
 import CheckList from '../../../components/CheckList';
+import MarkDeliveredModal from './MarkDeliveredModal';
 
 interface ReimbursementRequestDetailsViewProps {
   reimbursementRequest: ReimbursementRequest;
@@ -80,7 +80,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     reimbursementRequest.reimbursementRequestId
   );
   const { mutateAsync: denyReimbursementRequest } = useDenyReimbursementRequest(reimbursementRequest.reimbursementRequestId);
-  const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
   const { mutateAsync: markReimbursed } = useMarkReimbursementRequestAsReimbursed(
     reimbursementRequest.reimbursementRequestId
   );
@@ -112,17 +111,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     try {
       await denyReimbursementRequest();
       setShowDenyModal(false);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        toast.error(e.message, 3000);
-      }
-    }
-  };
-
-  const handleMarkDelivered = async () => {
-    try {
-      await markDelivered();
-      setShowMarkDelivered(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
         toast.error(e.message, 3000);
@@ -224,19 +212,6 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       </NERModal>
     );
   };
-
-  const MarkDeliveredModal = () => (
-    <NERModal
-      open={showMarkDelivered}
-      onHide={() => setShowMarkDelivered(false)}
-      title="Warning!"
-      cancelText="No"
-      submitText="Yes"
-      onSubmit={handleMarkDelivered}
-    >
-      <Typography>Are you sure the items in this reimbursement request have all been delivered?</Typography>
-    </NERModal>
-  );
 
   const MarkReimbursedModal = () => (
     <NERModal
@@ -511,7 +486,11 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
     >
       <DeleteModal />
       <DenyModal />
-      <MarkDeliveredModal />
+      <MarkDeliveredModal
+        modalShow={showMarkDelivered}
+        onHide={() => setShowMarkDelivered(false)}
+        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+      />
       <MarkReimbursedModal />
       <LeadershipApproveModal />
       <MarkPendingFinanceModal />
