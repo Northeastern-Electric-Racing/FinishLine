@@ -36,7 +36,8 @@ import {
 } from '../prisma-query-args/user.query-args';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
-import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import { getTaskQueryArgs, TaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import taskTransformer from '../transformers/tasks.transformer';
 
 export default class UsersService {
   /**
@@ -541,24 +542,12 @@ export default class UsersService {
   }
 
   static async getUserTasks(userId: string, organization: Organization) {
-    const requestedUser = await prisma.user.findUnique({ where: { userId } });
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { assignedTasks: getTaskQueryArgs(organization.organizationId) }
+    });
     if (!requestedUser) throw new NotFoundException('User', userId);
 
-    const tasks = prisma.task.findMany({
-      where: {
-        assignees: {
-          some: {
-            userId
-          }
-        },
-        wbsElement: {
-          organizationId: organization.organizationId
-        }
-      },
-      ...getTaskQueryArgs(organization.organizationId)
-    });
-
-    if (!tasks) throw new HttpException(404, 'User tasks Not Found');
-    return tasks;
+    return requestedUser.assignedTasks.map(taskTransformer);
   }
 }
