@@ -5,11 +5,16 @@
 
 /**************** General Section ****************/
 const BASE = `/`;
-const HOME = `/home`;
 const LOGIN = `/login`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
 const CREDITS = `/credits`;
+
+/**************** Home Section ****************/
+const HOME = `/home`;
+const HOME_GUEST = HOME + `/guest`;
+const HOME_PNM = HOME + `/pnm`;
+const HOME_MEMBER = HOME + `/member`;
 
 /**************** Finance Section ****************/
 const FINANCE = `/finance`;
@@ -58,10 +63,14 @@ const ORGANIZATIONS = `/organizations`;
 
 export const routes = {
   BASE,
-  HOME,
   LOGIN,
   INFO,
   CREDITS,
+
+  HOME,
+  HOME_GUEST,
+  HOME_PNM,
+  HOME_MEMBER,
 
   TEAMS,
   TEAMS_BY_ID,

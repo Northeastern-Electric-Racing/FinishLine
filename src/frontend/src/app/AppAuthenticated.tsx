@@ -27,10 +27,10 @@ import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import HiddenContentMargin from '../components/HiddenContentMargin';
-import emitter from './EventBus';
+import { useHomePageContext } from './HomePageContext';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -43,19 +43,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const [onMemberHomePage, setOnMemberHomePage] = useState(userRole !== 'GUEST');
-
-  useEffect(() => {
-    const handleMemberHomePage = (value: boolean) => {
-      setOnMemberHomePage(value);
-    };
-
-    emitter.on('memberHomePage', handleMemberHomePage as (event: unknown) => void);
-
-    return () => {
-      emitter.off('memberHomePage', handleMemberHomePage as (event: unknown) => void);
-    };
-  }, []);
+  const { onGuestHomePage } = useHomePageContext();
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -76,11 +64,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
           height: '100vh',
           position: 'fixed',
           width: 15,
-          borderRight: onMemberHomePage ? 2 : 0,
+          borderRight: !onGuestHomePage ? 2 : 0,
           borderRightColor: theme.palette.background.paper
         }}
       />
-      {onMemberHomePage && (
+      {!onGuestHomePage && (
         <>
           <IconButton
             onClick={() => {
@@ -88,6 +76,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
               setMoveContent(true);
             }}
             sx={{ position: 'fixed', left: -8, top: '3%' }}
+            id="sidebar-button"
           >
             <ArrowCircleRightTwoToneIcon
               sx={{
@@ -110,6 +99,9 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
         <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
+            {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
+            {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
+            {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
@@ -121,7 +113,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
-            <Route exact path={routes.HOME} component={Home} />
+            <Route path={routes.HOME} component={Home} />
             <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>
