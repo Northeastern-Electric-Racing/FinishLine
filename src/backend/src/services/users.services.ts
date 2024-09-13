@@ -36,7 +36,7 @@ import {
 } from '../prisma-query-args/user.query-args';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
-import { getTaskQueryArgs, TaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
 
 export default class UsersService {
