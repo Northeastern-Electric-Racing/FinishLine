@@ -55,11 +55,10 @@ export default class OrganizationsController {
 
   static async setLogoImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const logoFile = req.file || null;
-      if (!logoFile) {
+      if (!req.file) {
         throw new HttpException(400, 'Invalid or undefined image data');
       }
-      const updatedOrg = await OrganizationsService.setLogoImage(logoFile, req.currentUser, req.organization);
+      const updatedOrg = await OrganizationsService.setLogoImage(req.file, req.currentUser, req.organization);
 
       return res.status(200).json(updatedOrg);
     } catch (error: unknown) {

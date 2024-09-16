@@ -151,13 +151,13 @@ export default class OrganizationsService {
 
     const logoImageData = await uploadFile(logoImage);
 
-    const newOrg = await prisma.organization.update({
+    const updatedOrg = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
       data: {
         logoImageId: logoImageData.id
       }
     });
 
-    return newOrg;
+    return updatedOrg;
   }
 }
