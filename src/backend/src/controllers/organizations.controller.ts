@@ -65,13 +65,4 @@ export default class OrganizationsController {
       return next(error);
     }
   }
-
-  static async getOrganizationLogoImage(req: Request, res: Response, next: NextFunction) {
-    try {
-      const logoImageId = await OrganizationsService.getLogoImage(req.organization.organizationId);
-      res.status(200).json(logoImageId);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }

@@ -228,31 +228,4 @@ describe('Team Type Tests', () => {
       expect(updatedOrganization?.logoImageId).toBe('uploaded-image2.png');
     });
   });
-
-  describe('Get Organization Logo', () => {
-    it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getLogoImage('1')).rejects.toThrow(
-        new NotFoundException('Organization', '1')
-      );
-    });
-
-    it('Fails if the organization does not have a logo image', async () => {
-      await expect(async () => await OrganizationsService.getLogoImage(orgId)).rejects.toThrow(
-        new HttpException(404, `Organization ${orgId} does not have a logo image`)
-      );
-    });
-
-    it('Succeeds and gets the image', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await OrganizationsService.setLogoImage(
-        { originalname: 'image1.png' } as Express.Multer.File,
-        testBatman,
-        organization
-      );
-      const image = await OrganizationsService.getLogoImage(orgId);
-
-      expect(image).not.toBeNull();
-      expect(image).toBe('uploaded-image1.png');
-    });
-  });
 });
