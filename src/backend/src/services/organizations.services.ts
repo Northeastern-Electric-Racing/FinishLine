@@ -7,6 +7,7 @@ import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
+import { getProjects } from '../utils/projects.utils';
 
 export default class OrganizationsService {
   /**
@@ -130,5 +131,26 @@ export default class OrganizationsService {
       applyInterestImage: organization.applyInterestImageId,
       exploreAsGuestImage: organization.exploreAsGuestImageId
     };
+  }
+
+  static async setFeaturedProjects(projectIds: string[], organization: Organization, submitter: User) {
+    console.log('IN UTIL', projectIds);
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update featured projects');
+
+    //throws if all projects are not found
+    const featuredProjects = await getProjects(projectIds, organization.organizationId);
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        featuredProjects: {
+          set: featuredProjects.map((project) => ({ projectId: project.projectId }))
+        }
+      },
+      include: { featuredProjects: true }
+    });
+
+    return updatedOrg;
   }
 }
