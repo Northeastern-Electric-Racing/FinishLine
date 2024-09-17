@@ -218,6 +218,11 @@ export const checkMaterialInputs = async (
   }
 };
 
+/**
+ * Produce a array of primsa formated projectIDs, given the array of Project
+ * @param projectIds the projectIds to get as users
+ * @returns projectIds in prisma format
+ */
 export const getProjects = async (projectIds: string[], organizationId: string) => {
   const projects = await prisma.project.findMany({
     where: { projectId: { in: projectIds } },
