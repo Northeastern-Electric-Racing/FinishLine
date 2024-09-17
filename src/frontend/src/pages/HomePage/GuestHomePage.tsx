@@ -3,6 +3,7 @@ import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import ImageWithButton from './components/ImageWithButton';
 import emitter from '../../app/EventBus';
+import MemberEncouragement from './components/MemberEncouragement';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
@@ -20,6 +21,7 @@ const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
       <Typography variant="h3" textAlign="center" sx={{ mt: 2, pt: 3 }}>
         {user ? `Welcome, ${user.firstName}!` : 'Welcome, Guest!'}
       </Typography>
+      <MemberEncouragement />
       <Box sx={{ display: 'flex', mt: 4 }}>
         <Box sx={{ display: 'flex', padding: '50px', gap: 5 }}>
           <ImageWithButton
