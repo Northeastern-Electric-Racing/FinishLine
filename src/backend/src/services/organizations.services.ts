@@ -131,4 +131,33 @@ export default class OrganizationsService {
       exploreAsGuestImage: organization.exploreAsGuestImageId
     };
   }
+
+  /**
+   * Sets the logo for an organization, User must be admin
+   * @param logoImage the image which will be uploaded and have its id stored in the org
+   * @param submitter the user submitting the logo
+   * @param organization the organization who's logo is being set
+   * @returns the updated organization
+   * @throws if the user is not an admin
+   */
+  static async setLogoImage(
+    logoImage: Express.Multer.File,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update logo');
+    }
+
+    const logoImageData = await uploadFile(logoImage);
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        logoImageId: logoImageData.id
+      }
+    });
+
+    return updatedOrg;
+  }
 }
