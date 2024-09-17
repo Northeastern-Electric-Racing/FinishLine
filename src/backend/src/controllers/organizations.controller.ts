@@ -53,6 +53,17 @@ export default class OrganizationsController {
     }
   }
 
+  static async setOrganizationFeaturedProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectIds } = req.body;
+      const featuredProjects = await OrganizationsService.setFeaturedProjects(projectIds, req.organization, req.currentUser);
+
+      res.status(200).json(featuredProjects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setLogoImage(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.file) {
