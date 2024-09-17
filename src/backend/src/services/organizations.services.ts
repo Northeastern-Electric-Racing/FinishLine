@@ -134,7 +134,6 @@ export default class OrganizationsService {
   }
 
   static async setFeaturedProjects(projectIds: string[], organization: Organization, submitter: User) {
-    console.log('IN UTIL', projectIds);
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('update featured projects');
 
