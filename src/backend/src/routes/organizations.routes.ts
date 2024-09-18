@@ -27,4 +27,5 @@ organizationRouter.post(
   OrganizationsController.setOrganizationFeaturedProjects
 );
 organizationRouter.post('/logo/update', upload.single('logo'), OrganizationsController.setLogoImage);
+organizationRouter.get('/logo', OrganizationsController.getOrganizationLogoImage);
 export default organizationRouter;

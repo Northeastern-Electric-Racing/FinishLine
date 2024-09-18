@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -187,5 +187,26 @@ export default class OrganizationsService {
     });
 
     return updatedOrg;
+  }
+
+  /**
+   * Gets the logo image of the organization
+   * @param organizationId the id of the organization
+   * @returns the id of the image
+   */
+  static async getLogoImage(organizationId: string): Promise<string> {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!organization.logoImageId) {
+      throw new HttpException(404, `Organization ${organizationId} does not have a logo image`);
+    }
+
+    return organization.logoImageId;
   }
 }
