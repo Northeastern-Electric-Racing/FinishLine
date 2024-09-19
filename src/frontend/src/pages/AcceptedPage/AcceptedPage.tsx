@@ -1,13 +1,15 @@
 import { Typography, Box, Grid } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { AuthenticatedUser } from 'shared';
+import { AuthenticatedUser, TeamType } from 'shared';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import { NERButton } from '../../components/NERButton';
+import { fontSize } from '@mui/system';
 
 interface AcceptedPageProps {
   user: AuthenticatedUser;
+  // team: TeamType;
 }
 
 const AcceptedPage = ({ user }: AcceptedPageProps) => {
@@ -39,22 +41,22 @@ const AcceptedPage = ({ user }: AcceptedPageProps) => {
           display: 'block',
           marginLeft: 'auto',
           marginRight: 'auto',
-          marginTop: 2
+          marginTop: 4
         }}
       />
       <Box sx={{ mt: 2, ml: 2 }}>
         <Typography
           variant="h6"
           marginLeft="auto"
-          sx={{ marginTop: 5, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1 }}
+          sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1, fontSize: 25 }}
         >
-          Before you get started on the [subteam name] subteam, all new members will have to complete general and
-          subteam-specific onboarding. Please accept this offer within 5 days to start onboarding.
+          Before you get started on the  subteam, all new members will have to complete general and subteam-specific
+          onboarding. Please accept this offer within 5 days to start onboarding.
         </Typography>
         <Typography
           variant="h6"
           marginLeft="auto"
-          sx={{ marginTop: 1, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1 }}
+          sx={{ marginTop: 1, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1, fontSize: 25 }}
         >
           We can't wait to see you around and all that you'll accomplish!
         </Typography>
@@ -67,12 +69,12 @@ const AcceptedPage = ({ user }: AcceptedPageProps) => {
           width: '100%'
         }}
       >
-        <Grid container justifyContent="center" spacing={8} sx={{ maxWidth: '300px' }}>
+        <Grid container justifyContent="center" spacing={8} sx={{ maxWidth: '500px' }}>
           <Grid item>
-            <NERButton variant="contained">Accept</NERButton>
+            <NERButton variant="contained" sx={{fontSize: 20}}>Accept</NERButton>
           </Grid>
           <Grid item>
-            <NERButton variant="contained">Reject</NERButton>
+            <NERButton variant="contained" sx={{fontSize: 20}}>Reject</NERButton>
           </Grid>
         </Grid>
       </Box>
