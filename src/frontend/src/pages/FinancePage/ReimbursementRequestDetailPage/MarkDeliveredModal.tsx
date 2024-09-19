@@ -33,7 +33,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequestId }: MarkD
   const {
     handleSubmit,
     control,
-    formState: { errors, isValid },
+    formState: { errors },
     reset
   } = useForm({
     resolver: yupResolver(schema),
@@ -68,6 +68,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequestId }: MarkD
       reset={reset}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={handleMarkDelivered}
+      formId={'confirm-delivered-form'}
     >
       <FormControl fullWidth>
         <FormLabel>Date Final Item Delivered (MM-DD-YYYY)</FormLabel>
