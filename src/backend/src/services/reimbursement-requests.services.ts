@@ -761,6 +761,7 @@ export default class ReimbursementRequestService {
    * @param submitter The User marking the request as delivered
    * @param requestId The ID of the reimbursement request to be marked as delivered
    * @param organizationId The organization the user is currently in
+   * @param dateDelivered The date the reimbursed items were delivered
    * @throws NotFoundException if the id is invalid or not there
    * @throws AccessDeniedException if the creator of the request is not the submitter
    * @returns the updated reimbursement request
@@ -768,7 +769,8 @@ export default class ReimbursementRequestService {
   static async markReimbursementRequestAsDelivered(
     submitter: User,
     reimbursementRequestId: string,
-    organization: Organization
+    organization: Organization,
+    dateDelivered: Date
   ) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
@@ -784,9 +786,7 @@ export default class ReimbursementRequestService {
 
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
-      data: {
-        dateDelivered: new Date()
-      }
+      data: { dateDelivered }
     });
 
     return reimbursementRequestDelivered;
