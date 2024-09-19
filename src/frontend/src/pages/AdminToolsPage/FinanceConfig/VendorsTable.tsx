@@ -8,12 +8,14 @@ import { useState } from 'react';
 import CreateVendorModal from './CreateVendorModal';
 import AdminToolTable from '../AdminToolTable';
 import { Vendor } from 'shared';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditVendorModal from './EditVendorModal';
 
 const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
   const [createModalShow, setCreateModalShow] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [clickedVendor, setClickedVendor] = useState<Vendor>();
 
   if (!vendors || vendorIsLoading) {
@@ -24,17 +26,36 @@ const VendorsTable = () => {
   }
 
   const vendorTableRows = vendors.map((vendor) => (
-    <TableRow
-      onClick={() => {
-        setClickedVendor(vendor);
-        setShowEditModal(true);
-      }}
-      sx={{ cursor: 'pointer' }}
-    >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
+    <TableRow sx={{ cursor: 'pointer' }}>
+      <TableCell
+        align="left"
+        sx={{ border: '2px solid black' }}
+        onClick={() => {
+          setClickedVendor(vendor);
+          setShowEditModal(true);
+        }}
+      >
         {datePipe(vendor.dateCreated)}
       </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>{vendor.name}</TableCell>
+      <TableCell
+        sx={{ border: '2px solid black' }}
+        onClick={() => {
+          setClickedVendor(vendor);
+          setShowEditModal(true);
+        }}
+      >
+        {vendor.name}
+      </TableCell>
+      <TableCell
+        align="center"
+        sx={{ width: '20px', border: '2px solid black' }}
+        onClick={() => {
+          setClickedVendor(vendor);
+          setShowDeleteModal(true);
+        }}
+      >
+        <DeleteIcon />
+      </TableCell>
     </TableRow>
   ));
 
@@ -52,7 +73,10 @@ const VendorsTable = () => {
           vendors={vendors}
         />
       )}
-      <AdminToolTable columns={[{ name: 'Date Registered' }, { name: 'Vendor Name' }]} rows={vendorTableRows} />
+      <AdminToolTable
+        columns={[{ name: 'Date Registered' }, { name: 'Vendor Name' }, { name: 'Delete' }]}
+        rows={vendorTableRows}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
         <NERButton
           variant="contained"
