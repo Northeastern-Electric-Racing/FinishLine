@@ -1,4 +1,4 @@
-import { WbsElement, wbsPipe } from 'shared';
+import { WbsElement, wbsPipe, WorkPackage } from 'shared';
 import { WPFormType } from './form';
 
 export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {
@@ -11,3 +11,10 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
       return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
   }
 };
+
+export const getUpcomingWorkPackages = (workPackages: WorkPackage[]): WorkPackage[] => {
+  const currentTime = new Date();
+  const twoWeeks = new Date();
+  twoWeeks.setDate(currentTime.getDate() + 14);
+  return workPackages.filter(({startDate}) => currentTime <= startDate && startDate <= twoWeeks);
+}
