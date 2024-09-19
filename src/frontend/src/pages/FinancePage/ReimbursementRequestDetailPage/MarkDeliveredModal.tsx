@@ -6,6 +6,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
+import { ReimbursementRequest } from 'shared';
 
 const schema = yup.object().shape({
   dateDelivered: yup.date().required('Must provide delivery date.'),
@@ -18,12 +19,19 @@ const schema = yup.object().shape({
 interface MarkDeliveredModalProps {
   modalShow: boolean;
   onHide: () => void;
-  reimbursementRequestId: string;
+  reimbursementRequest: ReimbursementRequest;
 }
 
-const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequestId }: MarkDeliveredModalProps) => {
+const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDeliveredModalProps) => {
   const toast = useToast();
-  const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequestId);
+  const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
+
+  const dateIsBeforeExpenseCreated = (date: Date): boolean => {
+    if (!reimbursementRequest.dateOfExpense) return false;
+    else {
+      return date < new Date(new Date(reimbursementRequest.dateOfExpense).setHours(0, 0, 0, 0));
+    }
+  };
 
   const dateIsInTheFuture = (date: Date) => {
     const now = new Date();
@@ -81,7 +89,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequestId }: MarkD
               onChange={(date) => onChange(date ?? new Date())}
               className={'padding: 10'}
               value={value}
-              shouldDisableDate={dateIsInTheFuture}
+              shouldDisableDate={(date) => dateIsBeforeExpenseCreated(date) || dateIsInTheFuture(date)}
               slotProps={{ textField: { autoComplete: 'off' } }}
             />
           )}

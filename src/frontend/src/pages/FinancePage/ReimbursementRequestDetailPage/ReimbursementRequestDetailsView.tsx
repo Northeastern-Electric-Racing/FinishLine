@@ -489,7 +489,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       <MarkDeliveredModal
         modalShow={showMarkDelivered}
         onHide={() => setShowMarkDelivered(false)}
-        reimbursementRequestId={reimbursementRequest.reimbursementRequestId}
+        reimbursementRequest={reimbursementRequest}
       />
       <MarkReimbursedModal />
       <LeadershipApproveModal />
