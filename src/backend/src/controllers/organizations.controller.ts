@@ -85,4 +85,13 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async getFeaturedProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);
+      res.status(200).json(featuredProjects);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

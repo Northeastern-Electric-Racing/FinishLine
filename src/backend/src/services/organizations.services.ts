@@ -209,4 +209,22 @@ export default class OrganizationsService {
 
     return organization.logoImageId;
   }
+
+  /**
+   * Gets the featured projects for the given organization Id
+   * @param organizationId the organization to get the projects for
+   * @returns all the featured projects for the organization
+   */
+  static async getOrganizationFeaturedProjects(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { featuredProjects: true }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.featuredProjects;
+  }
 }
