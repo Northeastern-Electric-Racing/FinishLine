@@ -190,4 +190,69 @@ describe('Team Type Tests', () => {
       expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
     });
   });
+
+  describe('Set Logo', () => {
+    const file1 = { originalname: 'image1.png' } as Express.Multer.File;
+    const file2 = { originalname: 'image2.png' } as Express.Multer.File;
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        OrganizationsService.setLogoImage(file1, await createTestUser(wonderwomanGuest, orgId), organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update logo'));
+    });
+
+    it('Succeeds and updates the logo', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      (uploadFile as Mock).mockImplementation((file) => {
+        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+      });
+
+      await OrganizationsService.setLogoImage(file1, testBatman, organization);
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.logoImageId).toBe('uploaded-image1.png');
+
+      await OrganizationsService.setLogoImage(file2, testBatman, organization);
+
+      const updatedOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(updatedOrganization?.logoImageId).toBe('uploaded-image2.png');
+    });
+  });
+
+  describe('Get Organization Logo', () => {
+    it('Fails if an organization does not exist', async () => {
+      await expect(async () => await OrganizationsService.getLogoImage('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Fails if the organization does not have a logo image', async () => {
+      await expect(async () => await OrganizationsService.getLogoImage(orgId)).rejects.toThrow(
+        new HttpException(404, `Organization ${orgId} does not have a logo image`)
+      );
+    });
+
+    it('Succeeds and gets the image', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await OrganizationsService.setLogoImage(
+        { originalname: 'image1.png' } as Express.Multer.File,
+        testBatman,
+        organization
+      );
+      const image = await OrganizationsService.getLogoImage(orgId);
+
+      expect(image).not.toBeNull();
+      expect(image).toBe('uploaded-image1.png');
+    });
+  });
 });
