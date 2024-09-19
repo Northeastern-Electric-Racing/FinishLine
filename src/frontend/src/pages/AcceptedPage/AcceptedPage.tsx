@@ -50,7 +50,7 @@ const AcceptedPage = ({ user }: AcceptedPageProps) => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1, fontSize: 25 }}
         >
-          Before you get started on the  subteam, all new members will have to complete general and subteam-specific
+          Before you get started on the subteam, all new members will have to complete general and subteam-specific
           onboarding. Please accept this offer within 5 days to start onboarding.
         </Typography>
         <Typography
@@ -71,10 +71,14 @@ const AcceptedPage = ({ user }: AcceptedPageProps) => {
       >
         <Grid container justifyContent="center" spacing={8} sx={{ maxWidth: '500px' }}>
           <Grid item>
-            <NERButton variant="contained" sx={{fontSize: 20}}>Accept</NERButton>
+            <NERButton variant="contained" sx={{ fontSize: 20 }}>
+              Accept
+            </NERButton>
           </Grid>
           <Grid item>
-            <NERButton variant="contained" sx={{fontSize: 20}}>Reject</NERButton>
+            <NERButton variant="contained" sx={{ fontSize: 20 }}>
+              Reject
+            </NERButton>
           </Grid>
         </Grid>
       </Box>
