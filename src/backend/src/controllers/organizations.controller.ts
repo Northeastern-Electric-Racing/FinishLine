@@ -2,6 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import OrganizationsService from '../services/organizations.services';
 
 export default class OrganizationsController {
+  static async getCurrentOrganization(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organization = await OrganizationsService.getCurrentOrganization(req.organization.organizationId);
+      return res.status(200).json(organization);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async setUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const { links } = req.body;
