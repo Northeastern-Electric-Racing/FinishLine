@@ -5,14 +5,13 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import { NERButton } from '../../components/NERButton';
-import { fontSize } from '@mui/system';
 
 interface AcceptedPageProps {
   user: AuthenticatedUser;
-  // team: TeamType;
+  team: TeamType;
 }
 
-const AcceptedPage = ({ user }: AcceptedPageProps) => {
+const AcceptedPage = ({ user, team }: AcceptedPageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
@@ -50,7 +49,7 @@ const AcceptedPage = ({ user }: AcceptedPageProps) => {
           marginLeft="auto"
           sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0, fontFamily: 'oswald', fontWeight: 1, fontSize: 25 }}
         >
-          Before you get started on the subteam, all new members will have to complete general and subteam-specific
+          Before you get started on the {team.name}, all new members will have to complete general and subteam-specific
           onboarding. Please accept this offer within 5 days to start onboarding.
         </Typography>
         <Typography
