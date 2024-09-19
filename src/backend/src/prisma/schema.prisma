@@ -109,6 +109,33 @@ enum Design_Review_Status {
   DONE
 }
 
+enum Graph_Type {
+  BAR
+  LINE
+  PIE
+}
+
+enum Data_Type {
+  CAR
+  PROJECT
+  TEAM
+  CHANGE_REQUEST
+  BUDGET
+  DESIGN_REVIEW
+  USER
+}
+
+enum Values {
+  SUM
+  AVERAGE
+}
+
+enum Permission {
+  LEADS_ONLY
+  HEADS_ONLY
+  ALL_MEMBERS
+}
+
 model User {
   userId             String                @id @default(uuid())
   firstName          String
@@ -180,6 +207,10 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
+  createdGraphCollections         GraphCollection[]         @relation(name: "graphCollectionsCreator")
+  deletedGraphCollections         GraphCollection[]         @relation(name: "graphCollectionDeleter")
+  createdGraphs                   Graph[]                   @relation(name: "graphCreator")
+  deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
 }
 
 model Role {
@@ -214,6 +245,8 @@ model Team {
   teamTypeId             String?
   organizationId         String
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
+  Graph                  Graph?                     @relation(fields: [graphLinkId], references: [linkId])
+  graphLinkId            String?
 }
 
 model Session {
@@ -392,6 +425,8 @@ model Project {
   car          Car            @relation(fields: [carId], references: [carId])
   teams        Team[]         @relation(name: "assignedBy")
   favoritedBy  User[]         @relation(name: "favoritedBy")
+  Graph        Graph?         @relation(fields: [graphLinkId], references: [linkId])
+  graphLinkId  String?
 }
 
 model Work_Package {
@@ -854,6 +889,8 @@ model Car {
   projectProposedChanges Project_Proposed_Changes[]
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
+  Graph                  Graph?                     @relation(fields: [graphLinkId], references: [linkId])
+  graphLinkId            String?
 }
 
 model Organization {
@@ -896,17 +933,17 @@ model Organization {
 }
 
 model FrequentlyAskedQuestion {
-  faqId String       @id @default(uuid())
-  question                  String
-  answer                    String
-  userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId             String
-  userDeleted               User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId             String?
-  dateCreated               DateTime     @default(now())
-  dateDeleted               DateTime?
-  organizationId            String
-  organization              Organization @relation(fields: [organizationId], references: [organizationId])
+  faqId          String       @id @default(uuid())
+  question       String
+  answer         String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }
 
 model Milestone {
@@ -922,4 +959,46 @@ model Milestone {
   dateDeleted    DateTime?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Graph {
+  organizationId        String           @unique
+  startDate             DateTime
+  endDate               DateTime
+  title                 String
+  linkId                String           @id @default(uuid())
+  graphType             Graph_Type
+  cars                  Car[]
+  teams                 Team[]
+  projects              Project[]
+  userCreated           User             @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
+  userCreatedId         String
+  userDeleted           User?            @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
+  userDeletedId         String?
+  dateDeleted           DateTime?
+  graphDataId           String           @unique
+  data                  GraphData        @relation(fields: [graphDataId], references: [id])
+  groupBy               Data_Type
+  GraphCollection       GraphCollection? @relation(fields: [graphCollectionLinkId], references: [linkId])
+  graphCollectionLinkId String?
+}
+
+model GraphData {
+  id     String    @unique
+  type   Data_Type
+  values Values
+  Graph  Graph[]
+}
+
+model GraphCollection {
+  organizationId String       @unique
+  graphs         Graph[]
+  title          String
+  linkId         String       @id @default(uuid())
+  userCreatedId  String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCollectionsCreator")
+  userDeletedId  String?
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphCollectionDeleter")
+  dateDeleted    DateTime?
+  permissions    Permission[]
 }
