@@ -17,14 +17,14 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
  * @param wpList a list of work packages.
  * @returns a list of work packages that are overdue.
  */
-export const getOverdueWorkPackages = (wpList : WorkPackage[]) : WorkPackage[] => {
-  const overdueWorkPackages : WorkPackage[] = [];
+export const getOverdueWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
+  const overdueWorkPackages: WorkPackage[] = [];
 
-  for(let i = 0; i < wpList.length ; i++){
+  for (let i = 0; i < wpList.length; i++) {
     const curr = wpList[i];
 
     // if the work package is anything but complete and the end date is before today, it is overdue.
-    if(curr.status !== WbsElementStatus.Complete && curr.endDate < new Date()){
+    if (curr.status !== WbsElementStatus.Complete && curr.endDate < new Date()) {
       overdueWorkPackages.push(curr);
     }
   }
