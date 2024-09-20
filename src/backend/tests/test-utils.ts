@@ -17,6 +17,7 @@ import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSet
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
 import TasksService from '../src/services/tasks.services';
+import ProjectsService from '../src/services/projects.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -419,7 +420,22 @@ export const createTestDesignReview = async () => {
 export const createTestTask = async (user: User, organization?: Organization) => {
   if (!organization) organization = await createTestOrganization();
   const orgId = organization.organizationId;
-  await createTestProject(user, organization.organizationId);
+  const team = await TeamsService.createTeam(user, 'Test team', user.userId, 'Test', '', false, organization);
+  if (!team) throw new Error('Failed to create team');
+  const project = await createTestProject(user, organization.organizationId);
+  if (!project) throw new Error('Failed to create project');
+  const projectWithTeam = ProjectsService.setProjectTeam(
+    user,
+    {
+      carNumber: 0,
+      projectNumber: 1,
+      workPackageNumber: 0
+    },
+    team.teamId,
+    organization
+  );
+  if (!projectWithTeam) throw new Error('Failed to create project with team');
+
   const task = await TasksService.createTask(
     user,
     {
