@@ -16,15 +16,14 @@ describe('User Tests', () => {
     await resetUsers();
   });
 
-  describe('Get Users Tasks', async () => {
-    const testBatman = await createTestUser(batmanAppAdmin, orgId);
-    const { task } = await createTestTask(testBatman, organization);
-
+  describe('Get Users Tasks', () => {
     it('fails on invalid user id', async () => {
       expect(UsersService.getUserTasks('1', organization)).rejects.toThrow(new NotFoundException('User', '1'));
     });
 
     it("Succeeds and gets user's assigned tasks", async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const { task } = await createTestTask(testBatman, organization);
       const userTasks = await UsersService.getUserTasks(testBatman.userId, organization);
 
       expect(userTasks).toStrictEqual([task]);
