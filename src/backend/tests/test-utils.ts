@@ -12,10 +12,11 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, RoleEnum } from 'shared';
+import { ClubAccount, RoleEnum, TaskPriority, TaskStatus } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
+import TasksService from '../src/services/tasks.services';
 
 export interface CreateTestUserParams {
   firstName: string;
@@ -413,4 +414,28 @@ export const createTestDesignReview = async () => {
 
   const orgId = organization.organizationId;
   return { dr, organization, orgId };
+};
+
+export const createTestTask = async (user: User, organization?: Organization) => {
+  if (!organization) organization = await createTestOrganization();
+  const orgId = organization.organizationId;
+  const testBatman = await createTestUser(batmanAppAdmin, orgId);
+  const task = await TasksService.createTask(
+    testBatman,
+    {
+      carNumber: 0,
+      projectNumber: 0,
+      workPackageNumber: 0
+    },
+    'Test task',
+    'Test',
+    new Date(),
+    TaskPriority.High,
+    TaskStatus.IN_PROGRESS,
+    [testBatman.userId],
+    organization
+  );
+
+  if (!task) throw new Error('Failed to create design review');
+  return { task, organization, orgId };
 };
