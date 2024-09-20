@@ -423,7 +423,7 @@ export const createTestTask = async (user: User, organization?: Organization) =>
     user,
     {
       carNumber: 0,
-      projectNumber: 0,
+      projectNumber: 7,
       workPackageNumber: 0
     },
     'Test task',
