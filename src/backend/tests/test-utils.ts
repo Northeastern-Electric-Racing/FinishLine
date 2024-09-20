@@ -419,9 +419,8 @@ export const createTestDesignReview = async () => {
 export const createTestTask = async (user: User, organization?: Organization) => {
   if (!organization) organization = await createTestOrganization();
   const orgId = organization.organizationId;
-  const testBatman = await createTestUser(batmanAppAdmin, orgId);
   const task = await TasksService.createTask(
-    testBatman,
+    user,
     {
       carNumber: 0,
       projectNumber: 0,
@@ -432,7 +431,7 @@ export const createTestTask = async (user: User, organization?: Organization) =>
     new Date(),
     TaskPriority.High,
     TaskStatus.IN_PROGRESS,
-    [testBatman.userId],
+    [user.userId],
     organization
   );
 
