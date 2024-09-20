@@ -419,12 +419,12 @@ export const createTestDesignReview = async () => {
 export const createTestTask = async (user: User, organization?: Organization) => {
   if (!organization) organization = await createTestOrganization();
   const orgId = organization.organizationId;
-  const project = await createTestProject(user, organization.organizationId);
+  await createTestProject(user, organization.organizationId);
   const task = await TasksService.createTask(
     user,
     {
       carNumber: 0,
-      projectNumber: 0,
+      projectNumber: 1,
       workPackageNumber: 0
     },
     'Test task',
