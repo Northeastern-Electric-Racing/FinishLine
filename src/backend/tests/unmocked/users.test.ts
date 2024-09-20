@@ -18,7 +18,7 @@ describe('User Tests', () => {
 
   describe('Get Users Tasks', () => {
     it('fails on invalid user id', async () => {
-      expect(async () => await UsersService.getUserTasks('1', organization)).rejects.toThrow(
+      await expect(async () => await UsersService.getUserTasks('1', organization)).rejects.toThrow(
         new NotFoundException('User', '1')
       );
     });
