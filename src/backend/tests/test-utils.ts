@@ -436,6 +436,6 @@ export const createTestTask = async (user: User, organization?: Organization) =>
     organization
   );
 
-  if (!task) throw new Error('Failed to create design review');
+  if (!task) throw new Error('Failed to create task');
   return { task, organization, orgId };
 };
