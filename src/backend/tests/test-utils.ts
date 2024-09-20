@@ -424,7 +424,7 @@ export const createTestTask = async (user: User, organization?: Organization) =>
   if (!team) throw new Error('Failed to create team');
   const project = await createTestProject(user, organization.organizationId);
   if (!project) throw new Error('Failed to create project');
-  const projectWithTeam = ProjectsService.setProjectTeam(
+  const projectWithTeam = await ProjectsService.setProjectTeam(
     user,
     {
       carNumber: 0,
