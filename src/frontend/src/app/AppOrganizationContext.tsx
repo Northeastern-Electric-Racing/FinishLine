@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { useProvideOrganization } from '../hooks/organization.hooks';
+import { useProvideOrganization } from '../hooks/organizations.hooks';
 
 export interface Organization {
   organizationId: string;
