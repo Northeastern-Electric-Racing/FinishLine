@@ -57,7 +57,7 @@ const NERUploadButton = ({ dataTypeId, handleFileChange, onSubmit, addedImage, s
               onClick={() => setAddedImage(undefined)}
               sx={{ textTransform: 'none', mt: 1, mr: 1 }}
             >
-              Remove
+              Cancel
             </Button>
             <Button
               variant="contained"

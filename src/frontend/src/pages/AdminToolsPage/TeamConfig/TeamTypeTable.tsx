@@ -55,55 +55,63 @@ const TeamTypeTable: React.FC = () => {
     }
   };
 
-  const teamTypesTableRows = teamTypes.map((teamType) => (
-    <TableRow>
-      <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
-        {teamType.name}
-      </TableCell>
-      <TableCell
-        onClick={() => setEditingTeamType(teamType)}
-        sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Icon>{teamType.iconName}</Icon>
-          <Typography variant="body1" sx={{ marginLeft: 1 }}>
-            {teamType.iconName}
-          </Typography>
-        </Box>
-      </TableCell>
-      <TableCell
-        onClick={() => setEditingTeamType(teamType)}
-        sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="body1" sx={{ marginLeft: 1 }}>
-            {teamType.description}
-          </Typography>
-        </Box>
-      </TableCell>
-      <TableCell sx={{ border: '2px solid black' }}>
-        {teamType.imageFileId && (
-          <Box
-            component="img"
-            src={teamType.imageFileId}
-            alt="Image Preview"
-            sx={{ maxWidth: '100%', maxHeight: '200px', mb: 2 }}
-          />
-        )}
-        <NERUploadButton
-          dataTypeId={teamType.teamTypeId}
-          handleFileChange={(e) => handleFileChange(e, teamType.teamTypeId)}
-          onSubmit={onSubmitTeamTypeImage}
-          addedImage={addedImages[teamType.teamTypeId]}
-          setAddedImage={(newImage) =>
-            setAddedImages((prev) => {
-              return { ...prev, [teamType.teamTypeId]: newImage } as { [key: string]: File | undefined };
-            })
-          }
-        />
-      </TableCell>
-    </TableRow>
-  ));
+  const teamTypesTableRows = teamTypes.map((teamType) => {
+    const imageUrl = teamType.imageFileId ? `https://drive.google.com/uc?id=${teamType.imageFileId}` : '';
+
+    return (
+      <TableRow>
+        <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
+          {teamType.name}
+        </TableCell>
+        <TableCell
+          onClick={() => setEditingTeamType(teamType)}
+          sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Icon>{teamType.iconName}</Icon>
+            <Typography variant="body1" sx={{ marginLeft: 1 }}>
+              {teamType.iconName}
+            </Typography>
+          </Box>
+        </TableCell>
+        <TableCell
+          onClick={() => setEditingTeamType(teamType)}
+          sx={{ cursor: 'pointer', border: '2px solid black', verticalAlign: 'middle' }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body1" sx={{ marginLeft: 1 }}>
+              {teamType.description}
+            </Typography>
+          </Box>
+        </TableCell>
+        <TableCell sx={{ border: '2px solid black' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
+            {console.log(imageUrl)}
+            {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
+              <Box
+                key={imageUrl}
+                component="img"
+                src={imageUrl}
+                alt="Image Preview"
+                sx={{ maxWidth: '100%', maxHeight: '200px', mt: 1, mb: 1 }}
+              />
+            )}
+            <NERUploadButton
+              dataTypeId={teamType.teamTypeId}
+              handleFileChange={(e) => handleFileChange(e, teamType.teamTypeId)}
+              onSubmit={onSubmitTeamTypeImage}
+              addedImage={addedImages[teamType.teamTypeId]}
+              setAddedImage={(newImage) =>
+                setAddedImages((prev) => {
+                  return { ...prev, [teamType.teamTypeId]: newImage } as { [key: string]: File | undefined };
+                })
+              }
+            />
+          </Box>
+        </TableCell>
+      </TableRow>
+    );
+  });
 
   return (
     <Box>
