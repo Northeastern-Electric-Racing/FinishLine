@@ -17,7 +17,8 @@ import {
   getCurrentUserSecureSettings,
   getUserSecureSettings,
   getUserScheduleSettings,
-  updateUserScheduleSettings
+  updateUserScheduleSettings,
+  getUserTasks
 } from '../apis/users.api';
 import {
   User,
@@ -28,7 +29,8 @@ import {
   UserSecureSettings,
   UserScheduleSettings,
   UserWithScheduleSettings,
-  SetUserScheduleSettingsPayload
+  SetUserScheduleSettingsPayload,
+  Task
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -232,4 +234,11 @@ export const useUpdateUserRole = () => {
       }
     }
   );
+};
+
+export const useUserTasks = (id: string) => {
+  return useQuery<Task[], Error>(['users', id, 'tasks'], async () => {
+    const { data } = await getUserTasks(id);
+    return data;
+  });
 };

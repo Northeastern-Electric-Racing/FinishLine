@@ -9,7 +9,7 @@ import {
   Link,
   Stack,
   Typography,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import { wbsPipe, WorkPackage } from 'shared';
 import { datePipe, fullNamePipe, projectWbsPipe } from '../../../utils/pipes';

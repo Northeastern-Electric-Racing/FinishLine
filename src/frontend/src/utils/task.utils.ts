@@ -68,3 +68,17 @@ export const taskUserToAutocompleteOption = (user: User): { label: string; id: s
 export const getTaskAssigneeOptions = (teams: TeamPreview[]): User[] => {
   return teams.map((team) => makeTeamList(team)).flat();
 };
+
+export const isTaskOverdue = (task: Task) => {
+  return new Date() > task.deadline;
+};
+
+export const taskPriorityColor = (task: Task) => {
+  return task.priority === TaskPriority.Low
+    ? 'green'
+    : task.priority === TaskPriority.Medium
+    ? 'yellow'
+    : task.priority === TaskPriority.High
+    ? 'red'
+    : '';
+};
