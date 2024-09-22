@@ -10,6 +10,7 @@ import AdminToolTable from '../AdminToolTable';
 import { Vendor } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditVendorModal from './EditVendorModal';
+import DeleteVendorModal from './DeleteVendorModal';
 
 const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
@@ -62,6 +63,7 @@ const VendorsTable = () => {
   return (
     <Box>
       <CreateVendorModal showModal={createModalShow} handleClose={() => setCreateModalShow(false)} vendors={vendors} />
+      <DeleteVendorModal showModal={showDeleteModal} handleClose={() => setShowDeleteModal(false)} vendor={clickedVendor} />
       {clickedVendor && (
         <EditVendorModal
           showModal={showEditModal}
