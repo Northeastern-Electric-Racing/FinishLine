@@ -19,14 +19,8 @@ interface DeleteVendorModalProps {
 const DeleteVendorModal = ({ showModal, handleClose, defaultValues, onSubmit, vendor }: DeleteVendorModalProps) => {
   const toast = useToast();
 
-  const uniqueVendorTest = (name: string | undefined) =>
-    name !== undefined && vendors !== undefined && !vendors.map((v) => v.name).includes(name);
-
   const schema = yup.object().shape({
-    name: yup
-      .string()
-      .required('Vendor Name is Required')
-      .test('unique-vendor-test', 'Vendor name must be unique', uniqueVendorTest)
+    name: yup.string().required('Vendor Name is Required')
   });
 
   const {
