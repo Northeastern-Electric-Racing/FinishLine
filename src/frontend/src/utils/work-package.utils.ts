@@ -1,4 +1,3 @@
-import { WbsElement, wbsPipe, WorkPackage } from 'shared';
 import { WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
 import { WPFormType } from './form';
 
@@ -13,12 +12,18 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
   }
 };
 
-export const getUpcomingWorkPackages = (workPackages: WorkPackage[]): WorkPackage[] => {
+/**
+ * Given a list of work packages, return work packages with a start date within the next 2 weeks of the current day
+ * @param wpList a list of work packages.
+ * @returns a list of work packages with a start date within the next 2 weeks of the current day
+ */
+export const getUpcomingWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
   const currentTime = new Date();
   const twoWeeks = new Date();
   twoWeeks.setDate(currentTime.getDate() + 14);
-  return workPackages.filter(({ startDate }) => currentTime < startDate && startDate <= twoWeeks);
-  
+  return wpList.filter(({ startDate }) => currentTime < startDate && startDate <= twoWeeks);
+};
+
 /**
  * Given a list of work packages, return the work packages that are overdue.
  * @param wpList a list of work packages.
