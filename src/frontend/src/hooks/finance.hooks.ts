@@ -28,6 +28,7 @@ import {
   createAccountCode,
   createVendor,
   editVendor,
+  deleteVendor,
   getAllAccountCodes,
   editRefund,
   leadershipApproveReimbursementRequest,
@@ -192,6 +193,27 @@ export const useEditVendor = (vendorId: string) => {
     queryClient.invalidateQueries(['vendors']);
     return data;
   });
+};
+
+/**
+ * Custom react hook to delete a single vendor
+ * @param id id of the vendor to delete
+ * @returns the deleted vendor
+ */
+export const useDeleteVendor = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Vendor, Error>(
+    ['vendor', 'delete'],
+    async () => {
+      const { data } = await deleteVendor(id);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['vendors']);
+      }
+    }
+  );
 };
 
 /**

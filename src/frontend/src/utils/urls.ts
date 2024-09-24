@@ -125,6 +125,7 @@ const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes(
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeDeleteVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/delete`;
 const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
 /**************** Bill of Material Endpoints **************************/
@@ -289,6 +290,7 @@ export const apiUrls = {
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeDeleteVendor,
   financeLeadershipApprove,
 
   bomEndpoints,

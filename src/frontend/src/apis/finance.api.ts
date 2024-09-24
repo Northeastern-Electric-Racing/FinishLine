@@ -363,6 +363,16 @@ export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
 };
 
 /**
+ * Deletes a vendor in the database
+ *
+ * @param id the id of the vendor to delete
+ * @returns the deleted vendor
+ */
+export const deleteVendor = (id: string) => {
+  return axios.delete(apiUrls.financeDeleteVendor(id));
+};
+
+/**
  * Marks a reimbursement request as pending finance
  *
  * @param id The id of the reimbursement request
