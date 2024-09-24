@@ -6,7 +6,7 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Vendor } from 'shared';
-import { EditVendorPayload } from '../../../hooks/finance.hooks';
+import { EditVendorPayload, useDeleteVendor } from '../../../hooks/finance.hooks';
 
 interface DeleteVendorModalProps {
   showModal: boolean;
@@ -22,6 +22,8 @@ const DeleteVendorModal = ({ showModal, handleClose, defaultValues, onSubmit, ve
   const schema = yup.object().shape({
     name: yup.string().required('Vendor Name is Required')
   });
+
+  const { mutateAsync: deleteVendor } = useDeleteVendor(vendor.vendorId);
 
   const {
     handleSubmit,
@@ -50,11 +52,11 @@ const DeleteVendorModal = ({ showModal, handleClose, defaultValues, onSubmit, ve
     <NERFormModal
       open={showModal}
       onHide={handleClose}
-      title={!!defaultValues ? 'Edit Vendor' : 'Create Vendor'}
+      title={`Delete Vendor: ${vendor.name}`}
       reset={() => reset({ name: '' })}
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onFormSubmit}
-      formId={!!defaultValues ? 'edit-vendor-form' : 'create-vendor-form'}
+      formId={'delete-vendor-form'}
       showCloseButton
     >
       <FormControl>
