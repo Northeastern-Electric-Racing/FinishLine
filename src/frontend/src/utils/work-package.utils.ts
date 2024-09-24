@@ -16,5 +16,5 @@ export const getUpcomingWorkPackages = (workPackages: WorkPackage[]): WorkPackag
   const currentTime = new Date();
   const twoWeeks = new Date();
   twoWeeks.setDate(currentTime.getDate() + 14);
-  return workPackages.filter(({ startDate }) => currentTime <= startDate && startDate <= twoWeeks);
+  return workPackages.filter(({ startDate }) => currentTime < startDate && startDate <= twoWeeks);
 };
