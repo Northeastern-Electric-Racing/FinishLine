@@ -6,6 +6,7 @@ const Statistics: React.FC = () => {
   return (
     <Switch>
       <Route path={routes.STATISTICS} component={StatisticsPage} />
+      {/* Add more routes here */}
     </Switch>
   );
 };
