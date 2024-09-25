@@ -8,7 +8,6 @@ import { uploadFile } from '../../src/utils/google-integration.utils';
 import { Mock, vi } from 'vitest';
 import OrganizationsService from '../../src/services/organizations.services';
 import { Organization } from '@prisma/client';
-import exp from 'constants';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()
