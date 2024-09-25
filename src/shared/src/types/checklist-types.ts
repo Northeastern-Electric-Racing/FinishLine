@@ -8,10 +8,21 @@ import { User } from './user-types';
 
 export interface Checklist {
   checklistId: string;
-  subtasks: Checklist[];
-  parentChecklist?: Checklist;
-  description: string;
-  teamType: TeamType;
+  name: string;
+  checklistItems: ChecklistItem[];
+  teamType?: TeamType;
+  userCreated: User;
+  userDeleted?: User;
+  dateCreated: Date;
+  dateDeleted?: Date;
+}
+
+export interface ChecklistItem {
+  checklistItemId: string;
+  name: string;
+  subtasks: ChecklistItem[];
+  description: string[];
+  parentChecklistItem: ChecklistItem[];
   userCreated: User;
   userDeleted?: User;
   dateCreated: Date;
