@@ -1,5 +1,8 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
+import { useQuery } from 'react-query';
+import { Organization } from 'shared';
+import { getCurrentOrganization } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -18,6 +21,13 @@ export const useProvideOrganization = (): OrganizationProvider => {
     organizationId,
     selectOrganization
   };
+};
+
+export const useCurrentOrganization = () => {
+  return useQuery<Organization, Error>(['organizations'], async () => {
+    const { data } = await getCurrentOrganization();
+    return data;
+  });
 };
 
 // Hook for child components to get the auth object

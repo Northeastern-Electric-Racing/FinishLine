@@ -13,7 +13,7 @@ vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()
 }));
 
-describe('Team Type Tests', () => {
+describe('Organization Tests', () => {
   let orgId: string;
   let organization: Organization;
 
@@ -24,6 +24,22 @@ describe('Team Type Tests', () => {
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('Get Current Organization', () => {
+    it('Fails if organization does not exist', async () => {
+      await expect(async () => await OrganizationsService.getCurrentOrganization('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets the organization', async () => {
+      const org = await OrganizationsService.getCurrentOrganization(orgId);
+
+      expect(org).not.toBeNull();
+      expect(org.organizationId).toBe(orgId);
+      expect(org.name).toBe(organization.name);
+    });
   });
 
   describe('Set Images', () => {

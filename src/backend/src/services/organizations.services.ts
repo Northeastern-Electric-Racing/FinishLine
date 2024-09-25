@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -10,6 +10,26 @@ import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
 
 export default class OrganizationsService {
+  /**
+   * Gets the current organization
+   * @param organizationId the organizationId to be fetched
+   */
+  static async getCurrentOrganization(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (organization.dateDeleted) {
+      throw new DeletedException('Organization', organizationId);
+    }
+
+    return organization;
+  }
+
   /**
    * sets an organizations useful links
    * @param submitter the user who is setting the links
