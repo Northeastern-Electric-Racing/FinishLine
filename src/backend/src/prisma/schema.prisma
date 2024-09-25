@@ -953,7 +953,7 @@ model ChecklistItem {
   checklistItemId       String          @id @default(uuid())
   name                  String
   subtasks              ChecklistItem[] @relation("Subtasks")
-  description           String
+  description           String?
   parentChecklistItem   ChecklistItem?  @relation("Subtasks", fields: [parentChecklistItemId], references: [checklistItemId])
   parentChecklistItemId String?
   Checklist             Checklist       @relation(fields: [checklistId], references: [checklistId])

@@ -16,7 +16,7 @@ CREATE TABLE "Checklist" (
 CREATE TABLE "ChecklistItem" (
     "checklistItemId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
     "parentChecklistItemId" TEXT,
     "checklistId" TEXT NOT NULL,
     "dateCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
