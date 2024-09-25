@@ -86,7 +86,7 @@ export default class OrganizationsController {
     }
   }
 
-  static async getFeaturedProjects(req: Request, res: Response, next: NextFunction) {
+  static async getOrganizationFeaturedProjects(req: Request, res: Response, next: NextFunction) {
     try {
       const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);
       res.status(200).json(featuredProjects);
