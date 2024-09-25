@@ -1,6 +1,6 @@
 import { TableRow, TableCell, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import { EditVendorPayload, useGetAllVendors } from '../../../hooks/finance.hooks';
+import { useGetAllVendors } from '../../../hooks/finance.hooks';
 import { datePipe } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
@@ -11,7 +11,6 @@ import { Vendor } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditVendorModal from './EditVendorModal';
 import DeleteVendorModal from './DeleteVendorModal';
-import { useToast } from '../../../hooks/toasts.hooks';
 
 const VendorsTable = () => {
   const { data: vendors, isLoading: vendorIsLoading, isError: vendorIsError, error: vendorError } = useGetAllVendors();
@@ -19,19 +18,6 @@ const VendorsTable = () => {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [clickedVendor, setClickedVendor] = useState<Vendor>();
-
-  const toast = useToast();
-
-  const handleDeleteVendor = async (data: EditVendorPayload) => {
-    try {
-      // TODO: set up deleteVendor hook
-      //await deleteVendor(data);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    }
-  };
 
   if (!vendors || vendorIsLoading) {
     return <LoadingIndicator />;
@@ -96,7 +82,6 @@ const VendorsTable = () => {
             setClickedVendor(undefined);
           }}
           vendor={clickedVendor}
-          onSubmit={handleDeleteVendor}
         />
       )}
       <AdminToolTable

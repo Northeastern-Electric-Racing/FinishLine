@@ -6,17 +6,16 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Vendor } from 'shared';
-import { EditVendorPayload, useDeleteVendor } from '../../../hooks/finance.hooks';
+import { useDeleteVendor } from '../../../hooks/finance.hooks';
 
 interface DeleteVendorModalProps {
   showModal: boolean;
   handleClose: () => void;
   defaultValues?: Vendor;
-  onSubmit: (data: EditVendorPayload) => void;
   vendor: Vendor;
 }
 
-const DeleteVendorModal = ({ showModal, handleClose, defaultValues, onSubmit, vendor }: DeleteVendorModalProps) => {
+const DeleteVendorModal = ({ showModal, handleClose, defaultValues, vendor }: DeleteVendorModalProps) => {
   const toast = useToast();
 
   const schema = yup.object().shape({
@@ -37,9 +36,10 @@ const DeleteVendorModal = ({ showModal, handleClose, defaultValues, onSubmit, ve
     }
   });
 
-  const onFormSubmit = async (data: EditVendorPayload) => {
+  const onFormSubmit = async () => {
     try {
-      await onSubmit(data);
+      await deleteVendor;
+      console.log('deleted');
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
