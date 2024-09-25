@@ -7,6 +7,7 @@ import { body } from 'express-validator';
 const organizationRouter = express.Router();
 const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
+organizationRouter.get('/current', OrganizationsController.getCurrentOrganization);
 organizationRouter.post('/useful-links/set', ...linkValidators, validateInputs, OrganizationsController.setUsefulLinks);
 organizationRouter.get('/useful-links', OrganizationsController.getAllUsefulLinks);
 organizationRouter.post(
