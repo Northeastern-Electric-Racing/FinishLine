@@ -9,6 +9,7 @@ import PageLayout from '../../components/PageLayout';
 const StatisticsPage: React.FC = () => {
   return (
     <PageLayout title="Statistics">
+      {/* Add your frontend components here to check them */}
       <Box></Box>
     </PageLayout>
   );
