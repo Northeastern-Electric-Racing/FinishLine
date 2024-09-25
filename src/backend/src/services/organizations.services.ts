@@ -211,10 +211,11 @@ export default class OrganizationsService {
   }
 
   /**
-   *
-   * @param description
-   * @param submitter
-   * @param organization
+   * Sets the description of a given organization.
+   * @param description the new description
+   * @param submitter the user making the change (must be admin)
+   * @param organization the organization whos description is changing
+   * @throws if the user is not an admin
    */
   static async setOrganizationDescription(
     description: string,
