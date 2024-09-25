@@ -180,7 +180,7 @@ describe('Team Type Tests', () => {
       const testProject1 = await createTestProject(testBatman, orgId);
 
       await OrganizationsService.setFeaturedProjects([testProject1.projectId], organization, testBatman);
-      
+
       const projects = await OrganizationsService.getOrganizationFeaturedProjects(orgId);
 
       expect(projects).not.toBeNull();
