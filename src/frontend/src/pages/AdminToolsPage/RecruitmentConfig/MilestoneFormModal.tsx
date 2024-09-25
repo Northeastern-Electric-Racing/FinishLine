@@ -7,7 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Box } from '@mui/system';
 import useFormPersist from 'react-hook-form-persist';
 import { FormStorageKey } from '../../../utils/form';
-import { Milestone } from 'shared/src/types/milestone-types';
+import { Milestone } from 'shared';
 import { MilestonePayload } from '../../../hooks/recruitment.hooks';
 import { useState, useEffect } from 'react';
 import { DatePicker } from '@mui/x-date-pickers';
