@@ -28,9 +28,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
 
   const dateIsBeforeExpenseCreated = (date: Date): boolean => {
     if (!reimbursementRequest.dateOfExpense) return false;
-    else {
-      return date < new Date(new Date(reimbursementRequest.dateOfExpense).setHours(0, 0, 0, 0));
-    }
+    return date < new Date(new Date(reimbursementRequest.dateOfExpense).setHours(0, 0, 0, 0));
   };
 
   const dateIsInTheFuture = (date: Date) => {
