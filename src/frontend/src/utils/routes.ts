@@ -55,6 +55,9 @@ const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 /**************** Organizations ****************/
 const ORGANIZATIONS = `/organizations`;
 
+/**************** Statistics ****************/
+const STATISTICS = `/statistics`;
+
 export const routes = {
   HOME,
   LOGIN,
@@ -99,5 +102,7 @@ export const routes = {
   CALENDAR,
   DESIGN_REVIEW_BY_ID,
 
-  ORGANIZATIONS
+  ORGANIZATIONS,
+
+  STATISTICS
 };

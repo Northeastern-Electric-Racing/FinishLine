@@ -31,6 +31,7 @@ import { useState, useEffect } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import HiddenContentMargin from '../components/HiddenContentMargin';
 import emitter from './EventBus';
+import Statistics from '../pages/StatisticsPage/Statistics';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -121,6 +122,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.CREDITS} component={Credits} />
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
+            <Route path={routes.STATISTICS} component={Statistics} />
             <Route exact path={routes.HOME} component={Home} />
             <Route path="*" component={PageNotFound} />
           </Switch>
