@@ -900,7 +900,7 @@ model Organization {
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
   checklists               Checklist[]
-  ChecklistItem            ChecklistItem[]
+  checklistItems            ChecklistItem[]
 }
 
 model FrequentlyAskedQuestion {
