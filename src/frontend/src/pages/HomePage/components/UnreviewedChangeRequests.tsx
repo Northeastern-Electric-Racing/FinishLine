@@ -6,7 +6,6 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { getCRsToReview } from '../../../utils/change-request.utils';
-import Box from '@mui/material/Box';
 import ChangeRequestRow from '../../../components/ChangeRequestRow';
 
 const UnreviewedChangeRequests: React.FC = () => {
@@ -25,18 +24,12 @@ const UnreviewedChangeRequests: React.FC = () => {
 
   return (
     <PageBlock>
-      <Box sx={{ flexWrap: 'nowrap' }}>
-        <ChangeRequestRow
-          title="My Unreviewed Change Requests"
-          changeRequests={crsToReview}
-          noChangeRequestsMessage="No unreviewed change requests"
-        />
-        <style>{`
-          [data-testid='My Unreviewed Change RequestscrRow'] {
-            flex-wrap: nowrap !important;
-          }
-        `}</style>
-      </Box>
+      <ChangeRequestRow
+        title="My Unreviewed Change Requests"
+        changeRequests={crsToReview}
+        noChangeRequestsMessage="No unreviewed change requests"
+        flexWrap="nowrap"
+      />
     </PageBlock>
   );
 };
