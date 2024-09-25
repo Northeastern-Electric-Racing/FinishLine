@@ -79,9 +79,11 @@ export default class WorkPackagesService {
    * @throws if the work package with the desired WBS number is not found, is deleted or is not part of the given organization
    */
   static async getSingleWorkPackage(parsedWbs: WbsNumber, organization: Organization): Promise<WorkPackage> {
+    console.log('SERVICE');
     if (!isWorkPackage(parsedWbs)) {
       throw new HttpException(404, 'WBS Number ' + wbsPipe(parsedWbs) + ' is a not a work package WBS#');
     }
+    console.log('PASSED CHECK');
 
     const wp = await prisma.work_Package.findFirst({
       where: {
@@ -100,6 +102,7 @@ export default class WorkPackagesService {
         'Work Package',
         `${parsedWbs.carNumber}.${parsedWbs.projectNumber}.${parsedWbs.workPackageNumber}`
       );
+    console.log('FOUND WP');
 
     if (wp.wbsElement.dateDeleted) throw new DeletedException('Work Package', wp.wbsElementId);
 

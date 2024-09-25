@@ -70,15 +70,15 @@ export const getTaskAssigneeOptions = (teams: TeamPreview[]): User[] => {
 };
 
 export const isTaskOverdue = (task: Task) => {
-  return new Date() > task.deadline;
+  return new Date() > new Date(task.deadline);
 };
 
 export const taskPriorityColor = (task: Task) => {
   return task.priority === TaskPriority.Low
-    ? 'green'
+    ? '#1CAC19'
     : task.priority === TaskPriority.Medium
-    ? 'yellow'
+    ? '#ffc700'
     : task.priority === TaskPriority.High
-    ? 'red'
+    ? '#EF4345'
     : '';
 };
