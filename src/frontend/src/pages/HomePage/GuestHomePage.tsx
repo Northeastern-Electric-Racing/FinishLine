@@ -1,19 +1,21 @@
 import { Typography, Box } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
-import { AuthenticatedUser } from 'shared';
 import ImageWithButton from './components/ImageWithButton';
-import emitter from '../../app/EventBus';
+import { useHistory } from 'react-router-dom';
+import { routes } from '../../utils/routes';
+import { useCurrentUser } from '../../hooks/users.hooks';
+import { useEffect } from 'react';
+import { useHomePageContext } from '../../app/HomePageContext';
 
-interface GuestHomePageProps {
-  user: AuthenticatedUser;
-  setOnMemberHomePage: (e: boolean) => void;
-}
+const GuestHomePage = () => {
+  const user = useCurrentUser();
+  const history = useHistory();
+  const { setOnGuestHomePage, setOnPNMHomePage } = useHomePageContext();
 
-const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
-  const handleClick = () => {
-    emitter.emit('memberHomePage', true);
-    setOnMemberHomePage(true);
-  };
+  useEffect(() => {
+    setOnGuestHomePage(true);
+    setOnPNMHomePage(false);
+  }, [setOnGuestHomePage, setOnPNMHomePage]);
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -26,13 +28,16 @@ const GuestHomePage = ({ user, setOnMemberHomePage }: GuestHomePageProps) => {
             title="Interested in applying"
             imageSrc={`/Apply.png`}
             buttonText="Learn More"
-            onClick={() => {}}
+            onClick={() => history.push(routes.HOME_PNM)}
           />
           <ImageWithButton
             title="Explore Our Work as a Guest"
             imageSrc={`/Guest.png`}
             buttonText="FinishLine"
-            onClick={handleClick}
+            onClick={() => {
+              setOnGuestHomePage(false);
+              history.push(routes.HOME_MEMBER);
+            }}
           />
         </Box>
       </Box>

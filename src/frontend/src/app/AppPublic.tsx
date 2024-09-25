@@ -10,7 +10,7 @@ import Login from '../pages/LoginPage/Login';
 import AppAuthenticated from './AppAuthenticated';
 import { useProvideThemeToggle } from '../hooks/theme.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
-import { useOrganization } from '../hooks/organization.hooks';
+import { useOrganization } from '../hooks/organizations.hooks';
 import Organizations from '../pages/OrganizationPage/Organizations';
 
 const AppPublic: React.FC = () => {

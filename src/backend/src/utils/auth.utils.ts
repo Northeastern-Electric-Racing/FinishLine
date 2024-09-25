@@ -175,9 +175,13 @@ export const getUserAndOrganization = async (req: Request, res: Response, next: 
   ) {
     return next();
   }
-  const user = await getCurrentUser(res);
-  const organization = await getOrganization(req.headers);
-  req.currentUser = user;
-  req.organization = organization;
-  return next();
+  try {
+    const user = await getCurrentUser(res);
+    const organization = await getOrganization(req.headers);
+    req.currentUser = user;
+    req.organization = organization;
+    return next();
+  } catch (error) {
+    return next(error);
+  }
 };
