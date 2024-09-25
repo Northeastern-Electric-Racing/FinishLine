@@ -775,9 +775,6 @@ export default class ReimbursementRequestService {
     const startOfDay = (date: Date): Date => {
       return new Date(new Date(date).setHours(0, 0, 0, 0));
     };
-    const startOfNextDay = (date: Date): Date => {
-      return new Date(new Date(date).setHours(24, 0, 0, 0));
-    };
 
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
@@ -792,7 +789,8 @@ export default class ReimbursementRequestService {
       throw new InvalidOrganizationException('Reimbursement Request');
     if (reimbursementRequest.dateOfExpense && startOfDay(dateDelivered) < startOfDay(reimbursementRequest.dateOfExpense))
       throw new HttpException(400, 'Items cannot be delivered before the expense date.');
-    if (startOfNextDay(dateDelivered) > new Date()) throw new HttpException(400, 'Delivery date cannot be in the future.');
+    if (startOfDay(dateDelivered) > startOfDay(new Date()))
+      throw new HttpException(400, 'Delivery date cannot be in the future.');
 
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },

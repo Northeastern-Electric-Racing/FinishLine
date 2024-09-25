@@ -34,7 +34,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
   };
 
   const dateIsInTheFuture = (date: Date) => {
-    const now = new Date();
+    const now = new Date(new Date().setHours(0, 0, 0, 0));
     return date > now;
   };
 
@@ -57,7 +57,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
       toast.error('Delivery not confirmed!');
     }
     try {
-      await markDelivered({ dateDelivered: data.dateDelivered });
+      await markDelivered({ dateDelivered: new Date(data.dateDelivered.setHours(0, 0, 0, 0)) });
       toast.success('Marked as delivered!');
       onHide();
     } catch (e: unknown) {
