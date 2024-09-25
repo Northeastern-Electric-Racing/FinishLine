@@ -1,13 +1,14 @@
 import { LinkCreateArgs } from 'shared';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestLinkType, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
 import { uploadFile } from '../../src/utils/google-integration.utils';
 import { Mock, vi } from 'vitest';
 import OrganizationsService from '../../src/services/organizations.services';
 import { Organization } from '@prisma/client';
+import exp from 'constants';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()
@@ -164,6 +165,27 @@ describe('Team Type Tests', () => {
       expect(links.length).toBe(2);
       expect(links[0].url).toBe('link 1');
       expect(links[1].url).toBe('link 2');
+    });
+  });
+
+  describe('Get all featured projects', () => {
+    it('Fails if an organizaion does not exist', async () => {
+      await expect(async () => await OrganizationsService.getOrganizationFeaturedProjects('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets featured projects', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testProject1 = await createTestProject(testBatman, orgId);
+
+      await OrganizationsService.setFeaturedProjects([testProject1.projectId], organization, testBatman);
+      
+      const projects = await OrganizationsService.getOrganizationFeaturedProjects(orgId);
+
+      expect(projects).not.toBeNull();
+      expect(projects.length).toBe(1);
+      expect(projects[0].projectId).toBe(testProject1.projectId);
     });
   });
 
