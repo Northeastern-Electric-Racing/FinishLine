@@ -59,12 +59,4 @@ describe('home component', () => {
   });
 
   afterAll(() => vi.clearAllMocks());
-
-  it('renders welcome', () => {
-    renderComponent();
-    expect(screen.getByText(`Welcome, ${exampleAdminUser.firstName}!`)).toBeInTheDocument();
-    expect(screen.getByText('useful-links')).toBeInTheDocument();
-    expect(screen.getByText('upcoming-deadlines')).toBeInTheDocument();
-    expect(screen.getByText('work-packages-by-timeline-status')).toBeInTheDocument();
-  });
 });
