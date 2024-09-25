@@ -41,7 +41,7 @@ const ChangeRequestDropdown = ({ control, name }: ChangeRequestDropdownProps) =>
   const user = useCurrentUser();
   const { isLoading, data: changeRequests } = useAllChangeRequests();
   if (isLoading || !changeRequests) return <LoadingIndicator />;
-  
+
   const filteredRequests = getFilteredChangeRequests(changeRequests, user);
 
   const approvedChangeRequestOptions = filteredRequests.map((cr) => ({
