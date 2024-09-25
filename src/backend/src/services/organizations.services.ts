@@ -209,4 +209,29 @@ export default class OrganizationsService {
 
     return organization.logoImageId;
   }
+
+  /**
+   *
+   * @param description
+   * @param submitter
+   * @param organization
+   */
+  static async setOrganizationDescription(
+    description: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set description');
+    }
+    const updatedOrg = prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        description
+      }
+    });
+    return updatedOrg;
+  }
 }

@@ -85,4 +85,18 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async setOrganizationDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const updatedOrg = await OrganizationsService.setOrganizationDescription(
+        req.body.description,
+        req.currentUser,
+        req.organization
+      );
+
+      return res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

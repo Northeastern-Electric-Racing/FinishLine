@@ -28,4 +28,10 @@ organizationRouter.post(
 );
 organizationRouter.post('/logo/update', upload.single('logo'), OrganizationsController.setLogoImage);
 organizationRouter.get('/logo', OrganizationsController.getOrganizationLogoImage);
+organizationRouter.post(
+  '/description/set',
+  body('description').isString(),
+  validateInputs,
+  OrganizationsController.setOrganizationDescription
+);
 export default organizationRouter;
