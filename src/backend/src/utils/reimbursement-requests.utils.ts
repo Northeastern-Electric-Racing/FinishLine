@@ -12,7 +12,8 @@ import {
   isAdmin,
   wbsPipe,
   WbsReimbursementProductCreateArgs,
-  ReimbursementStatusType
+  ReimbursementStatusType,
+  isHead
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
@@ -369,8 +370,8 @@ export const isUserAdminOrOnFinance = async (submitter: User, organizationId: st
   try {
     await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organizationId);
   } catch (error) {
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
-      throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors');
+    if (!(await userHasPermission(submitter.userId, organizationId, isHead))) {
+      throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can access this endpoint');
     }
   }
 };
