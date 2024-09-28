@@ -115,7 +115,7 @@ enum Graph_Type {
   PIE
 }
 
-enum Data_Type {
+enum Graph_Data_Unit {
   CAR
   PROJECT
   TEAM
@@ -125,15 +125,20 @@ enum Data_Type {
   USER
 }
 
-enum Values {
+enum Measures {
   SUM
   AVERAGE
 }
 
 enum Permission {
-  LEADS_ONLY
-  HEADS_ONLY
-  ALL_MEMBERS
+  EDIT_GRAPH
+  CREATE_GRAPH
+  VIEW_GRAPH
+  DELETE_GRAPH
+  EDIT_GRAPH_COLLECTION
+  CREATE_GRAPH_COLLECTION
+  VIEW_GRAPH_COLLECTION
+  DELETE_GRAPH_COLLECTION
 }
 
 model User {
@@ -211,6 +216,7 @@ model User {
   deletedGraphCollections         GraphCollection[]         @relation(name: "graphCollectionDeleter")
   createdGraphs                   Graph[]                   @relation(name: "graphCreator")
   deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
+  permissions                     Permission[]
 }
 
 model Role {
@@ -245,8 +251,6 @@ model Team {
   teamTypeId             String?
   organizationId         String
   organization           Organization               @relation(fields: [organizationId], references: [organizationId])
-  Graph                  Graph?                     @relation(fields: [graphLinkId], references: [linkId])
-  graphLinkId            String?
 }
 
 model Session {
@@ -425,8 +429,6 @@ model Project {
   car          Car            @relation(fields: [carId], references: [carId])
   teams        Team[]         @relation(name: "assignedBy")
   favoritedBy  User[]         @relation(name: "favoritedBy")
-  Graph        Graph?         @relation(fields: [graphLinkId], references: [linkId])
-  graphLinkId  String?
 }
 
 model Work_Package {
@@ -889,8 +891,6 @@ model Car {
   projectProposedChanges Project_Proposed_Changes[]
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
-  Graph                  Graph?                     @relation(fields: [graphLinkId], references: [linkId])
-  graphLinkId            String?
 }
 
 model Organization {
@@ -962,36 +962,33 @@ model Milestone {
 }
 
 model Graph {
-  organizationId        String           @unique
+  organizationId        String
   startDate             DateTime
   endDate               DateTime
   title                 String
-  linkId                String           @id @default(uuid())
+  linkId                String           @default(uuid())
   graphType             Graph_Type
-  cars                  Car[]
-  teams                 Team[]
-  projects              Project[]
   userCreated           User             @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
   userCreatedId         String
   userDeleted           User?            @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
   userDeletedId         String?
   dateDeleted           DateTime?
-  graphDataId           String           @unique
+  graphDataId           String           @id
   data                  GraphData        @relation(fields: [graphDataId], references: [id])
-  groupBy               Data_Type
+  groupBy               Graph_Data_Unit
   GraphCollection       GraphCollection? @relation(fields: [graphCollectionLinkId], references: [linkId])
   graphCollectionLinkId String?
 }
 
 model GraphData {
-  id     String    @unique
-  type   Data_Type
-  values Values
-  Graph  Graph[]
+  id       String          @id
+  type     Graph_Data_Unit
+  measures Measures
+  Graph    Graph[]
 }
 
 model GraphCollection {
-  organizationId String       @unique
+  organizationId String
   graphs         Graph[]
   title          String
   linkId         String       @id @default(uuid())
