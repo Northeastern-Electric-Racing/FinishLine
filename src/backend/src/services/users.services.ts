@@ -36,6 +36,8 @@ import {
 } from '../prisma-query-args/user.query-args';
 import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
+import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
+import taskTransformer from '../transformers/tasks.transformer';
 
 export default class UsersService {
   /**
@@ -537,5 +539,21 @@ export default class UsersService {
     await updateUserAvailability(availabilities, newUserScheduleSettings, user);
 
     return userScheduleSettingsTransformer(newUserScheduleSettings);
+  }
+
+  /**
+   * Get's a user's assigned tasks
+   * @param userId the id of the user who's tasks are being returned
+   * @param organization the user's organization
+   * @returns a list of the user's assigned tasks
+   */
+  static async getUserTasks(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { assignedTasks: getTaskQueryArgs(organization.organizationId) }
+    });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    return requestedUser.assignedTasks.map(taskTransformer);
   }
 }
