@@ -254,7 +254,8 @@ export default class OrganizationsService {
       }
     });
     return updatedOrg;
-    }
+  }
+
   /**
    * Gets the featured projects for the given organization Id
    * @param organizationId the organization to get the projects for
