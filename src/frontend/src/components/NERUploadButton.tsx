@@ -48,7 +48,7 @@ const NERUploadButton = ({ dataTypeId, handleFileChange, onSubmit, addedImage, s
             component="img"
             src={addedImage ? URL.createObjectURL(addedImage) : ''}
             alt="Image Preview"
-            sx={{ maxWidth: '300px', maxHeight: '300px', mb: 1 }}
+            sx={{ maxWidth: '200px', mb: 1 }}
           />
           <Box sx={{ display: 'flex', width: 'fit-content' }}>
             <Button

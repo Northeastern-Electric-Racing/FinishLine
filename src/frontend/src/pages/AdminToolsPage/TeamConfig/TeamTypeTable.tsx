@@ -7,9 +7,10 @@ import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
+import { downloadGoogleImage } from '../../../apis/finance.api';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -23,6 +24,19 @@ const TeamTypeTable: React.FC = () => {
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
+  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({}); // Added state to store the image URL
+
+  useEffect(() => {
+    try {
+      teamTypes?.forEach(async (teamType) => {
+        const imageBlob = await downloadGoogleImage(teamType.imageFileId ?? '');
+        const url = URL.createObjectURL(imageBlob);
+        setImageUrls((prev) => ({ ...prev, [teamType.teamTypeId]: url }));
+      });
+    } catch (error) {
+      toast.error('Failed to fetch image');
+    }
+  }, [teamTypes]);
 
   const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
 
@@ -56,8 +70,6 @@ const TeamTypeTable: React.FC = () => {
   };
 
   const teamTypesTableRows = teamTypes.map((teamType) => {
-    const imageUrl = teamType.imageFileId ? `https://drive.google.com/uc?id=${teamType.imageFileId}` : '';
-
     return (
       <TableRow>
         <TableCell onClick={() => setEditingTeamType(teamType)} sx={{ cursor: 'pointer', border: '2px solid black' }}>
@@ -86,14 +98,12 @@ const TeamTypeTable: React.FC = () => {
         </TableCell>
         <TableCell sx={{ border: '2px solid black' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
-            {console.log(imageUrl)}
             {teamType.imageFileId && !addedImages[teamType.teamTypeId] && (
               <Box
-                key={imageUrl}
                 component="img"
-                src={imageUrl}
+                src={imageUrls[teamType.teamTypeId]}
                 alt="Image Preview"
-                sx={{ maxWidth: '100%', maxHeight: '200px', mt: 1, mb: 1 }}
+                sx={{ maxWidth: '100px', mt: 1, mb: 1 }}
               />
             )}
             <NERUploadButton
