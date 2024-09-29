@@ -24,7 +24,7 @@ const TeamTypeTable: React.FC = () => {
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
-  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({}); // Added state to store the image URL
+  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({});
 
   useEffect(() => {
     try {
@@ -34,7 +34,7 @@ const TeamTypeTable: React.FC = () => {
         setImageUrls((prev) => ({ ...prev, [teamType.teamTypeId]: url }));
       });
     } catch (error) {
-      toast.error('Failed to fetch image');
+      console.error('Error fetching image urls', error);
     }
   }, [teamTypes]);
 
