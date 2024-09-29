@@ -4,7 +4,8 @@
  */
 
 /**************** General Section ****************/
-const HOME = `/`;
+const BASE = `/`;
+const HOME = `/home`;
 const LOGIN = `/login`;
 const INFO = `/info`;
 const GANTT = `/gantt`;
@@ -56,6 +57,7 @@ const DESIGN_REVIEW_BY_ID = CALENDAR + `/:id`;
 const ORGANIZATIONS = `/organizations`;
 
 export const routes = {
+  BASE,
   HOME,
   LOGIN,
   INFO,

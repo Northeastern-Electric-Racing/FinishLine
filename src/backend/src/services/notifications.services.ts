@@ -108,7 +108,7 @@ export default class NotificationsService {
       if (!admin) throw new HttpException(404, 'Admin user not found');
       const organizations = await prisma.organization.findMany();
       for (const organization of organizations) {
-        await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization.organizationId);
+        await WorkPackagesService.slackMessageUpcomingDeadlines(admin, nextWeek, organization);
       }
     }
   }

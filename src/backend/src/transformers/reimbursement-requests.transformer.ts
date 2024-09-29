@@ -48,7 +48,7 @@ export const reimbursementRequestTransformer = (
     saboId: reimbursementRequest.saboId ?? undefined,
     dateCreated: reimbursementRequest.dateCreated,
     dateDeleted: reimbursementRequest.dateDeleted ?? undefined,
-    dateOfExpense: reimbursementRequest.dateOfExpense,
+    dateOfExpense: reimbursementRequest.dateOfExpense ?? undefined,
     reimbursementStatuses: reimbursementRequest.reimbursementStatuses.map(reimbursementStatusTransformer),
     recipient: userTransformer(reimbursementRequest.recipient),
     vendor: vendorTransformer(reimbursementRequest.vendor),

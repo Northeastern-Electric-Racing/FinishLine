@@ -11,11 +11,12 @@ import {
   ValidatedWbsReimbursementProductCreateArgs,
   isAdmin,
   wbsPipe,
-  WbsReimbursementProductCreateArgs
+  WbsReimbursementProductCreateArgs,
+  ReimbursementStatusType
 } from 'shared';
 import prisma from '../prisma/prisma';
 import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from './errors.utils';
-import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, User } from '@prisma/client';
+import { Prisma, Receipt, Reimbursement_Product, Reimbursement_Request, Reimbursement_Status, User } from '@prisma/client';
 import { isUserOnTeam } from './teams.utils';
 import { userHasPermission } from './users.utils';
 import { AuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args';
@@ -291,8 +292,9 @@ export const createReimbursementProducts = async (
  * @throws {AccessDeniedException} Fails validation when user is not on the
  * finance team.
  */
-export const validateUserIsPartOfFinanceTeam = async (user: User, organizationId: string) => {
-  const isUserAuthorized = await isUserOnFinanceTeam(user, organizationId);
+export const validateUserIsPartOfFinanceTeamOrAdmin = async (user: User, organizationId: string) => {
+  const isUserAuthorized =
+    (await isUserOnFinanceTeam(user, organizationId)) || (await userHasPermission(user.userId, organizationId, isAdmin));
 
   if (!isUserAuthorized) {
     throw new AccessDeniedException(`You are not a member of the finance team!`);
@@ -365,7 +367,7 @@ export const isAuthUserHeadOfFinance = (user: Prisma.UserGetPayload<AuthUserQuer
 
 export const isUserAdminOrOnFinance = async (submitter: User, organizationId: string) => {
   try {
-    await validateUserIsPartOfFinanceTeam(submitter, organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organizationId);
   } catch (error) {
     if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
       throw new AccessDeniedException('Only Admins, Finance Team Leads, or Heads can edit vendors');
@@ -385,14 +387,19 @@ export const isUserAdminOrOnFinance = async (submitter: User, organizationId: st
  */
 export const validateUserEditRRPermissions = async (
   user: User,
-  reimbursementRequest: Reimbursement_Request,
+  reimbursementRequest: Reimbursement_Request & { reimbursementStatuses: Reimbursement_Status[] },
   organizationId: string
 ) => {
   try {
-    await validateUserIsPartOfFinanceTeam(user, organizationId);
+    await validateUserIsPartOfFinanceTeamOrAdmin(user, organizationId);
   } catch {
-    if (reimbursementRequest.recipientId !== user.userId)
-      throw new AccessDeniedException('Only the creator or finance team can edit a reimbursement request');
+    if (
+      reimbursementRequest.recipientId !== user.userId ||
+      reimbursementRequest.reimbursementStatuses.some((status) => status.type === ReimbursementStatusType.PENDING_FINANCE)
+    )
+      throw new AccessDeniedException(
+        'Only the creator or finance team can edit a reimbursement request. A request that has been pending finance cannot be edited.'
+      );
   }
 };
 

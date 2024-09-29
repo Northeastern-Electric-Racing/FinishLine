@@ -7,20 +7,39 @@ import { testLink1 } from '../test-data/organizations.test-data';
 import { uploadFile } from '../../src/utils/google-integration.utils';
 import { Mock, vi } from 'vitest';
 import OrganizationsService from '../../src/services/organizations.services';
+import { Organization } from '@prisma/client';
 
 vi.mock('../../src/utils/google-integration.utils', () => ({
   uploadFile: vi.fn()
 }));
 
-describe('Team Type Tests', () => {
+describe('Organization Tests', () => {
   let orgId: string;
+  let organization: Organization;
 
   beforeEach(async () => {
-    orgId = (await createTestOrganization()).organizationId;
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
   });
 
   afterEach(async () => {
     await resetUsers();
+  });
+
+  describe('Get Current Organization', () => {
+    it('Fails if organization does not exist', async () => {
+      await expect(async () => await OrganizationsService.getCurrentOrganization('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets the organization', async () => {
+      const org = await OrganizationsService.getCurrentOrganization(orgId);
+
+      expect(org).not.toBeNull();
+      expect(org.organizationId).toBe(orgId);
+      expect(org.name).toBe(organization.name);
+    });
   });
 
   describe('Set Images', () => {
@@ -29,14 +48,8 @@ describe('Team Type Tests', () => {
     const file3 = { originalname: 'image3.png' } as Express.Multer.File;
     it('Fails if user is not an admin', async () => {
       await expect(
-        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), orgId)
+        OrganizationsService.setImages(file1, file2, await createTestUser(wonderwomanGuest, orgId), organization)
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update images'));
-    });
-
-    it('Fails if an organization does not exist', async () => {
-      await expect(
-        OrganizationsService.setImages(file1, file2, await createTestUser(batmanAppAdmin, orgId), '1')
-      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
     it('Succeeds and updates all the images', async () => {
@@ -45,19 +58,19 @@ describe('Team Type Tests', () => {
         return Promise.resolve({ id: `uploaded-${file.originalname}` });
       });
 
-      await OrganizationsService.setImages(file1, file2, testBatman, orgId);
+      await OrganizationsService.setImages(file1, file2, testBatman, organization);
 
-      const organization = await prisma.organization.findUnique({
+      const oldOrganization = await prisma.organization.findUnique({
         where: {
           organizationId: orgId
         }
       });
 
-      expect(organization).not.toBeNull();
-      expect(organization?.applyInterestImageId).toBe('uploaded-image1.png');
-      expect(organization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.applyInterestImageId).toBe('uploaded-image1.png');
+      expect(oldOrganization?.exploreAsGuestImageId).toBe('uploaded-image2.png');
 
-      await OrganizationsService.setImages(file1, file3, testBatman, orgId);
+      await OrganizationsService.setImages(file1, file3, testBatman, organization);
 
       const updatedOrganization = await prisma.organization.findUnique({
         where: {
@@ -74,12 +87,6 @@ describe('Team Type Tests', () => {
       await expect(
         OrganizationsService.setUsefulLinks(await createTestUser(wonderwomanGuest, orgId), orgId, [])
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update useful links'));
-    });
-
-    it('Fails if an organization does not exist', async () => {
-      await expect(
-        OrganizationsService.setUsefulLinks(await createTestUser(batmanAppAdmin, orgId), '1', testLink1)
-      ).rejects.toThrow(new HttpException(400, `Organization with id: 1 not found!`));
     });
 
     it('Fails if a link type does not exist', async () => {
@@ -151,12 +158,6 @@ describe('Team Type Tests', () => {
   });
 
   describe('Get all Useful Links', () => {
-    it('Fails if an organization does not exist', async () => {
-      await expect(async () => await OrganizationsService.getAllUsefulLinks('1')).rejects.toThrow(
-        new NotFoundException('Organization', '1')
-      );
-    });
-
     it('Succeeds and gets all the links', async () => {
       const testLinks1: LinkCreateArgs[] = [
         {
@@ -179,6 +180,30 @@ describe('Team Type Tests', () => {
       expect(links.length).toBe(2);
       expect(links[0].url).toBe('link 1');
       expect(links[1].url).toBe('link 2');
+    });
+  });
+
+  describe('Get Organization Images', () => {
+    it('Fails if an organization does not exist', async () => {
+      await expect(async () => await OrganizationsService.getOrganizationImages('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets all the images', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestLinkType(testBatman, orgId);
+      await OrganizationsService.setImages(
+        { originalname: 'image1.png' } as Express.Multer.File,
+        { originalname: 'image2.png' } as Express.Multer.File,
+        testBatman,
+        organization
+      );
+      const images = await OrganizationsService.getOrganizationImages(orgId);
+
+      expect(images).not.toBeNull();
+      expect(images.applyInterestImage).toBe('uploaded-image1.png');
+      expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
     });
   });
 });

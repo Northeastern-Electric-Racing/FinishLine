@@ -1,10 +1,11 @@
 import { Box, Grid, Typography, Button, CircularProgress } from '@mui/material';
 import MilestoneTable from './MilestoneTable';
 import FAQsTable from './FAQTable';
-import { useSetOrganizationImages } from '../../../hooks/organization.hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { useToast } from '../../../hooks/toasts.hooks';
+import { useOrganization, useProvideOrganization, useSetOrganizationImages } from '../../../hooks/organizations.hooks';
+import { downloadGoogleImage } from '../../../apis/finance.api';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const { isLoading: organizationImagesIsLoading, mutateAsync: organizationImages } = useSetOrganizationImages();
@@ -12,7 +13,23 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
     exploreAsGuest: [],
     applyInterest: []
   });
+
+  const organization = useGetOrganization();
+
+  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({});
   const toast = useToast();
+
+  useEffect(() => {
+    try {
+      Object.entries(addedImages)?.forEach(async ([addedImage]) => {
+        const imageBlob = await downloadGoogleImage(addedImage ?? '');
+        const url = URL.createObjectURL(imageBlob);
+        setImageUrls((prev) => ({ ...prev, [addedImage]: url }));
+      });
+    } catch (error) {
+      console.error('Error fetching image urls', error);
+    }
+  }, [addedImages]);
 
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
     const validFiles: File[] = [];

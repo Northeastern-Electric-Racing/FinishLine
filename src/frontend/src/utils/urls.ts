@@ -117,6 +117,8 @@ const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/deli
 const financeMarkAsReimbursed = (id: string) => `${financeEndpoints()}/${id}/reimbursed`;
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
+const financeMarkPending = (id: string) => `${financeEndpoints()}/${id}/pending-finance`;
+const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/request-changes`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
@@ -168,6 +170,7 @@ const workPackageTemplateDelete = (workPackageTemplateId: string) =>
 
 /******************* Organizations Endpoints ********************/
 const organizations = () => `${API_URL}/organizations`;
+const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 const organizationsSetImages = () => `${organizations()}/images/update`;
@@ -181,6 +184,11 @@ const recruitment = () => `${API_URL}/recruitment`;
 const allMilestones = () => `${recruitment()}/milestones`;
 const milestoneCreate = () => `${recruitment()}/milestone/create`;
 const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
+const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete`;
+const allFaqs = () => `${recruitment()}/faqs`;
+const faqCreate = () => `${recruitment()}/faq/create`;
+const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
+const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -275,6 +283,8 @@ export const apiUrls = {
   financeMarkAsReimbursed,
   financeApproveReimbursementRequest,
   financeDenyReimbursementRequest,
+  financeMarkPending,
+  financeRequestChanges,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditAccountCode,
@@ -316,6 +326,7 @@ export const apiUrls = {
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
 
+  currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
   organizationsSetImages,
@@ -326,5 +337,11 @@ export const apiUrls = {
   allMilestones,
   milestoneCreate,
   milestoneEdit,
+  milestoneDelete,
+  allFaqs,
+  faqCreate,
+  faqEdit,
+  faqDelete,
+
   version
 };

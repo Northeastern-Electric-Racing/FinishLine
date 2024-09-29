@@ -174,6 +174,7 @@ const ChangeRequestsTable: React.FC = () => {
         },
         '& .Mui-odd': { border: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}` }
       }}
+      data-testid={'Change Request Table'}
     >
       <DataGrid
         autoHeight

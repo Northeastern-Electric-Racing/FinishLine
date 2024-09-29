@@ -9274,6 +9274,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-cypress@npm:latest":
+  version: 3.5.0
+  resolution: "eslint-plugin-cypress@npm:3.5.0"
+  dependencies:
+    globals: ^13.20.0
+  peerDependencies:
+    eslint: ">=7"
+  checksum: b13b3e6c0074ab4246f15072f1c4877ffff0b14a891b0e3714cb13b449515446e814df29cbcf63b60dc09a8d301271f1434ded18398f9aa3f11005a3899bc265
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-flowtype@npm:^5.2.0":
   version: 5.10.0
   resolution: "eslint-plugin-flowtype@npm:5.10.0"
@@ -10223,7 +10234,9 @@ __metadata:
     eslint: ^7.0.0
     eslint-config-prettier: ^8.5.0
     eslint-config-react-app: ^7.0.1
+    eslint-plugin-cypress: latest
     eslint-plugin-prettier: ^4.2.1
+    mitt: ^3.0.1
     prettier: ^2.0.5
     react-hook-form-persist: ^3.0.0
     rimraf: ^3.0.2
@@ -10781,7 +10794,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^13.6.0, globals@npm:^13.9.0":
+"globals@npm:^13.20.0, globals@npm:^13.6.0, globals@npm:^13.9.0":
   version: 13.24.0
   resolution: "globals@npm:13.24.0"
   dependencies:
@@ -14374,6 +14387,13 @@ __metadata:
     stream-each: ^1.1.0
     through2: ^2.0.0
   checksum: 84b3d9889621d293f9a596bafe60df863b330c88fc19215ced8f603c605fc7e1bf06f8e036edf301bd630a03fd5d9d7d23d5d6b9a4802c30ca864d800f0bd9f8
+  languageName: node
+  linkType: hard
+
+"mitt@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mitt@npm:3.0.1"
+  checksum: b55a489ac9c2949ab166b7f060601d3b6d893a852515ae9eca4e11df01c013876df777ea109317622b5c1c60e8aae252558e33c8c94e14124db38f64a39614b1
   languageName: node
   linkType: hard
 

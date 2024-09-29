@@ -34,15 +34,15 @@ export type OrganizationPreview = Pick<
 >;
 
 export interface Organization {
-  organizationId: String;
-  name: String;
+  organizationId: string;
+  name: string;
   dateCreated: Date | null;
   userCreated: UserPreview;
   dateDeleted?: Date | null;
   userDeleted?: UserPreview;
   treasurer?: UserPreview;
   advisor?: UserPreview;
-  description: String;
+  description: string;
 }
 
 /**

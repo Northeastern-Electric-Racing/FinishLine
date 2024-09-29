@@ -6,9 +6,12 @@ import CreateMilestoneFormModal from './CreateMilestoneFormModal';
 import EditMilestoneFormModal from './EditMilestoneFormModal';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useHistoryState } from '../../../hooks/misc.hooks';
-import { useAllMilestones } from '../../../hooks/recruitment.hooks';
+import { useAllMilestones, useDeleteMilestone } from '../../../hooks/recruitment.hooks';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
+import NERDeleteModal from '../../../components/NERDeleteModal';
+import { useState } from 'react';
+import { useToast } from '../../../hooks/toasts.hooks';
 
 const MilestoneTable = () => {
   const [createModalShow, setCreateModalShow] = useHistoryState<boolean>('', false);
@@ -19,6 +22,22 @@ const MilestoneTable = () => {
     error: milestonesError,
     data: milestones
   } = useAllMilestones();
+
+  const handleDelete = (id: string) => {
+    setMilestoneToDelete(undefined);
+    try {
+      deleteMilestone(id);
+      toast.success('Milestone deleted successfully');
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        toast.error(e.message, 3000);
+      }
+    }
+  };
+
+  const [milestoneToDelete, setMilestoneToDelete] = useState<Milestone | undefined>(undefined);
+  const { mutateAsync: deleteMilestone } = useDeleteMilestone();
+  const toast = useToast();
 
   if (!milestones || milestonesIsLoading) return <LoadingIndicator />;
   if (milestonesIsError) return <ErrorPage message={milestonesError.message} />;
@@ -48,7 +67,8 @@ const MilestoneTable = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid'
+          borderBottom: index === milestones.length - 1 ? 'none' : '1px solid',
+          minHeight: '50px'
         }}
       >
         <Typography sx={{ maxWidth: 300 }}>{milestone.description}</Typography>
@@ -56,7 +76,12 @@ const MilestoneTable = () => {
           <Button sx={{ p: 0.5, color: 'white' }} onClick={() => setMilestoneEditing(milestone)}>
             <EditIcon />
           </Button>
-          <Button sx={{ p: 0.5, color: 'white' }}>
+          <Button
+            sx={{ p: 0.5, color: 'white' }}
+            onClick={() => {
+              setMilestoneToDelete(milestone);
+            }}
+          >
             <DeleteIcon />
           </Button>
         </Box>
@@ -116,6 +141,17 @@ const MilestoneTable = () => {
           Add Milestone
         </NERButton>
       </Box>
+      <NERDeleteModal
+        open={!!milestoneToDelete}
+        onHide={() => setMilestoneToDelete(undefined)}
+        formId="delete-item-form"
+        dataType="Milestone"
+        onFormSubmit={() => {
+          if (milestoneToDelete) {
+            handleDelete(milestoneToDelete.milestoneId);
+          }
+        }}
+      />
     </Box>
   );
 };
