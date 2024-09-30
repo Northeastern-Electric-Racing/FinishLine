@@ -9,17 +9,24 @@ import { fullNamePipe, wbsPipe } from '../../utils/pipes';
 import { Link as RouterLink } from 'react-router-dom';
 import { Card, CardContent, CardActions, Button, Link, Typography } from '@mui/material';
 import React from 'react';
+import { useHomePageContext } from '../../app/HomePageContext';
 
 interface TeamSummaryProps {
   team: Team;
 }
 
 const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
+  const { onPNMHomePage } = useHomePageContext();
+
   const projectsList = team.projects.map((project, idx) => (
     <React.Fragment key={project.name}>
-      <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
-        {project.name}
-      </Link>
+      {onPNMHomePage ? (
+        <Typography component="span">{project.name}</Typography>
+      ) : (
+        <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
+          {project.name}
+        </Link>
+      )}
       {idx + 1 !== team.projects.length ? ', ' : ''}
     </React.Fragment>
   ));
@@ -40,11 +47,13 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         </Typography>
       </CardContent>
       <CardActions>
-        <Button variant="outlined" size="small">
-          <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`}>
-            See More
-          </Link>
-        </Button>
+        {!onPNMHomePage && (
+          <Button variant="outlined" size="small">
+            <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`}>
+              See More
+            </Link>
+          </Button>
+        )}
       </CardActions>
     </Card>
   );
