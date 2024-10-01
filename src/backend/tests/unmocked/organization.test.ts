@@ -292,4 +292,37 @@ describe('Organization Tests', () => {
       expect(image).toBe('uploaded-image1.png');
     });
   });
+
+  describe('Set Organization Description', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        OrganizationsService.setOrganizationDescription(
+          'test description',
+          await createTestUser(wonderwomanGuest, orgId),
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('set description'));
+    });
+
+    it('Succeeds and updates the description', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const returnedOrganization = await OrganizationsService.setOrganizationDescription(
+        'sample description',
+        testBatman,
+        organization
+      );
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.description).toBe('sample description');
+      expect(oldOrganization?.organizationId).toBe(returnedOrganization.organizationId);
+      expect(oldOrganization?.description).toBe(returnedOrganization.description);
+    });
+  });
 });
