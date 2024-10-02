@@ -129,11 +129,11 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
           <Stack>
             <Box display="flex" alignItems="center">
               <Typography>Alex Leblang</Typography>
-              <CopyToClipboardButton msg={'Brody Pearlman'} />
+              <CopyToClipboardButton msg={'Alex Leblang'} />
             </Box>
             <Box display="flex" alignItems="center">
               <Typography>leblang.a@northeastern.edu</Typography>
-              <CopyToClipboardButton msg={'pearlman.br@northeastern.edu'} />
+              <CopyToClipboardButton msg={'leblang.a@northeastern.edu'} />
             </Box>
           </Stack>
         </Grid>
