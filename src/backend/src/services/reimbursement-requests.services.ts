@@ -18,7 +18,8 @@ import {
   WbsReimbursementProductCreateArgs,
   OtherReimbursementProductCreateArgs,
   AccountCode,
-  ReimbursementStatus
+  ReimbursementStatus,
+  startOfDay
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -772,10 +773,6 @@ export default class ReimbursementRequestService {
     organization: Organization,
     dateDelivered: Date
   ) {
-    const startOfDay = (date: Date): Date => {
-      return new Date(new Date(date).setHours(0, 0, 0, 0));
-    };
-
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
     });

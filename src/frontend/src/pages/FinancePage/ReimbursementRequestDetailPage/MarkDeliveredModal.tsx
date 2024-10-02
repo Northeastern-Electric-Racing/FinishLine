@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { ReimbursementRequest } from 'shared';
+import { ReimbursementRequest, startOfDay } from 'shared';
 
 const schema = yup.object().shape({
   dateDelivered: yup.date().required('Must provide delivery date.'),
@@ -28,11 +28,11 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
 
   const dateIsBeforeExpenseCreated = (date: Date): boolean => {
     if (!reimbursementRequest.dateOfExpense) return false;
-    return date < new Date(new Date(reimbursementRequest.dateOfExpense).setHours(0, 0, 0, 0));
+    return date < startOfDay(reimbursementRequest.dateOfExpense);
   };
 
   const dateIsInTheFuture = (date: Date) => {
-    const now = new Date(new Date().setHours(0, 0, 0, 0));
+    const now = startOfDay(new Date());
     return date > now;
   };
 
@@ -55,7 +55,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
       toast.error('Delivery not confirmed!');
     }
     try {
-      await markDelivered({ dateDelivered: new Date(data.dateDelivered.setHours(0, 0, 0, 0)) });
+      await markDelivered({ dateDelivered: startOfDay(data.dateDelivered) });
       toast.success('Marked as delivered!');
       onHide();
     } catch (e: unknown) {
