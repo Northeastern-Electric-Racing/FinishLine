@@ -10,11 +10,11 @@ import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 
-interface MemeberHomePageProps {
+interface MemberHomePageProps {
   user: AuthenticatedUser;
 }
 
-const MemberHomePage = ({ user }: MemeberHomePageProps) => {
+const MemberHomePage = ({ user }: MemberHomePageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
