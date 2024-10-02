@@ -28,7 +28,7 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
       </Typography>
       <Box sx={{ flexGrow: 1 }}>
         <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
-          <Grid item xs={9} md={6}>
+          <Grid item xs={12} md={6}>
             <MyTasks />
           </Grid>
         </Grid>
