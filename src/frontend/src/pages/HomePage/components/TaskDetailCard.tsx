@@ -9,7 +9,6 @@ import { formateDate } from '../../../../../backend/src/utils/datetime.utils';
 import { useState } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { styled } from '@mui/material/styles';
-import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useSingleProject } from '../../../hooks/projects.hooks';
