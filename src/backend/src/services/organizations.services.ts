@@ -93,23 +93,22 @@ export default class OrganizationsService {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update images');
     }
-  
+
     const applyInterestImageData = applyInterestImage ? await uploadFile(applyInterestImage) : null;
     const exploreAsGuestImageData = exploreAsGuestImage ? await uploadFile(exploreAsGuestImage) : null;
-  
+
     const updateData = {
       ...(applyInterestImageData && { applyInterestImageId: applyInterestImageData.id }),
       ...(exploreAsGuestImageData && { exploreAsGuestImageId: exploreAsGuestImageData.id })
     };
-  
+
     const newImages = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
       data: updateData
     });
-  
+
     return newImages;
   }
-  
 
   /**
     Gets all the useful links for an organization

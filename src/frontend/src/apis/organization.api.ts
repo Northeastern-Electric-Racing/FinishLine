@@ -7,6 +7,5 @@ export const setOrganizationImages = (images: File[]) => {
   formData.append('applyInterestImage', images[0]);
   formData.append('exploreAsGuestImage', images[1]);
 
-  return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), formData, {
-  });
+  return axios.post<{ message: string }>(apiUrls.organizationsSetImages(), formData, {});
 };

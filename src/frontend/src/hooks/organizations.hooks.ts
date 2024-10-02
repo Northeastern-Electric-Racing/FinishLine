@@ -42,11 +42,10 @@ export const useSetOrganizationImages = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['organizations']);
-      },
+      }
     }
   );
 };
-
 
 // Hook for child components to get the auth object
 export const useOrganization = () => {
