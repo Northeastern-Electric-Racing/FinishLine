@@ -43,12 +43,13 @@ const performSeed: () => Promise<void> = async () => {
   });
 
   const ner = await prisma.organization.create({
-    data: {
+    data: { 
       name: 'NER',
       userCreatedId: thomasEmrax.userId,
       description:
-        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).'
-    }
+        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
+        applicationLink: 'https://northeastern.campuslabs.com/engage/submitter/form/start/491315',
+      }
   });
 
   const { organizationId } = ner;

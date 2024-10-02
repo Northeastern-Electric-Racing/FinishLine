@@ -187,6 +187,7 @@ const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete
 const allFaqs = () => `${recruitment()}/faqs`;
 const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
+const applicationLinks = () => `${recruitment()}/application-link`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
 /**************** Other Endpoints ****************/

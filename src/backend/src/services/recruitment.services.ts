@@ -209,4 +209,17 @@ export default class RecruitmentServices {
 
     return faq;
   }
-}
+
+  /**
+   * Gets the application link for the given organization
+   * @param organizationId organization Id of the application link
+   * @returns the application link
+   */
+  static async getApplicationLink(organization: Organization) {
+    const applicationLink = await prisma.organization.findMany({
+      where: { organizationId: organization.organizationId }
+    });
+    
+    return applicationLink;
+  }
+};
