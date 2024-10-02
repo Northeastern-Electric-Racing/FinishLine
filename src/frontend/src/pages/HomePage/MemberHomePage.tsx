@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import OverdueWorkPackageAlerts from './components/OverdueWorkPackageAlerts';
 import UsefulLinks from './components/UsefulLinks';
 import WorkPackagesByTimelineStatus from './components/WorkPackagesByTimelineStatus';
@@ -11,8 +11,9 @@ import UpcomingDeadlines from './components/UpcomingDeadlines';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import PageLayout from '../../components/PageLayout';
+import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import MyTasks from './components/MyTasks';
 
 interface MemberHomePageProps {
   user: AuthenticatedUser;
@@ -29,10 +30,13 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <OverdueWorkPackageAlerts />
-      <UsefulLinks />
-      <UpcomingDeadlines />
-      <WorkPackagesByTimelineStatus />
+      <Box sx={{ flexGrow: 1 }}>
+        <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
+          <Grid item xs={9} md={6}>
+            <MyTasks />
+          </Grid>
+        </Grid>
+      </Box>
     </PageLayout>
   );
 };
