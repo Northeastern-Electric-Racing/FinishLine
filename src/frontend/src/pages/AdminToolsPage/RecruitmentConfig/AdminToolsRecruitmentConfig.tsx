@@ -47,7 +47,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
     };
 
     fetchImages();
-  }, [imageUrls]);
+  }, [currentImages]);
 
   if (organizationIsLoading) return <LoadingIndicator />;
   if (organizationIsError) return <ErrorPage message={organizationError.message} />;
