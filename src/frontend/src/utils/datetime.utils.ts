@@ -24,3 +24,7 @@ export const transformDate = (date: Date) => {
   const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
   return `${date.getFullYear().toString()}/${month}/${day}`;
 };
+
+export const daysOverdue = (deadline: Date) => {
+  return Math.round((new Date().getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
+};

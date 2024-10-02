@@ -3,7 +3,7 @@ import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { Task, wbsPipe } from 'shared';
 import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
-import { isTaskOverdue, taskPriorityColor } from '../../../utils/task.utils';
+import { taskPriorityColor } from '../../../utils/task.utils';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { formateDate } from '../../../../../backend/src/utils/datetime.utils';
 import { useState } from 'react';
@@ -12,6 +12,8 @@ import { styled } from '@mui/material/styles';
 import { useSingleWorkPackage } from '../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { useSingleProject } from '../../../hooks/projects.hooks';
+import { daysOverdue } from '../../../utils/datetime.utils';
 
 interface TaskDetailCardProps {
   task: Task;
@@ -20,32 +22,36 @@ interface TaskDetailCardProps {
 
 const NERToolTip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} arrow classes={{ popper: className }} />
-))(() => ({
+))(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {
-    color: 'red'
+    color: theme.palette.error.dark
   },
   [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: 'red'
+    backgroundColor: theme.palette.error.dark
   }
 }));
 
 const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => {
   const theme = useTheme();
-  const taskOverdue = isTaskOverdue(task);
+  const taskDaysOverdue = daysOverdue(new Date(task.deadline));
+  const taskOverdue = taskDaysOverdue > 0;
   const [hover, setHover] = useState<boolean>(false);
-  const { data: wp, isLoading, isError, error } = useSingleWorkPackage(task.wbsNum);
+  const { data: project, isLoading, isError, error } = useSingleProject(task.wbsNum);
 
-  if (isLoading || !wp) return <LoadingIndicator />;
+  if (isLoading || !project) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
+
   return (
     <NERToolTip
       title={
         <Stack direction={'row'}>
           <WarningAmberIcon />
-          <Typography ml={1}>Task #{taskNumber} is Overdue!</Typography>
+          <Typography ml={1}>
+            Task #{taskNumber} is {taskDaysOverdue} Days Overdue!
+          </Typography>
         </Stack>
       }
-      open={hover}
+      open={taskOverdue && hover}
       placement="right"
       arrow
     >
@@ -57,23 +63,33 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
           minWidth: 'fit-content',
           mr: 3,
           background: theme.palette.background.default,
-          border: hover ? '1px solid red' : undefined
+          border: taskOverdue && hover ? '1px solid red' : undefined
         }}
       >
         <CardContent>
           <Box display="flex" justifyContent={'space-between'}>
             <Stack direction="row" spacing={1}>
               <Stack direction="column">
-                <Typography fontWeight={'regular'} variant="h5">
-                  Task #{taskNumber}
-                </Typography>
+                <Box display="flex">
+                  <Typography fontWeight={'regular'} variant="h5">
+                    Task #{taskNumber}
+                  </Typography>
+                  {taskOverdue && (
+                    <Chip
+                      color="error"
+                      label={'OVERDUE'}
+                      sx={{
+                        ml: 1
+                      }}
+                    />
+                  )}
+                </Box>
                 <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(task.wbsNum)}`} noWrap>
                   <Typography fontWeight={'regular'} variant="subtitle2">
-                    {wbsPipe(task.wbsNum)} - {wp.name}
+                    {wbsPipe(task.wbsNum)} - {project.name}
                   </Typography>
                 </Link>
               </Stack>
-              {taskOverdue && <Chip color="error" label={'OVERDUE'} />}
             </Stack>
             <Stack direction="column" spacing={1}>
               <Chip

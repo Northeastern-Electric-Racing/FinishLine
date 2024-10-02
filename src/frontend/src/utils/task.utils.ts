@@ -69,10 +69,6 @@ export const getTaskAssigneeOptions = (teams: TeamPreview[]): User[] => {
   return teams.map((team) => makeTeamList(team)).flat();
 };
 
-export const isTaskOverdue = (task: Task) => {
-  return new Date() > new Date(task.deadline);
-};
-
 export const taskPriorityColor = (task: Task) => {
   return task.priority === TaskPriority.Low
     ? '#1CAC19'
