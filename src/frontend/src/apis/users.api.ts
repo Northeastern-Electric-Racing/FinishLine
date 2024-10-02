@@ -104,9 +104,7 @@ export const getUsersFavoriteProjects = (id: string) => {
  * @returns the secure settings
  */
 export const getUserSecureSettings = (id: string) => {
-  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(id), {
-    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
-  });
+  return axios.get<UserSecureSettings>(apiUrls.userSecureSettings(id));
 };
 
 /**
@@ -147,5 +145,7 @@ export const updateUserRole = (id: string, role: string) => {
 };
 
 export const getUserTasks = (id: string) => {
-  return axios.get<Task[]>(apiUrls.userTasks(id), {});
+  return axios.get<Task[]>(apiUrls.userTasks(id), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
 };
