@@ -94,4 +94,27 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async setOrganizationDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const updatedOrg = await OrganizationsService.setOrganizationDescription(
+        req.body.description,
+        req.currentUser,
+        req.organization
+      );
+
+      return res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async getOrganizationFeaturedProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);
+      res.status(200).json(featuredProjects);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

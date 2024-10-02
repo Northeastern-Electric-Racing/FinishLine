@@ -229,4 +229,48 @@ export default class OrganizationsService {
 
     return organization.logoImageId;
   }
+
+  /**
+   * Sets the description of a given organization.
+   * @param description the new description
+   * @param submitter the user making the change (must be admin)
+   * @param organization the organization whos description is changing
+   * @throws if the user is not an admin
+   */
+  static async setOrganizationDescription(
+    description: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set description');
+    }
+    const updatedOrg = prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        description
+      }
+    });
+    return updatedOrg;
+  }
+
+  /**
+   * Gets the featured projects for the given organization Id
+   * @param organizationId the organization to get the projects for
+   * @returns all the featured projects for the organization
+   */
+  static async getOrganizationFeaturedProjects(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { featuredProjects: true }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.featuredProjects;
+  }
 }

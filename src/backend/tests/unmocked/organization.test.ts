@@ -1,7 +1,7 @@
 import { LinkCreateArgs } from 'shared';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import { createTestLinkType, createTestOrganization, createTestProject, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
 import { uploadFile } from '../../src/utils/google-integration.utils';
@@ -183,6 +183,27 @@ describe('Organization Tests', () => {
     });
   });
 
+  describe('Get all featured projects', () => {
+    it('Fails if an organizaion does not exist', async () => {
+      await expect(async () => await OrganizationsService.getOrganizationFeaturedProjects('1')).rejects.toThrow(
+        new NotFoundException('Organization', '1')
+      );
+    });
+
+    it('Succeeds and gets featured projects', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testProject1 = await createTestProject(testBatman, orgId);
+
+      await OrganizationsService.setFeaturedProjects([testProject1.projectId], organization, testBatman);
+
+      const projects = await OrganizationsService.getOrganizationFeaturedProjects(orgId);
+
+      expect(projects).not.toBeNull();
+      expect(projects.length).toBe(1);
+      expect(projects[0].projectId).toBe(testProject1.projectId);
+    });
+  });
+
   describe('Get Organization Images', () => {
     it('Fails if an organization does not exist', async () => {
       await expect(async () => await OrganizationsService.getOrganizationImages('1')).rejects.toThrow(
@@ -269,6 +290,39 @@ describe('Organization Tests', () => {
 
       expect(image).not.toBeNull();
       expect(image).toBe('uploaded-image1.png');
+    });
+  });
+
+  describe('Set Organization Description', () => {
+    it('Fails if user is not an admin', async () => {
+      await expect(
+        OrganizationsService.setOrganizationDescription(
+          'test description',
+          await createTestUser(wonderwomanGuest, orgId),
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('set description'));
+    });
+
+    it('Succeeds and updates the description', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const returnedOrganization = await OrganizationsService.setOrganizationDescription(
+        'sample description',
+        testBatman,
+        organization
+      );
+
+      const oldOrganization = await prisma.organization.findUnique({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(oldOrganization).not.toBeNull();
+      expect(oldOrganization?.description).toBe('sample description');
+      expect(oldOrganization?.organizationId).toBe(returnedOrganization.organizationId);
+      expect(oldOrganization?.description).toBe(returnedOrganization.description);
     });
   });
 });
