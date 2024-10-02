@@ -41,7 +41,7 @@ export const useSetOrganizationImages = () => {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['organization images']);
+        queryClient.invalidateQueries(['organizations']);
       },
     }
   );

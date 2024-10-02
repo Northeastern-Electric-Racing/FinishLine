@@ -47,7 +47,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
     };
 
     fetchImages();
-  }, [currentImages]);
+  }, [currentImages || imageUrls]);
 
   if (organizationIsLoading) return <LoadingIndicator />;
   if (organizationIsError) return <ErrorPage message={organizationError.message} />;
@@ -56,9 +56,9 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
     const validFiles: File[] = [];
     files.forEach((file) => {
       if (file.size < 1000000) {
-        if (type == 'applyInterest') {
+        if (type === 'applyInterest') {
           validFiles[0] = file;
-        } else if (type == 'exploreAsGuest') {
+        } else if (type === 'exploreAsGuest') {
           validFiles[1] = file;
         }
       } else {
