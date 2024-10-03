@@ -54,19 +54,39 @@ const PNMHomePage = () => {
     <PageLayout title="Home" hidePageTitle>
       <Box sx={{ mt: 4, ml: 2 }}>
         <Grid container spacing={5}>
-          <Grid item xs={8}>
-            <Grid container spacing={5} display={'flex'} flexDirection={'column'}>
-              <Grid item xs={6}>
-                <Box>
-                  <Typography variant="h3">About NER</Typography>
-                  <Typography sx={{ mt: 4, fontSize: '1.2em' }}>{organization.description}</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6}>
+          <Grid item xs={7}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100vh'
+              }}
+            >
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  flexBasis: '40%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Typography variant="h3">About NER</Typography>
+                <Typography sx={{ mt: 4, fontSize: '1.2em' }}>{organization.description}</Typography>
+              </Box>
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  flexBasis: '60%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Typography variant="h3">Our Divisions</Typography>
                 <Tabs tabs={teamTypeTabs} tabValue={teamTypeTabValue} setTabValue={setTeamTypeTabValue} />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Grid>
+          <Grid item xs={1} />
           <Grid item xs={4}>
             <Box
               sx={{
@@ -91,4 +111,5 @@ const PNMHomePage = () => {
     </PageLayout>
   );
 };
+
 export default PNMHomePage;

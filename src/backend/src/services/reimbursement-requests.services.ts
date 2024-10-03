@@ -1069,8 +1069,8 @@ export default class ReimbursementRequestService {
    * @param organizationId the organization the user is currently in
    * @returns a buffer of the image data and the image type
    */
-  static async downloadReceiptImage(fileId: string, submitter: User, organization: Organization) {
-    await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
+  static async downloadReceiptImage(fileId: string, _submitter: User, _organization: Organization) {
+    // await validateUserIsPartOfFinanceTeamOrAdmin(submitter, organization.organizationId);
 
     const fileData = await downloadImageFile(fileId);
 

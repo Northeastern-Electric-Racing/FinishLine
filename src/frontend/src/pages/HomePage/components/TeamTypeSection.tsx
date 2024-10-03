@@ -11,6 +11,8 @@ const TeamTypeSection = ({ teamType }: TeamTypeSectionProps) => {
   const [imageUrl, setImageUrl] = useState<string>('');
 
   useEffect(() => {
+    setImageUrl('');
+
     const fetchImageUrl = async () => {
       if (teamType.imageFileId) {
         const url = await getImageUrl(teamType.imageFileId);
@@ -22,12 +24,12 @@ const TeamTypeSection = ({ teamType }: TeamTypeSectionProps) => {
   }, [teamType.imageFileId]);
 
   return (
-    <Grid container spacing={5}>
+    <Grid container spacing={2} alignItems="center">
       <Grid item xs={4}>
-        <Box component="img" src={imageUrl} alt="Image Preview" sx={{ maxWidth: '400px', mt: 1, mb: 1 }} />
+        <Box component="img" src={imageUrl} alt="Image Preview" sx={{ maxWidth: '100%', mt: 1, mb: 1 }} />
       </Grid>
       <Grid item xs={8}>
-        <Typography>{teamType.description}</Typography>
+        <Typography variant="body1">{teamType.description}</Typography>
       </Grid>
     </Grid>
   );
