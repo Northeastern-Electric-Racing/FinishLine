@@ -8,7 +8,7 @@ import { useCurrentUser } from '../../hooks/users.hooks';
 import ChangeRequestsOverview from './ChangeRequestsOverview';
 import ChangeRequestsTable from './ChangeRequestsTable';
 import PageLayout from '../../components/PageLayout';
-import NERTabs from '../../components/Tabs';
+import FullPageTabs from '../../components/FullPageTabs';
 
 const ChangeRequestsView: React.FC = () => {
   const history = useHistory();
@@ -32,7 +32,7 @@ const ChangeRequestsView: React.FC = () => {
     <PageLayout
       title="Change Requests"
       tabs={
-        <NERTabs
+        <FullPageTabs
           setTab={setTabIndex}
           tabsLabels={[
             { tabUrlValue: 'overview', tabName: 'Overview' },
