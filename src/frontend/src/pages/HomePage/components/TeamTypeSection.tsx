@@ -25,9 +25,11 @@ const TeamTypeSection = ({ teamType }: TeamTypeSectionProps) => {
 
   return (
     <Grid container spacing={2} alignItems="center">
-      <Grid item xs={4}>
-        <Box component="img" src={imageUrl} alt="Image Preview" sx={{ maxWidth: '100%', mt: 1, mb: 1 }} />
-      </Grid>
+      {imageUrl && (
+        <Grid item xs={4}>
+          <Box component="img" src={imageUrl} sx={{ maxWidth: '100%', mt: 1, mb: 1 }} />
+        </Grid>
+      )}
       <Grid item xs={8}>
         <Typography variant="body1">{teamType.description}</Typography>
       </Grid>
