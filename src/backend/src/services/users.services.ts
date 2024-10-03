@@ -541,6 +541,12 @@ export default class UsersService {
     return userScheduleSettingsTransformer(newUserScheduleSettings);
   }
 
+  /**
+   * Get's a user's assigned tasks
+   * @param userId the id of the user who's tasks are being returned
+   * @param organization the user's organization
+   * @returns a list of the user's assigned tasks
+   */
   static async getUserTasks(userId: string, organization: Organization) {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
