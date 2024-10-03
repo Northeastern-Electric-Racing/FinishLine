@@ -1,8 +1,8 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Organization } from 'shared';
-import { getCurrentOrganization } from '../apis/organizations.api';
+import { getCurrentOrganization, setOrganizationDescription } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -35,4 +35,20 @@ export const useOrganization = () => {
   const context = useContext(OrganizationContext);
   if (context === undefined) throw Error('Organization must be used inside of an organizational context.');
   return context;
+};
+
+export const useSetOrganizationDescription = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, string>(
+    ['organizations', 'description'],
+    async (description: string) => {
+      const { data } = await setOrganizationDescription(description);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
 };
