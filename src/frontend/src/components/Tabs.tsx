@@ -2,7 +2,6 @@ import { AppBar, Tab, Tabs as MUITabs, Box } from '@mui/material';
 import React from 'react';
 
 export interface TabData {
-  // value: number;
   label: string;
   component: React.ReactNode;
 }

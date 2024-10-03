@@ -30,13 +30,6 @@ export const useProvideOrganization = (): OrganizationProvider => {
   };
 };
 
-export const useCurrentOrganization = () => {
-  return useQuery<Organization, Error>(['organizations'], async () => {
-    const { data } = await getCurrentOrganization();
-    return data;
-  });
-};
-
 // Hook for child components to get the auth object
 export const useOrganization = () => {
   const context = useContext(OrganizationContext);
