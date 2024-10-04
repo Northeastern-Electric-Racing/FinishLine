@@ -3,7 +3,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useCurrentUser, useUserTasks } from '../../../hooks/users.hooks';
 import TaskDetailCard from './TaskDetailCard';
 import ErrorPage from '../../ErrorPage';
-import CompleteDisplay from './CompleteDisplay';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import ScrollablePageBlock from './ScrollablePageBlock';
 
@@ -18,7 +18,7 @@ const NoTasksDisplay: React.FC = () => {
         alignItems: 'center'
       }}
     >
-      <CompleteDisplay
+      <EmptyPageBlockDisplay
         icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
         heading={"You're all caught up!"}
         message={"You've completed all of your assigned tasks!"}

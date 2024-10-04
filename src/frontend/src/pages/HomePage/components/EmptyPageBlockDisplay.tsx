@@ -1,13 +1,13 @@
 import { Stack, Typography } from '@mui/material';
 import React from 'react';
 
-interface CompleteDisplayProps {
+interface EmptyPageBlockDisplayProps {
   icon: React.ReactNode;
   heading: String;
   message: String;
 }
 
-const CompleteDisplay: React.FC<CompleteDisplayProps> = ({ icon, heading, message }) => {
+const EmptyPageBlockDisplay: React.FC<EmptyPageBlockDisplayProps> = ({ icon, heading, message }) => {
   return (
     <Stack direction="column" spacing={1} alignItems="center" justifyContent="center">
       {icon}
@@ -17,4 +17,4 @@ const CompleteDisplay: React.FC<CompleteDisplayProps> = ({ icon, heading, messag
   );
 };
 
-export default CompleteDisplay;
+export default EmptyPageBlockDisplay;

@@ -71,7 +71,7 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
               <Stack direction="column">
                 <Box display="flex">
                   <Typography fontWeight={'regular'} variant="h5">
-                    Task #{taskNumber}
+                    Task #{taskNumber} - {task.title}
                   </Typography>
                   {taskOverdue && (
                     <Chip

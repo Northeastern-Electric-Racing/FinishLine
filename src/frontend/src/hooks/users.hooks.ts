@@ -236,9 +236,14 @@ export const useUpdateUserRole = () => {
   );
 };
 
-export const useUserTasks = (id: string) => {
-  return useQuery<Task[], Error>(['users', id, 'tasks'], async () => {
-    const { data } = await getUserTasks(id);
+/**
+ * Custom React Hook to get the user's assigned tasks
+ * @param userId user to get assigned tasks of
+ * @returns user's assigned task
+ */
+export const useUserTasks = (userId: string) => {
+  return useQuery<Task[], Error>(['users', userId, 'tasks'], async () => {
+    const { data } = await getUserTasks(userId);
     return data;
   });
 };
