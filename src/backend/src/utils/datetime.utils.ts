@@ -13,9 +13,3 @@ export const transformDate = (date: Date) => {
   const day = date.getDate() + 1 < 10 ? `0${date.getDate() + 1}` : (date.getDate() + 1).toString();
   return `${date.getFullYear().toString()}-${month}-${day}`;
 };
-
-export const formateDate = (date: Date) => {
-  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
-  const day = date.getDate() + 1 < 10 ? `0${date.getDate() + 1}` : (date.getDate() + 1).toString();
-  return `${month}/${day}/${date.getFullYear().toString()}`;
-};

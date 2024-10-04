@@ -5,14 +5,13 @@ import { Link as RouterLink } from 'react-router-dom';
 import { routes } from '../../../utils/routes';
 import { taskPriorityColor } from '../../../utils/task.utils';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import { formateDate } from '../../../../../backend/src/utils/datetime.utils';
 import { useState } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { styled } from '@mui/material/styles';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useSingleProject } from '../../../hooks/projects.hooks';
-import { daysOverdue } from '../../../utils/datetime.utils';
+import { daysOverdue, formatDate } from '../../../utils/datetime.utils';
 
 interface TaskDetailCardProps {
   task: Task;
@@ -99,7 +98,7 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
                 label={task.priority}
                 size="small"
               />
-              <Chip icon={<CalendarMonthIcon />} label={formateDate(new Date(task.deadline))} size="small" />
+              <Chip icon={<CalendarMonthIcon />} label={formatDate(new Date(task.deadline))} size="small" />
             </Stack>
           </Box>
           <Box
