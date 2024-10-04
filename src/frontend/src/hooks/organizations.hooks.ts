@@ -1,8 +1,9 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Organization } from 'shared';
 import { getCurrentOrganization } from '../apis/organizations.api';
+import { setOrganizationImages } from '../apis/organization.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -28,6 +29,22 @@ export const useProvideOrganization = (): OrganizationProvider => {
     organizationId,
     selectOrganization
   };
+};
+
+export const useSetOrganizationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<any, unknown, File[]>(
+    async (images: File[]) => {
+      const { data } = await setOrganizationImages(images);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
 };
 
 // Hook for child components to get the auth object
