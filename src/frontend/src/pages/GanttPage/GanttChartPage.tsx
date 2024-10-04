@@ -19,10 +19,10 @@ import { SearchBar } from '../../components/SearchBar';
 import GanttChartColorLegend from './GanttChartComponents/GanttChartColorLegend';
 import GanttChartFiltersButton from './GanttChartComponents/GanttChartFiltersButton';
 import GanttChart from './GanttChart';
-import { useAllTeamTypes } from '../../hooks/design-reviews.hooks';
 import { Project, Team, TeamType, WbsElement, WorkPackage } from 'shared';
 import { useAllTeams } from '../../hooks/teams.hooks';
 import { useGetAllCars } from '../../hooks/cars.hooks';
+import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 
 const GanttChartPage: FC = () => {
   const query = useQuery();
