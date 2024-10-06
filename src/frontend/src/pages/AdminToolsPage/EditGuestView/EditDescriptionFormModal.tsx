@@ -36,7 +36,7 @@ const EditDescriptionFormModal: React.FC<EditDescriptionFormModalProps> = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      description: originalDescription
+      description: originalDescription ?? ''
     }
   });
 
@@ -45,6 +45,7 @@ const EditDescriptionFormModal: React.FC<EditDescriptionFormModalProps> = ({
       open={modalShow}
       onHide={onHide}
       title="Edit Description"
+      formId="edit-organization-description"
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
       submitText="Save"
@@ -58,6 +59,10 @@ const EditDescriptionFormModal: React.FC<EditDescriptionFormModalProps> = ({
           e.preventDefault();
           e.stopPropagation();
           handleSubmit(onSubmit)(e);
+          reset();
+        }}
+        onKeyPress={(e) => {
+          e.key === 'Enter' && e.preventDefault();
         }}
       >
         <FormControl sx={{ width: '100%' }}>
@@ -67,7 +72,17 @@ const EditDescriptionFormModal: React.FC<EditDescriptionFormModalProps> = ({
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
-              <TextField required onChange={onChange} value={value} rows={5} multiline />
+              <TextField
+                required
+                onChange={onChange}
+                value={value}
+                rows={5}
+                multiline
+                error={!!errors.description}
+                sx={{
+                  width: '50vh'
+                }}
+              />
             )}
           />
         </FormControl>

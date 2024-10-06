@@ -43,6 +43,7 @@ export const useSetOrganizationDescription = () => {
     ['organizations', 'description'],
     async (description: string) => {
       const { data } = await setOrganizationDescription(description);
+      queryClient.invalidateQueries(['organizations']);
       return data;
     },
     {
