@@ -11,3 +11,9 @@ export const getCurrentOrganization = async () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+export const setOrganizationDescription = async (description: string) => {
+  return axios.post<Organization>(apiUrls.organizationsSetDescription(), {
+    description
+  });
+};
