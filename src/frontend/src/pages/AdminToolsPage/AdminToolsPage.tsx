@@ -19,7 +19,6 @@ import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 import EditDescription from './EditGuestView/EditDescription';
-import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
