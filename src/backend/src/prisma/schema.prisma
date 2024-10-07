@@ -976,7 +976,7 @@ model Graph {
   graphDataId           String           @id
   data                  GraphData        @relation(fields: [graphDataId], references: [id])
   groupBy               Graph_Data_Unit
-  GraphCollection       GraphCollection? @relation(fields: [graphCollectionLinkId], references: [linkId])
+  graphCollection       GraphCollection? @relation(fields: [graphCollectionLinkId], references: [linkId])
   graphCollectionLinkId String?
 }
 
@@ -984,7 +984,7 @@ model GraphData {
   id       String          @id
   type     Graph_Data_Unit
   measures Measures
-  Graph    Graph[]
+  graph    Graph[]
 }
 
 model GraphCollection {
