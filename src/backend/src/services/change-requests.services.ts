@@ -149,8 +149,15 @@ export default class ChangeRequestsService {
       }
     });
 
+    const newCR = await prisma.change_Request.findUnique({
+      where: { crId },
+      include: getChangeRequestQueryArgs(organization.organizationId).include
+    });
+
     // send the creator of the cr a slack notification that their cr was reviewed
-    await sendCRSubmitterReviewedNotification(foundCR);
+    if (newCR) {
+      await sendCRSubmitterReviewedNotification(newCR);
+    }
 
     // send a reply to a CR's notifications of its updated status
     await sendSlackCRStatusToThread(updated.notificationSlackThreads, foundCR.crId, foundCR.identifier, accepted);

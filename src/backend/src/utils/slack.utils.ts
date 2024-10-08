@@ -408,7 +408,7 @@ export const sendSlackCRReviewedNotification = async (
   if (!comments) {
     fullMsg = `:tada: Your Change Request was just reviewed! Click the link to view! :tada:`;
   } else {
-    fullMsg = `:tada: Your Change Request was just reviewed! Comments: ${comments} \nClick the link to view! :tada:`;
+    fullMsg = `:tada: Your Change Request was just reviewed!\n Comments: ${comments} \nClick the link to view! :tada:`;
   }
 
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
