@@ -1,6 +1,6 @@
 import { ChangeRequest, daysBetween, Task, UserPreview, wbsPipe, calculateEndDate } from 'shared';
 import { User } from '@prisma/client';
-import slack, { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
+import { editMessage, reactToMessage, replyToMessageInThread, sendMessage } from '../integrations/slack';
 import { getUserFullName, getUserSlackId } from './users.utils';
 import prisma from '../prisma/prisma';
 import { HttpException } from './errors.utils';
