@@ -216,7 +216,7 @@ export default class RecruitmentServices {
    * @returns the application link
    */
   static async getApplicationLink(organization: Organization) {
-    const applicationLink = await prisma.organization.findMany({
+    const applicationLink = await prisma.organization.findUnique({
       where: { organizationId: organization.organizationId }
     });
     

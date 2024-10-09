@@ -11,12 +11,3 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
       return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
   }
 };
-
-/**
- * Given a list of work packages, return the work packages that are overdue.
- * @param wpList a list of work packages.
- * @returns a list of work packages that are overdue.
- */
-export const getOverdueWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
-  return wpList.filter((wp) => wp.status !== WbsElementStatus.Complete && wp.endDate < new Date());
-};
