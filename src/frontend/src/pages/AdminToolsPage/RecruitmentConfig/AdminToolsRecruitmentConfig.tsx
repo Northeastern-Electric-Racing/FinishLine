@@ -1,6 +1,7 @@
 import { Box, Grid, Typography } from '@mui/material';
 import MilestoneTable from './MilestoneTable';
 import FAQsTable from './FAQTable';
+import ApplicationLinkTable from './ApplicationLinkTable';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   return (
@@ -14,6 +15,9 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         </Grid>
         <Grid item direction="column" alignSelf="right" xs={12} md={6}>
           <MilestoneTable />
+        </Grid>
+        <Grid item direction="column" xs={12} md={6}>
+          <ApplicationLinkTable />
         </Grid>
       </Grid>
     </Box>
