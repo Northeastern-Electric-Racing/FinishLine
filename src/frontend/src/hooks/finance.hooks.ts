@@ -394,13 +394,13 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
     const { data } = await getAllReimbursementRequests();
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      'SABO ID,Recipient,Total Cost,Status,Account,Date Created,Date Delivered,Date Submitted,Vendor\n' +
+      'SABO ID,Recipient,Total Cost,Status,Account,Account Code,Date Created,Date Delivered,Date Submitted,Vendor\n' +
       data
         .map(
           (rr) =>
             `${rr.saboId},${fullNamePipe(rr.recipient)},${rr.totalCost},${
               rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
-            },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+            },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
             },${rr.vendor.name}`
         )
@@ -543,7 +543,7 @@ export const useCreateVendor = () => {
 
 /**
  * Custom React Hook to mark a reimbursement request as pending finance
- * 
+ *
  * @param id The id of the reimbursement request to mark pending finance
  * @returns Mutation function with the ability to mark a rr as pending finance
  */
@@ -565,7 +565,7 @@ export const useMarkPendingFinance = (id: string) => {
 
 /**
  * Custom React Hook to request changes on a reimbursement request
- * 
+ *
  * @param id The id of the reimbursement request to request changes on
  * @returns Mutation function with the ability to mark a rr as requested changes
  */
