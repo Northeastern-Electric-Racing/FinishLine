@@ -16,7 +16,7 @@ const TeamsTools = () => {
     isLoading: allTeamsIsLoading,
     isError: allTeamsIsError,
     error: allTeamsError
-  } = useAllTeams(false);
+  } = useAllTeams();
 
   if (!allTeams || allTeamsIsLoading) return <LoadingIndicator />;
 

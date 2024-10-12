@@ -10,7 +10,7 @@ interface TeamDropdownProps {
 }
 
 const TeamDropdown = ({ control, name, multiselect = false }: TeamDropdownProps) => {
-  const { isLoading, data: teams } = useAllTeams(false);
+  const { isLoading, data: teams } = useAllTeams();
   if (isLoading || !teams) return <LoadingIndicator />;
 
   return (

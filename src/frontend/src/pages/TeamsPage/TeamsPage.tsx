@@ -5,20 +5,20 @@
 
 import { Grid } from '@mui/material';
 import LoadingIndicator from '../../components/LoadingIndicator';
-import { useAllTeams } from '../../hooks/teams.hooks';
+import { useAllArchivedTeams, useAllTeams } from '../../hooks/teams.hooks';
 import ErrorPage from '../ErrorPage';
 import TeamSummary from './TeamSummary';
 import PageLayout from '../../components/PageLayout';
 
 const TeamsPage: React.FC = () => {
-  const { isLoading: teamsLoading, isError: isTeamsError, data: teams, error: teamsError } = useAllTeams(false);
+  const { isLoading: teamsLoading, isError: isTeamsError, data: teams, error: teamsError } = useAllTeams();
 
   const {
     isLoading: archivedTeamsLoading,
     isError: isArchivedTeamsError,
     data: archivedTeams,
     error: archivedTeamsError
-  } = useAllTeams(true);
+  } = useAllArchivedTeams();
   console.log(archivedTeams);
 
   if (teamsLoading || !teams) return <LoadingIndicator />;

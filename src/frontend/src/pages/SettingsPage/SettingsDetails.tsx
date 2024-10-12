@@ -22,7 +22,7 @@ const SettingsDetails: React.FC = () => {
     error: secureSettingsError,
     data: userSecureSettings
   } = useCurrentUserSecureSettings();
-  const { isLoading: allTeamsIsLoading, isError: allTeamsIsError, data: teams, error: allTeamsError } = useAllTeams(false);
+  const { isLoading: allTeamsIsLoading, isError: allTeamsIsError, data: teams, error: allTeamsError } = useAllTeams();
 
   if (secureSettingsIsError) return <ErrorPage error={secureSettingsError} message={secureSettingsError.message} />;
   if (settingsIsError) return <ErrorPage error={settingsError} message={settingsError.message} />;
