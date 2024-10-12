@@ -10,7 +10,6 @@ export default class TeamsController {
       return res.status(200).json(teams);
     } catch (error: unknown) {
       return next(error);
-
     }
   }
 
