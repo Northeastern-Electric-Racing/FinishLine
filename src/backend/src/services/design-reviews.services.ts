@@ -1,5 +1,13 @@
-import { Design_Review_Status, Team_Type, User } from '@prisma/client';
-import { DesignReview, WbsNumber, isAdmin, isLeadership, isNotLeadership } from 'shared';
+import { Design_Review_Status, Team_Type, User, Organization } from '@prisma/client';
+import {
+  DesignReview,
+  WbsNumber,
+  isAdmin,
+  isLeadership,
+  isNotLeadership,
+  DesignReviewStatus,
+  AvailabilityCreateArgs
+} from 'shared';
 import prisma from '../prisma/prisma';
 import {
   NotFoundException,
@@ -10,7 +18,13 @@ import {
   AccessDeniedException,
   InvalidOrganizationException
 } from '../utils/errors.utils';
-import { getUsers, getPrismaQueryUserIds, userHasPermission, areUsersinList } from '../utils/users.utils';
+import {
+  getUsers,
+  getPrismaQueryUserIds,
+  userHasPermission,
+  areUsersinList,
+  updateUserAvailability
+} from '../utils/users.utils';
 import { isUserOnDesignReview, validateMeetingTimes } from '../utils/design-reviews.utils';
 import { designReviewTransformer } from '../transformers/design-reviews.transformer';
 import {
@@ -23,6 +37,8 @@ import {
 import { getDesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
 import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.query-args';
 import { UserWithSettings } from '../utils/auth.utils';
+import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils';
 
 export default class DesignReviewsService {
   /**
@@ -30,10 +46,10 @@ export default class DesignReviewsService {
    * @param organizationId the organization id of the current user
    * @returns All of the design reviews
    */
-  static async getAllDesignReviews(organizationId: string): Promise<DesignReview[]> {
+  static async getAllDesignReviews(organization: Organization): Promise<DesignReview[]> {
     const designReviews = await prisma.design_Review.findMany({
-      where: { dateDeleted: null, wbsElement: { organizationId } },
-      ...getDesignReviewQueryArgs(organizationId)
+      where: { dateDeleted: null, wbsElement: { organizationId: organization.organizationId } },
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
     return designReviews.map(designReviewTransformer);
   }
@@ -44,19 +60,24 @@ export default class DesignReviewsService {
    * @param designReviewId the id of the design review to be deleted
    * @param organizationId the organization that the user is currently in
    */
-  static async deleteDesignReview(submitter: User, designReviewId: string, organizationId: string): Promise<DesignReview> {
+  static async deleteDesignReview(
+    submitter: User,
+    designReviewId: string,
+    organization: Organization
+  ): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
       where: { designReviewId },
-      ...getDesignReviewQueryArgs(organizationId)
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
     if (!designReview) throw new NotFoundException('Design Review', designReviewId);
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
-    if (designReview.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Design Review');
+    if (designReview.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Design Review');
 
     if (
       !(
-        (await userHasPermission(submitter.userId, organizationId, isAdmin)) ||
+        (await userHasPermission(submitter.userId, organization.organizationId, isAdmin)) ||
         submitter.userId === designReview.userCreatedId
       )
     )
@@ -65,8 +86,16 @@ export default class DesignReviewsService {
     const deletedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
       data: { dateDeleted: new Date(), userDeleted: { connect: { userId: submitter.userId } } },
-      ...getDesignReviewQueryArgs(organizationId)
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
+
+    if (
+      deletedDesignReview.calendarEventId &&
+      deletedDesignReview.teamType.calendarId &&
+      deletedDesignReview.calendarEventId
+    ) {
+      await deleteCalendarEvent(deletedDesignReview.teamType.calendarId, deletedDesignReview.calendarEventId);
+    }
 
     return designReviewTransformer(deletedDesignReview);
   }
@@ -74,7 +103,7 @@ export default class DesignReviewsService {
   /**
    * Create a design review
    * @param submitter User submitting the design review
-   * @param dateScheduled when the design review is scheduled for
+   * @param initialDate what initial date to base the meeting times off of
    * @param teamTypeId team type id
    * @param requiredMemberIds ids of members who are required to go
    * @param optionalMemberIds ids of members who do not have to go
@@ -85,59 +114,48 @@ export default class DesignReviewsService {
    */
   static async createDesignReview(
     submitter: User,
-    dateScheduled: string,
+    initialDate: string,
     teamTypeId: string,
     requiredMemberIds: string[],
     optionalMemberIds: string[],
     wbsNum: WbsNumber,
     meetingTimes: number[],
-    organizationId: string
+    organization: Organization
   ): Promise<DesignReview> {
-    if (!(await userHasPermission(submitter.userId, organizationId, isLeadership)))
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isLeadership)))
       throw new AccessDeniedException('create design review');
 
-    const teamType = await DesignReviewsService.getSingleTeamType(teamTypeId, organizationId);
-
+    const teamType = await DesignReviewsService.getSingleTeamType(teamTypeId, organization);
     const wbsElement = await prisma.wBS_Element.findUnique({
       where: {
         wbsNumber: {
           carNumber: wbsNum.carNumber,
           projectNumber: wbsNum.projectNumber,
           workPackageNumber: wbsNum.workPackageNumber,
-          organizationId
+          organizationId: organization.organizationId
         }
       },
       include: {
-        workPackage: getWorkPackageQueryArgs(organizationId)
+        workPackage: getWorkPackageQueryArgs(organization.organizationId)
       }
     });
 
     if (!wbsElement) throw new NotFoundException('WBS Element', wbsNum.carNumber);
     if (wbsElement.dateDeleted) throw new DeletedException('WBS Element', wbsNum.carNumber);
-    if (wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('WBS Element');
-
-    if (meetingTimes.length === 0) throw new HttpException(400, 'There must be at least one meeting time');
+    if (wbsElement.organizationId !== organization.organizationId) throw new InvalidOrganizationException('WBS Element');
 
     // checks if the meeting times are valid times and are all continous (ie. [1, 2, 3, 4])
-    for (let i = 0; i < meetingTimes.length; i++) {
-      if (i === meetingTimes.length - 1) {
-        if (meetingTimes[i] < 0 || meetingTimes[i] > 83) {
-          throw new HttpException(400, 'Meeting times have to be in range 0-83');
-        }
-        continue;
-      }
-      if (meetingTimes[i + 1] - meetingTimes[i] !== 1 || meetingTimes[i] < 0 || meetingTimes[i] > 83) {
-        throw new HttpException(400, 'Meeting times have to be continous and in range 0-83');
-      }
-    }
+    validateMeetingTimes(meetingTimes);
 
-    const date = new Date(dateScheduled);
-    if (new Date(date.toDateString()) < new Date(new Date().toDateString())) {
-      throw new HttpException(400, 'Design review cannot be scheduled for a past day');
+    const date = new Date(initialDate);
+
+    if (date.getTime() < new Date().getTime()) {
+      throw new HttpException(400, 'Design review cannot be initially set for a past day');
     }
 
     const designReview = await prisma.design_Review.create({
       data: {
+        initialDateScheduled: date,
         dateScheduled: date,
         dateCreated: new Date(),
         status: Design_Review_Status.UNCONFIRMED,
@@ -150,7 +168,7 @@ export default class DesignReviewsService {
         meetingTimes,
         wbsElement: { connect: { wbsElementId: wbsElement.wbsElementId } }
       },
-      ...getDesignReviewQueryArgs(organizationId)
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
     const members = await prisma.user.findMany({
@@ -207,17 +225,18 @@ export default class DesignReviewsService {
   static async getSingleDesignReview(
     _submitter: User,
     designReviewId: string,
-    organizationId: string
+    organization: Organization
   ): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
       where: { designReviewId },
-      ...getDesignReviewQueryArgs(organizationId)
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
     if (!designReview) throw new NotFoundException('Design Review', designReviewId);
 
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
-    if (designReview.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Design Review');
+    if (designReview.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Design Review');
 
     return designReviewTransformer(designReview);
   }
@@ -256,10 +275,10 @@ export default class DesignReviewsService {
     status: Design_Review_Status,
     attendees: string[],
     meetingTimes: number[],
-    organizationId: string
+    organization: Organization
   ): Promise<DesignReview> {
-    // verify user is allowed to edit work package
-    if (await userHasPermission(user.userId, organizationId, isNotLeadership))
+    // verify user is allowed to edit design review
+    if (await userHasPermission(user.userId, organization.organizationId, isNotLeadership))
       throw new AccessDeniedMemberException('edit design reviews');
 
     // make sure the requiredMembersIds are not in the optionalMembers
@@ -276,7 +295,7 @@ export default class DesignReviewsService {
       throw new HttpException(400, 'location is required for in person design reviews');
     }
 
-    // throws if meeting times are not: consecutive and between 0-83
+    // throws if meeting times are not: consecutive and between 0-11
     meetingTimes = validateMeetingTimes(meetingTimes);
 
     // docTemplateLink is required if the status is scheduled or done
@@ -288,25 +307,37 @@ export default class DesignReviewsService {
     // validate the design review exists and is not deleted
     const originaldesignReview = await prisma.design_Review.findUnique({
       where: { designReviewId },
-      ...getDesignReviewQueryArgs(organizationId)
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
     if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
     if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
-    if (originaldesignReview.wbsElement.organizationId !== organizationId)
+    if (originaldesignReview.wbsElement.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Design Review');
 
     // validate the teamTypeId exists
-    const teamType = await DesignReviewsService.getSingleTeamType(teamTypeId, organizationId);
+    const teamType = await DesignReviewsService.getSingleTeamType(teamTypeId, organization);
 
     // throw if a user isn't found, then build prisma queries for connecting userIds
     const updatedRequiredMembers = getPrismaQueryUserIds(await getUsers(requiredMembersIds));
     const updatedOptionalMembers = getPrismaQueryUserIds(await getUsers(optionalMembersIds));
     const updatedAttendees = getPrismaQueryUserIds(await getUsers(attendees));
 
+    const calendarEventId =
+      originaldesignReview.calendarEventId ??
+      (teamType.calendarId &&
+        (await createCalendarEvent(
+          teamType.calendarId,
+          [...requiredMembersIds, ...optionalMembersIds],
+          dateScheduled,
+          isInPerson,
+          zoomLink,
+          location,
+          meetingTimes,
+          originaldesignReview.wbsElement
+        )));
     // actually try to update the design review
     const updatedDesignReview = await prisma.design_Review.update({
       where: { designReviewId },
-      ...getDesignReviewQueryArgs(organizationId),
       data: {
         designReviewId,
         dateScheduled,
@@ -326,13 +357,27 @@ export default class DesignReviewsService {
         docTemplateLink,
         attendees: {
           set: updatedAttendees
-        }
-      }
+        },
+        calendarEventId
+      },
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
     if (status === Design_Review_Status.SCHEDULED) {
-      const relevantThreads = await prisma.message_Info.findMany({ where: {} });
-      await sendDRScheduledSlackNotif(relevantThreads, updatedDesignReview);
+      await sendDRScheduledSlackNotif(updatedDesignReview.notificationSlackThreads, updatedDesignReview);
+      if (updatedDesignReview.calendarEventId && updatedDesignReview.teamType.calendarId) {
+        await updateCalendarEvent(
+          updatedDesignReview.teamType.calendarId,
+          updatedDesignReview.calendarEventId,
+          [...requiredMembersIds, ...optionalMembersIds],
+          updatedDesignReview.dateScheduled,
+          updatedDesignReview.isInPerson,
+          updatedDesignReview.zoomLink,
+          updatedDesignReview.location,
+          updatedDesignReview.meetingTimes,
+          updatedDesignReview.wbsElement
+        );
+      }
     }
 
     return designReviewTransformer(updatedDesignReview);
@@ -342,52 +387,60 @@ export default class DesignReviewsService {
    * Edits a design review by confirming a given user's availability and also updating their schedule settings with the given availability
    * @param submitter the member that is being confirmed
    * @param designReviewId the id of the design review
-   * @param availability the given member's availabilities
+   * @param availabilities the given member's availabilities
    * @param organizationId the organization that the user is currently in
    * @returns the modified design review with its updated confirmedMembers
    */
   static async markUserConfirmed(
     designReviewId: string,
-    availability: number[],
+    availabilities: AvailabilityCreateArgs[],
     submitter: UserWithSettings,
-    organizationId: string
+    organization: Organization
   ): Promise<DesignReview> {
     const designReview = await prisma.design_Review.findUnique({
       where: { designReviewId },
-      ...getDesignReviewQueryArgs(organizationId)
+      ...getDesignReviewQueryArgs(organization.organizationId)
     });
 
     if (!designReview) throw new NotFoundException('Design Review', designReviewId);
     if (designReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
-    if (designReview.wbsElement.organizationId !== organizationId) throw new InvalidOrganizationException('Design Review');
+    if (designReview.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Design Review');
 
     if (!isUserOnDesignReview(submitter, designReviewTransformer(designReview)))
       throw new HttpException(400, 'Current user is not in the list of this design reviews members');
 
-    availability.forEach((time) => {
-      if (time < 0 || time > 83) {
-        throw new HttpException(400, 'Availability times have to be in range 0-83');
-      }
+    let userSettings = await prisma.schedule_Settings.findUnique({
+      where: { userId: submitter.userId },
+      ...getUserScheduleSettingsQueryArgs()
     });
 
-    await prisma.schedule_Settings.upsert({
-      where: { userId: submitter.userId },
-      update: {
-        availability
-      },
-      create: {
-        userId: submitter.userId,
-        personalGmail: '',
-        personalZoomLink: '',
-        availability
-      }
-    });
+    if (!userSettings) {
+      userSettings = await prisma.schedule_Settings.create({
+        data: {
+          userId: submitter.userId,
+          availabilities: {
+            createMany: {
+              data: availabilities.map((availability) => ({
+                availability: availability.availability,
+                dateSet: availability.dateSet
+              }))
+            }
+          },
+          personalGmail: '',
+          personalZoomLink: ''
+        },
+        ...getUserScheduleSettingsQueryArgs()
+      });
+    }
+
+    await updateUserAvailability(availabilities, userSettings, submitter);
 
     // set submitter as confirmed if they're not already
     if (!designReview.confirmedMembers.map((user) => user.userId).includes(submitter.userId)) {
       const updatedDesignReview = await prisma.design_Review.update({
         where: { designReviewId },
-        ...getDesignReviewQueryArgs(organizationId),
+        ...getDesignReviewQueryArgs(organization.organizationId),
         data: {
           confirmedMembers: {
             connect: {
@@ -397,20 +450,22 @@ export default class DesignReviewsService {
         }
       });
 
-      const relevantThreads = await prisma.message_Info.findMany({ where: { designReviewId: designReview.designReviewId } });
-      await sendDRUserConfirmationToThread(relevantThreads, submitter);
+      await sendDRUserConfirmationToThread(updatedDesignReview.notificationSlackThreads, submitter);
 
-      // If all required attendees have confirmed their schedule, mark design review as confirmed
-      if (areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers)) {
+      // If all required attendees have confirmed their schedule and this member was a required attendee, mark design review as confirmed
+      if (
+        areUsersinList(designReview.requiredMembers, updatedDesignReview.confirmedMembers) &&
+        areUsersinList([submitter], designReview.requiredMembers)
+      ) {
         await prisma.design_Review.update({
           where: { designReviewId },
-          ...getDesignReviewQueryArgs(organizationId),
+          ...getDesignReviewQueryArgs(organization.organizationId),
           data: {
             status: Design_Review_Status.CONFIRMED
           }
         });
 
-        await sendDRConfirmationToThread(relevantThreads, updatedDesignReview.userCreated);
+        await sendDRConfirmationToThread(updatedDesignReview.notificationSlackThreads, updatedDesignReview.userCreated);
       }
 
       return designReviewTransformer(updatedDesignReview);
@@ -419,18 +474,62 @@ export default class DesignReviewsService {
   }
 
   /**
+   * Sets the status of a design review, only admin or the user who created the design review can set the status.
+   * @param user the user trying to set the status
+   * @param designReviewId the id of the design review
+   * @param status the status to set the design review to
+   * @param organizationId the organization that the user is currently in
+   * @returns the modified design review
+   */
+  static async setStatus(
+    user: User,
+    designReviewId: string,
+    status: DesignReviewStatus,
+    organization: Organization
+  ): Promise<DesignReview> {
+    // validate the design review exists and is not deleted
+    const originaldesignReview = await prisma.design_Review.findUnique({
+      where: { designReviewId },
+      include: { wbsElement: true }
+    });
+    if (!originaldesignReview) throw new NotFoundException('Design Review', designReviewId);
+    if (originaldesignReview.dateDeleted) throw new DeletedException('Design Review', designReviewId);
+    if (originaldesignReview.wbsElement.organizationId !== organization.organizationId)
+      throw new InvalidOrganizationException('Design Review');
+
+    // verify user is allowed to set the status of the design review
+    if (
+      !(await userHasPermission(user.userId, organization.organizationId, isAdmin)) &&
+      user.userId !== originaldesignReview.userCreatedId
+    ) {
+      throw new AccessDeniedAdminOnlyException('set the status of a design review');
+    }
+
+    // actually try to update the design review
+    const updatedDesignReview = await prisma.design_Review.update({
+      where: { designReviewId },
+      ...getDesignReviewQueryArgs(organization.organizationId),
+      data: {
+        status
+      }
+    });
+
+    return designReviewTransformer(updatedDesignReview);
+  }
+
+  /**
    * Gets a single team type and validates that it exists and is in the organization
    * @param teamTypeId The id of the team type to get
    * @param organizationId The organization that the user is currently in
    * @returns The retrieved Team Type
    */
-  static async getSingleTeamType(teamTypeId: string, organizationId: string): Promise<Team_Type> {
+  static async getSingleTeamType(teamTypeId: string, organization: Organization): Promise<Team_Type> {
     const teamType = await prisma.team_Type.findUnique({
       where: { teamTypeId }
     });
 
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
-    if (teamType.organizationId !== organizationId) throw new InvalidOrganizationException('Team Type');
+    if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
 
     return teamType;
   }

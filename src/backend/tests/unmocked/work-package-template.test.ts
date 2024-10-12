@@ -9,12 +9,14 @@ import { batmanAppAdmin, supermanAdmin, theVisitorGuest } from '../test-data/use
 import { workPackageTemplateTransformer } from '../../src/transformers/work-package-template.transformer';
 import prisma from '../../src/prisma/prisma';
 import WorkPackageTemplatesService from '../../src/services/work-package-template.services';
+import { Organization } from '@prisma/client';
 
 describe('Work Package Template Tests', () => {
   let orgId: string;
+  let organization: Organization;
   beforeEach(async () => {
-    await resetUsers();
-    orgId = (await createTestOrganization()).organizationId;
+    organization = await createTestOrganization();
+    orgId = organization.organizationId;
   });
 
   afterEach(async () => {
@@ -28,7 +30,7 @@ describe('Work Package Template Tests', () => {
           await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
             await createTestUser(theVisitorGuest, orgId),
             'id',
-            orgId
+            organization
           )
       ).rejects.toThrow(new AccessDeniedGuestException('get a work package template'));
     });
@@ -39,7 +41,7 @@ describe('Work Package Template Tests', () => {
           await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
             await createTestUser(batmanAppAdmin, orgId),
             'id1',
-            orgId
+            organization
           )
       ).rejects.toThrow(new HttpException(400, `Work package template with id id1 not found`));
     });
@@ -51,7 +53,7 @@ describe('Work Package Template Tests', () => {
       const recievedWorkPackageTemplate = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         await createTestUser(supermanAdmin, orgId),
         createdWorkPackageTemplate.workPackageTemplateId,
-        orgId
+        organization
       );
 
       expect(recievedWorkPackageTemplate).toStrictEqual(workPackageTemplateTransformer(createdWorkPackageTemplate));
@@ -65,7 +67,7 @@ describe('Work Package Template Tests', () => {
           await WorkPackageTemplatesService.deleteWorkPackageTemplate(
             await createTestUser(theVisitorGuest, orgId),
             'id',
-            orgId
+            organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete work package template'));
     });
@@ -76,7 +78,7 @@ describe('Work Package Template Tests', () => {
           await WorkPackageTemplatesService.deleteWorkPackageTemplate(
             await createTestUser(supermanAdmin, orgId),
             'id1',
-            orgId
+            organization
           )
       ).rejects.toThrow(new HttpException(400, `Work Package Template with id: id1 not found!`));
     });
@@ -87,7 +89,7 @@ describe('Work Package Template Tests', () => {
       await WorkPackageTemplatesService.deleteWorkPackageTemplate(
         testSuperman,
         testWorkPackageTemplate.workPackageTemplateId,
-        orgId
+        organization
       );
 
       await expect(
@@ -95,7 +97,7 @@ describe('Work Package Template Tests', () => {
           await WorkPackageTemplatesService.deleteWorkPackageTemplate(
             testSuperman,
             testWorkPackageTemplate.workPackageTemplateId,
-            orgId
+            organization
           )
       ).rejects.toThrow(new DeletedException('Work Package Template', testWorkPackageTemplate.workPackageTemplateId));
     });
@@ -137,24 +139,24 @@ describe('Work Package Template Tests', () => {
       await WorkPackageTemplatesService.deleteWorkPackageTemplate(
         testSuperman,
         testWorkPackageTemplate1.workPackageTemplateId,
-        orgId
+        organization
       );
 
       const updatedTestWorkPackageTemplate1 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         testSuperman,
         testWorkPackageTemplate1.workPackageTemplateId,
-        orgId
+        organization
       );
 
       const updatedTestWorkPackageTemplate2 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         testSuperman,
         testWorkPackageTemplate2.workPackageTemplateId,
-        orgId
+        organization
       );
       const updatedTestWorkPackageTemplate3 = await WorkPackageTemplatesService.getSingleWorkPackageTemplate(
         testSuperman,
         testWorkPackageTemplate3.workPackageTemplateId,
-        orgId
+        organization
       );
 
       expect(updatedTestWorkPackageTemplate1.dateDeleted).not.toBe(null);

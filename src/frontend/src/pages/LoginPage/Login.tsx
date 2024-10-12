@@ -12,7 +12,7 @@ import LoginPage from './LoginPage';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import { useQuery } from '../../hooks/utils.hooks';
 import { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
-import { useOrganization } from '../../hooks/organization.hooks';
+import { useOrganization } from '../../hooks/organizations.hooks';
 
 /**
  * Page for unauthenticated users to do login.

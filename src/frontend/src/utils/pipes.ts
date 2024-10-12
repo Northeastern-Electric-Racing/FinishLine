@@ -69,13 +69,13 @@ export const emDashPipe = (str: string) => {
  * so to get around that we do the toDateString() of the time and pass it into the Date constructor
  * where the constructor assumes it's in UTC and makes the correct Date object finally
  */
-export const datePipe = (date?: Date) => {
+export const datePipe = (date?: Date, includeYear = true) => {
   if (!date) return '';
   date = typeof date == 'string' ? new Date(date) : new Date(date.toDateString());
   return date.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric',
+    year: includeYear ? 'numeric' : undefined,
     timeZone: 'UTC'
   });
 };
@@ -183,7 +183,8 @@ export const displayEnum = (enumString: string) => {
   return enumString;
 };
 
-export const meetingStartTimePipe = (times: number[]) => {
+export const meetingStartTimePipe = (times: number[], isEndTime = false) => {
+  if (isEndTime && times[0] % 12 === 0) return '10pm';
   const time = (times[0] % 12) + 10;
 
   return time === 12 ? time + 'pm' : time < 12 ? time + 'am' : time - 12 + 'pm';

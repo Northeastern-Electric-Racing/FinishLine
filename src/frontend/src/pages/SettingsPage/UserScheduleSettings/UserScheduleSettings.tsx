@@ -10,13 +10,21 @@ import NERFailButton from '../../../components/NERFailButton';
 import { IconButton, Box, Grid, Typography } from '@mui/material';
 import UserScheduleSettingsView from './UserScheduleSettingsView';
 import UserScheduleSettingsEdit from './UserScheduleSettingsEdit';
-import { User } from 'shared';
+import {
+  Availability,
+  AvailabilityCreateArgs,
+  getMostRecentAvailabilities,
+  SetUserScheduleSettingsArgs,
+  User
+} from 'shared';
 import { useUpdateUserScheduleSettings, useUserScheduleSettings } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useSingleDesignReview } from '../../../hooks/design-reviews.hooks';
 import { useQuery } from '../../../hooks/utils.hooks';
+import { deeplyCopy } from 'shared/src/utils';
+import { availabilityTransformer } from '../../../apis/transformers/users.transformers';
 
 export interface ScheduleSettingsFormInput {
   personalGmail: string;
@@ -24,7 +32,7 @@ export interface ScheduleSettingsFormInput {
 }
 
 export interface ScheduleSettingsPayload extends ScheduleSettingsFormInput {
-  availability: number[];
+  availability: AvailabilityCreateArgs[];
 }
 
 const UserScheduleSettings = ({ user }: { user: User }) => {
@@ -55,8 +63,9 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
   if (updateUserScheduleSettingsIsError)
     return <ErrorPage error={updateUserScheduleSettingsError!} message={updateUserScheduleSettingsError?.message} />;
 
-  const handleConfirm = async (payload: ScheduleSettingsPayload) => {
+  const handleConfirm = async (payload: SetUserScheduleSettingsArgs) => {
     setEdit(false);
+
     try {
       await updateUserScheduleSettings({
         drScheduleSettingsId: data.drScheduleSettingsId,
@@ -67,6 +76,12 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
         toast.error(e.message);
       }
     }
+  };
+
+  const defaultValues: SetUserScheduleSettingsArgs = {
+    personalGmail: data.personalGmail,
+    personalZoomLink: data.personalZoomLink,
+    availability: getMostRecentAvailabilities(data.availabilities, new Date())
   };
 
   return (
@@ -108,7 +123,11 @@ const UserScheduleSettings = ({ user }: { user: User }) => {
       {!edit ? (
         <UserScheduleSettingsView scheduleSettings={data} designReview={designReview} />
       ) : (
-        <UserScheduleSettingsEdit onSubmit={handleConfirm} defaultValues={data} />
+        <UserScheduleSettingsEdit
+          onSubmit={handleConfirm}
+          totalAvailabilities={deeplyCopy(data.availabilities, availabilityTransformer) as Availability[]}
+          defaultValues={defaultValues}
+        />
       )}
       {edit && (
         <Box

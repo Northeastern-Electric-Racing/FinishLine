@@ -4,6 +4,8 @@
  */
 
 import {
+  DesignReview,
+  DesignReviewStatus,
   isProject,
   isWorkPackage,
   Project,
@@ -38,6 +40,7 @@ export interface GanttTaskData {
   allWorkPackages: WorkPackage[];
   unblockedWorkPackages: WorkPackage[];
   blocking: WbsNumber[];
+  designReviews: DesignReview[];
 
   // Optional Values
   styles?: {
@@ -85,6 +88,29 @@ export const getProjectEndDate = (project: ProjectPreview): Date => {
   }, new Date(0));
 };
 
+export const transformDesignReviewToGanttTask = (designReview: DesignReview): GanttTask => {
+  return {
+    id: designReview.designReviewId,
+    name: designReview.wbsName + ' - Design Review',
+    start: designReview.dateScheduled,
+    end: designReview.dateScheduled,
+    projectNumber: 0,
+    carNumber: 0,
+    workPackageNumber: 0,
+    allWorkPackages: [],
+    lead: designReview.userCreated,
+    manager: designReview.userCreated,
+    teamName: NO_TEAM,
+    stage: WorkPackageStage.Design,
+    unblockedWorkPackages: [],
+    blocking: [],
+    onClick: () => {
+      window.open(`/design-reviews-calendar/${designReview.designReviewId}`, '_blank');
+    },
+    designReviews: []
+  };
+};
+
 export const transformProjectPreviewToProject = (projectPreview: ProjectPreview, team: Team): Project => {
   return {
     ...projectPreview,
@@ -130,8 +156,10 @@ export const transformGanttTaskToWorkPackage = (task: GanttTask): WorkPackage =>
     teamTypes: [],
     changes: [],
     blocking: task.blocking,
+    deleted: false,
     projectName: '',
-    duration: dayjs(task.end).diff(dayjs(task.start), 'week')
+    duration: dayjs(task.end).diff(dayjs(task.start), 'week'),
+    designReviews: task.designReviews
   };
 };
 
@@ -275,13 +303,14 @@ export const filterGanttProjects = (
   deepCopy = deepCopy.filter((project) => project.status !== WbsElementStatus.Complete);
 
   if (ganttFilters.showOnlyOverdue) {
-    deepCopy = projects.filter((project) => getProjectEndDate(project) < new Date());
+    deepCopy = deepCopy.filter((project) => getProjectEndDate(project) < new Date());
   }
 
   // apply the search
   deepCopy = deepCopy.filter((project) => project.name.toLowerCase().includes(searchText.toLowerCase()));
 
-  deepCopy = deepCopy.filter((project) => getProjectEndDate(project).getFullYear() !== 1969); // Filter out projects with no end date
+  // filter out deleted projects
+  deepCopy = deepCopy.filter((project) => !project.deleted);
 
   return deepCopy;
 };
@@ -338,7 +367,8 @@ export const transformWorkPackageToGanttTask = (
       window.open(`/projects/${wbsPipe(workPackage.wbsNum)}`, '_blank');
     },
     lead: workPackage.lead,
-    manager: workPackage.manager
+    manager: workPackage.manager,
+    designReviews: workPackage.designReviews
   };
 };
 
@@ -363,7 +393,8 @@ export const transformProjectToGanttTask = (project: ProjectPreview, teamName: s
     blocking: [],
     onClick: () => {
       window.open(`/projects/${wbsPipe(project.wbsNum)}`, '_blank');
-    }
+    },
+    designReviews: project.workPackages.flatMap((wp) => wp.designReviews)
   };
 };
 
@@ -397,6 +428,10 @@ export const sortTeamList = (a: Team, b: Team, ganttFilters: GanttFilters, searc
   if (bProjects.length === 0) return Number.MIN_SAFE_INTEGER;
 
   return a.teamName.localeCompare(b.teamName);
+};
+
+export const GanttDesignReviewStatusColorPipe = (status: DesignReviewStatus) => {
+  return status !== DesignReviewStatus.UNCONFIRMED ? '#712f99' : '#876e96';
 };
 
 // maps stage and status to the desired color for Gantt Chart
@@ -557,7 +592,7 @@ export const aggregateGanttChanges = (ganttChanges: GanttChange[], allWbsElement
     const newWorkPackage = changeEvents.some((change) => change.type === 'create-work-package');
 
     const change: RequestEventChange = {
-      changeId: updatedEvent.id,
+      changeId: wbsPipe(wbsElement.wbsNum),
       prevStart: isProject(wbsElement.wbsNum) ? new Date() : (wbsElement as WorkPackage).startDate,
       prevEnd: isProject(wbsElement.wbsNum) ? new Date() : (wbsElement as WorkPackage).endDate,
       newStart: start,

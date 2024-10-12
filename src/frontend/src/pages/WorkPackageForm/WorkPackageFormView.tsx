@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { DescriptionBulletPreview, User, validateWBS, WbsElement, wbsPipe } from 'shared';
+import { DescriptionBulletPreview, User, validateWBS, WbsElement, wbsPipe, WorkPackageTemplate } from 'shared';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, TextField, Autocomplete, FormControl, Typography, Tooltip } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import WorkPackageFormDetails from './WorkPackageFormDetails';
 import NERSuccessButton from '../../components/NERSuccessButton';
 import PageLayout from '../../components/PageLayout';
@@ -27,6 +27,10 @@ import HelpIcon from '@mui/icons-material/Help';
 import { NERButton } from '../../components/NERButton';
 import dayjs from 'dayjs';
 import DescriptionBulletsEditView from '../../components/DescriptionBulletEditView';
+import { useAllWorkPackageTemplates } from '../../hooks/work-packages.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import { WorkPackageTemplateSection } from './WorkPackageTemplateSection';
 
 interface WorkPackageFormViewProps {
   exitActiveMode: () => void;
@@ -71,7 +75,8 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
     handleSubmit,
     control,
     watch,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -104,6 +109,36 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
   } = useFieldArray({ control, name: 'descriptionBullets' });
 
   const { userId } = user;
+  const {
+    data: workPackageTemplates,
+    isLoading: workPackageTemplateisLoading,
+    isError: workPackageTemplateisError,
+    error: workPackageTemplateError
+  } = useAllWorkPackageTemplates();
+
+  const [currentWorkPackageTemplate, setCurrentWorkPackageTemplate] = useState<WorkPackageTemplate>();
+
+  const watchedName = watch('name');
+  const watchedStage = watch('stage');
+  const watchedDuration = watch('duration');
+  const watchedDescriptionBullets = watch('descriptionBullets');
+
+  useEffect(() => {
+    if (currentWorkPackageTemplate) {
+      const { workPackageName, stage, duration, descriptionBullets } = currentWorkPackageTemplate;
+      if (
+        watchedName !== workPackageName ||
+        watchedStage !== stage ||
+        watchedDuration !== duration ||
+        JSON.stringify(watchedDescriptionBullets) !== JSON.stringify(descriptionBullets)
+      ) {
+        setCurrentWorkPackageTemplate(undefined);
+      }
+    }
+  }, [currentWorkPackageTemplate, watchedName, watchedStage, watchedDuration, watchedDescriptionBullets]);
+
+  if (workPackageTemplateisLoading || !workPackageTemplates) return <LoadingIndicator />;
+  if (workPackageTemplateisError) return <ErrorPage message={workPackageTemplateError.message} />;
 
   const onSubmit = async (data: WorkPackageFormViewPayload) => {
     const { name, startDate, duration, blockedBy, crId, stage, descriptionBullets } = data;
@@ -207,6 +242,19 @@ const WorkPackageFormView: React.FC<WorkPackageFormViewProps> = ({
           </Box>
         }
       >
+        <WorkPackageTemplateSection
+          workPackageTemplates={workPackageTemplates}
+          currentWorkPackageTemplate={currentWorkPackageTemplate}
+          setCurrentWorkPackageTemplate={(WorkPackageTemplate) => {
+            setValue('name', WorkPackageTemplate.workPackageName ?? '');
+            setValue('stage', WorkPackageTemplate.stage ?? 'NONE');
+            setValue('duration', WorkPackageTemplate.duration ?? 0);
+            setValue('descriptionBullets', WorkPackageTemplate.descriptionBullets ?? []);
+            setValue('workPackageId', WorkPackageTemplate.workPackageTemplateId);
+            setCurrentWorkPackageTemplate(WorkPackageTemplate);
+          }}
+        />
+
         <WorkPackageFormDetails
           control={control}
           errors={errors}

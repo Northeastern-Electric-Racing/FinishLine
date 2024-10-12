@@ -6,7 +6,8 @@ import {
   CreateReimbursementRequestPayload,
   EditReimbursementRequestPayload,
   EditVendorPayload,
-  AccountCodePayload
+  AccountCodePayload,
+  RefundPayload
 } from '../hooks/finance.hooks';
 import axios from '../utils/axios';
 import { apiUrls } from '../utils/urls';
@@ -170,6 +171,16 @@ export const approveReimbursementRequest = (id: string) => {
 };
 
 /**
+ * Leadership approve Reimbursement Request (set it to Pending Finance)
+ *
+ * @param id of the reimbursement request being approved by finance
+ * @returns the pending finance reimbursement status
+ */
+export const leadershipApproveReimbursementRequest = (id: string) => {
+  return axios.post(apiUrls.financeLeadershipApprove(id));
+};
+
+/**
  * Deny Reimbursement Request
  *
  * @param id of the reimbursement request being denied by finance
@@ -303,6 +314,17 @@ export const reportRefund = (amount: number, dateReceived: string) => {
 };
 
 /**
+ * Edits a refund in the database
+ *
+ * @param id the reimbursement id
+ * @param formData the amount and date to edit the refund with
+ * @returns the updated reimbursement
+ */
+export const editRefund = (id: string, formData: RefundPayload) => {
+  return axios.post(apiUrls.financeEditRefund(id), formData);
+};
+
+/**
  * Edits an expense type in the database
  * @param id id of the expense type
  * @param accountCodeData the edited data of the expense type
@@ -338,4 +360,24 @@ export const createVendor = async (vendorData: { name: string }) => {
  */
 export const editVendor = async (id: string, vendorData: EditVendorPayload) => {
   return axios.post(apiUrls.financeEditVendor(id), vendorData);
+};
+
+/**
+ * Marks a reimbursement request as pending finance
+ *
+ * @param id The id of the reimbursement request
+ * @returns The created Pending Finance status
+ */
+export const markPendingFinance = async (id: string) => {
+  return axios.post(apiUrls.financeMarkPending(id));
+};
+
+/**
+ * Removes the pending finance status from a reimbursement request
+ *
+ * @param id The id of the reimbursement Request
+ * @returns The removed pending finance status
+ */
+export const requestReimbursementRequestChanges = async (id: string) => {
+  return axios.post(apiUrls.financeRequestChanges(id));
 };

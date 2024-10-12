@@ -9,7 +9,8 @@ import {
   Description_Bullet_Type,
   Project,
   Work_Package,
-  WBS_Element
+  WBS_Element,
+  Organization
 } from '@prisma/client';
 import {
   addWeeksToDate,
@@ -329,7 +330,7 @@ export const applyProjectProposedChanges = async (
   reviewer: User,
   crId: string,
   carNumber: number,
-  organizationId: string
+  organization: Organization
 ) => {
   if (projectProposedChanges) {
     const links = wbsProposedChanges.links.map((link) => {
@@ -356,7 +357,7 @@ export const applyProjectProposedChanges = async (
         descriptionBullets,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
-        organizationId
+        organization
       );
 
       projectWbsElmeId = proj.wbsElementId;
@@ -372,7 +373,7 @@ export const applyProjectProposedChanges = async (
         links,
         wbsProposedChanges.leadId,
         wbsProposedChanges.managerId,
-        organizationId
+        organization
       );
 
       projectWbsElmeId = proj.wbsElementId;
@@ -386,7 +387,7 @@ export const applyProjectProposedChanges = async (
         null,
         reviewer,
         crId,
-        organizationId
+        organization
       );
     }
   }
@@ -409,7 +410,7 @@ export const applyWorkPackageProposedChanges = async (
   associatedWorkPackage: Work_Package | null,
   reviewer: User,
   crId: string,
-  organizationId: string
+  organization: Organization
 ) => {
   if (existingWbsElementId) {
     await WorkPackagesService.createWorkPackage(
@@ -423,7 +424,7 @@ export const applyWorkPackageProposedChanges = async (
       workPackageProposedChanges.wbsProposedChanges.proposedDescriptionBulletChanges.map(
         descriptionBulletToDescriptionBulletPreview
       ),
-      organizationId,
+      organization,
       existingWbsElementId
     );
   } else if (associatedWorkPackage) {
@@ -439,7 +440,7 @@ export const applyWorkPackageProposedChanges = async (
       wbsProposedChanges.proposedDescriptionBulletChanges.map(descriptionBulletToDescriptionBulletPreview),
       wbsProposedChanges.leadId,
       wbsProposedChanges.managerId,
-      organizationId
+      organization
     );
   }
 };
@@ -561,7 +562,7 @@ export const sendCRSubmitterReviewedNotification = async (
   const creatorUserSettings = await prisma.user_Settings.findUnique({ where: { userId: foundCR.submitterId } });
   if (creatorUserSettings && creatorUserSettings.slackId) {
     try {
-      await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId);
+      await sendSlackCRReviewedNotification(creatorUserSettings.slackId, foundCR.crId, foundCR.identifier);
     } catch (err: unknown) {
       if (err instanceof Error) {
         throw new HttpException(500, `Failed to send slack notification: ${err.message}`);

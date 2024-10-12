@@ -3,16 +3,15 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { DesignReview, TeamType, WbsNumber, DesignReviewStatus } from 'shared';
+import { DesignReview, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
 import {
   deleteDesignReview,
   editDesignReview,
   createDesignReviews,
   getAllDesignReviews,
-  getAllTeamTypes,
   getSingleDesignReview,
   markUserConfirmed,
-  createTeamType
+  setDesignReviewStatus
 } from '../apis/design-reviews.api';
 import { useCurrentUser } from './users.hooks';
 
@@ -23,11 +22,6 @@ export interface CreateDesignReviewsPayload {
   optionalMemberIds: string[];
   wbsNum: WbsNumber;
   meetingTimes: number[];
-}
-
-export interface CreateTeamTypePayload {
-  name: string;
-  iconName: string;
 }
 
 export const useCreateDesignReviews = () => {
@@ -94,39 +88,6 @@ export const useEditDesignReview = (designReviewId: string) => {
 };
 
 /**
- * Custom react hook to get all team types
- *
- * @returns all the team types
- */
-export const useAllTeamTypes = () => {
-  return useQuery<TeamType[], Error>(['teamTypes'], async () => {
-    const { data } = await getAllTeamTypes();
-    return data;
-  });
-};
-
-/**
- * Custom react hook to create a team type
- *
- * @returns the team type created
- */
-export const useCreateTeamType = () => {
-  const queryClient = useQueryClient();
-  return useMutation<TeamType, Error, CreateTeamTypePayload>(
-    ['teamTypes', 'create'],
-    async (teamTypePayload) => {
-      const { data } = await createTeamType(teamTypePayload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['teamTypes']);
-      }
-    }
-  );
-};
-
-/**
  * Custom react hook to delete a design review
  */
 
@@ -165,9 +126,9 @@ export const useSingleDesignReview = (id?: string) => {
 export const useMarkUserConfirmed = (id: string) => {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
-  return useMutation<DesignReview, Error, { availability: number[] }>(
+  return useMutation<DesignReview, Error, { availability: AvailabilityCreateArgs[] }>(
     ['design-reviews', 'mark-confirmed'],
-    async (designReviewPayload: { availability: number[] }) => {
+    async (designReviewPayload: { availability: AvailabilityCreateArgs[] }) => {
       const { data } = await markUserConfirmed(id, designReviewPayload);
       return data;
     },
@@ -175,6 +136,22 @@ export const useMarkUserConfirmed = (id: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries(['design-reviews']);
         queryClient.invalidateQueries(['users', user.userId, 'schedule-settings']);
+      }
+    }
+  );
+};
+
+export const useSetDesignReviewStatus = (id: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<DesignReview, Error, { status: DesignReviewStatus }>(
+    ['design-reviews', id],
+    async (payload: { status: DesignReviewStatus }) => {
+      const { data } = await setDesignReviewStatus(id, payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['design-reviews', id]);
       }
     }
   );

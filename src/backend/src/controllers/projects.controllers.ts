@@ -1,43 +1,37 @@
 import { Manufacturer, MaterialType, Project, validateWBS, WbsNumber, wbsPipe } from 'shared';
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@prisma/client';
-import { getCurrentUser } from '../utils/auth.utils';
 import ProjectsService from '../services/projects.services';
 import BillOfMaterialsService from '../services/boms.services';
-import { getOrganizationId } from '../utils/utils';
 
 export default class ProjectsController {
   static async getAllProjects(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
-      const projects: Project[] = await ProjectsService.getAllProjects(organizationId);
-      res.status(200).json(projects);
+      const includeDeleted = req.params.deleted === 'true';
+      const projects: Project[] = await ProjectsService.getAllProjects(req.organization, includeDeleted);
+      return res.status(200).json(projects);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getSingleProject(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-      const organizationId = getOrganizationId(req.headers);
 
-      const project: Project = await ProjectsService.getSingleProject(wbsNumber, organizationId);
+      const project: Project = await ProjectsService.getSingleProject(wbsNumber, req.organization);
 
-      res.status(200).json(project);
+      return res.status(200).json(project);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const { name, crId, carNumber, teamIds, budget, summary, leadId, managerId, links, descriptionBullets } = req.body;
-      const organizationId = getOrganizationId(req.headers);
 
       const createdProject = await ProjectsService.createProject(
-        user,
+        req.currentUser,
         crId,
         carNumber,
         name,
@@ -48,23 +42,20 @@ export default class ProjectsController {
         descriptionBullets,
         leadId,
         managerId,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(createdProject);
+      return res.status(200).json(createdProject);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async editProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { projectId, crId, name, budget, summary, descriptionBullets, links, leadId, managerId } = req.body;
-      const organizationId = getOrganizationId(req.headers);
-
       const editedProject: Project = await ProjectsService.editProject(
-        user,
+        req.currentUser,
         projectId,
         crId,
         name,
@@ -74,92 +65,84 @@ export default class ProjectsController {
         links,
         leadId || null,
         managerId || null,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(editedProject);
+      return res.status(200).json(editedProject);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async setProjectTeam(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
       const { teamId } = req.body;
-      const organizationId = getOrganizationId(req.headers);
 
-      await ProjectsService.setProjectTeam(user, wbsNumber, teamId, organizationId);
+      await ProjectsService.setProjectTeam(req.currentUser, wbsNumber, teamId, req.organization);
 
-      res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
+      return res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async deleteProject(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
-      const organizationId = getOrganizationId(req.headers);
-
-      const deletedProject: Project = await ProjectsService.deleteProject(user, wbsNumber, organizationId);
-      res.status(200).json(deletedProject);
+      const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
+      return res.status(200).json(deletedProject);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async toggleFavorite(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
 
-      const targetProject = await ProjectsService.toggleFavorite(wbsNum, user, organizationId);
+      const targetProject = await ProjectsService.toggleFavorite(wbsNum, req.currentUser, req.organization);
 
-      res.status(200).json(targetProject);
+      return res.status(200).json(targetProject);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllLinkTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
-
-      const linkTypes = await ProjectsService.getAllLinkTypes(organizationId);
-      res.status(200).json(linkTypes);
+      const linkTypes = await ProjectsService.getAllLinkTypes(req.organization);
+      return res.status(200).json(linkTypes);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createLinkType(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const { name, iconName, required } = req.body;
-      const organizationId = getOrganizationId(req.headers);
 
-      const newLinkType = await ProjectsService.createLinkType(user, name, iconName, required, organizationId);
-      res.status(200).json(newLinkType);
+      const newLinkType = await ProjectsService.createLinkType(req.currentUser, name, iconName, required, req.organization);
+      return res.status(200).json(newLinkType);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const wbsNum: WbsNumber = validateWBS(req.params.wbsNum);
       const { name, pdmFileName } = req.body;
-      const organizationId = getOrganizationId(req.headers);
-
-      const createAssembly = await BillOfMaterialsService.createAssembly(name, user, wbsNum, organizationId, pdmFileName);
-      res.status(200).json(createAssembly);
+      const createAssembly = await BillOfMaterialsService.createAssembly(
+        name,
+        req.currentUser,
+        wbsNum,
+        req.organization,
+        pdmFileName
+      );
+      return res.status(200).json(createAssembly);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -180,12 +163,9 @@ export default class ProjectsController {
         linkUrl,
         notes
       } = req.body;
-      const creator = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
-      const organizationId = getOrganizationId(req.headers);
-
       const material = await BillOfMaterialsService.createMaterial(
-        creator,
+        req.currentUser,
         name,
         status,
         materialTypeName,
@@ -196,91 +176,83 @@ export default class ProjectsController {
         subtotal,
         linkUrl,
         wbsNum,
-        organizationId,
+        req.organization,
         notes,
         assemblyId,
         pdmFileName,
         unitName
       );
-      res.status(200).json(material);
+      return res.status(200).json(material);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const createdManufacturer = await BillOfMaterialsService.createManufacturer(user, name, organizationId);
-      res.status(200).json(createdManufacturer);
+      const createdManufacturer = await BillOfMaterialsService.createManufacturer(req.currentUser, name, req.organization);
+      return res.status(200).json(createdManufacturer);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async deleteManufacturer(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const { manufacturerName } = req.params;
-      const organizationId = getOrganizationId(req.headers);
-
-      const deletedManufacturer = await BillOfMaterialsService.deleteManufacturer(user, manufacturerName, organizationId);
-      res.status(200).json(deletedManufacturer);
+      const deletedManufacturer = await BillOfMaterialsService.deleteManufacturer(
+        req.currentUser,
+        manufacturerName,
+        req.organization
+      );
+      return res.status(200).json(deletedManufacturer);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async deleteUnit(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: User = await getCurrentUser(res);
       const { unitId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
-
-      const deletedUnit = await BillOfMaterialsService.deleteUnit(user, unitId, organizationId);
-      res.status(200).json(deletedUnit);
+      const deletedUnit = await BillOfMaterialsService.deleteUnit(req.currentUser, unitId, req.organization);
+      return res.status(200).json(deletedUnit);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllManufacturers(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const manufacturers: Manufacturer[] = await BillOfMaterialsService.getAllManufacturers(user, organizationId);
-      res.status(200).json(manufacturers);
+      const manufacturers: Manufacturer[] = await BillOfMaterialsService.getAllManufacturers(
+        req.currentUser,
+        req.organization
+      );
+      return res.status(200).json(manufacturers);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllMaterialTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const materialTypes: MaterialType[] = await BillOfMaterialsService.getAllMaterialTypes(user, organizationId);
-      res.status(200).json(materialTypes);
+      const materialTypes: MaterialType[] = await BillOfMaterialsService.getAllMaterialTypes(
+        req.currentUser,
+        req.organization
+      );
+      return res.status(200).json(materialTypes);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const createdMaterialType = await BillOfMaterialsService.createMaterialType(name, user, organizationId);
-      res.status(200).json(createdMaterialType);
+      const createdMaterialType = await BillOfMaterialsService.createMaterialType(name, req.currentUser, req.organization);
+      return res.status(200).json(createdMaterialType);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -288,63 +260,54 @@ export default class ProjectsController {
     try {
       const { materialId } = req.params;
       const { assemblyId } = req.body;
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
       const updatedMaterial = await BillOfMaterialsService.assignMaterialAssembly(
-        user,
+        req.currentUser,
         materialId,
-        assemblyId,
-        organizationId
+        req.organization,
+        assemblyId
       );
-      res.status(200).json(updatedMaterial);
+      return res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async deleteAssembly(req: Request, res: Response, next: NextFunction) {
     try {
       const { assemblyId } = req.params;
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, user, organizationId);
-      res.status(200).json(deletedAssembly);
+      const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, req.currentUser, req.organization);
+      return res.status(200).json(deletedAssembly);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async deleteMaterialType(req: Request, res: Response, next: NextFunction) {
     try {
       const { materialTypeName } = req.params;
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const deletedMaterial = await BillOfMaterialsService.deleteMaterialType(user, materialTypeName, organizationId);
-      res.status(200).json(deletedMaterial);
+      const deletedMaterial = await BillOfMaterialsService.deleteMaterialType(
+        req.currentUser,
+        materialTypeName,
+        req.organization
+      );
+      return res.status(200).json(deletedMaterial);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async deleteMaterial(req: Request, res: Response, next: NextFunction) {
     try {
       const { materialId } = req.params;
-      const user: User = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const updatedMaterial = await BillOfMaterialsService.deleteMaterial(user, materialId, organizationId);
-      res.status(200).json(updatedMaterial);
+      const updatedMaterial = await BillOfMaterialsService.deleteMaterial(req.currentUser, materialId, req.organization);
+      return res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async editMaterial(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { materialId } = req.params;
       const {
         name,
@@ -361,10 +324,8 @@ export default class ProjectsController {
         linkUrl,
         notes
       } = req.body;
-      const organizationId = getOrganizationId(req.headers);
-
       const updatedMaterial = await BillOfMaterialsService.editMaterial(
-        user,
+        req.currentUser,
         materialId,
         name,
         status,
@@ -375,54 +336,51 @@ export default class ProjectsController {
         price,
         subtotal,
         linkUrl,
-        organizationId,
+        req.organization,
         notes,
         unitName,
         assemblyId,
         pdmFileName
       );
-      res.status(200).json(updatedMaterial);
+      return res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllUnits(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const units = await BillOfMaterialsService.getAllUnits(user, organizationId);
-      res.status(200).json(units);
+      const units = await BillOfMaterialsService.getAllUnits(req.currentUser, req.organization);
+      return res.status(200).json(units);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createUnit(req: Request, res: Response, next: NextFunction) {
     try {
       const { name } = req.body;
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
-      const createdUnit = await BillOfMaterialsService.createUnit(name, user, organizationId);
-      res.status(200).json(createdUnit);
+      const createdUnit = await BillOfMaterialsService.createUnit(name, req.currentUser, req.organization);
+      return res.status(200).json(createdUnit);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async editAssembly(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { assemblyId } = req.params;
       const { name, pdmFileName } = req.body;
-      const organizationId = getOrganizationId(req.headers);
-
-      const updatedAssembly = await BillOfMaterialsService.editAssembly(user, assemblyId, organizationId, name, pdmFileName);
-      res.status(200).json(updatedAssembly);
+      const updatedAssembly = await BillOfMaterialsService.editAssembly(
+        req.currentUser,
+        assemblyId,
+        req.organization,
+        name,
+        pdmFileName
+      );
+      return res.status(200).json(updatedAssembly);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -430,19 +388,16 @@ export default class ProjectsController {
     try {
       const { linkTypeName } = req.params;
       const { iconName, required } = req.body;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
       const linkTypeUpdated = await ProjectsService.editLinkType(
         linkTypeName,
         iconName,
         required,
-        submitter,
-        organizationId
+        req.currentUser,
+        req.organization
       );
-      res.status(200).json(linkTypeUpdated);
+      return res.status(200).json(linkTypeUpdated);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }

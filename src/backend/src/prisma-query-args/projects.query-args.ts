@@ -5,6 +5,7 @@ import { getDescriptionBulletQueryArgs } from './description-bullets.query-args'
 import { getTeamQueryArgs } from './teams.query-args';
 import { getMaterialQueryArgs, getAssemblyQueryArgs } from './bom.query-args';
 import { getTaskQueryArgs } from './tasks.query-args';
+import { getDesignReviewQueryArgs } from './design-reviews.query-args';
 
 export type ProjectQueryArgs = ReturnType<typeof getProjectQueryArgs>;
 
@@ -29,7 +30,8 @@ export const getProjectQueryArgs = (organizationId: string) =>
           assemblies: {
             where: { dateDeleted: null },
             ...getAssemblyQueryArgs(organizationId)
-          }
+          },
+          organization: true
         }
       },
       teams: getTeamQueryArgs(organizationId),
@@ -58,7 +60,8 @@ export const getProjectQueryArgs = (organizationId: string) =>
                 where: { dateDeleted: null },
                 ...getAssemblyQueryArgs(organizationId)
               },
-              blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } }
+              blocking: { where: { wbsElement: { dateDeleted: null } }, include: { wbsElement: true } },
+              designReviews: { where: { dateDeleted: null }, ...getDesignReviewQueryArgs(organizationId) }
             }
           },
           blockedBy: { where: { dateDeleted: null } }

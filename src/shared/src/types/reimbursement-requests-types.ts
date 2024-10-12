@@ -20,7 +20,9 @@ export interface ReimbursementRequestRow {
 }
 
 export enum ReimbursementStatusType {
+  PENDING_LEADERSHIP_APPROVAL = 'PENDING_LEADERSHIP_APPROVAL',
   PENDING_FINANCE = 'PENDING_FINANCE',
+  LEADERSHIP_APPROVED = 'LEADERSHIP_APPROVED',
   SABO_SUBMITTED = 'SABO_SUBMITTED',
   ADVISOR_APPROVED = 'ADVISOR_APPROVED',
   REIMBURSED = 'REIMBURSED',
@@ -48,7 +50,7 @@ export interface ReimbursementRequest {
   saboId?: number;
   dateCreated: Date;
   dateDeleted?: Date;
-  dateOfExpense: Date;
+  dateOfExpense?: Date;
   reimbursementStatuses: ReimbursementStatus[];
   recipient: User;
   vendor: Vendor;

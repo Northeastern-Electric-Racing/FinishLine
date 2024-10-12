@@ -4,9 +4,13 @@
  */
 
 import { Box, Card, Tooltip, Typography } from '@mui/material';
-import { WbsElementStatus, WorkPackageStage } from 'shared';
-import { GanttWorkPackageStageColorPipe, GanttWorkPackageTextColorPipe } from '../../../utils/gantt.utils';
-import { WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
+import { DesignReviewStatus, WbsElementStatus, WorkPackageStage } from 'shared';
+import {
+  GanttDesignReviewStatusColorPipe,
+  GanttWorkPackageStageColorPipe,
+  GanttWorkPackageTextColorPipe
+} from '../../../utils/gantt.utils';
+import { DesignReviewStatusTextPipe, WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
 
 const LEGEND_POPUPS_MAP = new Map<WorkPackageStage, JSX.Element>();
 
@@ -47,6 +51,43 @@ Object.values(WorkPackageStage).map((stage) =>
     </Card>
   )
 );
+
+const DesignReviewToolTipPopUp = () => {
+  return (
+    <Card
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        px: 2,
+        py: 1
+      }}
+    >
+      {
+        // map through all the Wbs Element Statuses
+        [DesignReviewStatus.UNCONFIRMED, DesignReviewStatus.SCHEDULED].map((status) => {
+          return (
+            <Box
+              sx={{
+                backgroundColor: GanttDesignReviewStatusColorPipe(status),
+                height: '2rem',
+                width: '8rem',
+                borderRadius: 1,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <Typography variant="body1" sx={{ color: 'white' }}>
+                {DesignReviewStatusTextPipe(status)}
+              </Typography>
+            </Box>
+          );
+        })
+      }
+    </Card>
+  );
+};
 
 const GanttChartColorLegend = () => {
   return (
@@ -103,6 +144,32 @@ const GanttChartColorLegend = () => {
           );
         })
       }
+      <Box
+        sx={{
+          background: `linear-gradient(90deg, ${GanttDesignReviewStatusColorPipe(
+            DesignReviewStatus.UNCONFIRMED
+          )} 0%, ${GanttDesignReviewStatusColorPipe(DesignReviewStatus.CONFIRMED)} 100%)`,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '2rem',
+          width: '8.25rem',
+          borderRadius: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          px: 1
+        }}
+      >
+        <Tooltip
+          title={<DesignReviewToolTipPopUp />}
+          slotProps={{
+            tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
+          }}
+        >
+          <Typography variant="body2" sx={{ color: 'white', overflow: 'hidden', textWrap: 'nowrap' }}>
+            Design Review
+          </Typography>
+        </Tooltip>
+      </Box>
     </Box>
   );
 };

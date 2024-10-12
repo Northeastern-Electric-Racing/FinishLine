@@ -4,9 +4,21 @@
  */
 
 import axios from '../utils/axios';
-import { Project, User, UserScheduleSettings, UserSecureSettings, UserWithScheduleSettings } from 'shared';
+import {
+  Project,
+  SetUserScheduleSettingsPayload,
+  User,
+  UserScheduleSettings,
+  UserSecureSettings,
+  UserWithScheduleSettings
+} from 'shared';
 import { apiUrls } from '../utils/urls';
-import { authUserTransformer, userTransformer } from './transformers/users.transformers';
+import {
+  authUserTransformer,
+  userScheduleSettingsTransformer,
+  userTransformer,
+  userWithScheduleSettingsTransformer
+} from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 import { projectTransformer } from './transformers/projects.transformers';
 
@@ -15,7 +27,7 @@ import { projectTransformer } from './transformers/projects.transformers';
  */
 export const getAllUsers = () => {
   return axios.get<UserWithScheduleSettings[]>(apiUrls.users(), {
-    transformResponse: (data) => JSON.parse(data).map(userTransformer)
+    transformResponse: (data) => JSON.parse(data).map(userWithScheduleSettingsTransformer)
   });
 };
 
@@ -100,7 +112,9 @@ export const getUserSecureSettings = (id: string) => {
  * @returns the schedule settings
  */
 export const getUserScheduleSettings = (userId: string) => {
-  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(userId));
+  return axios.get<UserScheduleSettings>(apiUrls.userScheduleSettings(userId), {
+    transformResponse: (data) => userScheduleSettingsTransformer(JSON.parse(data))
+  });
 };
 
 /**
@@ -120,7 +134,7 @@ export const updateUserSecureSettings = (settings: UserSecureSettings) => {
 /**
  * Update the given user's schedule settings by UserId
  */
-export const updateUserScheduleSettings = (settings: UserScheduleSettings) => {
+export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayload) => {
   return axios.post<UserScheduleSettings>(apiUrls.userScheduleSettingsSet(), settings);
 };
 

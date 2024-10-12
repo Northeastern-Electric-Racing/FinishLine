@@ -19,6 +19,7 @@ export const getReimbursementRequestQueryArgs = (organizationId: string) =>
           dateDeleted: null
         },
         ...getReimbursementProductQueryArgs(organizationId)
-      }
+      },
+      notificationSlackThreads: true
     }
   });

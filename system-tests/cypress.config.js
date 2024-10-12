@@ -1,7 +1,15 @@
 module.exports = {
   e2e: {
     setupNodeEvents(on, config) {
-      // implement node event listeners here
-    },
+      on('task', {
+        log(message) {
+          console.log(message);
+          return null;
+        }
+      });
+    }
   },
+  env: {
+    base_url: 'http://localhost:3000'
+  }
 };

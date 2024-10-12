@@ -95,7 +95,7 @@ const financeTeam = (headId: string, organizationId: string): Prisma.TeamCreateA
   return {
     data: {
       teamName: 'financeTeam',
-      slackId: 'finance',
+      slackId: 'financerand',
       headId,
       organizationId,
       financeTeam: true

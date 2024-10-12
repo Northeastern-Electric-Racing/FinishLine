@@ -10,6 +10,9 @@ import { exampleWbsProject1 } from './wbs-numbers.stub';
 export const teamType1: TeamType = {
   teamTypeId: '1',
   iconName: 'YouTubeIcon',
+  description: '',
+  imageFileId: null,
+  calendarId: null,
   name: 'teamType1'
 };
 
@@ -29,7 +32,8 @@ export const exampleDesignReview1: DesignReview = {
   isInPerson: false,
   attendees: [exampleAdminUser],
   wbsName: '1',
-  wbsNum: exampleWbsProject1
+  wbsNum: exampleWbsProject1,
+  initialDate: new Date('2024-03-25')
 };
 
 export const exampleDesignReview2: DesignReview = {
@@ -48,7 +52,8 @@ export const exampleDesignReview2: DesignReview = {
   isInPerson: true,
   attendees: [exampleAppAdminUser],
   wbsName: '1',
-  wbsNum: exampleWbsProject1
+  wbsNum: exampleWbsProject1,
+  initialDate: new Date('2024-03-25')
 };
 
 export const exampleAllDesignReviews: DesignReview[] = [exampleDesignReview1, exampleDesignReview2];

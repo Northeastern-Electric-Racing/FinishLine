@@ -38,7 +38,7 @@ export const reimbursementRequestTransformer = (request: ReimbursementRequest): 
     ...request,
     dateCreated: new Date(request.dateCreated),
     dateDeleted: request.dateDeleted ? new Date(request.dateDeleted) : undefined,
-    dateOfExpense: new Date(request.dateOfExpense),
+    dateOfExpense: request.dateOfExpense ? new Date(request.dateOfExpense) : undefined,
     reimbursementStatuses: request.reimbursementStatuses.map(reimbursementStatusTransformer),
     vendor: vendorTransformer(request.vendor),
     receiptPictures: request.receiptPictures.map(receiptTransformer),

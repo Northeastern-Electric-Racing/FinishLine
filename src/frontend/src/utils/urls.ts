@@ -27,6 +27,7 @@ const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
+const allProjects = (includeDeleted: boolean) => `${projects()}/all/${includeDeleted ? 'true' : 'false'}`;
 const projectsByWbsNum = (wbsNum: string) => `${projects()}/${wbsNum}`;
 const projectsCreate = () => `${projects()}/create`;
 const projectsEdit = () => `${projects()}/edit`;
@@ -88,6 +89,8 @@ const teamsSetLeads = (id: string) => `${teamsById(id)}/set-leads`;
 const teamTypes = () => `${teams()}/teamType`;
 const allTeamTypes = () => `${teamTypes()}/all`;
 const teamTypesCreate = () => `${teamTypes()}/create`;
+const teamTypeEdit = (id: string) => `${teamTypes()}/${id}/edit`;
+const teamTypeSetImage = (id: string) => `${teamTypes()}/${id}/set-image`;
 
 /**************** Description Bullet Endpoints ****************/
 const descriptionBullets = () => `${API_URL}/description-bullets`;
@@ -110,18 +113,22 @@ const financeGetUserReimbursementRequest = () => `${financeEndpoints()}/current-
 const financeGetUserReimbursements = () => `${financeEndpoints()}/reimbursements/current-user`;
 const financeGetAllReimbursements = () => `${financeEndpoints()}/reimbursements`;
 const financeReportRefund = () => `${financeEndpoints()}/reimburse`;
+const financeEditRefund = (id: string) => `${financeReportRefund()}/${id}/edit`;
 const financeSetSaboNumber = (id: string) => `${financeEndpoints()}/${id}/set-sabo-number`;
 const financeDeleteReimbursement = (id: string) => `${financeEndpoints()}/${id}/delete`;
 const financeMarkAsDelivered = (id: string) => `${financeEndpoints()}/${id}/delivered`;
 const financeMarkAsReimbursed = (id: string) => `${financeEndpoints()}/${id}/reimbursed`;
 const financeApproveReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/approve`;
 const financeDenyReimbursementRequest = (id: string) => `${financeEndpoints()}/${id}/deny`;
+const financeMarkPending = (id: string) => `${financeEndpoints()}/${id}/pending-finance`;
+const financeRequestChanges = (id: string) => `${financeEndpoints()}/${id}/request-changes`;
 const financeGetPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/list`;
 const financeSendPendingAdvisorList = () => `${financeEndpoints()}/pending-advisor/send`;
 const financeEditAccountCode = (accountCodeId: string) => `${getAllAccountCodes()}/${accountCodeId}/edit`;
 const financeCreateAccountCode = () => `${getAllAccountCodes()}/create`;
 const financeCreateVendor = () => `${financeEndpoints()}/vendors/create`;
 const financeEditVendor = (vendorId: string) => `${financeEndpoints()}/${vendorId}/vendors/edit`;
+const financeLeadershipApprove = (id: string) => `${financeEndpoints()}/${id}/leadership-approve`;
 
 /**************** Bill of Material Endpoints **************************/
 const bomEndpoints = () => `${API_URL}/projects/bom`;
@@ -152,6 +159,7 @@ const designReviewsEdit = (designReviewId: string) => `${designReviews()}/${desi
 const designReviewById = (id: string) => `${designReviews()}/${id}`;
 const designReviewDelete = (id: string) => `${designReviewById(id)}/delete`;
 const designReviewMarkUserConfirmed = (id: string) => `${designReviewById(id)}/confirm-schedule`;
+const designReviewSetStatus = (id: string) => `${designReviewById(id)}/set-status`;
 
 /******************* Work Package Template Endpoints ********************/
 
@@ -163,9 +171,26 @@ const workPackageTemplatesCreate = () => `${workPackageTemplates()}/create`;
 const workPackageTemplateDelete = (workPackageTemplateId: string) =>
   `${workPackageTemplatesById(workPackageTemplateId)}/delete`;
 
+/******************* Organizations Endpoints ********************/
+const organizations = () => `${API_URL}/organizations`;
+const currentOrganization = () => `${organizations()}/current`;
+const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
+const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
 const carsCreate = () => `${cars()}/create`;
+
+/************** Recruitment Endpoints ***************/
+const recruitment = () => `${API_URL}/recruitment`;
+const allMilestones = () => `${recruitment()}/milestones`;
+const milestoneCreate = () => `${recruitment()}/milestone/create`;
+const milestoneEdit = (id: string) => `${recruitment()}/milestone/${id}/edit`;
+const milestoneDelete = (id: string) => `${recruitment()}/milestone/${id}/delete`;
+const allFaqs = () => `${recruitment()}/faqs`;
+const faqCreate = () => `${recruitment()}/faq/create`;
+const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
+const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -185,6 +210,7 @@ export const apiUrls = {
   userScheduleSettingsSet,
 
   projects,
+  allProjects,
   projectsByWbsNum,
   projectsCreate,
   projectsEdit,
@@ -234,6 +260,8 @@ export const apiUrls = {
   allTeamTypes,
   teamsSetTeamType,
   teamTypesCreate,
+  teamTypeEdit,
+  teamTypeSetImage,
 
   descriptionBulletsCheck,
   descriptionBulletTypes,
@@ -252,6 +280,7 @@ export const apiUrls = {
   financeGetUserReimbursements,
   financeGetAllReimbursements,
   financeReportRefund,
+  financeEditRefund,
   financeSetSaboNumber,
   financeImageById,
   financeDeleteReimbursement,
@@ -259,12 +288,15 @@ export const apiUrls = {
   financeMarkAsReimbursed,
   financeApproveReimbursementRequest,
   financeDenyReimbursementRequest,
+  financeMarkPending,
+  financeRequestChanges,
   financeGetPendingAdvisorList,
   financeSendPendingAdvisorList,
   financeEditAccountCode,
   financeCreateAccountCode,
   financeCreateVendor,
   financeEditVendor,
+  financeLeadershipApprove,
 
   bomEndpoints,
   bomGetMaterialsByWbsNum,
@@ -291,6 +323,7 @@ export const apiUrls = {
   designReviewsEdit,
   designReviewMarkUserConfirmed,
   designReviewDelete,
+  designReviewSetStatus,
 
   workPackageTemplates,
   workPackageTemplatesById,
@@ -298,7 +331,21 @@ export const apiUrls = {
   workPackageTemplatesCreate,
   workPackageTemplateDelete,
 
+  currentOrganization,
+  organizationsUsefulLinks,
+  organizationsSetUsefulLinks,
+
   cars,
   carsCreate,
+  recruitment,
+  allMilestones,
+  milestoneCreate,
+  milestoneEdit,
+  milestoneDelete,
+  allFaqs,
+  faqCreate,
+  faqEdit,
+  faqDelete,
+
   version
 };

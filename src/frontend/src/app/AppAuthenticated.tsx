@@ -19,16 +19,18 @@ import AppContextUser from './AppContextUser';
 import { useSingleUserSettings } from '../hooks/users.hooks';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SessionTimeoutAlert from './SessionTimeoutAlert';
-import SetUserPreferences from '../pages/HomePage/SetUserPreferences';
+import SetUserPreferences from '../pages/HomePage/components/SetUserPreferences';
 import Finance from '../pages/FinancePage/Finance';
 import Sidebar from '../layouts/Sidebar/Sidebar';
 import { Box } from '@mui/system';
-import { Container, IconButton } from '@mui/material';
+import { Container, IconButton, useTheme } from '@mui/material';
 import ErrorPage from '../pages/ErrorPage';
 import { Role, isGuest } from 'shared';
 import Calendar from '../pages/CalendarPage/Calendar';
-import { useState } from 'react';
-import { GridMenuIcon } from '@mui/x-data-grid';
+import { useState, useEffect } from 'react';
+import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
+import HiddenContentMargin from '../components/HiddenContentMargin';
+import emitter from './EventBus';
 
 interface AppAuthenticatedProps {
   userId: string;
@@ -38,7 +40,22 @@ interface AppAuthenticatedProps {
 const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const theme = useTheme();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [moveContent, setMoveContent] = useState(false);
+  const [onMemberHomePage, setOnMemberHomePage] = useState(userRole !== 'GUEST');
+
+  useEffect(() => {
+    const handleMemberHomePage = (value: boolean) => {
+      setOnMemberHomePage(value);
+    };
+
+    emitter.on('memberHomePage', handleMemberHomePage as (event: unknown) => void);
+
+    return () => {
+      emitter.off('memberHomePage', handleMemberHomePage as (event: unknown) => void);
+    };
+  }, []);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
 
@@ -51,19 +68,47 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        onClick={() => setDrawerOpen(true)}
-        sx={{
-          position: 'fixed'
+      <Box
+        onMouseEnter={() => {
+          setDrawerOpen(true);
         }}
-      >
-        <GridMenuIcon />
-      </IconButton>
+        sx={{
+          height: '100vh',
+          position: 'fixed',
+          width: 15,
+          borderRight: onMemberHomePage ? 2 : 0,
+          borderRightColor: theme.palette.background.paper
+        }}
+      />
+      {onMemberHomePage && (
+        <>
+          <IconButton
+            onClick={() => {
+              setDrawerOpen(true);
+              setMoveContent(true);
+            }}
+            sx={{ position: 'fixed', left: -8, top: '3%' }}
+          >
+            <ArrowCircleRightTwoToneIcon
+              sx={{
+                fontSize: '30px',
+                zIndex: 1,
+                '& path:first-of-type': { color: '#000000' },
+                '& path:last-of-type': { color: '#ef4345' }
+              }}
+            />
+          </IconButton>
+          <Sidebar
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+            moveContent={moveContent}
+            setMoveContent={setMoveContent}
+          />
+        </>
+      )}
       <Box display={'flex'}>
-        <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        <Container maxWidth={false} sx={{ width: drawerOpen ? 'calc(100vw - 220px)' : 'calc(100vw - 50px)' }}>
+        <HiddenContentMargin open={moveContent} variant="permanent" />
+        <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
@@ -77,6 +122,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             <Route path={routes.FINANCE} component={Finance} />
             <Route path={routes.CALENDAR} component={Calendar} />
             <Route exact path={routes.HOME} component={Home} />
+            <Redirect from={routes.BASE} to={routes.HOME} />
             <Route path="*" component={PageNotFound} />
           </Switch>
         </Container>

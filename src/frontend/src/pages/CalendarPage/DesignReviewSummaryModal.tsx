@@ -1,4 +1,4 @@
-import { DesignReview, DesignReviewStatus, TeamType } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType, isAdmin } from 'shared';
 import NERModal from '../../components/NERModal';
 import { Box, Chip, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -22,9 +22,18 @@ interface DRCSummaryModalProps {
   onHide: () => void;
   designReview: DesignReview;
   teamTypes: TeamType[];
+  markedStatus?: DesignReviewStatus;
+  setMarkedStatus?: (_: DesignReviewStatus) => void;
 }
 
-const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designReview, teamTypes }) => {
+const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({
+  open,
+  onHide,
+  designReview,
+  teamTypes,
+  markedStatus = DesignReviewStatus.UNCONFIRMED,
+  setMarkedStatus = () => {}
+}: DRCSummaryModalProps) => {
   const user = useCurrentUser();
   const toast = useToast();
   const history = useHistory();
@@ -72,11 +81,9 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
       icon={getTeamTypeIcon(designReview.teamType.teamTypeId, true)}
       hideBackDrop
       showCloseButton
-    >
-      <Box minWidth="550px">
-        <DeleteModal />
+      titleChildren={
         <Box position="absolute" right="52px" top="12px">
-          {isDesignReviewCreator && (
+          {(isDesignReviewCreator || isAdmin(user.role)) && (
             <>
               <IconButton onClick={() => setShowDeleteModal(true)}>
                 <DeleteIcon />
@@ -98,6 +105,10 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
             <CheckCircle />
           </IconButton>
         </Box>
+      }
+    >
+      <Box minWidth="550px">
+        <DeleteModal />
 
         <Box>
           <Box display={'flex'} alignItems={'center'}>
@@ -106,10 +117,10 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
             </Typography>
             <Chip
               size="small"
-              label={designReviewStatusPipe(designReview.status)}
+              label={designReviewStatusPipe(markedStatus)}
               variant="filled"
               sx={{
-                backgroundColor: designReviewStatusColor(designReview.status),
+                backgroundColor: designReviewStatusColor(markedStatus),
                 fontSize: 14,
                 color: 'white',
                 width: 150,
@@ -117,7 +128,14 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({ open, onHide, designR
               }}
             />
           </Box>
-          {isScheduled && <DesignReviewSummaryModalDetails designReview={designReview} teamTypes={teamTypes} />}
+          {isScheduled && (
+            <DesignReviewSummaryModalDetails
+              designReview={designReview}
+              teamTypes={teamTypes}
+              markedStatus={markedStatus}
+              setMarkedStatus={setMarkedStatus}
+            />
+          )}
           {designReview.status === DesignReviewStatus.CONFIRMED && (
             <Box>
               <DesignReviewSummaryModalAttendees designReview={designReview} />

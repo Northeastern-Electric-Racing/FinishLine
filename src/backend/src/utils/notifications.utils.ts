@@ -1,12 +1,12 @@
-import { Team, Task as Prisma_Task, WBS_Element } from '@prisma/client';
+import { Task as Prisma_Task, WBS_Element, Design_Review } from '@prisma/client';
 import { UserWithSettings } from './auth.utils';
-import { HttpException } from './errors.utils';
-import { UserWithTeams, getTeamsFromUsers } from './teams.utils';
 
 export type TaskWithAssignees = Prisma_Task & {
   assignees: UserWithSettings[] | null;
-  wbsElement: WBS_Element | null;
+  wbsElement: WBS_Element;
 };
+
+export type DesignReviewWithAttendees = Design_Review & { attendees: UserWithSettings[]; wbsElement: WBS_Element };
 
 export const usersToSlackPings = (users: UserWithSettings[]) => {
   // https://api.slack.com/reference/surfaces/formatting#mentioning-users
@@ -15,26 +15,6 @@ export const usersToSlackPings = (users: UserWithSettings[]) => {
 
 export const userToSlackPing = (user: UserWithSettings) => {
   return `<@${user.userSettings?.slackId}>`;
-};
-
-/**
- * Gets the team of a task's assignees.
- * Assumes all assigness share a team
- * @param users the users of the task
- * @returns the team assigned to the task
- */
-export const getTeamFromTaskAssignees = (users: UserWithTeams[]): Team => {
-  const usersTeams = getTeamsFromUsers(users);
-
-  firstUsersTeams: for (const team of usersTeams[0]) {
-    for (let i = 1; i < usersTeams.length; i++) {
-      // If the team is not found in the current user's teams, continue to the next team
-      if (!usersTeams[i].some((t) => t.teamId === team.teamId)) continue firstUsersTeams;
-    }
-    return team;
-  }
-
-  throw new HttpException(400, 'All of the users do not share a team!');
 };
 
 /**
