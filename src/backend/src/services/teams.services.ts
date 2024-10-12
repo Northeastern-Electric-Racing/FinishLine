@@ -22,20 +22,22 @@ export default class TeamsService {
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
-  static async getAllArchivedTeams(organization: Organization): Promise<Team[]> {
+  static async getAllTeams(organization: Organization): Promise<Team[]> {
     const teams = await prisma.team.findMany({
-      where: { dateArchived: { not: null }, organizationId: organization.organizationId },
+      where: { dateArchived: null, organizationId: organization.organizationId },
       ...getTeamQueryArgs(organization.organizationId)
     });
     return teams.map(teamTransformer);
   }
 
-  static async getAllTeams(organization: Organization): Promise<Team[]> {
+  /**
+   * Gets all teams
+   * @param organizationId The organization the user is currently in
+   * @returns a list of teams
+   */
+  static async getAllArchivedTeams(organization: Organization): Promise<Team[]> {
     const teams = await prisma.team.findMany({
-
-  static async getAllTeams(organization: Organization): Promise<Team[]> {
-    const teams = await prisma.team.findMany({
-      where: { dateArchived: null, organizationId: organization.organizationId },
+      where: { dateArchived: { not: null }, organizationId: organization.organizationId },
       ...getTeamQueryArgs(organization.organizationId)
     });
     return teams.map(teamTransformer);

@@ -1,4 +1,4 @@
-import { Box, Grid, Menu, MenuItem, Stack } from '@mui/material';
+import { Box, Grid, ListItemIcon, Menu, MenuItem, Stack } from '@mui/material';
 import { useArchiveTeam, useSingleTeam } from '../../hooks/teams.hooks';
 import { useParams } from 'react-router-dom';
 import TeamMembersPageBlock from './TeamMembersPageBlock';
@@ -9,16 +9,17 @@ import ActiveProjectCardView from './ProjectCardsView';
 import DescriptionPageBlock from './DescriptionPageBlock';
 import { routes } from '../../utils/routes';
 import PageLayout from '../../components/PageLayout';
-import { Delete } from '@mui/icons-material';
 import { NERButton } from '../../components/NERButton';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isAdmin } from 'shared';
+import { isAdmin, isGuest } from 'shared';
 import React, { useState } from 'react';
 import DeleteTeamModal from './DeleteTeamModal';
 import SetTeamTypeModal from './SetTeamTypeModal';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { TeamPill } from './TeamPill';
 import { useToast } from '../../hooks/toasts.hooks';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ArchiveIcon from '@mui/icons-material/Archive';
 
 interface ParamTypes {
   teamId: string;
@@ -29,11 +30,14 @@ const TeamSpecificPage: React.FC = () => {
   const { teamId } = useParams<ParamTypes>();
   const { isLoading, isError, data, error } = useSingleTeam(teamId);
   const user = useCurrentUser();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteModal, setDeleteModalShow] = useState(false);
   const [showTeamTypeModal, setShowTeamTypeModal] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dropdownOpen = Boolean(anchorEl);
   const { mutateAsync: archiveTeam } = useArchiveTeam(teamId);
+  const handleClickDelete = () => {
+    setDeleteModalShow(true);
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -47,14 +51,12 @@ const TeamSpecificPage: React.FC = () => {
   if (isLoading || !data) return <LoadingIndicator />;
 
   const DeleteButton = () => (
-    <NERButton
-      variant="contained"
-      startIcon={<Delete />}
-      onClick={() => setShowDeleteModal(true)}
-      disabled={!isAdmin(user.role)}
-    >
+    <MenuItem onClick={handleClickDelete} disabled={!isAdmin(user.role)}>
+      <ListItemIcon>
+        <DeleteIcon fontSize="small" />
+      </ListItemIcon>
       Delete
-    </NERButton>
+    </MenuItem>
   );
 
   const SetTeamTypeButton = () => (
@@ -78,18 +80,22 @@ const TeamSpecificPage: React.FC = () => {
   };
 
   const ArchiveTeamButton: React.FC<ArchiveTeamButtonProps> = ({ archive }) => (
-    <NERButton variant="contained" onClick={() => handleArchive()} disabled={!isAdmin(user.role)}>
+    <MenuItem onClick={handleArchive} disabled={!isAdmin(user.role)}>
+      <ListItemIcon>
+        <ArchiveIcon fontSize="small" />
+      </ListItemIcon>
       {archive ? 'Unarchive Team' : 'Archive Team'}
-    </NERButton>
+    </MenuItem>
   );
 
-  const TeamActionsDropdown = () => (
-    <Box>
+  const TeamActionsDropdown = (
+    <Box ml={2}>
       <NERButton
         endIcon={<ArrowDropDownIcon style={{ fontSize: 28 }} />}
         variant="contained"
-        id="team-actions-dropdown"
+        id="project-actions-dropdown"
         onClick={handleClick}
+        disabled={isGuest(user.role)}
       >
         Actions
       </NERButton>
@@ -97,15 +103,17 @@ const TeamSpecificPage: React.FC = () => {
         open={dropdownOpen}
         anchorEl={anchorEl}
         onClose={handleDropdownClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
       >
-        <MenuItem onClick={handleDropdownClose}>
-          <ArchiveTeamButton archive={!!data.dateArchived} />
-        </MenuItem>
-        <MenuItem onClick={handleDropdownClose}>
-          <DeleteButton />
-        </MenuItem>
+        <ArchiveTeamButton archive={!!data.dateArchived} />
+        <DeleteButton />
       </Menu>
     </Box>
   );
@@ -115,7 +123,7 @@ const TeamSpecificPage: React.FC = () => {
       headerRight={
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <SetTeamTypeButton />
-          {TeamActionsDropdown()}
+          {TeamActionsDropdown}
         </Stack>
       }
       title={`Team ${data.teamName}`}
