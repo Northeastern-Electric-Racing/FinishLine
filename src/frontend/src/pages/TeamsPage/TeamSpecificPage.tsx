@@ -153,7 +153,7 @@ const TeamSpecificPage: React.FC = () => {
           <DescriptionPageBlock team={data} />
         </Grid>
       </Grid>
-      <DeleteTeamModal teamId={teamId} showModal={showDeleteModal} onHide={() => setShowDeleteModal(false)} />
+      <DeleteTeamModal teamId={teamId} showModal={showDeleteModal} onHide={() => setDeleteModalShow(false)} />
       <SetTeamTypeModal teamId={teamId} showModal={showTeamTypeModal} onHide={() => setShowTeamTypeModal(false)} />
     </PageLayout>
   );
