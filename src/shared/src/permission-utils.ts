@@ -48,4 +48,14 @@ export const isGuest: PermissionCheck = (role?: Role) => {
   return role === RoleEnum.GUEST;
 };
 
+export const isMember: PermissionCheck = (role?: Role) => {
+  if (!role) return true;
+  return role === RoleEnum.MEMBER;
+};
+
+export const isLead: PermissionCheck = (role?: Role) => {
+  if (!role) return true;
+  return role === RoleEnum.HEAD || role === RoleEnum.LEADERSHIP;
+};
+
 export type PermissionCheck = (role: Role | undefined) => boolean;

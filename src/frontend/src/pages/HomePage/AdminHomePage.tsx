@@ -11,11 +11,11 @@ import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
 
-interface MemberHomePageProps {
+interface AdminHomePageProps {
   user: AuthenticatedUser;
 }
 
-const MemberHomePage = ({ user }: MemberHomePageProps) => {
+const AdminHomePage = ({ user }: AdminHomePageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
@@ -31,4 +31,4 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
   );
 };
 
-export default MemberHomePage;
+export default AdminHomePage;

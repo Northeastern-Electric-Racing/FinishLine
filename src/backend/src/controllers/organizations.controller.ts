@@ -3,6 +3,15 @@ import OrganizationsService from '../services/organizations.services';
 import { HttpException } from '../utils/errors.utils';
 
 export default class OrganizationsController {
+  static async getCurrentOrganization(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organization = await OrganizationsService.getCurrentOrganization(req.organization.organizationId);
+      return res.status(200).json(organization);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async setUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const { links } = req.body;
@@ -53,6 +62,17 @@ export default class OrganizationsController {
     }
   }
 
+  static async setOrganizationFeaturedProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { projectIds } = req.body;
+      const featuredProjects = await OrganizationsService.setFeaturedProjects(projectIds, req.organization, req.currentUser);
+
+      res.status(200).json(featuredProjects);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setLogoImage(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.file) {
@@ -61,6 +81,38 @@ export default class OrganizationsController {
       const updatedOrg = await OrganizationsService.setLogoImage(req.file, req.currentUser, req.organization);
 
       return res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async getOrganizationLogoImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const logoImageId = await OrganizationsService.getLogoImage(req.organization.organizationId);
+      res.status(200).json(logoImageId);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async setOrganizationDescription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const updatedOrg = await OrganizationsService.setOrganizationDescription(
+        req.body.description,
+        req.currentUser,
+        req.organization
+      );
+
+      return res.status(200).json(updatedOrg);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async getOrganizationFeaturedProjects(req: Request, res: Response, next: NextFunction) {
+    try {
+      const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);
+      res.status(200).json(featuredProjects);
     } catch (error: unknown) {
       return next(error);
     }

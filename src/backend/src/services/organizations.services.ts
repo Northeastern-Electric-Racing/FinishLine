@@ -1,14 +1,35 @@
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, HttpException, DeletedException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
+import { getProjects } from '../utils/projects.utils';
 
 export default class OrganizationsService {
+  /**
+   * Gets the current organization
+   * @param organizationId the organizationId to be fetched
+   */
+  static async getCurrentOrganization(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (organization.dateDeleted) {
+      throw new DeletedException('Organization', organizationId);
+    }
+
+    return organization;
+  }
+
   /**
    * sets an organizations useful links
    * @param submitter the user who is setting the links
@@ -133,6 +154,33 @@ export default class OrganizationsService {
   }
 
   /**
+   * Updates the featured projects of an organization
+   * @param projectIds project ids of featured projects
+   * @param organization user's organization
+   * @param submitter user submitting featured projects
+   * @returns updated organization with featured projects
+   */
+  static async setFeaturedProjects(projectIds: string[], organization: Organization, submitter: User) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update featured projects');
+
+    //throws if all projects are not found
+    const featuredProjects = await getProjects(projectIds, organization.organizationId);
+
+    const updatedOrg = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        featuredProjects: {
+          set: featuredProjects.map((project) => ({ projectId: project.projectId }))
+        }
+      },
+      include: { featuredProjects: true }
+    });
+
+    return updatedOrg;
+  }
+
+  /**
    * Sets the logo for an organization, User must be admin
    * @param logoImage the image which will be uploaded and have its id stored in the org
    * @param submitter the user submitting the logo
@@ -159,5 +207,70 @@ export default class OrganizationsService {
     });
 
     return updatedOrg;
+  }
+
+  /**
+   * Gets the logo image of the organization
+   * @param organizationId the id of the organization
+   * @returns the id of the image
+   */
+  static async getLogoImage(organizationId: string): Promise<string> {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    if (!organization.logoImageId) {
+      throw new HttpException(404, `Organization ${organizationId} does not have a logo image`);
+    }
+
+    return organization.logoImageId;
+  }
+
+  /**
+   * Sets the description of a given organization.
+   * @param description the new description
+   * @param submitter the user making the change (must be admin)
+   * @param organization the organization whos description is changing
+   * @throws if the user is not an admin
+   */
+  static async setOrganizationDescription(
+    description: string,
+    submitter: User,
+    organization: Organization
+  ): Promise<Organization> {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set description');
+    }
+    const updatedOrg = prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        description
+      }
+    });
+    return updatedOrg;
+  }
+
+  /**
+   * Gets the featured projects for the given organization Id
+   * @param organizationId the organization to get the projects for
+   * @returns all the featured projects for the organization
+   */
+  static async getOrganizationFeaturedProjects(organizationId: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId },
+      include: { featuredProjects: true }
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+
+    return organization.featuredProjects;
   }
 }
