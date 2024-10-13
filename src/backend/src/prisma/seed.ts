@@ -176,11 +176,11 @@ const performSeed: () => Promise<void> = async () => {
   const glen = await createUser(dbSeedAllUsers.glen, RoleEnum.LEADERSHIP, organizationId);
   const shane = await createUser(dbSeedAllUsers.shane, RoleEnum.LEADERSHIP, organizationId);
   const june = await createUser(dbSeedAllUsers.june, RoleEnum.LEADERSHIP, organizationId);
-  const kevin = await createUser(dbSeedAllUsers.kevin, RoleEnum.LEADERSHIP, organizationId);
-  const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.LEADERSHIP, organizationId);
-  const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
-  const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
-  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
+  const kevin = await createUser(dbSeedAllUsers.kevin, RoleEnum.MEMBER, organizationId);
+  const norbury = await createUser(dbSeedAllUsers.norbury, RoleEnum.MEMBER, organizationId);
+  const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.MEMBER, organizationId);
+  const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.MEMBER, organizationId);
+  const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.MEMBER, organizationId);
   await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
