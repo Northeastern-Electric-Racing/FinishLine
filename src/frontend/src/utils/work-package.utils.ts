@@ -18,5 +18,20 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
  * @returns a list of work packages that are overdue.
  */
 export const getOverdueWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
-  return wpList.filter((wp) => wp.status !== WbsElementStatus.Complete && wp.endDate < new Date());
+  return wpList.filter((wp) => wp.status !== WbsElementStatus.Complete && new Date(wp.endDate) <= new Date());
+};
+
+export const getUpcomingWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
+  return wpList.filter(
+    (wp) =>
+      wp.status === WbsElementStatus.Inactive &&
+      //start date is within 2 weeks
+      wp.startDate < new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000) &&
+      //start date is in the future
+      wp.startDate > new Date()
+  );
+};
+
+export const getInProgressWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
+  return wpList.filter((wp) => wp.status === WbsElementStatus.Active && wp.endDate >= new Date());
 };
