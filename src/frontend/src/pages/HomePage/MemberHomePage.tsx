@@ -9,6 +9,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
 
 interface MemberHomePageProps {
   user: AuthenticatedUser;
@@ -25,6 +26,7 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
+      <TeamWorkPackageDisplay />
     </PageLayout>
   );
 };
