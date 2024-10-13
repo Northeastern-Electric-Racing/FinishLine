@@ -65,9 +65,9 @@ const ChangeRequestActionMenu: React.FC<ChangeRequestActionMenuProps> = ({
   const isRequestAllowed =
     changeRequest.submitter.userId === currentUser.userId && changeRequest.status === ChangeRequestStatus.Open;
 
-  function potentialCrReviewers(value: UserWithScheduleSettings): value is UserWithScheduleSettings {
+  const potentialCrReviewers = (value: UserWithScheduleSettings): boolean => {
     return isLeadership(value.role) && value.userId !== currentUser.userId;
-  }
+  };
 
   const UnreviewedActionsDropdown = () => (
     <div style={{ marginTop: '10px' }}>
