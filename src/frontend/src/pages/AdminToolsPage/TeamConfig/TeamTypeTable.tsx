@@ -10,7 +10,7 @@ import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.
 import { useEffect, useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
-import { downloadGoogleImage } from '../../../apis/finance.api';
+import { getImageUrl } from '../../../utils/image.utils';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -29,8 +29,7 @@ const TeamTypeTable: React.FC = () => {
   useEffect(() => {
     try {
       teamTypes?.forEach(async (teamType) => {
-        const imageBlob = await downloadGoogleImage(teamType.imageFileId ?? '');
-        const url = URL.createObjectURL(imageBlob);
+        const url = await getImageUrl(teamType.imageFileId ?? '');
         setImageUrls((prev) => ({ ...prev, [teamType.teamTypeId]: url }));
       });
     } catch (error) {
