@@ -9,8 +9,14 @@ import { apiUrls } from '../utils/urls';
 import { CreateTeamPayload } from '../hooks/teams.hooks';
 import { teamTransformer } from './transformers/teams.transformers';
 
-export const getAllTeams = (onlyArchive: boolean) => {
-  return axios.get<Team[]>(apiUrls.teams() + (onlyArchive ? '/archive' : ''), {
+export const getAllTeams = () => {
+  return axios.get<Team[]>(apiUrls.teams(), {
+    transformResponse: (data) => JSON.parse(data).map(teamTransformer)
+  });
+};
+
+export const getAllArchivedTeams = () => {
+  return axios.get<Team[]>(apiUrls.teams() + '/archive', {
     transformResponse: (data) => JSON.parse(data).map(teamTransformer)
   });
 };
@@ -40,7 +46,6 @@ export const setTeamHead = (id: string, userId: string) => {
 };
 
 export const archiveTeam = (id: string) => {
-  console.log(apiUrls.teamsArchive(id));
   return axios.post<Team>(apiUrls.teamsArchive(id));
 };
 

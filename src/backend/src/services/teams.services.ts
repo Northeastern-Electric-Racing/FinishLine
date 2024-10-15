@@ -18,7 +18,7 @@ import { createCalendar } from '../utils/google-integration.utils';
 
 export default class TeamsService {
   /**
-   * Gets all teams
+   * Gets all teams (archived teams are not included)
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
@@ -31,7 +31,7 @@ export default class TeamsService {
   }
 
   /**
-   * Gets all teams
+   * Gets all archived teams
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */

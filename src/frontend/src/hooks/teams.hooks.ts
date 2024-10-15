@@ -14,7 +14,8 @@ import {
   deleteTeam,
   createTeam,
   setTeamLeads,
-  archiveTeam
+  archiveTeam,
+  getAllArchivedTeams
 } from '../apis/teams.api';
 
 export interface CreateTeamPayload {
@@ -27,14 +28,14 @@ export interface CreateTeamPayload {
 
 export const useAllTeams = () => {
   return useQuery<Team[], Error>(['teams', false], async () => {
-    const { data } = await getAllTeams(false);
+    const { data } = await getAllTeams();
     return data;
   });
 };
 
 export const useAllArchivedTeams = () => {
   return useQuery<Team[], Error>(['teams', true], async () => {
-    const { data } = await getAllTeams(true);
+    const { data } = await getAllArchivedTeams();
     return data;
   });
 };
