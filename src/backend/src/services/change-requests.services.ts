@@ -132,7 +132,7 @@ export default class ChangeRequestsService {
     } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       await this.reviewActivationChangeRequest(foundCR, reviewer);
     }
-
+    const includeArgs = getChangeRequestQueryArgs(organization.organizationId).include;
     // finally we can update change request
     const updated = await prisma.change_Request.update({
       where: { crId },
@@ -143,14 +143,13 @@ export default class ChangeRequestsService {
         dateReviewed: new Date()
       },
       include: {
-        activationChangeRequest: true,
-        notificationSlackThreads: true,
-        wbsElement: { include: { workPackage: true } }
+        ...includeArgs,
+        notificationSlackThreads: true
       }
     });
 
-    // send the creator of the cr a slack notification that their cr was reviewed
-    await sendCRSubmitterReviewedNotification(foundCR);
+    // send a notification to the submitter that their change request has been reviewed
+    await sendCRSubmitterReviewedNotification(updated);
 
     // send a reply to a CR's notifications of its updated status
     await sendSlackCRStatusToThread(updated.notificationSlackThreads, foundCR.crId, foundCR.identifier, accepted);
