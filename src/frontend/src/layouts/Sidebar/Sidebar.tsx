@@ -20,6 +20,7 @@ import NERDrawer from '../../components/NERDrawer';
 import NavUserMenu from '../PageTitle/NavUserMenu';
 import DrawerHeader from '../../components/DrawerHeader';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -64,6 +65,11 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
       name: 'Calendar',
       icon: <CalendarTodayIcon />,
       route: routes.CALENDAR
+    },
+    {
+      name: 'Statistics',
+      icon: <BarChartIcon />,
+      route: routes.STATISTICS
     },
     {
       name: 'Info',
