@@ -1,5 +1,5 @@
 import axios from '../utils/axios';
-import { Organization } from 'shared';
+import { Organization, Project } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
@@ -11,3 +11,9 @@ export const getCurrentOrganization = async () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+export const getCurrentFeaturedProject =async () => {
+  return axios.get<Project[]>(apiUrls.organizationsFeaturedProjects(), {
+    transformResponse: (data) => JSON.parse(data)
+  })
+}

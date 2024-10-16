@@ -13,6 +13,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import FeaturedProjects from './components/FeaturedProjects'
 
 interface MemberHomePageProps {
   user: AuthenticatedUser;
@@ -33,6 +34,7 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
       <UsefulLinks />
       <UpcomingDeadlines />
       <WorkPackagesByTimelineStatus />
+      <FeaturedProjects/>
     </PageLayout>
   );
 };
