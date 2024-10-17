@@ -14,6 +14,7 @@ import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import MemberEncouragement from './components/MemberEncouragement';
+import GuestOrganizationInfo from './components/GuestOrganizationInfo';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
@@ -30,6 +31,7 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
+      <GuestOrganizationInfo />
       <MemberEncouragement />
       <OverdueWorkPackageAlerts />
       <UsefulLinks />
