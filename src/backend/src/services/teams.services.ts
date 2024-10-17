@@ -18,13 +18,26 @@ import { createCalendar } from '../utils/google-integration.utils';
 
 export default class TeamsService {
   /**
-   * Gets all teams
+   * Gets all teams (archived teams are not included)
    * @param organizationId The organization the user is currently in
    * @returns a list of teams
    */
   static async getAllTeams(organization: Organization): Promise<Team[]> {
     const teams = await prisma.team.findMany({
       where: { dateArchived: null, organizationId: organization.organizationId },
+      ...getTeamQueryArgs(organization.organizationId)
+    });
+    return teams.map(teamTransformer);
+  }
+
+  /**
+   * Gets all archived teams
+   * @param organizationId The organization the user is currently in
+   * @returns a list of teams
+   */
+  static async getAllArchivedTeams(organization: Organization): Promise<Team[]> {
+    const teams = await prisma.team.findMany({
+      where: { dateArchived: { not: null }, organizationId: organization.organizationId },
       ...getTeamQueryArgs(organization.organizationId)
     });
     return teams.map(teamTransformer);
