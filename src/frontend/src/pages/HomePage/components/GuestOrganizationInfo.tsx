@@ -1,8 +1,7 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { Grid } from '@mui/material';
-import { useCurrentOrganization, useOrganization } from '../../../hooks/organizations.hooks';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import React from 'react';
-import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 import { NERButton } from '../../../components/NERButton';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 
@@ -27,7 +26,6 @@ const NERGuestButton: React.FC<GuestOrganizationInfoButtonProps> = ({ href, butt
 const GuestOrganizationInfo = () => {
   const organizationName = useCurrentOrganization().data?.name;
   const organizationDescription = useCurrentOrganization().data?.description;
-  const usefulLinks = useAllUsefulLinks().data;
 
   return (
     <Box
