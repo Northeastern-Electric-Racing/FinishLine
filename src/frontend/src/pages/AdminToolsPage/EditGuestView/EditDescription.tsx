@@ -4,7 +4,7 @@ import { useCurrentOrganization, useSetOrganizationDescription } from '../../../
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { NERButton } from '../../../components/NERButton';
-import EditDescriptionFormModal, { EditDescriptionInput } from './EditDescriptionFormModal';
+import EditDescriptionForm, { EditDescriptionInput } from './EditDescriptionForm';
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const EditDescription: React.FC = () => {
@@ -47,12 +47,7 @@ const EditDescription: React.FC = () => {
     >
       <Typography variant="h4">{organization.name} Description</Typography>
       {isEditMode ? (
-        <EditDescriptionFormModal
-          organization={organization}
-          onSubmit={onSubmit}
-          isEditMode={isEditMode}
-          onHide={handleClose}
-        />
+        <EditDescriptionForm organization={organization} onSubmit={onSubmit} isEditMode={isEditMode} onHide={handleClose} />
       ) : (
         <Box>
           <TextField

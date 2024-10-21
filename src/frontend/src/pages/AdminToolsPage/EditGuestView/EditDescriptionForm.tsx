@@ -15,19 +15,14 @@ export interface EditDescriptionInput {
   description: string;
 }
 
-interface EditDescriptionFormModalProps {
+interface EditDescriptionFormProps {
   organization: Organization;
   onSubmit: (formInput: EditDescriptionInput) => Promise<void>;
   onHide: () => void;
   isEditMode: boolean;
 }
 
-const EditDescriptionFormModal: React.FC<EditDescriptionFormModalProps> = ({
-  organization,
-  onSubmit,
-  onHide,
-  isEditMode
-}) => {
+const EditDescriptionForm: React.FC<EditDescriptionFormProps> = ({ organization, onSubmit, onHide, isEditMode }) => {
   const {
     handleSubmit,
     control,
@@ -98,4 +93,4 @@ const EditDescriptionFormModal: React.FC<EditDescriptionFormModalProps> = ({
   );
 };
 
-export default EditDescriptionFormModal;
+export default EditDescriptionForm;
