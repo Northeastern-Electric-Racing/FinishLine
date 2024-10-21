@@ -44,6 +44,7 @@ const EditDescription: React.FC = () => {
           variant: 'outlined'
         })
       }}
+      variant={isEditMode ? 'outlined' : undefined}
     >
       <Typography variant="h4">{organization.name} Description</Typography>
       {isEditMode ? (
