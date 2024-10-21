@@ -1,9 +1,9 @@
 import React from 'react';
 import * as yup from 'yup';
-import { Controller, set, useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, FormControl, FormLabel, TextField, Typography } from '@mui/material';
-import { Organization } from 'shared';
+import { Box, FormControl, TextField } from '@mui/material';
+import { countWords, isUnderWordCount, Organization } from 'shared';
 import NERFailButton from '../../../components/NERFailButton';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 
@@ -64,7 +64,18 @@ const EditDescriptionForm: React.FC<EditDescriptionFormProps> = ({ organization,
           control={control}
           rules={{ required: true }}
           render={({ field: { onChange, value } }) => (
-            <TextField required onChange={onChange} value={value} rows={5} multiline error={!!errors.description} />
+            <TextField
+              required
+              onChange={onChange}
+              value={value}
+              rows={5}
+              multiline
+              inputProps={{
+                maxLength: isUnderWordCount(value, 200) ? null : 0
+              }}
+              helperText={`${countWords(value)}/100 words`}
+              error={!isUnderWordCount(value, 100)}
+            />
           )}
         />
       </FormControl>
