@@ -23,12 +23,7 @@ interface EditDescriptionFormProps {
 }
 
 const EditDescriptionForm: React.FC<EditDescriptionFormProps> = ({ organization, onSubmit, onHide, isEditMode }) => {
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset
-  } = useForm({
+  const { handleSubmit, control, reset } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       description: organization.description ?? ''
