@@ -1,4 +1,4 @@
-import { Box, TextField, Typography } from '@mui/material';
+import { Box, Card, TextField, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import { useCurrentOrganization, useSetOrganizationDescription } from '../../../hooks/organizations.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -8,18 +8,14 @@ import EditDescriptionFormModal, { EditDescriptionInput } from './EditDescriptio
 import { useToast } from '../../../hooks/toasts.hooks';
 
 const EditDescription: React.FC = () => {
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const theme = useTheme();
   const { data: organization, isLoading, isError, error } = useCurrentOrganization();
-  const {
-    mutateAsync: setOrganizationDescription,
-    isLoading: mutateIsLoading,
-    isError: mutateIsError,
-    error: mutateError
-  } = useSetOrganizationDescription();
+  const { mutateAsync: setOrganizationDescription, isLoading: mutateIsLoading } = useSetOrganizationDescription();
   const toast = useToast();
 
   const handleClose = () => {
-    setShowModal(false);
+    setIsEditMode(false);
   };
 
   const onSubmit = async (formInput: EditDescriptionInput) => {
@@ -36,41 +32,52 @@ const EditDescription: React.FC = () => {
 
   if (isLoading || mutateIsLoading || !organization) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
-  if (mutateIsError) return <ErrorPage message={mutateError?.message} />;
 
   return (
-    <Box>
+    <Card
+      sx={{
+        width: { xs: '100%', md: '50%' },
+        background: 'transparent',
+        padding: 2,
+        ...(isEditMode && {
+          background: theme.palette.background.paper,
+          variant: 'outlined'
+        })
+      }}
+    >
       <Typography variant="h4">{organization.name} Description</Typography>
-      <Box sx={{ width: { xs: '100%', md: '50%' } }}>
-        <TextField
-          id="organization-description"
-          value={organization.description}
-          rows={5}
-          multiline
-          fullWidth
-          InputProps={{
-            readOnly: true
-          }}
+      {isEditMode ? (
+        <EditDescriptionFormModal
+          organization={organization}
+          onSubmit={onSubmit}
+          isEditMode={isEditMode}
+          onHide={handleClose}
         />
-        <Box
-          sx={{
-            mt: 2,
-            display: 'flex',
-            justifyContent: 'flex-end'
-          }}
-        >
-          <NERButton variant="contained" onClick={() => setShowModal(true)}>
-            Update
-          </NERButton>
+      ) : (
+        <Box>
+          <TextField
+            required
+            value={organization.description}
+            rows={5}
+            multiline
+            fullWidth
+            InputProps={{
+              readOnly: true
+            }}
+          />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'end'
+            }}
+          >
+            <NERButton variant="contained" sx={{ my: 2 }} onClick={() => setIsEditMode(true)}>
+              Update
+            </NERButton>
+          </Box>
         </Box>
-      </Box>
-      <EditDescriptionFormModal
-        originalDescription={organization.description}
-        onSubmit={onSubmit}
-        modalShow={showModal}
-        onHide={handleClose}
-      />
-    </Box>
+      )}
+    </Card>
   );
 };
 

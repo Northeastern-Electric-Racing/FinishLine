@@ -43,7 +43,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ task, onSubmit, modalShow
     handleSubmit,
     control,
     formState: { errors },
-    reset
+    reset,
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
