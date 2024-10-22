@@ -1,13 +1,13 @@
-import { Box, Grid, Typography, Button, CircularProgress } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import MilestoneTable from './MilestoneTable';
 import FAQsTable from './FAQTable';
 import { useEffect, useMemo, useState } from 'react';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
 import { useCurrentOrganization, useSetOrganizationImages } from '../../../hooks/organizations.hooks';
 import { downloadGoogleImage } from '../../../apis/finance.api';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
+import NERUploadButton from '../../../components/NERUploadButton';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const {
@@ -16,9 +16,12 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
     isError: organizationIsError,
     error: organizationError
   } = useCurrentOrganization();
-  const { isLoading: organizationImagesIsLoading, mutateAsync: organizationImages } = useSetOrganizationImages();
+
+  const { mutateAsync: organizationImages } = useSetOrganizationImages();
   const toast = useToast();
-  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({});
+
+  const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
+  const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
 
   const currentImages = useMemo(() => {
     return [organization?.applyInterestImageId, organization?.exploreAsGuestImageId];
@@ -40,7 +43,6 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         });
 
         await Promise.all(imageFetches);
-        setImageUrls(newImageUrls);
       } catch (error) {
         console.error('Error fetching image URLs:', error);
       }
@@ -92,78 +94,50 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         Recruitment Images
       </Typography>
 
-      <Box mt={2}>
-        <Button
-          variant="contained"
-          color="success"
-          component="label"
-          startIcon={<FileUploadIcon />}
-          sx={{ width: 'fit-content', textTransform: 'none', mt: '9.75px' }}
-        >
-          Upload Apply Interest Image
-          <input
-            type="file"
-            accept="image/png, image/jpeg"
-            hidden
-            onChange={async (e) => {
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box>
+          <Typography variant="subtitle1" gutterBottom>
+            Apply Interest Image
+          </Typography>
+          <NERUploadButton
+            dataTypeId="applyInterest"
+            handleFileChange={(e) => {
               if (e.target.files) {
-                const files = Array.from(e.target.files);
-                await handleFileUpload(files, 'applyInterest');
+                setAddedImage1(e.target.files[0]);
               }
             }}
-          />
-        </Button>
-        {organizationImagesIsLoading && <CircularProgress size={24} sx={{ ml: 2 }} />}
-
-        {currentImages[0] && (
-          <Box component="ul" sx={{ listStyleType: 'disc', mt: 2 }}>
-            <li>
-              <Box
-                component="img"
-                src={imageUrls[currentImages[0]]}
-                alt="Apply Interest Image"
-                sx={{ maxWidth: '100px', mt: 1 }}
-              />
-            </li>
-          </Box>
-        )}
-      </Box>
-
-      <Box mt={2}>
-        <Button
-          variant="contained"
-          color="success"
-          component="label"
-          startIcon={<FileUploadIcon />}
-          sx={{ width: 'fit-content', textTransform: 'none', mt: '9.75px' }}
-        >
-          Upload Explore as Guest Image
-          <input
-            type="file"
-            accept="image/png, image/jpeg"
-            hidden
-            onChange={async (e) => {
-              if (e.target.files) {
-                const files = Array.from(e.target.files);
-                await handleFileUpload(files, 'exploreAsGuest');
+            onSubmit={() => {
+              if (addedImage1) {
+                handleFileUpload([addedImage1], 'applyInterest');
+                setAddedImage1(undefined);
               }
             }}
+            addedImage={addedImage1}
+            setAddedImage={setAddedImage1}
           />
-        </Button>
-        {organizationImagesIsLoading && <CircularProgress size={24} sx={{ ml: 2 }} />}
+        </Box>
 
-        {currentImages[1] && (
-          <Box component="ul" sx={{ listStyleType: 'disc', mt: 2 }}>
-            <li>
-              <Box
-                component="img"
-                src={imageUrls[currentImages[1]]}
-                alt="Explore as Guest Image"
-                sx={{ maxWidth: '100px', mt: 1 }}
-              />
-            </li>
-          </Box>
-        )}
+        <Box>
+          <Typography variant="subtitle1" gutterBottom>
+            Explore As Guest Image
+          </Typography>
+          <NERUploadButton
+            dataTypeId="exploreAsGuest"
+            handleFileChange={(e) => {
+              if (e.target.files) {
+                setAddedImage2(e.target.files[0]);
+              }
+            }}
+            onSubmit={() => {
+              if (addedImage2) {
+                handleFileUpload([addedImage2], 'exploreAsGuest');
+                setAddedImage2(undefined);
+              }
+            }}
+            addedImage={addedImage2}
+            setAddedImage={setAddedImage2}
+          />
+        </Box>
       </Box>
     </Box>
   );
