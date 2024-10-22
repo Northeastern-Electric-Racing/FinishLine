@@ -3,16 +3,14 @@
  * See the LICENSE file in the repository root folder for details.
  */
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { DesignReview, TeamType, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
+import { DesignReview, WbsNumber, DesignReviewStatus, AvailabilityCreateArgs } from 'shared';
 import {
   deleteDesignReview,
   editDesignReview,
   createDesignReviews,
   getAllDesignReviews,
-  getAllTeamTypes,
   getSingleDesignReview,
   markUserConfirmed,
-  createTeamType,
   setDesignReviewStatus
 } from '../apis/design-reviews.api';
 import { useCurrentUser } from './users.hooks';
@@ -24,11 +22,6 @@ export interface CreateDesignReviewsPayload {
   optionalMemberIds: string[];
   wbsNum: WbsNumber;
   meetingTimes: number[];
-}
-
-export interface CreateTeamTypePayload {
-  name: string;
-  iconName: string;
 }
 
 export const useCreateDesignReviews = () => {
@@ -89,39 +82,6 @@ export const useEditDesignReview = (designReviewId: string) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['design-reviews']);
-      }
-    }
-  );
-};
-
-/**
- * Custom react hook to get all team types
- *
- * @returns all the team types
- */
-export const useAllTeamTypes = () => {
-  return useQuery<TeamType[], Error>(['teamTypes'], async () => {
-    const { data } = await getAllTeamTypes();
-    return data;
-  });
-};
-
-/**
- * Custom react hook to create a team type
- *
- * @returns the team type created
- */
-export const useCreateTeamType = () => {
-  const queryClient = useQueryClient();
-  return useMutation<TeamType, Error, CreateTeamTypePayload>(
-    ['teamTypes', 'create'],
-    async (teamTypePayload) => {
-      const { data } = await createTeamType(teamTypePayload);
-      return data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['teamTypes']);
       }
     }
   );
