@@ -394,11 +394,11 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
     const { data } = await getAllReimbursementRequests();
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      'SABO ID,Recipient,Total Cost,Status,Account,Account Code,Date Created,Date Delivered,Date Submitted,Vendor\n' +
+      'SABO ID,FinishLine ID,Recipient,Total Cost,Status,Account,Account Code,Date Created,Date Delivered,Date Submitted,Vendor\n' +
       data
         .map(
           (rr) =>
-            `${rr.saboId},${fullNamePipe(rr.recipient)},${rr.totalCost},${
+            `${rr.saboId},${rr.reimbursementRequestId},${fullNamePipe(rr.recipient)},${rr.totalCost},${
               rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
             },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
