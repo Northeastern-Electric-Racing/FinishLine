@@ -132,7 +132,6 @@ export default class ChangeRequestsService {
     } else if (foundCR.type === CR_Type.ACTIVATION && foundCR.activationChangeRequest && accepted) {
       await this.reviewActivationChangeRequest(foundCR, reviewer);
     }
-    const includeArgs = getChangeRequestQueryArgs(organization.organizationId).include;
     // finally we can update change request
     const updated = await prisma.change_Request.update({
       where: { crId },
@@ -143,7 +142,7 @@ export default class ChangeRequestsService {
         dateReviewed: new Date()
       },
       include: {
-        ...includeArgs,
+        ...getChangeRequestQueryArgs(organization.organizationId).include,
         notificationSlackThreads: true
       }
     });

@@ -405,9 +405,9 @@ export const sendSlackCRReviewedNotification = async (
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
   // let fullMsg;
-  const fullMsg = !comments
-    ? `:tada: Your Change Request was just reviewed! Click the link to view! :tada:`
-    : `:tada: Your Change Request was just reviewed!\n Comments: ${comments} \nClick the link to view! :tada:`;
+  const fullMsg = `:tada: Your Change Request was just reviewed!${
+    comments ? `\n Comments: ${comments}` : ''
+  }\nClick the link to view! :tada:`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR#${identifier}`;
   msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
