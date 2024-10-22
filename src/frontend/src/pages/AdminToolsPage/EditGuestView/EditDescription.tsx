@@ -41,12 +41,15 @@ const EditDescription: React.FC = () => {
         padding: 2,
         ...(isEditMode && {
           background: theme.palette.background.paper,
+          padding: 1.9,
           variant: 'outlined'
         })
       }}
       variant={isEditMode ? 'outlined' : undefined}
     >
-      <Typography variant="h4">{organization.name} Description</Typography>
+      <Typography variant="h4" mb={1}>
+        {organization.name} Description
+      </Typography>
       {isEditMode ? (
         <EditDescriptionForm organization={organization} onSubmit={onSubmit} isEditMode={isEditMode} onHide={handleClose} />
       ) : (

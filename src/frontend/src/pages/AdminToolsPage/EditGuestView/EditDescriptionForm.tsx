@@ -77,7 +77,6 @@ const EditDescriptionForm: React.FC<EditDescriptionFormProps> = ({ organization,
       {isEditMode && (
         <Box
           sx={{
-            my: 2,
             display: 'flex',
             justifyContent: 'end'
           }}
