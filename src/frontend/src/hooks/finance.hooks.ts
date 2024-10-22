@@ -398,7 +398,7 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
       data
         .map(
           (rr) =>
-            `${rr.saboId},${rr.reimbursementRequestId},${fullNamePipe(rr.recipient)},${rr.totalCost},${
+            `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${
               rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
             },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
