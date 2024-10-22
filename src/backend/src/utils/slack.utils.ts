@@ -396,10 +396,18 @@ export const sendDRScheduledSlackNotif = async (
   }
 };
 
-export const sendSlackCRReviewedNotification = async (slackId: string, crId: string, identifier: number) => {
+export const sendSlackCRReviewedNotification = async (
+  slackId: string,
+  crId: string,
+  identifier: number,
+  comments: string | null
+) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
-  const fullMsg = `:tada: Your Change Request was just reviewed! Click the link to view! :tada:`;
+  // let fullMsg;
+  const fullMsg = `:tada: Your Change Request was just reviewed!${
+    comments ? `\n Comments: ${comments}` : ''
+  }\nClick the link to view! :tada:`;
   const fullLink = `https://finishlinebyner.com/cr/${crId}`;
   const btnText = `View CR#${identifier}`;
   msgs.push(sendMessage(slackId, fullMsg, fullLink, btnText));
