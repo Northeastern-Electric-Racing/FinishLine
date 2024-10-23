@@ -92,7 +92,11 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
             />
           )}
         />
-        <FormLabel>Are you sure the items in this reimbursement request have all been delivered?</FormLabel>
+      </FormControl>
+      <FormControl>
+        <FormLabel sx={{ marginTop: '1rem' }}>
+          Are you sure the items in this reimbursement request have all been delivered?
+        </FormLabel>
         <Controller
           name="confirmDelivered"
           control={control}
