@@ -96,13 +96,4 @@ export default class RecruitmentController {
       return next(error);
     }
   }
-
-  static async getApplicationLink(req: Request, res: Response, next: NextFunction) {
-    try {
-      const applicationLink = await RecruitmentServices.getApplicationLink(req.organization);
-      res.status(200).json(applicationLink);
-    } catch (error: unknown) {
-      return next(error);
-    }
-  }
 }

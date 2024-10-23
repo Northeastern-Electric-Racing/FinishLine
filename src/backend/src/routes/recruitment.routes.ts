@@ -50,8 +50,4 @@ recruitmentRouter.post(
 
 recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
 
-/* Application Link Section */
-recruitmentRouter.get('/application-links', RecruitmentController.getApplicationLinks);
-
-
 export default recruitmentRouter;

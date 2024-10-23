@@ -1,5 +1,4 @@
-import { Table, TableBody, TableCell, TableContainer, TableRow, Box, Typography } from '@mui/material';
-import { datePipe } from '../../../utils/pipes';
+import { TableCell, TableRow, Box, Typography } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
@@ -24,12 +23,12 @@ const ApplicationLinkTable: React.FC = () => {
   const applicationLinks = [organization.applicationLink];
   const applicationLinkTableRows = applicationLinks.map((applicationLink) => {
     return (
-    <TableRow>
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {applicationLink}
-      </TableCell>
-      
-    </TableRow>);
+      <TableRow>
+        <TableCell align="left" sx={{ border: '2px solid black' }}>
+          {applicationLink}
+        </TableCell>
+      </TableRow>
+    );
   });
 
   return (
@@ -37,10 +36,7 @@ const ApplicationLinkTable: React.FC = () => {
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
         Links Config
       </Typography>
-      <AdminToolTable 
-        columns={[{ name: 'Links' }]} 
-        rows={applicationLinkTableRows}
-      />
+      <AdminToolTable columns={[{ name: 'Links' }]} rows={applicationLinkTableRows} />
     </Box>
   );
 };

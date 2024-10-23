@@ -1,4 +1,4 @@
-import { WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
+import { WbsElement, wbsPipe} from 'shared';
 import { WPFormType } from './form';
 
 export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {
