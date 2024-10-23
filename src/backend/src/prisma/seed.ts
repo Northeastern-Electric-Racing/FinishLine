@@ -428,7 +428,7 @@ const performSeed: () => Promise<void> = async () => {
    */
 
   /** Project 1 */
-  const { projectWbsNumber: project1WbsNumber } = await seedProject(
+  const { projectWbsNumber: project1WbsNumber, projectId: project1Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -456,7 +456,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 2 */
-  const { projectWbsNumber: project2WbsNumber } = await seedProject(
+  const { projectWbsNumber: project2WbsNumber, projectId: project2Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -484,7 +484,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 3 */
-  const { projectWbsNumber: project3WbsNumber } = await seedProject(
+  const { projectWbsNumber: project3WbsNumber, projectId: project3Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -512,7 +512,7 @@ const performSeed: () => Promise<void> = async () => {
   );
 
   /** Project 4 */
-  const { projectWbsNumber: project4WbsNumber } = await seedProject(
+  const { projectWbsNumber: project4WbsNumber, projectId: project4Id } = await seedProject(
     thomasEmrax,
     changeRequest1.crId,
     fergus.wbsElement.carNumber,
@@ -1868,6 +1868,8 @@ const performSeed: () => Promise<void> = async () => {
     [schematicWpTemplate.workPackageTemplateId],
     ner
   );
+
+  await OrganizationsService.setFeaturedProjects([project1Id, project2Id, project3Id, project4Id], ner, batman);
 
   await OrganizationsService.setUsefulLinks(batman, organizationId, [
     {

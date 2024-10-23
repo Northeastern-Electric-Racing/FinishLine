@@ -8,6 +8,7 @@ import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
 
 export default class OrganizationsService {
   /**
