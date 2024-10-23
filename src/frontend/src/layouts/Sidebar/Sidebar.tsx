@@ -27,6 +27,9 @@ import SidebarButton from './SidebarButton';
 import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
+import { useCurrentOrganization } from '../../hooks/organizations.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../../pages/ErrorPage';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -106,6 +109,20 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setMoveContent(!moveContent);
   };
 
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+
+  if (!organization || organizationIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+
   return (
     <NERDrawer
       open={drawerOpen}
@@ -133,7 +150,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           {onPNMHomePage ? (
             // Apply button
             <SidebarButton
-              onClick={() => window.open('https://google.com', '_blank')}
+              onClick={() => window.open(organization.applicationLink, '_blank')}
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />
