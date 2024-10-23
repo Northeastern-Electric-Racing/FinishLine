@@ -1,10 +1,10 @@
 import { alfred } from '../test-data/users.test-data';
 import ReimbursementRequestService from '../../src/services/reimbursement-requests.services';
-import { AccessDeniedException } from '../../src/utils/errors.utils';
+import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
 import { createTestReimbursementRequest, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { assert } from 'console';
-import { ClubAccount, ReimbursementRequest } from 'shared';
+import { addDaysToDate, ClubAccount, ReimbursementRequest } from 'shared';
 import { Account_Code, Organization, Vendor } from '@prisma/client';
 import { UserWithSecureSettings } from '../../src/utils/auth.utils';
 
@@ -164,6 +164,69 @@ describe('Reimbursement Requests', () => {
       expect(rr.reimbursementStatuses).toHaveLength(1);
       expect(rr.reimbursementStatuses[0].type).toEqual('PENDING_LEADERSHIP_APPROVAL');
       expect(rr.identifier).toEqual(2);
+    });
+  });
+
+  describe('Marking a reimbursement request as delivered', () => {
+    test('cannot mark as delivered if delivery is before expense date', async () => {
+      // to get around the type checker
+      const rrExpenseDate: Date = reimbursementRequest.dateOfExpense ?? new Date('2022-11-22T00:00:01');
+
+      await expect(async () =>
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(
+          createdUser,
+          reimbursementRequest.reimbursementRequestId,
+          org,
+          addDaysToDate(rrExpenseDate, -1)
+        )
+      ).rejects.toThrow(new HttpException(400, 'Items cannot be delivered before the expense date.'));
+    });
+
+    test('cannot mark as delivered if delivery is after today', async () => {
+      await expect(async () =>
+        ReimbursementRequestService.markReimbursementRequestAsDelivered(
+          createdUser,
+          reimbursementRequest.reimbursementRequestId,
+          org,
+          addDaysToDate(new Date(), 1)
+        )
+      ).rejects.toThrow(new HttpException(400, 'Delivery date cannot be in the future.'));
+    });
+
+    test('adds delivered date to reimbursement request', async () => {
+      // we don't want to just check today - set date of expense to some time in the past
+      const oldReimbursementRequest = await ReimbursementRequestService.createReimbursementRequest(
+        createdUser,
+        reimbursementRequest.vendor.vendorId,
+        reimbursementRequest.account,
+        [],
+        [
+          {
+            name: 'GLUE',
+            reason: {
+              carNumber: 0,
+              projectNumber: 0,
+              workPackageNumber: 0
+            },
+            cost: 200000
+          }
+        ],
+        reimbursementRequest.accountCode.accountCodeId,
+        reimbursementRequest.totalCost,
+        org,
+        new Date('2022-11-22T00:00:01')
+      );
+
+      const dateToSetAsDelivered = addDaysToDate(new Date(), -5);
+
+      const updatedRR = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
+        createdUser,
+        oldReimbursementRequest.reimbursementRequestId,
+        org,
+        dateToSetAsDelivered
+      );
+
+      expect(updatedRR.dateDelivered).toEqual(dateToSetAsDelivered);
     });
   });
 });
