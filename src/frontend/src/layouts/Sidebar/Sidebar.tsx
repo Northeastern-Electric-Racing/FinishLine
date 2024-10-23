@@ -27,6 +27,7 @@ import SidebarButton from './SidebarButton';
 import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { isGuest } from 'shared';
+import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -106,6 +107,8 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setMoveContent(!moveContent);
   };
 
+  const { data: organization } = useCurrentOrganization();
+
   return (
     <NERDrawer
       open={drawerOpen}
@@ -133,7 +136,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           {onPNMHomePage ? (
             // Apply button
             <SidebarButton
-              onClick={() => window.open('https://google.com', '_blank')}
+              onClick={() => window.open(organization?.applicationLink, '_blank')}
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />

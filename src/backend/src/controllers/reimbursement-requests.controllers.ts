@@ -389,21 +389,6 @@ export default class ReimbursementRequestsController {
     }
   }
 
-  static async deleteAccountCode(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { accountCodeId } = req.params;
-
-      const deletedAccountCode = await ReimbursementRequestService.deleteAccountCode(
-        accountCodeId,
-        req.currentUser,
-        req.organization
-      );
-      return res.status(200).json(deletedAccountCode);
-    } catch (error: unknown) {
-      return next(error);
-    }
-  }
-
   static async editVendor(req: Request, res: Response, next: NextFunction) {
     try {
       const { vendorId } = req.params;
