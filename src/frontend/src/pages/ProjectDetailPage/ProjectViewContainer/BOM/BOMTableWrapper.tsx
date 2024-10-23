@@ -1,6 +1,6 @@
 import { Box } from '@mui/system';
 import { GridActionsCellItem, GridColumns, GridRowParams } from '@mui/x-data-grid';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Project, isLeadership } from 'shared';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -49,12 +49,16 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
   const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
 
   useEffect(() => {
+    const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
     if (storedHideColumn === 'false') {
-      setHideColumn(new Array(12).fill(false));
+      setHideColumn((prev) => {
+        const newHideColumn = new Array(12).fill(false);
+        return prev !== newHideColumn ? newHideColumn : prev;
+      });
     } else {
-      setHideColumn(storedHideColumn);
+      setHideColumn((prev) => (prev !== storedHideColumn ? storedHideColumn : prev));
     }
-  }, [setHideColumn, storedHideColumn]);
+  }, [setHideColumn]);
 
   if (isLoading) return <LoadingIndicator />;
 
@@ -190,111 +194,114 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
   };
 
   //Try to have the updated column created in BOMTable stored here, and then look at if the name of the column appears here, if it does then we dont hide, else we hide.
-  const columns: GridColumns<any> = [
-    {
-      ...bomBaseColDef,
-      flex: 1.2,
-      field: 'status',
-      headerName: 'Status',
-      renderCell: renderStatusBOM,
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[0]
-    },
-    {
-      ...bomBaseColDef,
-      field: 'type',
-      headerName: 'Type',
-      type: 'string',
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[1]
-    },
-    {
-      ...bomBaseColDef,
-      flex: 1.5,
-      field: 'name',
-      headerName: 'Name',
-      type: 'string',
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[2]
-    },
-    {
-      ...bomBaseColDef,
-      flex: 1.2,
-      field: 'manufacturer',
-      headerName: 'Manufacturer',
-      type: 'string',
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[3]
-    },
-    {
-      ...bomBaseColDef,
-      flex: 1.5,
-      field: 'manufacturerPN',
-      headerName: 'Manufacterer PN',
-      type: 'string',
-      sortable: false,
-      filterable: false,
-      colSpan: ({ row }) => {
-        if (row.id.includes('assembly')) {
-          return 2;
-        }
-        return 1;
+  const columns: GridColumns<any> = useMemo(
+    () => [
+      {
+        ...bomBaseColDef,
+        flex: 1.2,
+        field: 'status',
+        headerName: 'Status',
+        renderCell: renderStatusBOM,
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[0]
       },
-      hide: hideColumn[4]
-    },
-    {
-      ...bomBaseColDef,
-      flex: 1.3,
-      field: 'pdmFileName',
-      headerName: 'PDM File Name',
-      type: 'string',
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[5]
-    },
-    {
-      ...bomBaseColDef,
-      field: 'quantity',
-      headerName: 'Quantity',
-      type: 'number',
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[6]
-    },
-    {
-      ...bomBaseColDef,
-      field: 'price',
-      headerName: 'Price per Unit',
-      type: 'number',
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[7]
-    },
-    {
-      ...bomBaseColDef,
-      field: 'subtotal',
-      headerName: 'Subtotal',
-      type: 'number',
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[8]
-    },
-    {
-      ...bomBaseColDef,
-      flex: 1,
-      field: 'actions',
-      headerName: 'Actions',
-      type: 'actions',
-      getActions,
-      sortable: false,
-      filterable: false,
-      hide: hideColumn[11]
-    }
-  ];
+      {
+        ...bomBaseColDef,
+        field: 'type',
+        headerName: 'Type',
+        type: 'string',
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[1]
+      },
+      {
+        ...bomBaseColDef,
+        flex: 1.5,
+        field: 'name',
+        headerName: 'Name',
+        type: 'string',
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[2]
+      },
+      {
+        ...bomBaseColDef,
+        flex: 1.2,
+        field: 'manufacturer',
+        headerName: 'Manufacturer',
+        type: 'string',
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[3]
+      },
+      {
+        ...bomBaseColDef,
+        flex: 1.5,
+        field: 'manufacturerPN',
+        headerName: 'Manufacterer PN',
+        type: 'string',
+        sortable: false,
+        filterable: false,
+        colSpan: ({ row }) => {
+          if (row.id.includes('assembly')) {
+            return 2;
+          }
+          return 1;
+        },
+        hide: hideColumn[4]
+      },
+      {
+        ...bomBaseColDef,
+        flex: 1.3,
+        field: 'pdmFileName',
+        headerName: 'PDM File Name',
+        type: 'string',
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[5]
+      },
+      {
+        ...bomBaseColDef,
+        field: 'quantity',
+        headerName: 'Quantity',
+        type: 'number',
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[6]
+      },
+      {
+        ...bomBaseColDef,
+        field: 'price',
+        headerName: 'Price per Unit',
+        type: 'number',
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[7]
+      },
+      {
+        ...bomBaseColDef,
+        field: 'subtotal',
+        headerName: 'Subtotal',
+        type: 'number',
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[8]
+      },
+      {
+        ...bomBaseColDef,
+        flex: 1,
+        field: 'actions',
+        headerName: 'Actions',
+        type: 'actions',
+        getActions,
+        sortable: false,
+        filterable: false,
+        hide: hideColumn[11]
+      }
+    ],
+    [hideColumn]
+  );
 
   return (
     <Box>
