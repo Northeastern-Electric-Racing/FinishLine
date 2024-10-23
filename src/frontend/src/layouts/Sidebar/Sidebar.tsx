@@ -136,7 +136,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           {onPNMHomePage ? (
             // Apply button
             <SidebarButton
-              onClick={() => window.open(organization.applicationLink, '_blank')}
+              onClick={() => window.open(organization?.applicationLink, '_blank')}
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />
