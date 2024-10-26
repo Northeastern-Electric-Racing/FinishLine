@@ -1,4 +1,4 @@
-import { Box, Card, Typography, useTheme } from '@mui/material';
+import { Card, Typography, useTheme } from '@mui/material';
 import { Grid } from '@mui/material';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import React from 'react';
