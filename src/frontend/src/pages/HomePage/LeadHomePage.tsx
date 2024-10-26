@@ -3,12 +3,13 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import PageLayout from '../../components/PageLayout';
+import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
 
 interface LeadHomePageProps {
   user: AuthenticatedUser;
@@ -25,6 +26,13 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
+      <Box sx={{ flexGrow: 1 }}>
+        <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
+          <Grid item xs={12} md={6}>
+            <MyTeamsOverdueTasks user={user} />
+          </Grid>
+        </Grid>
+      </Box>
     </PageLayout>
   );
 };
