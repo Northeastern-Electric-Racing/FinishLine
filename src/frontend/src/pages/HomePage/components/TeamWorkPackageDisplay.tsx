@@ -6,6 +6,7 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { Card, CardContent, Typography, useTheme } from '@mui/material';
+import ScrollablePageBlock from './ScrollablePageBlock';
 
 const TeamWorkPackageDisplay: React.FC = () => {
   const theme = useTheme();
@@ -33,45 +34,15 @@ const TeamWorkPackageDisplay: React.FC = () => {
     .flat(2);
 
   return (
-    <Box sx={{ width: '40%', float: 'left', padding: '1vh' }}>
-      <Card
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexWrap: 'nowrap',
-          overflowY: 'auto',
-          justifyContent: 'flex-start',
-          height: '80vh',
-          gap: 2,
-          '&::-webkit-scrollbar': {
-            width: '20px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: theme.palette.divider,
-            borderRadius: '20px',
-            border: '6px solid transparent',
-            backgroundClip: 'content-box'
-          }
-        }}
-        variant="outlined"
-      >
-        <CardContent sx={{ height: `100%`, marginBottom: '10vh' }}>
-          <Typography mb={1} variant="h5">
-            {`My Team's Work Packages (${workPackages.length})`}
-          </Typography>
-          {workPackages.length === 0
-            ? `No work packages`
-            : workPackages.map((wp) => (
-                <Box key={wbsPipe(wp.wbsNum)} sx={{ marginBottom: '1vh' }}>
-                  <WorkPackageCard wp={wp} />
-                </Box>
-              ))}
-        </CardContent>
-      </Card>
-    </Box>
+    <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.length})`}>
+      {workPackages.length === 0
+        ? `No work packages`
+        : workPackages.map((wp) => (
+            <Box key={wbsPipe(wp.wbsNum)} sx={{ marginBottom: '1vh' }}>
+              <WorkPackageCard wp={wp} />
+            </Box>
+          ))}
+    </ScrollablePageBlock>
   );
 };
 

@@ -7,6 +7,7 @@ import axios from '../utils/axios';
 import {
   Project,
   SetUserScheduleSettingsPayload,
+  Task,
   User,
   UserScheduleSettings,
   UserSecureSettings,
@@ -21,6 +22,7 @@ import {
 } from './transformers/users.transformers';
 import { AuthenticatedUser, UserSettings } from 'shared';
 import { projectTransformer } from './transformers/projects.transformers';
+import { taskTransformer } from './transformers/tasks.transformers';
 
 /**
  * Fetches all users.
@@ -140,4 +142,10 @@ export const updateUserScheduleSettings = (settings: SetUserScheduleSettingsPayl
 
 export const updateUserRole = (id: string, role: string) => {
   return axios.post<{ message: string }>(apiUrls.userRoleByUserId(id), { role });
+};
+
+export const getUserTasks = (id: string) => {
+  return axios.get<Task[]>(apiUrls.userTasks(id), {
+    transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+  });
 };
