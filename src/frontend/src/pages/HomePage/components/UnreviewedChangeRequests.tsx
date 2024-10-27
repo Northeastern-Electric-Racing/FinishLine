@@ -28,7 +28,7 @@ const UnreviewedChangeRequests: React.FC = () => {
         title={`My Unreviewed Change Requests (${crsToReview.length})`}
         changeRequests={crsToReview}
         noChangeRequestsMessage="No unreviewed change requests"
-        flexWrap="nowrap"
+        flexWrap={false}
       />
     </ScrollablePageBlock>
   );
