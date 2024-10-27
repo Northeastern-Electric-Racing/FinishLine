@@ -5,11 +5,9 @@ import { useAllTeams } from '../../../hooks/teams.hooks';
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { Card, CardContent, Typography, useTheme } from '@mui/material';
 import ScrollablePageBlock from './ScrollablePageBlock';
 
 const TeamWorkPackageDisplay: React.FC = () => {
-  const theme = useTheme();
   const user = useCurrentUser();
   const { isLoading, isError, data: teams, error } = useAllTeams();
 
