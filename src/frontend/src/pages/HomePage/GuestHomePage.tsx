@@ -33,10 +33,6 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
       </Typography>
       <GuestOrganizationInfo />
       <MemberEncouragement />
-      <OverdueWorkPackageAlerts />
-      <UsefulLinks />
-      <UpcomingDeadlines />
-      <WorkPackagesByTimelineStatus />
     </PageLayout>
   );
 };
