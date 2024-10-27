@@ -57,7 +57,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
     const validFiles: File[] = [];
     files.forEach((file) => {
-      if (file.size < 1000000) {
+      if (file.size < 5 * 1024 * 1024) {
         if (type === 'applyInterest') {
           validFiles[0] = file;
         } else if (type === 'exploreAsGuest') {

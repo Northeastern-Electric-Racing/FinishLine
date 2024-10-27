@@ -47,7 +47,9 @@ const performSeed: () => Promise<void> = async () => {
       name: 'NER',
       userCreatedId: thomasEmrax.userId,
       description:
-        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).'
+        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
+      applyInterestImageId: '1_iak6ord4JP9TcR1sOYopyEs6EjTKQpw',
+      exploreAsGuestImageId: '1wRes7V_bMm9W7_3JCIDXYkMUiy6B3wRI'
     }
   });
 
