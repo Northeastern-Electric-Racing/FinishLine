@@ -20,6 +20,8 @@ interface PageLayoutProps {
   stickyHeader?: boolean;
 }
 
+export const PAGE_GRID_HEIGHT = 85;
+
 const PageLayout: React.FC<PageLayoutProps> = ({
   children,
   title,
