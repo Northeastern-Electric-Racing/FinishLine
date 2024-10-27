@@ -42,7 +42,8 @@ const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeReques
                 backgroundColor: theme.palette.divider,
                 borderRadius: '20px',
                 border: '6px solid transparent',
-                backgroundClip: 'content-box'
+                backgroundClip: 'content-box',
+                background: theme.palette.background.paper
               }
             }}
             data-testid={title + 'crRow'}
