@@ -16,7 +16,7 @@ interface GuestOrganizationInfoButtonProps {
 }
 
 const NERGuestButton: React.FC<GuestOrganizationInfoButtonProps> = ({ href, buttonText, iconName }) => {
-  const IconComponent = Icons[iconName] || Icons['Info'];
+  const IconComponent = Icons[iconName as keyof typeof Icons] || Icons['Info'];
 
   return (
     <Grid item xs={4}>
