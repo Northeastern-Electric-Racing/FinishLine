@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import React from 'react';
 import { NERButton } from '../../../components/NERButton';
-import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
+import * as Icons from '@mui/icons-material';
 import { useAllLinkTypes, useAllUsefulLinks } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -15,12 +15,14 @@ interface GuestOrganizationInfoButtonProps {
   iconName: string;
 }
 
-const NERGuestButton: React.FC<GuestOrganizationInfoButtonProps> = ({ href, buttonText }) => {
+const NERGuestButton: React.FC<GuestOrganizationInfoButtonProps> = ({ href, buttonText, iconName }) => {
+  const IconComponent = Icons[iconName] || Icons['Info'];
+
   return (
     <Grid item xs={4}>
-      <NERButton variant="contained" fullWidth={true} style={{ justifyContent: 'flex-start' }} href={href}>
-        <InfoRoundedIcon style={{ color: 'white' }} />
-        <Typography color="white" noWrap={true} sx={{ marginLeft: 1 }}>
+      <NERButton variant="contained" fullWidth={true} style={{ justifyContent: 'flex-start', color: 'white' }} href={href}>
+        <IconComponent />
+        <Typography noWrap={true} sx={{ marginLeft: 1 }}>
           {buttonText}
         </Typography>
       </NERButton>
@@ -50,13 +52,13 @@ const GuestOrganizationInfo = () => {
       sx={{
         padding: 2,
         bgcolor: theme.palette.background.paper,
-        borderRadius: '1rem',
+        borderRadius: '1',
         marginTop: 5
       }}
       variant="outlined"
     >
       <Stack spacing={2}>
-        <Typography variant="h4">FinishLine by {organization?.name}</Typography>
+        <Typography variant="h4">{organization?.name}</Typography>
         <Typography sx={{ marginBottom: 2, fontSize: 18 }}>{organization?.description}</Typography>
         <Grid container spacing={2}>
           {usefulLinks.map((link) => (
