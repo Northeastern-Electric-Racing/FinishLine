@@ -26,7 +26,8 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
   const toast = useToast();
   const { mutateAsync: markDelivered } = useMarkReimbursementRequestAsDelivered(reimbursementRequest.reimbursementRequestId);
 
-  const dateIsBeforeExpenseCreated = (date: Date): boolean => {
+  // is the given date before the date the expense happened (not when it was reported to FinishLine)?
+  const dateIsBeforeExpense = (date: Date): boolean => {
     if (!reimbursementRequest.dateOfExpense) return false;
     return date < startOfDay(reimbursementRequest.dateOfExpense);
   };
@@ -87,7 +88,7 @@ const MarkDeliveredModal = ({ modalShow, onHide, reimbursementRequest }: MarkDel
               onChange={(date) => onChange(date ?? new Date())}
               className={'padding: 10'}
               value={value}
-              shouldDisableDate={(date) => dateIsBeforeExpenseCreated(date) || dateIsInTheFuture(date)}
+              shouldDisableDate={(date) => dateIsBeforeExpense(date) || dateIsInTheFuture(date)}
               slotProps={{ textField: { autoComplete: 'off' } }}
             />
           )}
