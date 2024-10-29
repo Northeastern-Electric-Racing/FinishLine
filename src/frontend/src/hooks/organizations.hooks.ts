@@ -37,6 +37,10 @@ export const useOrganization = () => {
   return context;
 };
 
+/**
+ * Custom React Hook to set the description of an organization
+ * @returns the updated organization
+ */
 export const useSetOrganizationDescription = () => {
   const queryClient = useQueryClient();
   return useMutation<Organization, Error, string>(
