@@ -4,22 +4,17 @@
  */
 
 import { Typography } from '@mui/material';
-import OverdueWorkPackageAlerts from './components/OverdueWorkPackageAlerts';
-import UsefulLinks from './components/UsefulLinks';
-import WorkPackagesByTimelineStatus from './components/WorkPackagesByTimelineStatus';
-import UpcomingDeadlines from './components/UpcomingDeadlines';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
-import MemberEncouragement from './components/MemberEncouragement';
 
-interface GuestHomePageProps {
+interface LeadHomePageProps {
   user: AuthenticatedUser;
 }
 
-const GuestHomePage = ({ user }: GuestHomePageProps) => {
+const LeadHomePage = ({ user }: LeadHomePageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
@@ -30,13 +25,8 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <MemberEncouragement />
-      <OverdueWorkPackageAlerts />
-      <UsefulLinks />
-      <UpcomingDeadlines />
-      <WorkPackagesByTimelineStatus />
     </PageLayout>
   );
 };
 
-export default GuestHomePage;
+export default LeadHomePage;
