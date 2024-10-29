@@ -3,6 +3,7 @@ import { createTestOrganization, createTestTask, createTestUser, resetUsers } fr
 import { batmanAppAdmin, supermanAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
+import TeamsService from '../../src/services/teams.services';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -25,7 +26,16 @@ describe('User Tests', () => {
 
     it("Succeeds and gets user's assigned tasks", async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const { task } = await createTestTask(testBatman, organization);
+      const testTeam = await TeamsService.createTeam(
+        testBatman,
+        'Test Task team',
+        testBatman.userId,
+        'Test',
+        '',
+        false,
+        organization
+      );
+      const { task } = await createTestTask(testBatman, testTeam, organization);
       const userTasks = await UsersService.getUserTasks(testBatman.userId, organization);
 
       expect(userTasks).toStrictEqual([task]);
@@ -42,8 +52,17 @@ describe('User Tests', () => {
     it("Succeeds and gets all user' tasks in the list", async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const testClarkKent = await createTestUser(supermanAdmin, orgId);
-      const { task: batmanTask } = await createTestTask(testBatman, organization);
-      const { task: clarkKentTask } = await createTestTask(testClarkKent, organization);
+      const testTeam = await TeamsService.createTeam(
+        testBatman,
+        'Many Tasks Test team',
+        testBatman.userId,
+        'Test',
+        '',
+        false,
+        organization
+      );
+      const { task: batmanTask } = await createTestTask(testBatman, testTeam, organization);
+      const { task: clarkKentTask } = await createTestTask(testClarkKent, testTeam, organization);
       const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testClarkKent.userId], organization);
 
       expect(userTasks).toStrictEqual([batmanTask, clarkKentTask]);
