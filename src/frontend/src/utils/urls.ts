@@ -25,6 +25,7 @@ const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
+const manyUserTasks = () => `${users()}/tasks/get-many`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -207,6 +208,7 @@ export const apiUrls = {
   userScheduleSettings,
   userScheduleSettingsSet,
   userTasks,
+  manyUserTasks,
 
   projects,
   allProjects,

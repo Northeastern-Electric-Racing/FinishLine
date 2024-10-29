@@ -18,7 +18,8 @@ import {
   getUserSecureSettings,
   getUserScheduleSettings,
   updateUserScheduleSettings,
-  getUserTasks
+  getUserTasks,
+  getManyUserTasks
 } from '../apis/users.api';
 import {
   User,
@@ -244,6 +245,13 @@ export const useUpdateUserRole = () => {
 export const useUserTasks = (userId: string) => {
   return useQuery<Task[], Error>(['users', userId, 'tasks'], async () => {
     const { data } = await getUserTasks(userId);
+    return data;
+  });
+};
+
+export const useManyUserTasks = (userIds: string[]) => {
+  return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
+    const { data } = await getManyUserTasks(userIds);
     return data;
   });
 };
