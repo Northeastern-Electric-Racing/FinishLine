@@ -46,8 +46,7 @@ const FeaturedProjects: React.FC = () => {
         {featuredProjects.length === 0 ? (
           <Typography>No Featured Projects</Typography>
         ) : (
-          <></>
-          //featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
+          featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
         )}
       </Box>
     </PageBlock>

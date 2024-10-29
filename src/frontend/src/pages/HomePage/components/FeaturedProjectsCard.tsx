@@ -29,7 +29,7 @@ const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
                 component={RouterLink}
                 to={`${routes.PROJECTS}/${projectWbsPipe(project.wbsNum)}`}
               >
-                {projectWbsPipe(project.wbsNum)} - {project.teams}
+                {projectWbsPipe(project.wbsNum)} - {project.teams.map((project) => project.teamName)}
               </Link>
             </Typography>
             <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`} noWrap>
