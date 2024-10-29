@@ -38,7 +38,7 @@ const GuestOrganizationInfo = () => {
   } = useAllUsefulLinks();
   const { data: linkTypes, isLoading: linkTypesIsLoading } = useAllLinkTypes();
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || !organization) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
 
   if (!usefulLinks || usefulLinksIsLoading || !linkTypes || linkTypesIsLoading) return <LoadingIndicator />;
@@ -55,8 +55,8 @@ const GuestOrganizationInfo = () => {
       variant="outlined"
     >
       <Stack spacing={2}>
-        <Typography variant="h4">{organization?.name}</Typography>
-        <Typography sx={{ marginBottom: 2, fontSize: 18 }}>{organization?.description}</Typography>
+        <Typography variant="h4">{organization.name}</Typography>
+        <Typography sx={{ marginBottom: 2, fontSize: 18 }}>{organization.description}</Typography>
         <Grid container spacing={2}>
           {usefulLinks.map((link) => (
             <NERGuestButton
