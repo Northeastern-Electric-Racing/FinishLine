@@ -563,6 +563,6 @@ export default class UsersService {
     });
 
     const resolvedTasks = await Promise.all(tasksPromises);
-    return resolvedTasks;
+    return resolvedTasks.flat();
   }
 }
