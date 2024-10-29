@@ -556,4 +556,13 @@ export default class UsersService {
 
     return requestedUser.assignedTasks.map(taskTransformer);
   }
+
+  static async getManyUserTasks(userIds: string[], organization: Organization) {
+    const tasksPromises = userIds.map(async (userId) => {
+      return UsersService.getUserTasks(userId, organization);
+    });
+
+    const resolvedTasks = await Promise.all(tasksPromises);
+    return resolvedTasks;
+  }
 }
