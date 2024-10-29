@@ -1,9 +1,8 @@
-import { Card, Icon, SvgIcon, Typography, useTheme } from '@mui/material';
+import { Card, Icon, Typography, useTheme } from '@mui/material';
 import { Grid } from '@mui/material';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import React from 'react';
 import { NERButton } from '../../../components/NERButton';
-import * as Icons from '@mui/icons-material';
 import { useAllLinkTypes, useAllUsefulLinks } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -16,7 +15,6 @@ interface GuestOrganizationInfoButtonProps {
 }
 
 const NERGuestButton: React.FC<GuestOrganizationInfoButtonProps> = ({ href, buttonText, iconName }) => {
-
   return (
     <Grid item xs={4}>
       <NERButton variant="contained" fullWidth={true} style={{ justifyContent: 'flex-start', color: 'white' }} href={href}>
