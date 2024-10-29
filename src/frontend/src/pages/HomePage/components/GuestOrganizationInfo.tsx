@@ -1,4 +1,4 @@
-import { Card, Typography, useTheme } from '@mui/material';
+import { Card, Icon, SvgIcon, Typography, useTheme } from '@mui/material';
 import { Grid } from '@mui/material';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import React from 'react';
@@ -16,12 +16,11 @@ interface GuestOrganizationInfoButtonProps {
 }
 
 const NERGuestButton: React.FC<GuestOrganizationInfoButtonProps> = ({ href, buttonText, iconName }) => {
-  const IconComponent = Icons[iconName as keyof typeof Icons] || Icons['Info'];
 
   return (
     <Grid item xs={4}>
       <NERButton variant="contained" fullWidth={true} style={{ justifyContent: 'flex-start', color: 'white' }} href={href}>
-        <IconComponent />
+        <Icon>{iconName}</Icon>
         <Typography noWrap={true} sx={{ marginLeft: 1 }}>
           {buttonText}
         </Typography>
