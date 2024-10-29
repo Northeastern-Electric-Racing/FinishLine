@@ -179,4 +179,15 @@ export default class UsersController {
       return next(error);
     }
   }
+
+  static async getManyUserTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userIds } = req.body;
+
+      const tasks = await UsersService.getManyUserTasks(userIds, req.organization);
+      return res.status(200).json(tasks);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }
