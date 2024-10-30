@@ -50,4 +50,7 @@ recruitmentRouter.post(
 
 recruitmentRouter.delete('/faq/:faqId/delete', RecruitmentController.deleteFaq);
 
+/* Checklist Section */
+recruitmentRouter.delete('/onboarding/checklist/:checklistId/delete', RecruitmentController.deleteChecklist)
+
 export default recruitmentRouter;

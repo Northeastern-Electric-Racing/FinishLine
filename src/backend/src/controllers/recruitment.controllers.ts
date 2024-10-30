@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RecruitmentServices from '../services/recruitment.services';
+import { getCurrentUser } from '../utils/auth.utils';
 
 export default class RecruitmentController {
   static async getAllMilestones(req: Request, res: Response, next: NextFunction) {
@@ -92,6 +93,16 @@ export default class RecruitmentController {
       const { faqId } = req.params;
       await RecruitmentServices.deleteFaq(req.currentUser, faqId, req.organization);
       res.status(200).json({ message: `Successfully deleted FAQ with id ${faqId}` });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async deleteChecklist(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { checklistId } = req.params;
+      await RecruitmentServices.deleteChecklist(req.currentUser, checklistId, req.organization);
+      res.status(200).json({ message: `Successfully deleted checklist with id ${checklistId}` });
     } catch (error: unknown) {
       return next(error);
     }
