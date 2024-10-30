@@ -177,6 +177,18 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
   });
 };
 
+export const createTestTeamType = async (teamTypeId: string, organization: Organization) => {
+  return await prisma.team_Type.create({
+    data: {
+      teamTypeId,
+      name: 'teamType1',
+      iconName: 'YouTubeIcon',
+      description: '',
+      organizationId: organization.organizationId
+    }
+  });
+};
+
 export const createTestOrganization = async () => {
   const user = await prisma.user.create({
     data: {

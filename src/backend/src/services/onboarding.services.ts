@@ -18,10 +18,11 @@ export default class OnboardingServices {
       throw new AccessDeniedAdminOnlyException('non-admin tried to create a checklist');
     }
 
-    const teamTypeExists = await prisma.team_Type.findUnique({
+    const teamType = await prisma.team_Type.findUnique({
       where: { teamTypeId }
     });
-    if (!teamTypeExists) {
+
+    if (!teamType) {
       throw new NotFoundException('Team Type', teamTypeId);
     }
 
