@@ -9,7 +9,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
-import FeaturedProjects from './components/FeaturedProjects'
 import MyTasks from './components/MyTasks';
 
 interface MemberHomePageProps {
