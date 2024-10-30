@@ -5,8 +5,9 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import { useAllChangeRequests } from '../../../hooks/change-requests.hooks';
 import { useAllProjects } from '../../../hooks/projects.hooks';
 import { getCRsToReview } from '../../../utils/change-request.utils';
-import ChangeRequestRow from '../../../components/ChangeRequestRow';
 import ScrollablePageBlock from './ScrollablePageBlock';
+import { ChangeRequest } from 'shared';
+import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 
 const UnreviewedChangeRequests: React.FC = () => {
   const user = useCurrentUser();
@@ -22,14 +23,14 @@ const UnreviewedChangeRequests: React.FC = () => {
 
   const crsToReview = getCRsToReview(projects, workPackages, user, changeRequests);
 
+  const title =
+    crsToReview.length === 0 ? 'No unreviewed change requests' : `My Unreviewed Change Requests (${crsToReview.length})`;
+
   return (
-    <ScrollablePageBlock>
-      <ChangeRequestRow
-        title={`My Unreviewed Change Requests (${crsToReview.length})`}
-        changeRequests={crsToReview}
-        noChangeRequestsMessage="No unreviewed change requests"
-        flexWrap={false}
-      />
+    <ScrollablePageBlock title={title} horizontal={true}>
+      {crsToReview.map((cr: ChangeRequest) => (
+        <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>
+      ))}
     </ScrollablePageBlock>
   );
 };

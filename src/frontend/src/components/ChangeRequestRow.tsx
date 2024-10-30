@@ -12,10 +12,9 @@ interface ChangeRequestRowProps {
   title: string;
   changeRequests: ChangeRequest[];
   noChangeRequestsMessage: string;
-  flexWrap?: boolean;
 }
 
-const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeRequests, noChangeRequestsMessage, flexWrap }) => {
+const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeRequests, noChangeRequestsMessage }) => {
   const theme = useTheme();
 
   return (
@@ -29,7 +28,7 @@ const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeReques
             sx={{
               display: 'flex',
               flexDirection: 'row',
-              flexWrap: flexWrap ? 'wrap' : 'nowrap',
+              flexWrap: 'nowrap',
               overflow: 'auto',
               justifyContent: 'flex-start',
               '&::-webkit-scrollbar': {
