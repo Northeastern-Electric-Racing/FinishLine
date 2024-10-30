@@ -1,8 +1,7 @@
-import { Checklist, Team_Type } from '@prisma/client';
+import { Checklist, Organization, Team_Type, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
-import { Organization, User } from '@prisma/client';
 import { isAdmin, TeamType } from 'shared';
 
 export default class OnboardingServices {
