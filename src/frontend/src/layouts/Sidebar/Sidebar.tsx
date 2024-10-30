@@ -26,19 +26,17 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
 import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isGuest } from 'shared';
-import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../../pages/ErrorPage';
+import { Organization, isGuest } from 'shared';
 
 interface SidebarProps {
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
+  organization: Organization;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
   const { onPNMHomePage } = useHomePageContext();
   const user = useCurrentUser();
   const theme = useTheme();
@@ -109,20 +107,6 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     setMoveContent(!moveContent);
   };
 
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
-
-  if (!organization || organizationIsLoading) {
-    return <LoadingIndicator />;
-  }
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
-  }
-
   return (
     <NERDrawer
       open={drawerOpen}
@@ -150,7 +134,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           {onPNMHomePage ? (
             // Apply button
             <SidebarButton
-              onClick={() => window.open(organization?.applicationLink, '_blank')}
+              onClick={() => window.open(organization.applicationLink, '_blank')}
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />
