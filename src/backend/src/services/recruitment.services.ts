@@ -227,5 +227,4 @@ export default class RecruitmentServices {
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
   }
-  
 }
