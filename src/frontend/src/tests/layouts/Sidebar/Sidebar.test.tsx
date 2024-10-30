@@ -9,15 +9,38 @@ import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
 import * as miscHooks from '../../../hooks/misc.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
+import ErrorPage from '../../../pages/ErrorPage';
 
 /**
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+
+  if (!organization || organizationIsLoading) {
+    return <LoadingIndicator />;
+  }
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+
   return render(
     <RouterWrapper>
-      <Sidebar drawerOpen={true} setDrawerOpen={() => {}} moveContent={true} setMoveContent={() => {}} />
+      <Sidebar
+        drawerOpen={true}
+        setDrawerOpen={() => {}}
+        moveContent={true}
+        setMoveContent={() => {}}
+        organization={organization}
+      />
     </RouterWrapper>
   );
 };
