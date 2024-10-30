@@ -2,7 +2,8 @@ import { Organization } from '@prisma/client';
 import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { AccessDeniedAdminOnlyException } from '../../src/utils/errors.utils';
+import { AccessDeniedAdminOnlyException, NotFoundException } from '../../src/utils/errors.utils';
+import { teamType1 } from '../../../frontend/src/tests/test-support/test-data/design-reviews.stub';
 
 describe('Onboarding tests', () => {
   let orgId: string;
@@ -29,15 +30,25 @@ describe('Onboarding tests', () => {
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to create a checklist'));
     });
+    it('Fails if team type does not exits', async () => {
+      await expect(
+        await OnboardingServices.createChecklist(
+          await createTestUser(batmanAppAdmin, orgId),
+          'name',
+          'teamType',
+          organization
+        )
+      ).rejects.toThrow(new NotFoundException('Team Type', 'teamType'));
+    });
     it('Suceeds and creates a checklist', async () => {
       const result = await OnboardingServices.createChecklist(
         await createTestUser(batmanAppAdmin, orgId),
         'name',
-        'teamTypeId',
+        teamType1.teamTypeId,
         organization
       );
       expect(result.name).toEqual('name');
-      expect(result.teamTypeId).toEqual('teamTypeId');
+      expect(result.teamTypeId).toEqual('1');
     });
   });
 });
