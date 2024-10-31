@@ -12,8 +12,8 @@ export const getCurrentOrganization = async () => {
   });
 };
 
-export const getCurrentFeaturedProject =async () => {
+export const getCurrentFeaturedProject = async () => {
   return axios.get<Project[]>(apiUrls.organizationsFeaturedProjects(), {
     transformResponse: (data) => JSON.parse(data)
-  })
-}
+  });
+};
