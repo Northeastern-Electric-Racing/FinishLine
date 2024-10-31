@@ -9,7 +9,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
-import FeaturedProjects from './components/FeaturedProjects';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -26,7 +25,6 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <FeaturedProjects />
     </PageLayout>
   );
 };
