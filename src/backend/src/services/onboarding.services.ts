@@ -72,7 +72,8 @@ export default class OnboardingServices {
       );
 
     const userChecklists = await prisma.checklist.findMany({
-      where: { teamTypeId: { in: userTeamTypes.map((teamType) => teamType.teamTypeId) }, dateDeleted: null }
+      where: { teamTypeId: { in: userTeamTypes.map((teamType) => teamType.teamTypeId) }, dateDeleted: null },
+      include: { checklistItems: true }
     });
 
     return generalChecklists.concat(userChecklists);
