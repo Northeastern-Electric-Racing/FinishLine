@@ -12,4 +12,14 @@ export default class OnboardingController {
       return next(error);
     }
   }
+
+  static async getUsersChecklists(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const checklists = await OnboardingServices.getUsersChecklists(userId);
+      res.status(200).json(checklists);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

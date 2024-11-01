@@ -14,4 +14,6 @@ onboardingRouter.post(
   OnboardingController.createChecklist
 );
 
+onboardingRouter.get('/checklists/:userId', OnboardingController.getUsersChecklists);
+
 export default onboardingRouter;
