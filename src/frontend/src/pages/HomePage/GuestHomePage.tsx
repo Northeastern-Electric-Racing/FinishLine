@@ -6,16 +6,18 @@ import { routes } from '../../utils/routes';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect } from 'react';
 import { useHomePageContext } from '../../app/HomePageContext';
+import { set } from 'react-hook-form';
 
 const GuestHomePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
-  const { setOnGuestHomePage, setOnPNMHomePage } = useHomePageContext();
+  const { setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage } = useHomePageContext();
 
   useEffect(() => {
     setOnGuestHomePage(true);
     setOnPNMHomePage(false);
-  }, [setOnGuestHomePage, setOnPNMHomePage]);
+    setOnOnboardingHomePage(false);
+  }, [setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage]);
 
   return (
     <PageLayout title="Home" hidePageTitle>
