@@ -19,14 +19,15 @@ const MemberHomePage = () => {
   const user = useCurrentUser();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
   const { setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage } = useHomePageContext();
-  if (isLoading || !userSettingsData) return <LoadingIndicator />;
-  if (isError) return <ErrorPage error={error} message={error.message} />;
 
   useEffect(() => {
     setOnGuestHomePage(false);
     setOnPNMHomePage(false);
     setOnOnboardingHomePage(false);
   }, [setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage]);
+
+  if (isLoading || !userSettingsData) return <LoadingIndicator />;
+  if (isError) return <ErrorPage error={error} message={error.message} />;
 
   return (
     <PageLayout title="Home" hidePageTitle>

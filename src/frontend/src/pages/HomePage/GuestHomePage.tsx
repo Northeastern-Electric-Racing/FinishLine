@@ -6,7 +6,6 @@ import { routes } from '../../utils/routes';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import { useEffect } from 'react';
 import { useHomePageContext } from '../../app/HomePageContext';
-import { set } from 'react-hook-form';
 
 const GuestHomePage = () => {
   const user = useCurrentUser();

@@ -1,10 +1,7 @@
-import { Typography, Box, Grid } from '@mui/material';
+import { Typography } from '@mui/material';
 import PageLayout from '../../components/PageLayout';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
-import { useEffect, useState } from 'react';
-import FAQsSection from './components/FAQsSection';
-import TimelineSection from './components/TimelineSection';
-import Tabs from '../../components/Tabs';
+import { useEffect } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
