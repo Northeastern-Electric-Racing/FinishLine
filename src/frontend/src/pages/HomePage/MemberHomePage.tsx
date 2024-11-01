@@ -12,6 +12,8 @@ import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
+import { useEffect } from 'react';
+import { useHomePageContext } from '../../app/HomePageContext';
 
 const MemberHomePage = () => {
   const user = useCurrentUser();
