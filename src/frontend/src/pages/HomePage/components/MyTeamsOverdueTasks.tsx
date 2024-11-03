@@ -1,16 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ScrollablePageBlock from './ScrollablePageBlock';
-import { AuthenticatedUser, Task, User } from 'shared';
-import { useManyUserTasks, useUserTasks } from '../../../hooks/users.hooks';
+import { AuthenticatedUser } from 'shared';
+import { useManyUserTasks } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import TeamTaskCard from './TeamTaskCard';
-import { Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import { daysOverdue } from '../../../utils/datetime.utils';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 
 interface MyTeamsOverdueTasksProps {
   user: AuthenticatedUser;
 }
+
+const NoOverudeTeamTaskDisplay: React.FC = () => {
+  return (
+    <Box
+      sx={{
+        height: `calc(100vh - 200px)`,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      <EmptyPageBlockDisplay
+        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
+        heading={"You're team is all caught up!"}
+        message={"You're team has no overdue tasks!"}
+      />
+    </Box>
+  );
+};
 
 const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   const teamsAsHead = user.teamsAsHead ?? [];
@@ -24,13 +46,14 @@ const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   if (isError) return <ErrorPage message={error.message} />;
 
   const overdueTasks = new Set(tasks.filter((task) => daysOverdue(new Date(task.deadline)) > 0));
+
   return (
     <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.size})`}>
-      <Stack spacing={2}>
-        {[...overdueTasks].map((task, index) => (
-          <TeamTaskCard task={task} taskNumber={index + 1} />
-        ))}
-      </Stack>
+      {overdueTasks.size === 0 ? (
+        <NoOverudeTeamTaskDisplay />
+      ) : (
+        [...overdueTasks].map((task, index) => <TeamTaskCard task={task} taskNumber={index + 1} />)
+      )}
     </ScrollablePageBlock>
   );
 };
