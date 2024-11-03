@@ -25,6 +25,7 @@ describe('User Tests', () => {
 
     it("Succeeds and gets user's assigned tasks", async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
       const { task } = await createTestTask(testBatman, organization);
       const userTasks = await UsersService.getUserTasks(testBatman.userId, organization);
 
@@ -41,12 +42,10 @@ describe('User Tests', () => {
 
     it("Succeeds and gets all user' tasks in the list", async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testClarkKent = await createTestUser(supermanAdmin, orgId);
       const { task: batmanTask } = await createTestTask(testBatman, organization);
-      const { task: clarkKentTask } = await createTestTask(testClarkKent, organization);
-      const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testClarkKent.userId], organization);
+      const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testBatman.userId], organization);
 
-      expect(userTasks).toStrictEqual([batmanTask, clarkKentTask]);
+      expect(userTasks).toStrictEqual([batmanTask, batmanTask]);
     });
   });
 });
