@@ -1869,7 +1869,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await OrganizationsService.setFeaturedProjects([project1Id, project2Id, project3Id, project4Id], ner, batman);
+  await OrganizationsService.setFeaturedProjects([project1Id, project2Id, project3Id, project4Id], ner, thomasEmrax);
 
   await OrganizationsService.setUsefulLinks(batman, organizationId, [
     {

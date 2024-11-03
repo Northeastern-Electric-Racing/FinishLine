@@ -200,7 +200,7 @@ describe('Organization Tests', () => {
 
       expect(projects).not.toBeNull();
       expect(projects.length).toBe(1);
-      expect(projects[0]).toBe(testProject1);
+      expect(projects[0].id).toBe(testProject1.projectId);
     });
   });
 
