@@ -14,11 +14,11 @@ interface MyTeamsOverdueTasksProps {
   user: AuthenticatedUser;
 }
 
-const NoOverudeTeamTaskDisplay: React.FC = () => {
+const NoOverdueTeamTaskDisplay: React.FC = () => {
   return (
     <Box
       sx={{
-        height: `calc(100vh - 200px)`,
+        height: `calc(100vh - 300px)`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -50,7 +50,7 @@ const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   return (
     <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.size})`}>
       {overdueTasks.size === 0 ? (
-        <NoOverudeTeamTaskDisplay />
+        <NoOverdueTeamTaskDisplay />
       ) : (
         [...overdueTasks].map((task, index) => <TeamTaskCard task={task} taskNumber={index + 1} />)
       )}
