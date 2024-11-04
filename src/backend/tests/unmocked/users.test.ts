@@ -1,6 +1,6 @@
 import { Organization } from '@prisma/client';
 import { createTestOrganization, createTestTask, createTestUser, resetUsers } from '../test-utils';
-import { batmanAppAdmin, supermanAdmin } from '../test-data/users.test-data';
+import { batmanAppAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
 
