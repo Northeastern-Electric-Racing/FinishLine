@@ -9,6 +9,7 @@
     "@hello-pangea/dnd": "^16.6.0",
     "@hookform/resolvers": "^2.9.7",
     "@mui/icons-material": "^5.10.3",
+    "@mui/lab": "6.0.0-beta.10",
     "@mui/material": "^5.10.3",
     "@mui/system": "^5.10.16",
     "@mui/x-data-grid": "^5.16.0",
