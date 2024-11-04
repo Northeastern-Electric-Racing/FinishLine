@@ -12,9 +12,9 @@ import ErrorPage from '../../ErrorPage';
 import dayjs from 'dayjs';
 
 const TimelineSection = () => {
-  const { isLoading, isError, error, data: milestones } = useAllMilestones();
+  const { isLoading, isError, error, data: mileStones } = useAllMilestones();
 
-  if (isLoading || !milestones) return <LoadingIndicator />;
+  if (isLoading || !mileStones) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   const isPastEvent = (date: Date) => dayjs(date).isBefore(dayjs());
@@ -34,11 +34,11 @@ const TimelineSection = () => {
   return (
     <Grid>
       <Timeline position="alternate">
-        {milestones.map((milestone, index) => (
+        {mileStones.map((milestone, index) => (
           <TimelineItem key={index}>
             <TimelineSeparator>
               <TimelineDot color={getDotColor(milestone.dateOfEvent)} sx={{ width: '20px', height: '20px' }} />
-              {index < milestones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
+              {index < mileStones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
             </TimelineSeparator>
             <TimelineContent>
               <Typography variant="h4" sx={{ fontSize: 29 }}>
