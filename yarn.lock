@@ -2592,6 +2592,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kurkle/color@npm:^0.3.0":
+  version: 0.3.2
+  resolution: "@kurkle/color@npm:0.3.2"
+  checksum: 79e97b31f8f6efb28c69d373f94b0c7480226fe8ec95221f518ac998e156444a496727ce47de6d728eb5c3369288e794cba82cae34253deb0d472d3bfe080e49
+  languageName: node
+  linkType: hard
+
 "@mswjs/cookies@npm:^0.2.2":
   version: 0.2.2
   resolution: "@mswjs/cookies@npm:0.2.2"
@@ -6708,6 +6715,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chart.js@npm:4.4.6":
+  version: 4.4.6
+  resolution: "chart.js@npm:4.4.6"
+  dependencies:
+    "@kurkle/color": ^0.3.0
+  checksum: 4dcf6aa20f41115bb9e848d3053960eb4eeaaa94272344cc2b9b8faba33316c43893311897e20cd2bcd5b7963333cb30b7805829b78918d1d8c14a9e772e0c87
+  languageName: node
+  linkType: hard
+
 "check-error@npm:^1.0.3":
   version: 1.0.3
   resolution: "check-error@npm:1.0.3"
@@ -10437,6 +10453,7 @@ __metadata:
     "@vitejs/plugin-react": ^4.0.0
     axios: ^0.27.2
     bootstrap: ^4.6.0
+    chart.js: 4.4.6
     classnames: ^2.3.1
     customize-cra: ^0.9.1
     dayjs: ^1.11.10
@@ -10447,6 +10464,7 @@ __metadata:
     pdf-lib: ^1.17.1
     react: 18.2.0
     react-archer: ^4.4.0
+    react-chartjs-2: 5.2.0
     react-dom: ^18.2.0
     react-draggable: ^4.4.6
     react-google-charts: ^4.0.0
@@ -17083,6 +17101,16 @@ __metadata:
     prop-types: ^15.6.2
     react: ^16.9.0 || ^17 || ^18
   checksum: 2f675499d9af5a06911332e432af24280b38715151078a3a75b6dd7790f6756c19647928e3f67cda3b21526c6dda2729bedb17e40d1f21835a1b4873c362c6c4
+  languageName: node
+  linkType: hard
+
+"react-chartjs-2@npm:5.2.0":
+  version: 5.2.0
+  resolution: "react-chartjs-2@npm:5.2.0"
+  peerDependencies:
+    chart.js: ^4.1.1
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: ace702185be1450e5888a8bcd8b5fc1995067e3b11d236764a67f5567a3d7c32ff16923b8d48d3d39bda6e45135da6c044c9b43fbe8e1978f95aca9d2c0ce348
   languageName: node
   linkType: hard
 
