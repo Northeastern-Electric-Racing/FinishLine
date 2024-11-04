@@ -23,7 +23,7 @@
     "bootstrap": "^4.6.0",
     "classnames": "^2.3.1",
     "customize-cra": "^0.9.1",
-    "dayj": "^1.11.10",
+    "dayjs": "^1.11.10",
     "file-saver": "^2.0.5",
     "google-auth-library": "^8.1.1",
     "pdf-lib": "^1.17.1",

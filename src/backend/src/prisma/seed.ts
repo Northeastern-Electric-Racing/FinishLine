@@ -1889,7 +1889,7 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/5/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
 
   await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
 

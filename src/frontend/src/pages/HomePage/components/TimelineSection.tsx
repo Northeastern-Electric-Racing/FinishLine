@@ -22,14 +22,12 @@ const TimelineSection = () => {
   const getDotColor = (date: Date) => (isPastEvent(date) ? 'primary' : 'grey');
   const getConnectorStyle = (date: Date) => ({
     height: {
-      xs: '100px',
-      sm: '150px',
-      md: '200px'
+      xs: '100vh',
+      sm: '100vh',
+      md: '100vh'
     },
     backgroundColor: isPastEvent(date) ? 'primary.main' : 'grey'
   });
-
-  const fillLine = () => {};
 
   return (
     <Grid>
