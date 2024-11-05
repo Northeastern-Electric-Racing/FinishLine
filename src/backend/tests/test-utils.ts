@@ -273,7 +273,7 @@ export const createTestChecklist = async (user: User, organizationId: string) =>
     }
   });
   return checklist;
-}
+};
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
