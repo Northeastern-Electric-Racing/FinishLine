@@ -13,6 +13,16 @@ export default class TeamsController {
     }
   }
 
+  static async getAllArchivedTeams(req: Request, res: Response, next: NextFunction) {
+    try {
+      const teams = await TeamsService.getAllArchivedTeams(req.organization);
+
+      return res.status(200).json(teams);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async getSingleTeam(req: Request, res: Response, next: NextFunction) {
     try {
       const { teamId } = req.params;
