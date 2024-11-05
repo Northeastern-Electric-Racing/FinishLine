@@ -1,12 +1,12 @@
 import React from 'react';
 import { AuthenticatedUser, isAdmin, Team, WorkPackage } from 'shared';
-import ScrollablePageBlock from './ScrollablePageBlock';
-import { Box, Stack, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import WorkPackageCard from './WorkPackageCard';
 import { useAllWorkPackages, useGetManyWorkPackages } from '../../../hooks/work-packages.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { daysOverdue } from '../../../utils/datetime.utils';
+import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
 
 interface OverdueWorkPackagesViewProps {
   workPackages: WorkPackage[];
@@ -23,14 +23,56 @@ const getAllWbsNumFromTeams = (teams: Team[]) => {
 };
 
 const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workPackages }) => {
+  const theme = useTheme();
   return (
-    <ScrollablePageBlock>
-      <Stack spacing={2} sx={{ mt: 10 }}>
-        {workPackages.map((wp) => (
-          <WorkPackageCard wp={wp} />
-        ))}
-      </Stack>
-    </ScrollablePageBlock>
+    <Box sx={{ position: 'relative' }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: -20,
+          left: '20%',
+          background: theme.palette.background.paper,
+          padding: 4,
+          borderRadius: 2,
+          borderWidth: 2,
+          borderStyle: 'solid',
+          borderColor: theme.palette.primary.main
+        }}
+      >
+        <Typography variant="h4">Overdue Work Packages</Typography>
+      </Box>
+      <Card
+        sx={{
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            height: '20px'
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: theme.palette.error.dark,
+            borderRadius: '20px',
+            border: '6px solid transparent',
+            backgroundClip: 'content-box'
+          },
+          height: '100%',
+          my: 2,
+          background: theme.palette.background.paper,
+          borderWidth: 2,
+          borderColor: theme.palette.primary.main
+        }}
+        variant="outlined"
+      >
+        <CardContent sx={{ height: `100%`, maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 200px)` }}>
+          <Stack spacing={2} mt={10}>
+            {workPackages.map((wp) => (
+              <WorkPackageCard wp={wp} />
+            ))}
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 
