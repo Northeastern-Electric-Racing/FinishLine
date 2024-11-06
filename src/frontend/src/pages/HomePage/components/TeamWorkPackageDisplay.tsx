@@ -14,7 +14,7 @@ const NoTeamWorkPackagesDisplay: React.FC = () => {
   return (
     <Box
       sx={{
-        height: `calc(60vh - 200px)`,
+        height: `calc(100vh - 200px)`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -48,7 +48,7 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
 
   return (
     <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.size})`}>
-      {workPackages.size === 0 ? (
+      {workPackages.size === 2 ? (
         <NoTeamWorkPackagesDisplay />
       ) : (
         [...workPackages].map((wp) => (
