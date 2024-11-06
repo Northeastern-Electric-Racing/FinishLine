@@ -39,21 +39,24 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
   const teamsAsLead = user.teamsAsLead ?? [];
   const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
 
-  const workPackages = teamsAsLeadership
-    .map((team) => {
-      return team.projects.map((project) => {
-        return project.workPackages;
-      });
-    })
-    .flat(2);
+  // converting to set to remove duplicates
+  const workPackages = new Set(
+    teamsAsLeadership
+      .map((team) => {
+        return team.projects.map((project) => {
+          return project.workPackages;
+        });
+      })
+      .flat(2)
+  );
 
   return (
-    <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.length})`}>
-      {workPackages.length === 0 ? (
+    <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.size})`}>
+      {workPackages.size === 0 ? (
         <NoTeamWorkPackagesDisplay />
       ) : (
-        workPackages.map((wp) => (
-          <Box key={wbsPipe(wp.wbsNum)} sx={{ marginBottom: '1vh' }}>
+        [...workPackages].map((wp) => (
+          <Box key={wbsPipe(wp.wbsNum)} sx={{ mb: 1 }}>
             <WorkPackageCard wp={wp} />
           </Box>
         ))
