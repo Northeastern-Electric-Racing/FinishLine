@@ -7,6 +7,8 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { daysOverdue } from '../../../utils/datetime.utils';
 import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 
 interface OverdueWorkPackagesViewProps {
   workPackages: WorkPackage[];
@@ -16,6 +18,16 @@ interface OverdueWorkPackagesProps {
   user: AuthenticatedUser;
 }
 
+const NoOverdueWPsDisplay: React.FC = () => {
+  return (
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
+      heading={'Great Job Team!'}
+      message={'Your team has no overdue work packages!'}
+    />
+  );
+};
+
 const getAllWbsNumFromTeams = (teams: Team[]) => {
   const projects = teams.map((team) => team.projects).flat();
   const workPackages = projects.map((project) => project.workPackages).flat();
@@ -24,13 +36,18 @@ const getAllWbsNumFromTeams = (teams: Team[]) => {
 
 const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workPackages }) => {
   const theme = useTheme();
+  const isEmpty = workPackages.length === 0;
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box sx={{ position: 'relative', mt: 8 }}>
       <Box
         sx={{
+          display: 'flex',
+          justifyContent: 'center',
           position: 'absolute',
-          top: -20,
-          left: '20%',
+          top: -50,
+          width: '75%',
+          left: '50%',
+          transform: 'translateX(-50%)',
           background: theme.palette.background.paper,
           padding: 4,
           borderRadius: 2,
@@ -39,7 +56,9 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
           borderColor: theme.palette.primary.main
         }}
       >
-        <Typography variant="h4">Overdue Work Packages</Typography>
+        <Typography variant="h4" align="center">
+          Overdue Work Packages
+        </Typography>
       </Box>
       <Card
         sx={{
@@ -64,11 +83,16 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
         }}
         variant="outlined"
       >
-        <CardContent sx={{ height: `100%`, maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 200px)` }}>
-          <Stack spacing={2} mt={10}>
-            {workPackages.map((wp) => (
-              <WorkPackageCard wp={wp} />
-            ))}
+        <CardContent
+          sx={{
+            height: isEmpty ? `calc(${PAGE_GRID_HEIGHT}vh - 200px)` : `100%`,
+            maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 200px)`,
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Stack spacing={2} mt={isEmpty ? 12 : 10}>
+            {isEmpty ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
           </Stack>
         </CardContent>
       </Card>
