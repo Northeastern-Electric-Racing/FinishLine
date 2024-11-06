@@ -101,7 +101,9 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
 };
 
 const OverdueWorkPackages: React.FC<OverdueWorkPackagesProps> = ({ user }) => {
-  const teamsAsLeadership = [...user.teamsAsHead, ...user.teamsAsLead];
+  const teamsAsHead = user.teamsAsHead ?? [];
+  const teamsAsLead = user.teamsAsLead ?? [];
+  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
   const { data: allWps, isLoading: isLoadingAllWps, isError: isErrorAllWps, error: errorAllWps } = useAllWorkPackages();
   const {
     data: teamWps,
