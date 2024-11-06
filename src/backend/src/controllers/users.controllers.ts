@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import UsersService from '../services/users.services';
 import { AccessDeniedException } from '../utils/errors.utils';
+import { Task } from 'shared';
 
 export default class UsersController {
   static async getAllUsers(_req: Request, res: Response, next: NextFunction) {
@@ -175,6 +176,17 @@ export default class UsersController {
 
       const userTasks = await UsersService.getUserTasks(userId, organization);
       return res.status(200).json(userTasks);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async getManyUserTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userIds } = req.body;
+
+      const tasks: Task[] = await UsersService.getManyUserTasks(userIds, req.organization);
+      return res.status(200).json(tasks);
     } catch (error: unknown) {
       return next(error);
     }
