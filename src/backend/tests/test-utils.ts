@@ -116,6 +116,7 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.checklist.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -172,6 +173,18 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
           organizationId: orgId
         }
       }
+    }
+  });
+};
+
+export const createTestTeamType = async (teamTypeId: string, organization: Organization) => {
+  return await prisma.team_Type.create({
+    data: {
+      teamTypeId,
+      name: 'teamType1',
+      iconName: 'YouTubeIcon',
+      description: '',
+      organizationId: organization.organizationId
     }
   });
 };
@@ -384,7 +397,9 @@ export const createTestDesignReview = async () => {
   if (!head) throw new Error('Failed to find user');
   if (!lead) throw new Error('Failed to find user');
   await createTestProject(head, organization.organizationId);
-  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', organization);
+
+  const teamType = await TeamsService.createTeamType(head, 'Team1', 'Software', 'Software team', organization);
+
   const { designReviewId } = await DesignReviewsService.createDesignReview(
     lead,
     '03/25/2027',

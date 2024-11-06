@@ -33,6 +33,7 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import OnboardingServices from '../services/onboarding.services';
 
 const prisma = new PrismaClient();
 
@@ -257,9 +258,9 @@ const performSeed: () => Promise<void> = async () => {
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', ner);
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', ner);
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', ner);
+  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', '', ner);
+  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', '', ner);
+  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', '', ner);
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
@@ -1896,6 +1897,10 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
 
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
+
+  await OnboardingServices.createChecklist(batman, 'Checklist 1', teamType1.teamTypeId, ner);
+  await OnboardingServices.createChecklist(batman, 'Checklist 2', teamType2.teamTypeId, ner);
+  await OnboardingServices.createChecklist(batman, 'Checklist 3', teamType3.teamTypeId, ner);
 };
 
 performSeed()

@@ -670,6 +670,31 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Deletes the Account Code with the given id
+   *
+   * @param accountCodeId the requested account code to be deleted
+   * @param submitter the user deleting the account code
+   * @param organizationId the organization the user is currently in
+   * @returns the 'deleted' account code
+   */
+  static async deleteAccountCode(accountCodeId: string, submitter: User, organization: Organization) {
+    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+
+    const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
+
+    if (accountCode.dateDeleted) {
+      throw new DeletedException('Account Code', accountCodeId);
+    }
+
+    const deletedAccountCode = await prisma.account_Code.update({
+      where: { accountCodeId: accountCode.accountCodeId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return accountCodeTransformer(deletedAccountCode);
+  }
+
+  /**
    * Service function to upload a picture to the receipts folder in the NER google drive
    * @param reimbursementRequestId id for the reimbursement request we're tying the receipt to
    * @param file The file data for the image

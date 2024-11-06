@@ -1,7 +1,7 @@
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useEditMilestone } from '../../../hooks/recruitment.hooks';
-import { Milestone } from 'shared/src/types/milestone-types';
+import { Milestone } from 'shared';
 import MilestoneFormModal from './MilestoneFormModal';
 
 interface EditMilestoneFormModalProps {

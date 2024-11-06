@@ -13,6 +13,7 @@ import { getPrismaQueryUserIds, getUsers, userHasPermission } from '../utils/use
 import { isUnderWordCount } from 'shared';
 import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
+import { uploadFile } from '../utils/google-integration.utils';
 import { createCalendar } from '../utils/google-integration.utils';
 
 export default class TeamsService {
@@ -387,6 +388,7 @@ export default class TeamsService {
     submitter: User,
     name: string,
     iconName: string,
+    description: string,
     organization: Organization
   ): Promise<TeamType> {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -406,6 +408,7 @@ export default class TeamsService {
       data: {
         name,
         iconName,
+        description,
         organizationId: organization.organizationId,
         calendarId: teamTypeCalendarId
       }
@@ -440,6 +443,50 @@ export default class TeamsService {
   static async getAllTeamTypes(organization: Organization): Promise<TeamType[]> {
     const teamTypes = await prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } });
     return teamTypes;
+  }
+
+  /**
+   * Changes the description of the given teamType to be the new description
+   * @param user The user who is editing the description
+   * @param teamTypeId The id for the teamType that is being edited
+   * @param name the new name for the team
+   * @param iconName the new icon name for the team
+   * @param description the new description for the team
+   * @param imageFileId the new image for the team
+   * @param organizationId The organization the user is currently in
+   * @returns The team with the new description
+   */
+  static async editTeamType(
+    user: User,
+    teamTypeId: string,
+    name: string,
+    iconName: string,
+    description: string,
+    organization: Organization
+  ): Promise<TeamType> {
+    if (!isUnderWordCount(description, 300)) throw new HttpException(400, 'Description must be less than 300 words');
+
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedException('you must be an admin to edit the team types description');
+
+    const currentTeamType = await prisma.team_Type.findUnique({
+      where: { teamTypeId }
+    });
+
+    if (!currentTeamType) {
+      throw new NotFoundException('Team Type', teamTypeId);
+    }
+
+    const updatedTeamType = await prisma.team_Type.update({
+      where: { teamTypeId },
+      data: {
+        name,
+        iconName,
+        description
+      }
+    });
+
+    return updatedTeamType;
   }
 
   /**
@@ -481,5 +528,37 @@ export default class TeamsService {
     });
 
     return teamTransformer(updatedTeam);
+  }
+
+  static async setTeamTypeImage(
+    submitter: User,
+    teamTypeId: string,
+    image: Express.Multer.File,
+    organization: Organization
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('set a team types image');
+    }
+
+    const teamType = await prisma.team_Type.findUnique({
+      where: {
+        teamTypeId
+      }
+    });
+
+    if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
+
+    const imageData = await uploadFile(image);
+
+    const updatedTeamType = await prisma.team_Type.update({
+      where: {
+        teamTypeId
+      },
+      data: {
+        imageFileId: imageData.id
+      }
+    });
+
+    return updatedTeamType;
   }
 }
