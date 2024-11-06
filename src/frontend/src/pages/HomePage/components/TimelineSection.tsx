@@ -17,14 +17,17 @@ const TimelineSection = () => {
   if (isLoading || !mileStones) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  const isPastEvent = (date: Date) => dayjs(date).isBefore(dayjs());
+  const isPastEvent = (date: Date) => {
+    return date < new Date();
+  }
+
 
   const getDotColor = (date: Date) => (isPastEvent(date) ? 'primary' : 'grey');
   const getConnectorStyle = (date: Date) => ({
     height: {
-      xs: '100vh',
-      sm: '100vh',
-      md: '100vh'
+      xs: '0.1px',
+      sm: '1vh',
+      md: '10vh'
     },
     backgroundColor: isPastEvent(date) ? 'primary.main' : 'grey'
   });
