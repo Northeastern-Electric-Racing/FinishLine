@@ -1,10 +1,6 @@
 import WorkPackageCard from './WorkPackageCard';
 import { wbsPipe } from '../../../utils/pipes';
 import Box from '@mui/material/Box';
-import { useAllTeams } from '../../../hooks/teams.hooks';
-import { useCurrentUser } from '../../../hooks/users.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
