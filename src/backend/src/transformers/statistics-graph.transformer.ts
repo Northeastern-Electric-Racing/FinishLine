@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { Graph, GraphCollection, GraphData, GraphDataUnit, GraphType, Measure, Permission } from 'shared';
+import { Graph, GraphData, GraphDataUnit, GraphType, Measure } from 'shared';
 import { userTransformer } from './user.transformer';
-import { GraphCollectionQueryArgs, GraphDataQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { GraphDataQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 
 const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs>): Graph => {
   return {
