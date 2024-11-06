@@ -24,7 +24,7 @@ const TimelineSection = () => {
   const getDotColor = (date: Date) => (isPastEvent(date) ? 'primary' : 'grey');
   const getConnectorStyle = (date: Date) => ({
     height: {
-      xs: '0.1px',
+      xs: '1vh',
       sm: '1vh',
       md: '10vh'
     },
