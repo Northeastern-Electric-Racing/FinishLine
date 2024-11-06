@@ -47,5 +47,12 @@ userRouter.post(
 userRouter.get('/:userId/secure-settings', UsersController.getUserSecureSettings);
 userRouter.get('/:userId/schedule-settings', UsersController.getUserScheduleSettings);
 userRouter.get('/:userId/tasks', UsersController.getUserTasks);
+userRouter.post(
+  '/tasks/get-many',
+  body('userIds').isArray(),
+  nonEmptyString(body('userIds.*')),
+  validateInputs,
+  UsersController.getManyUserTasks
+);
 
 export default userRouter;
