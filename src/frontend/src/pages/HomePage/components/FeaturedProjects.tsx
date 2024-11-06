@@ -10,6 +10,30 @@ import ErrorPage from '../../ErrorPage';
 import { wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
+import { Box } from '@mui/material';
+import { Error } from '@mui/icons-material';
+
+const NoTasksDisplay: React.FC = () => {
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        height: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      <EmptyPageBlockDisplay
+        icon={<Error sx={{ fontSize: 70 }} />}
+        heading={'No Featured Projects'}
+        message={'There are no Featured Projects to Display'}
+      />
+    </Box>
+  );
+};
 
 const FeaturedProjects: React.FC = () => {
   const { data: featuredProjects, isLoading, isError, error } = useFeaturedProjects();
@@ -20,7 +44,7 @@ const FeaturedProjects: React.FC = () => {
   const fullDisplay = (
     <ScrollablePageBlock title={`Featured Projects`} horizontal>
       {featuredProjects.length === 0 ? (
-        <Typography>No Featured Projects</Typography>
+        <NoTasksDisplay />
       ) : (
         featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
       )}

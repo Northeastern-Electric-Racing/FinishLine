@@ -8,7 +8,7 @@ import { Link as RouterLink } from 'react-router-dom';
 interface ProjectCardProps {
   project: Project;
 }
-// remove the collapseable part
+
 const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
   const theme = useTheme();
   return (
