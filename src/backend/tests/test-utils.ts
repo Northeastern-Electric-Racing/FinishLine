@@ -12,7 +12,7 @@ import prisma from '../src/prisma/prisma';
 import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
-import { ClubAccount, RoleEnum } from 'shared';
+import { ClubAccount, Permission, RoleEnum } from 'shared';
 import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
@@ -24,10 +24,11 @@ export interface CreateTestUserParams {
   emailId?: string | null;
   googleAuthId: string;
   role: RoleEnum;
+  permissions?: Permission[];
 }
 
 export const createTestUser = async (
-  { firstName, lastName, email, emailId, googleAuthId, role }: CreateTestUserParams,
+  { firstName, lastName, email, emailId, googleAuthId, role, permissions }: CreateTestUserParams,
   organizationId: string,
   userSettings?: User_Settings,
   userSecureSettings?: User_Secure_Settings,
@@ -45,7 +46,8 @@ export const createTestUser = async (
           roleType: role,
           organizationId
         }
-      }
+      },
+      permissions
     }
   });
 
@@ -118,6 +120,9 @@ export const resetUsers = async () => {
   await prisma.frequentlyAskedQuestion.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.graph.deleteMany();
+  await prisma.graph_Collection.deleteMany();
+  await prisma.graph_Data.deleteMany();
 };
 
 export const createFinanceTeamAndLead = async (organization?: Organization) => {
@@ -131,12 +136,22 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
   );
 
   const lead = await createTestUser(
-    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
+    {
+      ...dbSeedAllUsers.aang,
+      googleAuthId: 'financeLead',
+      role: RoleEnum.LEADERSHIP,
+      permissions: dbSeedAllUsers.aang.permissions as Permission[]
+    },
     organization.organizationId
   );
 
   const financeMember = await createTestUser(
-    { ...dbSeedAllUsers.johnBoddy, googleAuthId: 'financeMember', role: RoleEnum.MEMBER },
+    {
+      ...dbSeedAllUsers.johnBoddy,
+      googleAuthId: 'financeMember',
+      role: RoleEnum.MEMBER,
+      permissions: dbSeedAllUsers.aang.permissions as Permission[]
+    },
     organization.organizationId
   );
 
@@ -378,7 +393,12 @@ export const createTestDesignReview = async () => {
     organization.organizationId
   );
   const lead = await createTestUser(
-    { ...dbSeedAllUsers.aang, googleAuthId: 'financeLead', role: RoleEnum.LEADERSHIP },
+    {
+      ...dbSeedAllUsers.aang,
+      googleAuthId: 'financeLead',
+      role: RoleEnum.LEADERSHIP,
+      permissions: dbSeedAllUsers.aang.permissions as Permission[]
+    },
     organization.organizationId
   );
   if (!head) throw new Error('Failed to find user');

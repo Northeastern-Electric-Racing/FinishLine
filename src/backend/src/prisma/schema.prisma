@@ -121,11 +121,13 @@ enum Graph_Data_Unit {
   TEAM
   CHANGE_REQUEST
   BUDGET
+  WORK_PACKAGE
+  REIMBURSEMENT
   DESIGN_REVIEW
   USER
 }
 
-enum Measures {
+enum Measure {
   SUM
   AVERAGE
 }
@@ -212,8 +214,8 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
-  createdGraphCollections         GraphCollection[]         @relation(name: "graphCollectionsCreator")
-  deletedGraphCollections         GraphCollection[]         @relation(name: "graphCollectionDeleter")
+  createdGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionsCreator")
+  deletedGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionDeleter")
   createdGraphs                   Graph[]                   @relation(name: "graphCreator")
   deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
   permissions                     Permission[]
@@ -930,6 +932,10 @@ model Organization {
   usefulLinks              Link[]
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
+
+  GraphCollection Graph_Collection[]
+
+  Graph Graph[] @relation(name: "graphOrganization")
 }
 
 model FrequentlyAskedQuestion {
@@ -962,33 +968,37 @@ model Milestone {
 }
 
 model Graph {
+  id                    String            @id @default(uuid())
   organizationId        String
+  organization          Organization      @relation(fields: [organizationId], references: [organizationId], name: "graphOrganization")
   startDate             DateTime
   endDate               DateTime
   title                 String
-  linkId                String           @default(uuid())
+  linkId                String            @default(uuid())
   graphType             Graph_Type
-  userCreated           User             @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
+  userCreated           User              @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
   userCreatedId         String
-  userDeleted           User?            @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
+  userDeleted           User?             @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
   userDeletedId         String?
   dateDeleted           DateTime?
-  graphDataId           String           @id
-  data                  GraphData        @relation(fields: [graphDataId], references: [id])
+  data                  Graph_Data[]
   groupBy               Graph_Data_Unit
-  graphCollection       GraphCollection? @relation(fields: [graphCollectionLinkId], references: [linkId])
+  graphCollection       Graph_Collection? @relation(fields: [graphCollectionLinkId], references: [linkId])
   graphCollectionLinkId String?
 }
 
-model GraphData {
-  id       String          @id
-  type     Graph_Data_Unit
-  measures Measures
-  graph    Graph[]
+model Graph_Data {
+  id      String          @id @default(uuid())
+  type    Graph_Data_Unit
+  measure Measure
+  value   Float
+  graphId String
+  graph   Graph           @relation(fields: [graphId], references: [id])
 }
 
-model GraphCollection {
+model Graph_Collection {
   organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
   graphs         Graph[]
   title          String
   linkId         String       @id @default(uuid())

@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { RoleEnum, User, UserWithScheduleSettings } from 'shared';
+import { Permission, RoleEnum, User, UserWithScheduleSettings } from 'shared';
 import userScheduleSettingsTransformer from './user-schedule-settings.transformer';
 import { UserQueryArgs, UserWithSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 
@@ -10,7 +10,8 @@ export const userTransformer = (user: Prisma.UserGetPayload<UserQueryArgs>): Use
     lastName: user.lastName,
     email: user.email,
     emailId: user.emailId,
-    role: user.roles.length > 0 ? user.roles[0].roleType : RoleEnum.GUEST
+    role: user.roles.length > 0 ? user.roles[0].roleType : RoleEnum.GUEST,
+    permissions: user.permissions.map((permission) => permission as Permission)
   };
 };
 

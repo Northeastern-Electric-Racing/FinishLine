@@ -12,6 +12,7 @@ export interface User {
   email: string;
   emailId: string | null;
   role: Role;
+  permissions: Permission[];
 }
 
 export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role'>;
@@ -24,6 +25,17 @@ export enum RoleEnum {
   LEADERSHIP = 'LEADERSHIP',
   MEMBER = 'MEMBER',
   GUEST = 'GUEST'
+}
+
+export enum Permission {
+  EDIT_GRAPH = 'EDIT_GRAPH',
+  CREATE_GRAPH = 'CREATE_GRAPH',
+  VIEW_GRAPH = 'VIEW_GRAPH',
+  DELETE_GRAPH = 'DELETE_GRAPH',
+  EDIT_GRAPH_COLLECTION = 'EDIT_GRAPH_COLLECTION',
+  CREATE_GRAPH_COLLECTION = 'CREATE_GRAPH_COLLECTION',
+  VIEW_GRAPH_COLLECTION = 'VIEW_GRAPH_COLLECTION',
+  DELETE_GRAPH_COLLECTION = 'DELETE_GRAPH_COLLECTION'
 }
 
 export type ThemeName = 'DARK' | 'LIGHT';
