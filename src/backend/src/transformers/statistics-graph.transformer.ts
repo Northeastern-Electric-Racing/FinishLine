@@ -27,17 +27,4 @@ const graphDataTransformer = (graphData: Prisma.Graph_DataGetPayload<GraphDataQu
   };
 };
 
-const graphCollectionTransformer = (
-  graphCollection: Prisma.Graph_CollectionGetPayload<GraphCollectionQueryArgs>
-): GraphCollection => {
-  return {
-    graphs: graphCollection.graphs ? graphCollection.graphs.map(graphTransformer) : [],
-    title: graphCollection.title,
-    linkId: graphCollection.linkId,
-    userCreated: userTransformer(graphCollection.userCreated),
-    userDeleted: graphCollection.userDeleted ? userTransformer(graphCollection.userDeleted) : undefined,
-    permissions: graphCollection.permissions as Permission[]
-  };
-};
-
 export default graphTransformer;
