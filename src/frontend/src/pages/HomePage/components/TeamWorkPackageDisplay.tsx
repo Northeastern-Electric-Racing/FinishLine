@@ -6,25 +6,41 @@ import { useCurrentUser } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import ScrollablePageBlock from './ScrollablePageBlock';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import { AuthenticatedUser } from 'shared';
 
-const TeamWorkPackageDisplay: React.FC = () => {
-  const user = useCurrentUser();
-  const { isLoading, isError, data: teams, error } = useAllTeams();
+interface TeamWorkPackageDisplayProps {
+  user: AuthenticatedUser;
+}
 
-  if (isLoading || !teams) return <LoadingIndicator />;
+const NoTeamWorkPackagesDisplay: React.FC = () => {
+  return (
+    <Box
+      sx={{
+        height: `calc(60vh - 200px)`,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      <EmptyPageBlockDisplay
+        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
+        heading={"You're team is all caught up!"}
+        message={'There are no work packages assigned to your team!'}
+      />
+    </Box>
+  );
+};
 
-  if (isError) return <ErrorPage message={error?.message} />;
+const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user }) => {
+  const teamsAsHead = user.teamsAsHead ?? [];
+  const teamsAsLead = user.teamsAsLead ?? [];
+  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
 
-  const myTeams = teams?.filter((team) => {
-    return (
-      team.members.some((member) => member.userId === user.userId) ||
-      team.leads.some((member) => member.userId === user.userId) ||
-      team.head.userId === user.userId
-    );
-  });
-
-  const workPackages = myTeams
-    ?.map((team) => {
+  const workPackages = teamsAsLeadership
+    .map((team) => {
       return team.projects.map((project) => {
         return project.workPackages;
       });
@@ -33,13 +49,15 @@ const TeamWorkPackageDisplay: React.FC = () => {
 
   return (
     <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.length})`}>
-      {workPackages.length === 0
-        ? `No work packages`
-        : workPackages.map((wp) => (
-            <Box key={wbsPipe(wp.wbsNum)} sx={{ marginBottom: '1vh' }}>
-              <WorkPackageCard wp={wp} />
-            </Box>
-          ))}
+      {workPackages.length === 0 ? (
+        <NoTeamWorkPackagesDisplay />
+      ) : (
+        workPackages.map((wp) => (
+          <Box key={wbsPipe(wp.wbsNum)} sx={{ marginBottom: '1vh' }}>
+            <WorkPackageCard wp={wp} />
+          </Box>
+        ))
+      )}
     </ScrollablePageBlock>
   );
 };
