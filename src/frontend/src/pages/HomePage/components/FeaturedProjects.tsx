@@ -5,7 +5,6 @@
 
 import FeaturedProjectsCard from './FeaturedProjectsCard';
 import { useFeaturedProjects } from '../../../hooks/organizations.hooks';
-import { Typography } from '@mui/material';
 import ErrorPage from '../../ErrorPage';
 import { wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
