@@ -13,7 +13,7 @@ import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Box } from '@mui/material';
 import { Error } from '@mui/icons-material';
 
-const NoTasksDisplay: React.FC = () => {
+const NoFeaturedProjectsDisplay: React.FC = () => {
   return (
     <Box
       sx={{
@@ -43,7 +43,7 @@ const FeaturedProjects: React.FC = () => {
   const fullDisplay = (
     <ScrollablePageBlock title={`Featured Projects`} horizontal>
       {featuredProjects.length === 0 ? (
-        <NoTasksDisplay />
+        <NoFeaturedProjectsDisplay />
       ) : (
         featuredProjects.map((p) => <FeaturedProjectsCard key={wbsPipe(p.wbsNum)} project={p} />)
       )}
