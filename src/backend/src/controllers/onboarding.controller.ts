@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import OnboardingServices from '../services/onboarding.services';
+import { check } from 'prettier';
 
 export default class OnboardingController {
   static async createChecklist(req: Request, res: Response, next: NextFunction) {
@@ -7,6 +8,24 @@ export default class OnboardingController {
       const { name, teamTypeId } = req.body;
 
       const checklist = await OnboardingServices.createChecklist(req.currentUser, name, teamTypeId, req.organization);
+      return res.status(200).json(checklist);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async createChecklistItem(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, checklistId, description, parentChecklistItemId } = req.body;
+
+      const checklist = await OnboardingServices.createChecklistItem(
+        req.currentUser,
+        name,
+        checklistId,
+        description,
+        parentChecklistItemId,
+        req.organization
+      );
       return res.status(200).json(checklist);
     } catch (error: unknown) {
       return next(error);

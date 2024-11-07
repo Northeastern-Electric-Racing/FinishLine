@@ -14,4 +14,14 @@ onboardingRouter.post(
   OnboardingController.createChecklist
 );
 
+onboardingRouter.post(
+  '/checklist/item/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('checklistId')),
+  nonEmptyString(body('description').optional()),
+  nonEmptyString(body('parentChecklistItemId').optional()),
+  validateInputs,
+  OnboardingController.createChecklistItem
+);
+
 export default onboardingRouter;

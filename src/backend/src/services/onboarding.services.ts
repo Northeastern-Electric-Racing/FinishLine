@@ -39,4 +39,47 @@ export default class OnboardingServices {
     });
     return checklist;
   }
+
+  /**
+   * Creates a new checklist item in the given checklist Id.
+   * @param submitter a user who is making the request
+   * @param name the name of the checklist
+   * @param checklistId the checklist
+   * @param description the description of the item
+   * @param parentChecklistItemId the parent checklist item this item belongs to
+   * @param organization the organization of the checklist
+   * @returns a newly created checklist
+   */
+  static async createChecklistItem(
+    submitter: User,
+    name: string,
+    checklistId: string,
+    description: string,
+    parentChecklistItemId: string,
+    organization: Organization
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('non-admin tried to create a checklist item');
+    }
+
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId }
+    });
+
+    if (!checklist) {
+      throw new NotFoundException('Checklist', checklistId);
+    }
+
+    const checklistItem = await prisma.checklistItem.create({
+      data: {
+        name,
+        checklistId,
+        description,
+        parentChecklistItemId,
+        userCreatedId: submitter.userId,
+        organizationId: organization.organizationId
+      }
+    });
+    return checklistItem;
+  }
 }

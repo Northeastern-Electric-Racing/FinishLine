@@ -133,6 +133,7 @@ export type ExceptionObjectNames =
   | 'Link Type'
   | 'Design Review'
   | 'Team Type'
+  | 'Checklist'
   | 'Work Package Template'
   | 'Description Bullet Type'
   | 'Organization'
