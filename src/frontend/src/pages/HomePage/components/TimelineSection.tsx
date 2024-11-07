@@ -9,7 +9,7 @@ import TimelineDot from '@mui/lab/TimelineDot';
 import { useAllMilestones } from '../../../hooks/recruitment.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import dayjs from 'dayjs';
+import { dateMonthDayYear } from '../../../utils/datetime.utils';
 
 const TimelineSection = () => {
   const { isLoading, isError, error, data: mileStones } = useAllMilestones();
@@ -45,7 +45,7 @@ const TimelineSection = () => {
                 {milestone.name}
               </Typography>
               <Typography variant="body1" sx={{ fontSize: 20 }}>
-                {dayjs(milestone.dateOfEvent).format('MMMM D, YYYY')}
+                {dateMonthDayYear(milestone.dateOfEvent)}
               </Typography>
               <Typography variant="body2">{milestone.description}</Typography>
             </TimelineContent>
