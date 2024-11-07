@@ -28,7 +28,7 @@ const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeReques
             sx={{
               display: 'flex',
               flexDirection: 'row',
-              flexWrap: 'nowrap',
+              flexWrap: 'wrap',
               overflow: 'auto',
               justifyContent: 'flex-start',
               '&::-webkit-scrollbar': {
@@ -41,8 +41,7 @@ const ChangeRequestRow: React.FC<ChangeRequestRowProps> = ({ title, changeReques
                 backgroundColor: theme.palette.divider,
                 borderRadius: '20px',
                 border: '6px solid transparent',
-                backgroundClip: 'content-box',
-                background: theme.palette.background.paper
+                backgroundClip: 'content-box'
               }
             }}
             data-testid={title + 'crRow'}
