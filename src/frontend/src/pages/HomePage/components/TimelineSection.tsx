@@ -41,7 +41,7 @@ const TimelineSection = () => {
               {index < mileStones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
             </TimelineSeparator>
             <TimelineContent>
-              <Typography variant="h4" sx={{ fontSize: 29 }}>
+              <Typography variant="h4" sx={{ fontSize: 28 }}>
                 {milestone.name}
               </Typography>
               <Typography variant="body1" sx={{ fontSize: 20 }}>
