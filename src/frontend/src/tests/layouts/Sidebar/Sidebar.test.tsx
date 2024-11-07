@@ -9,28 +9,13 @@ import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
 import * as miscHooks from '../../../hooks/misc.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
-import ErrorPage from '../../../pages/ErrorPage';
+import { exampleOrganization } from '../../test-support/test-data/organization.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
-
-  if (!organization || organizationIsLoading) {
-    return <LoadingIndicator />;
-  }
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
-  }
 
   return render(
     <RouterWrapper>
@@ -39,7 +24,7 @@ const renderComponent = () => {
         setDrawerOpen={() => {}}
         moveContent={true}
         setMoveContent={() => {}}
-        organization={organization}
+        organization={exampleOrganization}
       />
     </RouterWrapper>
   );
@@ -49,6 +34,7 @@ describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
     vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+
     renderComponent();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();
     expect(screen.getByText(/Change Requests/i)).toBeInTheDocument();
