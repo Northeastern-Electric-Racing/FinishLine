@@ -6,9 +6,9 @@ import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import TeamTaskCard from './TeamTaskCard';
 import { Box } from '@mui/material';
-import { daysOverdue } from '../../../utils/datetime.utils';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import { getOverdueTasks } from '../../../utils/task.utils';
 
 interface MyTeamsOverdueTasksProps {
   user: AuthenticatedUser;
@@ -45,14 +45,14 @@ const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   if (isLoading || !tasks) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const overdueTasks = new Set(tasks.filter((task) => daysOverdue(new Date(task.deadline)) > 0));
+  const overdueTasks = getOverdueTasks(tasks);
 
   return (
-    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.size})`}>
-      {overdueTasks.size === 0 ? (
+    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`}>
+      {overdueTasks.length === 0 ? (
         <NoOverdueTeamTaskDisplay />
       ) : (
-        [...overdueTasks].map((task, index) => <TeamTaskCard task={task} taskNumber={index + 1} />)
+        overdueTasks.map((task, index) => <TeamTaskCard task={task} taskNumber={index + 1} />)
       )}
     </ScrollablePageBlock>
   );

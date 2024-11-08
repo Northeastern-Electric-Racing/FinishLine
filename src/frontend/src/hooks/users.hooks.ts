@@ -249,6 +249,11 @@ export const useUserTasks = (userId: string) => {
   });
 };
 
+/**
+ * Custom react hook to get the assigned tasks of all users in the list
+ * @param userIds ids of users to get assigned tasks from
+ * @returns tasks assigned to all users in list
+ */
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
