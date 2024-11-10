@@ -343,7 +343,7 @@ describe('Recruitment Tests', () => {
       await expect(
         async () =>
           await RecruitmentServices.deleteChecklist(await createTestUser(wonderwomanGuest, orgId), 'id', organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete checklist'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a checklist'));
     });
 
     it('Fails if checklistId is not found', async () => {
@@ -356,7 +356,7 @@ describe('Recruitment Tests', () => {
     it('Fails if checklist is already deleted', async () => {
       const testSuperman = await createTestUser(supermanAdmin, orgId);
       const testChecklist = await createTestChecklist(testSuperman, orgId);
-      await RecruitmentServices.deleteMilestone(testSuperman, testChecklist.checklistId, organization);
+      await RecruitmentServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization);
 
       await expect(
         async () => await RecruitmentServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization)
