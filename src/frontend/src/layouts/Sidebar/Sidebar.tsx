@@ -33,7 +33,7 @@ interface SidebarProps {
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
-  organization: Organization;
+  organization?: Organization;
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
@@ -134,7 +134,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
           {onPNMHomePage ? (
             // Apply button
             <SidebarButton
-              onClick={() => window.open(organization.applicationLink, '_blank')}
+              onClick={() => window.open(organization?.applicationLink, '_blank')}
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />

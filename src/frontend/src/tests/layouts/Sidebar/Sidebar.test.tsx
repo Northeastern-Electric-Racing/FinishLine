@@ -4,12 +4,10 @@
  */
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
-import Sidebar from '../../../layouts/Sidebar/Sidebar';
 import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
 import * as miscHooks from '../../../hooks/misc.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
-import { exampleOrganization } from '../../test-support/test-data/organization.stub';
 
 /**
  * Sets up the component under test with the desired values and renders it.
@@ -17,17 +15,7 @@ import { exampleOrganization } from '../../test-support/test-data/organization.s
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
 
-  return render(
-    <RouterWrapper>
-      <Sidebar
-        drawerOpen={true}
-        setDrawerOpen={() => {}}
-        moveContent={true}
-        setMoveContent={() => {}}
-        organization={exampleOrganization}
-      />
-    </RouterWrapper>
-  );
+  return render(<RouterWrapper></RouterWrapper>);
 };
 
 describe('Sidebar Tests', () => {

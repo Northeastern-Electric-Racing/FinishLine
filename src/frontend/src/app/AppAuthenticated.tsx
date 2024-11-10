@@ -53,11 +53,8 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
     error: organizationError
   } = useCurrentOrganization();
 
-  if (!organization || organizationIsLoading) {
-    return <LoadingIndicator />;
-  }
-  if (organizationIsError) {
-    return <ErrorPage message={organizationError.message} />;
+  if (organizationIsLoading || !organization || organizationIsError) {
+    return organizationIsError ? <ErrorPage message={organizationError.message} /> : <LoadingIndicator />;
   }
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
