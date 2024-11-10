@@ -209,4 +209,22 @@ export default class RecruitmentServices {
 
     return faq;
   }
+
+  static async deleteChecklist(deleter: User, checklistId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete a checklist');
+
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId }
+    });
+
+    if (!checklist) throw new NotFoundException('Checklist', checklistId);
+
+    if (checklist.dateDeleted) throw new DeletedException('Checklist', checklistId);
+
+    await prisma.checklist.update({
+      where: { checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+  }
 }
