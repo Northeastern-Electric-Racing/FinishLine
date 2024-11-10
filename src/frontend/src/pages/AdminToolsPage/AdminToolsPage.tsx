@@ -18,7 +18,7 @@ import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
-import EditDescription from './EditGuestView/EditDescription';
+import GuestViewConfig from './EditGuestView/GuestViewConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -95,7 +95,7 @@ const AdminToolsPage: React.FC = () => {
         <AdminToolsRecruitmentConfig />
       ) : tabIndex === 4 ? (
         <Box>
-          <EditDescription />
+          <GuestViewConfig />
         </Box>
       ) : (
         <Box>
