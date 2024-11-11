@@ -14,4 +14,6 @@ onboardingRouter.post(
   OnboardingController.createChecklist
 );
 
+onboardingRouter.delete('/checklist/:checklistId/delete', OnboardingController.deleteChecklist);
+
 export default onboardingRouter;

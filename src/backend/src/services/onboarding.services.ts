@@ -2,7 +2,7 @@ import { Organization, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin } from 'shared';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 
 export default class OnboardingServices {
   /**
@@ -38,5 +38,23 @@ export default class OnboardingServices {
       }
     });
     return checklist;
+  }
+
+  static async deleteChecklist(deleter: User, checklistId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete a checklist');
+
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId }
+    });
+
+    if (!checklist) throw new NotFoundException('Checklist', checklistId);
+
+    if (checklist.dateDeleted) throw new DeletedException('Checklist', checklistId);
+
+    await prisma.checklist.update({
+      where: { checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
   }
 }
