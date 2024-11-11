@@ -183,6 +183,7 @@ const performSeed: () => Promise<void> = async () => {
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
   await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
+  const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -1893,9 +1894,21 @@ const performSeed: () => Promise<void> = async () => {
 
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
 
-  await OnboardingServices.createChecklist(batman, 'Checklist 1', teamType1.teamTypeId, ner);
+  const checklist1 = await OnboardingServices.createChecklist(batman, 'Checklist 1', teamType1.teamTypeId, ner);
   await OnboardingServices.createChecklist(batman, 'Checklist 2', teamType2.teamTypeId, ner);
   await OnboardingServices.createChecklist(batman, 'Checklist 3', teamType3.teamTypeId, ner);
+
+  // for testing purposes, will use the setUserChecklist endpoint once it has been created
+  await prisma.user.update({
+    where: {
+      userId: patrick.userId
+    },
+    data: {
+      onboardingChecklists: {
+        connect: { checklistId: checklist1.checklistId }
+      }
+    }
+  });
 };
 
 performSeed()
