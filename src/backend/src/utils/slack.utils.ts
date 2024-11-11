@@ -404,7 +404,6 @@ export const sendSlackCRReviewedNotification = async (
 ) => {
   if (process.env.NODE_ENV !== 'production') return; // don't send msgs unless in prod
   const msgs = [];
-  // let fullMsg;
   const fullMsg = `:tada: Your Change Request was just reviewed!${
     comments ? `\n Comments: ${comments}` : ''
   }\nClick the link to view! :tada:`;
