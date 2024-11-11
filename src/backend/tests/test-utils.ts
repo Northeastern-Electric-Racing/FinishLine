@@ -116,6 +116,7 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.checklistItem.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
@@ -260,6 +261,32 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
     }
   });
   return milestone;
+};
+
+export const createTestChecklist = async (user: User, organizationId: string) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create checklist');
+
+  const checklist = await prisma.checklist.create({
+    data: {
+      name: 'Checklist 1',
+      organizationId,
+      userCreatedId: user.userId,
+      dateCreated: new Date('11/04/2024'),
+      checklistItems: {
+        create: [
+          {
+            name: 'Test Item 1',
+            description: 'Test Description',
+            organizationId,
+            userCreatedId: user.userId,
+            dateCreated: new Date('03/03/2024')
+          }
+        ]
+      }
+    }
+  });
+  return checklist;
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {
