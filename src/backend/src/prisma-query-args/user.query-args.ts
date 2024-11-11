@@ -15,7 +15,8 @@ export const getUserQueryArgs = (organizationId: string) =>
           organizationId
         }
       },
-      organizations: true
+      organizations: true,
+      onboardingChecklists: true
     }
   });
 
@@ -29,7 +30,8 @@ export const getUserWithSettingsQueryArgs = (organizationId: string) =>
       },
       drScheduleSettings: getUserScheduleSettingsQueryArgs(),
       userSettings: true,
-      organizations: true
+      organizations: true,
+      onboardingChecklists: true
     }
   });
 

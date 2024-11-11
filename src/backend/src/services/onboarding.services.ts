@@ -39,4 +39,35 @@ export default class OnboardingServices {
     });
     return checklist;
   }
+
+  static async updateUserChecklists(submitter: User, userId: string, checklistId: string[], organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('non-admin tried to update a checklist');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User', userId);
+    }
+
+    const checklists = await prisma.checklist.findMany({
+      where: { checklistId: { in: checklistId } }
+    });
+
+    if (checklists.length !== checklistId.length) {
+      throw new NotFoundException('Checklist', 'one or more checklistId');
+    }
+
+    await prisma.user.update({
+      where: { userId },
+      data: {
+        onboardingChecklists: {
+          set: checklistId.map((checklistId) => ({ checklistId }))
+        }
+      }
+    });
+  }
 }

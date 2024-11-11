@@ -12,4 +12,16 @@ export default class OnboardingController {
       return next(error);
     }
   }
+
+  static async updateUserChecklists(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const { checklistId } = req.body;
+
+      await OnboardingServices.updateUserChecklists(req.currentUser, userId, checklistId, req.organization);
+      return res.status(200).json({ message: 'Checklist updated successfully' });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

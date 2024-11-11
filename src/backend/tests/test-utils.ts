@@ -328,6 +328,29 @@ export const createTestProject = async (user: User, organizationId?: string): Pr
   return genesisProject;
 };
 
+export const createTestChecklist = async (orgId: string, checklistId: string) => {
+  const user = await prisma.user.create({
+    data: {
+      firstName: 'ADMIN',
+      lastName: 'FAQ',
+      email: 'FAQCREATOR@gmail.com',
+      googleAuthId: 'FAQCREATOR'
+    }
+  });
+
+  return await prisma.checklist.create({
+    data: {
+      checklistId,
+      checklistItems: {
+        create: []
+      },
+      name: 'Checklist1',
+      userCreatedId: user.userId,
+      organizationId: orgId
+    }
+  });
+};
+
 export const createTestReimbursementRequest = async () => {
   const organization = await createTestOrganization();
   await createFinanceTeamAndLead(organization);
