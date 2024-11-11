@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import OnboardingServices from '../services/onboarding.services';
-import { check } from 'prettier';
 
 export default class OnboardingController {
   static async createChecklist(req: Request, res: Response, next: NextFunction) {

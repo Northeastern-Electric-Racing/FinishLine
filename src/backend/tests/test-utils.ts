@@ -116,6 +116,7 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.checklistItem.deleteMany();
   await prisma.checklist.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
@@ -260,6 +261,20 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
     }
   });
   return milestone;
+};
+
+export const createTestChecklist = async (submitter: User, checklistId: string, organization: Organization) => {
+  return await prisma.checklist.create({
+    data: {
+      checklistId,
+      name: 'Checklist 1',
+      checklistItems: {
+        create: []
+      },
+      userCreatedId: submitter.userId,
+      organizationId: organization.organizationId
+    }
+  });
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {

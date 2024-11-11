@@ -134,6 +134,7 @@ export type ExceptionObjectNames =
   | 'Design Review'
   | 'Team Type'
   | 'Checklist'
+  | 'Checklist Item'
   | 'Work Package Template'
   | 'Description Bullet Type'
   | 'Organization'

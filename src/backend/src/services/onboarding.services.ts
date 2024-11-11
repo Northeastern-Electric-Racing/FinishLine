@@ -13,17 +13,19 @@ export default class OnboardingServices {
    * @param organization the organization of the checklist
    * @returns a newly created checklist
    */
-  static async createChecklist(submitter: User, name: string, teamTypeId: string, organization: Organization) {
+  static async createChecklist(submitter: User, name: string, teamTypeId: string | null, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('non-admin tried to create a checklist');
     }
 
-    const teamType = await prisma.team_Type.findUnique({
-      where: { teamTypeId }
-    });
+    if (teamTypeId) {
+      const teamType = await prisma.team_Type.findUnique({
+        where: { teamTypeId }
+      });
 
-    if (!teamType) {
-      throw new NotFoundException('Team Type', teamTypeId);
+      if (!teamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
+      }
     }
 
     const checklist = await prisma.checklist.create({
@@ -54,8 +56,8 @@ export default class OnboardingServices {
     submitter: User,
     name: string,
     checklistId: string,
-    description: string,
-    parentChecklistItemId: string,
+    parentChecklistItemId: string | null,
+    description: string | null,
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -70,6 +72,16 @@ export default class OnboardingServices {
       throw new NotFoundException('Checklist', checklistId);
     }
 
+    if (parentChecklistItemId) {
+      const parentChecklistItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: parentChecklistItemId }
+      });
+
+      if (!parentChecklistItem) {
+        throw new NotFoundException('Checklist Item', parentChecklistItemId);
+      }
+    }
+
     const checklistItem = await prisma.checklistItem.create({
       data: {
         name,
@@ -80,6 +92,7 @@ export default class OnboardingServices {
         organizationId: organization.organizationId
       }
     });
+
     return checklistItem;
   }
 }

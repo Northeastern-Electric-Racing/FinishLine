@@ -9,7 +9,7 @@ const onboardingRouter = express.Router();
 onboardingRouter.post(
   '/checklist/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('teamTypeId')),
+  nonEmptyString(body('teamTypeId')).optional(),
   validateInputs,
   OnboardingController.createChecklist
 );
