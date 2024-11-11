@@ -13,8 +13,7 @@ import {
   createTestFAQ,
   createTestOrganization,
   createTestUser,
-  resetUsers,
-  createTestChecklist
+  resetUsers
 } from '../test-utils';
 import {
   batmanAppAdmin,

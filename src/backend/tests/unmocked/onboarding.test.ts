@@ -2,7 +2,12 @@ import { Organization } from '@prisma/client';
 import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../../src/utils/errors.utils';
 import prisma from '../../src/prisma/prisma';
 
 describe('Onboarding tests', () => {
