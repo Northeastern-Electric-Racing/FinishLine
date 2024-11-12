@@ -194,6 +194,24 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new NotFoundException('Checklist Item', 'parentChecklistItemId'));
     });
 
+    it('Fails if checklist of parent checklist item does not equal given checklist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklist1 = await createTestChecklist(testBatman, orgId);
+      const testChecklist2 = await createTestChecklist(testBatman, orgId);
+      const testParentChecklistItem = await createTestChecklistItem(testBatman, testChecklist1.checklistId, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklistItem(
+            testBatman,
+            'name',
+            testChecklist2.checklistId,
+            testParentChecklistItem.checklistItemId,
+            'description',
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Cannot have parent checklist item with a different checklist'));
+    });
+
     it('Succeeds and creates a checklist item', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;

@@ -1906,6 +1906,7 @@ const performSeed: () => Promise<void> = async () => {
     'Download Visual Studio Code',
     ner
   );
+
   await OnboardingServices.createChecklistItem(
     batman,
     'Checklist Item 2',

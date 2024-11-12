@@ -2,7 +2,7 @@ import { Organization, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin } from 'shared';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 
 export default class OnboardingServices {
   /* Checklist section */
@@ -130,6 +130,10 @@ export default class OnboardingServices {
 
       if (!parentChecklistItem) {
         throw new NotFoundException('Checklist Item', parentChecklistItemId);
+      }
+
+      if (parentChecklistItem.checklistId !== checklistId) {
+        throw new HttpException(400, 'Cannot have parent checklist item with a different checklist');
       }
     }
 
