@@ -30,6 +30,30 @@ describe('Onboarding tests', () => {
     await resetUsers();
   });
 
+  describe('Get all Checklists', () => {
+    it('Gets all checklists and checklistItems for the given organization', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const checklist1 = await createTestChecklist(batman, orgId);
+      const checklist2 = await createTestChecklist(batman, orgId);
+      const allChecklists = await OnboardingServices.getAllChecklists(organization);
+      expect(allChecklists[0].checklistId).toEqual(checklist1.checklistId);
+      expect(allChecklists[1].checklistId).toEqual(checklist2.checklistId);
+      expect(allChecklists[0].checklistItems.length).toEqual(1);
+    });
+
+    it('Gets all checklists and checklistItems that are not deleted', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const checklist1 = await createTestChecklist(batman, orgId);
+      await prisma.checklist.update({
+        where: { checklistId: checklist1.checklistId },
+        data: { checklistItems: { deleteMany: {} } }
+      });
+      const allChecklists = await OnboardingServices.getAllChecklists(organization);
+      expect(allChecklists.length).toEqual(1);
+      expect(allChecklists[0].checklistItems.length).toEqual(0);
+    });
+  });
+
   describe('Create Checklist', () => {
     it('Fails if user is not admin', async () => {
       await expect(
@@ -170,7 +194,7 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new NotFoundException('Checklist Item', 'parentChecklistItemId'));
     });
 
-    it('Succeeds and creates a checklist', async () => {
+    it('Succeeds and creates a checklist item', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
       const result = await OnboardingServices.createChecklistItem(

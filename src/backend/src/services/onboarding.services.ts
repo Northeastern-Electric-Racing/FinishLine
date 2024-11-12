@@ -5,6 +5,26 @@ import { isAdmin } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 
 export default class OnboardingServices {
+  /* Checklist section */
+
+  /**
+   * gets all checklists for the given organization
+   * @param organization the organization of the checklists
+   * @returns all checklists for the given organization
+   */
+  static async getAllChecklists(organization: Organization) {
+    const allChecklists = prisma.checklist.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      include: {
+        checklistItems: {
+          where: { dateDeleted: null }
+        }
+      }
+    });
+
+    return allChecklists;
+  }
+
   /**
    * Creates a new checklist in the given organization Id.
    * @param submitter a user who is making the request
@@ -41,6 +61,37 @@ export default class OnboardingServices {
     });
     return checklist;
   }
+
+  /**
+   * Deletes a checklist in the given checklist Id.
+   * @param deleter a user who is making the request
+   * @param checklistId the checklist
+   * @param organization the organization of the checklist
+   */
+  static async deleteChecklist(deleter: User, checklistId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete a checklist');
+
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId }
+    });
+
+    if (!checklist) throw new NotFoundException('Checklist', checklistId);
+
+    if (checklist.dateDeleted) throw new DeletedException('Checklist', checklistId);
+
+    await prisma.checklistItem.updateMany({
+      where: { checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+
+    await prisma.checklist.update({
+      where: { checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+  }
+
+  /* Checklist Item section */
 
   /**
    * Creates a new checklist item in the given checklist Id.
@@ -94,35 +145,6 @@ export default class OnboardingServices {
     });
 
     return checklistItem;
-  }
-
-  /**
-   * Deletes a checklist in the given checklist Id.
-   * @param deleter a user who is making the request
-   * @param checklistId the checklist
-   * @param organization the organization of the checklist
-   */
-  static async deleteChecklist(deleter: User, checklistId: string, organization: Organization) {
-    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('delete a checklist');
-
-    const checklist = await prisma.checklist.findUnique({
-      where: { checklistId }
-    });
-
-    if (!checklist) throw new NotFoundException('Checklist', checklistId);
-
-    if (checklist.dateDeleted) throw new DeletedException('Checklist', checklistId);
-
-    await prisma.checklistItem.updateMany({
-      where: { checklistId },
-      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
-    });
-
-    await prisma.checklist.update({
-      where: { checklistId },
-      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
-    });
   }
 
   /**
