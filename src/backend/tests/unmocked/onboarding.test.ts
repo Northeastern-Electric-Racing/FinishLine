@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { createTestChecklist, createTestChecklistItem, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
@@ -155,21 +155,27 @@ describe('Onboarding tests', () => {
       const updatedTestChecklist1 = await prisma.checklist.findUnique({
         where: { checklistId: testChecklist1.checklistId }
       });
+
       expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
     });
 
-    /*
     it('Succeeds and deletes checklist with all its items', async () => {
       const testSuperman = await createTestUser(supermanAdmin, orgId);
       const testChecklist1 = await createTestChecklist(testSuperman, orgId);
       await OnboardingServices.deleteChecklist(testSuperman, testChecklist1.checklistId, organization);
+      expect(testChecklist1.checklistItems.length).toBe(1);
 
       const updatedTestChecklist1 = await prisma.checklist.findUnique({
-        where: { checklistId: testChecklist1.checklistId }
+        where: { checklistId: testChecklist1.checklistId },
+        include: {
+          checklistItems: {
+            where: { dateDeleted: null }
+          }
+        }
       });
+
       expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
-      expect(testChecklist1.checklist.dateDeleted).not.toBe(null);
+      expect(updatedTestChecklist1?.checklistItems.length).toBe(0);
     });
-    */
   });
 });
