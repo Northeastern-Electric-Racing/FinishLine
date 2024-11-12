@@ -9,6 +9,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import GuestOrganizationInfo from './components/GuestOrganizationInfo';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
