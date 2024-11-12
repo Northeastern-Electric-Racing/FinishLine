@@ -28,8 +28,8 @@ const authenticatedUserTransformer = (
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
     organizations: user.organizations.map((organization) => organization.organizationId),
     currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId),
-    teamsAsHeadId: user.teamsAsHead.map(teamTransformer),
-    teamsAsLeadId: user.teamsAsLead.map(teamTransformer)
+    teamsAsHead: user.teamsAsHead.map(teamTransformer),
+    teamsAsLead: user.teamsAsLead.map(teamTransformer)
   };
 };
 

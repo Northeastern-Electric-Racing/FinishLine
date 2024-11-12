@@ -24,3 +24,13 @@ export const transformDate = (date: Date) => {
   const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
   return `${date.getFullYear().toString()}/${month}/${day}`;
 };
+
+export const formatDate = (date: Date) => {
+  const month = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
+  const day = date.getDate() + 1 < 10 ? `0${date.getDate() + 1}` : (date.getDate() + 1).toString();
+  return `${month}/${day}/${date.getFullYear().toString()}`;
+};
+
+export const daysOverdue = (deadline: Date) => {
+  return Math.round((new Date().getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
+};

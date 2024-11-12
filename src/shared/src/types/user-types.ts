@@ -65,8 +65,8 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
-  teamsAsHeadId: Team[];
-  teamsAsLeadId: Team[];
+  teamsAsHead?: Team[];
+  teamsAsLead?: Team[];
 }
 
 export interface UserSettings {
