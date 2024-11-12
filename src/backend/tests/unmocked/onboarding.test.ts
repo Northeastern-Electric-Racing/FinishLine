@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import { createTestChecklist, createTestChecklistItem, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
@@ -157,5 +157,19 @@ describe('Onboarding tests', () => {
       });
       expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
     });
+
+    /*
+    it('Succeeds and deletes checklist with all its items', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testChecklist1 = await createTestChecklist(testSuperman, orgId);
+      await OnboardingServices.deleteChecklist(testSuperman, testChecklist1.checklistId, organization);
+
+      const updatedTestChecklist1 = await prisma.checklist.findUnique({
+        where: { checklistId: testChecklist1.checklistId }
+      });
+      expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
+      expect(testChecklist1.checklist.dateDeleted).not.toBe(null);
+    });
+    */
   });
 });
