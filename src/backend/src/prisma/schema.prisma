@@ -180,6 +180,8 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
+  unreadAnnouncements             Announcement[]
+  unreadNotifications             Notification[]
 }
 
 model Role {
@@ -926,4 +928,19 @@ model Milestone {
   dateDeleted    DateTime?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Announcement {
+  announcementId String   @id @default(uuid())
+  userCreated    User     @relation(fields: [userCreatedId], references: [userId])
+  userCreatedId  String
+  dateCrated     DateTime
+}
+
+model Notification {
+  notificationId String  @id @default(uuid())
+  text           String
+  iconName       String
+  User           User?   @relation(fields: [userId], references: [userId])
+  userId         String?
 }
