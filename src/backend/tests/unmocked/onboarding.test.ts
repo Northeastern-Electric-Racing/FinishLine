@@ -92,13 +92,13 @@ describe('Onboarding tests', () => {
 
     it('Succeeds and creates a checklist', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      createTestChecklist(testBatman, 'id', organization);
+      createTestChecklist(testBatman, 'id');
       const result = await OnboardingServices.createChecklistItem(testBatman, 'name', 'id', null, null, organization);
       expect(result.name).toEqual('name');
       expect(result.checklistId).toEqual('id');
     });
   });
-   
+
   describe('Delete Checklist', () => {
     it('Fails if user is not admin', async () => {
       await expect(

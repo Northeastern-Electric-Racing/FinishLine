@@ -25,10 +25,12 @@ export default class OnboardingController {
         parentChecklistItemId,
         req.organization
       );
-      return res.status(200).json(checklist);
+      res.status(200).json(checklist);
+    } catch (error: unknown) {
+      return next(error);
     }
   }
-  
+
   static async deleteChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { checklistId } = req.params;
