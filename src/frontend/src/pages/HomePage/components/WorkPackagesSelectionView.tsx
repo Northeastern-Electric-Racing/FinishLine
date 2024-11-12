@@ -81,6 +81,7 @@ const WorkPackagesSelectionView: React.FC = () => {
         flexDirection: 'column',
         flexWrap: 'nowrap',
         overflowY: 'auto',
+        overflowX: 'hidden',
         justifyContent: 'flex-start',
         height: '40vh',
         gap: 2,
@@ -91,16 +92,16 @@ const WorkPackagesSelectionView: React.FC = () => {
           backgroundColor: 'transparent'
         },
         '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.divider,
+          backgroundColor: theme.palette.primary.main,
           borderRadius: '20px',
           border: '6px solid transparent',
           backgroundClip: 'content-box'
         }
       }}
     >
-      <Grid container rowSpacing={2} columnSpacing={0}>
+      <Grid container rowSpacing={2}>
         {workPackages.map((wp) => (
-          <Grid item sm={12} md={6}>
+          <Grid item xs={12} md={6}>
             <Box key={wbsPipe(wp.wbsNum)}>
               <WorkPackageCard wp={wp} />
             </Box>
@@ -113,16 +114,14 @@ const WorkPackagesSelectionView: React.FC = () => {
   const currentWps = getWorkPackages(currentDisplayedWPs);
 
   return (
-    <Box sx={{ width: '66%', height: '40%', float: 'left' }}>
-      <PageBlock>
-        <WorkPackageSelect
-          options={workPackages.map((wp) => wp[0])}
-          onSelect={handleChange}
-          firstSelected={currentDisplayedWPs}
-        />
-        {currentWps.length === 0 ? <NoWorkPackages /> : workPackagesDisplay(currentWps)}
-      </PageBlock>
-    </Box>
+    <PageBlock>
+      <WorkPackageSelect
+        options={workPackages.map((wp) => wp[0])}
+        onSelect={handleChange}
+        firstSelected={currentDisplayedWPs}
+      />
+      {currentWps.length === 0 ? <NoWorkPackages /> : workPackagesDisplay(currentWps)}
+    </PageBlock>
   );
 };
 
