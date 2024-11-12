@@ -80,6 +80,11 @@ export default class OnboardingServices {
 
     if (checklist.dateDeleted) throw new DeletedException('Checklist', checklistId);
 
+    await prisma.checklistItem.updateMany({
+      where: { checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+
     await prisma.checklist.update({
       where: { checklistId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }

@@ -6,7 +6,7 @@ import OnboardingController from '../controllers/onboarding.controller';
 const onboardingRouter = express.Router();
 
 /* Checklists Section */
-onboardingRouter.get('/checklist/', OnboardingController.getAllChecklists);
+onboardingRouter.get('/checklist', OnboardingController.getAllChecklists);
 
 onboardingRouter.post(
   '/checklist/create',
