@@ -59,7 +59,7 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to create a checklist'));
     });
 
-    it('Fails if team type does not exits', async () => {
+    it('Fails if team type does not exists', async () => {
       await expect(
         async () =>
           await OnboardingServices.createChecklist(
@@ -71,7 +71,7 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new NotFoundException('Team Type', 'teamType'));
     });
 
-    it('Suceeds and creates a checklist', async () => {
+    it('Succeeds and creates a checklist', async () => {
       createTestTeamType('id', organization);
       const result = await OnboardingServices.createChecklist(
         await createTestUser(batmanAppAdmin, orgId),
@@ -81,6 +81,67 @@ describe('Onboarding tests', () => {
       );
       expect(result.name).toEqual('name');
       expect(result.teamTypeId).toEqual('id');
+    });
+  });
+
+  describe('Create Checklist Item', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklistItem(
+            await createTestUser(wonderwomanGuest, orgId),
+            'name',
+            'checklistId',
+            'description',
+            'parentChecklistItemId',
+            organization
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to create a checklist item'));
+    });
+
+    it('Fails if checklist does not exist', async () => {
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklistItem(
+            await createTestUser(batmanAppAdmin, orgId),
+            'name',
+            'checklistId',
+            'description',
+            null,
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Checklist', 'checklistId'));
+    });
+
+    it('Fails if parent checklist item does not exist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklistItem(
+            testBatman,
+            'name',
+            testChecklistId,
+            'parentChecklistItemId',
+            'description',
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Checklist Item', 'parentChecklistItemId'));
+    });
+
+    it('Succeeds and creates a checklist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      const result = await OnboardingServices.createChecklistItem(
+        testBatman,
+        'name',
+        testChecklistId,
+        null,
+        null,
+        organization
+      );
+      expect(result.name).toEqual('name');
+      expect(result.checklistId).toEqual(testChecklistId);
     });
   });
 
