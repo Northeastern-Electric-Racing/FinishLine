@@ -5,13 +5,30 @@ import OnboardingController from '../controllers/onboarding.controller';
 
 const onboardingRouter = express.Router();
 
-/* User Checklists Section */
+/* Checklists Section */
+onboardingRouter.get('/checklists', OnboardingController.getAllChecklists);
+
 onboardingRouter.post(
   '/checklist/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('teamTypeId')),
+  nonEmptyString(body('teamTypeId')).optional(),
   validateInputs,
   OnboardingController.createChecklist
 );
+
+onboardingRouter.delete('/checklist/:checklistId/delete', OnboardingController.deleteChecklist);
+
+/* Checklist Items Section */
+onboardingRouter.post(
+  '/checklist/item/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('checklistId')),
+  nonEmptyString(body('description').optional()),
+  nonEmptyString(body('parentChecklistItemId').optional()),
+  validateInputs,
+  OnboardingController.createChecklistItem
+);
+
+onboardingRouter.delete('/checklist/item/:checklistItemId/delete', OnboardingController.deleteChecklistItem);
 
 export default onboardingRouter;

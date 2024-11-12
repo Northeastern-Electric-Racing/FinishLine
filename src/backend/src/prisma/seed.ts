@@ -48,7 +48,8 @@ const performSeed: () => Promise<void> = async () => {
       name: 'NER',
       userCreatedId: thomasEmrax.userId,
       description:
-        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).'
+        'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
+      applicationLink: 'https://northeastern.campuslabs.com/engage/submitter/form/start/491315'
     }
   });
 
@@ -1895,8 +1896,25 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
 
   const checklist1 = await OnboardingServices.createChecklist(batman, 'Checklist 1', teamType1.teamTypeId, ner);
-  await OnboardingServices.createChecklist(batman, 'Checklist 2', teamType2.teamTypeId, ner);
+  const checklist2 = await OnboardingServices.createChecklist(batman, 'Checklist 2', teamType2.teamTypeId, ner);
   await OnboardingServices.createChecklist(batman, 'Checklist 3', teamType3.teamTypeId, ner);
+
+  const checklistItem1 = await OnboardingServices.createChecklistItem(
+    batman,
+    'Checklist Item 1',
+    checklist1.checklistId,
+    null,
+    'Download Visual Studio Code',
+    ner
+  );
+  await OnboardingServices.createChecklistItem(
+    batman,
+    'Checklist Item 2',
+    checklist1.checklistId,
+    checklistItem1.checklistItemId,
+    'Donwload Node.js',
+    ner
+  );
 
   // for testing purposes, will use the setUserChecklist endpoint once it has been created
   await prisma.user.update({

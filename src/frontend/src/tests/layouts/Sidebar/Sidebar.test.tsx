@@ -4,17 +4,18 @@
  */
 
 import { render, routerWrapperBuilder, screen } from '../../test-support/test-utils';
-import Sidebar from '../../../layouts/Sidebar/Sidebar';
 import { mockGetVersionNumberReturnValue } from '../../test-support/mock-hooks';
 import * as miscHooks from '../../../hooks/misc.hooks';
 import { exampleAdminUser } from '../../test-support/test-data/users.stub';
 import * as userHooks from '../../../hooks/users.hooks';
+import Sidebar from '../../../layouts/Sidebar/Sidebar';
 
 /**
  * Sets up the component under test with the desired values and renders it.
  */
 const renderComponent = () => {
   const RouterWrapper = routerWrapperBuilder({});
+
   return render(
     <RouterWrapper>
       <Sidebar drawerOpen={true} setDrawerOpen={() => {}} moveContent={true} setMoveContent={() => {}} />
@@ -26,6 +27,7 @@ describe('Sidebar Tests', () => {
   it('Renders Navigation Links', () => {
     vi.spyOn(miscHooks, 'useGetVersionNumber').mockReturnValue(mockGetVersionNumberReturnValue({ tag_name: 'v3.5.4' }));
     vi.spyOn(userHooks, 'useCurrentUser').mockReturnValue(exampleAdminUser);
+
     renderComponent();
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();
     expect(screen.getByText(/Change Requests/i)).toBeInTheDocument();
