@@ -1,5 +1,5 @@
 import { wbsPipe, WorkPackage } from 'shared';
-import { Box, MenuItem, Select, useTheme, SelectChangeEvent } from '@mui/material';
+import { Box, Grid, useTheme } from '@mui/material';
 import {
   getInProgressWorkPackages,
   getOverdueWorkPackages,
@@ -8,63 +8,70 @@ import {
 import { useCurrentUser } from '../../../hooks/users.hooks';
 import PageBlock from '../../../layouts/PageBlock';
 import WorkPackageCard from './WorkPackageCard';
-import { useEffect, useState } from 'react';
+import WorkPackageSelect from './WorkPackageSelect';
+import React, { useState } from 'react';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+
+const NoWorkPackages: React.FC = () => {
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        height: '40vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      <EmptyPageBlockDisplay
+        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
+        heading={`You're all caught up!`}
+        message={'You have no pending work packages of this type!'}
+      />
+    </Box>
+  );
+};
 
 const WorkPackagesSelectionView: React.FC = () => {
   const user = useCurrentUser();
   const theme = useTheme();
 
-  enum WPGroup {
-    upcoming = 'upcoming',
-    inProgress = 'inProgress',
-    overdue = 'overdue'
-  }
-  const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<WPGroup>(WPGroup.upcoming);
+  const relevantWPs = user.teamsAsHead
+    ? user.teamsAsHead.map((team) => team.projects.map((project) => project.workPackages)).flat(2)
+    : [];
 
-  const setCookie = (name: string, value: string, days: number) => {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    const expires = 'expires=' + date.toUTCString();
-    document.cookie = `${name}=${value}; ${expires}; path=/`;
-  };
-
-  useEffect(() => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; wpGroup=`);
-    let savedGroup;
-    if (parts.length === 2) {
-      savedGroup = parts.pop()?.split(';').shift();
-    }
-    if (savedGroup) {
-      setCurrentDisplayedWPs(savedGroup as WPGroup);
-    }
-  }, []);
-
-  if (!user.teamAsHeadId) {
-    throw new Error('rwge4rwa');
-  }
-
-  const relevantWPs = user.teamsAsHeadId.map((team) => team.projects.map((project) => project.workPackages)).flat(2);
+  relevantWPs.concat(
+    user.teamsAsLead ? user.teamsAsLead.map((team) => team.projects.map((project) => project.workPackages)).flat(2) : []
+  );
 
   const upcomingWPs: WorkPackage[] = getUpcomingWorkPackages(relevantWPs);
   const inProgressWPs: WorkPackage[] = getInProgressWorkPackages(relevantWPs);
   const overdueWPs: WorkPackage[] = getOverdueWorkPackages(relevantWPs);
 
-  const handleChange = (event: SelectChangeEvent) => {
-    const value = event.target.value as WPGroup;
-    setCookie('wpGroup', value, 7);
-    setCurrentDisplayedWPs(value);
+  const workPackages: [string, WorkPackage[]][] = [
+    [`Upcoming Work Packages (${upcomingWPs.length})`, upcomingWPs],
+    [`In Progress Work Packages (${inProgressWPs.length})`, inProgressWPs],
+    [`Overdue Work Packages (${overdueWPs.length})`, overdueWPs]
+  ];
+
+  let defaultFirstDisplay = 2;
+  if (workPackages[2][1].length === 0) {
+    defaultFirstDisplay = 1;
+    if (workPackages[1][1].length === 0) {
+      defaultFirstDisplay = 0;
+    }
+  }
+
+  const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
+
+  const handleChange = (event: number) => {
+    setCurrentDisplayedWPs(event);
   };
 
-  const getWorkPackages = (key: WPGroup): WorkPackage[] => {
-    switch (key) {
-      case WPGroup.upcoming:
-        return upcomingWPs;
-      case WPGroup.inProgress:
-        return inProgressWPs;
-      case WPGroup.overdue:
-        return overdueWPs;
-    }
+  const getWorkPackages = (key: number): WorkPackage[] => {
+    return workPackages[key][1];
   };
 
   const workPackagesDisplay = (workPackages: WorkPackage[]) => (
@@ -75,7 +82,7 @@ const WorkPackagesSelectionView: React.FC = () => {
         flexWrap: 'nowrap',
         overflowY: 'auto',
         justifyContent: 'flex-start',
-        height: '50vh',
+        height: '40vh',
         gap: 2,
         '&::-webkit-scrollbar': {
           width: '20px'
@@ -91,25 +98,29 @@ const WorkPackagesSelectionView: React.FC = () => {
         }
       }}
     >
-      {workPackages.length === 0
-        ? `No work packages`
-        : workPackages.map((wp) => (
+      <Grid container rowSpacing={2} columnSpacing={0}>
+        {workPackages.map((wp) => (
+          <Grid item sm={12} md={6}>
             <Box key={wbsPipe(wp.wbsNum)}>
               <WorkPackageCard wp={wp} />
             </Box>
-          ))}
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 
+  const currentWps = getWorkPackages(currentDisplayedWPs);
+
   return (
-    <Box sx={{ width: '40%', float: 'left' }}>
+    <Box sx={{ width: '66%', height: '40%', float: 'left' }}>
       <PageBlock>
-        <Select value={currentDisplayedWPs.toString()} disableUnderline variant="standard" onChange={handleChange}>
-          <MenuItem value={WPGroup.upcoming.toString()}>Upcoming Work Packages</MenuItem>
-          <MenuItem value={WPGroup.inProgress.toString()}>In Progress Work Packages</MenuItem>
-          <MenuItem value={WPGroup.overdue.toString()}>Overdue Work Packages</MenuItem>
-        </Select>
-        {workPackagesDisplay(getWorkPackages(currentDisplayedWPs))}
+        <WorkPackageSelect
+          options={workPackages.map((wp) => wp[0])}
+          onSelect={handleChange}
+          firstSelected={currentDisplayedWPs}
+        />
+        {currentWps.length === 0 ? <NoWorkPackages /> : workPackagesDisplay(currentWps)}
       </PageBlock>
     </Box>
   );

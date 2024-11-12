@@ -15,23 +15,34 @@ export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElemen
 /**
  * Given a list of work packages, return the work packages that are overdue.
  * @param wpList a list of work packages.
- * @returns a list of work packages that are overdue.
+ * @returns a sub-list of work packages that are not complete, and have end dates before the current date.
  */
 export const getOverdueWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
   return wpList.filter((wp) => wp.status !== WbsElementStatus.Complete && new Date(wp.endDate) <= new Date());
 };
 
+/**
+ * Given a list of work packages, return the work packages that are upcoming.
+ * @param wpList a list of work packages.
+ * @returns a sub-list of work packages that are active and have a start date within the next 2 weeks.
+ */
 export const getUpcomingWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
   return wpList.filter(
     (wp) =>
-      wp.status === WbsElementStatus.Inactive &&
-      //start date is within 2 weeks
-      wp.startDate < new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000) &&
-      //start date is in the future
-      wp.startDate > new Date()
+      wp.status !== WbsElementStatus.Complete &&
+      new Date(wp.startDate) <= new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000) &&
+      new Date(wp.startDate) >= new Date()
   );
 };
 
+/**
+ * Given a list of work packages, return the work packages that are in progress.
+ * @param wpList a list of work packages.
+ * @returns a sub-list of work packages that are active, have a start date in the past, and an end date in the future.
+ */
 export const getInProgressWorkPackages = (wpList: WorkPackage[]): WorkPackage[] => {
-  return wpList.filter((wp) => wp.status === WbsElementStatus.Active && wp.endDate >= new Date());
+  return wpList.filter(
+    (wp) =>
+      wp.status === WbsElementStatus.Active && new Date(wp.endDate) >= new Date() && new Date(wp.startDate) <= new Date()
+  );
 };
