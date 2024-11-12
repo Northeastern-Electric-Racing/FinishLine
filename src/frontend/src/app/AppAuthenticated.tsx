@@ -53,11 +53,11 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
     error: organizationError
   } = useCurrentOrganization();
 
-  if (organizationIsLoading || !organization || organizationIsError) {
-    return organizationIsError ? <ErrorPage message={organizationError.message} /> : <LoadingIndicator />;
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
   }
 
-  if (isLoading || !userSettingsData) return <LoadingIndicator />;
+  if (isLoading || !userSettingsData || !organization || organizationIsLoading) return <LoadingIndicator />;
 
   if (isError) {
     if ((error as Error).message === 'Authentication Failed: Invalid JWT!') {
