@@ -1,46 +1,55 @@
-import { Card, CardContent, Typography, useTheme } from '@mui/material';
+import { Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
 
 interface ScrollablePageBlockProps {
   children: React.ReactNode;
   title?: String;
+  horizontal?: boolean;
 }
 
-const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title }) => {
+const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title, horizontal }) => {
   const theme = useTheme();
   return (
     <Card
       sx={{
-        overflowY: 'auto',
-        '&::-webkit-scrollbar': {
-          height: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.error.dark,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        },
-        height: '100%',
+        height: horizontal ? 'auto' : '100%',
         my: 2,
         background: theme.palette.background.paper
       }}
       variant="outlined"
     >
-      <CardContent sx={{ height: `100%`, maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 200px)` }}>
-        {title && (
-          <Typography mb={1} variant="h5">
-            {title}
-          </Typography>
-        )}
-        {children}
+      {title && (
+        <Typography ml={2} mt={2} variant="h4">
+          {title}
+        </Typography>
+      )}
+      <CardContent
+        sx={{
+          marginTop: 1,
+          maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 100px)`,
+          flexWrap: 'nowrap',
+          overflow: 'auto',
+          justifyContent: 'flex-start',
+          '&::-webkit-scrollbar': {
+            height: '20px'
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: theme.palette.error.dark,
+            borderRadius: '20px',
+            border: '6px solid transparent',
+            backgroundClip: 'content-box'
+          }
+        }}
+      >
+        <Stack direction={horizontal ? 'row' : 'column'} spacing={2}>
+          {children}
+        </Stack>
       </CardContent>
     </Card>
   );
 };
-
 export default ScrollablePageBlock;
