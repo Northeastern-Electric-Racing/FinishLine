@@ -264,7 +264,12 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
   return milestone;
 };
 
-export const createTestChecklistItem = async (user: User, organizationId: string, checklistId: string) => {
+export const createTestChecklistItem = async (
+  user: User,
+  checklistId: string,
+  organizationId: string,
+  parentChecklistItemId?: string
+) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
   if (!organizationId) throw new Error('Failed to create organization');
 
@@ -274,7 +279,8 @@ export const createTestChecklistItem = async (user: User, organizationId: string
       description: 'Test Description',
       organizationId,
       userCreatedId: user.userId,
-      checklistId
+      checklistId,
+      parentChecklistItemId
     }
   });
   return checklistItem;
@@ -292,11 +298,14 @@ export const createTestChecklist = async (user: User, organizationId: string) =>
     }
   });
 
-  const checklistItem = await createTestChecklistItem(user, organizationId, checklist.checklistId);
+  const checklistItem = await createTestChecklistItem(user, checklist.checklistId, organizationId);
 
-  await prisma.checklist.update({
+  const updatedChecklist = await prisma.checklist.update({
     where: {
       checklistId: checklist.checklistId
+    },
+    include: {
+      checklistItems: true
     },
     data: {
       checklistItems: {
@@ -307,7 +316,7 @@ export const createTestChecklist = async (user: User, organizationId: string) =>
     }
   });
 
-  return checklist;
+  return updatedChecklist;
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {

@@ -133,12 +133,11 @@ export type ExceptionObjectNames =
   | 'Link Type'
   | 'Design Review'
   | 'Team Type'
-  | 'Checklist'
-  | 'Checklist Item'
   | 'Work Package Template'
   | 'Description Bullet Type'
   | 'Organization'
   | 'Car'
   | 'Milestone'
   | 'Faq'
-  | 'Checklist';
+  | 'Checklist'
+  | 'Checklist Item';
