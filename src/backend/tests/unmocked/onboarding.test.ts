@@ -1,11 +1,19 @@
 import { Organization } from '@prisma/client';
-import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import {
+  createTestChecklist,
+  createTestChecklistItem,
+  createTestOrganization,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   HttpException,
+  InvalidOrganizationException,
   NotFoundException
 } from '../../src/utils/errors.utils';
 import prisma from '../../src/prisma/prisma';
@@ -104,6 +112,24 @@ describe('Onboarding tests', () => {
             organization
           )
       ).rejects.toThrow(new NotFoundException('Checklist Item', 'parentChecklistItemId'));
+    });
+
+    it('Fails if checklist of parent checklist item does not equal given checklist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testParentChecklist = await createTestChecklist(testBatman, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      const testParentChecklistItem = await createTestChecklistItem(testBatman, orgId, testParentChecklist.checklistId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklistItem(
+            testBatman,
+            'name',
+            testChecklistId,
+            testParentChecklistItem.checklistItemId,
+            'description',
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Invalid checklist'));
     });
 
     it('Succeeds and creates a checklist', async () => {
