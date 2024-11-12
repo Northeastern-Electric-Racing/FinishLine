@@ -90,21 +90,35 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new NotFoundException('Checklist', 'checklistId'));
     });
 
+    it('Fails if parent checklist item does not exist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklistItem(
+            testBatman,
+            'name',
+            testChecklistId,
+            'parentChecklistItemId',
+            'description',
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Checklist Item', 'parentChecklistItemId'));
+    });
+
     it('Succeeds and creates a checklist', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testChecklist = createTestChecklist(testBatman, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
       const result = await OnboardingServices.createChecklistItem(
         testBatman,
         'name',
-        (
-          await testChecklist
-        ).checklistId,
+        testChecklistId,
         null,
         null,
         organization
       );
       expect(result.name).toEqual('name');
-      expect(result.checklistId).toEqual((await testChecklist).checklistId);
+      expect(result.checklistId).toEqual(testChecklistId);
     });
   });
 
