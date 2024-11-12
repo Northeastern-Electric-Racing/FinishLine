@@ -91,8 +91,17 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
             flexDirection: 'column'
           }}
         >
-          <Stack spacing={2} mt={isEmpty ? 12 : 10}>
-            {isEmpty ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
+          <Stack spacing={2} mt={isEmpty ? 12 : 8}>
+            {isEmpty ? (
+              <NoOverdueWPsDisplay />
+            ) : (
+              workPackages.map((wp) => (
+                <>
+                  <WorkPackageCard wp={wp} />
+                  <WorkPackageCard wp={wp} />
+                </>
+              ))
+            )}
           </Stack>
         </CardContent>
       </Card>
