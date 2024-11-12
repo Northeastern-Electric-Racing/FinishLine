@@ -13,7 +13,6 @@ import {
   AccessDeniedAdminOnlyException,
   DeletedException,
   HttpException,
-  InvalidOrganizationException,
   NotFoundException
 } from '../../src/utils/errors.utils';
 import prisma from '../../src/prisma/prisma';
