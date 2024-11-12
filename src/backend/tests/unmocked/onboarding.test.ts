@@ -92,10 +92,19 @@ describe('Onboarding tests', () => {
 
     it('Succeeds and creates a checklist', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      createTestChecklist(testBatman, 'id');
-      const result = await OnboardingServices.createChecklistItem(testBatman, 'name', 'id', null, null, organization);
+      const testChecklist = createTestChecklist(testBatman, orgId);
+      const result = await OnboardingServices.createChecklistItem(
+        testBatman,
+        'name',
+        (
+          await testChecklist
+        ).checklistId,
+        null,
+        null,
+        organization
+      );
       expect(result.name).toEqual('name');
-      expect(result.checklistId).toEqual('id');
+      expect(result.checklistId).toEqual((await testChecklist).checklistId);
     });
   });
 
