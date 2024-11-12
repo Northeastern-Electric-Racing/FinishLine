@@ -12,9 +12,9 @@ import ErrorPage from '../../ErrorPage';
 import { dateMonthDayYear } from '../../../utils/datetime.utils';
 
 const TimelineSection = () => {
-  const { isLoading, isError, error, data: mileStones } = useAllMilestones();
+  const { isLoading, isError, error, data: milestones } = useAllMilestones();
 
-  if (isLoading || !mileStones) return <LoadingIndicator />;
+  if (isLoading || !milestones) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
   const isPastEvent = (date: Date) => {
@@ -34,11 +34,11 @@ const TimelineSection = () => {
   return (
     <Grid>
       <Timeline position="alternate">
-        {mileStones.map((milestone, index) => (
+        {milestones.map((milestone, index) => (
           <TimelineItem key={index}>
             <TimelineSeparator>
               <TimelineDot color={getDotColor(milestone.dateOfEvent)} sx={{ width: '20px', height: '20px' }} />
-              {index < mileStones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
+              {index < milestones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
             </TimelineSeparator>
             <TimelineContent>
               <Typography variant="h4" sx={{ fontSize: 28 }}>
