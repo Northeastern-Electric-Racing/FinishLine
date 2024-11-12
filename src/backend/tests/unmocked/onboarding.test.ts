@@ -175,7 +175,7 @@ describe('Onboarding tests', () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const testParentChecklist = await createTestChecklist(testBatman, orgId);
       const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
-      const testParentChecklistItem = await createTestChecklistItem(testBatman, orgId, testParentChecklist.checklistId);
+      const testParentChecklistItem = await createTestChecklistItem(testBatman, testParentChecklist.checklistId, orgId);
       await expect(
         async () =>
           await OnboardingServices.createChecklistItem(
