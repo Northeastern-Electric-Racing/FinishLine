@@ -13,6 +13,24 @@ export default class OnboardingController {
     }
   }
 
+  static async createChecklistItem(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, checklistId, description, parentChecklistItemId } = req.body;
+
+      const checklist = await OnboardingServices.createChecklistItem(
+        req.currentUser,
+        name,
+        checklistId,
+        description,
+        parentChecklistItemId,
+        req.organization
+      );
+      res.status(200).json(checklist);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async deleteChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { checklistId } = req.params;

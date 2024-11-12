@@ -9,9 +9,19 @@ const onboardingRouter = express.Router();
 onboardingRouter.post(
   '/checklist/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('teamTypeId')),
+  nonEmptyString(body('teamTypeId')).optional(),
   validateInputs,
   OnboardingController.createChecklist
+);
+
+onboardingRouter.post(
+  '/checklist/item/create',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('checklistId')),
+  nonEmptyString(body('description').optional()),
+  nonEmptyString(body('parentChecklistItemId').optional()),
+  validateInputs,
+  OnboardingController.createChecklistItem
 );
 
 onboardingRouter.delete('/checklist/:checklistId/delete', OnboardingController.deleteChecklist);

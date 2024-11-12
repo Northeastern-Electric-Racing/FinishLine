@@ -13,17 +13,19 @@ export default class OnboardingServices {
    * @param organization the organization of the checklist
    * @returns a newly created checklist
    */
-  static async createChecklist(submitter: User, name: string, teamTypeId: string, organization: Organization) {
+  static async createChecklist(submitter: User, name: string, teamTypeId: string | null, organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('non-admin tried to create a checklist');
     }
 
-    const teamType = await prisma.team_Type.findUnique({
-      where: { teamTypeId }
-    });
+    if (teamTypeId) {
+      const teamType = await prisma.team_Type.findUnique({
+        where: { teamTypeId }
+      });
 
-    if (!teamType) {
-      throw new NotFoundException('Team Type', teamTypeId);
+      if (!teamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
+      }
     }
 
     const checklist = await prisma.checklist.create({
@@ -40,6 +42,66 @@ export default class OnboardingServices {
     return checklist;
   }
 
+  /**
+   * Creates a new checklist item in the given checklist Id.
+   * @param submitter a user who is making the request
+   * @param name the name of the checklist
+   * @param checklistId the checklist
+   * @param description the description of the item
+   * @param parentChecklistItemId the parent checklist item this item belongs to
+   * @param organization the organization of the checklist
+   * @returns a newly created checklist
+   */
+  static async createChecklistItem(
+    submitter: User,
+    name: string,
+    checklistId: string,
+    parentChecklistItemId: string | null,
+    description: string | null,
+    organization: Organization
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('non-admin tried to create a checklist item');
+    }
+
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId }
+    });
+
+    if (!checklist) {
+      throw new NotFoundException('Checklist', checklistId);
+    }
+
+    if (parentChecklistItemId) {
+      const parentChecklistItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: parentChecklistItemId }
+      });
+
+      if (!parentChecklistItem) {
+        throw new NotFoundException('Checklist Item', parentChecklistItemId);
+      }
+    }
+
+    const checklistItem = await prisma.checklistItem.create({
+      data: {
+        name,
+        checklistId,
+        description,
+        parentChecklistItemId,
+        userCreatedId: submitter.userId,
+        organizationId: organization.organizationId
+      }
+    });
+
+    return checklistItem;
+  }
+
+  /**
+   * Deletes a checklist in the given checklist Id.
+   * @param deleter a user who is making the request
+   * @param checklistId the checklist
+   * @param organization the organization of the checklist
+   */
   static async deleteChecklist(deleter: User, checklistId: string, organization: Organization) {
     if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
       throw new AccessDeniedAdminOnlyException('delete a checklist');
