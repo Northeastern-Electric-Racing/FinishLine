@@ -264,30 +264,59 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
   return milestone;
 };
 
+export const createTestChecklistItem = async (
+  user: User,
+  checklistId: string,
+  organizationId: string,
+  parentChecklistItemId?: string
+) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create organization');
+
+  const checklistItem = await prisma.checklistItem.create({
+    data: {
+      name: 'Checklist Item 1',
+      description: 'Test Description',
+      organizationId,
+      userCreatedId: user.userId,
+      checklistId,
+      parentChecklistItemId
+    }
+  });
+  return checklistItem;
+};
+
 export const createTestChecklist = async (user: User, organizationId: string) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
   if (!organizationId) throw new Error('Failed to create checklist');
-
   const checklist = await prisma.checklist.create({
     data: {
       name: 'Checklist 1',
       organizationId,
       userCreatedId: user.userId,
-      dateCreated: new Date('11/04/2024'),
+      dateCreated: new Date('11/04/2024')
+    }
+  });
+
+  const checklistItem = await createTestChecklistItem(user, checklist.checklistId, organizationId);
+
+  const updatedChecklist = await prisma.checklist.update({
+    where: {
+      checklistId: checklist.checklistId
+    },
+    include: {
+      checklistItems: true
+    },
+    data: {
       checklistItems: {
-        create: [
-          {
-            name: 'Test Item 1',
-            description: 'Test Description',
-            organizationId,
-            userCreatedId: user.userId,
-            dateCreated: new Date('03/03/2024')
-          }
-        ]
+        connect: {
+          checklistItemId: checklistItem.checklistItemId
+        }
       }
     }
   });
-  return checklist;
+
+  return updatedChecklist;
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {
