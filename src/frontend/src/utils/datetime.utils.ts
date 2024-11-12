@@ -26,7 +26,7 @@ export const transformDate = (date: Date) => {
 };
 
 /**
- * Formats a date object in the form of Month Day, Year (ie: January 1, 2024)
+ * Formats a Date object in the form of Month Day, Year (ie: January 1, 2024)
  *
  * @param date the date object for modify
  * @returns a string representing the date
