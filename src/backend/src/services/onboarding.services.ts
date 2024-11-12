@@ -133,7 +133,7 @@ export default class OnboardingServices {
       }
 
       if (parentChecklistItem.checklistId !== checklistId) {
-        throw new HttpException(400, 'Invalid checklist');
+        throw new HttpException(400, 'Cannot have parent checklist item with a different checklist');
       }
     }
 

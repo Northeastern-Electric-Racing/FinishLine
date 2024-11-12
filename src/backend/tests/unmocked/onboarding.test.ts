@@ -209,7 +209,7 @@ describe('Onboarding tests', () => {
             'description',
             organization
           )
-      ).rejects.toThrow(new HttpException(400, 'Invalid checklist'));
+      ).rejects.toThrow(new HttpException(400, 'Cannot have parent checklist item with a different checklist'));
     });
 
     it('Succeeds and creates a checklist item', async () => {
