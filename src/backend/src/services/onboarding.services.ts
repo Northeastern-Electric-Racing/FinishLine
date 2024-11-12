@@ -3,7 +3,6 @@ import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
-import { check } from 'prettier';
 
 export default class OnboardingServices {
   /**
