@@ -2,13 +2,7 @@ import { Organization, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin } from 'shared';
-import {
-  AccessDeniedAdminOnlyException,
-  DeletedException,
-  HttpException,
-  InvalidOrganizationException,
-  NotFoundException
-} from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 
 export default class OnboardingServices {
   /**
