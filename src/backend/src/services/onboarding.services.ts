@@ -140,7 +140,7 @@ export default class OnboardingServices {
       where: { checklistItemId }
     });
 
-    if (!checklistItem) throw new NotFoundException('Checklist', checklistItemId);
+    if (!checklistItem) throw new NotFoundException('Checklist Item', checklistItemId);
 
     if (checklistItem.dateDeleted) throw new DeletedException('Checklist Item', checklistItemId);
 

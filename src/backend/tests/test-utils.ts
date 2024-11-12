@@ -264,7 +264,12 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
   return milestone;
 };
 
-export const createTestChecklistItem = async (user: User, checklistId: string, organizationId: string) => {
+export const createTestChecklistItem = async (
+  user: User,
+  checklistId: string,
+  organizationId: string,
+  parentChecklistItemId?: string
+) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
   if (!organizationId) throw new Error('Failed to create organization');
 
@@ -274,7 +279,8 @@ export const createTestChecklistItem = async (user: User, checklistId: string, o
       description: 'Test Description',
       organizationId,
       userCreatedId: user.userId,
-      checklistId
+      checklistId,
+      parentChecklistItemId
     }
   });
   return checklistItem;
