@@ -12,6 +12,16 @@ export default class OnboardingController {
     }
   }
 
+  static async getCheckedChecklists(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const checkedChecklists = await OnboardingServices.getCheckedChecklists(userId, req.organization);
+      res.status(200).json(checkedChecklists);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async createChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, teamTypeId } = req.body;
