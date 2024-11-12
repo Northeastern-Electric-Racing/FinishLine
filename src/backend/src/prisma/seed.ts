@@ -1900,7 +1900,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const checklistItem1 = await OnboardingServices.createChecklistItem(
     batman,
-    'Checklist 1',
+    'Checklist Item 1',
     checklist1.checklistId,
     null,
     'Download Visual Studio Code',
@@ -1908,9 +1908,9 @@ const performSeed: () => Promise<void> = async () => {
   );
   await OnboardingServices.createChecklistItem(
     batman,
-    'Checklist 2',
-    checklist2.checklistId,
-    checklistItem1.checklistId,
+    'Checklist Item 2',
+    checklist1.checklistId,
+    checklistItem1.checklistItemId,
     'Donwload Node.js',
     ner
   );

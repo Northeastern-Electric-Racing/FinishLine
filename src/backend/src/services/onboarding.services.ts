@@ -5,7 +5,6 @@ import { isAdmin } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 
 export default class OnboardingServices {
-  
   /* Checklist section */
 
   /**
@@ -141,5 +140,34 @@ export default class OnboardingServices {
     });
 
     return checklistItem;
+  }
+
+  /**
+   * Deletes a checklist in the given checklist item Id.
+   * @param deleter a user who is making the request
+   * @param checklistItemId the checklist item
+   * @param organization the organization of the checklist
+   */
+  static async deleteChecklistItem(deleter: User, checklistItemId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete a checklist item');
+
+    const checklistItem = await prisma.checklistItem.findUnique({
+      where: { checklistItemId }
+    });
+
+    if (!checklistItem) throw new NotFoundException('Checklist Item', checklistItemId);
+
+    if (checklistItem.dateDeleted) throw new DeletedException('Checklist Item', checklistItemId);
+
+    await prisma.checklistItem.updateMany({
+      where: { parentChecklistItemId: checklistItemId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
+
+    await prisma.checklistItem.update({
+      where: { checklistItemId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
   }
 }

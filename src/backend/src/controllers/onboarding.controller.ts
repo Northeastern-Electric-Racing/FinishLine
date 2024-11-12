@@ -51,4 +51,14 @@ export default class OnboardingController {
       return next(error);
     }
   }
+
+  static async deleteChecklistItem(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { checklistItemId } = req.params;
+      await OnboardingServices.deleteChecklistItem(req.currentUser, checklistItemId, req.organization);
+      res.status(200).json({ message: `Successfully deleted checklist item with id ${checklistItemId}` });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }
