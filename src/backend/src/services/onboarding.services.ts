@@ -2,7 +2,7 @@ import { Organization, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin } from 'shared';
-import { AccessDeniedAdminOnlyException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
 
 export default class OnboardingServices {
   /**
@@ -63,7 +63,7 @@ export default class OnboardingServices {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('non-admin tried to create a checklist item');
     }
-
+  
     const checklist = await prisma.checklist.findUnique({
       where: { checklistId }
     });
@@ -94,5 +94,26 @@ export default class OnboardingServices {
     });
 
     return checklistItem;
+    }
+
+/**
+   * Deletes a checklist in the given checklist Id.
+   * @param deleter a user who is making the request
+   * @param checklistId the checklist
+   * @param organization the organization of the checklist
+   */
+  static async deleteChecklist(deleter: User, checklistId: string, organization: Organization) {
+    if (!(await userHasPermission(deleter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('delete a checklist');
+
+  
+    if (!checklist) throw new NotFoundException('Checklist', checklistId);
+
+    if (checklist.dateDeleted) throw new DeletedException('Checklist', checklistId);
+
+    await prisma.checklist.update({
+      where: { checklistId },
+      data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
+    });
   }
 }
