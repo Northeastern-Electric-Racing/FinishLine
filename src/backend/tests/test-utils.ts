@@ -204,6 +204,7 @@ export const createTestOrganization = async () => {
     data: {
       name: 'Joe mama',
       description: 'Joe mama`s organization',
+      applicationLink: '',
       userCreated: {
         connect: {
           userId: user.userId
