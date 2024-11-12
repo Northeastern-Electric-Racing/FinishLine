@@ -5,7 +5,9 @@ import OnboardingController from '../controllers/onboarding.controller';
 
 const onboardingRouter = express.Router();
 
-/* User Checklists Section */
+/* Checklists Section */
+onboardingRouter.get('/checklists', OnboardingController.getAllChecklists);
+
 onboardingRouter.post(
   '/checklist/create',
   nonEmptyString(body('name')),
@@ -14,6 +16,9 @@ onboardingRouter.post(
   OnboardingController.createChecklist
 );
 
+onboardingRouter.delete('/checklist/:checklistId/delete', OnboardingController.deleteChecklist);
+
+/* Checklist Items Section */
 onboardingRouter.post(
   '/checklist/item/create',
   nonEmptyString(body('name')),
@@ -23,8 +28,6 @@ onboardingRouter.post(
   validateInputs,
   OnboardingController.createChecklistItem
 );
-
-onboardingRouter.delete('/checklist/:checklistId/delete', OnboardingController.deleteChecklist);
 
 onboardingRouter.delete('/checklist/item/:checklistItemId/delete', OnboardingController.deleteChecklistItem);
 
