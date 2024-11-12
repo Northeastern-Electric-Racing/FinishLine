@@ -196,15 +196,15 @@ describe('Onboarding tests', () => {
 
     it('Fails if checklist of parent checklist item does not equal given checklist', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testParentChecklist = await createTestChecklist(testBatman, orgId);
-      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
-      const testParentChecklistItem = await createTestChecklistItem(testBatman, testParentChecklist.checklistId, orgId);
+      const testChecklist1 = await createTestChecklist(testBatman, orgId);
+      const testChecklist2 = await createTestChecklist(testBatman, orgId);
+      const testParentChecklistItem = await createTestChecklistItem(testBatman, testChecklist1.checklistId, orgId);
       await expect(
         async () =>
           await OnboardingServices.createChecklistItem(
             testBatman,
             'name',
-            testChecklistId,
+            testChecklist2.checklistId,
             testParentChecklistItem.checklistItemId,
             'description',
             organization
