@@ -6,6 +6,24 @@ import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } f
 
 export default class OnboardingServices {
   /**
+   * gets all checklists for the given organization
+   * @param organization the organization of the checklists
+   * @returns all checklists for the given organization
+   */
+  static async getAllChecklists(organization: Organization) {
+    const allChecklists = prisma.checklist.findMany({
+      where: { organizationId: organization.organizationId, dateDeleted: null },
+      include: {
+        checklistItems: {
+          where: { dateDeleted: null }
+        }
+      }
+    });
+    
+    return allChecklists;
+  }
+
+  /**
    * Creates a new checklist in the given organization Id.
    * @param submitter a user who is making the request
    * @param name the name of the checklist

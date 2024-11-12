@@ -2,6 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import OnboardingServices from '../services/onboarding.services';
 
 export default class OnboardingController {
+  static async getAllChecklists(req: Request, res: Response, next: NextFunction) {
+    try {
+      const checklists = await OnboardingServices.getAllChecklists(req.organization);
+      res.status(200).json(checklists);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+  
   static async createChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, teamTypeId } = req.body;
