@@ -32,7 +32,7 @@ describe('Onboarding tests', () => {
       expect(allChecklists[1].checklistId).toEqual(checklist2.checklistId);
       expect(allChecklists[0].checklistItems.length).toEqual(1);
     });
-    
+
     it('Gets all checklists and checklistItems that are not deleted', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist1 = await createTestChecklist(batman, orgId);
@@ -43,7 +43,7 @@ describe('Onboarding tests', () => {
       const allChecklists = await OnboardingServices.getAllChecklists(organization);
       expect(allChecklists.length).toEqual(1);
       expect(allChecklists[0].checklistItems.length).toEqual(0);
-    })
+    });
   });
 
   describe('Create Checklist', () => {
@@ -81,6 +81,43 @@ describe('Onboarding tests', () => {
       );
       expect(result.name).toEqual('name');
       expect(result.teamTypeId).toEqual('id');
+    });
+  });
+
+  describe('Delete Checklist', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OnboardingServices.deleteChecklist(await createTestUser(wonderwomanGuest, orgId), 'id', organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a checklist'));
+    });
+
+    it('Fails if checklistId is not found', async () => {
+      await expect(
+        async () =>
+          await OnboardingServices.deleteChecklist(await createTestUser(batmanAppAdmin, orgId), 'id1', organization)
+      ).rejects.toThrow(new HttpException(400, 'Checklist with id: id1 not found!'));
+    });
+
+    it('Fails if checklist is already deleted', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testChecklist = await createTestChecklist(testSuperman, orgId);
+      await OnboardingServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization);
+
+      await expect(
+        async () => await OnboardingServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization)
+      ).rejects.toThrow(new DeletedException('Checklist', testChecklist.checklistId));
+    });
+
+    it('Succeeds and deletes checklist', async () => {
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
+      const testChecklist1 = await createTestChecklist(testSuperman, orgId);
+      await OnboardingServices.deleteChecklist(testSuperman, testChecklist1.checklistId, organization);
+
+      const updatedTestChecklist1 = await prisma.checklist.findUnique({
+        where: { checklistId: testChecklist1.checklistId }
+      });
+      expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
     });
   });
 
@@ -142,43 +179,6 @@ describe('Onboarding tests', () => {
       );
       expect(result.name).toEqual('name');
       expect(result.checklistId).toEqual(testChecklistId);
-    });
-  });
-
-  describe('Delete Checklist', () => {
-    it('Fails if user is not admin', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.deleteChecklist(await createTestUser(wonderwomanGuest, orgId), 'id', organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a checklist'));
-    });
-
-    it('Fails if checklistId is not found', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.deleteChecklist(await createTestUser(batmanAppAdmin, orgId), 'id1', organization)
-      ).rejects.toThrow(new HttpException(400, 'Checklist with id: id1 not found!'));
-    });
-
-    it('Fails if checklist is already deleted', async () => {
-      const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const testChecklist = await createTestChecklist(testSuperman, orgId);
-      await OnboardingServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization);
-
-      await expect(
-        async () => await OnboardingServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization)
-      ).rejects.toThrow(new DeletedException('Checklist', testChecklist.checklistId));
-    });
-
-    it('Succeeds and deletes checklist', async () => {
-      const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const testChecklist1 = await createTestChecklist(testSuperman, orgId);
-      await OnboardingServices.deleteChecklist(testSuperman, testChecklist1.checklistId, organization);
-
-      const updatedTestChecklist1 = await prisma.checklist.findUnique({
-        where: { checklistId: testChecklist1.checklistId }
-      });
-      expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
     });
   });
 });
