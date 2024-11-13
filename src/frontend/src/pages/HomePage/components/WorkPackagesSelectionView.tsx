@@ -1,4 +1,4 @@
-import { wbsPipe, WorkPackage } from 'shared';
+import { RoleEnum, wbsPipe, WorkPackage } from 'shared';
 import { Box, Grid, useTheme } from '@mui/material';
 import {
   getInProgressWorkPackages,
@@ -99,10 +99,10 @@ const WorkPackagesSelectionView: React.FC = () => {
         }
       }}
     >
-      <Grid container rowSpacing={2}>
+      <Grid container rowSpacing={2} columnSpacing={2}>
         {workPackages.map((wp) => (
-          <Grid item xs={12} md={6}>
-            <Box key={wbsPipe(wp.wbsNum)}>
+          <Grid item sm={12} md={user.role === RoleEnum.ADMIN || user.role === RoleEnum.APP_ADMIN ? 6 : 12}>
+            <Box sx={{ width: '100%', height: 'auto', overflow: 'hidden' }} key={wbsPipe(wp.wbsNum)}>
               <WorkPackageCard wp={wp} />
             </Box>
           </Grid>

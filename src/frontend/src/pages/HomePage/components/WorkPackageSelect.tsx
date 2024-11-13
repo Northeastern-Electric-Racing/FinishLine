@@ -1,5 +1,6 @@
 import { Box, Card, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface CustomSelectProps {
   options: string[];
@@ -44,6 +45,7 @@ const WorkPackageSelect: React.FC<CustomSelectProps> = ({ options, onSelect, fir
           variant="h5"
           sx={{ paddingX: 2, paddingY: 1, display: 'inline-block', cursor: 'pointer' }}
         >
+          <ExpandMoreIcon sx={{ ml: -1, paddingRight: 0.5 }} />
           {options[selected]}
         </Typography>
       </Box>
