@@ -180,7 +180,8 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
-  unreadAnnouncements             Announcement[]
+  receivedAnnouncements           Announcement[]            @relation(name: "ReceivedAnnouncements")
+  createdAnnouncements            Announcement[]            @relation(name: "CreatedAnnouncements")
   unreadNotifications             Notification[]
 }
 
@@ -932,15 +933,16 @@ model Milestone {
 
 model Announcement {
   announcementId String   @id @default(uuid())
-  userCreated    User     @relation(fields: [userCreatedId], references: [userId])
-  userCreatedId  String
+  text           String
+  usersReceived  User[]   @relation("ReceivedAnnouncements")
   dateCrated     DateTime
+  userCreatedId  String
+  userCreated    User     @relation("CreatedAnnouncements", fields: [userCreatedId], references: [userId])
 }
 
 model Notification {
-  notificationId String  @id @default(uuid())
+  notificationId String @id @default(uuid())
   text           String
   iconName       String
-  User           User?   @relation(fields: [userId], references: [userId])
-  userId         String?
+  users          User[]
 }
