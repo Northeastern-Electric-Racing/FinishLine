@@ -81,7 +81,7 @@ describe('Onboarding tests', () => {
       createTestTeamType('id', organization);
       const user = await createTestUser(batmanAppAdmin, orgId);
 
-      // Create a team and add the user as a member
+      // Create a team and add the user as a member (getUsersChecklists requires user to be on a team)
       const team = await TeamsService.createTeam(
         user,
         'Engineering Team',
@@ -97,10 +97,11 @@ describe('Onboarding tests', () => {
       });
 
       // Create a checklist, set its teamTypeId to null to be a general checklist
-      const checklist = await OnboardingServices.createChecklist(user, 'General Checklist', 'id', organization);
+      const checklist = await createTestChecklist(user, orgId);
       const generalChecklist = await prisma.checklist.update({
         where: { checklistId: checklist.checklistId },
-        data: { teamTypeId: null }
+        data: { teamTypeId: null },
+        include: { checklistItems: true }
       });
 
       const result = await OnboardingServices.getUsersChecklists(user.userId);
@@ -130,17 +131,18 @@ describe('Onboarding tests', () => {
       });
 
       // Create a checklist, set its teamTypeId to null to be a general checklist
-      const checklist = await OnboardingServices.createChecklist(user, 'General Checklist', 'id', organization);
+      const checklist = await createTestChecklist(user, orgId);
       const generalChecklist = await prisma.checklist.update({
         where: { checklistId: checklist.checklistId },
-        data: { teamTypeId: null }
+        data: { teamTypeId: null },
+        include: { checklistItems: true }
       });
 
       // Create a checklist that matches the user's team type
-      const teamChecklist = await OnboardingServices.createChecklist(user, 'Team Checklist', 'id', organization);
+      const teamChecklist = await createTestChecklist(user, orgId);
 
       const result = await OnboardingServices.getUsersChecklists(user.userId);
-      expect(result).toMatchObject([generalChecklist, teamChecklist]);
+      expect(result).toEqual([generalChecklist, teamChecklist]);
     });
 
     it('Throws an error if the user does not have any teams', async () => {

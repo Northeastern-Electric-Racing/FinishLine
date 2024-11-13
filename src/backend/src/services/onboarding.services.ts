@@ -57,7 +57,8 @@ export default class OnboardingServices {
    */
   static async getUsersChecklists(userId: string) {
     const generalChecklists = await prisma.checklist.findMany({
-      where: { teamTypeId: null, dateDeleted: null }
+      where: { teamTypeId: null, dateDeleted: null },
+      include: { checklistItems: true }
     });
 
     const userTeams = await prisma.team.findMany({
