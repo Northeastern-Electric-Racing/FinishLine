@@ -10,6 +10,7 @@ import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
+import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
 
 interface LeadHomePageProps {
   user: AuthenticatedUser;
@@ -30,6 +31,9 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
         <Grid container height={`${PAGE_GRID_HEIGHT}vh`} spacing={2}>
           <Grid item xs={12} md={6}>
             <TeamWorkPackageDisplay user={user} />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <MyTeamsOverdueTasks user={user} />
           </Grid>
         </Grid>
       </Box>
