@@ -16,7 +16,7 @@ interface GuestOrganizationInfoButtonProps {
 
 const NERGuestButton: React.FC<GuestOrganizationInfoButtonProps> = ({ href, buttonText, iconName }) => {
   return (
-    <Grid item xs={12} sm={6} md={4}>
+    <Grid item xs={12} sm={5} md={4}>
       <NERButton variant="contained" fullWidth={true} style={{ justifyContent: 'flex-start', color: 'white' }} href={href}>
         <Icon>{iconName}</Icon>
         <Typography noWrap={true} sx={{ marginLeft: 1 }}>
