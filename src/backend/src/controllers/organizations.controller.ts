@@ -65,6 +65,7 @@ export default class OrganizationsController {
     try {
       const { applicationLink } = req.body;
       const updatedOrganization = await OrganizationsService.updateApplicationLink(
+        req.currentUser,
         req.organization.organizationId,
         applicationLink
       );
