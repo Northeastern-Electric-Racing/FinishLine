@@ -5,6 +5,8 @@ interface HomePageContextProps {
   setOnPNMHomePage: (value: boolean) => void;
   onGuestHomePage: boolean;
   setOnGuestHomePage: (value: boolean) => void;
+  onOnboardingHomePage: boolean;
+  setOnOnboardingHomePage: (value: boolean) => void;
 }
 
 const HomePageContext = createContext<HomePageContextProps | undefined>(undefined);
@@ -12,9 +14,19 @@ const HomePageContext = createContext<HomePageContextProps | undefined>(undefine
 export const HomePageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [onGuestHomePage, setOnGuestHomePage] = useState(false);
   const [onPNMHomePage, setOnPNMHomePage] = useState(false);
+  const [onOnboardingHomePage, setOnOnboardingHomePage] = useState(false);
 
   return (
-    <HomePageContext.Provider value={{ onGuestHomePage, setOnGuestHomePage, onPNMHomePage, setOnPNMHomePage }}>
+    <HomePageContext.Provider
+      value={{
+        onGuestHomePage,
+        setOnGuestHomePage,
+        onPNMHomePage,
+        setOnPNMHomePage,
+        onOnboardingHomePage,
+        setOnOnboardingHomePage
+      }}
+    >
       {children}
     </HomePageContext.Provider>
   );
