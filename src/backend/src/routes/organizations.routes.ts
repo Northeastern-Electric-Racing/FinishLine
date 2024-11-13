@@ -19,4 +19,6 @@ organizationRouter.post(
 );
 
 organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
+
+organizationRouter.post('/application-link/update', OrganizationsController.updateApplicationLink);
 export default organizationRouter;

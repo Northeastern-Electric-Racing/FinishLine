@@ -60,4 +60,17 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async updateApplicationLink(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { applicationLink } = req.body;
+      const updatedOrganization = await OrganizationsService.updateApplicationLink(
+        req.organization.organizationId,
+        applicationLink
+      );
+      res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }

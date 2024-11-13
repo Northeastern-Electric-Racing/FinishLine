@@ -206,4 +206,18 @@ describe('Organization Tests', () => {
       expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
     });
   });
+
+  describe('Update Application Link', () => {
+    it('Succeeds and updates the application link', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestLinkType(testBatman, orgId);
+      const updatedOrganization = await OrganizationsService.updateApplicationLink(
+        organization.organizationId,
+        'new application link'
+      );
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.applicationLink).toBe('new application link');
+    });
+  });
 });
