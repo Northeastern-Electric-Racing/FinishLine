@@ -37,9 +37,9 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
   const { isLoading, isError, data: teams, error } = useAllTeams();
 
   if (isLoading || !teams) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error?.message} />;
+  if (isError) return <ErrorPage message={error.message} />;
 
-  const myTeams = teams?.filter((team) => {
+  const myTeams = teams.filter((team) => {
     return (
       team.members.some((member) => member.userId === user.userId) ||
       team.leads.some((member) => member.userId === user.userId) ||
@@ -48,7 +48,7 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
   });
 
   const workPackages = myTeams
-    ?.map((team) => {
+    .map((team) => {
       return team.projects.map((project) => {
         return project.workPackages;
       });
