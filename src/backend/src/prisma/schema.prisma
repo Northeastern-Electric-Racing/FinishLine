@@ -484,7 +484,7 @@ model Task {
   taskId          String        @id @default(uuid())
   title           String
   notes           String
-  deadline        DateTime
+  deadline        DateTime?
   assignees       User[]        @relation(name: "assignedTo")
   priority        Task_Priority
   status          Task_Status
@@ -898,17 +898,17 @@ model Organization {
 }
 
 model FrequentlyAskedQuestion {
-  faqId String       @id @default(uuid())
-  question                  String
-  answer                    String
-  userCreated               User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
-  userCreatedId             String
-  userDeleted               User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
-  userDeletedId             String?
-  dateCreated               DateTime     @default(now())
-  dateDeleted               DateTime?
-  organizationId            String
-  organization              Organization @relation(fields: [organizationId], references: [organizationId])
+  faqId          String       @id @default(uuid())
+  question       String
+  answer         String
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "frequentlyAskedQuestionCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "frequentlyAskedQuestionDeleter")
+  userDeletedId  String?
+  dateCreated    DateTime     @default(now())
+  dateDeleted    DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }
 
 model Milestone {

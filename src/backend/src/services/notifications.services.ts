@@ -76,8 +76,8 @@ export default class NotificationsService {
     // send the notifications to each team for their respective tasks
     const promises = Array.from(teamTaskMap).map(async ([slackId, tasks]) => {
       const messageBlock = tasks
-        .map((task) => {
-          const daysUntilDeadline = daysBetween(task.deadline, new Date());
+      .map((task) => {
+        const daysUntilDeadline = daysBetween(task.deadline!, new Date());
 
           return `${usersToSlackPings(task.assignees ?? [])} <https://finishlinebyner.com/projects/${wbsPipe(
             task.wbsElement

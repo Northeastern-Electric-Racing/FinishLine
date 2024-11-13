@@ -18,11 +18,11 @@ export default class TasksService {
    * @param wbsNum the WBS Number to create the task for
    * @param title the title of the tas
    * @param notes the notes of the task
-   * @param deadline the deadline of the task
    * @param priority the priority of the task
    * @param status the status of the task
    * @param assignees the assignees ids of the task
    * @param organizationId the organization that the user is currently in
+   * @param deadline the deadline of the task
    * @returns the id of the successfully created task
    * @throws if the user does not have access to create a task, wbs element does not exist, or wbs element is deleted
    */
@@ -31,11 +31,11 @@ export default class TasksService {
     wbsNum: WbsNumber,
     title: string,
     notes: string,
-    deadline: Date,
     priority: Task_Priority,
     status: Task_Status,
     assignees: string[],
-    organization: Organization
+    organization: Organization,
+    deadline?: Date
   ): Promise<Task> {
     const requestedWbsElement = await prisma.wBS_Element.findUnique({
       where: {
@@ -94,6 +94,10 @@ export default class TasksService {
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
+    if (status == 'IN_PROGRESS' && (!deadline || assignees.length == 0)) {
+      throw new AccessDeniedException('Tasks in progress must have a dealine and assignees');
+    }
+
     const createdTask = await prisma.task.create({
       data: {
         wbsElement: {
@@ -147,6 +151,10 @@ export default class TasksService {
 
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
+    if (originalTask.status == 'IN_PROGRESS' && !deadline) {
+      throw new AccessDeniedException('A task in progress must have a deadline!');
+    }
+
     const updatedTask = await prisma.task.update({
       where: { taskId },
       data: { title, notes, priority, deadline },
@@ -168,6 +176,10 @@ export default class TasksService {
     const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
+
+    if (status == 'IN_PROGRESS' && !originalTask.deadline) {
+      throw new AccessDeniedException('Must have a deadline!');
+    }
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);
     if (!hasPermission)

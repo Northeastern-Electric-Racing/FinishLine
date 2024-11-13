@@ -8,7 +8,7 @@ const tasksRouter = express.Router();
 tasksRouter.post(
   '/:wbsNum',
   nonEmptyString(body('title')),
-  body('deadline').isDate(),
+  body('deadline').optional().isDate(),
   body('notes').isString(),
   isTaskPriority(body('priority')),
   isTaskStatus(body('status')),
@@ -22,7 +22,7 @@ tasksRouter.post(
   '/:taskId/edit',
   nonEmptyString(body('title')),
   nonEmptyString(body('notes')),
-  body('deadline').isDate(),
+  body('deadline').optional().isDate(),
   isTaskPriority(body('priority')),
   TasksController.editTask
 );
