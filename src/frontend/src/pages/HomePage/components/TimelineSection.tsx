@@ -17,6 +17,10 @@ const TimelineSection = () => {
   if (isLoading || !milestones) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
+  const sortedMilestones = milestones.sort((milestone1, milestone2) =>
+    milestone1.dateOfEvent < milestone2.dateOfEvent ? -1 : 1
+  );
+
   const isPastEvent = (date: Date) => {
     return date < new Date();
   };
@@ -34,7 +38,7 @@ const TimelineSection = () => {
   return (
     <Grid>
       <Timeline position="alternate">
-        {milestones.map((milestone, index) => (
+        {sortedMilestones.map((milestone, index) => (
           <TimelineItem key={index}>
             <TimelineSeparator>
               <TimelineDot color={getDotColor(milestone.dateOfEvent)} sx={{ width: '20px', height: '20px' }} />
