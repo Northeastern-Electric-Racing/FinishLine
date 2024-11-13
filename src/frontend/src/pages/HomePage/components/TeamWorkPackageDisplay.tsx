@@ -5,6 +5,9 @@ import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import { AuthenticatedUser } from 'shared';
+import { useAllTeams } from '../../../hooks/teams.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
 interface TeamWorkPackageDisplayProps {
   user: AuthenticatedUser;
@@ -23,35 +26,41 @@ const NoTeamWorkPackagesDisplay: React.FC = () => {
     >
       <EmptyPageBlockDisplay
         icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
-        heading={"You're team is all caught up!"}
-        message={'There are no work packages assigned to your team!'}
+        heading={'No Active Work Packages'}
+        message={'There are no active work packages assigned to your team!'}
       />
     </Box>
   );
 };
 
 const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user }) => {
-  const teamsAsHead = user.teamsAsHead ?? [];
-  const teamsAsLead = user.teamsAsLead ?? [];
-  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
+  const { isLoading, isError, data: teams, error } = useAllTeams();
 
-  // converting to set to remove duplicates
-  const workPackages = new Set(
-    teamsAsLeadership
-      .map((team) => {
-        return team.projects.map((project) => {
-          return project.workPackages;
-        });
-      })
-      .flat(2)
-  );
+  if (isLoading || !teams) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  const myTeams = teams?.filter((team) => {
+    return (
+      team.members.some((member) => member.userId === user.userId) ||
+      team.leads.some((member) => member.userId === user.userId) ||
+      team.head.userId === user.userId
+    );
+  });
+
+  const workPackages = myTeams
+    ?.map((team) => {
+      return team.projects.map((project) => {
+        return project.workPackages;
+      });
+    })
+    .flat(2);
 
   return (
-    <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.size})`}>
-      {workPackages.size === 2 ? (
+    <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.length})`}>
+      {workPackages.length === 0 ? (
         <NoTeamWorkPackagesDisplay />
       ) : (
-        [...workPackages].map((wp) => (
+        workPackages.map((wp) => (
           <Box key={wbsPipe(wp.wbsNum)} sx={{ mb: 1 }}>
             <WorkPackageCard wp={wp} />
           </Box>
