@@ -244,6 +244,10 @@ const CreditsPage: React.FC = () => {
     { name: 'Kenneth Aldridge', color: '#E70D0D' },
     { name: 'Nishanth Chinnadurai', color: '#8E6B9F' },
     { name: 'Eric Yao', color: '#a5ff38' },
+    { name: 'Wilson Wei', color: '#008000' },
+    { name: 'Thanin Kongkiatsophon', color: '#15B392' },
+    { name: 'Aryan Gupta', color: '#5a4094' },
+    { name: 'Lisa Wan', color: '#CCCCFF' },
     { name: 'Aidan Wong', color: '#4284f5' }
   ];
 
