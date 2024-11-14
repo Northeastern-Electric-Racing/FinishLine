@@ -243,6 +243,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Chris Li', color: '#5d42f5' },
     { name: 'Kenneth Aldridge', color: '#E70D0D' },
     { name: 'Nishanth Chinnadurai', color: '#8E6B9F' },
+    { name: 'Haylie Pedersen', color: '#368048' },
     { name: 'Kinsey Bellerose', color: '#3281a8' },
     { name: 'Tyler Morrill', color: '#4a881b' },
     { name: 'Kyan Barker', color: '#5d42f5' },
