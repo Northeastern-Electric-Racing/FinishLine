@@ -8,7 +8,7 @@ const onboardingRouter = express.Router();
 /* Checklists Section */
 onboardingRouter.get('/checklists', OnboardingController.getAllChecklists);
 
-onboardingRouter.get('/checklists/:userId/checked', OnboardingController.getCheckedChecklists);
+onboardingRouter.get('/checklists/checked', OnboardingController.getCheckedChecklists);
 
 onboardingRouter.post(
   '/checklist/create',
