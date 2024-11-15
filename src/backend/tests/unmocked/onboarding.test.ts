@@ -55,22 +55,16 @@ describe('Onboarding tests', () => {
   });
 
   describe('Get Checked Checklists', () => {
-    it('Fails if user does not exist', async () => {
-      await expect(async () => await OnboardingServices.getCheckedChecklists('userId', organization)).rejects.toThrow(
-        new NotFoundException('User', 'userId')
-      );
-    });
-
     it('Succeeds and gets all checked checklists for the user', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist1 = await createTestChecklist(batman, orgId);
-      const uncheckedChecklists = await OnboardingServices.getCheckedChecklists(batman.userId, organization);
+      const uncheckedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
       expect(uncheckedChecklists[0].checklistItems.length).toEqual(0);
       await prisma.checklistItem.update({
         where: { checklistItemId: checklist1.checklistItems[0].checklistItemId },
         data: { usersChecked: { connect: { userId: batman.userId } } }
       });
-      const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman.userId, organization);
+      const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
       expect(checkedChecklists[0].checklistItems.length).toEqual(1);
     });
   });

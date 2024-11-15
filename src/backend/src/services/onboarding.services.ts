@@ -31,18 +31,12 @@ export default class OnboardingServices {
    * @param organization the organization of the checklists
    * @returns all the checklists that this user has checked
    */
-  static async getCheckedChecklists(userId: string, organization: Organization) {
-    const user = await prisma.user.findUnique({
-      where: { userId }
-    });
-
-    if (!user) throw new NotFoundException('User', userId);
-
+  static async getCheckedChecklists(user: User, organization: Organization) {
     const checkedChecklists = prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
       include: {
         checklistItems: {
-          where: { dateDeleted: null, usersChecked: { some: { userId } } }
+          where: { dateDeleted: null, usersChecked: { some: { userId: user.userId } } }
         }
       }
     });
