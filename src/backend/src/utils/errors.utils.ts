@@ -141,4 +141,3 @@ export type ExceptionObjectNames =
   | 'Faq'
   | 'Checklist'
   | 'Checklist Item';
-

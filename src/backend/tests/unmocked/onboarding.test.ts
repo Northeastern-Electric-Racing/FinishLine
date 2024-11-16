@@ -118,7 +118,7 @@ describe('Onboarding tests', () => {
             ['checklistId'],
             organization
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to update a checklist'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only an admin can update a user`s checklists'));
     });
 
     it('Fails if user does not exist', async () => {
@@ -158,7 +158,6 @@ describe('Onboarding tests', () => {
       // expect(batman.onboardingChecklists.length).toEqual(0);
     });
   });
-
 
   describe('Delete Checklist', () => {
     it('Fails if user is not admin', async () => {
