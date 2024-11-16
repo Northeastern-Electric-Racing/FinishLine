@@ -16,11 +16,11 @@ interface TeamSummaryProps {
 }
 
 const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
-  const { onPNMHomePage } = useHomePageContext();
+  const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
 
   const projectsList = team.projects.map((project, idx) => (
     <React.Fragment key={project.name}>
-      {onPNMHomePage ? (
+      {onPNMHomePage || onOnboardingHomePage ? (
         <Typography component="span">{project.name}</Typography>
       ) : (
         <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(project.wbsNum)}`}>
@@ -47,7 +47,7 @@ const TeamSummary: React.FC<TeamSummaryProps> = ({ team }) => {
         </Typography>
       </CardContent>
       <CardActions>
-        {!onPNMHomePage && (
+        {!(onPNMHomePage || onOnboardingHomePage) && (
           <Button variant="outlined" size="small">
             <Link component={RouterLink} to={`${routes.TEAMS}/${team.teamId}`}>
               See More

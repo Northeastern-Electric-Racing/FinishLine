@@ -880,6 +880,7 @@ model Organization {
   description           String
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
+  applicationLink       String
 
   // Relation references
   wbsElements              WBS_Element[]
@@ -902,7 +903,7 @@ model Organization {
   FrequentlyAskedQuestions FrequentlyAskedQuestion[]
   Milestone                Milestone[]
   checklists               Checklist[]
-  checklistItems            ChecklistItem[]
+  checklistItems           ChecklistItem[]
 }
 
 model FrequentlyAskedQuestion {
