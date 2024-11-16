@@ -1922,17 +1922,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  // for testing purposes, will use the setUserChecklist endpoint once it has been created
-  await prisma.user.update({
-    where: {
-      userId: patrick.userId
-    },
-    data: {
-      onboardingChecklists: {
-        connect: { checklistId: softwareChecklist.checklistId }
-      }
-    }
-  });
+  await OnboardingServices.updateUserChecklists(batman, patrick.userId, [softwareChecklist.checklistId], ner);
 };
 
 performSeed()

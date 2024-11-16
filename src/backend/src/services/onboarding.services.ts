@@ -81,10 +81,16 @@ export default class OnboardingServices {
     return checklist;
   }
 
-
+  /**
+   * Updates the checklists for a user
+   * @param submitter The user who is making the request
+   * @param userId The user whose checklists are being updated
+   * @param checklistId The checklists to update
+   * @param organization The organization of the checklists
+   */
   static async updateUserChecklists(submitter: User, userId: string, checklistId: string[], organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('non-admin tried to update a checklist');
+      throw new AccessDeniedAdminOnlyException('Only an admin can update a user`s checklists');
     }
 
     const user = await prisma.user.findUnique({
@@ -112,6 +118,7 @@ export default class OnboardingServices {
       }
     });
   }
+
   /**
    * Deletes a checklist in the given checklist Id.
    * @param deleter a user who is making the request

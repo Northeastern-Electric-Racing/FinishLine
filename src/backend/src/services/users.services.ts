@@ -50,7 +50,8 @@ export default class UsersService {
           roles: true,
           userSettings: true,
           drScheduleSettings: getUserScheduleSettingsQueryArgs(),
-          organizations: true
+          organizations: true,
+          onboardingChecklists: true
         }
       });
 
