@@ -78,7 +78,8 @@ describe('Onboarding tests', () => {
 
   describe("Get User's Checklists", () => {
     it('Throws an error if the user does not have any teams', async () => {
-      await expect(async () => await OnboardingServices.getUsersChecklists('fakeId')).rejects.toThrow(
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(async () => await OnboardingServices.getUsersChecklists(batman)).rejects.toThrow(
         new HttpException(404, 'This user does not have any teams')
       );
     });
@@ -110,12 +111,12 @@ describe('Onboarding tests', () => {
         include: { checklistItems: true }
       });
 
-      const result = await OnboardingServices.getUsersChecklists(user.userId);
+      const result = await OnboardingServices.getUsersChecklists(user);
       expect(result).toStrictEqual([generalChecklist]);
     });
 
     it('Returns all general checklist and matching checklists of user teamType', async () => {
-      const teamType = createTestTeamType('id', organization);
+      const teamType = await createTestTeamType('id', organization);
       const user = await createTestUser(batmanAppAdmin, orgId);
 
       // Create a team and add the user as a member
@@ -132,7 +133,7 @@ describe('Onboarding tests', () => {
         where: { teamId: team.teamId },
         data: {
           members: { connect: { userId: user.userId } },
-          teamType: { connect: { teamTypeId: (await teamType).teamTypeId } }
+          teamType: { connect: { teamTypeId: teamType.teamTypeId } }
         }
       });
 
@@ -147,7 +148,7 @@ describe('Onboarding tests', () => {
       // Create a checklist that matches the user's team type
       const teamChecklist = await createTestChecklist(user, orgId);
 
-      const result = await OnboardingServices.getUsersChecklists(user.userId);
+      const result = await OnboardingServices.getUsersChecklists(user);
       expect(result).toEqual([generalChecklist, teamChecklist]);
     });
 
@@ -173,7 +174,7 @@ describe('Onboarding tests', () => {
         }
       });
 
-      const result = await OnboardingServices.getUsersChecklists(user.userId);
+      const result = await OnboardingServices.getUsersChecklists(user);
       expect(result).toStrictEqual([]);
     });
   });
