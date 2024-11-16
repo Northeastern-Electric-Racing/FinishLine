@@ -1,7 +1,7 @@
-import { Organization, User } from '@prisma/client';
+import { Checklist, Organization, Team_Type, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
-import { isAdmin } from 'shared';
+import { isAdmin, TeamType } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 
 export default class OnboardingServices {
@@ -42,6 +42,46 @@ export default class OnboardingServices {
     });
 
     return checkedChecklists;
+  }
+
+  /*
+   * Gets all checklists for the given user.
+   * @param user the current user to get checklists for
+   * @returns all checklists for the given user Id
+   */
+  static async getUsersChecklists(user: User) {
+    const generalChecklists = await prisma.checklist.findMany({
+      where: { teamTypeId: null, dateDeleted: null },
+      include: { checklistItems: true }
+    });
+
+    const userTeams = await prisma.team.findMany({
+      where: { members: { some: { userId: user.userId } } },
+      include: {
+        teamType: {
+          include: {
+            checklists: true
+          }
+        }
+      }
+    });
+    if (!userTeams || userTeams.length === 0) {
+      throw new HttpException(404, 'This user does not have any teams');
+    }
+
+    const userTeamTypes: TeamType[] = userTeams
+      .map((team) => team.teamType)
+      .filter(
+        (teamType): teamType is Team_Type & { checklists: Checklist[] } =>
+          teamType !== null && teamType.checklists.length > 0
+      );
+
+    const userChecklists = await prisma.checklist.findMany({
+      where: { teamTypeId: { in: userTeamTypes.map((teamType) => teamType.teamTypeId) }, dateDeleted: null },
+      include: { checklistItems: true }
+    });
+
+    return generalChecklists.concat(userChecklists);
   }
 
   /**
