@@ -17,7 +17,7 @@ import { useState } from 'react';
 import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
-import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
+import AdminToolsRecruitmentOnboardingConfig from './RecruitmentConfig/AdminToolsRecruitmentOnboardingConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -39,7 +39,7 @@ const AdminToolsPage: React.FC = () => {
     tabs.push({ tabUrlValue: 'finance-configuration', tabName: 'Finance Configuration' });
   }
   if (isUserAdmin) {
-    tabs.push({ tabUrlValue: 'recruitment', tabName: 'Recruitment' });
+    tabs.push({ tabUrlValue: 'recruitment-onboarding', tabName: 'Recruitment/Onboarding' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
@@ -80,7 +80,7 @@ const AdminToolsPage: React.FC = () => {
       ) : tabIndex === 2 ? (
         <AdminToolsFinanceConfig />
       ) : tabIndex === 3 ? (
-        <AdminToolsRecruitmentConfig />
+        <AdminToolsRecruitmentOnboardingConfig />
       ) : (
         <Box>
           <Box pb={2}>

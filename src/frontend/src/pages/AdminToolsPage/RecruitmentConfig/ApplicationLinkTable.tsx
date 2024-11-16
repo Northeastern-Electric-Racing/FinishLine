@@ -1,4 +1,4 @@
-import { TableCell, TableRow, Box, Typography } from '@mui/material';
+import { TableCell, TableRow, Box } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
@@ -16,6 +16,7 @@ const ApplicationLinkTable: React.FC = () => {
   if (!organization || organizationIsLoading) {
     return <LoadingIndicator />;
   }
+  
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
   }
@@ -33,10 +34,7 @@ const ApplicationLinkTable: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
-        Links Config
-      </Typography>
-      <AdminToolTable columns={[{ name: 'Links' }]} rows={applicationLinkTableRows} />
+      <AdminToolTable columns={[{ name: 'Application Link' }]} rows={applicationLinkTableRows} />
     </Box>
   );
 };

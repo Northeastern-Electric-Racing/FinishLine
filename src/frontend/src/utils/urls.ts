@@ -191,6 +191,10 @@ const faqCreate = () => `${recruitment()}/faq/create`;
 const faqEdit = (id: string) => `${recruitment()}/faq/${id}/edit`;
 const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 
+/************** Onboarding Endpoints ***************/
+const onboarding = () => `${API_URL}/onboarding`;
+const allChecklists = () => `${onboarding()}/checklists`;
+
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
 
@@ -344,6 +348,9 @@ export const apiUrls = {
   faqCreate,
   faqEdit,
   faqDelete,
+
+  onboarding,
+  allChecklists,
 
   version
 };

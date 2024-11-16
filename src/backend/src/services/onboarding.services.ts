@@ -17,7 +17,10 @@ export default class OnboardingServices {
       where: { organizationId: organization.organizationId, dateDeleted: null },
       include: {
         checklistItems: {
-          where: { dateDeleted: null }
+          where: { dateDeleted: null },
+          include: {
+            parentChecklistItem: true
+          }
         }
       }
     });
