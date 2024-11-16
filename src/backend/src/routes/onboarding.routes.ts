@@ -20,7 +20,7 @@ onboardingRouter.post(
 
 onboardingRouter.post(
   '/checklist/:userId/update',
-  body('checklistId').isArray(),
+  body('checklistIds').isArray(),
   nonEmptyString(body('checklistId.*')),
   validateInputs,
   OnboardingController.updateUserChecklists

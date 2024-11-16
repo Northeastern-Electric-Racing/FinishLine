@@ -88,7 +88,7 @@ export default class OnboardingServices {
    * @param checklistId The checklists to update
    * @param organization The organization of the checklists
    */
-  static async updateUserChecklists(submitter: User, userId: string, checklistId: string[], organization: Organization) {
+  static async updateUserChecklists(submitter: User, userId: string, checklistIds: string[], organization: Organization) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('Only an admin can update a user`s checklists');
     }
@@ -102,10 +102,10 @@ export default class OnboardingServices {
     }
 
     const checklists = await prisma.checklist.findMany({
-      where: { checklistId: { in: checklistId } }
+      where: { checklistId: { in: checklistIds } }
     });
 
-    if (checklists.length !== checklistId.length) {
+    if (checklists.length !== checklistIds.length) {
       throw new NotFoundException('Checklist', 'one or more checklistId');
     }
 
@@ -113,7 +113,7 @@ export default class OnboardingServices {
       where: { userId },
       data: {
         onboardingChecklists: {
-          set: checklistId.map((checklistId) => ({ checklistId }))
+          set: checklistIds.map((checklistId) => ({ checklistId }))
         }
       }
     });
