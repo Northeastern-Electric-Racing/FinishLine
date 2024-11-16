@@ -77,6 +77,12 @@ describe('Onboarding tests', () => {
   });
 
   describe("Get User's Checklists", () => {
+    it('Throws an error if the user does not have any teams', async () => {
+      await expect(async () => await OnboardingServices.getUsersChecklists('fakeId')).rejects.toThrow(
+        new HttpException(404, 'This user does not have any teams')
+      );
+    });
+
     it('Returns all general checklists when checklist fails to match user teamType', async () => {
       createTestTeamType('id', organization);
       const user = await createTestUser(batmanAppAdmin, orgId);
@@ -143,12 +149,6 @@ describe('Onboarding tests', () => {
 
       const result = await OnboardingServices.getUsersChecklists(user.userId);
       expect(result).toEqual([generalChecklist, teamChecklist]);
-    });
-
-    it('Throws an error if the user does not have any teams', async () => {
-      await expect(async () => await OnboardingServices.getUsersChecklists('fakeId')).rejects.toThrow(
-        new HttpException(404, 'This user does not have any teams')
-      );
     });
 
     it('Returns an empty array when a user is on a team but there are no checklists', async () => {
