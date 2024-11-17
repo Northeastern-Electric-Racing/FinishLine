@@ -1,4 +1,4 @@
-import { Checklist, ChecklistItem, Organization, Team_Type, User } from '@prisma/client';
+import { Checklist, Organization, Team_Type, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin, TeamType } from 'shared';
@@ -217,17 +217,17 @@ export default class OnboardingServices {
    * @param checklistId the checklist
    * @param description the description of the item
    * @param parentChecklistItemId the parent checklist item this item belongs to
-   * @param subtasks the subtasks of the item
+   * @param subtaskIds the subtasks ids of the item
    * @param organization the organization of the checklist
    * @returns an updated checklist item
    */
   static async updateChecklistItem(
     submitter: User,
     name: string,
-    checklistId: string,
+    checklistItemId: string,
     parentChecklistItemId: string | null,
     description: string | null,
-    subtasks: ChecklistItem[],
+    subtaskIds: string[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -235,14 +235,14 @@ export default class OnboardingServices {
     }
 
     const checklistItem = await prisma.checklistItem.findUnique({
-      where: { checklistItemId: checklistId, dateDeleted: null },
+      where: { checklistItemId, dateDeleted: null },
       include: {
         subtasks: true
       }
     });
 
     if (!checklistItem) {
-      throw new NotFoundException('Checklist Item', checklistId);
+      throw new NotFoundException('Checklist Item', checklistItemId);
     }
 
     if (parentChecklistItemId) {
@@ -254,23 +254,33 @@ export default class OnboardingServices {
         throw new NotFoundException('Checklist Item', parentChecklistItemId);
       }
 
-      if (parentChecklistItem.checklistId !== checklistId) {
+      if (parentChecklistItem.checklistItemId !== checklistItemId) {
         throw new HttpException(400, 'Cannot have parent checklist item that is part a different checklist');
       }
     }
 
+    subtaskIds.forEach(async (subtaskId) => {
+      const subtask = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: subtaskId, dateDeleted: null }
+      });
+
+      if (!subtask) {
+        throw new NotFoundException('Checklist Item', subtaskId);
+      }
+    });
+
     const existingSubtaskIds = new Set(checklistItem.subtasks.map((subtask) => subtask.checklistItemId));
-    const newSubtasks = subtasks.filter((subtask) => !existingSubtaskIds.has(subtask.checklistItemId));
+    const newSubtasks = subtaskIds.filter((subtaskId) => !existingSubtaskIds.has(subtaskId));
 
     await prisma.checklistItem.update({
-      where: { checklistItemId: checklistId },
+      where: { checklistItemId },
       data: {
         name,
         parentChecklistItemId,
         description,
         subtasks: {
-          connect: newSubtasks.map((subtask) => ({
-            checklistItemId: subtask.checklistId
+          connect: newSubtasks.map((subtaskId) => ({
+            checklistItemId: subtaskId
           }))
         }
       }

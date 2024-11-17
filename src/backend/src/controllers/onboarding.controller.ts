@@ -72,7 +72,7 @@ export default class OnboardingController {
 
   static async updateChecklistItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, parentChecklistItemId, subtasks } = req.body;
+      const { name, description, parentChecklistItemId, subtaskIds } = req.body;
       const { checklistItemId } = req.params;
 
       await OnboardingServices.updateChecklistItem(
@@ -81,7 +81,7 @@ export default class OnboardingController {
         checklistItemId,
         description,
         parentChecklistItemId,
-        subtasks,
+        subtaskIds,
         req.organization
       );
       res.status(200).json({ message: 'ChecklistItem updated successfully' });

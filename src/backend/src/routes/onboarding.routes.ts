@@ -38,7 +38,8 @@ onboardingRouter.post(
   nonEmptyString(body('name')),
   nonEmptyString(body('description').optional()),
   nonEmptyString(body('parentChecklistItemId').optional()),
-  body('subtasks').isArray,
+  body('subtaskIds').isArray,
+  nonEmptyString(body('subtaskIds.*')),
   validateInputs,
   OnboardingController.updateChecklistItem
 );
