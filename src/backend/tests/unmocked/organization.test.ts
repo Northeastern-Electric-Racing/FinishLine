@@ -211,8 +211,8 @@ describe('Organization Tests', () => {
     it('Fails if organization does not exist', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
-        async () => await OrganizationsService.updateApplicationLink(testBatman, '1', 'new application link')
-      ).rejects.toThrow(new NotFoundException('Organization', '1'));
+        async () => await OrganizationsService.updateApplicationLink(testBatman, orgId, 'new application link')
+      ).rejects.toThrow(new NotFoundException('Organization', orgId));
     });
 
     it('Succeeds and updates the application link', async () => {
