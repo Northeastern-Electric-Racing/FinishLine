@@ -235,13 +235,13 @@ export default class OnboardingServices {
     }
 
     const checklistItem = await prisma.checklistItem.findUnique({
-      where: { checklistItemId: checklistId },
+      where: { checklistItemId: checklistId, dateDeleted: null },
       include: {
         subtasks: true
       }
     });
 
-    if (!checklistItem || checklistItem.dateDeleted) {
+    if (!checklistItem) {
       throw new NotFoundException('Checklist Item', checklistId);
     }
 
