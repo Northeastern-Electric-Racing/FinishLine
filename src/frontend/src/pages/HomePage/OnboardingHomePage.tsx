@@ -28,7 +28,7 @@ const OnboardingHomePage = () => {
   return (
     <PageLayout title="Home" hidePageTitle>
       <Typography sx={{ fontSize: '3em', mt: 2, ml: 2 }}>Welcome to the Northeastern Electric Racing Team</Typography>
-      <Grid container xs={6} md={12} direction="column" sx={gridStyle}>
+      <Grid container direction="column" sx={gridStyle}>
         {/* Placeholder */}
         <Grid item>
           <QuestionsSection></QuestionsSection>
