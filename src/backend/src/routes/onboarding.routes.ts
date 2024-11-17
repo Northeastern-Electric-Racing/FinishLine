@@ -36,7 +36,6 @@ onboardingRouter.post(
 onboardingRouter.post(
   '/checklist/item/:checklistItemId/update',
   nonEmptyString(body('name')),
-  nonEmptyString(body('checklistId')),
   nonEmptyString(body('description').optional()),
   nonEmptyString(body('parentChecklistItemId').optional()),
   body('subtasks').isArray,

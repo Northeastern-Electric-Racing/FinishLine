@@ -72,12 +72,13 @@ export default class OnboardingController {
 
   static async updateChecklistItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, checklistId, description, parentChecklistItemId, subtasks } = req.body;
+      const { name, description, parentChecklistItemId, subtasks } = req.body;
+      const { checklistItemId } = req.params;
 
       await OnboardingServices.updateChecklistItem(
         req.currentUser,
         name,
-        checklistId,
+        checklistItemId,
         description,
         parentChecklistItemId,
         subtasks,
