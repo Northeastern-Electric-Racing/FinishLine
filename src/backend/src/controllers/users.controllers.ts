@@ -191,4 +191,16 @@ export default class UsersController {
       return next(error);
     }
   }
+
+  static async getUserUnreadNotifications(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const { organization } = req;
+
+      const unreadNotifications = await UsersService.getUserUnreadNotifications(userId, organization);
+      return res.status(200).json(unreadNotifications);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

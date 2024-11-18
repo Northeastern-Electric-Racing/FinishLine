@@ -944,5 +944,5 @@ model Notification {
   notificationId String @id @default(uuid())
   text           String
   iconName       String
-  users          User[]
+  usersReceived  User[]
 }

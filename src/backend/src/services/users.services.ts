@@ -38,6 +38,8 @@ import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args'
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
+import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
+import notificationTransformer from '../transformers/notification.transformer';
 
 export default class UsersService {
   /**
@@ -570,5 +572,15 @@ export default class UsersService {
 
     const resolvedTasks = await Promise.all(tasksPromises);
     return resolvedTasks.flat();
+  }
+
+  static async getUserUnreadNotifications(userId: string, organization: Organization) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId },
+      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    });
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    return requestedUser.unreadNotifications.map(notificationTransformer);
   }
 }
