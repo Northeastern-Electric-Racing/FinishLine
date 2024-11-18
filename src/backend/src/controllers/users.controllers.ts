@@ -191,4 +191,16 @@ export default class UsersController {
       return next(error);
     }
   }
+
+  static async sendNotitifcation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const { text, iconName } = req.body;
+
+      const updatedUser = await UsersService.sendNotification(userId, text, iconName);
+      return res.status(200).json(updatedUser);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

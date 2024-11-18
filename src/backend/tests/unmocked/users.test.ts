@@ -48,4 +48,21 @@ describe('User Tests', () => {
       expect(userTasks).toStrictEqual([batmanTask, batmanTask]);
     });
   });
+
+  describe('Send Notification', () => {
+    it('fails on invalid user id', async () => {
+      await expect(async () => await UsersService.sendNotification('1', 'test', 'test')).rejects.toThrow(
+        new NotFoundException('User', '1')
+      );
+    });
+
+    /*
+    it('Succeeds and sends notification to user', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      UsersService.sendNotification(testBatman.userId, 'test', 'test');
+
+      expect(testBatman).toStrictEqual([batmanTask, batmanTask]);
+    });
+    */
+  });
 });

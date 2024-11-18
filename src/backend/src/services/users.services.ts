@@ -571,4 +571,23 @@ export default class UsersService {
     const resolvedTasks = await Promise.all(tasksPromises);
     return resolvedTasks.flat();
   }
+
+  static async sendNotification(userId: string, text: string, iconName: string) {
+    const createdNotification = await prisma.notification.create({
+      data: {
+        text,
+        iconName
+      }
+    });
+
+    const udaptedUser = await prisma.user.update({
+      where: { userId },
+      data: { unreadNotifications: { connect: createdNotification } },
+      include: { unreadNotifications: true }
+    });
+
+    if (!udaptedUser) throw new NotFoundException('User', userId);
+
+    return udaptedUser;
+  }
 }
