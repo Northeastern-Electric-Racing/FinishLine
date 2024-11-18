@@ -1,8 +1,8 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization } from 'shared';
-import { getCurrentOrganization, setOrganizationDescription } from '../apis/organizations.api';
+import { Organization, Project } from 'shared';
+import { getFeaturedProjects, getCurrentOrganization, setOrganizationDescription } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -26,6 +26,13 @@ export const useProvideOrganization = (): OrganizationProvider => {
 export const useCurrentOrganization = () => {
   return useQuery<Organization, Error>(['organizations'], async () => {
     const { data } = await getCurrentOrganization();
+    return data;
+  });
+};
+
+export const useFeaturedProjects = () => {
+  return useQuery<Project[], Error>(['organizations', 'featured-projects'], async () => {
+    const { data } = await getFeaturedProjects();
     return data;
   });
 };
