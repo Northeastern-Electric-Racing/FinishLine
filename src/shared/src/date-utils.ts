@@ -36,6 +36,16 @@ const getDay = (date: Date): number => {
 };
 
 /**
+ * Gets the beginning of the day
+ * @returns the beginning of the day (at 12am local)
+ */
+export const startOfDay = (date: Date): Date => {
+  const ret = new Date(date);
+  ret.setHours(0, 0, 0, 0);
+  return ret;
+};
+
+/**
  * Calculate the days between two dates
  */
 const daysBetween = (date1: Date, date2: Date): number => {
