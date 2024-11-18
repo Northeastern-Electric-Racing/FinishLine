@@ -259,15 +259,17 @@ export default class OnboardingServices {
       }
     }
 
-    subtaskIds.forEach(async (subtaskId) => {
-      const subtask = await prisma.checklistItem.findUnique({
-        where: { checklistItemId: subtaskId, dateDeleted: null }
-      });
+    await Promise.all(
+      subtaskIds.map(async (subtaskId) => {
+        const subtask = await prisma.checklistItem.findUnique({
+          where: { checklistItemId: subtaskId, dateDeleted: null }
+        });
 
-      if (!subtask) {
-        throw new NotFoundException('Checklist Item', subtaskId);
-      }
-    });
+        if (!subtask) {
+          throw new NotFoundException('Checklist Item', subtaskId);
+        }
+      })
+    );
 
     const existingSubtaskIds = new Set(checklistItem.subtasks.map((subtask) => subtask.checklistItemId));
     const newSubtasks = subtaskIds.filter((subtaskId) => !existingSubtaskIds.has(subtaskId));
