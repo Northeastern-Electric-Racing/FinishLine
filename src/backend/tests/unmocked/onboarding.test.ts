@@ -16,6 +16,7 @@ import {
   NotFoundException
 } from '../../src/utils/errors.utils';
 import prisma from '../../src/prisma/prisma';
+import TeamsService from '../../src/services/teams.services';
 
 describe('Onboarding tests', () => {
   let orgId: string;
@@ -66,6 +67,109 @@ describe('Onboarding tests', () => {
       });
       const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
       expect(checkedChecklists[0].checklistItems.length).toEqual(1);
+    });
+  });
+
+  describe("Get User's Checklists", () => {
+    it('Throws an error if the user does not have any teams', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(async () => await OnboardingServices.getUsersChecklists(batman)).rejects.toThrow(
+        new HttpException(404, 'This user does not have any teams')
+      );
+    });
+
+    it('Returns all general checklists when checklist fails to match user teamType', async () => {
+      createTestTeamType('id', organization);
+      const user = await createTestUser(batmanAppAdmin, orgId);
+
+      // Create a team and add the user as a member (getUsersChecklists requires user to be on a team)
+      const team = await TeamsService.createTeam(
+        user,
+        'Engineering Team',
+        user.userId,
+        'slackId123',
+        'This is the engineering team',
+        false,
+        organization
+      );
+      await prisma.team.update({
+        where: { teamId: team.teamId },
+        data: { members: { connect: { userId: user.userId } } }
+      });
+
+      // Create a checklist, set its teamTypeId to null to be a general checklist
+      const checklist = await createTestChecklist(user, orgId);
+      const generalChecklist = await prisma.checklist.update({
+        where: { checklistId: checklist.checklistId },
+        data: { teamTypeId: null },
+        include: { checklistItems: true }
+      });
+
+      const result = await OnboardingServices.getUsersChecklists(user);
+      expect(result).toStrictEqual([generalChecklist]);
+    });
+
+    it('Returns all general checklist and matching checklists of user teamType', async () => {
+      const teamType = await createTestTeamType('id', organization);
+      const user = await createTestUser(batmanAppAdmin, orgId);
+
+      // Create a team and add the user as a member
+      const team = await TeamsService.createTeam(
+        user,
+        'Engineering Team',
+        user.userId,
+        'slackId123',
+        'This is the engineering team',
+        false,
+        organization
+      );
+      await prisma.team.update({
+        where: { teamId: team.teamId },
+        data: {
+          members: { connect: { userId: user.userId } },
+          teamType: { connect: { teamTypeId: teamType.teamTypeId } }
+        }
+      });
+
+      // Create a checklist, set its teamTypeId to null to be a general checklist
+      const checklist = await createTestChecklist(user, orgId);
+      const generalChecklist = await prisma.checklist.update({
+        where: { checklistId: checklist.checklistId },
+        data: { teamTypeId: null },
+        include: { checklistItems: true }
+      });
+
+      // Create a checklist that matches the user's team type
+      const teamChecklist = await createTestChecklist(user, orgId);
+
+      const result = await OnboardingServices.getUsersChecklists(user);
+      expect(result).toEqual([generalChecklist, teamChecklist]);
+    });
+
+    it('Returns an empty array when a user is on a team but there are no checklists', async () => {
+      const teamType = createTestTeamType('id', organization);
+      const user = await createTestUser(batmanAppAdmin, orgId);
+
+      // Create a team and add the user as a member
+      const team = await TeamsService.createTeam(
+        user,
+        'Engineering Team',
+        user.userId,
+        'slackId123',
+        'This is the engineering team',
+        false,
+        organization
+      );
+      await prisma.team.update({
+        where: { teamId: team.teamId },
+        data: {
+          members: { connect: { userId: user.userId } },
+          teamType: { connect: { teamTypeId: (await teamType).teamTypeId } }
+        }
+      });
+
+      const result = await OnboardingServices.getUsersChecklists(user);
+      expect(result).toStrictEqual([]);
     });
   });
 
