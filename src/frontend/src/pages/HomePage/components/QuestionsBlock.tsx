@@ -13,8 +13,8 @@ const QuestionsBlock: React.FC = () => {
   const theme = useTheme();
 
   return (
-    <Card sx={{ my: 2, background: theme.palette.background.paper }}>
-      <Box sx={{ margin: 2 }}>
+    <Card sx={{ background: theme.palette.background.paper, borderRadius: '10px' }}>
+      <Box margin={2}>
         <Typography variant="h5">Questions?</Typography>
         <Typography sx={{ mt: 1, mb: -1 }}>Feel free to contact:</Typography>
         <List sx={{ listStyleType: 'disc', pl: 2 }}>
