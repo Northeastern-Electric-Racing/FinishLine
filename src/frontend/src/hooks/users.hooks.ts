@@ -19,7 +19,8 @@ import {
   getUserScheduleSettings,
   updateUserScheduleSettings,
   getUserTasks,
-  getManyUserTasks
+  getManyUserTasks,
+  getNotifications
 } from '../apis/users.api';
 import {
   User,
@@ -31,7 +32,8 @@ import {
   UserScheduleSettings,
   UserWithScheduleSettings,
   SetUserScheduleSettingsPayload,
-  Task
+  Task,
+  Notification
 } from 'shared';
 import { useAuth } from './auth.hooks';
 import { useContext } from 'react';
@@ -257,6 +259,18 @@ export const useUserTasks = (userId: string) => {
 export const useManyUserTasks = (userIds: string[]) => {
   return useQuery<Task[], Error>(['users', userIds, 'tasks'], async () => {
     const { data } = await getManyUserTasks(userIds);
+    return data;
+  });
+};
+
+/**
+ * Curstom react hook to get all unread notifications from a user
+ * @param userId id of user to get unread notifications from
+ * @returns
+ */
+export const useUserNotifications = (userId: string) => {
+  return useQuery<Notification[], Error>(['users', userId, 'notifications'], async () => {
+    const { data } = await getNotifications(userId);
     return data;
   });
 };

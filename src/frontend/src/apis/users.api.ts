@@ -5,6 +5,7 @@
 
 import axios from '../utils/axios';
 import {
+  Notification,
   Project,
   SetUserScheduleSettingsPayload,
   Task,
@@ -23,6 +24,7 @@ import {
 import { AuthenticatedUser, UserSettings } from 'shared';
 import { projectTransformer } from './transformers/projects.transformers';
 import { taskTransformer } from './transformers/tasks.transformers';
+import notificationTransformer from '../../../backend/src/transformers/notification.transformer';
 
 /**
  * Fetches all users.
@@ -158,4 +160,20 @@ export const getManyUserTasks = (userIds: string[]) => {
       transformResponse: (data) => JSON.parse(data).map(taskTransformer)
     }
   );
+};
+
+/*
+ * Sends a notification to the user with the given id
+ */
+export const sendNotification = (id: string, notification: Notification) => {
+  return axios.post<User>(apiUrls.userSendNotifications(id), notification);
+};
+
+/*
+ * Gets all unread notifications of the user with the given id
+ */
+export const getNotifications = (id: string) => {
+  return axios.get<Notification[]>(apiUrls.userNotifications(id), {
+    transformResponse: (data) => notificationTransformer(JSON.parse(data))
+  });
 };
