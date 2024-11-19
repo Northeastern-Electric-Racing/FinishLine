@@ -211,20 +211,14 @@ describe('Organization Tests', () => {
     it('Fails if user is not admin', async () => {
       await expect(
         async () =>
-          await OrganizationsService.setOnboardingText(await createTestUser(wonderwomanGuest, orgId), orgId, 'text')
+          await OrganizationsService.setOnboardingText(await createTestUser(wonderwomanGuest, orgId), organization, 'text')
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update onboarding text'));
-    });
-
-    it('Fails if organization does not exist', async () => {
-      await expect(
-        OrganizationsService.setOnboardingText(await createTestUser(batmanAppAdmin, orgId), 'id1', 'texts')
-      ).rejects.toThrow(new NotFoundException('Organization', 'id1'));
     });
 
     it('Succeeds and updates onboarding text', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
 
-      const updatedOrganization = await OrganizationsService.setOnboardingText(testBatman, orgId, 'Testing text');
+      const updatedOrganization = await OrganizationsService.setOnboardingText(testBatman, organization, 'Testing text');
 
       expect(updatedOrganization).not.toBeNull();
       expect(updatedOrganization.onboardingText).toBe('Testing text');

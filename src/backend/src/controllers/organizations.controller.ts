@@ -66,7 +66,7 @@ export default class OrganizationsController {
       const { text } = req.body;
       const updatedOrganization = await OrganizationsService.setOnboardingText(
         req.currentUser,
-        req.organization.organizationId,
+        req.organization,
         text
       );
       return res.status(200).json(updatedOrganization);
