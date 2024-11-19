@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
-import QuestionsBlock from './components/QuestionsBlock';
+import InfoBlock from './components/InfoBlock';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
@@ -66,29 +66,7 @@ const OnboardingHomePage = () => {
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             {/* This will be replaced with the 'Onboarding' block*/}
             <Grid item>
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '25vh',
-                  borderRadius: '10px'
-                }}
-              >
-                <Typography variant="h5">Onboarding</Typography>
-              </Box>
-            </Grid>
-            <Grid item>
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '25vh',
-                  borderRadius: '10px'
-                }}
-              >
-                <Typography variant="h5">Useful Links</Typography>
-              </Box>
-            </Grid>
-            <Grid item>
-              <QuestionsBlock />
+              <InfoBlock />
             </Grid>
           </Grid>
         </Grid>
