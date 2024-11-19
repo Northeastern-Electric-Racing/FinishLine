@@ -1,58 +1,44 @@
 import { Box, Grid, Typography } from '@mui/material';
 import MilestoneTable from './MilestoneTable';
 import FAQsTable from './FAQTable';
-import { useEffect, useMemo, useState } from 'react';
-import LoadingIndicator from '../../../components/LoadingIndicator';
-import ErrorPage from '../../ErrorPage';
 import { useToast } from '../../../hooks/toasts.hooks';
+import NERUploadButton from '../../../components/NERUploadButton';
+import { useEffect, useState } from 'react';
 import { useCurrentOrganization, useSetOrganizationImages } from '../../../hooks/organizations.hooks';
 import { downloadGoogleImage } from '../../../apis/finance.api';
-import NERUploadButton from '../../../components/NERUploadButton';
+import { blobPipe } from '../../../utils/pipes';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
-  const {
-    data: organization,
-    isLoading: organizationIsLoading,
-    isError: organizationIsError,
-    error: organizationError
-  } = useCurrentOrganization();
-
   const { mutateAsync: organizationImages } = useSetOrganizationImages();
   const toast = useToast();
+
+  const { data: organization } = useCurrentOrganization();
+
+  const [defaultImage1, setDefaultImage1] = useState<File | undefined>(undefined);
+  const [defaultImage2, setDefaultImage2] = useState<File | undefined>(undefined);
 
   const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
   const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
 
-  const currentImages = useMemo(() => {
-    return [organization?.applyInterestImageId, organization?.exploreAsGuestImageId];
-  }, [organization]);
-
   useEffect(() => {
-    if (!currentImages.every(Boolean)) return;
-
     const fetchImages = async () => {
-      try {
-        const newImageUrls: { [key: string]: string } = {};
+      const applyBlob = await downloadGoogleImage(organization?.applyInterestImageId ?? '');
+      const exploreBlob = await downloadGoogleImage(organization?.exploreAsGuestImageId ?? '');
 
-        const imageFetches = currentImages.map(async (image) => {
-          if (image) {
-            const imageBlob = await downloadGoogleImage(image);
-            const url = URL.createObjectURL(imageBlob);
-            newImageUrls[image] = url;
-          }
-        });
+      const applyFile = blobPipe(applyBlob, 'applyInterestImage.jpg');
+      const exploreFile = blobPipe(exploreBlob, 'exploreAsGuestImage.jpg');
 
-        await Promise.all(imageFetches);
-      } catch (error) {
-        console.error('Error fetching image URLs:', error);
-      }
+      setDefaultImage1(applyFile);
+      setDefaultImage2(exploreFile);
     };
 
     fetchImages();
-  }, [currentImages]);
+  }, [organization]);
 
-  if (organizationIsLoading) return <LoadingIndicator />;
-  if (organizationIsError) return <ErrorPage message={organizationError.message} />;
+  if (!defaultImage1 || !defaultImage2) {
+    return <LoadingIndicator />;
+  }
 
   const handleFileUpload = async (files: File[], type: 'exploreAsGuest' | 'applyInterest') => {
     const validFiles: File[] = [];
@@ -99,6 +85,14 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
           <Typography variant="subtitle1" gutterBottom>
             Apply Interest Image
           </Typography>
+          {!addedImage1 && defaultImage1 ? (
+            <Box
+              component="img"
+              sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
+              alt="Apply Interest"
+              src={URL.createObjectURL(defaultImage1)}
+            />
+          ) : null}
           <NERUploadButton
             dataTypeId="applyInterest"
             handleFileChange={(e) => {
@@ -121,6 +115,14 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
           <Typography variant="subtitle1" gutterBottom>
             Explore As Guest Image
           </Typography>
+          {!addedImage2 && defaultImage2 ? (
+            <Box
+              component="img"
+              sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
+              alt="Apply Interest"
+              src={URL.createObjectURL(defaultImage2)}
+            />
+          ) : null}
           <NERUploadButton
             dataTypeId="exploreAsGuest"
             handleFileChange={(e) => {
