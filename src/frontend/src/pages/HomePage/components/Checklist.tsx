@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Checklist as ChecklistType } from 'shared';
-import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
+import { Typography, Grid, Box, IconButton } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
 
