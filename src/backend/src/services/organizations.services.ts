@@ -152,6 +152,13 @@ export default class OrganizationsService {
     };
   }
 
+  /**
+   * Sets onboarding text field
+   * @param submitter
+   * @param organizationId
+   * @param text
+   * @returns updated organization with onboarding text
+   */
   static async setOnboardingText(submitter: User, organizationId: string, text: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId }
