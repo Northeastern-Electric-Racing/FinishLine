@@ -3,6 +3,7 @@ import { createTestOrganization, createTestTask, createTestUser, resetUsers } fr
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
+import prisma from '../../src/prisma/prisma';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -56,13 +57,17 @@ describe('User Tests', () => {
       );
     });
 
-    /*
     it('Succeeds and sends notification to user', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      UsersService.sendNotification(testBatman.userId, 'test', 'test');
+      await UsersService.sendNotification(testBatman.userId, 'test1', 'test1');
+      await UsersService.sendNotification(testBatman.userId, 'test2', 'test2');
 
-      expect(testBatman).toStrictEqual([batmanTask, batmanTask]);
+      const batmanWithNotifications = await prisma.user.findUnique({
+        where: { userId: testBatman.userId },
+        include: { unreadNotifications: true }
+      });
+
+      expect(batmanWithNotifications?.unreadNotifications).toHaveLength(2);
     });
-    */
   });
 });

@@ -573,6 +573,12 @@ export default class UsersService {
   }
 
   static async sendNotification(userId: string, text: string, iconName: string) {
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
     const createdNotification = await prisma.notification.create({
       data: {
         text,
@@ -581,12 +587,10 @@ export default class UsersService {
     });
 
     const udaptedUser = await prisma.user.update({
-      where: { userId },
+      where: { userId: requestedUser.userId },
       data: { unreadNotifications: { connect: createdNotification } },
       include: { unreadNotifications: true }
     });
-
-    if (!udaptedUser) throw new NotFoundException('User', userId);
 
     return udaptedUser;
   }
