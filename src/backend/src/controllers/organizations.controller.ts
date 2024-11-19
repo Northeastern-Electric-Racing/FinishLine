@@ -60,4 +60,18 @@ export default class OrganizationsController {
       next(error);
     }
   }
+
+  static async setOnboardingText(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { text } = req.body;
+      const updatedOrganization = await OrganizationsService.setOnboardingText(
+        req.currentUser,
+        req.organization.organizationId,
+        text
+      );
+      return res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

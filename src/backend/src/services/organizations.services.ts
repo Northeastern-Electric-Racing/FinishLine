@@ -151,4 +151,27 @@ export default class OrganizationsService {
       exploreAsGuestImage: organization.exploreAsGuestImageId
     };
   }
+
+  static async setOnboardingText(submitter: User, organizationId: string, text: string) {
+    const organization = await prisma.organization.findUnique({
+      where: { organizationId }
+    });
+  
+    if (!organization) {
+      throw new NotFoundException('Organization', organizationId);
+    }
+  
+    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update onboarding text');
+    }
+  
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId },
+      data: {
+        onboardingText: text
+      }
+    });
+  
+    return updatedOrganization;
+  }
 }

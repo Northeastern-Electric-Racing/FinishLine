@@ -35,12 +35,4 @@ onboardingRouter.post(
 
 onboardingRouter.delete('/checklist/item/:checklistItemId/delete', OnboardingController.deleteChecklistItem);
 
-/* Onboarding Text Section */
-onboardingRouter.post(
-  '/organizations/onboarding-text/set',
-  nonEmptyString(body('text')),
-  validateInputs,
-  OnboardingController.setOnboardingText
-);
-
 export default onboardingRouter;
