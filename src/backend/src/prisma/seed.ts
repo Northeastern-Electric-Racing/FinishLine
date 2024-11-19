@@ -1913,9 +1913,54 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
+  const checklistItem2 = await OnboardingServices.createChecklistItem(
+    batman,
+    'Engage',
+    softwareChecklist.checklistId,
+    null,
+    'Join NER on Engage. This is what Northeastern uses to keep trak of our roster',
+    ner
+  );
+
+  await OnboardingServices.createChecklistItem(
+    batman,
+    'Put your name and pronouns',
+    softwareChecklist.checklistId,
+    checklistItem1.checklistItemId,
+    null,
+    ner
+  );
+
   await OnboardingServices.createChecklistItem(
     batman,
     'Add profile picture',
+    softwareChecklist.checklistId,
+    checklistItem1.checklistItemId,
+    null,
+    ner
+  );
+
+  await OnboardingServices.createChecklistItem(
+    batman,
+    'Include your team and/or subteam',
+    softwareChecklist.checklistId,
+    checklistItem1.checklistItemId,
+    null,
+    ner
+  );
+
+  await OnboardingServices.createChecklistItem(
+    batman,
+    'Include your major and year',
+    softwareChecklist.checklistId,
+    checklistItem1.checklistItemId,
+    null,
+    ner
+  );
+
+  await OnboardingServices.createChecklistItem(
+    batman,
+    'Turn on notifications',
     softwareChecklist.checklistId,
     checklistItem1.checklistItemId,
     null,

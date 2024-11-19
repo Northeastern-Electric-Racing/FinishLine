@@ -1,4 +1,4 @@
-import { Typography, Box, IconButton } from '@mui/material';
+import { Typography, Box, IconButton, Checkbox } from '@mui/material';
 import { useState } from 'react';
 import { ChecklistItem } from 'shared';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
@@ -29,6 +29,22 @@ const Task: React.FC<SubtaskProps> = ({ checklistItems, parentTask }) => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Checkbox
+            sx={{
+              '& .MuiSvgIcon-root': {
+                fill: 'black',
+                backgroundColor: 'black',
+                borderRadius: 1
+              },
+              '&.Mui-checked .MuiSvgIcon-root': {
+                backgroundColor: 'white'
+              },
+              '&:hover': {
+                backgroundColor: 'transparent'
+              }
+            }}
+          />
+
           <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.name}</Typography>
           <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
             {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
