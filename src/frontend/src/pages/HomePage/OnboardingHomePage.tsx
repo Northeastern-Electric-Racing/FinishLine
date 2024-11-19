@@ -67,7 +67,7 @@ const OnboardingHomePage = () => {
             <Grid item>
               <Box
                 sx={{
-                  backgroundColor: '#272727', //to match the example best
+                  backgroundColor: '#2F3031', //to match the example best
                   height: '35vh',
                   borderRadius: '10px',
                   padding: 2,
