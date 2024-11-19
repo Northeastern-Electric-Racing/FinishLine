@@ -55,5 +55,11 @@ userRouter.post(
   UsersController.getManyUserTasks
 );
 userRouter.get('/:userId/notifications', UsersController.getUserUnreadNotifications);
+userRouter.post(
+  `/:userId/notifications/send`,
+  nonEmptyString(body('text')),
+  nonEmptyString(body('iconName')),
+  UsersController.sendNotitifcation
+);
 
 export default userRouter;
