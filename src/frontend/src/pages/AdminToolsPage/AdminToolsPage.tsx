@@ -18,6 +18,7 @@ import FullPageTabs from '../../components/FullPageTabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
+import AdminToolsOnboardingConfig from './OnboardingConfig/AdminToolsOnboardingConfig';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -40,6 +41,7 @@ const AdminToolsPage: React.FC = () => {
   }
   if (isUserAdmin) {
     tabs.push({ tabUrlValue: 'recruitment', tabName: 'Recruitment' });
+    tabs.push({ tabUrlValue: 'onboarding', tabName: 'Onboarding' });
     tabs.push({ tabUrlValue: 'miscellaneous', tabName: 'Miscellaneous' });
   }
 
@@ -81,6 +83,8 @@ const AdminToolsPage: React.FC = () => {
         <AdminToolsFinanceConfig />
       ) : tabIndex === 3 ? (
         <AdminToolsRecruitmentConfig />
+      ) : tabIndex === 4 ? (
+        <AdminToolsOnboardingConfig />
       ) : (
         <Box>
           <Box pb={2}>
