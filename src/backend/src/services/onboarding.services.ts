@@ -271,9 +271,6 @@ export default class OnboardingServices {
       })
     );
 
-    const existingSubtaskIds = new Set(checklistItem.subtasks.map((subtask) => subtask.checklistItemId));
-    const newSubtasks = subtaskIds.filter((subtaskId) => !existingSubtaskIds.has(subtaskId));
-
     await prisma.checklistItem.update({
       where: { checklistItemId },
       data: {
@@ -281,7 +278,7 @@ export default class OnboardingServices {
         parentChecklistItemId,
         description,
         subtasks: {
-          connect: newSubtasks.map((subtaskId) => ({
+          connect: subtaskIds.map((subtaskId) => ({
             checklistItemId: subtaskId
           }))
         }
