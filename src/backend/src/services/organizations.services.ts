@@ -160,7 +160,6 @@ export default class OrganizationsService {
    * @returns updated organization with onboarding text
    */
   static async setOnboardingText(submitter: User, organization: Organization, text: string) {
-
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update onboarding text');
     }

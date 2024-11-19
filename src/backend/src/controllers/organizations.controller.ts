@@ -64,11 +64,7 @@ export default class OrganizationsController {
   static async setOnboardingText(req: Request, res: Response, next: NextFunction) {
     try {
       const { text } = req.body;
-      const updatedOrganization = await OrganizationsService.setOnboardingText(
-        req.currentUser,
-        req.organization,
-        text
-      );
+      const updatedOrganization = await OrganizationsService.setOnboardingText(req.currentUser, req.organization, text);
       return res.status(200).json(updatedOrganization);
     } catch (error: unknown) {
       return next(error);
