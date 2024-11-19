@@ -4,7 +4,6 @@ import OrganizationsController from '../controllers/organizations.controller';
 import multer, { memoryStorage } from 'multer';
 import { body } from 'express-validator';
 
-
 const organizationRouter = express.Router();
 const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
 
