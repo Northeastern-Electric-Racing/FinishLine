@@ -1,4 +1,4 @@
-import { Grid, Typography, ListItem, Card, List, useTheme } from '@mui/material';
+import { Grid, Typography, ListItem, List, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 
 const InfoBlock: React.FC = () => {

@@ -64,7 +64,6 @@ const OnboardingHomePage = () => {
             </Box>
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
-            {/* This will be replaced with the 'Onboarding' block*/}
             <Grid item>
               <InfoBlock />
             </Grid>
