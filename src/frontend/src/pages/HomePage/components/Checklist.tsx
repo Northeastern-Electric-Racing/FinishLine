@@ -5,7 +5,6 @@ import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
 
 const Checklist: React.FC<{ checklist: ChecklistType }> = ({ checklist }) => {
-  const theme = useTheme();
   const parentTasks = checklist.checklistItems.filter((task) => task.parentChecklistItemId === null);
   const allChecklistItems = checklist.checklistItems;
 
