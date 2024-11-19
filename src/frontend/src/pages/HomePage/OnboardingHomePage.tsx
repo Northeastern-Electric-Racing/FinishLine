@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
+import ChecklistSection from './components/ChecklistSection';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
@@ -40,27 +41,8 @@ const OnboardingHomePage = () => {
         </Box>
         <Grid container display={'flex'}>
           {/* This will be replaced with the 'Checklist' component*/}
-          <Grid item xs={12} md={7}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                height: '150vh',
-                width: '100%',
-                mt: 4
-              }}
-            >
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '50%',
-                  width: '95%',
-                  borderRadius: '10px'
-                }}
-              >
-                <Typography>Checklists</Typography>
-              </Box>
-            </Box>
+          <Grid item xs={12} md={7} padding={2}>
+            <ChecklistSection />
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             {/* This will be replaced with the 'Onboarding' block*/}

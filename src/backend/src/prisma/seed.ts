@@ -1909,7 +1909,7 @@ const performSeed: () => Promise<void> = async () => {
     'Join Slack',
     softwareChecklist.checklistId,
     null,
-    null,
+    'Slack is our primary method of communication outside of meetings and the shop. To join, you must use your @northeastern.edu email (No personal emails!). We do not send email reminders for meetings, so you will need to stay in the loop via Slack and Google Calandar.',
     ner
   );
 
