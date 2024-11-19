@@ -1,5 +1,6 @@
 import { Grid, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 
 const OnboardingInfoSection: React.FC = () => {
   return (
@@ -16,7 +17,10 @@ const OnboardingInfoSection: React.FC = () => {
           <Typography>Onboarding</Typography>
         </Box>
       </Grid>
-      {/* This will be replaced with the 'Useful Links' block*/}
+      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
+        Useful Links
+      </Typography>
+      <UsefulLinksTable />
       <Grid item>
         <Box
           sx={{
