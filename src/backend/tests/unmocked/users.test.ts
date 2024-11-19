@@ -72,4 +72,24 @@ describe('User Tests', () => {
       expect(batmanWithNotifications?.unreadNotifications[1].text).toBe('test2');
     });
   });
+
+  describe('Get Notifications', () => {
+    it('fails on invalid user id', async () => {
+      await expect(async () => await UsersService.getUserUnreadNotifications('1', organization)).rejects.toThrow(
+        new NotFoundException('User', '1')
+      );
+    });
+
+    it('Succeeds and gets user notifications', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await UsersService.sendNotification(testBatman.userId, 'test1', 'test1');
+      await UsersService.sendNotification(testBatman.userId, 'test2', 'test2');
+
+      const notifications = await UsersService.getUserUnreadNotifications(testBatman.userId, organization);
+
+      expect(notifications).toHaveLength(2);
+      expect(notifications[0].text).toBe('test1');
+      expect(notifications[1].text).toBe('test2');
+    });
+  });
 });
