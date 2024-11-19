@@ -68,6 +68,8 @@ describe('User Tests', () => {
       });
 
       expect(batmanWithNotifications?.unreadNotifications).toHaveLength(2);
+      expect(batmanWithNotifications?.unreadNotifications[0].text).toBe('test1');
+      expect(batmanWithNotifications?.unreadNotifications[1].text).toBe('test2');
     });
   });
 });
