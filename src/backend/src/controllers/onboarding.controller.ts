@@ -79,4 +79,14 @@ export default class OnboardingController {
       return next(error);
     }
   }
+
+  static async setOnboardingText(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { text } = req.body;
+      await OnboardingServices.setOnboardingText(req.currentUser, text, req.organization);
+      res.status(200).json({ message: `Successfully updated onboarding text`});
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

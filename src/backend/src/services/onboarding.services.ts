@@ -238,4 +238,19 @@ export default class OnboardingServices {
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
   }
+
+  static async setOnboardingText(submitter: User, text: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('non-admin tried to update onboarding text');
+    }
+
+    await prisma.organization.update({
+      where: {
+        organizationId: organization.organizationId
+      },
+      data: {
+        onboardingText: text
+      }
+    });
+  }
 }
