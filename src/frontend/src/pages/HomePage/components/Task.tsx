@@ -21,11 +21,12 @@ const Task: React.FC<SubtaskProps> = ({ checklistItems, parentTask }) => {
     <Box sx={{ width: '85%' }}>
       <Box
         sx={{
-          backgroundColor: showSubtasks ? 'white' : 'gray',
+          backgroundColor: showSubtasks ? 'white' : '#CECECE',
           borderRadius: 2,
           padding: 2,
           alignContent: 'center',
-          position: 'relative'
+          position: 'relative',
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)'
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

@@ -8,7 +8,7 @@ const SubtaskSection: React.FC<{ subtasks: ChecklistItem[]; parentTask: Checklis
   const theme = useTheme();
 
   return (
-    <Box sx={{ backgroundColor: 'gray', padding: 2, marginTop: -0.5, borderRadius: '0px 0px 10px 10px' }}>
+    <Box sx={{ backgroundColor: '#CECECE', padding: 2, marginTop: -0.5, borderRadius: '0px 0px 10px 10px' }}>
       {subtasks.length > 0 ? (
         <Grid container sx={{ display: 'flex' }}>
           <Grid item xs={12} md={7}>

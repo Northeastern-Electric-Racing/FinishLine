@@ -44,7 +44,6 @@ const OnboardingHomePage = () => {
           <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
         </Box>
         <Grid container display={'flex'}>
-          {/* This will be replaced with the 'Checklist' component*/}
           <Grid item xs={12} md={7} padding={2}>
             <ChecklistSection />
           </Grid>

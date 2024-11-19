@@ -16,7 +16,7 @@ const Checklist: React.FC<{ checklist: ChecklistType }> = ({ checklist }) => {
   };
 
   return (
-    <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5 }}>
+    <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: 5 }}>
       <Grid container>
         <Grid item xs={12} padding={2.5}>
           <Grid display="flex" alignItems="center" justifyContent="space-between">
