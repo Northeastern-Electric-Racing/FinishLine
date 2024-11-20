@@ -23,7 +23,7 @@ organizationRouter.get('/images', OrganizationsController.getOrganizationImages)
 
 organizationRouter.post(
   '/onboardingText/set',
-  nonEmptyString(body('text')),
+  nonEmptyString(body('onboardingText')),
   validateInputs,
   OrganizationsController.setOnboardingText
 );
