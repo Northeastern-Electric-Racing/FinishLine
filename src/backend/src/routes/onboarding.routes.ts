@@ -22,6 +22,14 @@ onboardingRouter.post(
 
 onboardingRouter.delete('/checklist/:checklistId/delete', OnboardingController.deleteChecklist);
 
+onboardingRouter.post(
+  '/checklist/:checklistId/update',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('teamTypeId')),
+  validateInputs,
+  OnboardingController.updateChecklist
+);
+
 /* Checklist Items Section */
 onboardingRouter.post(
   '/checklist/item/create',

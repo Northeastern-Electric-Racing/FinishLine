@@ -11,6 +11,7 @@ import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
@@ -399,6 +400,71 @@ describe('Onboarding tests', () => {
 
       expect(updatedTestChecklistItem1?.dateDeleted).not.toBe(null);
       expect(updatedTestChecklistItem2?.dateDeleted).not.toBe(null);
+    });
+  });
+
+  describe('Update Checklist', () => {
+    it('Throws if updater is not an admin', async () => {
+      const checklist = await createTestChecklist(await createTestUser(batmanAppAdmin, orgId), orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.updateChecklist(
+            await createTestUser(wonderwomanGuest, orgId),
+            checklist.checklistId,
+            'New Name',
+            'teamTypeId',
+            organization
+          )
+      ).rejects.toThrow(new AccessDeniedException('You need to be an admin to update the checklist'));
+    });
+
+    it('Throws if checklist is not found', async () => {
+      const adminUser = await createTestUser(batmanAppAdmin, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.updateChecklist(adminUser, 'nonexistentId', 'New Name', 'teamTypeId', organization)
+      ).rejects.toThrow(new NotFoundException('Checklist', 'nonexistentId'));
+    });
+
+    it('Throws if checklist has been deleted', async () => {
+      const adminUser = await createTestUser(batmanAppAdmin, orgId);
+      const checklist = await createTestChecklist(adminUser, orgId);
+      await OnboardingServices.deleteChecklist(adminUser, checklist.checklistId, organization);
+      await expect(
+        async () =>
+          await OnboardingServices.updateChecklist(adminUser, checklist.checklistId, 'New Name', 'teamTypeId', organization)
+      ).rejects.toThrow(new DeletedException('Checklist', checklist.checklistId));
+    });
+
+    it('Throws if teamTypeId is not valid', async () => {
+      const adminUser = await createTestUser(batmanAppAdmin, orgId);
+      const checklist = await createTestChecklist(adminUser, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.updateChecklist(
+            adminUser,
+            checklist.checklistId,
+            'New Name',
+            'invalidTeamTypeId',
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
+    });
+
+    it('Successfully updates the checklist', async () => {
+      const adminUser = await createTestUser(batmanAppAdmin, orgId);
+      const teamType = await createTestTeamType('validTeamTypeId', organization);
+      const checklist = await createTestChecklist(adminUser, orgId);
+      const updatedChecklist = await OnboardingServices.updateChecklist(
+        adminUser,
+        checklist.checklistId,
+        'New checklist name',
+        teamType.teamTypeId,
+        organization
+      );
+
+      expect(updatedChecklist.name).toBe('New checklist name');
+      expect(updatedChecklist.teamTypeId).toBe('validTeamTypeId');
     });
   });
 });
