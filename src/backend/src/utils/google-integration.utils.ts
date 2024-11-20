@@ -88,6 +88,13 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(fileObject.buffer);
 
+  if (fileObject.filename.length > 20) {
+    throw new HttpException(400, 'File name is too long');
+  }
+  if (!/^[\w\-\s]+$/.test(fileObject.filename)) {
+    throw new HttpException(400, 'File name contains invalid characters');
+  }
+
   oauth2Client.setCredentials({
     refresh_token: DRIVE_REFRESH_TOKEN
   });
