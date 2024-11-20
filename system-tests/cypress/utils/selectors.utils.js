@@ -8,6 +8,15 @@ const SELECTORS = {
   LOADING_INDICATOR: testIdBuilder('loader'),
   LOGIN_ICON: testIdBuilder('LoginIcon'),
   DEV_LOGIN_TEXT: 'Local Dev User',
+
+  // Home Page
+  LEARN_MORE_BUTTON: 'Learn More',
+  FINISHLINE_BUTTON: 'FinishLine',
+  USEFUL_LINKS: 'Useful Links',
+  ABOUT_NER: 'About NER',
+  SIDEBAR: idBuilder('sidebar-button'),
+
+  // Change Request
   CR_ROW: (title) => testIdBuilder(`${title}crRow`),
   NEW_CHANGE_REQUEST_BUTTON: 'New Change Request',
   ALL_CHANGE_REQUESTS_TAB: 'All Change Requests',

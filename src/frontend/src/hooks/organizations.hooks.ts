@@ -9,6 +9,13 @@ interface OrganizationProvider {
   selectOrganization: (organizationId: string) => void;
 }
 
+export const useCurrentOrganization = () => {
+  return useQuery<Organization, Error>(['organizations'], async () => {
+    const { data } = await getCurrentOrganization();
+    return data;
+  });
+};
+
 export const useProvideOrganization = (): OrganizationProvider => {
   const [organizationId, setOrganizationId] = useState<string>('');
 
@@ -21,13 +28,6 @@ export const useProvideOrganization = (): OrganizationProvider => {
     organizationId,
     selectOrganization
   };
-};
-
-export const useCurrentOrganization = () => {
-  return useQuery<Organization, Error>(['organizations'], async () => {
-    const { data } = await getCurrentOrganization();
-    return data;
-  });
 };
 
 // Hook for child components to get the auth object
