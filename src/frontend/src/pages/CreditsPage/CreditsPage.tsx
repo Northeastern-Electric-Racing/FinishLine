@@ -211,7 +211,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Meggan Shvartsberg', color: '#00DBFF' },
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
-    { name: 'Elton Yu', color: '#f202a2'},
+    { name: 'Elton Yu', color: '#f202a2' },
     { name: 'Will Anderson', color: '#ebb145' },
     { name: 'Alex Park', color: '#CCCCFF' },
     {
