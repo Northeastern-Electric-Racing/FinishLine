@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 import {
   Club_Accounts,
   Organization,
@@ -13,7 +14,13 @@ import { dbSeedAllUsers } from '../src/prisma/seed-data/users.seed';
 import TeamsService from '../src/services/teams.services';
 import ReimbursementRequestService from '../src/services/reimbursement-requests.services';
 import { ClubAccount, Permission, RoleEnum } from 'shared';
-import { batmanAppAdmin, batmanScheduleSettings, batmanSecureSettings, batmanSettings } from './test-data/users.test-data';
+import {
+  batmanAppAdmin,
+  batmanScheduleSettings,
+  batmanSecureSettings,
+  batmanSettings,
+  supermanAdmin
+} from './test-data/users.test-data';
 import { getWorkPackageTemplateQueryArgs } from '../src/prisma-query-args/work-package-template.query-args';
 import DesignReviewsService from '../src/services/design-reviews.services';
 
@@ -47,7 +54,7 @@ export const createTestUser = async (
           organizationId
         }
       },
-      permissions
+      additionalPermissions: permissions
     }
   });
 
@@ -118,11 +125,11 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
-  await prisma.organization.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.graph_Query.deleteMany();
   await prisma.graph.deleteMany();
   await prisma.graph_Collection.deleteMany();
-  await prisma.graph_Data.deleteMany();
+  await prisma.organization.deleteMany();
+  await prisma.user.deleteMany();
 };
 
 export const createFinanceTeamAndLead = async (organization?: Organization) => {
@@ -140,7 +147,7 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
       ...dbSeedAllUsers.aang,
       googleAuthId: 'financeLead',
       role: RoleEnum.LEADERSHIP,
-      permissions: dbSeedAllUsers.aang.permissions as Permission[]
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
     },
     organization.organizationId
   );
@@ -150,7 +157,7 @@ export const createFinanceTeamAndLead = async (organization?: Organization) => {
       ...dbSeedAllUsers.johnBoddy,
       googleAuthId: 'financeMember',
       role: RoleEnum.MEMBER,
-      permissions: dbSeedAllUsers.aang.permissions as Permission[]
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
     },
     organization.organizationId
   );
@@ -282,8 +289,10 @@ export const createTestLinkType = async (user: User, organizationId?: string) =>
   return linkType;
 };
 
-export const createTestProject = async (user: User, organizationId?: string): Promise<Project> => {
-  if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
+export const createTestCar = async (orgId?: string, userIdentification?: string) => {
+  if (!orgId) orgId = (await createTestOrganization()).organizationId;
+  if (!userIdentification) userIdentification = (await createTestUser(supermanAdmin, orgId)).userId;
+
   const car = await prisma.car.create({
     data: {
       wbsElement: {
@@ -294,20 +303,33 @@ export const createTestProject = async (user: User, organizationId?: string): Pr
           dateCreated: new Date('01/01/2023'),
           name: 'Car',
           status: WBS_Element_Status.INACTIVE,
-          leadId: user.userId,
-          managerId: user.userId,
-          organizationId
+          leadId: userIdentification,
+          managerId: userIdentification,
+          organizationId: orgId
         }
       }
     }
   });
+
+  return car;
+};
+
+export const createTestProject = async (
+  user: User,
+  organizationId?: string,
+  teamId?: string,
+  carId?: string,
+  projectNumber: number = 1
+): Promise<Project> => {
+  if (!organizationId) organizationId = (await createTestOrganization()).organizationId as string;
+  if (!carId) carId = (await createTestCar(organizationId, user.userId)).carId;
 
   const genesisProject = await prisma.project.create({
     data: {
       wbsElement: {
         create: {
           carNumber: 0,
-          projectNumber: 1,
+          projectNumber,
           workPackageNumber: 0,
           dateCreated: new Date('01/01/2023'),
           name: 'Genesis',
@@ -319,13 +341,28 @@ export const createTestProject = async (user: User, organizationId?: string): Pr
       },
       car: {
         connect: {
-          carId: car.carId
+          carId
         }
       },
       summary: 'Initial Car so that we can make change requests and projects and other stuff',
       budget: 1000
     }
   });
+
+  if (teamId) {
+    await prisma.project.update({
+      where: {
+        projectId: genesisProject.projectId
+      },
+      data: {
+        teams: {
+          connect: {
+            teamId
+          }
+        }
+      }
+    });
+  }
 
   return genesisProject;
 };
@@ -397,7 +434,7 @@ export const createTestDesignReview = async () => {
       ...dbSeedAllUsers.aang,
       googleAuthId: 'financeLead',
       role: RoleEnum.LEADERSHIP,
-      permissions: dbSeedAllUsers.aang.permissions as Permission[]
+      permissions: dbSeedAllUsers.aang.additionalPermissions as Permission[]
     },
     organization.organizationId
   );
@@ -433,4 +470,47 @@ export const createTestDesignReview = async () => {
 
   const orgId = organization.organizationId;
   return { dr, organization, orgId };
+};
+
+export const createTestTeamType = async (organizationId?: string) => {
+  let orgId = organizationId;
+  if (!organizationId) {
+    orgId = (await createTestOrganization()).organizationId;
+  }
+
+  return await prisma.team_Type.create({
+    data: {
+      name: 'aTeam',
+      iconName: 'gear',
+      organizationId: orgId!
+    }
+  });
+};
+
+export const createTestTeam = async (headId?: string, divId?: string, orgId?: string) => {
+  if (!divId) {
+    const division = await createTestTeamType(orgId);
+    divId = division.teamTypeId;
+    orgId = division.organizationId;
+  } else if (!orgId) {
+    orgId = (await createTestOrganization()).organizationId;
+  }
+
+  if (!headId) {
+    headId = (await createTestUser(supermanAdmin, orgId)).userId;
+  }
+
+  const team = await prisma.team.create({
+    data: {
+      teamName: 'aTeamName',
+      slackId: 'aSlackId',
+      description: 'aDescription',
+      financeTeam: false,
+      headId: headId!,
+      teamTypeId: divId,
+      organizationId: orgId
+    }
+  });
+
+  return team;
 };

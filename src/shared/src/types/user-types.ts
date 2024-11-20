@@ -15,7 +15,7 @@ export interface User {
   permissions: Permission[];
 }
 
-export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role'>;
+export type UserPreview = Pick<User, 'userId' | 'firstName' | 'lastName' | 'email' | 'emailId' | 'role' | 'permissions'>;
 
 export type Role = 'APP_ADMIN' | 'ADMIN' | 'HEAD' | 'LEADERSHIP' | 'MEMBER' | 'GUEST';
 export enum RoleEnum {
@@ -76,6 +76,7 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
+  permissions: Permission[];
 }
 
 export interface UserSettings {
@@ -111,13 +112,7 @@ export interface Availability {
   availability: number[];
 }
 
-export interface UserWithScheduleSettings {
-  userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  emailId: string | null;
-  role: Role;
+export interface UserWithScheduleSettings extends User {
   scheduleSettings?: UserScheduleSettings;
 }
 

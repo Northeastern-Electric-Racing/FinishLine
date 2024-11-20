@@ -1,4 +1,4 @@
-import { Role, RoleEnum } from 'shared';
+import { Permission, Role, RoleEnum } from 'shared';
 
 export const rankUserRole = (role: Role) => {
   switch (role) {
@@ -49,3 +49,36 @@ export const isGuest: PermissionCheck = (role?: Role) => {
 };
 
 export type PermissionCheck = (role: Role | undefined) => boolean;
+
+export const getPermissionsForRoleType = (role: Role): Permission[] => {
+  switch (role) {
+    case RoleEnum.APP_ADMIN:
+    case RoleEnum.ADMIN:
+      return Object.keys(Permission) as Permission[];
+    case RoleEnum.HEAD:
+      return [
+        Permission.EDIT_GRAPH,
+        Permission.CREATE_GRAPH,
+        Permission.VIEW_GRAPH,
+        Permission.DELETE_GRAPH,
+        Permission.EDIT_GRAPH_COLLECTION,
+        Permission.CREATE_GRAPH_COLLECTION,
+        Permission.DELETE_GRAPH_COLLECTION
+      ];
+    case RoleEnum.LEADERSHIP:
+      return [
+        Permission.EDIT_GRAPH,
+        Permission.CREATE_GRAPH,
+        Permission.VIEW_GRAPH,
+        Permission.DELETE_GRAPH,
+        Permission.EDIT_GRAPH_COLLECTION,
+        Permission.CREATE_GRAPH_COLLECTION,
+        Permission.DELETE_GRAPH_COLLECTION
+      ];
+    case RoleEnum.MEMBER:
+    case RoleEnum.GUEST:
+      return [];
+  }
+
+  return [];
+};

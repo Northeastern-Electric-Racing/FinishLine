@@ -1,17 +1,64 @@
-import { Organization } from '@prisma/client';
+import { Graph_Type, Organization, User } from '@prisma/client';
 import { supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
-import { createTestOrganization, createTestUser, resetUsers } from '../test-utils';
+import {
+  createTestCar,
+  createTestOrganization,
+  createTestProject,
+  createTestTeam,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
 import StatisticsService from '../../src/services/statistics.services';
-import { AccessDeniedException } from '../../src/utils/errors.utils';
-import { GraphDataUnit, GraphType, Measure } from 'shared';
+import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
+import { GraphGen, GraphType, Measure } from 'shared';
 
 describe('Statistics Tests', () => {
   let orgId: string;
   let organization: Organization;
+  let user: User;
+  const graphGen: GraphGen = {
+    finalColumn: 'budget',
+    finalTable: 'Project',
+    groupByColumn: 'name',
+    queryPath: {
+      table: 'Team_Type',
+      primaryKey: 'teamTypeId',
+      next: {
+        table: 'Team',
+        primaryKey: 'teamId',
+        parentForeignKey: 'teamTypeId',
+        next: {
+          table: '_assignedBy',
+          primaryKey: 'A',
+          parentForeignKey: 'B',
+          next: {
+            table: 'Project',
+            primaryKey: 'projectId',
+            parentForeignKey: 'projectId'
+          }
+        }
+      }
+    }
+  };
+
+  let expectedCreatedGraph: any;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
+    user = await createTestUser(supermanAdmin, organization.organizationId);
     orgId = organization.organizationId;
+    expectedCreatedGraph = {
+      title: 'New Graph',
+      graphType: 'BAR',
+      finalTable: 'Project',
+      finalColumn: 'budget',
+      groupByColumn: 'name',
+      measure: 'SUM',
+      userCreatedId: user.userId,
+      userDeletedId: null,
+      organizationId: orgId
+    };
   });
 
   afterEach(async () => {
@@ -25,57 +72,90 @@ describe('Statistics Tests', () => {
           await StatisticsService.createGraph(
             await createTestUser(wonderwomanGuest, orgId),
             new Date(),
-            new Date(),
-            'Graph 1',
-            GraphType.LINE,
-            [
-              {
-                id: '1',
-                type: GraphDataUnit.CHANGE_REQUEST,
-                measure: Measure.SUM,
-                value: 1,
-                graphId: '1'
-              }
-            ],
-            GraphDataUnit.CHANGE_REQUEST,
-            'fake-link-id',
+            new Date(new Date().getTime() + 10000),
+            'New Graph',
+            Graph_Type.BAR,
+            Measure.SUM,
+            graphGen,
             organization
           )
       ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a graph'));
     });
 
-    it('Create graph works', async () => {
+    it('Throws if end date is before start date', async () => {
+      await expect(
+        async () =>
+          await StatisticsService.createGraph(
+            user,
+            new Date('12/12/2024'),
+            new Date(new Date('12/12/2024').getTime() - 10000),
+            'New Graph',
+            Graph_Type.BAR,
+            Measure.SUM,
+            graphGen,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
+    });
+
+    it('Create graph works for getting total project budget by division', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2);
+
       const result = await StatisticsService.createGraph(
-        await createTestUser(supermanAdmin, orgId),
-        new Date(),
-        new Date(),
-        'Graph 2',
-        GraphType.LINE,
-        [
-          {
-            id: '1',
-            type: GraphDataUnit.CHANGE_REQUEST,
-            measure: Measure.SUM,
-            value: 1,
-            graphId: '1'
-          }
-        ],
-        GraphDataUnit.CHANGE_REQUEST,
-        'fake-link-id',
+        user,
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000),
+        'New Graph',
+        GraphType.BAR,
+        Measure.SUM,
+        graphGen,
         organization
       );
 
-      expect(result).toEqual({
-        title: 'Graph 2',
-        graphType: 'LINE',
-        data: {
-          id: '1',
-          type: GraphDataUnit.CHANGE_REQUEST,
-          measure: Measure.SUM
-        },
-        groupBy: 'CHANGE_REQUEST',
-        graphCollectionLinkId: 'fake-link-id'
-      });
+      expect(result).toContain(expectedCreatedGraph);
+      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
+      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 2000
+        }
+      ]);
+    });
+
+    it('Create graph works for getting average project budget by division', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2);
+
+      const result = await StatisticsService.createGraph(
+        user,
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000),
+        'New Graph',
+        GraphType.BAR,
+        Measure.AVG,
+        graphGen,
+        organization
+      );
+
+      expect(result).toContain({ ...expectedCreatedGraph, measure: Measure.AVG });
+      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
+      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 1000
+        }
+      ]);
     });
   });
 });

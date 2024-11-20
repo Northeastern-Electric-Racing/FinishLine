@@ -6,40 +6,40 @@ export enum GraphType {
   PIE = 'PIE'
 }
 
-export enum GraphDataUnit {
-  CAR = 'CAR',
-  PROJECT = 'PROJECT',
-  TEAM = 'TEAM',
-  CHANGE_REQUEST = 'CHANGE_REQUEST',
-  BUDGET = 'BUDGET',
-  WORK_PACKAGE = 'WORK_PACKAGE',
-  REIMBURSEMENT = 'REIMBURSEMENT',
-  DESIGN_REVIEW = 'DESIGN_REVIEW',
-  USER = 'USER'
-}
-
 export enum Measure {
   SUM = 'SUM',
-  AVG = 'AVERAGE'
+  AVG = 'AVG'
 }
 
+export interface GraphGen {
+  finalTable: string;
+  finalColumn: string;
+  groupByColumn: string;
+  queryPath: QueryPath;
+}
+
+export interface QueryPath {
+  table: string;
+  primaryKey: string;
+  parentForeignKey?: string;
+  next?: QueryPath;
+}
+
+
 export interface GraphData {
-  type: GraphDataUnit;
-  measure: Measure;
   value: number;
+  label: string;
 }
 
 export interface Graph {
   startDate: Date;
   endDate: Date;
   title: string;
-  linkId: string;
   graphType: GraphType;
   userCreated: User;
   userDeleted?: User;
   dateDeleted?: Date;
   graphData: GraphData[];
-  groupBy: GraphDataUnit;
   graphCollectionId?: String;
 }
 

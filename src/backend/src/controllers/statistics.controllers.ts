@@ -5,18 +5,19 @@ import { Graph } from 'shared';
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
     try {
-      const { startDate, endDate, title, graphType, data, groupBy, graphCollectionLinkId } = req.body;
+      console.log('in controller');
+      const { startDate, endDate, title, graphType, measure, graphGen, graphCollectionId } = req.body;
 
       const graph: Graph = await StatisticsService.createGraph(
         req.currentUser,
-        startDate,
-        endDate,
+        new Date(startDate),
+        new Date(endDate),
         title,
         graphType,
-        data,
-        groupBy,
-        graphCollectionLinkId,
-        req.organization
+        measure,
+        graphGen,
+        req.organization,
+        graphCollectionId
       );
 
       return res.status(200).json(graph);
