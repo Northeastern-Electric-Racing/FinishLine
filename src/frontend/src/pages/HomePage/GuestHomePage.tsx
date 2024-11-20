@@ -10,7 +10,11 @@ import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import MemberEncouragement from './components/MemberEncouragement';
+<<<<<<< HEAD
 import GuestOrganizationInfo from './components/GuestOrganizationInfo';
+=======
+import FeaturedProjects from './components/FeaturedProjects';
+>>>>>>> 3a163645552eb1f7dd95f140b35ab87ecdc6736d
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
@@ -29,6 +33,10 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
       </Typography>
       <GuestOrganizationInfo />
       <MemberEncouragement />
+<<<<<<< HEAD
+=======
+      <FeaturedProjects />
+>>>>>>> 3a163645552eb1f7dd95f140b35ab87ecdc6736d
     </PageLayout>
   );
 };
