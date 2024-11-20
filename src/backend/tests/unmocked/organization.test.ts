@@ -206,4 +206,22 @@ describe('Organization Tests', () => {
       expect(images.exploreAsGuestImage).toBe('uploaded-image2.png');
     });
   });
+
+  describe('Update Onboarding Text', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OrganizationsService.setOnboardingText(await createTestUser(wonderwomanGuest, orgId), organization, 'text')
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update onboarding text'));
+    });
+
+    it('Succeeds and updates onboarding text', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const updatedOrganization = await OrganizationsService.setOnboardingText(testBatman, organization, 'Testing text');
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.onboardingText).toBe('Testing text');
+    });
+  });
 });
