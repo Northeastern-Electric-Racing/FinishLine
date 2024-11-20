@@ -31,8 +31,12 @@ export const transformDate = (date: Date) => {
  * @param date the date object for modify
  * @returns a string representing the date
  */
-export const dateMonthDayYear = (date: Date) => {
-  return dayjs(date).format('MMMM D, YYYY');
+export const dateMonthDayYear = (date: Date): string => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 };
 
 /**
