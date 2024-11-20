@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Box, IconButton, Typography, Link as LinkComponent } from '@mui/material';
+import { TableRow, TableCell, Box, IconButton, Typography, Link as LinkComponent, Table, TableBody, TableHead } from '@mui/material';
 import AdminToolTable from '../../AdminToolTable';
 import { NERButton } from '../../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
@@ -14,6 +14,7 @@ import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
 import CreateUsefulLinkModal from './CreateUsefulLinkModal';
 import EditUsefulLinkModal from './EditUsefulLinkModal';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
+import NERDeleteModal from '../../../../components/NERDeleteModal';
 
 const UsefulLinksTable = () => {
   const currentUser = useCurrentUser();
@@ -88,7 +89,37 @@ const UsefulLinksTable = () => {
       )}
 
       <Box>
-        <AdminToolTable columns={[{ name: 'Name' }, { name: 'URL' }, { name: '' }]} rows={usefulLinkRows} />
+        <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white',
+                borderRadius: '10px 0px 0px 0px'
+              }}
+            >
+              Question
+            </TableCell>
+            <TableCell
+              sx={{
+                fontWeight: 'bold',
+                fontSize: '1em',
+                backgroundColor: '#ef4345',
+                color: 'white',
+                borderRadius: '0px 10px 0px 0px'
+              }}
+            >
+              Answer
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {usefulLinkRows}
+        </TableBody>
+        </Table>
         <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
           {isAdmin(currentUser.role) && (
             <NERButton onClick={() => setShowCreateModel(true)} variant="contained">
@@ -97,20 +128,17 @@ const UsefulLinksTable = () => {
           )}
         </Box>
       </Box>
-      <NERModal
+      <NERDeleteModal
         open={!!linkToDelete}
-        title="Warning!"
         onHide={() => setLinkToDelete(undefined)}
-        submitText="Delete"
-        onSubmit={() => {
-          handleDelete(usefulLinks, linkToDelete!);
+        formId="delete-item-form"
+        dataType="FAQ"
+        onFormSubmit={() => {
+          if (linkToDelete) {
+            handleDelete(usefulLinks, linkToDelete);
+          }
         }}
-      >
-        <Typography gutterBottom>
-          Are you sure you want to delete the link <i>{linkToDelete?.linkType.name}</i>?
-        </Typography>
-        <Typography fontWeight="bold">This action cannot be undone!</Typography>
-      </NERModal>
+      />
     </Box>
   );
 };
