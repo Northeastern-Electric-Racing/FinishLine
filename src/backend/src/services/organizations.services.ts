@@ -159,19 +159,15 @@ export default class OrganizationsService {
    * @param newLink new application link to be updated
    * @returns updated organization data
    */
-  static async updateApplicationLink(submitter: User, organizationId: string, newLink: string) {
-    const organization = await prisma.organization.update({
-      where: { organizationId },
+  static async updateApplicationLink(submitter: User, newLink: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update application link');
+
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
       data: { applicationLink: newLink }
     });
 
-    if (!(await userHasPermission(submitter.userId, organizationId, isAdmin)))
-      throw new AccessDeniedAdminOnlyException('update application links');
-
-    if (!organization) {
-      throw new NotFoundException('Organization', organizationId);
-    }
-
-    return organization;
+    return updatedOrganization;
   }
 }

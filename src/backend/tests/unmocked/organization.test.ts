@@ -208,11 +208,14 @@ describe('Organization Tests', () => {
   });
 
   describe('Update Application Link', () => {
-    it('Fails if organization does not exist', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+    it('Fails if user is not admin', async () => {
       await expect(
-        async () => await OrganizationsService.updateApplicationLink(testBatman, orgId, 'new application link')
-      ).rejects.toThrow(new NotFoundException('Organization', orgId));
+        OrganizationsService.updateApplicationLink(
+          await createTestUser(wonderwomanGuest, orgId),
+          'new application link',
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update application link'));
     });
 
     it('Succeeds and updates the application link', async () => {
@@ -220,8 +223,8 @@ describe('Organization Tests', () => {
       await createTestLinkType(testBatman, orgId);
       const updatedOrganization = await OrganizationsService.updateApplicationLink(
         testBatman,
-        organization.organizationId,
-        'new application link'
+        'new application link',
+        organization
       );
 
       expect(updatedOrganization).not.toBeNull();

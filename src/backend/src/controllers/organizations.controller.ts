@@ -66,8 +66,8 @@ export default class OrganizationsController {
       const { applicationLink } = req.body;
       const updatedOrganization = await OrganizationsService.updateApplicationLink(
         req.currentUser,
-        req.organization.organizationId,
-        applicationLink
+        applicationLink,
+        req.organization
       );
       res.status(200).json(updatedOrganization);
     } catch (error: unknown) {
