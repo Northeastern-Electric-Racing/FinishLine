@@ -1,7 +1,12 @@
-import { Grid, Typography, ListItem, List, useTheme } from '@mui/material';
+import { Grid, Typography, ListItem, List, useTheme, Button } from '@mui/material';
 import { Box } from '@mui/system';
+import { Link } from 'shared';
 
-const InfoBlock: React.FC = () => {
+interface InfoBlockProps {
+  links: Link[];
+}
+
+const InfoBlock: React.FC<InfoBlockProps> = ({ links }) => {
   const theme = useTheme();
   const contacts: string[] = [
     'President - Allyson Kolesar kolesar.a@northeastern.edu',
@@ -28,13 +33,33 @@ const InfoBlock: React.FC = () => {
       <Grid item>
         <Box
           sx={{
-            backgroundColor: 'gray',
+            backgroundColor: theme.palette.background.paper,
             height: '25vh',
             borderRadius: '10px',
             width: '100%'
           }}
         >
-          <Typography variant="h5">Useful Links</Typography>
+          <Typography variant="h5" sx={{ mb: 3, px: 2, pt: 2 }}>
+            Useful Links
+          </Typography>
+
+          <Grid container spacing={2} justifyContent="center" sx={{ px: 2 }}>
+            {links.map((link) => {
+              return (
+                <Grid item xs={6}>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    sx={{ backgroundColor: '#616161', color: 'white' }}
+                    href={link.url}
+                    target="_blank"
+                  >
+                    {link.linkType.name}
+                  </Button>
+                </Grid>
+              );
+            })}
+          </Grid>
         </Box>
       </Grid>
       {/* This will be replaced with the 'Questions' block*/}
