@@ -146,7 +146,7 @@ export default class OnboardingServices {
     });
 
     if (checklists.length !== checklistIds.length) {
-      throw new NotFoundException('Checklist', 'one or more checklistId');
+      throw new HttpException(400, 'one or more checklistIds were not valid');
     }
 
     await prisma.user.update({

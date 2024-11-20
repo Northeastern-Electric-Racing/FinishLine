@@ -247,19 +247,27 @@ describe('Onboarding tests', () => {
             ['checklistId1', 'checklistId2'],
             organization
           )
-      ).rejects.toThrow(new NotFoundException('Checklist', 'one or more checklistId'));
+      ).rejects.toThrow(new HttpException(400, 'one or more checklistIds were not valid'));
     });
 
-    it('Suceeds and adds/deletes the user checklists', async () => {
+    it('Suceeds and adds the user checklists', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist1 = await createTestChecklist(batman, orgId);
       const checklist2 = await createTestChecklist(batman, orgId);
       const checklistIds = [checklist1.checklistId, checklist2.checklistId];
       await OnboardingServices.updateUserChecklists(batman, batman.userId, checklistIds, organization);
-      // expect(batman.onboardingChecklists[0].checklistId).toEqual('checklistId1');
-      // expect(batman.onboardingChecklists[1].checklistId).toEqual('checklistId2');
-      // await OnboardingServices.updateUserChecklists(batman, batman.userId, [], organization);
-      // expect(batman.onboardingChecklists.length).toEqual(0);
+      const updatedBatman = await prisma.user.findUnique({
+        where: { userId: batman.userId },
+        include: { onboardingChecklists: true }
+      });
+      expect(updatedBatman?.onboardingChecklists[0].checklistId).toEqual(checklist1.checklistId);
+      expect(updatedBatman?.onboardingChecklists[1].checklistId).toEqual(checklist2.checklistId);
+      await OnboardingServices.updateUserChecklists(batman, batman.userId, [], organization);
+      const deletedBatman = await prisma.user.findUnique({
+        where: { userId: batman.userId },
+        include: { onboardingChecklists: true }
+      });
+      expect(deletedBatman?.onboardingChecklists.length).toEqual(0);
     });
   });
 
