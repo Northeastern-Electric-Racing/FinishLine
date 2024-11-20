@@ -211,6 +211,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Meggan Shvartsberg', color: '#00DBFF' },
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
     { name: 'Jay Jung', color: '##344739' },
+    { name: 'Elton Yu', color: '#f202a2' },
     { name: 'Will Anderson', color: '#ebb145' },
     { name: 'Alex Park', color: '#CCCCFF' },
     {
@@ -256,6 +257,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Aryan Gupta', color: '#5a4094' },
     { name: 'Lisa Wan', color: '#CCCCFF' },
     { name: 'Aidan Wong', color: '#4284f5' },
+    { name: 'Shrey Agarwal', color: '#800080' },
     { name: 'Amber Friar', color: '#F5A9B8' }
   ];
 
