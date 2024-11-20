@@ -91,7 +91,8 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
   if (fileObject.filename.length > 20) {
     throw new HttpException(400, 'File name is too long');
   }
-  if (!/^[\w\-\s]+$/.test(fileObject.filename)) {
+  /* The regex /^[\w\-\s]+$/ limits the file name to the set of alphanumeric characters (\w), hyphens (-), spaces (\s), and dots */
+  if (!/^[\w\-\s.]+$/.test(fileObject.filename)) {
     throw new HttpException(400, 'File name contains invalid characters');
   }
 

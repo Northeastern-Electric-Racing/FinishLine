@@ -367,7 +367,7 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   onChange={(e) => {
                     if (e.target.files) {
                       [...e.target.files].forEach((file) => {
-                        /* The regex /^[\w\-\s]+$/ limits the input to the set of alphanumeric characters (\w), hyphens (\-), and spaces (\s) */
+                        /* The regex /^[\w\-\s]+$/ limits the file name to the set of alphanumeric characters (\w), hyphens (-), spaces (\s), and dots */
                         if (file.size < 1000000 && file.name.length <= 20 && /^[\w\-\s.]+$/.test(file.name)) {
                           receiptPrepend({
                             file,
