@@ -9,7 +9,7 @@ import TimelineDot from '@mui/lab/TimelineDot';
 import { useAllMilestones } from '../../../hooks/recruitment.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { dateMonthDayYear } from '../../../utils/datetime.utils';
+import { dateMonthDayYear, isPastEvent } from '../../../utils/datetime.utils';
 
 const TimelineSection = () => {
   const { isLoading, isError, error, data: milestones } = useAllMilestones();
@@ -17,31 +17,37 @@ const TimelineSection = () => {
   if (isLoading || !milestones) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
 
-  const sortedMilestones = milestones.sort((milestone1, milestone2) =>
-    milestone1.dateOfEvent < milestone2.dateOfEvent ? -1 : 1
-  );
+  const sortedMilestones = milestones
+    .map((milestone) => ({
+      ...milestone,
+      dateOfEvent: new Date(milestone.dateOfEvent)
+    }))
+    .sort((milestone1, milestone2) => (milestone1.dateOfEvent < milestone2.dateOfEvent ? -1 : 1));
+  console.log('test');
+  console.log(isPastEvent(new Date('2024-11-10'), new Date()));
 
-  const isPastEvent = (date: Date) => {
-    return date < new Date();
-  };
+  const getDotStyle = (date: Date) => ({
+    backgroundColor: isPastEvent(date, new Date()) ? 'primary.main' : 'grey',
+    width: '20px',
+    height: '20px'
+  });
 
-  const getDotColor = (date: Date) => (isPastEvent(date) ? 'primary' : 'grey');
   const getConnectorStyle = (date: Date) => ({
+    backgroundColor: isPastEvent(date, new Date()) ? 'primary.main' : 'grey',
     height: {
       xs: '1vh',
       sm: '1vh',
       md: '10vh'
-    },
-    backgroundColor: isPastEvent(date) ? 'primary.main' : 'grey'
+    }
   });
 
   return (
     <Grid>
       <Timeline position="alternate">
         {sortedMilestones.map((milestone, index) => (
-          <TimelineItem key={index}>
+          <TimelineItem key={milestone.milestoneId}>
             <TimelineSeparator>
-              <TimelineDot color={getDotColor(milestone.dateOfEvent)} sx={{ width: '20px', height: '20px' }} />
+              <TimelineDot sx={getDotStyle(milestone.dateOfEvent)} />
               {index < milestones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
             </TimelineSeparator>
             <TimelineContent>

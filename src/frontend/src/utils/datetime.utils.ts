@@ -34,3 +34,13 @@ export const transformDate = (date: Date) => {
 export const dateMonthDayYear = (date: Date) => {
   return dayjs(date).format('MMMM D, YYYY');
 };
+
+/**
+ * Determines whether the provided date is before today's date
+ * @param startDate the first Date object
+ * @param endDate the second Date object
+ * @returns true if the end date date comes after the start date and false otherwise
+ */
+export const isPastEvent = (startDate: Date, endDate: Date) => {
+  return startDate < endDate;
+};
