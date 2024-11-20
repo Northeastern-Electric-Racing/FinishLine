@@ -1893,6 +1893,9 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
 
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
+
+  await UsersService.sendNotification(thomasEmrax.userId, 'testing notifications', 'star');
+  await UsersService.sendNotification(thomasEmrax.userId, 'testing notifications #2', 'star');
 };
 
 performSeed()

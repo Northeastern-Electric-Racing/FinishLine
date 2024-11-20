@@ -174,6 +174,6 @@ export const sendNotification = (id: string, notification: Notification) => {
  */
 export const getNotifications = (id: string) => {
   return axios.get<Notification[]>(apiUrls.userNotifications(id), {
-    transformResponse: (data) => notificationTransformer(JSON.parse(data))
+    transformResponse: (data) => JSON.parse(data)
   });
 };
