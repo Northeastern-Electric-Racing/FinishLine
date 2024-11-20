@@ -325,11 +325,13 @@ export default class ReimbursementRequestsController {
   static async markReimbursementRequestAsDelivered(req: Request, res: Response, next: NextFunction) {
     try {
       const { requestId } = req.params;
+      const { dateDelivered } = req.body;
 
       const updatedRequest = await ReimbursementRequestService.markReimbursementRequestAsDelivered(
         req.currentUser,
         requestId,
-        req.organization
+        req.organization,
+        dateDelivered
       );
       return res.status(200).json(updatedRequest);
     } catch (error: unknown) {
