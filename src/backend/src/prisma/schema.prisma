@@ -881,6 +881,8 @@ model Organization {
   applyInterestImageId  String?   @unique
   exploreAsGuestImageId String?   @unique
   applicationLink       String
+  onboardingText        String?
+  contacts              String[]
 
   // Relation references
   wbsElements              WBS_Element[]

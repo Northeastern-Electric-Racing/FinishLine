@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
+import InfoBlock from './components/InfoBlock';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
@@ -63,27 +64,8 @@ const OnboardingHomePage = () => {
             </Box>
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
-            {/*'Onboarding' block*/}
             <Grid item>
-              <Box
-                sx={{
-                  backgroundColor: '#2F3031', //to match the example best
-                  height: '35vh',
-                  borderRadius: '10px',
-                  padding: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  color: 'white'
-                }}
-              >
-                <Typography variant="h4" sx={{ marginBottom: 1 }}>
-                  Onboarding
-                </Typography>
-                <Typography variant="body1" sx={{ lineHeight: 1.5, fontSize: 20 }}>
-                  Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very
-                  excited to officially welcome you to our team.
-                </Typography>
-              </Box>
+              <InfoBlock />
             </Grid>
           </Grid>
         </Grid>
