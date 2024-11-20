@@ -21,6 +21,15 @@ export default class OnboardingController {
     }
   }
 
+  static async getUsersChecklists(req: Request, res: Response, next: NextFunction) {
+    try {
+      const checklists = await OnboardingServices.getUsersChecklists(req.currentUser);
+      res.status(200).json(checklists);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async createChecklist(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, teamTypeId } = req.body;

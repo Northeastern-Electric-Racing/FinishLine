@@ -10,6 +10,8 @@ onboardingRouter.get('/checklists', OnboardingController.getAllChecklists);
 
 onboardingRouter.get('/checklists/checked', OnboardingController.getCheckedChecklists);
 
+onboardingRouter.get('/checklists/usersChecklists', OnboardingController.getUsersChecklists);
+
 onboardingRouter.post(
   '/checklist/create',
   nonEmptyString(body('name')),
