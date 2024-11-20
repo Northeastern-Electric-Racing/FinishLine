@@ -8,7 +8,9 @@ import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
-import { AuthenticatedUser } from 'shared';
+import { AuthenticatedUser, wbsPipe } from 'shared';
+import { useAllWorkPackages } from '../../hooks/work-packages.hooks';
+import WorkPackageCard from './components/WorkPackageCard';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -16,6 +18,7 @@ interface AdminHomePageProps {
 
 const AdminHomePage = ({ user }: AdminHomePageProps) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
+  const { data: workPackages, isError: wpIsError, isLoading: wpLoading, error: wpError } = useAllWorkPackages();
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;
@@ -25,6 +28,8 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
+      {(workPackages?.map((wp) => <WorkPackageCard key={wbsPipe(wp.wbsNum)} wp={wp} />))}
+
     </PageLayout>
   );
 };

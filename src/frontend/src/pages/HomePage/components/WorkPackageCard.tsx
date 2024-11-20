@@ -6,12 +6,13 @@ import {
   Chip,
   CircularProgress,
   CircularProgressProps,
+  Grid,
   Link,
   Stack,
   Typography,
   useTheme
 } from '@mui/material';
-import { wbsPipe, WorkPackage } from 'shared';
+import { daysBetween, wbsPipe, WorkPackage } from 'shared';
 import { datePipe, fullNamePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
@@ -36,6 +37,7 @@ export const CircularProgressWithLabel = (props: CircularProgressProps & { value
 
 const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
   const theme = useTheme();
+  const currentDate = new Date();
   return (
     <Card
       variant="outlined"
@@ -45,29 +47,48 @@ const WorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
         background: theme.palette.background.default
       }}
     >
-      <CardContent sx={{ padding: 2 }}>
-        <Stack direction="row" justifyContent="space-between">
-          <Box>
-            <Typography fontWeight={'regular'} variant="subtitle2" noWrap>
-              <Link color={'text.primary'} component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
-                {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
-              </Link>
-            </Typography>
-            <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`} noWrap>
-              <Typography fontWeight={'regular'} variant="h5">
-                {wbsPipe(wp.wbsNum)} - {wp.name}
+      <Grid container direction="row">
+        <CardContent sx={{ padding: 2 }}>
+          <Stack direction="row" justifyContent="space-between">
+            <Box>
+              <Typography fontWeight={'regular'} variant="subtitle2" noWrap>
+                <Link color={'text.primary'} component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
+                  {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
+                </Link>
               </Typography>
-            </Link>
-            <Typography fontWeight={'regular'} fontSize={20} variant="h6" noWrap>
-              {datePipe(wp.startDate) + ' ⟝ ' + wp.duration + ' wks ⟞ ' + datePipe(wp.endDate)}
+              <Link component={RouterLink} to={`${routes.PROJECTS}/${wbsPipe(wp.wbsNum)}`} noWrap>
+                <Typography fontWeight={'regular'} variant="h5">
+                  {wbsPipe(wp.wbsNum)} - {wp.name}
+                </Typography>
+              </Link>
+              <Typography fontWeight={'regular'} fontSize={20} variant="h6" noWrap>
+                {datePipe(wp.startDate) + ' ⟝ ' + wp.duration + ' wks ⟞ ' + datePipe(wp.endDate)}
+              </Typography>
+            </Box>
+          </Stack>
+          <Stack direction="row" sx={{ marginTop: 1 }}>
+            <Chip sx={{ marginTop: 1, marginRight: 2 }} icon={<Construction />} label={fullNamePipe(wp.lead)} size="medium" />
+            <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.manager)} size="medium" />
+          </Stack>
+        </CardContent>
+        <Grid container >
+          <Grid item xs={6}>
+            <Typography>
+              {daysBetween(currentDate, new Date(wp.endDate))}
             </Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row" sx={{ marginTop: 1 }}>
-          <Chip sx={{ marginTop: 1, marginRight: 2 }} icon={<Construction />} label={fullNamePipe(wp.lead)} size="medium" />
-          <Chip sx={{ marginTop: 1 }} icon={<Work />} label={fullNamePipe(wp.manager)} size="medium" />
-        </Stack>
-      </CardContent>
+          </Grid>
+          <Grid item xs={6}>
+            <Stack>
+              <Typography>
+                Days
+              </Typography>
+              <Typography>
+                Overdue
+              </Typography>
+            </Stack>
+          </Grid>  
+        </Grid>
+      </Grid>
     </Card>
   );
 };
