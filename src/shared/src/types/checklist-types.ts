@@ -21,7 +21,7 @@ export interface ChecklistItem {
   checklistItemId: string;
   name: string;
   subtasks: ChecklistItem[];
-  description: string[];
+  descriptions: string[];
   parentChecklistItemId: string;
   userCreated: User;
   userDeleted?: User;

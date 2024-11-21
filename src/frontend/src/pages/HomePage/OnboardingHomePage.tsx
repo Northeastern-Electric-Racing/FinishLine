@@ -45,7 +45,18 @@ const OnboardingHomePage = () => {
           <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
         </Box>
         <Grid container display={'flex'}>
-          <Grid item xs={12} md={7} padding={2}>
+          <Grid
+            item
+            xs={12}
+            md={7}
+            sx={{
+              maxHeight: '82vh',
+              overflow: 'auto',
+              scrollbarColor: 'transparent transparent',
+              scrollbarWidth: 'none',
+              padding: 2
+            }}
+          >
             <ChecklistSection />
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>

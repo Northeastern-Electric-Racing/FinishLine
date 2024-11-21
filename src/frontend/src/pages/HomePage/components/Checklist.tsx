@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Checklist as ChecklistType } from 'shared';
-import { Typography, Grid, Box, IconButton } from '@mui/material';
+import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
 
 const Checklist: React.FC<{ checklist: ChecklistType }> = ({ checklist }) => {
   const parentTasks = checklist.checklistItems.filter((task) => task.parentChecklistItemId === null);
   const allChecklistItems = checklist.checklistItems;
-
+  const theme = useTheme();
   const [showTasks, setShowTasks] = useState(false);
 
   const toggleShowTasks = () => {
@@ -15,7 +15,7 @@ const Checklist: React.FC<{ checklist: ChecklistType }> = ({ checklist }) => {
   };
 
   return (
-    <Box sx={{ backgroundColor: '#2C2C2C', borderRadius: 5 }}>
+    <Box sx={{ backgroundColor: theme.palette.background.paper, borderRadius: 5 }}>
       <Grid container>
         <Grid item xs={12} padding={2.5}>
           <Grid display="flex" alignItems="center" justifyContent="space-between">

@@ -276,8 +276,8 @@ describe('Onboarding tests', () => {
             await createTestUser(wonderwomanGuest, orgId),
             'name',
             'checklistId',
-            'description',
             'parentChecklistItemId',
+            ['description'],
             organization
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to create a checklist item'));
@@ -290,8 +290,8 @@ describe('Onboarding tests', () => {
             await createTestUser(batmanAppAdmin, orgId),
             'name',
             'checklistId',
-            'description',
             null,
+            ['description'],
             organization
           )
       ).rejects.toThrow(new NotFoundException('Checklist', 'checklistId'));
@@ -307,7 +307,7 @@ describe('Onboarding tests', () => {
             'name',
             testChecklistId,
             'parentChecklistItemId',
-            'description',
+            ['description'],
             organization
           )
       ).rejects.toThrow(new NotFoundException('Checklist Item', 'parentChecklistItemId'));
@@ -325,7 +325,7 @@ describe('Onboarding tests', () => {
             'name',
             testChecklist2.checklistId,
             testParentChecklistItem.checklistItemId,
-            'description',
+            ['description'],
             organization
           )
       ).rejects.toThrow(new HttpException(400, 'Cannot have parent checklist item with a different checklist'));
@@ -339,7 +339,7 @@ describe('Onboarding tests', () => {
         'name',
         testChecklistId,
         null,
-        null,
+        [],
         organization
       );
       expect(result.name).toEqual('name');
@@ -356,7 +356,7 @@ describe('Onboarding tests', () => {
             'name',
             'id',
             null,
-            null,
+            [],
             [],
             organization
           )
@@ -370,7 +370,7 @@ describe('Onboarding tests', () => {
           'name',
           'id1',
           null,
-          null,
+          [],
           [],
           organization
         );
@@ -387,7 +387,7 @@ describe('Onboarding tests', () => {
           'name',
           testChecklistItem.checklistItemId,
           'unknown',
-          null,
+          [],
           [],
           organization
         );
@@ -407,7 +407,7 @@ describe('Onboarding tests', () => {
           'name',
           testChecklistItem.checklistItemId,
           testParentChecklistItem.checklistItemId,
-          null,
+          [],
           [],
           organization
         );
@@ -424,7 +424,7 @@ describe('Onboarding tests', () => {
           'name',
           testChecklistItem.checklistItemId,
           null,
-          null,
+          [],
           ['unknown'],
           organization
         );
@@ -439,7 +439,7 @@ describe('Onboarding tests', () => {
       const subtask2 = await createTestChecklistItem(batman, testChecklistId, orgId);
 
       const updatedName = 'Updated Checklist Item Name';
-      const updatedDescription = 'Updated Checklist Item Description';
+      const updatedDescriptions = ['Description 1', 'Description 2'];
       const updatedSubtaskIds = [subtask1.checklistItemId, subtask2.checklistItemId];
 
       const checklistItem = await prisma.checklistItem.findUnique({
@@ -447,7 +447,7 @@ describe('Onboarding tests', () => {
         include: { subtasks: true }
       });
       expect(checklistItem?.name).toEqual('Checklist Item 1');
-      expect(checklistItem?.description).toEqual('Test Description');
+      expect(checklistItem?.descriptions[0]).toEqual('Test Description');
       expect(checklistItem?.subtasks.length).toEqual(0);
 
       await OnboardingServices.updateChecklistItem(
@@ -455,7 +455,7 @@ describe('Onboarding tests', () => {
         updatedName,
         testChecklistItem.checklistItemId,
         null,
-        updatedDescription,
+        updatedDescriptions,
         updatedSubtaskIds,
         organization
       );
@@ -465,7 +465,8 @@ describe('Onboarding tests', () => {
         include: { subtasks: true }
       });
       expect(updatedChecklistItem?.name).toEqual(updatedName);
-      expect(updatedChecklistItem?.description).toEqual(updatedDescription);
+      expect(updatedChecklistItem?.descriptions[0]).toEqual('Description 1');
+      expect(updatedChecklistItem?.descriptions[1]).toEqual('Description 2');
       expect(updatedChecklistItem?.subtasks.length).toEqual(2);
     });
   });

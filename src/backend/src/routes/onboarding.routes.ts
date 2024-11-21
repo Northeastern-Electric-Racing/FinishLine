@@ -27,7 +27,8 @@ onboardingRouter.post(
   '/checklist/item/create',
   nonEmptyString(body('name')),
   nonEmptyString(body('checklistId')),
-  nonEmptyString(body('description').optional()),
+  body('descriptions').isArray(),
+  nonEmptyString(body('descriptions.*')),
   nonEmptyString(body('parentChecklistItemId').optional()),
   validateInputs,
   OnboardingController.createChecklistItem
@@ -36,7 +37,8 @@ onboardingRouter.post(
 onboardingRouter.post(
   '/checklist/item/:checklistItemId/update',
   nonEmptyString(body('name')),
-  nonEmptyString(body('description').optional()),
+  body('descriptions').isArray(),
+  nonEmptyString(body('descriptions.*')),
   nonEmptyString(body('parentChecklistItemId').optional()),
   body('subtaskIds').isArray,
   nonEmptyString(body('subtaskIds.*')),

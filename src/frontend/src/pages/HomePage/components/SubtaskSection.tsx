@@ -45,22 +45,34 @@ const SubtaskSection: React.FC<{ subtasks: ChecklistItem[]; parentTask: Checklis
               borderRadius: 2
             }}
           >
-            <Typography color={theme.palette.common.white}>{parentTask.description}</Typography>
+            <Typography color={theme.palette.common.white}>{parentTask.descriptions[0]}</Typography>
           </Grid>
         </Grid>
       ) : (
-        <Grid
+        <Box
           sx={{
-            backgroundColor: theme.palette.background.paper,
-            width: '50%',
-            padding: 2,
-            borderRadius: 2,
             display: 'flex',
-            margin: 'auto'
+            justifyContent: 'space-between',
+            gap: 2
           }}
         >
-          <Typography color={theme.palette.common.white}>{parentTask.description}</Typography>
-        </Grid>
+          {parentTask.descriptions.map((description) => {
+            return (
+              <Grid
+                sx={{
+                  backgroundColor: theme.palette.background.paper,
+                  width: '50%',
+                  padding: 2,
+                  borderRadius: 2,
+                  display: 'flex',
+                  margin: 'auto'
+                }}
+              >
+                <Typography color={theme.palette.common.white}>{description}</Typography>
+              </Grid>
+            );
+          })}
+        </Box>
       )}
     </Box>
   );

@@ -276,7 +276,7 @@ export const createTestChecklistItem = async (
   const checklistItem = await prisma.checklistItem.create({
     data: {
       name: 'Checklist Item 1',
-      description: 'Test Description',
+      descriptions: ['Test Description'],
       organizationId,
       userCreatedId: user.userId,
       checklistId,

@@ -167,7 +167,7 @@ export default class OnboardingServices {
     name: string,
     checklistId: string,
     parentChecklistItemId: string | null,
-    description: string | null,
+    descriptions: string[],
     organization: Organization
   ) {
     if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
@@ -200,7 +200,7 @@ export default class OnboardingServices {
       data: {
         name,
         checklistId,
-        description,
+        descriptions,
         parentChecklistItemId,
         userCreatedId: submitter.userId,
         organizationId: organization.organizationId
@@ -226,7 +226,7 @@ export default class OnboardingServices {
     name: string,
     checklistItemId: string,
     parentChecklistItemId: string | null,
-    description: string | null,
+    descriptions: string[],
     subtaskIds: string[],
     organization: Organization
   ) {
@@ -276,7 +276,7 @@ export default class OnboardingServices {
       data: {
         name,
         parentChecklistItemId,
-        description,
+        descriptions,
         subtasks: {
           connect: subtaskIds.map((subtaskId) => ({
             checklistItemId: subtaskId

@@ -54,13 +54,13 @@ export default class OnboardingController {
   /* ChecklistItem section */
   static async createChecklistItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, checklistId, description, parentChecklistItemId } = req.body;
+      const { name, checklistId, descriptions, parentChecklistItemId } = req.body;
 
       const checklist = await OnboardingServices.createChecklistItem(
         req.currentUser,
         name,
         checklistId,
-        description,
+        descriptions,
         parentChecklistItemId,
         req.organization
       );
@@ -72,14 +72,14 @@ export default class OnboardingController {
 
   static async updateChecklistItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, description, parentChecklistItemId, subtaskIds } = req.body;
+      const { name, descriptions, parentChecklistItemId, subtaskIds } = req.body;
       const { checklistItemId } = req.params;
 
       await OnboardingServices.updateChecklistItem(
         req.currentUser,
         name,
         checklistItemId,
-        description,
+        descriptions,
         parentChecklistItemId,
         subtaskIds,
         req.organization
