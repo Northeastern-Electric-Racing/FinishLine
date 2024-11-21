@@ -135,7 +135,15 @@ export default class OnboardingServices {
       throw new NotFoundException('User', userId);
     }
 
-    if (teamTypeIds) {
+    if (teamTypeIds.length > 0) {
+      const generalChecklist = await prisma.checklist.findFirst({
+        where: { teamTypeId: null, dateDeleted: null }
+      });
+
+      if (!generalChecklist) {
+        throw new HttpException(400, 'General Checklist not Found');
+      }
+
       const checklists = await prisma.checklist.findMany({
         where: { teamTypeId: { in: teamTypeIds }, dateDeleted: null }
       });
@@ -144,11 +152,13 @@ export default class OnboardingServices {
         throw new HttpException(400, 'Some teams` checklists not found');
       }
 
+      const allUsersChecklists = [generalChecklist, ...checklists];
+
       await prisma.user.update({
         where: { userId },
         data: {
           onboardingChecklists: {
-            set: checklists.map((checklist) => ({ checklistId: checklist.checklistId }))
+            set: allUsersChecklists.map((checklist) => ({ checklistId: checklist.checklistId }))
           }
         }
       });

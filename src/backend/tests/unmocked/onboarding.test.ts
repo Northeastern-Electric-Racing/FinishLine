@@ -219,8 +219,22 @@ describe('Onboarding tests', () => {
       );
     });
 
+    it('Fails if general checklist does not exist', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const teamType1 = await createTestTeamType('teamTypeId1', 'teamType1', organization);
+      const teamType2 = await createTestTeamType('teamTypeId2', 'teamType2', organization);
+      const checklist1 = await createTestChecklist(batman, orgId, teamType1.teamTypeId);
+      const checklist2 = await createTestChecklist(batman, orgId, teamType2.teamTypeId);
+      await expect(
+        async () =>
+          await OnboardingServices.updateUserChecklists(batman.userId, [checklist1.checklistId, checklist2.checklistId])
+      ).rejects.toThrow(new HttpException(400, 'General Checklist not Found'));
+    });
+
     it('Fails if one or more checklistId does not exist', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
+      // creating a general checklist
+      await createTestChecklist(batman, orgId);
       await expect(
         async () => await OnboardingServices.updateUserChecklists(batman.userId, ['checklistId1', 'checklistId2'])
       ).rejects.toThrow(new HttpException(400, 'Some teams` checklists not found'));
@@ -228,8 +242,10 @@ describe('Onboarding tests', () => {
 
     it('Succeeds and adds the user checklists', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
+
       const teamType1 = await createTestTeamType('teamTypeId1', 'teamType1', organization);
       const teamType2 = await createTestTeamType('teamTypeId2', 'teamType2', organization);
+      const generalChecklist = await createTestChecklist(batman, orgId);
       const checklist1 = await createTestChecklist(batman, orgId, teamType1.teamTypeId);
       const checklist2 = await createTestChecklist(batman, orgId, teamType2.teamTypeId);
       const teamTypeIds = [teamType1.teamTypeId, teamType2.teamTypeId];
@@ -238,8 +254,9 @@ describe('Onboarding tests', () => {
         where: { userId: batman.userId },
         include: { onboardingChecklists: true }
       });
-      expect(updatedBatman?.onboardingChecklists[0].checklistId).toEqual(checklist1.checklistId);
-      expect(updatedBatman?.onboardingChecklists[1].checklistId).toEqual(checklist2.checklistId);
+      expect(updatedBatman?.onboardingChecklists[0].checklistId).toEqual(generalChecklist.checklistId);
+      expect(updatedBatman?.onboardingChecklists[1].checklistId).toEqual(checklist1.checklistId);
+      expect(updatedBatman?.onboardingChecklists[2].checklistId).toEqual(checklist2.checklistId);
       await OnboardingServices.updateUserChecklists(batman.userId, []);
       const deletedBatman = await prisma.user.findUnique({
         where: { userId: batman.userId },
