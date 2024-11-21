@@ -43,7 +43,9 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
       </Box>
       <Box
         sx={{
+          width: '100%',
           display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between'
         }}
       >
