@@ -89,11 +89,11 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
   bufferStream.end(fileObject.buffer);
 
   if (fileObject.filename.length > 20) {
-    throw new HttpException(400, 'File name is too long');
+    throw new HttpException(400, 'File name can only be at most 20 characters long');
   }
-  /* The regex /^[\w\-\s]+$/ limits the file name to the set of alphanumeric characters (\w), hyphens (-), spaces (\s), and dots */
-  if (!/^[\w\-\s.]+$/.test(fileObject.filename)) {
-    throw new HttpException(400, 'File name contains invalid characters');
+  /* The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type) */
+  if (!/^[\w.]+$/.test(fileObject.filename)) {
+    throw new HttpException(400, 'File name should only contain letters and numbers');
   }
 
   oauth2Client.setCredentials({

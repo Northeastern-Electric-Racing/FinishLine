@@ -367,22 +367,22 @@ const ReimbursementRequestFormView: React.FC<ReimbursementRequestFormViewProps> 
                   onChange={(e) => {
                     if (e.target.files) {
                       [...e.target.files].forEach((file) => {
-                        /* The regex /^[\w\-\s]+$/ limits the file name to the set of alphanumeric characters (\w), hyphens (-), spaces (\s), and dots */
-                        if (file.size < 1000000 && file.name.length <= 20 && /^[\w\-\s.]+$/.test(file.name)) {
-                          receiptPrepend({
-                            file,
-                            name: file.name,
-                            googleFileId: ''
-                          });
-                        } else if (file.size >= 1000000) {
+                        /* The regex /^[\w.]+$/ limits the file name to the set of alphanumeric characters (\w) and dots (for file type) */
+                        if (file.size >= 1000000) {
                           toast.error(`Error uploading ${file.name}; file must be less than 1 MB`, 5000);
                           document.getElementById('receipt-image')!.innerHTML = '';
                         } else if (file.name.length > 20) {
                           toast.error(`Error uploading ${file.name}; file name must be less than 20 characters`, 5000);
                           document.getElementById('receipt-image')!.innerHTML = '';
-                        } else {
-                          toast.error(`Error uploading ${file.name}; file name must contain only letters and numbers`, 5000);
+                        } else if (!/^[\w.]+$/.test(file.name)) {
+                          toast.error(`Error uploading ${file.name}; file name must only contain letter and numbers`, 5000);
                           document.getElementById('receipt-image')!.innerHTML = '';
+                        } else {
+                          receiptPrepend({
+                            file,
+                            name: file.name,
+                            googleFileId: ''
+                          });
                         }
                       });
                     }
