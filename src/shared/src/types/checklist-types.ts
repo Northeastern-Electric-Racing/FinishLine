@@ -22,7 +22,7 @@ export interface ChecklistItem {
   name: string;
   subtasks: ChecklistItem[];
   descriptions: string[];
-  parentChecklistItemId: string;
+  parentChecklistItemId: string | null;
   userCreated: User;
   userDeleted?: User;
   dateCreated: Date;
