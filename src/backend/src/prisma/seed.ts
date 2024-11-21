@@ -1922,7 +1922,7 @@ const performSeed: () => Promise<void> = async () => {
     ner
   );
 
-  await OnboardingServices.updateUserChecklists(batman, patrick.userId, [softwareChecklist.checklistId], ner);
+  await OnboardingServices.updateUserChecklists(patrick.userId, [softwareChecklist.checklistId]);
 };
 
 performSeed()

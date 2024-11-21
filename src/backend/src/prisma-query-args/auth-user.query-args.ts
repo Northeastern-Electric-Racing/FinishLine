@@ -12,7 +12,16 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
         }
       },
       organizations: true,
-      onboardingChecklists: true,
+      onboardingChecklists: {
+        include: {
+          checklistItems: {
+            include: {
+              subtasks: true,
+              usersChecked: true
+            }
+          }
+        }
+      },
       teamsAsLead: {
         where: {
           organizationId

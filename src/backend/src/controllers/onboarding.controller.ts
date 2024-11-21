@@ -44,9 +44,9 @@ export default class OnboardingController {
   static async updateUserChecklists(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params;
-      const { checklistIds } = req.body;
+      const { teamTypeIds } = req.body;
 
-      await OnboardingServices.updateUserChecklists(req.currentUser, userId, checklistIds, req.organization);
+      await OnboardingServices.updateUserChecklists(userId, teamTypeIds);
       return res.status(200).json({ message: 'Checklist updated successfully' });
     } catch (error: unknown) {
       return next(error);

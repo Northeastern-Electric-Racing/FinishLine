@@ -3,6 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
+import { Checklist } from './checklist-types';
 import { AvailabilityCreateArgs } from './design-review-types';
 
 export interface User {
@@ -65,7 +66,7 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
-  onboardingChecklistsId: string[];
+  onboardingChecklists: Checklist[];
 }
 
 export interface UserSettings {

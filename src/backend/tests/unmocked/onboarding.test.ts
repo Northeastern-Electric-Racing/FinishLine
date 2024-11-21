@@ -80,7 +80,7 @@ describe('Onboarding tests', () => {
     });
 
     it('Returns all general checklists when checklist fails to match user teamType', async () => {
-      createTestTeamType('id', organization);
+      createTestTeamType('id', 'teamType1', organization);
       const user = await createTestUser(batmanAppAdmin, orgId);
 
       // Create a team and add the user as a member (getUsersChecklists requires user to be on a team)
@@ -111,7 +111,7 @@ describe('Onboarding tests', () => {
     });
 
     it('Returns all general checklist and matching checklists of user teamType', async () => {
-      const teamType = await createTestTeamType('id', organization);
+      const teamType = await createTestTeamType('id', 'teamType1', organization);
       const user = await createTestUser(batmanAppAdmin, orgId);
 
       // Create a team and add the user as a member
@@ -148,7 +148,7 @@ describe('Onboarding tests', () => {
     });
 
     it('Returns an empty array when a user is on a team but there are no checklists', async () => {
-      const teamType = createTestTeamType('id', organization);
+      const teamType = createTestTeamType('id', 'teamType1', organization);
       const user = await createTestUser(batmanAppAdmin, orgId);
 
       // Create a team and add the user as a member
@@ -200,7 +200,7 @@ describe('Onboarding tests', () => {
     });
 
     it('Succeeds and creates a checklist', async () => {
-      createTestTeamType('id', organization);
+      createTestTeamType('id', 'teamType1', organization);
       const result = await OnboardingServices.createChecklist(
         await createTestUser(batmanAppAdmin, orgId),
         'name',
@@ -213,56 +213,34 @@ describe('Onboarding tests', () => {
   });
 
   describe('Update User Checklists', () => {
-    it('Fails if user is not admin', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.updateUserChecklists(
-            await createTestUser(wonderwomanGuest, orgId),
-            'userId',
-            ['checklistId'],
-            organization
-          )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('Only an admin can update a user`s checklists'));
-    });
-
     it('Fails if user does not exist', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.updateUserChecklists(
-            await createTestUser(batmanAppAdmin, orgId),
-            'userId',
-            ['checklistId'],
-            organization
-          )
-      ).rejects.toThrow(new NotFoundException('User', 'userId'));
+      await expect(async () => await OnboardingServices.updateUserChecklists('userId', ['checklistId'])).rejects.toThrow(
+        new NotFoundException('User', 'userId')
+      );
     });
 
     it('Fails if one or more checklistId does not exist', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       await expect(
-        async () =>
-          await OnboardingServices.updateUserChecklists(
-            batman,
-            batman.userId,
-            ['checklistId1', 'checklistId2'],
-            organization
-          )
-      ).rejects.toThrow(new HttpException(400, 'one or more checklistIds were not valid'));
+        async () => await OnboardingServices.updateUserChecklists(batman.userId, ['checklistId1', 'checklistId2'])
+      ).rejects.toThrow(new HttpException(400, 'Some teams` checklists not found'));
     });
 
-    it('Suceeds and adds the user checklists', async () => {
+    it('Succeeds and adds the user checklists', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const checklist1 = await createTestChecklist(batman, orgId);
-      const checklist2 = await createTestChecklist(batman, orgId);
-      const checklistIds = [checklist1.checklistId, checklist2.checklistId];
-      await OnboardingServices.updateUserChecklists(batman, batman.userId, checklistIds, organization);
+      const teamType1 = await createTestTeamType('teamTypeId1', 'teamType1', organization);
+      const teamType2 = await createTestTeamType('teamTypeId2', 'teamType2', organization);
+      const checklist1 = await createTestChecklist(batman, orgId, teamType1.teamTypeId);
+      const checklist2 = await createTestChecklist(batman, orgId, teamType2.teamTypeId);
+      const teamTypeIds = [teamType1.teamTypeId, teamType2.teamTypeId];
+      await OnboardingServices.updateUserChecklists(batman.userId, teamTypeIds);
       const updatedBatman = await prisma.user.findUnique({
         where: { userId: batman.userId },
         include: { onboardingChecklists: true }
       });
       expect(updatedBatman?.onboardingChecklists[0].checklistId).toEqual(checklist1.checklistId);
       expect(updatedBatman?.onboardingChecklists[1].checklistId).toEqual(checklist2.checklistId);
-      await OnboardingServices.updateUserChecklists(batman, batman.userId, [], organization);
+      await OnboardingServices.updateUserChecklists(batman.userId, []);
       const deletedBatman = await prisma.user.findUnique({
         where: { userId: batman.userId },
         include: { onboardingChecklists: true }

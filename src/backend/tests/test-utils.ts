@@ -178,11 +178,11 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
   });
 };
 
-export const createTestTeamType = async (teamTypeId: string, organization: Organization) => {
+export const createTestTeamType = async (teamTypeId: string, name: string, organization: Organization) => {
   return await prisma.team_Type.create({
     data: {
       teamTypeId,
-      name: 'teamType1',
+      name,
       iconName: 'YouTubeIcon',
       description: '',
       organizationId: organization.organizationId
@@ -286,7 +286,7 @@ export const createTestChecklistItem = async (
   return checklistItem;
 };
 
-export const createTestChecklist = async (user: User, organizationId: string) => {
+export const createTestChecklist = async (user: User, organizationId: string, teamTypeId?: string) => {
   if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
   if (!organizationId) throw new Error('Failed to create checklist');
   const checklist = await prisma.checklist.create({
@@ -294,7 +294,8 @@ export const createTestChecklist = async (user: User, organizationId: string) =>
       name: 'Checklist 1',
       organizationId,
       userCreatedId: user.userId,
-      dateCreated: new Date('11/04/2024')
+      dateCreated: new Date('11/04/2024'),
+      teamTypeId
     }
   });
 

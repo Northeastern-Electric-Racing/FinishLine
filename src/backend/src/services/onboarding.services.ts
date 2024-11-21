@@ -123,16 +123,10 @@ export default class OnboardingServices {
 
   /**
    * Updates the checklists for a user
-   * @param submitter The user who is making the request
    * @param userId The user whose checklists are being updated
-   * @param checklistId The checklists to update
-   * @param organization The organization of the checklists
+   * @param teamTypeIds The team types that the user is a part of that have checklists
    */
-  static async updateUserChecklists(submitter: User, userId: string, checklistIds: string[], organization: Organization) {
-    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('Only an admin can update a user`s checklists');
-    }
-
+  static async updateUserChecklists(userId: string, teamTypeIds: string[]) {
     const user = await prisma.user.findUnique({
       where: { userId }
     });
@@ -141,22 +135,33 @@ export default class OnboardingServices {
       throw new NotFoundException('User', userId);
     }
 
-    const checklists = await prisma.checklist.findMany({
-      where: { checklistId: { in: checklistIds } }
-    });
+    if (teamTypeIds) {
+      const checklists = await prisma.checklist.findMany({
+        where: { teamTypeId: { in: teamTypeIds }, dateDeleted: null }
+      });
 
-    if (checklists.length !== checklistIds.length) {
-      throw new HttpException(400, 'one or more checklistIds were not valid');
-    }
-
-    await prisma.user.update({
-      where: { userId },
-      data: {
-        onboardingChecklists: {
-          set: checklistIds.map((checklistId) => ({ checklistId }))
-        }
+      if (checklists.length !== teamTypeIds.length) {
+        throw new HttpException(400, 'Some teams` checklists not found');
       }
-    });
+
+      await prisma.user.update({
+        where: { userId },
+        data: {
+          onboardingChecklists: {
+            set: checklists.map((checklist) => ({ checklistId: checklist.checklistId }))
+          }
+        }
+      });
+    } else {
+      await prisma.user.update({
+        where: { userId },
+        data: {
+          onboardingChecklists: {
+            set: []
+          }
+        }
+      });
+    }
   }
 
   /**

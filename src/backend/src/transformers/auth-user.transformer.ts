@@ -6,6 +6,7 @@ import {
   isAuthUserOnFinance
 } from '../utils/reimbursement-requests.utils';
 import { Prisma } from '@prisma/client';
+import { checklistTransformer } from './checklist.transformer';
 
 const authenticatedUserTransformer = (
   user: Prisma.UserGetPayload<AuthUserQueryArgs>,
@@ -27,7 +28,7 @@ const authenticatedUserTransformer = (
     changeRequestsToReviewId: user.changeRequestsToReview.map((changeRequest) => changeRequest.crId),
     organizations: user.organizations.map((organization) => organization.organizationId),
     currentOrganization: user.organizations.find((organization) => organization.organizationId === organizationId),
-    onboardingChecklistsId: user.onboardingChecklists.map((checklist) => checklist.checklistId)
+    onboardingChecklists: user.onboardingChecklists.map((checklist) => checklistTransformer(checklist))
   };
 };
 

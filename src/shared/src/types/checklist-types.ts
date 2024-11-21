@@ -3,28 +3,21 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { TeamType } from './design-review-types';
 import { User } from './user-types';
 
 export interface Checklist {
   checklistId: string;
   name: string;
   checklistItems: ChecklistItem[];
-  teamType?: TeamType;
-  userCreated: User;
-  userDeleted?: User;
-  dateCreated: Date;
-  dateDeleted?: Date;
+  teamTypeId: string | null;
 }
 
 export interface ChecklistItem {
   checklistItemId: string;
   name: string;
   subtasks: ChecklistItem[];
-  description: string[];
-  parentChecklistItem: ChecklistItem[];
-  userCreated: User;
-  userDeleted?: User;
-  dateCreated: Date;
-  dateDeleted?: Date;
+  description: string | null;
+  parentChecklistItemId: string | null;
+  usersChecked: User[];
+  checklistId: string;
 }
