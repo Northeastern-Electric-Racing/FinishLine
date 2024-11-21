@@ -347,6 +347,129 @@ describe('Onboarding tests', () => {
     });
   });
 
+  describe('Update ChecklistItem', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OnboardingServices.updateChecklistItem(
+            await createTestUser(wonderwomanGuest, orgId),
+            'name',
+            'id',
+            null,
+            null,
+            [],
+            organization
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to update a checklist item'));
+    });
+
+    it('Fails if the checklist item does not exist', async () => {
+      await expect(async () => {
+        await OnboardingServices.updateChecklistItem(
+          await createTestUser(batmanAppAdmin, orgId),
+          'name',
+          'id1',
+          null,
+          null,
+          [],
+          organization
+        );
+      }).rejects.toThrow(new NotFoundException('Checklist Item', 'id1'));
+    });
+
+    it('Fails if the parent checklist item id does not exist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      const testChecklistItem = await createTestChecklistItem(testBatman, testChecklistId, orgId);
+      await expect(async () => {
+        await OnboardingServices.updateChecklistItem(
+          testBatman,
+          'name',
+          testChecklistItem.checklistItemId,
+          'unknown',
+          null,
+          [],
+          organization
+        );
+      }).rejects.toThrow(new NotFoundException('Checklist Item', 'unknown'));
+    });
+
+    it('Fails if the parent checklist item does not match the checklist item id', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      const testParentChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      const testChecklistItem = await createTestChecklistItem(testBatman, testChecklistId, orgId);
+      const testParentChecklistItem = await createTestChecklistItem(testBatman, testParentChecklistId, orgId);
+
+      await expect(async () => {
+        await OnboardingServices.updateChecklistItem(
+          testBatman,
+          'name',
+          testChecklistItem.checklistItemId,
+          testParentChecklistItem.checklistItemId,
+          null,
+          [],
+          organization
+        );
+      }).rejects.toThrow(new HttpException(400, 'Cannot have parent checklist item that is part a different checklist'));
+    });
+
+    it('Fails if any of the subtasks do not exist', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
+      const testChecklistItem = await createTestChecklistItem(testBatman, testChecklistId, orgId);
+      await expect(async () => {
+        await OnboardingServices.updateChecklistItem(
+          testBatman,
+          'name',
+          testChecklistItem.checklistItemId,
+          null,
+          null,
+          ['unknown'],
+          organization
+        );
+      }).rejects.toThrow(new NotFoundException('Checklist Item', 'unknown'));
+    });
+
+    it('Successfully updates a checklist item', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklistId = (await createTestChecklist(batman, orgId)).checklistId;
+      const testChecklistItem = await createTestChecklistItem(batman, testChecklistId, orgId);
+      const subtask1 = await createTestChecklistItem(batman, testChecklistId, orgId);
+      const subtask2 = await createTestChecklistItem(batman, testChecklistId, orgId);
+
+      const updatedName = 'Updated Checklist Item Name';
+      const updatedDescription = 'Updated Checklist Item Description';
+      const updatedSubtaskIds = [subtask1.checklistItemId, subtask2.checklistItemId];
+
+      const checklistItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: testChecklistItem.checklistItemId },
+        include: { subtasks: true }
+      });
+      expect(checklistItem?.name).toEqual('Checklist Item 1');
+      expect(checklistItem?.description).toEqual('Test Description');
+      expect(checklistItem?.subtasks.length).toEqual(0);
+
+      await OnboardingServices.updateChecklistItem(
+        batman,
+        updatedName,
+        testChecklistItem.checklistItemId,
+        null,
+        updatedDescription,
+        updatedSubtaskIds,
+        organization
+      );
+
+      const updatedChecklistItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: testChecklistItem.checklistItemId },
+        include: { subtasks: true }
+      });
+      expect(updatedChecklistItem?.name).toEqual(updatedName);
+      expect(updatedChecklistItem?.description).toEqual(updatedDescription);
+      expect(updatedChecklistItem?.subtasks.length).toEqual(2);
+    });
+  });
+
   describe('Delete Checklist Item', () => {
     it('Fails if user is not admin', async () => {
       await expect(

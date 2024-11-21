@@ -23,7 +23,7 @@ const Task: React.FC<SubtaskProps> = ({ checklistItems, parentTask }) => {
         sx={{
           backgroundColor: showSubtasks ? 'white' : '#CECECE',
           borderRadius: 2,
-          padding: 2,
+          padding: 1.5,
           alignContent: 'center',
           position: 'relative',
           boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)'

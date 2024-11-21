@@ -33,6 +33,17 @@ onboardingRouter.post(
   OnboardingController.createChecklistItem
 );
 
+onboardingRouter.post(
+  '/checklist/item/:checklistItemId/update',
+  nonEmptyString(body('name')),
+  nonEmptyString(body('description').optional()),
+  nonEmptyString(body('parentChecklistItemId').optional()),
+  body('subtaskIds').isArray,
+  nonEmptyString(body('subtaskIds.*')),
+  validateInputs,
+  OnboardingController.updateChecklistItem
+);
+
 onboardingRouter.delete('/checklist/item/:checklistItemId/delete', OnboardingController.deleteChecklistItem);
 
 export default onboardingRouter;

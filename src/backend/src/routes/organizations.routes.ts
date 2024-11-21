@@ -1,7 +1,8 @@
 import express from 'express';
-import { linkValidators, validateInputs } from '../utils/validation.utils';
+import { linkValidators, validateInputs, nonEmptyString } from '../utils/validation.utils';
 import OrganizationsController from '../controllers/organizations.controller';
 import multer, { memoryStorage } from 'multer';
+import { body } from 'express-validator';
 
 const organizationRouter = express.Router();
 const upload = multer({ limits: { fileSize: 30000000 }, storage: memoryStorage() });
@@ -19,4 +20,12 @@ organizationRouter.post(
 );
 
 organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
+
+organizationRouter.post(
+  '/onboardingText/set',
+  nonEmptyString(body('onboardingText')),
+  validateInputs,
+  OrganizationsController.setOnboardingText
+);
+
 export default organizationRouter;

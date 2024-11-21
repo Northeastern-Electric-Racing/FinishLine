@@ -70,6 +70,26 @@ export default class OnboardingController {
     }
   }
 
+  static async updateChecklistItem(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, description, parentChecklistItemId, subtaskIds } = req.body;
+      const { checklistItemId } = req.params;
+
+      await OnboardingServices.updateChecklistItem(
+        req.currentUser,
+        name,
+        checklistItemId,
+        description,
+        parentChecklistItemId,
+        subtaskIds,
+        req.organization
+      );
+      res.status(200).json({ message: 'ChecklistItem updated successfully' });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async deleteChecklistItem(req: Request, res: Response, next: NextFunction) {
     try {
       const { checklistItemId } = req.params;
