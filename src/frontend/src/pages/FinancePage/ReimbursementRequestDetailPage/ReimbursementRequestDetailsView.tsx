@@ -471,7 +471,7 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       disabled:
         isPendingFinance ||
         !isLeadershipApproved ||
-        (isAdmin(user.role) ? false : user.userId !== reimbursementRequest.recipient.userId)
+        (!isAdmin(user.role) && user.userId !== reimbursementRequest.recipient.userId)
     },
     {
       title: 'Request Changes',
