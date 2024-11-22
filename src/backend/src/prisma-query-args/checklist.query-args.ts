@@ -1,8 +1,14 @@
 import { Prisma } from '@prisma/client';
-import { getUserQueryArgs } from './user.query-args';
+import { getUserQueryArgs, UserQueryArgs } from './user.query-args';
 
 export type ChecklistQueryArgs = ReturnType<typeof getChecklistQueryArgs>;
-export type ChecklistItemQueryArgs = ReturnType<typeof getChecklistItemQueryArgs>;
+export type ChecklistItemQueryArgs = {
+  include: {
+    usersChecked: UserQueryArgs;
+    subtasks: ChecklistItemQueryArgs;
+    organization: true;
+  };
+};
 
 const getChecklistQueryArgs = (organizationId: string) => {
   return Prisma.validator<Prisma.ChecklistDefaultArgs>()({
@@ -12,11 +18,11 @@ const getChecklistQueryArgs = (organizationId: string) => {
   });
 };
 
-const getChecklistItemQueryArgs = (organizationId: string) => {
+const getChecklistItemQueryArgs = (organizationId: string): ChecklistItemQueryArgs => {
   return Prisma.validator<Prisma.ChecklistItemDefaultArgs>()({
     include: {
       usersChecked: getUserQueryArgs(organizationId),
-      subtasks: true,
+      subtasks: getChecklistItemQueryArgs(organizationId),
       organization: true
     }
   });
