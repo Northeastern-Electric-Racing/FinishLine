@@ -149,3 +149,13 @@ export const getUserTasks = (id: string) => {
     transformResponse: (data) => JSON.parse(data).map(taskTransformer)
   });
 };
+
+export const getManyUserTasks = (userIds: string[]) => {
+  return axios.post<Task[]>(
+    apiUrls.manyUserTasks(),
+    { userIds },
+    {
+      transformResponse: (data) => JSON.parse(data).map(taskTransformer)
+    }
+  );
+};
