@@ -2,7 +2,13 @@ import { Checklist, Organization, Team_Type, User } from '@prisma/client';
 import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin, TeamType } from 'shared';
-import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import {
+  AccessDeniedAdminOnlyException,
+  AccessDeniedException,
+  DeletedException,
+  HttpException,
+  NotFoundException
+} from '../utils/errors.utils';
 
 export default class OnboardingServices {
   /* Checklist section */
@@ -148,6 +154,51 @@ export default class OnboardingServices {
       where: { checklistId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
+  }
+
+  /**
+   * Updates a checklist given the new name and teamTypeId
+   * @param user the user who is updating the checklist
+   * @param checklistId the id of the checklist being updated
+   * @param name the name of the checklist being updated
+   * @param teamTypeId the Id of the team
+   * @param organization the organization of the checklist
+   */
+  static async updateChecklist(
+    user: User,
+    checklistId: string,
+    name: string,
+    teamTypeId: string,
+    organization: Organization
+  ): Promise<Checklist> {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedException('You need to be an admin to update the checklist');
+    }
+
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId }
+    });
+
+    if (!checklist) throw new NotFoundException('Checklist', checklistId);
+
+    if (checklist.dateDeleted) throw new DeletedException('Checklist', checklist.checklistId);
+
+    if (teamTypeId) {
+      const teamType = await prisma.team_Type.findUnique({
+        where: { teamTypeId }
+      });
+
+      if (!teamType) {
+        throw new NotFoundException('Team Type', teamTypeId);
+      }
+    }
+
+    const updatedChecklist = await prisma.checklist.update({
+      where: { checklistId },
+      data: { name, teamTypeId }
+    });
+
+    return updatedChecklist;
   }
 
   /* Checklist Item section */

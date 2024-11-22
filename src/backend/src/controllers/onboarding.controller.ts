@@ -51,6 +51,25 @@ export default class OnboardingController {
     }
   }
 
+  static async updateChecklist(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { checklistId } = req.params;
+      const { name, teamTypeId } = req.body;
+
+      const updatedChecklist = await OnboardingServices.updateChecklist(
+        req.currentUser,
+        checklistId,
+        name,
+        teamTypeId,
+        req.organization
+      );
+
+      return res.status(200).json(updatedChecklist);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   /* ChecklistItem section */
   static async createChecklistItem(req: Request, res: Response, next: NextFunction) {
     try {
