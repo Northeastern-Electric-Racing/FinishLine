@@ -13,12 +13,12 @@ const OnboardingInfoSection: React.FC = () => {
   ];
 
   const { data: links, isError: linksIsError, error: linksError, isLoading: linksIsLoading } = useAllUsefulLinks();
+
   if (!links || linksIsLoading) return <LoadingIndicator />;
   if (linksIsError) return <ErrorPage message={linksError?.message} />;
 
   return (
     <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-      {/* This will be replaced with the 'Onboarding' block*/}
       <Grid item>
         <Box
           sx={{
@@ -31,7 +31,6 @@ const OnboardingInfoSection: React.FC = () => {
           <Typography variant="h5">Onboarding</Typography>
         </Box>
       </Grid>
-      {/* This will be replaced with the 'Useful Links' block*/}
       <Grid item>
         <Box
           sx={{
@@ -64,7 +63,6 @@ const OnboardingInfoSection: React.FC = () => {
           </Grid>
         </Box>
       </Grid>
-      {/* This will be replaced with the 'Questions' block*/}
       <Grid item>
         <Box
           sx={{
