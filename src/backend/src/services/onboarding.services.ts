@@ -211,6 +211,82 @@ export default class OnboardingServices {
   }
 
   /**
+   * Updated a checklist item in the given checklist Id.
+   * @param submitter a user who is making the request
+   * @param name the name of the checklist
+   * @param checklistId the checklist
+   * @param description the description of the item
+   * @param parentChecklistItemId the parent checklist item this item belongs to
+   * @param subtaskIds the subtasks ids of the item
+   * @param organization the organization of the checklist
+   * @returns an updated checklist item
+   */
+  static async updateChecklistItem(
+    submitter: User,
+    name: string,
+    checklistItemId: string,
+    parentChecklistItemId: string | null,
+    description: string | null,
+    subtaskIds: string[],
+    organization: Organization
+  ) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('non-admin tried to update a checklist item');
+    }
+
+    const checklistItem = await prisma.checklistItem.findUnique({
+      where: { checklistItemId, dateDeleted: null },
+      include: {
+        subtasks: true
+      }
+    });
+
+    if (!checklistItem) {
+      throw new NotFoundException('Checklist Item', checklistItemId);
+    }
+
+    if (parentChecklistItemId) {
+      const parentChecklistItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: parentChecklistItemId }
+      });
+
+      if (!parentChecklistItem) {
+        throw new NotFoundException('Checklist Item', parentChecklistItemId);
+      }
+
+      if (parentChecklistItem.checklistItemId !== checklistItemId) {
+        throw new HttpException(400, 'Cannot have parent checklist item that is part a different checklist');
+      }
+    }
+
+    await Promise.all(
+      subtaskIds.map(async (subtaskId) => {
+        const subtask = await prisma.checklistItem.findUnique({
+          where: { checklistItemId: subtaskId, dateDeleted: null }
+        });
+
+        if (!subtask) {
+          throw new NotFoundException('Checklist Item', subtaskId);
+        }
+      })
+    );
+
+    await prisma.checklistItem.update({
+      where: { checklistItemId },
+      data: {
+        name,
+        parentChecklistItemId,
+        description,
+        subtasks: {
+          connect: subtaskIds.map((subtaskId) => ({
+            checklistItemId: subtaskId
+          }))
+        }
+      }
+    });
+  }
+
+  /**
    * Deletes a checklist in the given checklist item Id.
    * @param deleter a user who is making the request
    * @param checklistItemId the checklist item

@@ -5,14 +5,11 @@ import { useEffect } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
-import InfoBlock from './components/InfoBlock';
-import { useAllUsefulLinks } from '../../hooks/projects.hooks';
+import OnboardingInfoSection from './components/OnboardingInfoSection';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage } = useHomePageContext();
-
-  const { data: links, isError: linksIsError, error: linksError, isLoading: linksIsLoading } = useAllUsefulLinks();
 
   useEffect(() => {
     setOnPNMHomePage(false);
@@ -20,9 +17,8 @@ const OnboardingHomePage = () => {
     setOnOnboardingHomePage(true);
   }, [setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage]);
 
-  if (!organization || isLoading || !links || linksIsLoading) return <LoadingIndicator />;
+  if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
-  if (linksIsError) return <ErrorPage message={linksError?.message} />;
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -69,7 +65,7 @@ const OnboardingHomePage = () => {
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>
-              <InfoBlock links={links} />
+              <OnboardingInfoSection />
             </Grid>
           </Grid>
         </Grid>

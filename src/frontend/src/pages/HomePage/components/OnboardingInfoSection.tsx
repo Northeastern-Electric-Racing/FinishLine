@@ -1,12 +1,10 @@
 import { Grid, Typography, ListItem, List, useTheme, Button } from '@mui/material';
 import { Box } from '@mui/system';
-import { Link } from 'shared';
+import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import ErrorPage from '../../ErrorPage';
 
-interface InfoBlockProps {
-  links: Link[];
-}
-
-const InfoBlock: React.FC<InfoBlockProps> = ({ links }) => {
+const OnboardingInfoSection: React.FC = () => {
   const theme = useTheme();
   const contacts: string[] = [
     'President - Allyson Kolesar kolesar.a@northeastern.edu',
@@ -14,25 +12,23 @@ const InfoBlock: React.FC<InfoBlockProps> = ({ links }) => {
     'Chief Software Engineer - Peyton Mckee mckee.p@northeastern.edu'
   ];
 
+  const { data: links, isError: linksIsError, error: linksError, isLoading: linksIsLoading } = useAllUsefulLinks();
+  if (!links || linksIsLoading) return <LoadingIndicator />;
+  if (linksIsError) return <ErrorPage message={linksError?.message} />;
+
   return (
     <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
       {/* This will be replaced with the 'Onboarding' block*/}
       <Grid item>
         <Box
           sx={{
+            backgroundColor: 'gray',
             height: '25vh',
             borderRadius: '10px',
-            width: '100%',
-            background: theme.palette.background.paper
+            width: '100%'
           }}
         >
-          <Typography variant="h5" ml={2} pt={2}>
-            Onboarding
-          </Typography>
-          <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>
-            Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to
-            officially welcome you to our team.
-          </Typography>
+          <Typography variant="h5">Onboarding</Typography>
         </Box>
       </Grid>
       {/* This will be replaced with the 'Useful Links' block*/}
@@ -56,7 +52,7 @@ const InfoBlock: React.FC<InfoBlockProps> = ({ links }) => {
                   <Button
                     variant="contained"
                     fullWidth
-                    sx={{ backgroundColor: '#616161', color: 'white' }}
+                    sx={{ backgroundColor: '#616161', color: 'white', borderRadius: '10px', height: '5vh' }}
                     href={link.url}
                     target="_blank"
                   >
@@ -93,4 +89,4 @@ const InfoBlock: React.FC<InfoBlockProps> = ({ links }) => {
   );
 };
 
-export default InfoBlock;
+export default OnboardingInfoSection;
