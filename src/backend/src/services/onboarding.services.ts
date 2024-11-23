@@ -119,7 +119,14 @@ export default class OnboardingServices {
         where: { organizationId: organization.organizationId, teamId: null, teamTypeId: null, dateDeleted: null }
       });
 
-      if (generalChecklist) {
+      if (parentChecklistId) {
+        const parentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklistId } });
+        if (parentChecklist?.teamId || parentChecklist?.teamTypeId) {
+          throw new HttpException(400, 'Parent checklist must also be a general checklist');
+        }
+      }
+
+      if (generalChecklist && !parentChecklistId) {
         throw new HttpException(400, 'General checklist already exists');
       }
     }
@@ -208,7 +215,13 @@ export default class OnboardingServices {
         where: { organizationId: organization.organizationId, teamId: null, teamTypeId: null, dateDeleted: null }
       });
 
-      if (generalChecklist) {
+      if (generalChecklist && parentChecklistId) {
+        if (generalChecklist.checklistId !== parentChecklistId) {
+          throw new HttpException(400, 'Parent checklist must be the general checklist');
+        }
+      }
+
+      if (generalChecklist && !parentChecklistId) {
         throw new HttpException(400, 'General checklist already exists');
       }
     }

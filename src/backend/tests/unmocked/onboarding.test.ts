@@ -4,13 +4,11 @@ import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   AccessDeniedAdminOnlyException,
-  AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
 } from '../../src/utils/errors.utils';
 import prisma from '../../src/prisma/prisma';
-import exp from 'constants';
 
 describe('Onboarding tests', () => {
   let orgId: string;
@@ -162,6 +160,25 @@ describe('Onboarding tests', () => {
             organization
           )
       ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
+    });
+
+    it('Fails if creating a general checklist and its parent is not also a general checklist', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const teamtype1 = await createTestTeamType('teamtype1', organization);
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', teamtype1.teamTypeId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            parentChecklist.checklistId,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must also be a general checklist'));
     });
 
     it('Fails if teamId is invalid', async () => {
