@@ -65,7 +65,6 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
-  onboardingChecklistsId: string[];
 }
 
 export interface UserSettings {

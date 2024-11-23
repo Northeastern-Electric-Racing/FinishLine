@@ -23,8 +23,7 @@ export const exampleAdminUser: AuthenticatedUser = {
   role: RoleEnum.ADMIN,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: ['yello'],
-  onboardingChecklistsId: []
+  organizations: ['yello']
 };
 
 export const exampleAdminUser2: AuthenticatedUser = {
@@ -36,8 +35,7 @@ export const exampleAdminUser2: AuthenticatedUser = {
   role: RoleEnum.ADMIN,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: [],
-  onboardingChecklistsId: []
+  organizations: []
 };
 
 export const exampleLeadershipUser: User = {
@@ -76,8 +74,7 @@ export const exampleMemberUser: AuthenticatedUser = {
   role: RoleEnum.HEAD,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: [],
-  onboardingChecklistsId: []
+  organizations: []
 };
 
 export const exampleGuestUser: AuthenticatedUser = {
@@ -89,8 +86,7 @@ export const exampleGuestUser: AuthenticatedUser = {
   role: RoleEnum.GUEST,
   favoritedProjectsId: [],
   changeRequestsToReviewId: [],
-  organizations: [],
-  onboardingChecklistsId: []
+  organizations: []
 };
 
 export const exampleGuestUser2: User = {

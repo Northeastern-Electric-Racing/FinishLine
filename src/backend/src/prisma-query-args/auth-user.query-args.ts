@@ -12,7 +12,6 @@ export const getAuthUserQueryArgs = (organizationId: string) =>
         }
       },
       organizations: true,
-      onboardingChecklists: true,
       teamsAsLead: {
         where: {
           organizationId

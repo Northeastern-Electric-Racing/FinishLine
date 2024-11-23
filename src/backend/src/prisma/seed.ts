@@ -1894,45 +1894,6 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
 
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
-
-  const softwareChecklist = await OnboardingServices.createChecklist(batman, 'Software Checklist', software.teamTypeId, ner);
-  const electricalChecklist = await OnboardingServices.createChecklist(
-    batman,
-    'Electrical Checklist',
-    electrical.teamTypeId,
-    ner
-  );
-  const generalChecklist = await OnboardingServices.createChecklist(batman, 'General Checklist', null, ner);
-
-  const checklistItem1 = await OnboardingServices.createChecklistItem(
-    batman,
-    'Join Slack',
-    softwareChecklist.checklistId,
-    null,
-    null,
-    ner
-  );
-
-  await OnboardingServices.createChecklistItem(
-    batman,
-    'Add profile picture',
-    softwareChecklist.checklistId,
-    checklistItem1.checklistItemId,
-    null,
-    ner
-  );
-
-  // for testing purposes, will use the setUserChecklist endpoint once it has been created
-  await prisma.user.update({
-    where: {
-      userId: patrick.userId
-    },
-    data: {
-      onboardingChecklists: {
-        connect: { checklistId: softwareChecklist.checklistId }
-      }
-    }
-  });
 };
 
 performSeed()
