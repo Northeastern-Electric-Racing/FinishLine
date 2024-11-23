@@ -4,6 +4,7 @@ import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   AccessDeniedAdminOnlyException,
+  AccessDeniedException,
   DeletedException,
   HttpException,
   NotFoundException
