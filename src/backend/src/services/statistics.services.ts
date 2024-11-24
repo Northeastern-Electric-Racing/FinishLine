@@ -1,10 +1,10 @@
 import { Organization, User, Graph_Type, Measure } from '@prisma/client';
-import { Graph, GraphData, GraphGen, QueryPath } from 'shared';
+import { Graph, GraphData, GraphGen, isUnderWordCount, QueryPath } from 'shared';
 import prisma from '../prisma/prisma';
 import graphTransformer from '../transformers/statistics-graph.transformer';
 import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
-import { AccessDeniedException, HttpException } from '../utils/errors.utils';
+import { AccessDeniedException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { Sql } from '@prisma/client/runtime/library';
 
 export default class StatisticsService {
@@ -114,5 +114,71 @@ export default class StatisticsService {
         label: value[graphGen.groupByColumn]
       };
     });
+  }
+
+  /**
+   * Edits the graph metadata in the database, retrieve the graph data using getGraphData function
+   *
+   * Note: the `userCreatedId` and `organizationId` are not editable.
+   *
+   * @param userEditing The user editing the graph, must be the user who created the graph
+   * @param graphId The id of the graph to edit
+   * @param startDate The start date of when to consider the data
+   * @param endDate The end date of when to consider the data
+   * @param title The title of the graph
+   * @param graphType The type of graph
+   * @param measure The measurement to apply to the data
+   * @param graphGen The metadata for how to acquire the data, leads a recursive path of sql
+   * @param organization The organization the graph belongs to
+   * @returns The edited graph and its data
+   */
+  static async editGraph(
+    userEditing: User,
+    graphId: string,
+    startDate: Date,
+    endDate: Date,
+    title: string,
+    graphType: Graph_Type,
+    measure: Measure,
+    graphGen: GraphGen,
+    organization: Organization,
+    graphCollectionId?: string
+  ): Promise<Graph> {
+    const graph = await prisma.graph.findUnique({
+      where: {
+        id: graphId
+      },
+      ...getGraphQueryArgs(organization.organizationId)
+    });
+    if (!graph) {
+      throw new NotFoundException('Graph', graphId);
+    }
+    if (graph.dateDeleted) {
+      throw new DeletedException('Graph', graphId);
+    }
+    if (graph.userCreatedId !== userEditing.userId) {
+      throw new AccessDeniedException('Only the creator of an graph can update it');
+    }
+
+    if (!isUnderWordCount(title, 20)) throw new HttpException(400, 'Title must be less than 20 words');
+
+    const updatedGraph = await prisma.graph.update({
+      where: {
+        id: graphId
+      },
+      data: {
+        startDate,
+        endDate,
+        title,
+        graphType,
+        measure,
+        finalTable: graphGen.finalTable,
+        finalColumn: graphGen.finalColumn,
+        groupByColumn: graphGen.groupByColumn,
+        graphCollectionId: graphCollectionId ? graphCollectionId : null
+      },
+      ...getGraphQueryArgs(organization.organizationId)
+    });
+    return graphTransformer({ ...updatedGraph, graphData: await StatisticsService.getGraphData(graphGen, measure) });
   }
 }
