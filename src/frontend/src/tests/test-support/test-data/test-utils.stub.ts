@@ -90,6 +90,10 @@ export const mockAuth = (isLoading: boolean, user?: User) => {
   } as Auth;
 };
 
+export const mockCurrentUser = () => {
+  return exampleAuthenticatedAdminUser;
+};
+
 export const mockUtils = {
   add: () => null,
   remove: () => null,

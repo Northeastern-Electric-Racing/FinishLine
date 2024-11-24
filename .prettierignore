@@ -32,7 +32,7 @@ yarn-debug.log*
 yarn-error.log*
 /.vscode
 
-system-tests/*
+system-tests/cypress/e2e/2-advanced-examples/*
 docker-compose.yml
 .github/*
 tsconfig.build.json

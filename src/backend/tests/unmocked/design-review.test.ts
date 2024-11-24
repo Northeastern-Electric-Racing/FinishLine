@@ -5,14 +5,16 @@ import { createTestDesignReview, createTestUser, resetUsers } from '../test-util
 import prisma from '../../src/prisma/prisma';
 import { getUserQueryArgs } from '../../src/prisma-query-args/user.query-args';
 import { DesignReviewStatus } from 'shared';
-import { Design_Review } from '@prisma/client';
+import { Design_Review, Organization } from '@prisma/client';
 
 describe('Design Reviews', () => {
   let designReview: Design_Review;
   let organizationId: string;
+  let organization: Organization;
   beforeEach(async () => {
-    const { dr, orgId } = await createTestDesignReview();
+    const { dr, organization: org, orgId } = await createTestDesignReview();
     designReview = dr;
+    organization = org;
     organizationId = orgId;
   });
 
@@ -23,7 +25,7 @@ describe('Design Reviews', () => {
   // change with admin who is not creator
   test('Set status works when an admin who is not the creator sets', async () => {
     const user = await createTestUser(supermanAdmin, organizationId);
-    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organizationId);
+    await DesignReviewsService.setStatus(user, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organization);
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
         designReviewId: designReview.designReviewId
@@ -44,12 +46,7 @@ describe('Design Reviews', () => {
     if (!drCreator) {
       throw new Error('User not found in database');
     }
-    await DesignReviewsService.setStatus(
-      drCreator,
-      designReview.designReviewId,
-      DesignReviewStatus.CONFIRMED,
-      organizationId
-    );
+    await DesignReviewsService.setStatus(drCreator, designReview.designReviewId, DesignReviewStatus.CONFIRMED, organization);
     const updatedDR = await prisma.design_Review.findUnique({
       where: {
         designReviewId: designReview.designReviewId
@@ -65,7 +62,7 @@ describe('Design Reviews', () => {
         await createTestUser(financeMember, organizationId),
         designReview.designReviewId,
         DesignReviewStatus.CONFIRMED,
-        organizationId
+        organization
       )
     ).rejects.toThrow(
       new AccessDeniedException('admin and app-admin only have the ability to set the status of a design review')

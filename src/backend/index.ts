@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
+import { getUserAndOrganization, prodHeaders, requireJwtDev, requireJwtProd } from './src/utils/auth.utils';
 import { errorHandler } from './src/utils/errors.utils';
 import userRouter from './src/routes/users.routes';
 import projectRouter from './src/routes/projects.routes';
@@ -16,6 +16,7 @@ import designReviewsRouter from './src/routes/design-reviews.routes';
 import workPackageTemplatesRouter from './src/routes/work-package-templates.routes';
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
+import recruitmentRouter from './src/routes/recruitment.routes';
 
 const app = express();
 
@@ -49,6 +50,9 @@ app.use(cors(options));
 // ensure each request is authorized using JWT
 app.use(isProd ? requireJwtProd : requireJwtDev);
 
+// get user and organization
+app.use(getUserAndOrganization);
+
 // routes
 app.use('/users', userRouter);
 app.use('/projects', projectRouter);
@@ -63,6 +67,7 @@ app.use('/notifications', notificationsRouter);
 app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
+app.use('/recruitment', recruitmentRouter);
 app.use('/', (_req, res) => {
   res.status(200).json('Welcome to FinishLine');
 });

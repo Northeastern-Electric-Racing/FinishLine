@@ -1,60 +1,50 @@
 import { Request, Response, NextFunction } from 'express';
 import ChangeRequestsService from '../services/change-requests.services';
-import { getCurrentUser } from '../utils/auth.utils';
-import { User } from '@prisma/client';
-import { getOrganizationId } from '../utils/utils';
 
 export default class ChangeRequestsController {
   static async getChangeRequestByID(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId } = req.params;
-      const organizationId = getOrganizationId(req.headers);
 
-      const cr = await ChangeRequestsService.getChangeRequestByID(crId, organizationId);
-      res.status(200).json(cr);
+      const cr = await ChangeRequestsService.getChangeRequestByID(crId, req.organization);
+      return res.status(200).json(cr);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const organizationId = getOrganizationId(req.headers);
-
-      const changeRequests = await ChangeRequestsService.getAllChangeRequests(organizationId);
-      res.status(200).json(changeRequests);
+      const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization);
+      return res.status(200).json(changeRequests);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async reviewChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId, reviewNotes, accepted, psId } = req.body;
-      const organizationId = getOrganizationId(req.headers);
-      const reviewer = await getCurrentUser(res);
       const id = await ChangeRequestsService.reviewChangeRequest(
-        reviewer,
+        req.currentUser,
         crId,
         reviewNotes,
         accepted,
-        organizationId,
+        req.organization,
         psId
       );
-      res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
+      return res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createActivationChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, leadId, managerId, startDate, confirmDetails } = req.body;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
 
       const id = await ChangeRequestsService.createActivationChangeRequest(
-        submitter,
+        req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
@@ -63,45 +53,41 @@ export default class ChangeRequestsController {
         managerId,
         startDate,
         confirmDetails,
-        organizationId
+        req.organization
       );
-      res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
+      return res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createStageGateChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, confirmDone } = req.body;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
       const id = await ChangeRequestsService.createStageGateChangeRequest(
-        submitter,
+        req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
         type,
         confirmDone,
-        organizationId
+        req.organization
       );
-      res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
+      return res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async createStandardChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNum, type, what, why, proposedSolutions, projectProposedChanges, workPackageProposedChanges } = req.body;
-      const submitter = await getCurrentUser(res);
       if (workPackageProposedChanges && workPackageProposedChanges.stage === 'NONE') {
         workPackageProposedChanges.stage = null;
       }
-      const organizationId = getOrganizationId(req.headers);
 
       const createdCR = await ChangeRequestsService.createStandardChangeRequest(
-        submitter,
+        req.currentUser,
         wbsNum.carNumber,
         wbsNum.projectNumber,
         wbsNum.workPackageNumber,
@@ -109,46 +95,42 @@ export default class ChangeRequestsController {
         what,
         why,
         proposedSolutions,
-        organizationId,
+        req.organization,
         projectProposedChanges,
         workPackageProposedChanges
       );
-      res.status(200).json(createdCR);
+      return res.status(200).json(createdCR);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async addProposedSolution(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId, budgetImpact, description, timelineImpact, scopeImpact } = req.body;
-      const submitter = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
       const id = await ChangeRequestsService.addProposedSolution(
-        submitter,
+        req.currentUser,
         crId,
         budgetImpact,
         description,
         timelineImpact,
         scopeImpact,
-        organizationId
+        req.organization
       );
-      res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
+      return res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async deleteChangeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const { crId } = req.params;
-      const user: User = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
 
-      await ChangeRequestsService.deleteChangeRequest(user, crId, organizationId);
-      res.status(200).json({ message: `Successfully deleted change request #${crId}` });
+      await ChangeRequestsService.deleteChangeRequest(req.currentUser, crId, req.organization);
+      return res.status(200).json({ message: `Successfully deleted change request #${crId}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -156,13 +138,11 @@ export default class ChangeRequestsController {
     try {
       const { userIds } = req.body;
       const { crId } = req.params;
-      const submitter: User = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
 
-      await ChangeRequestsService.requestCRReview(submitter, userIds, crId, organizationId);
-      res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
+      await ChangeRequestsService.requestCRReview(req.currentUser, userIds, crId, req.organization);
+      return res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }

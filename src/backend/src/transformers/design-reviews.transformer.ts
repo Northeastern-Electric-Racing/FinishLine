@@ -21,6 +21,7 @@ export const designReviewTransformer = (
     isOnline: designReview.isOnline,
     isInPerson: designReview.isInPerson,
     zoomLink: designReview.zoomLink ?? undefined,
+    calendarEventId: designReview.calendarEventId ?? undefined,
     attendees: designReview.attendees.map(userTransformer),
     dateDeleted: designReview.dateDeleted ?? undefined,
     userDeleted: designReview.userDeleted ? userTransformer(designReview.userDeleted) : undefined,

@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { User } from '@prisma/client';
+import { Organization, User } from '@prisma/client';
 import { DescriptionBulletPreview, LinkCreateArgs, WbsNumber } from 'shared';
 import ProjectsService from '../../services/projects.services';
 
@@ -25,7 +25,7 @@ export const seedProject = async (
   descriptionBullets: DescriptionBulletPreview[],
   leadId: string | null,
   managerId: string | null,
-  organizationId: string
+  organization: Organization
 ): Promise<{ projectWbsNumber: WbsNumber; projectId: string }> => {
   const project = await ProjectsService.createProject(
     creator,
@@ -39,7 +39,7 @@ export const seedProject = async (
     descriptionBullets,
     leadId,
     managerId,
-    organizationId
+    organization
   );
 
   await ProjectsService.editProject(
@@ -53,7 +53,7 @@ export const seedProject = async (
     links,
     leadId,
     managerId,
-    organizationId
+    organization
   );
 
   return { projectWbsNumber: project.wbsNum, projectId: project.id };

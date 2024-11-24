@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { validateWBS, WbsNumber, WorkPackage } from 'shared';
 import WorkPackagesService from '../services/work-packages.services';
-import { getCurrentUser } from '../utils/auth.utils';
-import { getOrganizationId } from '../utils/utils';
 
 /** Controller for operations involving work packages. */
 export default class WorkPackagesController {
@@ -10,13 +8,12 @@ export default class WorkPackagesController {
   static async getAllWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { query } = req;
-      const organizationId = getOrganizationId(req.headers);
 
-      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, organizationId);
+      const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
 
-      res.status(200).json(outputWorkPackages);
+      return res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -24,25 +21,23 @@ export default class WorkPackagesController {
   static async getSingleWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
       const parsedWbs: WbsNumber = validateWBS(req.params.wbsNum);
-      const organizationId = getOrganizationId(req.headers);
 
-      const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, organizationId);
+      const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
 
-      res.status(200).json(wp);
+      return res.status(200).json(wp);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   static async getManyWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const { wbsNums } = req.body;
-      const organizationId = getOrganizationId(req.headers);
 
-      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, organizationId);
-      res.status(200).json(workPackages);
+      const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
+      return res.status(200).json(workPackages);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -54,11 +49,8 @@ export default class WorkPackagesController {
       if (stage === 'NONE') {
         stage = null;
       }
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
       const workPackage = await WorkPackagesService.createWorkPackage(
-        user,
+        req.currentUser,
         name,
         crId,
         stage,
@@ -66,12 +58,12 @@ export default class WorkPackagesController {
         duration,
         blockedBy,
         descriptionBullets,
-        organizationId
+        req.organization
       );
 
-      res.status(200).json(workPackage);
+      return res.status(200).json(workPackage);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -83,11 +75,8 @@ export default class WorkPackagesController {
       if (stage === 'NONE') {
         stage = null;
       }
-      const user = await getCurrentUser(res);
-      const organizationId = getOrganizationId(req.headers);
-
       await WorkPackagesService.editWorkPackage(
-        user,
+        req.currentUser,
         workPackageId,
         name,
         crId,
@@ -98,25 +87,23 @@ export default class WorkPackagesController {
         descriptionBullets,
         leadId,
         managerId,
-        organizationId
+        req.organization
       );
-      res.status(200).json({ message: 'Work package updated successfully' });
+      return res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   // Delete a work package that corresponds to the given wbs number
   static async deleteWorkPackage(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const wbsNum = validateWBS(req.params.wbsNum);
-      const organizationId = getOrganizationId(req.headers);
 
-      await WorkPackagesService.deleteWorkPackage(user, wbsNum, organizationId);
-      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+      await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
+      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
@@ -124,26 +111,26 @@ export default class WorkPackagesController {
   static async getBlockingWorkPackages(req: Request, res: Response, next: NextFunction) {
     try {
       const wbsNum = validateWBS(req.params.wbsNum);
-      const organizationId = getOrganizationId(req.headers);
 
-      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(wbsNum, organizationId);
+      const blockingWorkPackages: WorkPackage[] = await WorkPackagesService.getBlockingWorkPackages(
+        wbsNum,
+        req.organization
+      );
 
-      res.status(200).json(blockingWorkPackages);
+      return res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 
   // Send reminder message to project lead of every work package that is due before/on given deadline
-  static async slackMessageUpcomingDeadlines(req: Request, res: Response, next: NextFunction) {
+  static async slackMessageUpcomingDeadlines(req: Request, _res: Response, next: NextFunction) {
     try {
-      const user = await getCurrentUser(res);
       const { deadline } = req.body;
-      const organizationId = getOrganizationId(req.headers);
 
-      await WorkPackagesService.slackMessageUpcomingDeadlines(user, new Date(deadline), organizationId);
+      await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
     } catch (error: unknown) {
-      next(error);
+      return next(error);
     }
   }
 }
