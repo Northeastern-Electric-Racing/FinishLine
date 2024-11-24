@@ -1,5 +1,6 @@
 import { Bar } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, BarController, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Box } from '@mui/material';
 
 Chart.register(CategoryScale, LinearScale, BarController, BarElement, Title, Tooltip, Legend);
 
@@ -92,9 +93,9 @@ const StatsBarChart: React.FC<StatsBarChartProps> = ({
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', maxWidth: width, maxHeight: height }}>
+    <Box sx={{ width: '100%', height: '100%', maxWidth: width, maxHeight: height }}>
       <Bar data={data} options={options} />
-    </div>
+    </Box>
   );
 };
 
