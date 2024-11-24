@@ -410,7 +410,7 @@ export default class ReimbursementRequestsController {
       res.setHeader('content-length', imageData.buffer.length);
 
       // Send the Buffer as the response body
-      res.send(imageData.buffer);
+      res.status(200).send(imageData.buffer);
     } catch (error: unknown) {
       next(error);
     }

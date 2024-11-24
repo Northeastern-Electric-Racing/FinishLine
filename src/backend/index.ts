@@ -64,7 +64,7 @@ app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
 app.use('/', (_req, res) => {
-  res.json('Welcome to FinishLine');
+  res.status(200).json('Welcome to FinishLine');
 });
 
 // custom error handler middleware
