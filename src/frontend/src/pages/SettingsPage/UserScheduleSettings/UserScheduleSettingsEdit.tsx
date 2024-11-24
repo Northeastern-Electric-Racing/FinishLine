@@ -43,7 +43,7 @@ const UserScheduleSettingsEdit: React.FC<UserScheduleSettingsEditProps> = ({
         toast.error('Invalid Zoom Link Format. Link must start with "https://".');
         return;
       } else if (!data.personalZoomLink.includes('zoom.us/j/')) {
-        toast.error('Invalid Zoom Link Format. Link must contains "zoom.us/j/".');
+        toast.error('Invalid Zoom Link Format. Link must contain "zoom.us/j/".');
         return;
       }
     }
