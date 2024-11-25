@@ -8,6 +8,8 @@ import { linkTransformer } from '../transformers/links.transformer';
 import { getLinkQueryArgs } from '../prisma-query-args/links.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { getProjects } from '../utils/projects.utils';
+import { getProjectQueryArgs } from '../prisma-query-args/projects.query-args';
+import projectTransformer from '../transformers/projects.transformer';
 
 export default class OrganizationsService {
   /**
@@ -264,13 +266,13 @@ export default class OrganizationsService {
   static async getOrganizationFeaturedProjects(organizationId: string) {
     const organization = await prisma.organization.findUnique({
       where: { organizationId },
-      include: { featuredProjects: true }
+      include: { featuredProjects: getProjectQueryArgs(organizationId) }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
     }
 
-    return organization.featuredProjects;
+    return organization.featuredProjects.map(projectTransformer);
   }
 }

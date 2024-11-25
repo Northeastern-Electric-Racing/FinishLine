@@ -25,6 +25,7 @@ const userSecureSettings = (id: string) => `${usersById(id)}/secure-settings`;
 const userScheduleSettings = (id: string) => `${usersById(id)}/schedule-settings`;
 const userScheduleSettingsSet = () => `${users()}/schedule-settings/set`;
 const userTasks = (id: string) => `${usersById(id)}/tasks`;
+const manyUserTasks = () => `${users()}/tasks/get-many`;
 
 /**************** Projects Endpoints ****************/
 const projects = () => `${API_URL}/projects`;
@@ -174,6 +175,8 @@ const organizations = () => `${API_URL}/organizations`;
 const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
+const organizationsSetDescription = () => `${organizations()}/description/set`;
+const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -207,6 +210,7 @@ export const apiUrls = {
   userScheduleSettings,
   userScheduleSettingsSet,
   userTasks,
+  manyUserTasks,
 
   projects,
   allProjects,
@@ -330,6 +334,8 @@ export const apiUrls = {
   currentOrganization,
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
+  organizationsFeaturedProjects,
+  organizationsSetDescription,
 
   cars,
   carsCreate,
