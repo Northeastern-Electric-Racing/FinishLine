@@ -238,4 +238,85 @@ export default class OnboardingServices {
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
   }
+
+  static async toggleChecklistItem(checklistId: string, userId: string) {
+    const checklistItem = await prisma.checklistItem.findUnique({
+      where: { checklistItemId: checklistId },
+      include: { usersChecked: true }
+    });
+
+    if (!checklistItem) {
+      throw new NotFoundException('Checklist Item', checklistId);
+    }
+
+    const isChecked = checklistItem.usersChecked.some((user) => user.userId === userId);
+
+    if (isChecked) {
+      //remove user from usersChecked
+      await prisma.checklistItem.update({
+        where: { checklistItemId: checklistId },
+        data: {
+          usersChecked: {
+            disconnect: { userId }
+          }
+        }
+      });
+    } else {
+      //add user to usersChecked
+      await prisma.checklistItem.update({
+        where: { checklistItemId: checklistId },
+        data: {
+          usersChecked: {
+            connect: { userId }
+          }
+        }
+      });
+    }
+
+    if (!checklistItem.parentChecklistItemId) {
+      return checklistItem;
+    }
+
+    const parentChecklistItem = await prisma.checklistItem.findUnique({
+      where: { checklistItemId: checklistItem.parentChecklistItemId },
+      include: {
+        subtasks: {
+          where: { dateDeleted: null },
+          include: { usersChecked: true }
+        }
+      }
+    });
+
+    if (!parentChecklistItem) {
+      return checklistItem;
+    }
+
+    //if all subtasks checked, check the parent
+    const allSubtasksChecked = parentChecklistItem.subtasks.every((subtask) =>
+      subtask.usersChecked.some((user) => user.userId === userId)
+    );
+
+    if (allSubtasksChecked) {
+      await prisma.checklistItem.update({
+        where: { checklistItemId: parentChecklistItem.checklistItemId },
+        data: {
+          usersChecked: {
+            connect: { userId }
+          }
+        }
+      });
+    } else {
+      //if not all subtasks checked, uncheck the parent
+      await prisma.checklistItem.update({
+        where: { checklistItemId: parentChecklistItem.checklistItemId },
+        data: {
+          usersChecked: {
+            disconnect: { userId }
+          }
+        }
+      });
+    }
+
+    return checklistItem;
+  }
 }

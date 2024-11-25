@@ -401,4 +401,92 @@ describe('Onboarding tests', () => {
       expect(updatedTestChecklistItem2?.dateDeleted).not.toBe(null);
     });
   });
+
+  describe('Toggle Checklist Item', () => {
+    it('Toggles checklist item and updates the parent checklist item if all children checked', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+
+      const parentChecklist = await createTestChecklist(batman, orgId);
+      const parentChecklistItem = await createTestChecklistItem(batman, parentChecklist.checklistId, orgId);
+
+      const childChecklistItem1 = await createTestChecklistItem(
+        batman,
+        parentChecklist.checklistId,
+        orgId,
+        parentChecklistItem.checklistItemId
+      );
+
+      const childChecklistItem2 = await createTestChecklistItem(
+        batman,
+        parentChecklist.checklistId,
+        orgId,
+        parentChecklistItem.checklistItemId
+      );
+
+      const initialParentItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: parentChecklistItem.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(initialParentItem?.usersChecked.length).toBe(0);
+
+      const initialChildItem1 = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: childChecklistItem1.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(initialChildItem1?.usersChecked.length).toBe(0);
+
+      const initialChildItem2 = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: childChecklistItem2.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(initialChildItem2?.usersChecked.length).toBe(0);
+
+      //toggle first child item
+      await OnboardingServices.toggleChecklistItem(childChecklistItem1.checklistItemId, batman.userId);
+
+      const updatedChildItem1 = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: childChecklistItem1.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(updatedChildItem1?.usersChecked.length).toBe(1);
+
+      //parent still not checked since only one child checked
+      const partiallyUpdatedParentItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: parentChecklistItem.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(partiallyUpdatedParentItem?.usersChecked.length).toBe(0);
+
+      await OnboardingServices.toggleChecklistItem(childChecklistItem2.checklistItemId, batman.userId);
+
+      const updatedChildItem2 = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: childChecklistItem2.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(updatedChildItem2?.usersChecked.length).toBe(1);
+
+      //parent now checked since all children are checked
+      const fullyUpdatedParentItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: parentChecklistItem.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(fullyUpdatedParentItem?.usersChecked.length).toBe(1);
+
+      //uncheck child
+      await OnboardingServices.toggleChecklistItem(childChecklistItem1.checklistItemId, batman.userId);
+
+      const revertedChildItem1 = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: childChecklistItem1.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(revertedChildItem1?.usersChecked.length).toBe(0);
+
+      //parent unchecked
+      const revertedParentItem = await prisma.checklistItem.findUnique({
+        where: { checklistItemId: parentChecklistItem.checklistItemId },
+        include: { usersChecked: true }
+      });
+      expect(revertedParentItem?.usersChecked.length).toBe(0);
+    });
+  });
 });
