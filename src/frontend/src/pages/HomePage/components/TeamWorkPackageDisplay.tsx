@@ -4,10 +4,11 @@ import Box from '@mui/material/Box';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { AuthenticatedUser } from 'shared';
+import { AuthenticatedUser, WbsElementStatus } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
+import { isUserOnTeam } from '../../../utils/teams.utils';
 
 interface TeamWorkPackageDisplayProps {
   user: AuthenticatedUser;
@@ -39,18 +40,12 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
   if (isLoading || !teams) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
-  const myTeams = teams.filter((team) => {
-    return (
-      team.members.some((member) => member.userId === user.userId) ||
-      team.leads.some((member) => member.userId === user.userId) ||
-      team.head.userId === user.userId
-    );
-  });
+  const myTeams = teams.filter((team) => isUserOnTeam(team, user));
 
   const workPackages = myTeams
     .map((team) => {
       return team.projects.map((project) => {
-        return project.workPackages;
+        return project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active);
       });
     })
     .flat(2);
