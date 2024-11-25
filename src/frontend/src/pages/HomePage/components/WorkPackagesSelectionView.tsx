@@ -96,7 +96,9 @@ const WorkPackagesSelectionView: React.FC = () => {
           borderRadius: '20px',
           border: '6px solid transparent',
           backgroundClip: 'content-box'
-        }
+        },
+        scrollbarWidth: 'auto',
+        scrollbarColor: `${theme.palette.primary.main} transparent`
       }}
     >
       <Grid container rowSpacing={2} columnSpacing={2}>
