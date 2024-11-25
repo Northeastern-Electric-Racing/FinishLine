@@ -109,21 +109,16 @@ export const getAllWbsElements = (projects: Project[]): { wbsNum: WbsNumber; wbs
 
 export const cleanReimbursementRequestStatus = (status: ReimbursementStatusType) => {
   switch (status) {
-    case ReimbursementStatusType.ADVISOR_APPROVED: {
+    case ReimbursementStatusType.ADVISOR_APPROVED:
       return 'Advisor Approved';
-    }
-    case ReimbursementStatusType.PENDING_FINANCE: {
+    case ReimbursementStatusType.PENDING_FINANCE:
       return 'Pending Finance Team';
-    }
-    case ReimbursementStatusType.REIMBURSED: {
+    case ReimbursementStatusType.REIMBURSED:
       return 'Reimbursed';
-    }
-    case ReimbursementStatusType.SABO_SUBMITTED: {
+    case ReimbursementStatusType.SABO_SUBMITTED:
       return 'Submitted to SABO';
-    }
-    case ReimbursementStatusType.DENIED: {
+    case ReimbursementStatusType.DENIED:
       return 'Denied';
-    }
     case ReimbursementStatusType.PENDING_LEADERSHIP_APPROVAL:
       return 'Pending Leadership Approval';
     case ReimbursementStatusType.LEADERSHIP_APPROVED:
