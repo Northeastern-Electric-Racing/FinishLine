@@ -1,7 +1,6 @@
 import { Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
-import { Stack } from '@mui/system';
 
 interface ScrollablePageBlockProps {
   children: React.ReactNode;
