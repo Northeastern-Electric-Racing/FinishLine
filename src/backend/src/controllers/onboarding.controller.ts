@@ -88,4 +88,16 @@ export default class OnboardingController {
       return next(error);
     }
   }
+
+  static async toggleChecklistItem(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { checklistId } = req.params;
+      const { userId } = req.currentUser;
+
+      const updatedItem = await OnboardingServices.toggleChecklistItem(checklistId, userId);
+      res.status(200).json(updatedItem);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

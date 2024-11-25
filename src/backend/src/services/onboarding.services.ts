@@ -308,7 +308,6 @@ export default class OnboardingServices {
       throw new DeletedException('Checklist', checklistId);
     }
 
-    // delete all subtasks
     await prisma.checklist.updateMany({
       where: { parentChecklistId: checklistId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
@@ -318,5 +317,82 @@ export default class OnboardingServices {
       where: { checklistId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
+  }
+
+  static async toggleChecklistItem(checklistId: string, userId: string) {
+    const checklist = await prisma.checklist.findUnique({
+      where: { checklistId },
+      include: { usersChecked: true, subtasks: true }
+    });
+
+    if (!checklist) {
+      throw new NotFoundException('Checklist', checklistId);
+    }
+
+    const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
+
+    if (isChecked) {
+      await prisma.checklist.update({
+        where: { checklistId },
+        data: {
+          usersChecked: {
+            disconnect: { userId }
+          }
+        }
+      });
+    } else {
+      await prisma.checklist.update({
+        where: { checklistId },
+        data: {
+          usersChecked: {
+            connect: { userId }
+          }
+        }
+      });
+    }
+
+    if (!checklist.parentChecklistId) {
+      return checklist;
+    }
+
+    const parentChecklist = await prisma.checklist.findUnique({
+      where: { checklistId: checklist.parentChecklistId },
+      include: {
+        subtasks: {
+          where: { dateDeleted: null },
+          include: { usersChecked: true }
+        }
+      }
+    });
+
+    if (!parentChecklist) {
+      return checklist;
+    }
+
+    const allSubtasksChecked = parentChecklist.subtasks.every((subtask) =>
+      subtask.usersChecked.some((user) => user.userId === userId)
+    );
+
+    if (allSubtasksChecked) {
+      await prisma.checklist.update({
+        where: { checklistId: parentChecklist.checklistId },
+        data: {
+          usersChecked: {
+            connect: { userId }
+          }
+        }
+      });
+    } else {
+      await prisma.checklist.update({
+        where: { checklistId: parentChecklist.checklistId },
+        data: {
+          usersChecked: {
+            disconnect: { userId }
+          }
+        }
+      });
+    }
+
+    return checklist;
   }
 }

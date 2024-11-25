@@ -42,4 +42,10 @@ onboardingRouter.post(
 
 onboardingRouter.post('/checklist/delete/:checklistId', OnboardingController.deleteChecklist);
 
+onboardingRouter.post(
+  '/checklists/item/:checklistId/checked',
+  OnboardingController.toggleChecklistItem
+);
+
+
 export default onboardingRouter;
