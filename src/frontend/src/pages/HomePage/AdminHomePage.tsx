@@ -28,7 +28,7 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       </Typography>
       <Box sx={{ flexGrow: 1 }}>
         <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={8}>
             <WorkPackagesSelectionView />
           </Grid>
         </Grid>
