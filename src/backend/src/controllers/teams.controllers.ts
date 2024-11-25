@@ -7,9 +7,9 @@ export default class TeamsController {
     try {
       const teams = await TeamsService.getAllTeams(req.organization);
 
-      return res.status(200).json(teams);
+       res.status(200).json(teams);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -17,9 +17,9 @@ export default class TeamsController {
     try {
       const teams = await TeamsService.getAllArchivedTeams(req.organization);
 
-      return res.status(200).json(teams);
+       res.status(200).json(teams);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -29,9 +29,9 @@ export default class TeamsController {
 
       const team = await TeamsService.getSingleTeam(teamId, req.organization);
 
-      return res.status(200).json(team);
+       res.status(200).json(team);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -43,9 +43,9 @@ export default class TeamsController {
       const updateTeam = await TeamsService.setTeamMembers(req.currentUser, req.params.teamId, userIds, req.organization);
 
       //  the updated team
-      return res.status(200).json(updateTeam);
+       res.status(200).json(updateTeam);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -54,9 +54,9 @@ export default class TeamsController {
       const { newDescription } = req.body;
 
       const team = await TeamsService.editDescription(req.currentUser, req.params.teamId, newDescription, req.organization);
-      return res.status(200).json(team);
+       res.status(200).json(team);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -66,9 +66,9 @@ export default class TeamsController {
       const { teamId } = req.params;
 
       const team = await TeamsService.setTeamHead(req.currentUser, teamId, userId, req.organization);
-      return res.status(200).json(team);
+       res.status(200).json(team);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -85,9 +85,9 @@ export default class TeamsController {
         isFinanceTeam,
         req.organization
       );
-      return res.status(200).json(team);
+       res.status(200).json(team);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -97,9 +97,9 @@ export default class TeamsController {
       const { teamId } = req.params;
 
       const team = await TeamsService.setTeamLeads(req.currentUser, teamId, userIds, req.organization);
-      return res.status(200).json(team);
+       res.status(200).json(team);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -110,7 +110,7 @@ export default class TeamsController {
       await TeamsService.deleteTeam(req.currentUser, teamId, req.organization);
       res.status(204).json({ message: `Successfully deleted team with id ${teamId}` });
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -119,9 +119,9 @@ export default class TeamsController {
       const { teamId } = req.params;
 
       const archivedTeam = await TeamsService.archiveTeam(req.currentUser, teamId, req.organization);
-      return res.status(200).json(archivedTeam);
+       res.status(200).json(archivedTeam);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -132,9 +132,9 @@ export default class TeamsController {
 
       const updatedTeam = await TeamsService.setTeamType(req.currentUser, teamId, teamTypeId, req.organization);
 
-      return res.status(200).json(updatedTeam);
+       res.status(200).json(updatedTeam);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -144,18 +144,18 @@ export default class TeamsController {
 
       const teamType = await TeamsService.getSingleTeamType(teamTypeId, req.organization);
 
-      return res.status(200).json(teamType);
+       res.status(200).json(teamType);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
   static async getAllTeamTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const teamTypes = await TeamsService.getAllTeamTypes(req.organization);
-      return res.status(200).json(teamTypes);
+       res.status(200).json(teamTypes);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -201,7 +201,7 @@ export default class TeamsController {
       const teamType = await TeamsService.setTeamTypeImage(req.currentUser, req.params.teamTypeId, file, req.organization);
       res.status(200).json(teamType);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 }

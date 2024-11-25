@@ -11,9 +11,9 @@ export default class WorkPackagesController {
 
       const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
 
-      return res.status(200).json(outputWorkPackages);
+       res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -24,9 +24,9 @@ export default class WorkPackagesController {
 
       const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
 
-      return res.status(200).json(wp);
+       res.status(200).json(wp);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -35,9 +35,9 @@ export default class WorkPackagesController {
       const { wbsNums } = req.body;
 
       const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
-      return res.status(200).json(workPackages);
+       res.status(200).json(workPackages);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -61,9 +61,9 @@ export default class WorkPackagesController {
         req.organization
       );
 
-      return res.status(200).json(workPackage);
+      res.status(200).json(workPackage);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -89,9 +89,9 @@ export default class WorkPackagesController {
         managerId,
         req.organization
       );
-      return res.status(200).json({ message: 'Work package updated successfully' });
+      res.status(200).json({ message: 'Work package updated successfully' });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -101,9 +101,9 @@ export default class WorkPackagesController {
       const wbsNum = validateWBS(req.params.wbsNum);
 
       await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
-      return res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+       res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -117,9 +117,9 @@ export default class WorkPackagesController {
         req.organization
       );
 
-      return res.status(200).json(blockingWorkPackages);
+       res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -130,7 +130,7 @@ export default class WorkPackagesController {
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 }

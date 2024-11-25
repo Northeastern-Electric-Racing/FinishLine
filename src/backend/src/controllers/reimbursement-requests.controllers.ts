@@ -17,36 +17,36 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(userReimbursementRequests);
+       res.status(200).json(userReimbursementRequests);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
   static async getCurrentUserReimbursements(req: Request, res: Response, next: NextFunction) {
     try {
       const userReimbursements = await ReimbursementRequestService.getUserReimbursements(req.currentUser, req.organization);
-      return res.status(200).json(userReimbursements);
+       res.status(200).json(userReimbursements);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
   static async getAllReimbursements(req: Request, res: Response, next: NextFunction) {
     try {
       const reimbursements = await ReimbursementRequestService.getAllReimbursements(req.currentUser, req.organization);
-      return res.status(200).json(reimbursements);
+       res.status(200).json(reimbursements);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
   static async getAllVendors(req: Request, res: Response, next: NextFunction) {
     try {
       const vendors: Vendor[] = await ReimbursementRequestService.getAllVendors(req.organization);
-      return res.status(200).json(vendors);
+       res.status(200).json(vendors);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -74,9 +74,9 @@ export default class ReimbursementRequestsController {
         req.organization,
         dateOfExpense
       );
-      return res.status(200).json(createdReimbursementRequest);
+       res.status(200).json(createdReimbursementRequest);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -89,9 +89,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(reimbursement);
+       res.status(200).json(reimbursement);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -122,9 +122,9 @@ export default class ReimbursementRequestsController {
         req.organization,
         dateOfExpense
       );
-      return res.status(200).json(updatedReimbursementRequestId);
+       res.status(200).json(updatedReimbursementRequestId);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -140,9 +140,9 @@ export default class ReimbursementRequestsController {
         dateReceived,
         req.organization
       );
-      return res.status(200).json(updatedReimbursement);
+       res.status(200).json(updatedReimbursement);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -155,9 +155,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(deletedReimbursementRequest);
+       res.status(200).json(deletedReimbursementRequest);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -167,9 +167,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(requestsPendingAdvisors);
+       res.status(200).json(requestsPendingAdvisors);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -181,9 +181,9 @@ export default class ReimbursementRequestsController {
         saboNumbers,
         req.organization.organizationId
       );
-      return res.status(200).json({ message: 'Successfully sent pending advisor list' });
+       res.status(200).json({ message: 'Successfully sent pending advisor list' });
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -192,9 +192,9 @@ export default class ReimbursementRequestsController {
       const { requestId } = req.params;
       const { saboNumber } = req.body;
       await ReimbursementRequestService.setSaboNumber(requestId, saboNumber, req.currentUser, req.organization);
-      return res.status(200).json({ message: 'Successfully set sabo number' });
+       res.status(200).json({ message: 'Successfully set sabo number' });
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -202,9 +202,9 @@ export default class ReimbursementRequestsController {
     try {
       const { name } = req.body;
       const createdVendor = await ReimbursementRequestService.createVendor(req.currentUser, name, req.organization);
-      return res.status(200).json(createdVendor);
+       res.status(200).json(createdVendor);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -219,9 +219,9 @@ export default class ReimbursementRequestsController {
         allowedRefundSources,
         req.organization
       );
-      return res.status(200).json(createdAccountCode);
+       res.status(200).json(createdAccountCode);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -235,18 +235,18 @@ export default class ReimbursementRequestsController {
       const origin = isProd ? 'https://finishlinebyner.com' : 'http://localhost:3000';
 
       res.header('Access-Control-Allow-Origin', origin);
-      return res.status(200).json(receipt);
+       res.status(200).json(receipt);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
   static async getAllAccountCodes(req: Request, res: Response, next: NextFunction) {
     try {
       const accountCodes = await ReimbursementRequestService.getAllAccountCodes(req.organization);
-      return res.status(200).json(accountCodes);
+       res.status(200).json(accountCodes);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -256,9 +256,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(reimbursementRequests);
+       res.status(200).json(reimbursementRequests);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -271,9 +271,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(reimbursementStatus);
+       res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -286,9 +286,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(reimbursementStatus);
+       res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -301,9 +301,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(reimbursementStatus);
+       res.status(200).json(reimbursementStatus);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -316,9 +316,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(updatedRequest);
+       res.status(200).json(updatedRequest);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -333,9 +333,9 @@ export default class ReimbursementRequestsController {
         req.organization,
         dateDelivered
       );
-      return res.status(200).json(updatedRequest);
+       res.status(200).json(updatedRequest);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -348,9 +348,9 @@ export default class ReimbursementRequestsController {
         requestId,
         req.organization
       );
-      return res.status(200).json(reimbursementRequest);
+       res.status(200).json(reimbursementRequest);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -367,7 +367,7 @@ export default class ReimbursementRequestsController {
       // Send the Buffer as the response body
       res.status(200).send(imageData.buffer);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -385,9 +385,9 @@ export default class ReimbursementRequestsController {
         allowedRefundSources,
         req.organization
       );
-      return res.status(200).json(accountCodeUpdated);
+       res.status(200).json(accountCodeUpdated);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -400,9 +400,9 @@ export default class ReimbursementRequestsController {
         req.currentUser,
         req.organization
       );
-      return res.status(200).json(deletedAccountCode);
+       res.status(200).json(deletedAccountCode);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -412,9 +412,9 @@ export default class ReimbursementRequestsController {
       const { name } = req.body;
 
       const editedVendor = await ReimbursementRequestService.editVendor(name, vendorId, req.currentUser, req.organization);
-      return res.status(200).json(editedVendor);
+       res.status(200).json(editedVendor);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -423,9 +423,9 @@ export default class ReimbursementRequestsController {
       const { vendorId } = req.params;
 
       const deletedVendor = await ReimbursementRequestService.deleteVendor(vendorId, req.currentUser, req.organization);
-      return res.status(200).json(deletedVendor);
+       res.status(200).json(deletedVendor);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 

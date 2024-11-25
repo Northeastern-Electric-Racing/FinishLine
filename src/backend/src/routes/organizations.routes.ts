@@ -1,6 +1,6 @@
 import express from 'express';
 import { linkValidators, validateInputs } from '../utils/validation.utils';
-import OrganizationsController from '../controllers/organizations.controller';
+import OrganizationsController from '../controllers/organizations.controllers';
 import multer, { memoryStorage } from 'multer';
 
 const organizationRouter = express.Router();

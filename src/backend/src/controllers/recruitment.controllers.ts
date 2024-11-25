@@ -22,9 +22,9 @@ export default class RecruitmentController {
         dateOfEvent,
         req.organization
       );
-      return res.status(200).json(milestone);
+       res.status(200).json(milestone);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -41,9 +41,9 @@ export default class RecruitmentController {
         milestoneId,
         req.organization
       );
-      return res.status(200).json(milestone);
+       res.status(200).json(milestone);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -53,7 +53,7 @@ export default class RecruitmentController {
       await RecruitmentServices.deleteMilestone(req.currentUser, milestoneId, req.organization);
       res.status(200).json({ message: `Successfully deleted milestone with id ${milestoneId}` });
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -93,7 +93,7 @@ export default class RecruitmentController {
       await RecruitmentServices.deleteFaq(req.currentUser, faqId, req.organization);
       res.status(200).json({ message: `Successfully deleted FAQ with id ${faqId}` });
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 }

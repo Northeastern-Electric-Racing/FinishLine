@@ -6,9 +6,9 @@ export default class CarsController {
     try {
       const cars = await CarsService.getAllCars(req.organization);
 
-      return res.status(200).json(cars);
+       res.status(200).json(cars);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 
@@ -17,9 +17,9 @@ export default class CarsController {
       const { name } = req.body;
       const car = await CarsService.createCar(req.organization, req.currentUser, name);
 
-      return res.status(201).json(car);
+       res.status(201).json(car);
     } catch (error: unknown) {
-      return next(error);
+       next(error);
     }
   }
 }
