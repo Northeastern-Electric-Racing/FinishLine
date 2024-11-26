@@ -5,7 +5,6 @@ import { useManyUserTasks } from '../../../hooks/users.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import TeamTaskCard from './TeamTaskCard';
-import { Box } from '@mui/material';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import { getOverdueTasks } from '../../../utils/task.utils';
@@ -14,23 +13,13 @@ interface MyTeamsOverdueTasksProps {
   user: AuthenticatedUser;
 }
 
-const NoOverdueTeamTaskDisplay: React.FC = () => {
+const NoOverdueTeamTaskDisplay = () => {
   return (
-    <Box
-      sx={{
-        height: `calc(50vh - 100px)`,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <EmptyPageBlockDisplay
-        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
-        heading={"You're team is all caught up!"}
-        message={"You're team has no overdue tasks!"}
-      />
-    </Box>
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
+      heading={"You're team is all caught up!"}
+      message={"You're team has no overdue tasks!"}
+    />
   );
 };
 
@@ -48,7 +37,7 @@ const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   const overdueTasks = getOverdueTasks(tasks);
 
   return (
-    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`} height={50}>
+    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`}>
       {overdueTasks.length === 0 ? (
         <NoOverdueTeamTaskDisplay />
       ) : (

@@ -9,7 +9,6 @@ import { AuthenticatedUser, ChangeRequest } from 'shared';
 import ChangeRequestDetailCard from '../../../components/ChangeRequestDetailCard';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { Box } from '@mui/material';
 
 interface UnreviewedChangeRequestsProps {
   user: AuthenticatedUser;
@@ -17,22 +16,11 @@ interface UnreviewedChangeRequestsProps {
 
 const NoUnreviewedChangeRequests: React.FC = () => {
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <EmptyPageBlockDisplay
-        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
-        heading={`You're all caught up!`}
-        message={'Uou have no unreviewed changre requests!'}
-      />
-    </Box>
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
+      heading={`You're all caught up!`}
+      message={'Uou have no unreviewed changre requests!'}
+    />
   );
 };
 
@@ -54,7 +42,7 @@ const UnreviewedChangeRequests: React.FC<UnreviewedChangeRequestsProps> = ({ use
       {crsToReview.length === 0 ? (
         <NoUnreviewedChangeRequests />
       ) : (
-        crsToReview.map((cr: ChangeRequest) => <ChangeRequestDetailCard changeRequest={cr}></ChangeRequestDetailCard>)
+        crsToReview.map((cr: ChangeRequest) => <ChangeRequestDetailCard changeRequest={cr} />)
       )}
     </ScrollablePageBlock>
   );

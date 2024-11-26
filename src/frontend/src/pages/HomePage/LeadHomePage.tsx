@@ -3,11 +3,11 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Grid, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import PageLayout from '../../components/PageLayout';
+import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import UnreviewedChangeRequests from './components/UnreviewedChangeRequests';
 import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
@@ -28,13 +28,11 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
         Welcome, {user.firstName}!
       </Typography>
       <UnreviewedChangeRequests user={user} />
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid container>
-          <Grid item xs={12} md={6}>
-            <MyTeamsOverdueTasks user={user} />
-          </Grid>
+      <Grid container>
+        <Grid item xs={12} md={6} height={`calc(${PAGE_GRID_HEIGHT}vh - 280px)`}>
+          <MyTeamsOverdueTasks user={user} />
         </Grid>
-      </Box>
+      </Grid>
     </PageLayout>
   );
 };
