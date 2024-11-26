@@ -1,33 +1,33 @@
 import { Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
 
 interface ScrollablePageBlockProps {
   children: React.ReactNode;
   title?: String;
   horizontal?: boolean;
+  height?: number;
 }
 
-const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title, horizontal }) => {
+const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, title, horizontal, height }) => {
   const theme = useTheme();
   return (
     <Card
       sx={{
-        height: horizontal ? 'auto' : '100%',
+        height: horizontal ? 'auto' : `${height}vh`,
         my: 2,
         background: theme.palette.background.paper
       }}
       variant="outlined"
     >
       {title && (
-        <Typography ml={2} mt={2} variant="h4">
+        <Typography ml={2} mt={2} variant="h5">
           {title}
         </Typography>
       )}
       <CardContent
         sx={{
           marginTop: 1,
-          maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 100px)`,
+          maxHeight: height && `${height}vh`,
           flexWrap: 'nowrap',
           overflow: 'auto',
           justifyContent: 'flex-start',

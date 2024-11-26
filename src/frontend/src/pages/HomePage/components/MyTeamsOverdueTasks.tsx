@@ -18,7 +18,7 @@ const NoOverdueTeamTaskDisplay: React.FC = () => {
   return (
     <Box
       sx={{
-        height: `calc(100vh - 300px)`,
+        height: `calc(50vh - 100px)`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -48,7 +48,7 @@ const MyTeamsOverdueTasks: React.FC<MyTeamsOverdueTasksProps> = ({ user }) => {
   const overdueTasks = getOverdueTasks(tasks);
 
   return (
-    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`}>
+    <ScrollablePageBlock title={`My Team's Overdue Tasks (${overdueTasks.length})`} height={50}>
       {overdueTasks.length === 0 ? (
         <NoOverdueTeamTaskDisplay />
       ) : (

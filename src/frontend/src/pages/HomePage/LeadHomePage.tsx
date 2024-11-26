@@ -7,7 +7,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
-import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
+import PageLayout from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import UnreviewedChangeRequests from './components/UnreviewedChangeRequests';
 import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
@@ -29,7 +29,7 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
       </Typography>
       <UnreviewedChangeRequests user={user} />
       <Box sx={{ flexGrow: 1 }}>
-        <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
+        <Grid container>
           <Grid item xs={12} md={6}>
             <MyTeamsOverdueTasks user={user} />
           </Grid>
