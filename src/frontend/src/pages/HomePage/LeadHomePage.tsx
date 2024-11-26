@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Grid, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -26,13 +26,11 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
-          <Grid item xs={12} md={6}>
-            <MyTeamsOverdueTasks user={user} />
-          </Grid>
+      <Grid container>
+        <Grid item xs={12} md={6} height={`calc(${PAGE_GRID_HEIGHT}vh)`}>
+          <MyTeamsOverdueTasks user={user} />
         </Grid>
-      </Box>
+      </Grid>
     </PageLayout>
   );
 };
