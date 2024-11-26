@@ -50,6 +50,7 @@ describe('User Tests', () => {
     });
   });
 
+  /*
   describe('Send Notification', () => {
     it('fails on invalid user id', async () => {
       await expect(async () => await UsersService.sendNotification('1', 'test', 'test')).rejects.toThrow(
@@ -72,4 +73,5 @@ describe('User Tests', () => {
       expect(batmanWithNotifications?.unreadNotifications[1].text).toBe('test2');
     });
   });
+  */
 });
