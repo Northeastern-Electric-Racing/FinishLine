@@ -5,22 +5,46 @@ import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { CalendarTodayOutlined } from '@mui/icons-material';
 import { LocationOnOutlined } from '@mui/icons-material';
+import { useHistory } from 'react-router-dom';
+import { NERButton } from '../../../components/NERButton';
 
 interface DesignReviewProps {
   designReview: DesignReview;
 }
 
-/*
-  Questions:
-  is there a better way to choose a day as a string?
-  is there a better way to remove the year from a date?
-  what does the list of times mean? I just chose the first time and hard coded it to be a pm. idk if this was right
-  how do i make the button to confirm your avalibilty?
-*/
+const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview }) => {
+  const history = useHistory();
+  return (
+    <>
+      {!designReview.status ? (
+        <NERButton
+          variant="contained"
+          size="small"
+          sx={{ color: 'white' }}
+          onClick={() => {
+            {
+              history.push(`${routes.CALENDAR}/${designReview.designReviewId}`);
+            }
+          }}
+          component={RouterLink}
+        >
+          Confirm Availibility
+        </NERButton>
+      ) : (
+        <Typography mr={1}>{designReview.status}</Typography>
+      )}
+    </>
+  );
+};
 
 function getWeekday(date: Date): string {
   const weekdays: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return weekdays[date.getDay()];
+}
+
+function getTime(list: number[]): string {
+  const weekdays: string[] = ['10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm'];
+  return weekdays[list[0] - 1];
 }
 
 function removeYear(str: string): string {
@@ -57,8 +81,7 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview }
                   ', ' +
                   removeYear(datePipe(designReview.dateScheduled)) +
                   ' @ ' +
-                  designReview.meetingTimes[0] +
-                  'pm'}
+                  getTime(designReview.meetingTimes)}
               </Typography>
             </Stack>
             <Stack direction="row" spacing={1}>
@@ -68,7 +91,7 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview }
               </Typography>
             </Stack>
           </Box>
-          <Typography mr={1}>{designReview.status}</Typography>
+          <DisplayStatus designReview={designReview}></DisplayStatus>
         </Stack>
       </CardContent>
     </Card>
