@@ -1,4 +1,4 @@
-import { Card, Icon, Typography, useTheme } from '@mui/material';
+import { Box, Card, Icon, Typography, useTheme } from '@mui/material';
 import { Grid } from '@mui/material';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import React from 'react';
@@ -6,7 +6,6 @@ import { NERButton } from '../../../components/NERButton';
 import { useAllLinkTypes, useAllUsefulLinks } from '../../../hooks/projects.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
-import { Stack } from '@mui/system';
 
 interface GuestOrganizationInfoButtonProps {
   href?: string;
@@ -50,26 +49,29 @@ const GuestOrganizationInfo = () => {
         padding: 2,
         bgcolor: theme.palette.background.paper,
         borderRadius: '1',
-        marginTop: 5
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
       }}
       variant="outlined"
     >
-      <Stack spacing={2}>
+      <Box>
         <Typography sx={{ paddingLeft: 2 }} variant="h4">
           {organization.name}
         </Typography>
-        <Typography sx={{ marginBottom: 2, fontSize: 18, paddingLeft: 2 }}>{organization.description}</Typography>
-        <Grid container spacing={2}>
-          {usefulLinks.map((link) => (
-            <NERGuestButton
-              key={link.linkId}
-              buttonText={link.linkType.name}
-              href={link.url}
-              iconName={link.linkType.iconName}
-            />
-          ))}
-        </Grid>
-      </Stack>
+        <Typography sx={{ mt: 2, fontSize: 18, paddingLeft: 2 }}>{organization.description}</Typography>
+      </Box>
+      <Grid container spacing={2}>
+        {usefulLinks.map((link) => (
+          <NERGuestButton
+            key={link.linkId}
+            buttonText={link.linkType.name}
+            href={link.url}
+            iconName={link.linkType.iconName}
+          />
+        ))}
+      </Grid>
     </Card>
   );
 };
