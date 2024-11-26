@@ -28,7 +28,7 @@ export const useCreateTask = (wbsNum: WbsNumber) => {
         createTaskPayload.status,
         createTaskPayload.assignees,
         createTaskPayload.notes,
-        createTaskPayload.deadline,
+        createTaskPayload.deadline
       );
       return data;
     },

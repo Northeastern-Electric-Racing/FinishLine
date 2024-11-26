@@ -94,8 +94,8 @@ export default class TasksService {
     if (!isUnderWordCount(title, 15)) throw new HttpException(400, 'Title must be less than 15 words');
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
-    if (status == 'IN_PROGRESS' && (!deadline || assignees.length == 0)) {
-      throw new AccessDeniedException('Tasks in progress must have a dealine and assignees');
+    if (status === 'IN_PROGRESS' && (!deadline || assignees.length === 0)) {
+      throw new HttpException(400,'Tasks in progress must have a dealine and assignees');
     }
 
     const createdTask = await prisma.task.create({
@@ -151,10 +151,6 @@ export default class TasksService {
 
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
-    if (originalTask.status == 'IN_PROGRESS' && !deadline) {
-      throw new AccessDeniedException('A task in progress must have a deadline!');
-    }
-
     const updatedTask = await prisma.task.update({
       where: { taskId },
       data: { title, notes, priority, deadline },
@@ -173,12 +169,12 @@ export default class TasksService {
    */
   static async editTaskStatus(user: User, taskId: string, status: Task_Status) {
     // Get the original task and check if it exists
-    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { wbsElement: true } });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: {assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 
-    if (status == 'IN_PROGRESS' && !originalTask.deadline) {
-      throw new AccessDeniedException('Must have a deadline!');
+    if (status === 'IN_PROGRESS' && (!originalTask.deadline || originalTask.assignees.length === 0)) {
+      throw new HttpException(400, 'A task in progress must have a deadline and assignees!');
     }
 
     const hasPermission = await hasPermissionToEditTask(user, taskId);

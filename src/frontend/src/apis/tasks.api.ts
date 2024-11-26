@@ -25,7 +25,7 @@ export const createSingleTask = (
   status: TaskStatus,
   assignees: string[],
   notes: string,
-  deadline?: string,
+  deadline?: string
 ) => {
   return axios.post<Task>(
     apiUrls.tasksCreate(wbsPipe(wbsNum)),

@@ -69,7 +69,7 @@ const TaskListTabPanel = (props: TaskListTabPanelProps) => {
 
   const moveToInProgress = (id: string, assignees: string, deadline?: Date) => async () => {
     try {
-      if (!deadline || assignees.length == 0) {
+      if (!deadline || assignees.length === 0) {
         toast.error('A task must have a deadline and assignees to be in progress!');
         return;
       }
