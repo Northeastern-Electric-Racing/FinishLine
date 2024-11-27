@@ -21,7 +21,7 @@ import {
 } from 'shared';
 import { projectWbsPipe } from './pipes';
 import dayjs from 'dayjs';
-import { deepOrange, green, grey, indigo, lightBlue, orange, pink } from '@mui/material/colors';
+import { deepOrange, green, grey, indigo, orange, pink } from '@mui/material/colors';
 import { projectPreviewTranformer } from '../apis/transformers/projects.transformers';
 
 export const NO_TEAM = 'No Team';
@@ -360,7 +360,7 @@ export const transformWorkPackageToGanttTask = (
     allWorkPackages,
     blocking: workPackage.blocking,
     styles: {
-      color: GanttWorkPackageTextColorPipe(workPackage.stage),
+      color: '#ffffff',
       backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
     },
     onClick: () => {
@@ -450,7 +450,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       case WorkPackageStage.Install:
         return pink[500];
       case WorkPackageStage.Testing:
-        return lightBlue[600];
+        return '#44a0b1';
       default:
         return grey[500];
     }
@@ -465,7 +465,7 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       case WorkPackageStage.Install:
         return pink[300];
       case WorkPackageStage.Testing:
-        return lightBlue[300];
+        return '#55c7dd';
       default:
         return grey[500];
     }
@@ -480,18 +480,10 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
       case WorkPackageStage.Install:
         return pink[800];
       case WorkPackageStage.Testing:
-        return lightBlue[800];
+        return '#2d6b77';
       default:
         return grey[500];
     }
-  }
-};
-
-// maps stage to the desired text color
-export const GanttWorkPackageTextColorPipe: (stage: WorkPackageStage | undefined) => string = (stage) => {
-  switch (stage) {
-    default:
-      return '#ffffff';
   }
 };
 

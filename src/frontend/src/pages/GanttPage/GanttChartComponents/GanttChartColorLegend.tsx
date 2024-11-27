@@ -5,11 +5,7 @@
 
 import { Box, Card, Tooltip, Typography } from '@mui/material';
 import { DesignReviewStatus, WbsElementStatus, WorkPackageStage } from 'shared';
-import {
-  GanttDesignReviewStatusColorPipe,
-  GanttWorkPackageStageColorPipe,
-  GanttWorkPackageTextColorPipe
-} from '../../../utils/gantt.utils';
+import { GanttDesignReviewStatusColorPipe, GanttWorkPackageStageColorPipe } from '../../../utils/gantt.utils';
 import { DesignReviewStatusTextPipe, WbsElementStatusTextPipe, WorkPackageStageTextPipe } from '../../../utils/enum-pipes';
 
 const LEGEND_POPUPS_MAP = new Map<WorkPackageStage, JSX.Element>();
@@ -41,7 +37,7 @@ Object.values(WorkPackageStage).map((stage) =>
                 alignItems: 'center'
               }}
             >
-              <Typography variant="body1" sx={{ color: GanttWorkPackageTextColorPipe(stage) }}>
+              <Typography variant="body1" sx={{ color: '#ffffff' }}>
                 {WbsElementStatusTextPipe(status)}
               </Typography>
             </Box>
@@ -133,10 +129,7 @@ const GanttChartColorLegend = () => {
                   tooltip: { sx: { background: 'transparent', width: 'fit-content' } }
                 }}
               >
-                <Typography
-                  variant="body2"
-                  sx={{ color: GanttWorkPackageTextColorPipe(stage), overflow: 'hidden', textWrap: 'nowrap' }}
-                >
+                <Typography variant="body2" sx={{ color: '#ffffff', overflow: 'hidden', textWrap: 'nowrap' }}>
                   {WorkPackageStageTextPipe(stage)}
                 </Typography>
               </Tooltip>
