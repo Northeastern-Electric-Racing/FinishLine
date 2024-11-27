@@ -24,13 +24,14 @@ export const sendNotificationToUsers = async (userIds: string[], text: string, i
     data: {
       text,
       iconName
-    }
+    },
+    ...getNotificationQueryArgs(organizationId)
   });
 
   const notificationPromises = userIds.map(async (userId) => {
     return sendNotificationToUser(userId, createdNotification.notificationId, organizationId);
   });
 
-  const resolvedNotifications = await Promise.all(notificationPromises);
-  return resolvedNotifications.flat();
+  await Promise.all(notificationPromises);
+  return notificationTransformer(createdNotification);
 };
