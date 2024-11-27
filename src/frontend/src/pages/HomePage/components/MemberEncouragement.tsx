@@ -23,7 +23,15 @@ const MemberEncouragement: React.FC = () => {
           }
         }}
       >
-        <Grid container alignItems="center" justifyContent="space-between">
+        <Grid
+          container
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            direction: 'row',
+            flexWrap: 'nowrap'
+          }}
+        >
           <Grid item>
             <Typography variant="h6" color="white">
               Already a member?
@@ -36,7 +44,7 @@ const MemberEncouragement: React.FC = () => {
             <NERButton
               variant="contained"
               size="small"
-              sx={{ color: 'white' }}
+              sx={{ color: 'white', whiteSpace: 'nowrap' }}
               onClick={() => {
                 history.push(routes.TEAMS);
               }}
