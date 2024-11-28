@@ -360,7 +360,7 @@ export const transformWorkPackageToGanttTask = (
     allWorkPackages,
     blocking: workPackage.blocking,
     styles: {
-      color: '#ffffff',
+      color: GanttWorkPackageTextColor,
       backgroundColor: GanttWorkPackageStageColorPipe(workPackage.stage, workPackage.status)
     },
     onClick: () => {
@@ -486,6 +486,8 @@ export const GanttWorkPackageStageColorPipe: (stage: WorkPackageStage | undefine
     }
   }
 };
+
+export const GanttWorkPackageTextColor: string = '#ffffff';
 
 /**
  * Determines if the highlighted change is on the wbs elements project.
