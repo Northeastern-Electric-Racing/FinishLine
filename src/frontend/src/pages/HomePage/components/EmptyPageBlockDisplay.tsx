@@ -1,4 +1,4 @@
-import { Stack, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React from 'react';
 
 interface EmptyPageBlockDisplayProps {
@@ -9,11 +9,20 @@ interface EmptyPageBlockDisplayProps {
 
 const EmptyPageBlockDisplay: React.FC<EmptyPageBlockDisplayProps> = ({ icon, heading, message }) => {
   return (
-    <Stack direction="column" spacing={1} alignItems="center" justifyContent="center">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%'
+      }}
+    >
       {icon}
       <Typography variant="h4">{heading}</Typography>
       <Typography variant="subtitle1">{message}</Typography>
-    </Stack>
+    </Box>
   );
 };
 
