@@ -1,6 +1,6 @@
-import { DesignReview, DesignReviewStatus, TeamType, isAdmin } from 'shared';
+import { DesignReview, DesignReviewStatus, TeamType, isAdmin, wbsPipe } from 'shared';
 import NERModal from '../../components/NERModal';
-import { Box, Chip, IconButton, Typography } from '@mui/material';
+import { Box, Chip, IconButton, Link, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import DesignReviewSummaryModalDetails from './SummaryComponents/DesignReviewSummaryModalDetails';
@@ -112,9 +112,15 @@ const DRCSummaryModal: React.FC<DRCSummaryModalProps> = ({
 
         <Box>
           <Box display={'flex'} alignItems={'center'}>
-            <Typography flexGrow={1} variant="h4">
-              {`${designReview.wbsName}`}
-            </Typography>
+            <Link
+              component={RouterLink}
+              to={`${routes.PROJECTS}/${wbsPipe(designReview.wbsNum)}/overview`}
+              sx={{ display: 'flex', flexGrow: 1 }}
+            >
+              <Typography flexGrow={1} variant="h4">
+                {`${designReview.wbsName}`}
+              </Typography>
+            </Link>
             <Chip
               size="small"
               label={designReviewStatusPipe(markedStatus)}
