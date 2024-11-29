@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import { AuthenticatedUser, WbsElementStatus } from 'shared';
+import { AuthenticatedUser, WbsElementStatus, WorkPackage } from 'shared';
 import { useAllTeams } from '../../../hooks/teams.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
@@ -43,12 +43,21 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
   const myTeams = teams.filter((team) => isUserOnTeam(team, user));
 
   const workPackages = myTeams
+    //convert list of teams into list of work packages in projects in those teams
     .map((team) => {
       return team.projects.map((project) => {
         return project.workPackages.filter((wp) => wp.status === WbsElementStatus.Active);
       });
     })
-    .flat(2);
+    //flatten into 1 dimensional list of work packages
+    .flat(2)
+    //remove duplicate work packages
+    .reduce((acc: WorkPackage[], wp: WorkPackage) => {
+      if (acc.filter((addedWp) => addedWp.id === wp.id).length === 0) {
+        acc.push(wp);
+      }
+      return acc;
+    }, []);
 
   return (
     <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.length})`}>
