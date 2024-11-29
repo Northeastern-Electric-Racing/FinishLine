@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useCurrentUser, useUserTasks } from '../../../hooks/users.hooks';
 import TaskDetailCard from './TaskDetailCard';
@@ -9,21 +9,11 @@ import ScrollablePageBlock from './ScrollablePageBlock';
 
 const NoTasksDisplay: React.FC = () => {
   return (
-    <Box
-      sx={{
-        height: `calc(100vh - 200px)`,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <EmptyPageBlockDisplay
-        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
-        heading={"You're all caught up!"}
-        message={"You've completed all of your assigned tasks!"}
-      />
-    </Box>
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
+      heading={"You're all caught up!"}
+      message={"You've completed all of your assigned tasks!"}
+    />
   );
 };
 
@@ -39,6 +29,7 @@ const MyTasks: React.FC = () => {
 
   if (userTasksIsLoading || !userTasks) return <LoadingIndicator />;
   if (userTasksIsError) return <ErrorPage message={userTasksError.message} />;
+
   return (
     <ScrollablePageBlock title={`My Tasks (${userTasks.length})`}>
       {userTasks.length === 0 ? (

@@ -85,6 +85,10 @@ export interface RefundPayload {
   dateReceived: string;
 }
 
+export interface MarkDeliveredRequestPayload {
+  dateDelivered: Date;
+}
+
 /**
  * Custom React Hook to upload a new picture.
  */
@@ -232,10 +236,10 @@ export const useAllReimbursements = () => {
  */
 export const useMarkReimbursementRequestAsDelivered = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementRequest, Error>(
+  return useMutation<ReimbursementRequest, Error, MarkDeliveredRequestPayload>(
     ['reimbursement-requests', 'edit'],
-    async () => {
-      const { data } = await markReimbursementRequestAsDelivered(id);
+    async (markDeliveredData: MarkDeliveredRequestPayload) => {
+      const { data } = await markReimbursementRequestAsDelivered(id, markDeliveredData);
       return data;
     },
     {
