@@ -1,4 +1,4 @@
-import { WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
+import { addWeeksToDate, WbsElement, WbsElementStatus, wbsPipe, WorkPackage } from 'shared';
 import { WPFormType } from './form';
 
 export const getTitleFromFormType = (formType: WPFormType, wbsElement: WbsElement): string => {
@@ -30,7 +30,7 @@ export const getUpcomingWorkPackages = (wpList: WorkPackage[]): WorkPackage[] =>
   return wpList.filter(
     (wp) =>
       wp.status !== WbsElementStatus.Complete &&
-      new Date(wp.startDate) <= new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000) &&
+      new Date(wp.startDate) <= addWeeksToDate(new Date(), 2) &&
       new Date(wp.startDate) >= new Date()
   );
 };

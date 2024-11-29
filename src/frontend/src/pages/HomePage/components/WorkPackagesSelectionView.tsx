@@ -27,7 +27,7 @@ const NoWorkPackages: React.FC = () => {
     >
       <EmptyPageBlockDisplay
         icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
-        heading={`You're all caught up!`}
+        heading={`You're all set!`}
         message={'You have no pending work packages of this type!'}
       />
     </Box>
@@ -65,14 +65,6 @@ const WorkPackagesSelectionView: React.FC = () => {
   }
 
   const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
-
-  const handleChange = (event: number) => {
-    setCurrentDisplayedWPs(event);
-  };
-
-  const getWorkPackages = (key: number): WorkPackage[] => {
-    return workPackages[key][1];
-  };
 
   const workPackagesDisplay = (workPackages: WorkPackage[]) => (
     <Box
@@ -113,13 +105,13 @@ const WorkPackagesSelectionView: React.FC = () => {
     </Box>
   );
 
-  const currentWps = getWorkPackages(currentDisplayedWPs);
+  const [, currentWps] = workPackages[currentDisplayedWPs]; //getWorkPackages(currentDisplayedWPs);
 
   return (
     <PageBlock>
       <WorkPackageSelect
         options={workPackages.map((wp) => wp[0])}
-        onSelect={handleChange}
+        onSelect={setCurrentDisplayedWPs}
         firstSelected={currentDisplayedWPs}
       />
       {currentWps.length === 0 ? <NoWorkPackages /> : workPackagesDisplay(currentWps)}
