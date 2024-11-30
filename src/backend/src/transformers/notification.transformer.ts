@@ -4,6 +4,7 @@ import { Notification } from 'shared';
 
 const notificationTransformer = (notification: Prisma.NotificationGetPayload<NotificationQueryArgs>): Notification => {
   return {
+    notificationId: notification.notificationId,
     text: notification.text,
     iconName: notification.iconName
   };

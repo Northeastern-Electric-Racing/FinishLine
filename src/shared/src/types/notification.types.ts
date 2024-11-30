@@ -1,4 +1,5 @@
 export interface Notification {
-  text: String;
-  iconName: String;
+  notificationId: string;
+  text: string;
+  iconName: string;
 }
