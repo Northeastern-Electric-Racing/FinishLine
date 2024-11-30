@@ -9,6 +9,7 @@ interface NotificationCardProps {
 
 const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => {
   const theme = useTheme();
+
   return (
     <Box
       sx={{

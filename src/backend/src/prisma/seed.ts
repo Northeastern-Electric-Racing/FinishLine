@@ -33,6 +33,7 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import { sendNotificationToUsers } from '../utils/homepage-notifications.utils';
 
 const prisma = new PrismaClient();
 
@@ -1894,8 +1895,8 @@ const performSeed: () => Promise<void> = async () => {
 
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
 
-  await UsersService.sendNotification(thomasEmrax.userId, 'testing notifications', 'star');
-  await UsersService.sendNotification(thomasEmrax.userId, 'testing notifications #2', 'star');
+  await sendNotificationToUsers([thomasEmrax.userId], 'test', 'star', ner.organizationId);
+  await sendNotificationToUsers([thomasEmrax.userId], 'test2', 'star', ner.organizationId);
 };
 
 performSeed()
