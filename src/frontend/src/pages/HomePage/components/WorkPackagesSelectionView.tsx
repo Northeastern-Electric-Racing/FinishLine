@@ -1,12 +1,11 @@
-import { RoleEnum, wbsPipe, WorkPackage } from 'shared';
-import { Box, Grid, useTheme } from '@mui/material';
+import { WorkPackage } from 'shared';
+import { Box, Card, CardContent, useTheme } from '@mui/material';
 import {
   getInProgressWorkPackages,
   getOverdueWorkPackages,
   getUpcomingWorkPackages
 } from '../../../utils/work-package.utils';
 import { useCurrentUser } from '../../../hooks/users.hooks';
-import PageBlock from '../../../layouts/PageBlock';
 import WorkPackageCard from './WorkPackageCard';
 import WorkPackageSelect from './WorkPackageSelect';
 import React, { useState } from 'react';
@@ -15,22 +14,11 @@ import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutli
 
 const NoWorkPackages: React.FC = () => {
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: '40vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <EmptyPageBlockDisplay
-        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
-        heading={`You're all set!`}
-        message={'You have no pending work packages of this type!'}
-      />
-    </Box>
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
+      heading={`You're all set!`}
+      message={'You have no pending work packages of this type!'}
+    />
   );
 };
 
@@ -66,56 +54,81 @@ const WorkPackagesSelectionView: React.FC = () => {
 
   const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
 
-  const workPackagesDisplay = (workPackages: WorkPackage[]) => (
+  const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        flexWrap: 'nowrap',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        justifyContent: 'flex-start',
-        height: '40vh',
-        gap: 2,
-        '&::-webkit-scrollbar': {
-          width: '20px'
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: theme.palette.primary.main,
-          borderRadius: '20px',
-          border: '6px solid transparent',
-          backgroundClip: 'content-box'
-        },
-        scrollbarWidth: 'auto',
-        scrollbarColor: `${theme.palette.primary.main} transparent`
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        overflow: 'auto',
+        width: '100%',
+        gap: 2
       }}
     >
-      <Grid container rowSpacing={2} columnSpacing={2}>
-        {workPackages.map((wp) => (
-          <Grid item sm={12} md={user.role === RoleEnum.ADMIN || user.role === RoleEnum.APP_ADMIN ? 6 : 12}>
-            <Box sx={{ width: '100%', height: 'auto', overflow: 'hidden' }} key={wbsPipe(wp.wbsNum)}>
-              <WorkPackageCard wp={wp} />
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
+      {workPackages.map((wp) => (
+        <Box
+          sx={{
+            maxWidth: 'fit-content'
+          }}
+        >
+          <WorkPackageCard wp={wp} />
+        </Box>
+      ))}
     </Box>
   );
 
   const [, currentWps] = workPackages[currentDisplayedWPs]; //getWorkPackages(currentDisplayedWPs);
 
   return (
-    <PageBlock>
-      <WorkPackageSelect
-        options={workPackages.map((wp) => wp[0])}
-        onSelect={setCurrentDisplayedWPs}
-        firstSelected={currentDisplayedWPs}
-      />
-      {currentWps.length === 0 ? <NoWorkPackages /> : workPackagesDisplay(currentWps)}
-    </PageBlock>
+    <Card
+      sx={{
+        height: '100%',
+        background: theme.palette.background.paper
+      }}
+      variant="outlined"
+    >
+      <CardContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          flexWrap: 'nowrap'
+        }}
+      >
+        <WorkPackageSelect
+          options={workPackages.map((wp) => wp[0])}
+          onSelect={setCurrentDisplayedWPs}
+          firstSelected={currentDisplayedWPs}
+        />
+        <Box
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            gap: 2,
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            },
+            scrollbarWidth: 'auto',
+            scrollbarColor: `${theme.palette.primary.main} transparent`
+          }}
+        >
+          <Box sx={{ flex: 1 }}>{currentWps.length === 0 ? <NoWorkPackages /> : WorkPackagesDisplay(currentWps)}</Box>
+        </Box>
+      </CardContent>
+    </Card>
   );
 };
 

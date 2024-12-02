@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Typography, Box, Grid } from '@mui/material';
+import { Typography, Grid } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -26,13 +26,11 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
-          <Grid item xs={12} md={8}>
-            <WorkPackagesSelectionView />
-          </Grid>
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}>
+        <Grid item xs={10} md={7} height="70%">
+          <WorkPackagesSelectionView />
         </Grid>
-      </Box>
+      </Grid>
     </PageLayout>
   );
 };
