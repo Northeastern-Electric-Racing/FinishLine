@@ -1,6 +1,4 @@
 import WorkPackageCard from './WorkPackageCard';
-import { wbsPipe } from '../../../utils/pipes';
-import Box from '@mui/material/Box';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
@@ -16,21 +14,11 @@ interface TeamWorkPackageDisplayProps {
 
 const NoTeamWorkPackagesDisplay: React.FC = () => {
   return (
-    <Box
-      sx={{
-        height: `calc(100vh - 200px)`,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <EmptyPageBlockDisplay
-        icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
-        heading={'No Active Work Packages'}
-        message={'There are no active work packages assigned to your team!'}
-      />
-    </Box>
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
+      heading={'No Active Work Packages'}
+      message={'There are no active work packages assigned to your team!'}
+    />
   );
 };
 
@@ -61,15 +49,7 @@ const TeamWorkPackageDisplay: React.FC<TeamWorkPackageDisplayProps> = ({ user })
 
   return (
     <ScrollablePageBlock title={`My Team's Work Packages (${workPackages.length})`}>
-      {workPackages.length === 0 ? (
-        <NoTeamWorkPackagesDisplay />
-      ) : (
-        workPackages.map((wp) => (
-          <Box key={wbsPipe(wp.wbsNum)} sx={{ mb: 1 }}>
-            <WorkPackageCard wp={wp} />
-          </Box>
-        ))
-      )}
+      {workPackages.length === 0 ? <NoTeamWorkPackagesDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
     </ScrollablePageBlock>
   );
 };
