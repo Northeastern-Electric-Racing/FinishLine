@@ -9,7 +9,6 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
-import UnreviewedChangeRequests from './components/UnreviewedChangeRequests';
 import MyTeamsOverdueTasks from './components/MyTeamsOverdueTasks';
 
 interface LeadHomePageProps {
@@ -27,9 +26,8 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <UnreviewedChangeRequests user={user} />
-      <Grid container>
-        <Grid item xs={12} md={6} height={`calc(${PAGE_GRID_HEIGHT}vh - 280px)`}>
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}>
+        <Grid item xs={12} md={6} height={`100%`}>
           <MyTeamsOverdueTasks user={user} />
         </Grid>
       </Grid>
