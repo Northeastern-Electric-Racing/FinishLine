@@ -29,7 +29,7 @@ const options: cors.CorsOptions = {
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'https://finishlinebyner.com',
-    'https://qa.finishlinebyner.com'
+    'https://qa.finishlinebyner.com',
   ],
   methods: 'GET, POST, DELETE',
   credentials: true,

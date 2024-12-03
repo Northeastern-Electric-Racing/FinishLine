@@ -9,12 +9,15 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import { downloadGoogleImage } from '../../apis/finance.api';
 import { downloadImageFile } from '../../../../backend/src/utils/google-integration.utils';
+import { imageDownloadUrl, imageFileUrl, imagePreviewUrl } from '../../utils/reimbursement-request.utils';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
 
 const GuestHomePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
   const { setOnGuestHomePage, setOnPNMHomePage } = useHomePageContext();
-  const { data: organization } = useCurrentOrganization();
+  const { data: organization, isError, error, isLoading } = useCurrentOrganization();
 
   const [applyInterestImage, setApplyInterestImage] = useState('');
   const [exploreAsGuestImage, setExploreAsGuestImage] = useState('');
@@ -22,19 +25,12 @@ const GuestHomePage = () => {
   useEffect(() => {
     setOnGuestHomePage(true);
     setOnPNMHomePage(false);
-
-    const fetchImages = async () => {
-      const applyBlob = await downloadImageFile(organization?.applyInterestImageId ?? '');
-      const exploreBlob = await downloadImageFile(organization?.exploreAsGuestImageId ?? '');
-      const applyImage = URL.createObjectURL(applyBlob);
-      const exploreImage = URL.createObjectURL(exploreBlob);
-      setApplyInterestImage(applyImage);
-      setExploreAsGuestImage(exploreImage);
-    };
-
-    fetchImages();
   }, [setOnGuestHomePage, setOnPNMHomePage, organization]);
 
+  if (!organization || isLoading) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error?.message} />;
+
+  console.log(imagePreviewUrl(organization!.applyInterestImageId))
   return (
     <PageLayout title="Home" hidePageTitle>
       <Typography variant="h3" textAlign="center" sx={{ mt: 2, pt: 3 }}>
@@ -53,7 +49,7 @@ const GuestHomePage = () => {
         <Box sx={{ display: 'flex', gap: 5 }}>
           <ImageWithButton
             title="Interested in applying"
-            imageSrc={applyInterestImage}
+            imageSrc={`https://drive.google.com/thumbnail?id=${organization?.applyInterestImageId}&sz=w1000`}
             buttonText="Learn More"
             onClick={() => history.push(routes.HOME_PNM)}
           />
