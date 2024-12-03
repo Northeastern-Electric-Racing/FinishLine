@@ -31,7 +31,7 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
         <Grid item xs={12} md={6} height={'100%'}>
           <MyTasks />
         </Grid>
-        <Grid item xs={12} md={6} height={'60%'}>
+        <Grid item xs={12} md={6} height={'100%'}>
           <TeamWorkPackageDisplay user={user} />
         </Grid>
       </Grid>

@@ -36,6 +36,7 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
             display: 'flex',
             flexDirection: horizontal ? 'row' : 'column',
             gap: 2,
+            height: '100%',
             overflowX: horizontal ? 'auto' : 'hidden',
             overflowY: horizontal ? 'hidden' : 'auto',
             '&::-webkit-scrollbar': {
@@ -52,9 +53,7 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
             }
           }}
         >
-          {React.Children.map(children, (child) => (
-            <Box sx={{ minHeight: 'fit-content' }}>{child}</Box>
-          ))}
+          {children}
         </Box>
       </CardContent>
     </Card>
