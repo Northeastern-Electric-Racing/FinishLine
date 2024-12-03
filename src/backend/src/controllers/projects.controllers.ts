@@ -8,9 +8,9 @@ export default class ProjectsController {
     try {
       const includeDeleted = req.params.deleted === 'true';
       const projects: Project[] = await ProjectsService.getAllProjects(req.organization, includeDeleted);
-       res.status(200).json(projects);
+      res.status(200).json(projects);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -20,9 +20,9 @@ export default class ProjectsController {
 
       const project: Project = await ProjectsService.getSingleProject(wbsNumber, req.organization);
 
-       res.status(200).json(project);
+      res.status(200).json(project);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -45,9 +45,9 @@ export default class ProjectsController {
         req.organization
       );
 
-       res.status(200).json(createdProject);
+      res.status(200).json(createdProject);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -68,9 +68,9 @@ export default class ProjectsController {
         req.organization
       );
 
-       res.status(200).json(editedProject);
+      res.status(200).json(editedProject);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -81,9 +81,9 @@ export default class ProjectsController {
 
       await ProjectsService.setProjectTeam(req.currentUser, wbsNumber, teamId, req.organization);
 
-       res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
+      res.status(200).json({ message: `Project ${wbsPipe(wbsNumber)}'s teams successfully updated.` });
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -91,9 +91,9 @@ export default class ProjectsController {
     try {
       const wbsNumber: WbsNumber = validateWBS(req.params.wbsNum);
       const deletedProject: Project = await ProjectsService.deleteProject(req.currentUser, wbsNumber, req.organization);
-       res.status(200).json(deletedProject);
+      res.status(200).json(deletedProject);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -103,18 +103,18 @@ export default class ProjectsController {
 
       const targetProject = await ProjectsService.toggleFavorite(wbsNum, req.currentUser, req.organization);
 
-       res.status(200).json(targetProject);
+      res.status(200).json(targetProject);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
   static async getAllLinkTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const linkTypes = await ProjectsService.getAllLinkTypes(req.organization);
-       res.status(200).json(linkTypes);
+      res.status(200).json(linkTypes);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -123,9 +123,9 @@ export default class ProjectsController {
       const { name, iconName, required } = req.body;
 
       const newLinkType = await ProjectsService.createLinkType(req.currentUser, name, iconName, required, req.organization);
-       res.status(200).json(newLinkType);
+      res.status(200).json(newLinkType);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -140,9 +140,9 @@ export default class ProjectsController {
         req.organization,
         pdmFileName
       );
-       res.status(200).json(createAssembly);
+      res.status(200).json(createAssembly);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -182,9 +182,9 @@ export default class ProjectsController {
         pdmFileName,
         unitName
       );
-       res.status(200).json(material);
+      res.status(200).json(material);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -192,9 +192,9 @@ export default class ProjectsController {
     try {
       const { name } = req.body;
       const createdManufacturer = await BillOfMaterialsService.createManufacturer(req.currentUser, name, req.organization);
-       res.status(200).json(createdManufacturer);
+      res.status(200).json(createdManufacturer);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -206,9 +206,9 @@ export default class ProjectsController {
         manufacturerName,
         req.organization
       );
-       res.status(200).json(deletedManufacturer);
+      res.status(200).json(deletedManufacturer);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -216,9 +216,9 @@ export default class ProjectsController {
     try {
       const { unitId } = req.params;
       const deletedUnit = await BillOfMaterialsService.deleteUnit(req.currentUser, unitId, req.organization);
-       res.status(200).json(deletedUnit);
+      res.status(200).json(deletedUnit);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -228,9 +228,9 @@ export default class ProjectsController {
         req.currentUser,
         req.organization
       );
-       res.status(200).json(manufacturers);
+      res.status(200).json(manufacturers);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -240,9 +240,9 @@ export default class ProjectsController {
         req.currentUser,
         req.organization
       );
-       res.status(200).json(materialTypes);
+      res.status(200).json(materialTypes);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -250,9 +250,9 @@ export default class ProjectsController {
     try {
       const { name } = req.body;
       const createdMaterialType = await BillOfMaterialsService.createMaterialType(name, req.currentUser, req.organization);
-       res.status(200).json(createdMaterialType);
+      res.status(200).json(createdMaterialType);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -266,9 +266,9 @@ export default class ProjectsController {
         req.organization,
         assemblyId
       );
-       res.status(200).json(updatedMaterial);
+      res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -276,9 +276,9 @@ export default class ProjectsController {
     try {
       const { assemblyId } = req.params;
       const deletedAssembly = await BillOfMaterialsService.deleteAssembly(assemblyId, req.currentUser, req.organization);
-       res.status(200).json(deletedAssembly);
+      res.status(200).json(deletedAssembly);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -290,9 +290,9 @@ export default class ProjectsController {
         materialTypeName,
         req.organization
       );
-       res.status(200).json(deletedMaterial);
+      res.status(200).json(deletedMaterial);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -300,9 +300,9 @@ export default class ProjectsController {
     try {
       const { materialId } = req.params;
       const updatedMaterial = await BillOfMaterialsService.deleteMaterial(req.currentUser, materialId, req.organization);
-       res.status(200).json(updatedMaterial);
+      res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -342,18 +342,18 @@ export default class ProjectsController {
         assemblyId,
         pdmFileName
       );
-       res.status(200).json(updatedMaterial);
+      res.status(200).json(updatedMaterial);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
   static async getAllUnits(req: Request, res: Response, next: NextFunction) {
     try {
       const units = await BillOfMaterialsService.getAllUnits(req.currentUser, req.organization);
-       res.status(200).json(units);
+      res.status(200).json(units);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -361,9 +361,9 @@ export default class ProjectsController {
     try {
       const { name } = req.body;
       const createdUnit = await BillOfMaterialsService.createUnit(name, req.currentUser, req.organization);
-       res.status(200).json(createdUnit);
+      res.status(200).json(createdUnit);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -378,9 +378,9 @@ export default class ProjectsController {
         name,
         pdmFileName
       );
-       res.status(200).json(updatedAssembly);
+      res.status(200).json(updatedAssembly);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -395,9 +395,9 @@ export default class ProjectsController {
         req.currentUser,
         req.organization
       );
-       res.status(200).json(linkTypeUpdated);
+      res.status(200).json(linkTypeUpdated);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 }

@@ -20,9 +20,9 @@ export default class TasksController {
         req.organization
       );
 
-       res.status(200).json(task);
+      res.status(200).json(task);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -33,9 +33,9 @@ export default class TasksController {
 
       const updateTask = await TasksService.editTask(req.currentUser, taskId, title, notes, priority, deadline);
 
-       res.status(200).json(updateTask);
+      res.status(200).json(updateTask);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -46,9 +46,9 @@ export default class TasksController {
 
       const updatedTask = await TasksService.editTaskStatus(req.currentUser, taskId, status);
 
-       res.status(200).json(updatedTask);
+      res.status(200).json(updatedTask);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -59,9 +59,9 @@ export default class TasksController {
 
       const updatedTask = await TasksService.editTaskAssignees(req.currentUser, taskId, assignees, req.organization);
 
-       res.status(200).json(updatedTask);
+      res.status(200).json(updatedTask);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -71,9 +71,9 @@ export default class TasksController {
 
       const updatedTask = await TasksService.deleteTask(req.currentUser, taskId, req.organization);
 
-       res.status(200).json(updatedTask);
+      res.status(200).json(updatedTask);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 }

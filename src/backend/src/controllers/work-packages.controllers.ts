@@ -11,9 +11,9 @@ export default class WorkPackagesController {
 
       const outputWorkPackages: WorkPackage[] = await WorkPackagesService.getAllWorkPackages(query, req.organization);
 
-       res.status(200).json(outputWorkPackages);
+      res.status(200).json(outputWorkPackages);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -24,9 +24,9 @@ export default class WorkPackagesController {
 
       const wp: WorkPackage = await WorkPackagesService.getSingleWorkPackage(parsedWbs, req.organization);
 
-       res.status(200).json(wp);
+      res.status(200).json(wp);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -35,9 +35,9 @@ export default class WorkPackagesController {
       const { wbsNums } = req.body;
 
       const workPackages: WorkPackage[] = await WorkPackagesService.getManyWorkPackages(wbsNums, req.organization);
-       res.status(200).json(workPackages);
+      res.status(200).json(workPackages);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -101,9 +101,9 @@ export default class WorkPackagesController {
       const wbsNum = validateWBS(req.params.wbsNum);
 
       await WorkPackagesService.deleteWorkPackage(req.currentUser, wbsNum, req.organization);
-       res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
+      res.status(200).json({ message: `Successfully deleted work package #${req.params.wbsNum}` });
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -117,9 +117,9 @@ export default class WorkPackagesController {
         req.organization
       );
 
-       res.status(200).json(blockingWorkPackages);
+      res.status(200).json(blockingWorkPackages);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -130,7 +130,7 @@ export default class WorkPackagesController {
 
       await WorkPackagesService.slackMessageUpcomingDeadlines(req.currentUser, new Date(deadline), req.organization);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 }

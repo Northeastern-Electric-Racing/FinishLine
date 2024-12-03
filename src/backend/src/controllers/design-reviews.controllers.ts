@@ -6,9 +6,9 @@ export default class DesignReviewsController {
   static async getAllDesignReviews(req: Request, res: Response, next: NextFunction) {
     try {
       const designReviews = await DesignReviewsService.getAllDesignReviews(req.organization);
-       res.status(200).json(designReviews);
+      res.status(200).json(designReviews);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -16,9 +16,9 @@ export default class DesignReviewsController {
     try {
       const drId: string = req.params.designReviewId;
       const deletedDesignReview = await DesignReviewsService.deleteDesignReview(req.currentUser, drId, req.organization);
-       res.status(200).json(deletedDesignReview);
+      res.status(200).json(deletedDesignReview);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -36,9 +36,9 @@ export default class DesignReviewsController {
         meetingTimes,
         req.organization
       );
-       res.status(200).json(createdDesignReview);
+      res.status(200).json(createdDesignReview);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -47,9 +47,9 @@ export default class DesignReviewsController {
       const drId: string = req.params.designReviewId;
 
       const designReview = await DesignReviewsService.getSingleDesignReview(req.currentUser, drId, req.organization);
-       res.status(200).json(designReview);
+      res.status(200).json(designReview);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -90,9 +90,9 @@ export default class DesignReviewsController {
         meetingTimes,
         req.organization
       );
-       res.status(200).json({ message: 'Design Review updated successfully' });
+      res.status(200).json({ message: 'Design Review updated successfully' });
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -109,9 +109,9 @@ export default class DesignReviewsController {
         user,
         req.organization
       );
-       res.status(200).json(updatedDesignReview);
+      res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 
@@ -127,9 +127,9 @@ export default class DesignReviewsController {
         status,
         req.organization
       );
-       res.status(200).json(updatedDesignReview);
+      res.status(200).json(updatedDesignReview);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 }
