@@ -34,7 +34,6 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
           sx={{
             mt: 2,
             display: 'flex',
-            flex: 1,
             flexDirection: horizontal ? 'row' : 'column',
             gap: 2,
             overflowX: horizontal ? 'auto' : 'hidden',

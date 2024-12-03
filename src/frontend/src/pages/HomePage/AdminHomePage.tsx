@@ -9,6 +9,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
+import UnreviewedChangeRequests from './components/UnreviewedChangeRequests';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -25,7 +26,11 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}></Grid>
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}>
+        <Grid item xs={12} md={12} height={`40%`}>
+          <UnreviewedChangeRequests user={user} />
+        </Grid>
+      </Grid>
     </PageLayout>
   );
 };

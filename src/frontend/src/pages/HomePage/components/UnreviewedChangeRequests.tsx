@@ -38,7 +38,7 @@ const UnreviewedChangeRequests: React.FC<UnreviewedChangeRequestsProps> = ({ use
   const crsToReview = getCRsToReview(projects, workPackages, user, changeRequests);
 
   return (
-    <ScrollablePageBlock title={`Change Requests to Review (${crsToReview.length})`} horizontal>
+    <ScrollablePageBlock title={`Change Requests To Review (${crsToReview.length})`} horizontal>
       {crsToReview.length === 0 ? (
         <NoUnreviewedChangeRequests />
       ) : (
