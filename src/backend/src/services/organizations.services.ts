@@ -181,7 +181,7 @@ export default class OrganizationsService {
    * @param organizationId organizationId of the organization
    * @returns updated organization with new contacts
    */
-  static async updateOrganizationContacts(user: User, contacts: string[], organization: Organization) {
+  static async updateOrganizationContacts(user: User, organization: Organization, contacts: string[]) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('Only admins can update contacts');
     }
@@ -195,8 +195,6 @@ export default class OrganizationsService {
       }
     });
 
-    return {
-      updatedOrganization
-    };
+    return updatedOrganization;
   }
 }

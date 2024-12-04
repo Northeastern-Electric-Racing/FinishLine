@@ -79,13 +79,13 @@ export default class OrganizationsController {
     try {
       const { contacts } = req.body;
 
-      const updatedContacts = await OrganizationsService.updateOrganizationContacts(
+      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(
         req.currentUser,
-        contacts,
-        req.organization
+        req.organization,
+        contacts
       );
 
-      return res.json(updatedContacts);
+      return res.status(200).json(updatedOrganization);
     } catch (error: unknown) {
       return next(error);
     }
