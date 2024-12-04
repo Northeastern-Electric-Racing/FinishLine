@@ -37,7 +37,9 @@ const OnboardingInfoSection: React.FC = () => {
             backgroundColor: theme.palette.background.paper,
             height: '25vh',
             borderRadius: '10px',
-            width: '100%'
+            width: '100%',
+            overflow: "hidden",
+            overflowY: "scroll",
           }}
         >
           <Typography variant="h5" sx={{ mb: 3, px: 2, pt: 2 }}>
@@ -51,7 +53,7 @@ const OnboardingInfoSection: React.FC = () => {
                   <Button
                     variant="contained"
                     fullWidth
-                    sx={{ backgroundColor: '#616161', color: 'white', borderRadius: '10px', height: '5vh' }}
+                    sx={{ backgroundColor: '#616161', color: 'white', borderRadius: '10px', height: '5vh', '&:hover': {backgroundColor: '#ef4345'} }}
                     href={link.url}
                     target="_blank"
                   >
