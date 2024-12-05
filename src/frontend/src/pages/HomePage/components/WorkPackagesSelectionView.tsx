@@ -26,33 +26,32 @@ const WorkPackagesSelectionView: React.FC = () => {
   const user = useCurrentUser();
   const theme = useTheme();
 
-  const relevantWPs = user.teamsAsHead
-    ? user.teamsAsHead.map((team) => team.projects.map((project) => project.workPackages)).flat(2)
-    : [];
+  const teamsAsHead = user.teamsAsHead ?? [];
+  const teamsAsLead = user.teamsAsLead ?? [];
+  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
 
-  relevantWPs.concat(
-    user.teamsAsLead ? user.teamsAsLead.map((team) => team.projects.map((project) => project.workPackages)).flat(2) : []
-  );
+  const relevantWPs = teamsAsLeadership.map((team) => team.projects.map((project) => project.workPackages)).flat(2);
 
   const upcomingWPs: WorkPackage[] = getUpcomingWorkPackages(relevantWPs);
   const inProgressWPs: WorkPackage[] = getInProgressWorkPackages(relevantWPs);
   const overdueWPs: WorkPackage[] = getOverdueWorkPackages(relevantWPs);
 
-  const workPackages: [string, WorkPackage[]][] = [
+  const workPackageOptions: [string, WorkPackage[]][] = [
     [`Upcoming Work Packages (${upcomingWPs.length})`, upcomingWPs],
     [`In Progress Work Packages (${inProgressWPs.length})`, inProgressWPs],
     [`Overdue Work Packages (${overdueWPs.length})`, overdueWPs]
   ];
 
   let defaultFirstDisplay = 2;
-  if (workPackages[2][1].length === 0) {
+  if (workPackageOptions[2][1].length === 0) {
     defaultFirstDisplay = 1;
-    if (workPackages[1][1].length === 0) {
+    if (workPackageOptions[1][1].length === 0) {
       defaultFirstDisplay = 0;
     }
   }
 
   const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
+  const [, currentWps] = workPackageOptions[currentDisplayedWPs];
 
   const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
     <Box
@@ -66,18 +65,10 @@ const WorkPackagesSelectionView: React.FC = () => {
       }}
     >
       {workPackages.map((wp) => (
-        <Box
-          sx={{
-            maxWidth: 'fit-content'
-          }}
-        >
-          <WorkPackageCard wp={wp} />
-        </Box>
+        <WorkPackageCard wp={wp} />
       ))}
     </Box>
   );
-
-  const [, currentWps] = workPackages[currentDisplayedWPs]; //getWorkPackages(currentDisplayedWPs);
 
   return (
     <Card
@@ -96,9 +87,9 @@ const WorkPackagesSelectionView: React.FC = () => {
         }}
       >
         <WorkPackageSelect
-          options={workPackages.map((wp) => wp[0])}
+          options={workPackageOptions.map((wp) => wp[0])}
           onSelect={setCurrentDisplayedWPs}
-          firstSelected={currentDisplayedWPs}
+          selected={currentDisplayedWPs}
         />
         <Box
           sx={{
@@ -125,7 +116,7 @@ const WorkPackagesSelectionView: React.FC = () => {
             scrollbarColor: `${theme.palette.primary.main} transparent`
           }}
         >
-          <Box sx={{ flex: 1 }}>{currentWps.length === 0 ? <NoWorkPackages /> : WorkPackagesDisplay(currentWps)}</Box>
+          {currentWps.length === 0 ? <NoWorkPackages /> : WorkPackagesDisplay(currentWps)}
         </Box>
       </CardContent>
     </Card>
