@@ -85,6 +85,10 @@ export interface RefundPayload {
   dateReceived: string;
 }
 
+export interface MarkDeliveredRequestPayload {
+  dateDelivered: Date;
+}
+
 /**
  * Custom React Hook to upload a new picture.
  */
@@ -232,10 +236,10 @@ export const useAllReimbursements = () => {
  */
 export const useMarkReimbursementRequestAsDelivered = (id: string) => {
   const queryClient = useQueryClient();
-  return useMutation<ReimbursementRequest, Error>(
+  return useMutation<ReimbursementRequest, Error, MarkDeliveredRequestPayload>(
     ['reimbursement-requests', 'edit'],
-    async () => {
-      const { data } = await markReimbursementRequestAsDelivered(id);
+    async (markDeliveredData: MarkDeliveredRequestPayload) => {
+      const { data } = await markReimbursementRequestAsDelivered(id, markDeliveredData);
       return data;
     },
     {
@@ -394,13 +398,13 @@ export const useDownloadCSVFileOfReimbursementRequests = () => {
     const { data } = await getAllReimbursementRequests();
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      'SABO ID,Recipient,Total Cost,Status,Account,Date Created,Date Delivered,Date Submitted,Vendor\n' +
+      'SABO ID,FinishLine ID,Recipient,Total Cost,Status,Account,Account Code,Date Created,Date Delivered,Date Submitted,Vendor\n' +
       data
         .map(
           (rr) =>
-            `${rr.saboId},${fullNamePipe(rr.recipient)},${rr.totalCost},${
+            `${rr.saboId},${rr.identifier},${fullNamePipe(rr.recipient)},${rr.totalCost},${
               rr.reimbursementStatuses[rr.reimbursementStatuses.length - 1].type
-            },${rr.account},${rr.dateCreated},${rr.dateDelivered ?? ''},${
+            },${rr.account},${rr.accountCode.code},${rr.dateCreated},${rr.dateDelivered ?? ''},${
               rr.reimbursementStatuses.find((rs) => rs.type === ReimbursementStatusType.SABO_SUBMITTED)?.dateCreated ?? ''
             },${rr.vendor.name}`
         )
