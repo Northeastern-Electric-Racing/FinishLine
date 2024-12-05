@@ -8,44 +8,44 @@ const onboardingRouter = express.Router();
 /* Checklists Section */
 onboardingRouter.get('/checklists', OnboardingController.getAllChecklists);
 
+onboardingRouter.get('/checklists/general', OnboardingController.getGeneralChecklists);
+
 onboardingRouter.get('/checklists/checked', OnboardingController.getCheckedChecklists);
 
-onboardingRouter.get('/checklists/usersChecklists', OnboardingController.getUsersChecklists);
+onboardingRouter.get(
+  '/checklist/teamTypeChecklists',
+  body('teamTypeIds').isArray(),
+  nonEmptyString(body('teamTypeIds.*')),
+  validateInputs,
+  OnboardingController.getTeamTypeChecklists
+);
 
 onboardingRouter.post(
   '/checklist/create',
   nonEmptyString(body('name')),
-  nonEmptyString(body('teamTypeId')).optional(),
+  body('descriptions').isArray(),
+  nonEmptyString(body('descriptions.*')),
+  nonEmptyString(body('isOptional').isBoolean()),
+  nonEmptyString(body('teamId').optional()),
+  nonEmptyString(body('teamTypeId').optional()),
+  nonEmptyString(body('parentChecklistId').optional()),
   validateInputs,
   OnboardingController.createChecklist
 );
 
-onboardingRouter.delete('/checklist/:checklistId/delete', OnboardingController.deleteChecklist);
-
-/* Checklist Items Section */
 onboardingRouter.post(
-  '/checklist/item/create',
-  nonEmptyString(body('name')),
-  nonEmptyString(body('checklistId')),
-  body('descriptions').isArray(),
-  nonEmptyString(body('descriptions.*')),
-  nonEmptyString(body('parentChecklistItemId').optional()),
-  validateInputs,
-  OnboardingController.createChecklistItem
-);
-
-onboardingRouter.post(
-  '/checklist/item/:checklistItemId/update',
+  '/checklist/edit/:checklistId',
   nonEmptyString(body('name')),
   body('descriptions').isArray(),
   nonEmptyString(body('descriptions.*')),
-  nonEmptyString(body('parentChecklistItemId').optional()),
-  body('subtaskIds').isArray,
-  nonEmptyString(body('subtaskIds.*')),
+  nonEmptyString(body('isOptional').isBoolean()),
+  nonEmptyString(body('teamId').optional()),
+  nonEmptyString(body('teamTypeId').optional()),
+  nonEmptyString(body('parentChecklistId').optional()),
   validateInputs,
-  OnboardingController.updateChecklistItem
+  OnboardingController.editChecklist
 );
 
-onboardingRouter.delete('/checklist/item/:checklistItemId/delete', OnboardingController.deleteChecklistItem);
+onboardingRouter.post('/checklist/delete/:checklistId', OnboardingController.deleteChecklist);
 
 export default onboardingRouter;

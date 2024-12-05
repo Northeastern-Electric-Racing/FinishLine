@@ -6,7 +6,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import ChecklistSection from './components/ChecklistSection';
-import InfoBlock from './components/InfoBlock';
+import OnboardingInfoSection from './components/OnboardingInfoSection';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
@@ -61,7 +61,7 @@ const OnboardingHomePage = () => {
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>
-              <InfoBlock />
+              <OnboardingInfoSection />
             </Grid>
           </Grid>
         </Grid>

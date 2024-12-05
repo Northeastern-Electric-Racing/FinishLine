@@ -424,6 +424,10 @@ const performSeed: () => Promise<void> = async () => {
 
   const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner);
 
+  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner);
+
+  const instagramWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Instagram', 'bar_chart', true, ner);
+
   await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner);
 
   /**
@@ -1882,6 +1886,16 @@ const performSeed: () => Promise<void> = async () => {
       linkId: '2',
       linkTypeName: 'Bill of Materials',
       url: 'https://docs.google.com'
+    },
+    {
+      linkId: '3',
+      linkTypeName: 'NER Website',
+      url: 'https://electricracing.northeastern.edu/'
+    },
+    {
+      linkId: '4',
+      linkTypeName: 'NER Instagram',
+      url: 'https://www.instagram.com/nuelectricracing/'
     }
   ]);
 
@@ -1890,108 +1904,8 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createMilestone(batman, 'Milestone 3', 'This is milestone 3', new Date('11/23/24'), ner);
 
   await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
-
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
-
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
-
-  const softwareChecklist = await OnboardingServices.createChecklist(batman, 'Software Checklist', software.teamTypeId, ner);
-  const electricalChecklist = await OnboardingServices.createChecklist(
-    batman,
-    'Electrical Checklist',
-    electrical.teamTypeId,
-    ner
-  );
-  const generalChecklist = await OnboardingServices.createChecklist(batman, 'General Checklist', null, ner);
-
-  const checklistItem1 = await OnboardingServices.createChecklistItem(
-    batman,
-    'Join Slack',
-    softwareChecklist.checklistId,
-    null,
-    [
-      'Slack is our primary method of communication outside of meetings and the shop. To join, you must use your @northeastern.edu email (No personal emails!). We do not send email reminders for meetings, so you will need to stay in the loop via Slack and Google Calandar.'
-    ],
-    ner
-  );
-
-  const checklistItem2 = await OnboardingServices.createChecklistItem(
-    batman,
-    'Engage',
-    softwareChecklist.checklistId,
-    null,
-    ['Join NER on Engage. This is what Northeastern uses to keep trak of our roster'],
-    ner
-  );
-
-  const checklistItem3 = await OnboardingServices.createChecklistItem(
-    batman,
-    'Attend New & Recruiting Members General Meeting',
-    softwareChecklist.checklistId,
-    null,
-    [
-      'We will be hosting our usual New & Recruiting Members General Meeting. We will be orienting new members, talking about the semester ahead, and providing an opportunity to buy some merch from previous semesters. Please make an effort to attend',
-      "Weekly Meetings: \nNER members typically attend 1-2 meetings each week. At these meetings, we share updates on the work we've done and address any blockers. Engineering teams also host \"bay times\", where you can join your project's lead and head in Richards 54 for hands-on work. You'll learn more about our meetings schedule and bay times at our general meeting, in Slack and GCals."
-    ],
-    ner
-  );
-
-  await OnboardingServices.createChecklistItem(
-    batman,
-    'Put your name and pronouns',
-    softwareChecklist.checklistId,
-    checklistItem1.checklistItemId,
-    [],
-    ner
-  );
-
-  await OnboardingServices.createChecklistItem(
-    batman,
-    'Add profile picture',
-    softwareChecklist.checklistId,
-    checklistItem1.checklistItemId,
-    [],
-    ner
-  );
-
-  await OnboardingServices.createChecklistItem(
-    batman,
-    'Include your team and/or subteam',
-    softwareChecklist.checklistId,
-    checklistItem1.checklistItemId,
-    [],
-    ner
-  );
-
-  await OnboardingServices.createChecklistItem(
-    batman,
-    'Include your major and year',
-    softwareChecklist.checklistId,
-    checklistItem1.checklistItemId,
-    [],
-    ner
-  );
-
-  await OnboardingServices.createChecklistItem(
-    batman,
-    'Turn on notifications',
-    softwareChecklist.checklistId,
-    checklistItem1.checklistItemId,
-    [],
-    ner
-  );
-
-  // for testing purposes, will use the setUserChecklist endpoint once it has been created
-  await prisma.user.update({
-    where: {
-      userId: patrick.userId
-    },
-    data: {
-      onboardingChecklists: {
-        connect: { checklistId: softwareChecklist.checklistId }
-      }
-    }
-  });
 };
 
 performSeed()

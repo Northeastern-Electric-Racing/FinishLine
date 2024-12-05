@@ -36,10 +36,9 @@ import { useCurrentOrganization } from '../hooks/organizations.hooks';
 interface AppAuthenticatedProps {
   userId: string;
   userRole: Role;
-  onboardingChecklists?: boolean;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, onboardingChecklists }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   const theme = useTheme();
@@ -113,10 +112,9 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, o
         <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
-            {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
-            {onboardingChecklists && <Redirect exact path={routes.HOME} to={routes.HOME_ONBOARDING} />}
-            {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
-            {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
+            {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_ONBOARDING} />}
+            {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME_ONBOARDING} />}
+            {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME_ONBOARDING} />}
             <Route path={routes.PROJECTS} component={Projects} />
             <Redirect from={routes.CR_BY_ID} to={routes.CHANGE_REQUESTS_BY_ID} />
             <Route path={routes.CHANGE_REQUESTS} component={ChangeRequests} />
