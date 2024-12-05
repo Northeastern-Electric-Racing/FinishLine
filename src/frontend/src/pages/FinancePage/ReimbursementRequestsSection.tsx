@@ -1,7 +1,7 @@
 import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useState } from 'react';
-import { ReimbursementRequest, isAdmin } from 'shared';
+import { ReimbursementRequest, isHead } from 'shared';
 import { useCurrentUser } from '../../hooks/users.hooks';
 import {
   centsToDollar,
@@ -45,7 +45,7 @@ const ReimbursementRequestTable = ({
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const user = useCurrentUser();
-  const canViewAllReimbursementRequests = user.isFinance || isAdmin(user.role);
+  const canViewAllReimbursementRequests = user.isFinance || isHead(user.role);
 
   const displayedReimbursementRequests =
     tabValue === 1 && allReimbursementRequests ? allReimbursementRequests : userReimbursementRequests;
