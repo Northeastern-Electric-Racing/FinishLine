@@ -1,5 +1,5 @@
 import { Organization } from '@prisma/client';
-import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import { createTestChecklist, createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
@@ -81,33 +81,38 @@ describe('Onboarding tests', () => {
     });
   });
 
-  describe('Get TeamType Checklists', () => {
-    it('Fails if teamTypeIds are empty', async () => {
-      await expect(async () => await OnboardingServices.getTeamTypeChecklists([], organization)).rejects.toThrow(
-        new HttpException(400, 'teamTypeIds cannot be empty')
+  describe('Get Users TeamType Checklists', () => {
+    it('Fails if user does not exists', async () => {
+      await expect(async () => await OnboardingServices.getUsersTeamTypeChecklists('1', organization)).rejects.toThrow(
+        new NotFoundException('User', '1')
       );
     });
 
-    it('Fails if teamTypeIds are invalid', async () => {
-      await expect(async () => await OnboardingServices.getTeamTypeChecklists(['id1', 'id2'], organization)).rejects.toThrow(
-        new HttpException(400, 'One or more inavlid teamTypeIds')
-      );
+    it('Fails if the team types are empty', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await prisma.user.update({
+        where: { userId: batman.userId },
+        data: { teamsAsMember: { set: [] } }
+      });
+      await expect(
+        async () => await OnboardingServices.getUsersTeamTypeChecklists(batman.userId, organization)
+      ).rejects.toThrow(new HttpException(400, 'teamTypeIds cannot be empty'));
     });
 
-    it('Succeeds and gets all checklists for the given teamTypeIds', async () => {
+    it('Succeeds and gets all checklists for the user and teamType', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
+      const team1 = await createTestTeam('team1', organization, teamType1.teamTypeId, batman.userId);
+      await prisma.user.update({
+        where: { userId: batman.userId },
+        data: { teamsAsMember: { connect: { teamId: team1.teamId } } }
+      });
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1', teamType1.teamTypeId);
-      const checklist2 = await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
-      await createTestChecklist(batman, orgId, 'Checklist 3');
-      const teamTypeChecklists = await OnboardingServices.getTeamTypeChecklists(
-        [teamType1.teamTypeId, teamType2.teamTypeId],
-        organization
-      );
-      expect(teamTypeChecklists.length).toEqual(2);
+      await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
+      const teamTypeChecklists = await OnboardingServices.getUsersTeamTypeChecklists(batman.userId, organization);
+      expect(teamTypeChecklists.length).toEqual(1);
       expect(teamTypeChecklists[0].checklistId).toEqual(checklist1.checklistId);
-      expect(teamTypeChecklists[1].checklistId).toEqual(checklist2.checklistId);
     });
   });
 

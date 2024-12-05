@@ -15,7 +15,7 @@ export default class OnboardingServices {
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
       where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { subtasks: true }
+      include: { subtasks: true, teamType: true }
     });
 
     return allChecklists;
@@ -29,9 +29,8 @@ export default class OnboardingServices {
   static async getGeneralChecklists(organization: Organization) {
     const generalChecklists = await prisma.checklist.findFirst({
       where: { organizationId: organization.organizationId, teamId: null, teamTypeId: null, dateDeleted: null },
-      include: { subtasks: true }
+      include: { subtasks: true, teamType: true }
     });
-    console.log(generalChecklists)
     return generalChecklists;
   }
 
@@ -68,10 +67,10 @@ export default class OnboardingServices {
 
     const teamTypeIds = user.teamsAsMember.map((team) => team.teamTypeId).filter((id): id is string => id !== null);
 
-    if (!teamTypeIds) {
+    if (teamTypeIds.length === 0) {
       throw new HttpException(400, 'teamTypeIds cannot be empty');
     }
-    console.log(teamTypeIds);
+    console.log('id', teamTypeIds);
 
     const teamTypeChecklists = await prisma.checklist.findMany({
       where: {
@@ -80,9 +79,10 @@ export default class OnboardingServices {
         teamTypeId: { in: teamTypeIds },
         parentChecklistId: null
       },
-      include: { subtasks: true }
+      include: { subtasks: true, teamType: true }
     });
-    console.log(teamTypeChecklists);
+
+    console.log('teamTypeChecklists', teamTypeChecklists);
     return teamTypeChecklists;
   }
 

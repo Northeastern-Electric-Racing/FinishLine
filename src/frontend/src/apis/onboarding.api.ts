@@ -7,3 +7,15 @@ export const getAllChecklists = () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+export const getGeneralChecklist = () => {
+  return axios.get<Checklist>(apiUrls.generalChecklist(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
+export const getUsersTeamTypeChecklists = () => {
+  return axios.get<Checklist[]>(apiUrls.usersTeamTypeChecklists(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};

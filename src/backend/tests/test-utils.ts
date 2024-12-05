@@ -188,6 +188,23 @@ export const createTestTeamType = async (name: string, organization: Organizatio
   });
 };
 
+export const createTestTeam = async (
+  teamName: string,
+  organization: Organization,
+  teamTypeId: string,
+  headUserId: string
+) => {
+  return await prisma.team.create({
+    data: {
+      teamName,
+      organizationId: organization.organizationId,
+      teamTypeId,
+      slackId: 'slackId',
+      headId: headUserId
+    }
+  });
+};
+
 export const createTestOrganization = async () => {
   const user = await prisma.user.create({
     data: {

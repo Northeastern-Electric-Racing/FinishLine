@@ -2,9 +2,9 @@ import { Typography, useTheme, Grid } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import React from 'react';
-import { ChecklistItem } from 'shared';
+import { Checklist } from 'shared';
 
-const SubtaskSection: React.FC<{ subtasks: ChecklistItem[]; parentTask: ChecklistItem }> = ({ subtasks, parentTask }) => {
+const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist }> = ({ subtasks, parentTask }) => {
   const theme = useTheme();
 
   return (

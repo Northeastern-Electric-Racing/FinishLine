@@ -1,28 +1,51 @@
 import { Grid, Box } from '@mui/material';
-import { useAllChecklists } from '../../../hooks/onboarding.hook';
+import { useGeneralChecklist, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import Checklist from './Checklist';
 
 const ChecklistSection: React.FC = () => {
-  const { data: checklists, isError, error, isLoading } = useAllChecklists();
+  const {
+    data: generalChecklist,
+    isError: generalChecklistIsError,
+    error: generalChecklistError,
+    isLoading: generalChecklistIsLoading
+  } = useGeneralChecklist();
 
-  if (!checklists || isLoading) {
+  const {
+    data: usersTeamTypeChecklists,
+    isError: usersTeamTypeChecklistsIsError,
+    error: usersTeamTypeChecklistsError,
+    isLoading: usersTeamTypeChecklistsIsLoading
+  } = useUsersTeamTypeChecklists();
+
+  console.log('general checklist', generalChecklist);
+  console.log('team type checklist', usersTeamTypeChecklists);
+
+  if (!generalChecklist || generalChecklistIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
     return <LoadingIndicator />;
   }
-
-  if (isError) {
-    return <ErrorPage error={error} />;
+  if (generalChecklistIsError) {
+    return <ErrorPage error={generalChecklistError} />;
   }
+
+  if (usersTeamTypeChecklistsIsError) {
+    return <ErrorPage error={usersTeamTypeChecklistsError} />;
+  }
+
+  const allChecklists = [generalChecklist, usersTeamTypeChecklists];
 
   return (
     <Box>
       <Grid container>
-        {checklists.map((checklist) => (
-          <Grid item xs={12} padding={2}>
-            <Checklist checklist={checklist} />
-          </Grid>
-        ))}
+        {allChecklists.map((checklist) => {
+          console.log(checklist);
+          return (
+            <Grid item xs={12} padding={2}>
+              <Checklist parentChecklist={checklist} teamType={checklist.teamType?.name}/>
+            </Grid>
+          );
+        })}
       </Grid>
     </Box>
   );

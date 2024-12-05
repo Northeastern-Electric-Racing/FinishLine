@@ -1,16 +1,15 @@
 import { Typography, Box, IconButton, Checkbox } from '@mui/material';
 import { useState } from 'react';
-import { ChecklistItem } from 'shared';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
+import { Checklist } from 'shared';
 
 interface SubtaskProps {
-  checklistItems: ChecklistItem[];
-  parentTask: ChecklistItem;
+  subtasks: Checklist[];
+  parentTask: Checklist;
 }
 
-const Task: React.FC<SubtaskProps> = ({ checklistItems, parentTask }) => {
-  const subtasks = checklistItems.filter((task) => task.parentChecklistItemId === parentTask.checklistItemId);
+const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
 
   const toggleShowSubtasks = () => {
