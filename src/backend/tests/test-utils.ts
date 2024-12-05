@@ -300,7 +300,8 @@ export const createTestChecklist = async (
       parentChecklistId
     },
     include: {
-      subtasks: true
+      subtasks: true,
+      teamType: true
     }
   });
 

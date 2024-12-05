@@ -57,9 +57,9 @@ describe('Onboarding tests', () => {
     it('Gets all general checklists for the given organization', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
-      await createTestChecklist(batman, orgId, 'Checklist 2');
+      const checklist2 = await createTestChecklist(batman, orgId, 'Checklist 2');
       const generalChecklists = await OnboardingServices.getGeneralChecklists(organization);
-      expect(generalChecklists!.checklistId).toEqual(checklist1.checklistId);
+      expect(generalChecklists).toEqual([checklist1, checklist2]);
     });
   });
 
