@@ -1,12 +1,11 @@
 
-name: System-Tests
+name: Production Build
 
 on:
   push:
     branches:
       - main
-      - develop
-      - feature/**
+      - multitenancy
 
 jobs:
   run-tests:
@@ -23,4 +22,4 @@ jobs:
       - name: Yarn Install
         run: yarn install
       - name: Run Tests
-        run: yarn containerize:test:e2e
+        run: yarn containerize

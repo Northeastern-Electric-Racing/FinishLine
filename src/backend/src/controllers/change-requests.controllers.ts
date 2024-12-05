@@ -7,18 +7,18 @@ export default class ChangeRequestsController {
       const { crId } = req.params;
 
       const cr = await ChangeRequestsService.getChangeRequestByID(crId, req.organization);
-      return res.status(200).json(cr);
+      res.status(200).json(cr);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
   static async getAllChangeRequests(req: Request, res: Response, next: NextFunction) {
     try {
       const changeRequests = await ChangeRequestsService.getAllChangeRequests(req.organization);
-      return res.status(200).json(changeRequests);
+      res.status(200).json(changeRequests);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -33,9 +33,9 @@ export default class ChangeRequestsController {
         req.organization,
         psId
       );
-      return res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
+      res.status(200).json({ message: `Change request #${id} successfully reviewed.` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -55,9 +55,9 @@ export default class ChangeRequestsController {
         confirmDetails,
         req.organization
       );
-      return res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
+      res.status(200).json({ message: `Successfully created activation change request with id #${id}` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -73,9 +73,9 @@ export default class ChangeRequestsController {
         confirmDone,
         req.organization
       );
-      return res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
+      res.status(200).json({ message: `Successfully created stage gate request with id #${id}` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -99,9 +99,9 @@ export default class ChangeRequestsController {
         projectProposedChanges,
         workPackageProposedChanges
       );
-      return res.status(200).json(createdCR);
+      res.status(200).json(createdCR);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -117,9 +117,9 @@ export default class ChangeRequestsController {
         scopeImpact,
         req.organization
       );
-      return res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
+      res.status(200).json({ message: `Successfully added proposed solution with id #${id}` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -128,9 +128,9 @@ export default class ChangeRequestsController {
       const { crId } = req.params;
 
       await ChangeRequestsService.deleteChangeRequest(req.currentUser, crId, req.organization);
-      return res.status(200).json({ message: `Successfully deleted change request #${crId}` });
+      res.status(200).json({ message: `Successfully deleted change request #${crId}` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -140,9 +140,9 @@ export default class ChangeRequestsController {
       const { crId } = req.params;
 
       await ChangeRequestsService.requestCRReview(req.currentUser, userIds, crId, req.organization);
-      return res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
+      res.status(200).json({ message: `Successfully requested reviewer(s) to change request #${crId}` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }

@@ -16,6 +16,7 @@ const FeaturedProjectsCard: React.FC<ProjectCardProps> = ({ project }) => {
       variant="outlined"
       sx={{
         minWidth: 'fit-content',
+        minHeight: 'fit-content',
         mr: 3,
         background: theme.palette.background.default
       }}
