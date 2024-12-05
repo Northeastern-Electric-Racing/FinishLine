@@ -52,9 +52,7 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
             }
           }}
         >
-          {React.Children.map(children, (child) => (
-            <Box sx={{ flex: 1 }}>{child}</Box>
-          ))}
+          {children}
         </Box>
       </CardContent>
     </Card>
