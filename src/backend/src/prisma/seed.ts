@@ -184,6 +184,7 @@ const performSeed: () => Promise<void> = async () => {
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
   await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
+  const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -259,19 +260,19 @@ const performSeed: () => Promise<void> = async () => {
    * TEAMS
    */
   /** Creating Team Types */
-  const teamType1 = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', '', ner);
-  const teamType2 = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', '', ner);
-  const teamType3 = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', '', ner);
+  const mechanical = await TeamsService.createTeamType(batman, 'Mechanical', 'YouTubeIcon', '', ner);
+  const software = await TeamsService.createTeamType(thomasEmrax, 'Software', 'InstagramIcon', '', ner);
+  const electrical = await TeamsService.createTeamType(cyborg, 'Electrical', 'SettingsIcon', '', ner);
 
   /** Creating Teams */
   const justiceLeague: Team = await prisma.team.create(dbSeedAllTeams.justiceLeague(batman.userId, organizationId));
   const avatarBenders: Team = await prisma.team.create(
-    dbSeedAllTeams.avatarBenders(aang.userId, teamType2.teamTypeId, organizationId)
+    dbSeedAllTeams.avatarBenders(aang.userId, software.teamTypeId, organizationId)
   );
   const ravens: Team = await prisma.team.create(dbSeedAllTeams.ravens(johnHarbaugh.userId, organizationId));
   const orioles: Team = await prisma.team.create(dbSeedAllTeams.orioles(brandonHyde.userId, organizationId));
   const huskies: Team = await prisma.team.create(
-    dbSeedAllTeams.huskies(thomasEmrax.userId, teamType3.teamTypeId, organizationId)
+    dbSeedAllTeams.huskies(thomasEmrax.userId, electrical.teamTypeId, organizationId)
   );
   const plLegends: Team = await prisma.team.create(dbSeedAllTeams.plLegends(cristianoRonaldo.userId, organizationId));
   const financeTeam: Team = await prisma.team.create(dbSeedAllTeams.financeTeam(monopolyMan.userId, organizationId));
@@ -322,7 +323,7 @@ const performSeed: () => Promise<void> = async () => {
   await TeamsService.setTeamMembers(
     aang,
     avatarBenders.teamId,
-    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi].map((user) => user.userId),
+    [katara, sokka, toph, zuko, iroh, azula, appa, momo, suki, yue, bumi, patrick].map((user) => user.userId),
     ner
   );
   await TeamsService.setTeamMembers(
@@ -1740,7 +1741,7 @@ const performSeed: () => Promise<void> = async () => {
   const designReview1 = await DesignReviewsService.createDesignReview(
     batman,
     nextDay.toDateString(),
-    teamType1.teamTypeId,
+    mechanical.teamTypeId,
     [thomasEmrax.userId, batman.userId],
     [superman.userId, wonderwoman.userId],
     {
@@ -1756,7 +1757,7 @@ const performSeed: () => Promise<void> = async () => {
     batman,
     designReview1.designReviewId,
     nextDay,
-    teamType1.teamTypeId,
+    mechanical.teamTypeId,
     [thomasEmrax.userId, batman.userId, superman.userId, wonderwoman.userId],
     [joeBlow.userId, joeShmoe.userId, aang.userId],
     false,
@@ -1889,30 +1890,74 @@ const performSeed: () => Promise<void> = async () => {
   await RecruitmentServices.createMilestone(batman, 'Milestone 3', 'This is milestone 3', new Date('11/23/24'), ner);
 
   await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
-
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
-
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
 
-  const checklist1 = await OnboardingServices.createChecklist(batman, 'Checklist 1', teamType1.teamTypeId, ner);
-  const checklist2 = await OnboardingServices.createChecklist(batman, 'Checklist 2', teamType2.teamTypeId, ner);
-  await OnboardingServices.createChecklist(batman, 'Checklist 3', teamType3.teamTypeId, ner);
-
-  const checklistItem1 = await OnboardingServices.createChecklistItem(
+  const joinSlackChecklist = await OnboardingServices.createChecklist(
     batman,
-    'Checklist Item 1',
-    checklist1.checklistId,
+    'Join Slack',
+    [
+      'Slack is our primary method of communication outside of meetings and the shop. To join, you must use your @northeastern.edu email (No personal emails!). We do not send email reminders for meetings, so you will need to stay in the loop via Slack and Google Calandar.'
+    ],
+    false,
     null,
-    'Download Visual Studio Code',
+    null,
+    null,
     ner
   );
 
-  await OnboardingServices.createChecklistItem(
+  await OnboardingServices.createChecklist(
     batman,
-    'Checklist Item 2',
-    checklist1.checklistId,
-    checklistItem1.checklistItemId,
-    'Donwload Node.js',
+    'Put your name and pronouns',
+    [],
+    false,
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Include your team and/or subteam',
+    [],
+    false,
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Include your major and/or year',
+    [],
+    false,
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Turn on notifications',
+    [],
+    false,
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner
+  );
+
+  const engageChecklist = await OnboardingServices.createChecklist(
+    batman,
+    'Engage',
+    ['Join NER on engage. This is what Northeastern uses to keep track of our roster'],
+    false,
+    null,
+    software.teamTypeId,
+    null,
     ner
   );
 };

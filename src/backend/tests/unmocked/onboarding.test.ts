@@ -1,14 +1,7 @@
 import { Organization } from '@prisma/client';
-import {
-  createTestChecklist,
-  createTestChecklistItem,
-  createTestOrganization,
-  createTestTeamType,
-  createTestUser,
-  resetUsers
-} from '../test-utils';
+import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
-import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   AccessDeniedAdminOnlyException,
   DeletedException,
@@ -33,45 +26,88 @@ describe('Onboarding tests', () => {
   describe('Get all Checklists', () => {
     it('Gets all checklists and checklistItems for the given organization', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const checklist1 = await createTestChecklist(batman, orgId);
-      const checklist2 = await createTestChecklist(batman, orgId);
+      const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
+      const checklist2 = await createTestChecklist(batman, orgId, 'Checklist 2');
       const allChecklists = await OnboardingServices.getAllChecklists(organization);
+      expect(allChecklists.length).toEqual(2);
       expect(allChecklists[0].checklistId).toEqual(checklist1.checklistId);
       expect(allChecklists[1].checklistId).toEqual(checklist2.checklistId);
-      expect(allChecklists[0].checklistItems.length).toEqual(1);
     });
 
-    it('Gets all checklists and checklistItems that are not deleted', async () => {
+    it('Gets all checklists that are not deleted', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const checklist1 = await createTestChecklist(batman, orgId);
+      const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
       await prisma.checklist.update({
         where: { checklistId: checklist1.checklistId },
-        data: { checklistItems: { deleteMany: {} } }
+        data: { dateDeleted: new Date() }
       });
       const allChecklists = await OnboardingServices.getAllChecklists(organization);
-      expect(allChecklists.length).toEqual(1);
-      expect(allChecklists[0].checklistItems.length).toEqual(0);
+      expect(allChecklists.length).toEqual(0);
+    });
+  });
+
+  describe('Get General Checklists', () => {
+    it('Gets all general checklists for the given organization', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
+      await createTestChecklist(batman, orgId, 'Checklist 2');
+      const generalChecklists = await OnboardingServices.getGeneralChecklists(organization);
+      expect(generalChecklists!.checklistId).toEqual(checklist1.checklistId);
     });
   });
 
   describe('Get Checked Checklists', () => {
-    it('Fails if user does not exist', async () => {
-      await expect(async () => await OnboardingServices.getCheckedChecklists('userId', organization)).rejects.toThrow(
-        new NotFoundException('User', 'userId')
+    it('Succeeds and gets all checked checklists for the user', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
+      await createTestChecklist(batman, orgId, 'Checklist 1');
+      const checklist3 = await createTestChecklist(batman, orgId, 'Checklist 1');
+      const uncheckedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
+      expect(uncheckedChecklists.length).toEqual(0);
+      await prisma.checklist.update({
+        where: { checklistId: checklist1.checklistId },
+        data: { usersChecked: { connect: { userId: batman.userId } } }
+      });
+
+      await prisma.checklist.update({
+        where: { checklistId: checklist3.checklistId },
+        data: { usersChecked: { connect: { userId: batman.userId } } }
+      });
+
+      const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman, organization);
+      expect(checkedChecklists.length).toEqual(2);
+      expect(checkedChecklists[0].checklistId).toEqual(checklist1.checklistId);
+      expect(checkedChecklists[1].checklistId).toEqual(checklist3.checklistId);
+    });
+  });
+
+  describe('Get TeamType Checklists', () => {
+    it('Fails if teamTypeIds are empty', async () => {
+      await expect(async () => await OnboardingServices.getTeamTypeChecklists([], organization)).rejects.toThrow(
+        new HttpException(400, 'teamTypeIds cannot be empty')
       );
     });
 
-    it('Succeeds and gets all checked checklists for the user', async () => {
+    it('Fails if teamTypeIds are invalid', async () => {
+      await expect(async () => await OnboardingServices.getTeamTypeChecklists(['id1', 'id2'], organization)).rejects.toThrow(
+        new HttpException(400, 'One or more inavlid teamTypeIds')
+      );
+    });
+
+    it('Succeeds and gets all checklists for the given teamTypeIds', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
-      const checklist1 = await createTestChecklist(batman, orgId);
-      const uncheckedChecklists = await OnboardingServices.getCheckedChecklists(batman.userId, organization);
-      expect(uncheckedChecklists[0].checklistItems.length).toEqual(0);
-      await prisma.checklistItem.update({
-        where: { checklistItemId: checklist1.checklistItems[0].checklistItemId },
-        data: { usersChecked: { connect: { userId: batman.userId } } }
-      });
-      const checkedChecklists = await OnboardingServices.getCheckedChecklists(batman.userId, organization);
-      expect(checkedChecklists[0].checklistItems.length).toEqual(1);
+      const teamType1 = await createTestTeamType('teamtype1', organization);
+      const teamType2 = await createTestTeamType('teamtype2', organization);
+      const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1', teamType1.teamTypeId);
+      const checklist2 = await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
+      await createTestChecklist(batman, orgId, 'Checklist 3');
+      const teamTypeChecklists = await OnboardingServices.getTeamTypeChecklists(
+        [teamType1.teamTypeId, teamType2.teamTypeId],
+        organization
+      );
+      expect(teamTypeChecklists.length).toEqual(2);
+      expect(teamTypeChecklists[0].checklistId).toEqual(checklist1.checklistId);
+      expect(teamTypeChecklists[1].checklistId).toEqual(checklist2.checklistId);
     });
   });
 
@@ -82,45 +118,353 @@ describe('Onboarding tests', () => {
           await OnboardingServices.createChecklist(
             await createTestUser(wonderwomanGuest, orgId),
             'name',
+            ['description1', 'description2'],
+            true,
+            null,
             'teamTypeId',
+            null,
             organization
           )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to create a checklist'));
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('create a checklist'));
     });
 
-    it('Fails if team type does not exists', async () => {
+    it('Fails if given both teamId and teamTypeId', async () => {
       await expect(
         async () =>
           await OnboardingServices.createChecklist(
             await createTestUser(batmanAppAdmin, orgId),
             'name',
-            'teamType',
+            ['description1', 'description2'],
+            true,
+            'teamId',
+            'teamTypeId',
+            null,
             organization
           )
-      ).rejects.toThrow(new NotFoundException('Team Type', 'teamType'));
+      ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
     });
 
-    it('Succeeds and creates a checklist', async () => {
-      createTestTeamType('id', organization);
+    it('Fails if general checklist already exists', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestChecklist(batman, orgId, 'General Checklist');
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            null,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
+    });
+
+    it('Fails if creating a general checklist and its parent is not also a general checklist', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const teamtype1 = await createTestTeamType('teamtype1', organization);
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', teamtype1.teamTypeId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            parentChecklist.checklistId,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must also be a general checklist'));
+    });
+
+    it('Fails if teamId is invalid', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            'invalidTeamId',
+            null,
+            null,
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
+    });
+
+    it('Fails if teamTypeId is invalid', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            'invalidTeamTypeId',
+            null,
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
+    });
+
+    it('Fails if parentChecklistId is invalid', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            'invalidChecklistId',
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
+    });
+
+    it('Fails if parentChecklistId is deleted', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist');
+      await prisma.checklist.update({
+        where: { checklistId: parentChecklist.checklistId },
+        data: { dateDeleted: new Date() }
+      });
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            parentChecklist.checklistId,
+            organization
+          )
+      ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
+    });
+
+    it('Fails if parentChecklistId does not match teamId or teamTypeId', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const teamType1 = await createTestTeamType('teamtype1', organization);
+      const teamType2 = await createTestTeamType('teamtype2', organization);
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', teamType1.teamTypeId);
+      await expect(
+        async () =>
+          await OnboardingServices.createChecklist(
+            batman,
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            teamType2.teamTypeId,
+            parentChecklist.checklistId,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
+    });
+
+    it('Succeeds and creates a checklist with teamTypeId', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const teamType1 = await createTestTeamType('teamtype1', organization);
       const result = await OnboardingServices.createChecklist(
-        await createTestUser(batmanAppAdmin, orgId),
+        batman,
         'name',
-        'id',
+        ['description1', 'description2'],
+        true,
+        null,
+        teamType1.teamTypeId,
+        null,
         organization
       );
       expect(result.name).toEqual('name');
-      expect(result.teamTypeId).toEqual('id');
+    });
+  });
+
+  describe('Edit Checklist', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            await createTestUser(wonderwomanGuest, orgId),
+            'checklidtId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            null,
+            organization
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('edit a checklist'));
+    });
+
+    it('Fails if given both teamId and teamTypeId', async () => {
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            await createTestUser(batmanAppAdmin, orgId),
+            'checklistId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            'teamId',
+            'teamTypeId',
+            null,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
+    });
+
+    it('Fails if general checklist already exists', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestChecklist(batman, orgId, 'General Checklist');
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            batman,
+            'checklistId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            null,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
+    });
+
+    it('Fails if teamId is invalid', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            batman,
+            'checklistId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            'invalidTeamId',
+            null,
+            null,
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Team', 'invalidTeamId'));
+    });
+
+    it('Fails if teamTypeId is invalid', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            batman,
+            'checklistId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            'invalidTeamTypeId',
+            null,
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Team Type', 'invalidTeamTypeId'));
+    });
+
+    it('Fails if parentChecklistId is invalid', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            batman,
+            'checklistId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            'invalidChecklistId',
+            organization
+          )
+      ).rejects.toThrow(new NotFoundException('Checklist', 'invalidChecklistId'));
+    });
+
+    it('Fails if parentChecklistId is deleted', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist');
+      await prisma.checklist.update({
+        where: { checklistId: parentChecklist.checklistId },
+        data: { dateDeleted: new Date() }
+      });
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            batman,
+            'checklistId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            null,
+            parentChecklist.checklistId,
+            organization
+          )
+      ).rejects.toThrow(new DeletedException('Checklist', parentChecklist.checklistId));
+    });
+
+    it('Fails if parentChecklistId does not match teamId or teamTypeId', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const teamType1 = await createTestTeamType('teamtype1', organization);
+      const teamType2 = await createTestTeamType('teamtype2', organization);
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklist', teamType1.teamTypeId);
+      await expect(
+        async () =>
+          await OnboardingServices.editChecklist(
+            batman,
+            'checklistId',
+            'name',
+            ['description1', 'description2'],
+            true,
+            null,
+            teamType2.teamTypeId,
+            parentChecklist.checklistId,
+            organization
+          )
+      ).rejects.toThrow(new HttpException(400, 'Parent checklist must have the same teamId or teamTypeId'));
+    });
+
+    it('Succeeds and edits a checklist with teamTypeId', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const teamType1 = await createTestTeamType('teamtype1', organization);
+      const checklist = await createTestChecklist(batman, orgId, 'Checklist 1');
+      const result = await OnboardingServices.editChecklist(
+        batman,
+        checklist.checklistId,
+        'newName',
+        ['description1', 'description2'],
+        true,
+        null,
+        teamType1.teamTypeId,
+        null,
+        organization
+      );
+      expect(result.name).toEqual('newName');
+      expect(result.teamTypeId).toEqual(teamType1.teamTypeId);
+      expect(result.descriptions).toEqual(['description1', 'description2']);
     });
   });
 
   describe('Delete Checklist', () => {
-    it('Fails if user is not admin', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.deleteChecklist(await createTestUser(wonderwomanGuest, orgId), 'id', organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a checklist'));
-    });
-
     it('Fails if checklistId is not found', async () => {
       await expect(
         async () =>
@@ -128,179 +472,49 @@ describe('Onboarding tests', () => {
       ).rejects.toThrow(new HttpException(400, 'Checklist with id: id1 not found!'));
     });
 
+    it('Fails if user is not admin', async () => {
+      const checklist1 = await createTestChecklist(await createTestUser(batmanAppAdmin, orgId), orgId, 'Checklist 1');
+      const wonderwoman = await createTestUser(wonderwomanGuest, orgId);
+      await expect(
+        async () => await OnboardingServices.deleteChecklist(wonderwoman, checklist1.checklistId, organization)
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a checklist'));
+    });
+
     it('Fails if checklist is already deleted', async () => {
-      const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const testChecklist = await createTestChecklist(testSuperman, orgId);
-      await OnboardingServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization);
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklist = await createTestChecklist(batman, orgId, 'Checklist 1');
+      await OnboardingServices.deleteChecklist(batman, testChecklist.checklistId, organization);
 
       await expect(
-        async () => await OnboardingServices.deleteChecklist(testSuperman, testChecklist.checklistId, organization)
+        async () => await OnboardingServices.deleteChecklist(batman, testChecklist.checklistId, organization)
       ).rejects.toThrow(new DeletedException('Checklist', testChecklist.checklistId));
     });
 
-    it('Succeeds and deletes checklist', async () => {
-      const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const testChecklist1 = await createTestChecklist(testSuperman, orgId);
-      await OnboardingServices.deleteChecklist(testSuperman, testChecklist1.checklistId, organization);
-
-      const updatedTestChecklist1 = await prisma.checklist.findUnique({
-        where: { checklistId: testChecklist1.checklistId }
-      });
-
-      expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
+    it('Succeeds and deletes a checklist', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const testChecklist = await createTestChecklist(batman, orgId, 'Checklist 1');
+      await OnboardingServices.deleteChecklist(batman, testChecklist.checklistId, organization);
+      const checklist = await prisma.checklist.findFirst({ where: { checklistId: testChecklist.checklistId } });
+      expect(checklist!.dateDeleted).not.toBeNull();
     });
 
-    it('Succeeds and deletes checklist with all its items', async () => {
-      const testSuperman = await createTestUser(supermanAdmin, orgId);
-      const testChecklist1 = await createTestChecklist(testSuperman, orgId);
-      await OnboardingServices.deleteChecklist(testSuperman, testChecklist1.checklistId, organization);
-      expect(testChecklist1.checklistItems.length).toBe(1);
-
-      const updatedTestChecklist1 = await prisma.checklist.findUnique({
-        where: { checklistId: testChecklist1.checklistId },
-        include: {
-          checklistItems: {
-            where: { dateDeleted: null }
-          }
-        }
-      });
-
-      expect(updatedTestChecklist1?.dateDeleted).not.toBe(null);
-      expect(updatedTestChecklist1?.checklistItems.length).toBe(0);
-    });
-  });
-
-  describe('Create Checklist Item', () => {
-    it('Fails if user is not admin', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.createChecklistItem(
-            await createTestUser(wonderwomanGuest, orgId),
-            'name',
-            'checklistId',
-            'description',
-            'parentChecklistItemId',
-            organization
-          )
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('non-admin tried to create a checklist item'));
-    });
-
-    it('Fails if checklist does not exist', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.createChecklistItem(
-            await createTestUser(batmanAppAdmin, orgId),
-            'name',
-            'checklistId',
-            'description',
-            null,
-            organization
-          )
-      ).rejects.toThrow(new NotFoundException('Checklist', 'checklistId'));
-    });
-
-    it('Fails if parent checklist item does not exist', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
-      await expect(
-        async () =>
-          await OnboardingServices.createChecklistItem(
-            testBatman,
-            'name',
-            testChecklistId,
-            'parentChecklistItemId',
-            'description',
-            organization
-          )
-      ).rejects.toThrow(new NotFoundException('Checklist Item', 'parentChecklistItemId'));
-    });
-
-    it('Fails if checklist of parent checklist item does not equal given checklist', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testChecklist1 = await createTestChecklist(testBatman, orgId);
-      const testChecklist2 = await createTestChecklist(testBatman, orgId);
-      const testParentChecklistItem = await createTestChecklistItem(testBatman, testChecklist1.checklistId, orgId);
-      await expect(
-        async () =>
-          await OnboardingServices.createChecklistItem(
-            testBatman,
-            'name',
-            testChecklist2.checklistId,
-            testParentChecklistItem.checklistItemId,
-            'description',
-            organization
-          )
-      ).rejects.toThrow(new HttpException(400, 'Cannot have parent checklist item with a different checklist'));
-    });
-
-    it('Succeeds and creates a checklist item', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
-      const result = await OnboardingServices.createChecklistItem(
-        testBatman,
-        'name',
-        testChecklistId,
-        null,
-        null,
-        organization
-      );
-      expect(result.name).toEqual('name');
-      expect(result.checklistId).toEqual(testChecklistId);
-    });
-  });
-
-  describe('Delete Checklist Item', () => {
-    it('Fails if user is not admin', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.deleteChecklistItem(await createTestUser(wonderwomanGuest, orgId), 'id', organization)
-      ).rejects.toThrow(new AccessDeniedAdminOnlyException('delete a checklist item'));
-    });
-
-    it('Fails if checklist item does not exist', async () => {
-      await expect(
-        async () =>
-          await OnboardingServices.deleteChecklistItem(await createTestUser(batmanAppAdmin, orgId), 'id1', organization)
-      ).rejects.toThrow(new NotFoundException('Checklist Item', 'id1'));
-    });
-
-    it('Fails if checklist item is already deleted', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
-      const testChecklistItem = await createTestChecklistItem(testBatman, testChecklistId, orgId);
-      await OnboardingServices.deleteChecklistItem(testBatman, testChecklistItem.checklistItemId, organization);
-
-      await expect(
-        async () => await OnboardingServices.deleteChecklistItem(testBatman, testChecklistItem.checklistItemId, organization)
-      ).rejects.toThrow(new DeletedException('Checklist Item', testChecklistItem.checklistItemId));
-    });
-
-    it('Succeeds and deletes checklist item and its children', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      const testChecklistId = (await createTestChecklist(testBatman, orgId)).checklistId;
-      const testChecklistItem1 = await createTestChecklistItem(testBatman, testChecklistId, orgId);
-      const testChecklistItem2 = await createTestChecklistItem(
-        testBatman,
-        testChecklistId,
+    it('Succeeds and deletes a checklist with subtasks', async () => {
+      const batman = await createTestUser(batmanAppAdmin, orgId);
+      const parentChecklist = await createTestChecklist(batman, orgId, 'Parent Checklsit 1');
+      const childChecklist = await createTestChecklist(
+        batman,
         orgId,
-        testChecklistItem1.checklistItemId
+        'Child Checklist 1',
+        undefined,
+        undefined,
+        parentChecklist.checklistId
       );
 
-      expect(testChecklistItem1?.dateDeleted).toBe(null);
-      expect(testChecklistItem2?.dateDeleted).toBe(null);
-
-      await OnboardingServices.deleteChecklistItem(testBatman, testChecklistItem1.checklistItemId, organization);
-
-      const updatedTestChecklistItem1 = await prisma.checklistItem.findUnique({
-        where: { checklistItemId: testChecklistItem1.checklistItemId }
-      });
-
-      const updatedTestChecklistItem2 = await prisma.checklistItem.findUnique({
-        where: { checklistItemId: testChecklistItem2.checklistItemId }
-      });
-
-      expect(updatedTestChecklistItem1?.dateDeleted).not.toBe(null);
-      expect(updatedTestChecklistItem2?.dateDeleted).not.toBe(null);
+      await OnboardingServices.deleteChecklist(batman, parentChecklist.checklistId, organization);
+      const newParentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklist.checklistId } });
+      const newChildChecklist = await prisma.checklist.findFirst({ where: { checklistId: childChecklist.checklistId } });
+      expect(newParentChecklist!.dateDeleted).not.toBeNull();
+      expect(newChildChecklist!.dateDeleted).not.toBeNull();
     });
   });
 });

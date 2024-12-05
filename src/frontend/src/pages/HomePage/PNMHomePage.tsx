@@ -12,12 +12,13 @@ import { useHomePageContext } from '../../app/HomePageContext';
 const PNMHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const [tabValue, setTabValue] = useState(0);
-  const { setOnPNMHomePage, setOnGuestHomePage } = useHomePageContext();
+  const { setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage } = useHomePageContext();
 
   useEffect(() => {
     setOnPNMHomePage(true);
     setOnGuestHomePage(false);
-  }, [setOnPNMHomePage, setOnGuestHomePage]);
+    setOnOnboardingHomePage(false);
+  }, [setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage]);
 
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;

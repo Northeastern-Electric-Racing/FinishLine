@@ -170,4 +170,26 @@ export default class OrganizationsService {
 
     return updatedOrganization;
   }
+
+  /**
+   * Sets onboarding text field
+   * @param submitter
+   * @param organization
+   * @param text
+   * @returns updated organization with onboarding text
+   */
+  static async setOnboardingText(submitter: User, organization: Organization, onboardingText: string) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update onboarding text');
+    }
+
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        onboardingText
+      }
+    });
+
+    return updatedOrganization;
+  }
 }
