@@ -183,7 +183,7 @@ export default class OrganizationsService {
    */
   static async updateOrganizationContacts(user: User, organization: Organization, contacts: string[]) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
-      throw new AccessDeniedAdminOnlyException('Only admins can update contacts');
+      throw new AccessDeniedAdminOnlyException('update organiztion contacts');
     }
     const { organizationId } = organization;
     const updatedOrganization = await prisma.organization.update({
