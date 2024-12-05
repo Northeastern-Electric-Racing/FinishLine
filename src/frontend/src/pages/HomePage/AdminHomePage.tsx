@@ -27,7 +27,7 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
         Welcome, {user.firstName}!
       </Typography>
       <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}>
-        <Grid item xs={10} md={7} height="50%">
+        <Grid item xs={10} md={7} height="70%">
           <WorkPackagesSelectionView />
         </Grid>
       </Grid>

@@ -36,6 +36,7 @@ const WorkPackagesSelectionView: React.FC = () => {
   const inProgressWPs: WorkPackage[] = getInProgressWorkPackages(relevantWPs);
   const overdueWPs: WorkPackage[] = getOverdueWorkPackages(relevantWPs);
 
+  // options for selection
   const workPackageOptions: [string, WorkPackage[]][] = [
     [`Upcoming Work Packages (${upcomingWPs.length})`, upcomingWPs],
     [`In Progress Work Packages (${inProgressWPs.length})`, inProgressWPs],
@@ -51,6 +52,8 @@ const WorkPackagesSelectionView: React.FC = () => {
   }
 
   const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
+
+  // destructuring tuple to get wps of selected option
   const [, currentWps] = workPackageOptions[currentDisplayedWPs];
 
   const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
