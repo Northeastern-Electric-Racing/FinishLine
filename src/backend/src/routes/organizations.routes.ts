@@ -22,10 +22,24 @@ organizationRouter.post(
 organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
 
 organizationRouter.post(
+  '/application-link/update',
+  nonEmptyString(body('applicationLink')),
+  validateInputs,
+  OrganizationsController.updateApplicationLink
+);
+organizationRouter.post(
   '/onboardingText/set',
   nonEmptyString(body('onboardingText')),
   validateInputs,
   OrganizationsController.setOnboardingText
+);
+
+organizationRouter.post(
+  '/contacts/set',
+  body('contacts').isArray(),
+  nonEmptyString(body('contacts.*')),
+  validateInputs,
+  OrganizationsController.updateOrganizationContacts
 );
 
 export default organizationRouter;
