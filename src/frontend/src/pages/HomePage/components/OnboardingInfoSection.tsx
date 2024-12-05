@@ -22,13 +22,19 @@ const OnboardingInfoSection: React.FC = () => {
       <Grid item>
         <Box
           sx={{
-            backgroundColor: 'gray',
             height: '25vh',
             borderRadius: '10px',
-            width: '100%'
+            width: '100%',
+            background: theme.palette.background.paper
           }}
         >
-          <Typography variant="h5">Onboarding</Typography>
+          <Typography variant="h5" ml={2} pt={2}>
+            Onboarding
+          </Typography>
+          <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>
+            Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to
+            officially welcome you to our team.
+          </Typography>
         </Box>
       </Grid>
       <Grid item>
