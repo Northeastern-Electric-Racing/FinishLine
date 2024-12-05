@@ -12,10 +12,10 @@ const SubtaskSection: React.FC<{ subtasks: Checklist[]; parentTask: Checklist }>
       sx={{ backgroundColor: '#CECECE', padding: 2, marginTop: -0.5, marginBottom: 3, borderRadius: '0px 0px 10px 10px' }}
     >
       {subtasks.length > 0 ? (
-        <Grid container sx={{ display: 'flex' }}>
+        <Grid container sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center', alignItems: 'center' }}>
           <Grid item xs={12} md={7}>
             {subtasks.map((subtask) => (
-              <Box marginLeft={5} display={'flex'} alignItems={'center'}>
+              <Box marginLeft={5} display={'flex'} alignItems={'center'} marginBottom={1}>
                 <Checkbox
                   sx={{
                     '& .MuiSvgIcon-root': {

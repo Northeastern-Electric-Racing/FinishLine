@@ -90,23 +90,12 @@ describe('Onboarding tests', () => {
 
   describe('Get Users TeamType Checklists', () => {
     it('Fails if user does not exists', async () => {
-      await expect(async () => await OnboardingServices.getUsersTeamTypeChecklists('1', organization)).rejects.toThrow(
+      await expect(async () => await OnboardingServices.getUsersChecklists('1', organization)).rejects.toThrow(
         new NotFoundException('User', '1')
       );
     });
 
-    it('Fails if the team types are empty', async () => {
-      const batman = await createTestUser(batmanAppAdmin, orgId);
-      await prisma.user.update({
-        where: { userId: batman.userId },
-        data: { teamsAsMember: { set: [] } }
-      });
-      await expect(
-        async () => await OnboardingServices.getUsersTeamTypeChecklists(batman.userId, organization)
-      ).rejects.toThrow(new HttpException(400, 'teamTypeIds cannot be empty'));
-    });
-
-    it('Succeeds and gets all checklists for the user and teamType', async () => {
+    it('Succeeds and gets all checklists for the user`s team and teamtype', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
@@ -117,9 +106,11 @@ describe('Onboarding tests', () => {
       });
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1', teamType1.teamTypeId);
       await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
-      const teamTypeChecklists = await OnboardingServices.getUsersTeamTypeChecklists(batman.userId, organization);
-      expect(teamTypeChecklists.length).toEqual(1);
+      const checklist3 = await createTestChecklist(batman, orgId, 'Checklist 3', undefined, team1.teamId);
+      const teamTypeChecklists = await OnboardingServices.getUsersChecklists(batman.userId, organization);
+      expect(teamTypeChecklists.length).toEqual(2);
       expect(teamTypeChecklists[0].checklistId).toEqual(checklist1.checklistId);
+      expect(teamTypeChecklists[1].checklistId).toEqual(checklist3.checklistId);
     });
   });
 

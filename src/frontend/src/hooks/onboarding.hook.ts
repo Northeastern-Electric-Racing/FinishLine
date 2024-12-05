@@ -1,6 +1,6 @@
 import { useQuery } from 'react-query';
 import { Checklist } from 'shared';
-import { getAllChecklists, getGeneralChecklists, getUsersTeamTypeChecklists } from '../apis/onboarding.api';
+import { getAllChecklists, getGeneralChecklists, getUsersChecklists } from '../apis/onboarding.api';
 
 export const useAllChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists'], async () => {
@@ -18,7 +18,7 @@ export const useGeneralChecklists = () => {
 
 export const useUsersTeamTypeChecklists = () => {
   return useQuery<Checklist[], Error>(['checklists', 'teamTypeChecklists'], async () => {
-    const { data } = await getUsersTeamTypeChecklists();
+    const { data } = await getUsersChecklists();
     return data;
   });
 };

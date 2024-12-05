@@ -35,28 +35,39 @@ const ChecklistSection: React.FC = () => {
     return <ErrorPage error={usersTeamTypeChecklistsError} />;
   }
 
-  const groupedTeamTypeChecklists = usersTeamTypeChecklists.reduce<Record<string, ChecklistType[]>>((grouped, checklist) => {
-    const teamTypeName: string = checklist.teamType!.name;
-    if (!grouped[teamTypeName]) {
-      grouped[teamTypeName] = [];
-    }
-    grouped[teamTypeName].push(checklist);
-    return grouped;
-  }, {});
+  const groupedChecklists = usersTeamTypeChecklists.reduce<Record<string, ChecklistType[]>>(
+    (groupedChecklists, checklist) => {
+      let checklistName: string;
+      if (checklist.teamType) {
+        checklistName = checklist.teamType.name;
+      } else if (checklist.team) {
+        checklistName = checklist.team?.teamName;
+      } else {
+        checklistName = 'General';
+      }
 
-  const groupedTeamTypeChecklistsArray = Object.entries(groupedTeamTypeChecklists).map(([teamTypeName, checklists]) => ({
-    teamTypeName,
+      if (!groupedChecklists[checklistName]) {
+        groupedChecklists[checklistName] = [];
+      }
+      groupedChecklists[checklistName].push(checklist);
+      return groupedChecklists;
+    },
+    {}
+  );
+
+  const groupedChecklistsArray = Object.entries(groupedChecklists).map(([checklistName, checklists]) => ({
+    checklistName,
     checklists
   }));
 
-  const allChecklists = [{ teamTypeName: 'General', checklists: generalChecklists }, ...groupedTeamTypeChecklistsArray];
+  const allChecklists = [{ checklistName: 'General', checklists: generalChecklists }, ...groupedChecklistsArray];
 
   return (
     <Box>
       <Grid container>
-        {allChecklists.map(({ teamTypeName, checklists }) => (
+        {allChecklists.map(({ checklistName, checklists }) => (
           <Grid item xs={12} padding={2}>
-            <Checklist parentChecklists={checklists} teamTypeName={teamTypeName} />
+            <Checklist parentChecklists={checklists} checklistName={checklistName} />
           </Grid>
         ))}
       </Grid>

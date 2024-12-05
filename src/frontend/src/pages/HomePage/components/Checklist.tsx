@@ -4,9 +4,9 @@ import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
 
-const Checklist: React.FC<{ parentChecklists: ChecklistType[]; teamTypeName?: string }> = ({
+const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: string }> = ({
   parentChecklists,
-  teamTypeName
+  checklistName
 }) => {
   console.log('parentChecklist', parentChecklists);
   const theme = useTheme();
@@ -22,7 +22,7 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; teamTypeName?: st
         <Grid item xs={12} padding={2.5}>
           <Grid display="flex" alignItems="center" justifyContent="space-between">
             <Typography fontSize="2em" fontWeight="bold">
-              {teamTypeName ?? 'General'} Checklist
+              {checklistName ?? 'General'} Checklist
             </Typography>
             <Grid display="flex" alignItems="center" gap={2}>
               <progress value={50} max={100} />

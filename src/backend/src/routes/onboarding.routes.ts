@@ -12,7 +12,7 @@ onboardingRouter.get('/checklists/general', OnboardingController.getGeneralCheck
 
 onboardingRouter.get('/checklists/checked', OnboardingController.getCheckedChecklists);
 
-onboardingRouter.get('/checklists/usersTeamTypeChecklists', OnboardingController.getUsersTeamTypeChecklists);
+onboardingRouter.get('/checklists/usersChecklists', OnboardingController.getUsersChecklists);
 
 onboardingRouter.post(
   '/checklist/create',

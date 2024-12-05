@@ -14,7 +14,7 @@ export const getGeneralChecklists = () => {
   });
 };
 
-export const getUsersTeamTypeChecklists = () => {
+export const getUsersChecklists = () => {
   return axios.get<Checklist[]>(apiUrls.usersTeamTypeChecklists(), {
     transformResponse: (data) => JSON.parse(data)
   });
