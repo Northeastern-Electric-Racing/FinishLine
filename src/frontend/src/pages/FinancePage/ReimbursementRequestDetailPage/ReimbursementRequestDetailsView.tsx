@@ -15,7 +15,7 @@ import { Grid, Typography, useTheme, Link, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ReimbursementRequest, isHead } from 'shared';
+import { ReimbursementRequest, isAdmin, isHead } from 'shared';
 import ActionsMenu, { ButtonInfo } from '../../../components/ActionsMenu';
 import NERModal from '../../../components/NERModal';
 import PageLayout from '../../../components/PageLayout';
@@ -443,7 +443,10 @@ const ReimbursementRequestDetailsView: React.FC<ReimbursementRequestDetailsViewP
       title: 'Mark Pending Finance',
       onClick: () => setShowMarkPendingFinanceModal(true),
       icon: <Pending />,
-      disabled: user.userId !== reimbursementRequest.recipient.userId || isPendingFinance || !isLeadershipApproved
+      disabled:
+        isPendingFinance ||
+        !isLeadershipApproved ||
+        (!isAdmin(user.role) && user.userId !== reimbursementRequest.recipient.userId)
     },
     {
       title: 'Request Changes',
