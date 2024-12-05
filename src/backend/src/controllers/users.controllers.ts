@@ -8,9 +8,9 @@ export default class UsersController {
     try {
       const users = await UsersService.getAllUsers();
 
-      return res.status(200).json(users);
+      res.status(200).json(users);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -20,9 +20,9 @@ export default class UsersController {
 
       const requestedUser = await UsersService.getSingleUser(userId, req.organization);
 
-      return res.status(200).json(requestedUser);
+      res.status(200).json(requestedUser);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -30,9 +30,9 @@ export default class UsersController {
     try {
       const settings = await UsersService.getUserSettings(req.currentUser.userId);
 
-      return res.status(200).json(settings);
+      res.status(200).json(settings);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -40,9 +40,9 @@ export default class UsersController {
     try {
       const secureSettings = await UsersService.getCurrentUserSecureSettings(req.currentUser);
 
-      return res.status(200).json(secureSettings);
+      res.status(200).json(secureSettings);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -50,9 +50,9 @@ export default class UsersController {
     try {
       const projects = await UsersService.getUsersFavoriteProjects(req.currentUser.userId, req.organization);
 
-      return res.status(200).json(projects);
+      res.status(200).json(projects);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -63,9 +63,9 @@ export default class UsersController {
 
       await UsersService.updateUserSettings(user, defaultTheme, slackId);
 
-      return res.status(200).json({ message: `Successfully updated settings for user ${user.userId}.` });
+      res.status(200).json({ message: `Successfully updated settings for user ${user.userId}.` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -77,9 +77,9 @@ export default class UsersController {
       const { user, token } = await UsersService.logUserIn(idToken, header!);
 
       res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
-      return res.status(200).json(user);
+      res.status(200).json(user);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -97,9 +97,9 @@ export default class UsersController {
 
       const user = await UsersService.logUserInDev(userId, header);
 
-      return res.status(200).json(user);
+      res.status(200).json(user);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -110,9 +110,9 @@ export default class UsersController {
 
       const targetUser = await UsersService.updateUserRole(userId, req.currentUser, role, req.organization);
 
-      return res.status(200).json(targetUser);
+      res.status(200).json(targetUser);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -122,9 +122,9 @@ export default class UsersController {
 
       const userSecureSettings = await UsersService.getUserSecureSetting(userId, req.currentUser, req.organization);
 
-      return res.status(200).json(userSecureSettings);
+      res.status(200).json(userSecureSettings);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -135,9 +135,9 @@ export default class UsersController {
 
       await UsersService.setUserSecureSettings(user, nuid, street, city, state, zipcode, phoneNumber);
 
-      return res.status(200).json({ message: `Successfully updated secure settings for user ${user.userId}.` });
+      res.status(200).json({ message: `Successfully updated secure settings for user ${user.userId}.` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -152,9 +152,9 @@ export default class UsersController {
         availability
       );
 
-      return res.status(200).json(updatedScheduleSettings);
+      res.status(200).json(updatedScheduleSettings);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -163,9 +163,9 @@ export default class UsersController {
       const { userId } = req.params;
 
       const userScheduleSettings = await UsersService.getUserScheduleSettings(userId, req.currentUser);
-      return res.status(200).json(userScheduleSettings);
+      res.status(200).json(userScheduleSettings);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -175,9 +175,9 @@ export default class UsersController {
       const { organization } = req;
 
       const userTasks = await UsersService.getUserTasks(userId, organization);
-      return res.status(200).json(userTasks);
+      res.status(200).json(userTasks);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -186,9 +186,9 @@ export default class UsersController {
       const { userIds } = req.body;
 
       const tasks: Task[] = await UsersService.getManyUserTasks(userIds, req.organization);
-      return res.status(200).json(tasks);
+      res.status(200).json(tasks);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }
