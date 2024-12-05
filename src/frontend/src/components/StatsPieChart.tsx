@@ -1,5 +1,6 @@
 import { Pie } from 'react-chartjs-2';
 import { Chart, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import { Box } from '@mui/material';
 
 Chart.register(ArcElement, Title, Tooltip, Legend);
 
@@ -76,9 +77,9 @@ const StatsPieChart: React.FC<StatsPieChartProps> = ({ xAxisData, yAxisData, wid
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', maxWidth: width, maxHeight: height }}>
+    <Box style={{ width: '100%', height: '100%', maxWidth: width, maxHeight: height }}>
       <Pie data={data} options={options} />
-    </div>
+    </Box>
   );
 };
 
