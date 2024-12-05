@@ -21,7 +21,12 @@ organizationRouter.post(
 
 organizationRouter.get('/images', OrganizationsController.getOrganizationImages);
 
-organizationRouter.post('/application-link/update', OrganizationsController.updateApplicationLink);
+organizationRouter.post(
+  '/application-link/update',
+  nonEmptyString(body('applicationLink')),
+  validateInputs,
+  OrganizationsController.updateApplicationLink
+);
 organizationRouter.post(
   '/onboardingText/set',
   nonEmptyString(body('onboardingText')),
