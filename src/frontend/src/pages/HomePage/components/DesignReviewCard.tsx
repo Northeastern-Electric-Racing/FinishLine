@@ -16,10 +16,13 @@ interface DesignReviewProps {
 
 const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const history = useHistory();
+
+  const confirmedMemberIds = designReview.confirmedMembers.map((user) => user.userId);
+  console.log('CONFIRMED:', confirmedMemberIds);
+
   return (
-    //is this what we want
     <>
-      {!designReview.status || !designReview.confirmedMembers.includes(user) ? (
+      {!confirmedMemberIds.includes(user.userId) ? (
         <NERButton
           variant="contained"
           size="small"
