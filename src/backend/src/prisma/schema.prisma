@@ -115,19 +115,10 @@ enum Graph_Type {
   PIE
 }
 
-enum Graph_Data_Unit {
-  CAR
-  PROJECT
-  TEAM
-  CHANGE_REQUEST
-  BUDGET
-  DESIGN_REVIEW
-  USER
-}
-
-enum Measures {
+enum Measure {
+  COUNT
   SUM
-  AVERAGE
+  AVG
 }
 
 enum Permission {
@@ -142,15 +133,16 @@ enum Permission {
 }
 
 model User {
-  userId             String                @id @default(uuid())
-  firstName          String
-  lastName           String
-  googleAuthId       String                @unique
-  email              String                @unique
-  emailId            String?               @unique
-  roles              Role[]
-  userSettings       User_Settings?
-  userSecureSettings User_Secure_Settings?
+  userId                String                @id @default(uuid())
+  firstName             String
+  lastName              String
+  googleAuthId          String                @unique
+  email                 String                @unique
+  emailId               String?               @unique
+  roles                 Role[]
+  additionalPermissions Permission[]
+  userSettings          User_Settings?
+  userSecureSettings    User_Secure_Settings?
 
   // Relation references
   submittedChangeRequests         Change_Request[]          @relation(name: "submittedChangeRequests")
@@ -212,11 +204,10 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
-  createdGraphCollections         GraphCollection[]         @relation(name: "graphCollectionsCreator")
-  deletedGraphCollections         GraphCollection[]         @relation(name: "graphCollectionDeleter")
+  createdGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionsCreator")
+  deletedGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionDeleter")
   createdGraphs                   Graph[]                   @relation(name: "graphCreator")
   deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
-  permissions                     Permission[]
 }
 
 model Role {
@@ -747,6 +738,8 @@ model Team_Type {
   iconName       String
   designReviews  Design_Review[]
   team           Team[]
+  description    String
+  imageFileId    String?
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
   calendarId     String?
@@ -928,8 +921,10 @@ model Organization {
   changeRequests           Change_Request[]
   reimbursementReqeusts    Reimbursement_Request[]
   usefulLinks              Link[]
-  FrequentlyAskedQuestions FrequentlyAskedQuestion[]
-  Milestone                Milestone[]
+  frequentlyAskedQuestions FrequentlyAskedQuestion[]
+  milestones               Milestone[]
+  graphCollections         Graph_Collection[]
+  graphs                   Graph[]
 }
 
 model FrequentlyAskedQuestion {
@@ -962,40 +957,51 @@ model Milestone {
 }
 
 model Graph {
-  organizationId        String
-  startDate             DateTime
-  endDate               DateTime
-  title                 String
-  linkId                String           @default(uuid())
-  graphType             Graph_Type
-  userCreated           User             @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
-  userCreatedId         String
-  userDeleted           User?            @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
-  userDeletedId         String?
-  dateDeleted           DateTime?
-  graphDataId           String           @id
-  data                  GraphData        @relation(fields: [graphDataId], references: [id])
-  groupBy               Graph_Data_Unit
-  graphCollection       GraphCollection? @relation(fields: [graphCollectionLinkId], references: [linkId])
-  graphCollectionLinkId String?
-}
+  id            String     @id @default(uuid())
+  startDate     DateTime
+  endDate       DateTime
+  title         String
+  graphType     Graph_Type
+  dateDeleted   DateTime?
+  dateCreated   DateTime   @default(now())
+  finalTable    String
+  finalColumn   String
+  groupByColumn String
+  measure       Measure
 
-model GraphData {
-  id       String          @id
-  type     Graph_Data_Unit
-  measures Measures
-  graph    Graph[]
-}
+  queryPaths Graph_Query[] // Treated as a one to many, should be structured as a queue where the first element is the first element to join in the query and the last element is the table before the final table
 
-model GraphCollection {
+  graphCollectionId String?
+  graphCollection   Graph_Collection? @relation(fields: [graphCollectionId], references: [id])
+
+  userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCreator")
+  userCreatedId  String
+  userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphDeleter")
+  userDeletedId  String?
   organizationId String
-  graphs         Graph[]
-  title          String
-  linkId         String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
+}
+
+model Graph_Query {
+  id         String @id @default(uuid())
+  primaryKey String
+  table      String
+
+  graphId String
+  graph   Graph  @relation(fields: [graphId], references: [id])
+}
+
+model Graph_Collection {
+  id              String       @id @default(uuid())
+  title           String
+  dateDeleted     DateTime?
+  viewPermissions Permission[]
+  graphs          Graph[]
+
   userCreatedId  String
   userCreated    User         @relation(fields: [userCreatedId], references: [userId], name: "graphCollectionsCreator")
   userDeletedId  String?
   userDeleted    User?        @relation(fields: [userDeletedId], references: [userId], name: "graphCollectionDeleter")
-  dateDeleted    DateTime?
-  permissions    Permission[]
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [organizationId])
 }

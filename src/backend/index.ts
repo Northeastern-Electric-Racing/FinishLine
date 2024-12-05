@@ -17,8 +17,10 @@ import workPackageTemplatesRouter from './src/routes/work-package-templates.rout
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
+import statisticsRouter from './src/routes/statistics.routes';
 
 const app = express();
+
 const port = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -67,8 +69,9 @@ app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
 app.use('/recruitment', recruitmentRouter);
+app.use('/statistics', statisticsRouter);
 app.use('/', (_req, res) => {
-  res.json('Welcome to FinishLine');
+  res.status(200).json('Welcome to FinishLine');
 });
 
 // custom error handler middleware
