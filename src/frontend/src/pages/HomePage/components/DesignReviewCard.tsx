@@ -3,10 +3,11 @@ import { DesignReview, User } from 'shared';
 import { datePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
-import { CalendarTodayOutlined } from '@mui/icons-material';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { LocationOnOutlined } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
+import { meetingStartTimePipe } from '../../../../../backend/src/utils/design-reviews.utils';
 
 interface DesignReviewProps {
   designReview: DesignReview;
@@ -24,9 +25,7 @@ const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
           size="small"
           sx={{ color: 'white' }}
           onClick={() => {
-            {
-              history.push(`${routes.CALENDAR}/${designReview.designReviewId}`);
-            }
+            history.push(`${routes.CALENDAR}/${designReview.designReviewId}`);
           }}
           component={RouterLink}
         >
@@ -42,11 +41,6 @@ const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
 function getWeekday(date: Date): string {
   const weekdays: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return weekdays[date.getDay()];
-}
-
-function getTime(list: number[]): string {
-  const weekdays: string[] = ['10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm'];
-  return weekdays[list[0] - 1];
 }
 
 function removeYear(str: string): string {
@@ -77,13 +71,13 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
               </Link>
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-              <Typography>{<CalendarTodayOutlined sx={{ fontSize: 21 }} />}</Typography>
+              <Typography>{<CalendarMonthIcon sx={{ fontSize: 21 }} />}</Typography>
               <Typography fontWeight={'regular'} variant="body2">
                 {getWeekday(designReview.dateScheduled) +
                   ', ' +
                   removeYear(datePipe(designReview.dateScheduled)) +
                   ' @ ' +
-                  getTime(designReview.meetingTimes)}
+                  meetingStartTimePipe(designReview.meetingTimes)}
               </Typography>
             </Stack>
             <Stack direction="row" spacing={1}>
@@ -93,7 +87,7 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
               </Typography>
             </Stack>
           </Box>
-          <DisplayStatus designReview={designReview} user={user}></DisplayStatus>
+          <DisplayStatus designReview={designReview} user={user} />
         </Stack>
       </CardContent>
     </Card>

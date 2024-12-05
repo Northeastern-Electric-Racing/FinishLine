@@ -22,7 +22,7 @@ const NoUpcomingDesignReviewsDisplay: React.FC = () => {
     <Box
       sx={{
         width: '100%',
-        height: 'auto',
+        height: `calc(100vh - 300px)`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -50,11 +50,6 @@ const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) =>
     const inTwoWeeks = new Date();
     inTwoWeeks.setDate(currentDate.getDate() + 14);
 
-    /*
-  Since this is on the leads page, leads shouldn't see all design reviews here. 
-  We should filter the design reviews on whether the current user is found the the 
-  design review's required or optional members field
-*/
     return (
       scheduledDate >= currentDate &&
       scheduledDate <= inTwoWeeks &&
