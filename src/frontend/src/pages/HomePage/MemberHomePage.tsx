@@ -10,6 +10,7 @@ import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import MyTasks from './components/MyTasks';
+import TeamWorkPackageDisplay from './components/TeamWorkPackageDisplay';
 
 interface MemberHomePageProps {
   user: AuthenticatedUser;
@@ -26,9 +27,12 @@ const MemberHomePage = ({ user }: MemberHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}>
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2} spacing={2}>
         <Grid item xs={12} md={6} height={'100%'}>
           <MyTasks />
+        </Grid>
+        <Grid item xs={12} md={6} height={'100%'}>
+          <TeamWorkPackageDisplay user={user} />
         </Grid>
       </Grid>
     </PageLayout>

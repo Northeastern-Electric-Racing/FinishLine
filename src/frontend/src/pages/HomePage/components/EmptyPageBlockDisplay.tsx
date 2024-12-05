@@ -11,6 +11,7 @@ const EmptyPageBlockDisplay: React.FC<EmptyPageBlockDisplayProps> = ({ icon, hea
   return (
     <Box
       sx={{
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',

@@ -1,4 +1,3 @@
-import { Stack } from '@mui/material';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import { useCurrentUser, useUserTasks } from '../../../hooks/users.hooks';
 import TaskDetailCard from './TaskDetailCard';
@@ -35,11 +34,9 @@ const MyTasks: React.FC = () => {
       {userTasks.length === 0 ? (
         <NoTasksDisplay />
       ) : (
-        <Stack spacing={2}>
-          {userTasks.map((task, index) => {
-            return <TaskDetailCard task={task} taskNumber={index + 1} />;
-          })}
-        </Stack>
+        userTasks.map((task, index) => {
+          return <TaskDetailCard task={task} taskNumber={index + 1} />;
+        })
       )}
     </ScrollablePageBlock>
   );

@@ -29,6 +29,7 @@ const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ task, taskNumber }) => {
       variant="outlined"
       sx={{
         minWidth: 'fit-content',
+        minHeight: 'fit-content',
         mr: 3,
         background: theme.palette.background.default,
         borderRadius: 2
