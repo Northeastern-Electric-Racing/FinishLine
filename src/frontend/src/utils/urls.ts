@@ -194,7 +194,7 @@ const faqDelete = (id: string) => `${recruitment()}/faq/${id}/delete`;
 /************** Onboarding Endpoints ***************/
 const onboarding = () => `${API_URL}/onboarding`;
 const allChecklists = () => `${onboarding()}/checklists`;
-const generalChecklist = () => `${allChecklists()}/general`;
+const generalChecklists = () => `${allChecklists()}/general`;
 const usersTeamTypeChecklists = () => `${allChecklists()}/usersTeamTypeChecklists`;
 
 /**************** Other Endpoints ****************/
@@ -353,7 +353,7 @@ export const apiUrls = {
 
   onboarding,
   allChecklists,
-  generalChecklist,
+  generalChecklists,
   usersTeamTypeChecklists,
 
   version

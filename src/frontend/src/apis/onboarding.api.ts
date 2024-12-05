@@ -8,8 +8,8 @@ export const getAllChecklists = () => {
   });
 };
 
-export const getGeneralChecklist = () => {
-  return axios.get<Checklist>(apiUrls.generalChecklist(), {
+export const getGeneralChecklists = () => {
+  return axios.get<Checklist[]>(apiUrls.generalChecklists(), {
     transformResponse: (data) => JSON.parse(data)
   });
 };

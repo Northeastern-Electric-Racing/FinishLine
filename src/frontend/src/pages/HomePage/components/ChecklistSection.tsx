@@ -1,16 +1,17 @@
 import { Grid, Box } from '@mui/material';
-import { useGeneralChecklist, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
+import { useGeneralChecklists, useUsersTeamTypeChecklists } from '../../../hooks/onboarding.hook';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ErrorPage from '../../ErrorPage';
 import Checklist from './Checklist';
+import { Checklist as ChecklistType } from 'shared';
 
 const ChecklistSection: React.FC = () => {
   const {
-    data: generalChecklist,
-    isError: generalChecklistIsError,
-    error: generalChecklistError,
-    isLoading: generalChecklistIsLoading
-  } = useGeneralChecklist();
+    data: generalChecklists,
+    isError: generalChecklistsIsError,
+    error: generalChecklistsError,
+    isLoading: generalChecklistsIsLoading
+  } = useGeneralChecklists();
 
   const {
     data: usersTeamTypeChecklists,
@@ -19,33 +20,45 @@ const ChecklistSection: React.FC = () => {
     isLoading: usersTeamTypeChecklistsIsLoading
   } = useUsersTeamTypeChecklists();
 
-  console.log('general checklist', generalChecklist);
+  console.log('general checklist', generalChecklists);
   console.log('team type checklist', usersTeamTypeChecklists);
 
-  if (!generalChecklist || generalChecklistIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
+  if (!generalChecklists || generalChecklistsIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
     return <LoadingIndicator />;
   }
-  if (generalChecklistIsError) {
-    return <ErrorPage error={generalChecklistError} />;
+
+  if (generalChecklistsIsError) {
+    return <ErrorPage error={generalChecklistsError} />;
   }
 
   if (usersTeamTypeChecklistsIsError) {
     return <ErrorPage error={usersTeamTypeChecklistsError} />;
   }
 
-  const allChecklists = [generalChecklist, usersTeamTypeChecklists];
+  const groupedTeamTypeChecklists = usersTeamTypeChecklists.reduce<Record<string, ChecklistType[]>>((grouped, checklist) => {
+    const teamTypeName: string = checklist.teamType!.name;
+    if (!grouped[teamTypeName]) {
+      grouped[teamTypeName] = [];
+    }
+    grouped[teamTypeName].push(checklist);
+    return grouped;
+  }, {});
+
+  const groupedTeamTypeChecklistsArray = Object.entries(groupedTeamTypeChecklists).map(([teamTypeName, checklists]) => ({
+    teamTypeName,
+    checklists
+  }));
+
+  const allChecklists = [{ teamTypeName: 'General', checklists: generalChecklists }, ...groupedTeamTypeChecklistsArray];
 
   return (
     <Box>
       <Grid container>
-        {allChecklists.map((checklist) => {
-          console.log(checklist);
-          return (
-            <Grid item xs={12} padding={2}>
-              <Checklist parentChecklist={checklist} teamType={checklist.teamType?.name}/>
-            </Grid>
-          );
-        })}
+        {allChecklists.map(({ teamTypeName, checklists }) => (
+          <Grid item xs={12} padding={2}>
+            <Checklist parentChecklists={checklists} teamTypeName={teamTypeName} />
+          </Grid>
+        ))}
       </Grid>
     </Box>
   );

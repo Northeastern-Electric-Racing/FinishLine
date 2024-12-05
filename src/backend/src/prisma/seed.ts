@@ -1915,7 +1915,7 @@ const performSeed: () => Promise<void> = async () => {
     ],
     false,
     null,
-    software.teamTypeId,
+    null,
     null,
     ner
   );
@@ -1926,7 +1926,7 @@ const performSeed: () => Promise<void> = async () => {
     [],
     false,
     null,
-    software.teamTypeId,
+    null,
     joinSlackChecklist.checklistId,
     ner
   );
@@ -1937,7 +1937,7 @@ const performSeed: () => Promise<void> = async () => {
     [],
     false,
     null,
-    software.teamTypeId,
+    null,
     joinSlackChecklist.checklistId,
     ner
   );
@@ -1948,7 +1948,7 @@ const performSeed: () => Promise<void> = async () => {
     [],
     false,
     null,
-    software.teamTypeId,
+    null,
     joinSlackChecklist.checklistId,
     ner
   );
@@ -1959,7 +1959,7 @@ const performSeed: () => Promise<void> = async () => {
     [],
     false,
     null,
-    software.teamTypeId,
+    null,
     joinSlackChecklist.checklistId,
     ner
   );
@@ -1970,30 +1970,30 @@ const performSeed: () => Promise<void> = async () => {
     ['Join NER on engage. This is what Northeastern uses to keep track of our roster'],
     false,
     null,
-    software.teamTypeId,
+    null,
     null,
     ner
   );
 
-  const generalChecklist = await OnboardingServices.createChecklist(
+  const learnGitChecklist = await OnboardingServices.createChecklist(
     batman,
-    'General',
-    ['Everyone be good'],
+    'Learn how to use git',
+    ['Go online and learn how to use git'],
     false,
     null,
-    null,
+    software.teamTypeId,
     null,
     ner
   );
 
   await OnboardingServices.createChecklist(
     batman,
-    'Be respectful',
+    'Create your first project',
     [],
     false,
     null,
-    null,
-    generalChecklist.checklistId,
+    software.teamTypeId,
+    learnGitChecklist.checklistId,
     ner
   );
 };

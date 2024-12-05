@@ -4,12 +4,11 @@ import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
 
-const Checklist: React.FC<{ parentChecklist: ChecklistType; teamTypeName?: string }> = ({
-  parentChecklist,
+const Checklist: React.FC<{ parentChecklists: ChecklistType[]; teamTypeName?: string }> = ({
+  parentChecklists,
   teamTypeName
 }) => {
-  console.log('parentChecklist', parentChecklist);
-  const { subtasks } = parentChecklist;
+  console.log('parentChecklist', parentChecklists);
   const theme = useTheme();
   const [showTasks, setShowTasks] = useState(false);
 
@@ -40,7 +39,9 @@ const Checklist: React.FC<{ parentChecklist: ChecklistType; teamTypeName?: strin
                 justifyContent: 'center'
               }}
             >
-              <Task subtasks={subtasks} parentTask={parentChecklist} />
+              {parentChecklists.map((parentChecklist) => (
+                <Task subtasks={parentChecklist.subtasks} parentTask={parentChecklist} />
+              ))}
             </Box>
           )}
         </Grid>

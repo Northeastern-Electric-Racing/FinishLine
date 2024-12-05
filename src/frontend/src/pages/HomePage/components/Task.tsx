@@ -25,7 +25,8 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
           padding: 1.5,
           alignContent: 'center',
           position: 'relative',
-          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)'
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
+          marginBottom: showSubtasks ? 0 : 3
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

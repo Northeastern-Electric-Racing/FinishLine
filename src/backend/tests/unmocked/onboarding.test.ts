@@ -1,5 +1,12 @@
 import { Organization } from '@prisma/client';
-import { createTestChecklist, createTestOrganization, createTestTeam, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import {
+  createTestChecklist,
+  createTestOrganization,
+  createTestTeam,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
@@ -147,24 +154,6 @@ describe('Onboarding tests', () => {
             organization
           )
       ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
-    });
-
-    it('Fails if general checklist already exists', async () => {
-      const batman = await createTestUser(batmanAppAdmin, orgId);
-      await createTestChecklist(batman, orgId, 'General Checklist');
-      await expect(
-        async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'name',
-            ['description1', 'description2'],
-            true,
-            null,
-            null,
-            null,
-            organization
-          )
-      ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
     });
 
     it('Fails if creating a general checklist and its parent is not also a general checklist', async () => {
