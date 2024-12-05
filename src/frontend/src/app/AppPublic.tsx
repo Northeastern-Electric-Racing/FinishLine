@@ -35,7 +35,13 @@ const AppPublic: React.FC = () => {
         return <Organizations></Organizations>;
       }
 
-      return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} />;
+      return (
+        <AppAuthenticated
+          userId={auth.user.userId}
+          userRole={auth.user.role}
+          completedOnboarding={auth.user.completedOnboarding}
+        />
+      );
     }
 
     // if we're on development and the userId is stored in localStorage,
