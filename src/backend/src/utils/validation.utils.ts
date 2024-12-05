@@ -230,10 +230,11 @@ export const projectValidators = [
   nonEmptyString(body('managerId').optional())
 ];
 
-export const validateInputs = (req: Request, res: Response, next: Function): Response | void => {
+export const validateInputs = (req: Request, res: Response, next: Function): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+  } else {
+    next();
   }
-  next();
 };

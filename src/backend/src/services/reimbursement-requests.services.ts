@@ -18,7 +18,8 @@ import {
   WbsReimbursementProductCreateArgs,
   OtherReimbursementProductCreateArgs,
   AccountCode,
-  ReimbursementStatus
+  ReimbursementStatus,
+  startOfDay
 } from 'shared';
 import prisma from '../prisma/prisma';
 import {
@@ -670,6 +671,31 @@ export default class ReimbursementRequestService {
   }
 
   /**
+   * Deletes the Account Code with the given id
+   *
+   * @param accountCodeId the requested account code to be deleted
+   * @param submitter the user deleting the account code
+   * @param organizationId the organization the user is currently in
+   * @returns the 'deleted' account code
+   */
+  static async deleteAccountCode(accountCodeId: string, submitter: User, organization: Organization) {
+    await isUserAdminOrOnFinance(submitter, organization.organizationId);
+
+    const accountCode = await ReimbursementRequestService.getSingleAccountCode(accountCodeId, organization);
+
+    if (accountCode.dateDeleted) {
+      throw new DeletedException('Account Code', accountCodeId);
+    }
+
+    const deletedAccountCode = await prisma.account_Code.update({
+      where: { accountCodeId: accountCode.accountCodeId },
+      data: { dateDeleted: new Date() }
+    });
+
+    return accountCodeTransformer(deletedAccountCode);
+  }
+
+  /**
    * Service function to upload a picture to the receipts folder in the NER google drive
    * @param reimbursementRequestId id for the reimbursement request we're tying the receipt to
    * @param file The file data for the image
@@ -761,6 +787,7 @@ export default class ReimbursementRequestService {
    * @param submitter The User marking the request as delivered
    * @param requestId The ID of the reimbursement request to be marked as delivered
    * @param organizationId The organization the user is currently in
+   * @param dateDelivered The date the reimbursed items were delivered
    * @throws NotFoundException if the id is invalid or not there
    * @throws AccessDeniedException if the creator of the request is not the submitter
    * @returns the updated reimbursement request
@@ -768,7 +795,8 @@ export default class ReimbursementRequestService {
   static async markReimbursementRequestAsDelivered(
     submitter: User,
     reimbursementRequestId: string,
-    organization: Organization
+    organization: Organization,
+    dateDelivered: Date
   ) {
     const reimbursementRequest = await prisma.reimbursement_Request.findUnique({
       where: { reimbursementRequestId }
@@ -781,12 +809,14 @@ export default class ReimbursementRequestService {
       throw new AccessDeniedException('Only the creator of the reimbursement request can mark as delivered');
     if (reimbursementRequest.organizationId !== organization.organizationId)
       throw new InvalidOrganizationException('Reimbursement Request');
+    if (reimbursementRequest.dateOfExpense && startOfDay(dateDelivered) < startOfDay(reimbursementRequest.dateOfExpense))
+      throw new HttpException(400, 'Items cannot be delivered before the expense date.');
+    if (startOfDay(dateDelivered) > startOfDay(new Date()))
+      throw new HttpException(400, 'Delivery date cannot be in the future.');
 
     const reimbursementRequestDelivered = await prisma.reimbursement_Request.update({
       where: { reimbursementRequestId },
-      data: {
-        dateDelivered: new Date()
-      }
+      data: { dateDelivered }
     });
 
     return reimbursementRequestDelivered;

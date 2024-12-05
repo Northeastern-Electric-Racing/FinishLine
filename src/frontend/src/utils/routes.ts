@@ -4,6 +4,7 @@
  */
 
 /**************** General Section ****************/
+const BASE = `/`;
 const HOME = `/home`;
 const LOGIN = `/login`;
 const INFO = `/info`;
@@ -59,6 +60,7 @@ const ORGANIZATIONS = `/organizations`;
 const STATISTICS = `/statistics`;
 
 export const routes = {
+  BASE,
   HOME,
   LOGIN,
   INFO,
