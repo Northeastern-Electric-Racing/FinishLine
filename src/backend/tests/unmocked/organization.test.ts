@@ -224,4 +224,30 @@ describe('Organization Tests', () => {
       expect(updatedOrganization.onboardingText).toBe('Testing text');
     });
   });
+
+  describe('Update Organization Contacts', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        async () =>
+          await OrganizationsService.updateOrganizationContacts(
+            await createTestUser(wonderwomanGuest, orgId),
+            organization,
+            ['Test contact 1', 'Test Contact 2']
+          )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update organiztion contacts'));
+    });
+
+    it('Succeeds and updates organization contacts', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+
+      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
+        'Test Contact 1',
+        'Test Contact 2'
+      ]);
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.contacts[0]).toBe('Test Contact 1');
+      expect(updatedOrganization.contacts[1]).toBe('Test Contact 2');
+    });
+  });
 });
