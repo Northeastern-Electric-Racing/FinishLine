@@ -207,6 +207,31 @@ describe('Organization Tests', () => {
     });
   });
 
+  describe('Update Application Link', () => {
+    it('Fails if user is not admin', async () => {
+      await expect(
+        OrganizationsService.updateApplicationLink(
+          await createTestUser(wonderwomanGuest, orgId),
+          'new application link',
+          organization
+        )
+      ).rejects.toThrow(new AccessDeniedAdminOnlyException('update application link'));
+    });
+
+    it('Succeeds and updates the application link', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await createTestLinkType(testBatman, orgId);
+      const updatedOrganization = await OrganizationsService.updateApplicationLink(
+        testBatman,
+        'new application link',
+        organization
+      );
+
+      expect(updatedOrganization).not.toBeNull();
+      expect(updatedOrganization.applicationLink).toBe('new application link');
+    });
+  });
+
   describe('Update Onboarding Text', () => {
     it('Fails if user is not admin', async () => {
       await expect(

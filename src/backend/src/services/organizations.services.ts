@@ -153,6 +153,25 @@ export default class OrganizationsService {
   }
 
   /**
+   * Updates the application link for the given organization Id
+   * @param submitter the user who is setting the links
+   * @param organizationId organization Id of the organization
+   * @param newLink new application link to be updated
+   * @returns updated organization data
+   */
+  static async updateApplicationLink(submitter: User, newLink: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update application link');
+
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: { applicationLink: newLink }
+    });
+
+    return updatedOrganization;
+  }
+
+  /**
    * Sets onboarding text field
    * @param submitter
    * @param organization

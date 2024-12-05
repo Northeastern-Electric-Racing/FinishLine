@@ -61,6 +61,20 @@ export default class OrganizationsController {
     }
   }
 
+  static async updateApplicationLink(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { applicationLink } = req.body;
+      const updatedOrganization = await OrganizationsService.updateApplicationLink(
+        req.currentUser,
+        applicationLink,
+        req.organization
+      );
+      res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setOnboardingText(req: Request, res: Response, next: NextFunction) {
     try {
       const { onboardingText } = req.body;
