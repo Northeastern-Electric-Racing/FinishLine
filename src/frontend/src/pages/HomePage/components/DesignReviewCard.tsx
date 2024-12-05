@@ -23,7 +23,7 @@ const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
         <NERButton
           variant="contained"
           size="small"
-          sx={{ color: 'white' }}
+          sx={{ color: 'white', padding: 1 }}
           onClick={() => {
             history.push(`${routes.CALENDAR}/${designReview.designReviewId}`);
           }}
@@ -54,19 +54,16 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
       variant="outlined"
       sx={{
         minWidth: 'fit-content',
+        minHeight: 'fit-content',
         mr: 3,
         background: theme.palette.background.default
       }}
     >
-      <CardContent sx={{ padding: 1, ml: 1 }}>
+      <CardContent sx={{ padding: 2 }}>
         <Stack direction="row" justifyContent="space-between" alignItems={'center'}>
           <Box>
             <Typography fontWeight={'regular'} variant="h5" noWrap>
-              <Link
-                color={'#e34041'}
-                component={RouterLink}
-                to={`${routes.PROJECTS}/${projectWbsPipe(designReview.wbsNum)}`}
-              >
+              <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(designReview.wbsNum)}`}>
                 {designReview.wbsName}
               </Link>
             </Typography>

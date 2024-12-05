@@ -6,7 +6,7 @@
 import DesignReviewCard from './DesignReviewCard';
 import { useAllDesignReviews } from '../../../hooks/design-reviews.hooks';
 import ErrorPage from '../../ErrorPage';
-import { AuthenticatedUser, wbsPipe } from 'shared';
+import { AuthenticatedUser, DesignReviewStatus, wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
@@ -50,20 +50,24 @@ const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) =>
     const inTwoWeeks = new Date();
     inTwoWeeks.setDate(currentDate.getDate() + 14);
 
+    const memberUserIds = [
+      ...review.requiredMembers.map((user) => user.userId),
+      ...review.optionalMembers.map((user) => user.userId)
+    ];
     return (
       scheduledDate >= currentDate &&
       scheduledDate <= inTwoWeeks &&
-      !review.status.includes('DONE') &&
-      (review.requiredMembers.includes(user) || review.optionalMembers.includes(user))
+      review.status !== DesignReviewStatus.DONE &&
+      memberUserIds.includes(user.userId)
     );
   });
 
   const fullDisplay = (
-    <ScrollablePageBlock title={`Upcoming Design Reviews (${designReviews.length})`}>
-      {designReviews.length === 0 ? (
+    <ScrollablePageBlock title={`Upcoming Design Reviews (${filteredDesignReviews.length})`}>
+      {filteredDesignReviews.length === 0 ? (
         <NoUpcomingDesignReviewsDisplay />
       ) : (
-        designReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
+        filteredDesignReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
       )}
     </ScrollablePageBlock>
   );

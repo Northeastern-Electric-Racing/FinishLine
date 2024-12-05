@@ -27,7 +27,7 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} spacing={2} mt={2}>
         <Grid item xs={12} md={6} height={'100%'}>
           <MyTeamsOverdueTasks user={user} />
         </Grid>
