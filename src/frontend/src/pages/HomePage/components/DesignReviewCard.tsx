@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Link, Stack, Typography, useTheme } from '@mui/material';
-import { DesignReview } from 'shared';
+import { DesignReview, User } from 'shared';
 import { datePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
@@ -10,13 +10,15 @@ import { NERButton } from '../../../components/NERButton';
 
 interface DesignReviewProps {
   designReview: DesignReview;
+  user: User;
 }
 
-const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview }) => {
+const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const history = useHistory();
   return (
+    //is this what we want
     <>
-      {!designReview.status ? (
+      {!designReview.status || !designReview.confirmedMembers.includes(user) ? (
         <NERButton
           variant="contained"
           size="small"
@@ -51,7 +53,7 @@ function removeYear(str: string): string {
   return str.substring(0, str.length - 5);
 }
 
-const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview }) => {
+const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const theme = useTheme();
   return (
     <Card
@@ -91,7 +93,7 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview }
               </Typography>
             </Stack>
           </Box>
-          <DisplayStatus designReview={designReview}></DisplayStatus>
+          <DisplayStatus designReview={designReview} user={user}></DisplayStatus>
         </Stack>
       </CardContent>
     </Card>

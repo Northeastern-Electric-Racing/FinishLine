@@ -31,7 +31,7 @@ const LeadHomePage = ({ user }: LeadHomePageProps) => {
         <Grid container height={`${PAGE_GRID_HEIGHT}vh`}>
           <Grid item xs={12} md={6}>
             <MyTeamsOverdueTasks user={user} />
-            <UpcomingDesignReviews />
+            <UpcomingDesignReviews user={user} />
           </Grid>
         </Grid>
       </Box>

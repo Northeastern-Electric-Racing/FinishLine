@@ -6,12 +6,16 @@
 import DesignReviewCard from './DesignReviewCard';
 import { useAllDesignReviews } from '../../../hooks/design-reviews.hooks';
 import ErrorPage from '../../ErrorPage';
-import { wbsPipe } from 'shared';
+import { AuthenticatedUser, wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Box } from '@mui/material';
 import { Error } from '@mui/icons-material';
+
+interface UpcomingDesignReviewProps {
+  user: AuthenticatedUser;
+}
 
 const NoUpcomingDesignReviewsDisplay: React.FC = () => {
   return (
@@ -34,7 +38,7 @@ const NoUpcomingDesignReviewsDisplay: React.FC = () => {
   );
 };
 
-const UpcomingDesignReviews: React.FC = () => {
+const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) => {
   const { data: designReviews, isLoading, isError, error } = useAllDesignReviews();
 
   if (isLoading || !designReviews) return <LoadingIndicator />;
@@ -45,7 +49,18 @@ const UpcomingDesignReviews: React.FC = () => {
     const currentDate = new Date();
     const inTwoWeeks = new Date();
     inTwoWeeks.setDate(currentDate.getDate() + 14);
-    return scheduledDate >= currentDate && scheduledDate <= inTwoWeeks && !review.status.includes('DONE');
+
+    /*
+  Since this is on the leads page, leads shouldn't see all design reviews here. 
+  We should filter the design reviews on whether the current user is found the the 
+  design review's required or optional members field
+*/
+    return (
+      scheduledDate >= currentDate &&
+      scheduledDate <= inTwoWeeks &&
+      !review.status.includes('DONE') &&
+      (review.requiredMembers.includes(user) || review.optionalMembers.includes(user))
+    );
   });
 
   const fullDisplay = (
@@ -53,7 +68,7 @@ const UpcomingDesignReviews: React.FC = () => {
       {designReviews.length === 0 ? (
         <NoUpcomingDesignReviewsDisplay />
       ) : (
-        designReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} />)
+        designReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
       )}
     </ScrollablePageBlock>
   );
