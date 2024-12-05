@@ -25,7 +25,6 @@ export interface QueryPath {
   next?: QueryPath;
 }
 
-
 export interface GraphData {
   value: number;
   label: string;

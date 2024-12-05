@@ -14,8 +14,6 @@ export const getGraphQueryArgs = (organizationId: string) =>
     }
   });
 
-
-
 export const getGraphCollectionQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.Graph_CollectionDefaultArgs>()({
     include: {

@@ -58,7 +58,6 @@ export const requireJwtProd = (req: Request, res: Response, next: NextFunction) 
 
 // middleware function for development that will enforce jwt authorization
 export const requireJwtDev = (req: Request, res: Response, next: NextFunction) => {
-  console.log(req.path);
   if (
     req.path === '/users/auth/login/dev' || // logins dont have cookies yet
     req.path === '/' || // base route is available so aws can listen and check the health
