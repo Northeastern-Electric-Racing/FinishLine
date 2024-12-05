@@ -44,6 +44,7 @@ export interface Organization {
   advisor?: UserPreview;
   description: string;
   applicationLink: string;
+  onboardingText: string | null;
 }
 
 /**

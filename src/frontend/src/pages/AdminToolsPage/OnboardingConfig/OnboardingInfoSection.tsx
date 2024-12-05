@@ -1,21 +1,27 @@
 import { Grid, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
+import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import OnboardingBlock from '../../../components/OnboardingBlock';
 
 const OnboardingInfoSection: React.FC = () => {
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+
+  if (!organization || organizationIsLoading) return <LoadingIndicator />;
+
   return (
     <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
-      {/* This will be replaced with the 'Onboarding' block*/}
-      <Grid item>
-        <Box
-          sx={{
-            backgroundColor: 'gray',
-            height: '25vh',
-            borderRadius: '10px'
-          }}
-        >
-          <Typography>Onboarding</Typography>
-        </Box>
-      </Grid>
+      <OnboardingBlock organization={organization} />
       {/* This will be replaced with the 'Useful Links' block*/}
       <Grid item>
         <Box
