@@ -12,13 +12,7 @@ onboardingRouter.get('/checklists/general', OnboardingController.getGeneralCheck
 
 onboardingRouter.get('/checklists/checked', OnboardingController.getCheckedChecklists);
 
-onboardingRouter.get(
-  '/checklist/teamTypeChecklists',
-  body('teamTypeIds').isArray(),
-  nonEmptyString(body('teamTypeIds.*')),
-  validateInputs,
-  OnboardingController.getTeamTypeChecklists
-);
+onboardingRouter.get('/checklists/userTeamTypeChecklists', OnboardingController.getUsersTeamTypeChecklists);
 
 onboardingRouter.post(
   '/checklist/create',

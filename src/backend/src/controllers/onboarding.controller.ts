@@ -30,10 +30,9 @@ export default class OnboardingController {
     }
   }
 
-  static async getTeamTypeChecklists(req: Request, res: Response, next: NextFunction) {
+  static async getUsersTeamTypeChecklists(req: Request, res: Response, next: NextFunction) {
     try {
-      const { teamTypeIds } = req.body;
-      const checklists = OnboardingServices.getTeamTypeChecklists(teamTypeIds, req.organization);
+      const checklists = OnboardingServices.getUsersTeamTypeChecklists(req.currentUser.userId, req.organization);
       res.status(200).json(checklists);
     } catch (error: unknown) {
       return next(error);
