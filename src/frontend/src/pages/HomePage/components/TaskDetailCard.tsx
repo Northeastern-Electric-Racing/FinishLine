@@ -59,6 +59,7 @@ const TaskDetailCard: React.FC<TaskDetailCardProps> = ({ task, taskNumber }) => 
         onMouseLeave={() => setHover(false)}
         sx={{
           minWidth: 'fit-content',
+          minHeight: 'fit-content',
           mr: 3,
           background: theme.palette.background.default,
           border: taskOverdue && hover ? '1px solid red' : undefined

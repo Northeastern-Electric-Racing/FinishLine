@@ -54,6 +54,12 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
     setOpen(false);
   };
 
+  const treasurerName = 'Alex Leblang';
+  const treasurerEmail = 'leblang.a@northeastern.edu';
+
+  const advisorName = 'Andrew Gouldstone';
+  const advisorEmail = 'a.gouldstone@northeastern.edu';
+
   return (
     <NERModal
       open={open}
@@ -128,12 +134,12 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography>Alex Leblang</Typography>
-              <CopyToClipboardButton msg={'Brody Pearlman'} />
+              <Typography>{treasurerName}</Typography>
+              <CopyToClipboardButton msg={treasurerName} />
             </Box>
             <Box display="flex" alignItems="center">
-              <Typography>leblang.a@northeastern.edu</Typography>
-              <CopyToClipboardButton msg={'pearlman.br@northeastern.edu'} />
+              <Typography>{treasurerEmail}</Typography>
+              <CopyToClipboardButton msg={treasurerEmail} />
             </Box>
           </Stack>
         </Grid>
@@ -145,12 +151,12 @@ const SubmitToSaboModal = ({ open, setOpen, reimbursementRequest }: SubmitToSabo
         <Grid item xs={8}>
           <Stack>
             <Box display="flex" alignItems="center">
-              <Typography style={{ marginRight: '0.5rem' }}>Andrew Gouldstone</Typography>
-              <CopyToClipboardButton msg={'Andrew Gouldstone'} />
+              <Typography style={{ marginRight: '0.5rem' }}>{advisorName}</Typography>
+              <CopyToClipboardButton msg={advisorName} />
             </Box>
             <Box display="flex" alignItems="center">
-              <Typography>a.gouldstone@northeastern.edu</Typography>
-              <CopyToClipboardButton msg={'a.gouldstone@northeastern.edu'} />
+              <Typography>{advisorEmail}</Typography>
+              <CopyToClipboardButton msg={advisorEmail} />
             </Box>
           </Stack>
         </Grid>
