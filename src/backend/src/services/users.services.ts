@@ -407,7 +407,6 @@ export default class UsersService {
       where: { userId },
       data: { completedOnboarding: !user.completedOnboarding },
       ...getUserQueryArgs(organization.organizationId)
-
     });
 
     return userTransformer(updatedUser);
