@@ -88,4 +88,20 @@ export default class OrganizationsController {
       return next(error);
     }
   }
+
+  static async updateOrganizationContacts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { contacts } = req.body;
+
+      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(
+        req.currentUser,
+        req.organization,
+        contacts
+      );
+
+      return res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
 }

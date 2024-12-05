@@ -34,4 +34,12 @@ organizationRouter.post(
   OrganizationsController.setOnboardingText
 );
 
+organizationRouter.post(
+  '/contacts/set',
+  body('contacts').isArray(),
+  nonEmptyString(body('contacts.*')),
+  validateInputs,
+  OrganizationsController.updateOrganizationContacts
+);
+
 export default organizationRouter;

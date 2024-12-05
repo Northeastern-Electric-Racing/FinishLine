@@ -192,4 +192,28 @@ export default class OrganizationsService {
 
     return updatedOrganization;
   }
+
+  /**
+   * Updates contacts of organization
+   * @param user User updating the contacts
+   * @param contacts The new contacts of the organization
+   * @param organizationId organizationId of the organization
+   * @returns updated organization with new contacts
+   */
+  static async updateOrganizationContacts(user: User, organization: Organization, contacts: string[]) {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update organiztion contacts');
+    }
+    const { organizationId } = organization;
+    const updatedOrganization = await prisma.organization.update({
+      where: {
+        organizationId
+      },
+      data: {
+        contacts
+      }
+    });
+
+    return updatedOrganization;
+  }
 }
