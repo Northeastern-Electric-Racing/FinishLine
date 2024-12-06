@@ -4,7 +4,7 @@ import { datePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import { LocationOnOutlined } from '@mui/icons-material';
+import { LocationOnOutlined, Computer } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
 import { meetingStartTimePipe } from '../../../../../backend/src/utils/design-reviews.utils';
@@ -13,6 +13,25 @@ interface DesignReviewProps {
   designReview: DesignReview;
   user: User;
 }
+
+const DesignReviewInfo = ({ icon, text, link }: { icon: React.ReactNode; text: string; link?: boolean }) => {
+  return (
+    <Stack direction="row" spacing={1}>
+      <Typography sx={{ fontSize: 21 }}>{icon}</Typography>
+      {link ? (
+        <Link href={text}>
+          <Typography fontWeight={'regular'} variant="body2">
+            {text}
+          </Typography>
+        </Link>
+      ) : (
+        <Typography fontWeight={'regular'} variant="body2">
+          {text}
+        </Typography>
+      )}
+    </Stack>
+  );
+};
 
 const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const history = useHistory();
@@ -28,7 +47,7 @@ const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
           size="small"
           sx={{ color: 'white', padding: 1 }}
           onClick={() => {
-            history.push(`${routes.CALENDAR}/${designReview.designReviewId}`);
+            history.push(`${routes.SETTINGS_PREFERENCES}?drId=${designReview.designReviewId}`);
           }}
           component={RouterLink}
         >
@@ -80,12 +99,12 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
                   meetingStartTimePipe(designReview.meetingTimes)}
               </Typography>
             </Stack>
-            <Stack direction="row" spacing={1}>
-              <Typography>{<LocationOnOutlined sx={{ fontSize: 21 }} />}</Typography>
-              <Typography fontWeight={'regular'} variant="body2">
-                {designReview.location}
-              </Typography>
-            </Stack>
+            {designReview.isInPerson && !!designReview.location && (
+              <DesignReviewInfo icon={<LocationOnOutlined />} text={designReview.location} />
+            )}
+            {designReview.isOnline && !!designReview.zoomLink && (
+              <DesignReviewInfo icon={<Computer />} text={designReview.zoomLink} link />
+            )}
           </Box>
           <DisplayStatus designReview={designReview} user={user} />
         </Stack>
