@@ -80,9 +80,9 @@ export default class OrganizationsController {
       }
       const updatedOrg = await OrganizationsService.setLogoImage(req.file, req.currentUser, req.organization);
 
-      return res.status(200).json(updatedOrg);
+      res.status(200).json(updatedOrg);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -103,9 +103,9 @@ export default class OrganizationsController {
         req.organization
       );
 
-      return res.status(200).json(updatedOrg);
+      res.status(200).json(updatedOrg);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -114,7 +114,7 @@ export default class OrganizationsController {
       const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);
       res.status(200).json(featuredProjects);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }

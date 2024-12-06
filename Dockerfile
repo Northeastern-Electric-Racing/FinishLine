@@ -1,4 +1,4 @@
-FROM node:18.17.1
+FROM node:20
 WORKDIR /base
 
 COPY package.json tsconfig.build.json ./
