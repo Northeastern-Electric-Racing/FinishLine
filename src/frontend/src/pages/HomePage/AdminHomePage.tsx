@@ -27,11 +27,11 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2} spacing={2}>
-        <Grid item xs={12} md={12} height={`40%`}>
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={1} spacing={2}>
+        <Grid item xs={12} md={12} height={`44%`}>
           <ChangeRequestsToReview user={user} />
         </Grid>
-        <Grid item xs={10} md={7} height="60%">
+        <Grid item xs={10} md={7} height="56%">
           <WorkPackagesSelectionView />
         </Grid>
       </Grid>
