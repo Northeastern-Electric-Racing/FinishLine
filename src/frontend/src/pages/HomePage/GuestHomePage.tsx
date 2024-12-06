@@ -3,7 +3,7 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { Box, Typography } from '@mui/material';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import { useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
@@ -12,6 +12,7 @@ import { AuthenticatedUser } from 'shared';
 import MemberEncouragement from './components/MemberEncouragement';
 import GuestOrganizationInfo from './components/GuestOrganizationInfo';
 import FeaturedProjects from './components/FeaturedProjects';
+import LogoDisplay from './components/LogoDisplay';
 
 interface GuestHomePageProps {
   user: AuthenticatedUser;
@@ -32,18 +33,27 @@ const GuestHomePage = ({ user }: GuestHomePageProps) => {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 2,
+          gap: 1.5,
           height: `${PAGE_GRID_HEIGHT}vh`,
           mt: 2
         }}
       >
-        <Box height={'45%'}>
-          <GuestOrganizationInfo />
-        </Box>
-        <Box height={'15%'}>
-          <MemberEncouragement />
-        </Box>
-        <Box height={'45%'}>
+        <Grid container height={'60%'} spacing={2}>
+          <Grid item height={'100%'} xs={8.5}>
+            <Stack height={'100%'} spacing={1.5}>
+              <Box height={'70%'}>
+                <GuestOrganizationInfo />
+              </Box>
+              <Box height={'30%'}>
+                <MemberEncouragement />
+              </Box>
+            </Stack>
+          </Grid>
+          <Grid item height={'100%'} xs={3.5}>
+            <LogoDisplay />
+          </Grid>
+        </Grid>
+        <Box height={'40%'}>
           <FeaturedProjects />
         </Box>
       </Box>

@@ -88,7 +88,9 @@ export default class OrganizationsController {
 
   static async getOrganizationLogoImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const logoImageId = await OrganizationsService.getLogoImage(req.organization.organizationId);
+      const { organization } = req;
+
+      const logoImageId = await OrganizationsService.getLogoImage(organization.organizationId);
       res.status(200).json(logoImageId);
     } catch (error: unknown) {
       next(error);

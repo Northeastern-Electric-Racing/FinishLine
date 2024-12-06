@@ -23,3 +23,9 @@ export const setOrganizationDescription = async (description: string) => {
     description
   });
 };
+
+export const getOrganizationLogo = async () => {
+  return axios.get<string>(apiUrls.organizationsLogoImage(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};

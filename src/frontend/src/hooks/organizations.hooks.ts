@@ -2,7 +2,13 @@ import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Organization, Project } from 'shared';
-import { getFeaturedProjects, getCurrentOrganization, setOrganizationDescription } from '../apis/organizations.api';
+import {
+  getFeaturedProjects,
+  getCurrentOrganization,
+  setOrganizationDescription,
+  getOrganizationLogo
+} from '../apis/organizations.api';
+import { downloadGoogleImage } from '../apis/finance.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -63,4 +69,14 @@ export const useSetOrganizationDescription = () => {
       }
     }
   );
+};
+
+export const useOrganizationLogo = () => {
+  return useQuery<string, Error>(['organizations', 'logo'], async () => {
+    const { data: fileId } = await getOrganizationLogo();
+
+    const imageBlob = await downloadGoogleImage(fileId);
+
+    return URL.createObjectURL(imageBlob);
+  });
 };
