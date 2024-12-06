@@ -10,6 +10,7 @@ import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
 import WorkPackagesSelectionView from './components/WorkPackagesSelectionView';
+import ChangeRequestsToReview from './components/ChangeRequestsToReview';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -26,8 +27,11 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       <Typography variant="h3" marginLeft="auto" sx={{ marginTop: 2, textAlign: 'center', pt: 3, padding: 0 }}>
         Welcome, {user.firstName}!
       </Typography>
-      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}>
-        <Grid item xs={10} md={7} height="70%">
+      <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2} spacing={2}>
+        <Grid item xs={12} md={12} height={`40%`}>
+          <ChangeRequestsToReview user={user} />
+        </Grid>
+        <Grid item xs={10} md={7} height="60%">
           <WorkPackagesSelectionView />
         </Grid>
       </Grid>
