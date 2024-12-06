@@ -9,7 +9,7 @@ import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout, { PAGE_GRID_HEIGHT } from '../../components/PageLayout';
 import { AuthenticatedUser } from 'shared';
-import UnreviewedChangeRequests from './components/UnreviewedChangeRequests';
+import ChangeRequestsToReview from './components/ChangeRequestsToReview';
 
 interface AdminHomePageProps {
   user: AuthenticatedUser;
@@ -28,7 +28,7 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
       </Typography>
       <Grid container height={`${PAGE_GRID_HEIGHT}vh`} mt={2}>
         <Grid item xs={12} md={12} height={`40%`}>
-          <UnreviewedChangeRequests user={user} />
+          <ChangeRequestsToReview user={user} />
         </Grid>
       </Grid>
     </PageLayout>
