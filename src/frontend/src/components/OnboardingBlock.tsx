@@ -24,7 +24,7 @@ const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization }) => {
           </Typography>
           <EditIcon sx={{ marginRight: '15px', marginTop: '20px' }}></EditIcon>
         </Box>
-        <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>{organization?.onboardingText}</Typography>
+        <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>{organization.onboardingText}</Typography>
       </Box>
     </Grid>
   );
