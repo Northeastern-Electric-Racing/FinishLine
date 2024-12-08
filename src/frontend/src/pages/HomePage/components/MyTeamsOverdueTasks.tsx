@@ -13,7 +13,7 @@ interface MyTeamsOverdueTasksProps {
   user: AuthenticatedUser;
 }
 
-const NoOverdueTeamTaskDisplay: React.FC = () => {
+const NoOverdueTeamTaskDisplay = () => {
   return (
     <EmptyPageBlockDisplay
       icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 128 }} />}
