@@ -1,6 +1,5 @@
 import { Box, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
 import WorkPackageCard from './WorkPackageCard';
-import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
 import { WorkPackage } from 'shared';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
@@ -21,9 +20,8 @@ const NoOverdueWPsDisplay: React.FC = () => {
 
 const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workPackages }) => {
   const theme = useTheme();
-  const isEmpty = workPackages.length === 0;
   return (
-    <Box sx={{ position: 'relative', mt: 8 }}>
+    <Box sx={{ position: 'relative', mt: 8, height: '83%' }}>
       <Box
         sx={{
           display: 'flex',
@@ -70,14 +68,13 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
       >
         <CardContent
           sx={{
-            height: isEmpty ? `calc(${PAGE_GRID_HEIGHT}vh - 200px)` : `100%`,
-            maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 200px)`,
+            height: '100%',
             display: 'flex',
             flexDirection: 'column'
           }}
         >
-          <Stack spacing={2} mt={isEmpty ? 12 : 8}>
-            {isEmpty ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
+          <Stack spacing={2} mt={8}>
+            {workPackages.length === 0 ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
           </Stack>
         </CardContent>
       </Card>
