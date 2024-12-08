@@ -23,8 +23,6 @@ const TimelineSection = () => {
       dateOfEvent: new Date(milestone.dateOfEvent)
     }))
     .sort((milestone1, milestone2) => (milestone1.dateOfEvent < milestone2.dateOfEvent ? -1 : 1));
-  console.log('test');
-  console.log(isPastEvent(new Date('2024-11-10'), new Date()));
 
   const getDotStyle = (date: Date) => ({
     backgroundColor: isPastEvent(date, new Date()) ? 'primary.main' : 'grey',
@@ -34,18 +32,22 @@ const TimelineSection = () => {
 
   const getConnectorStyle = (date: Date) => ({
     backgroundColor: isPastEvent(date, new Date()) ? 'primary.main' : 'grey',
-    height: {
-      xs: '1vh',
-      sm: '1vh',
-      md: '10vh'
-    }
+    flexGrow: 1
   });
 
   return (
-    <Grid>
+    <Grid
+      container
+      sx={{
+        height: '80vh',
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        justifyContent: 'center'
+      }}
+    >
       <Timeline position="alternate">
         {sortedMilestones.map((milestone, index) => (
-          <TimelineItem key={milestone.milestoneId}>
+          <TimelineItem key={milestone.milestoneId} sx={{ flexGrow: 1 }}>
             <TimelineSeparator>
               <TimelineDot sx={getDotStyle(milestone.dateOfEvent)} />
               {index < milestones.length - 1 && <TimelineConnector sx={getConnectorStyle(milestone.dateOfEvent)} />}
