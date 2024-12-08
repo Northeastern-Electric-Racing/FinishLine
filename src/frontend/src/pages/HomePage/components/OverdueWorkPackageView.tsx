@@ -20,6 +20,7 @@ const NoOverdueWPsDisplay: React.FC = () => {
 
 const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workPackages }) => {
   const theme = useTheme();
+  const isEmpty = workPackages.length === 0;
   return (
     <Box sx={{ position: 'relative', mt: 5, height: '90%' }}>
       <Box
@@ -55,7 +56,7 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
       >
         <CardContent
           sx={{
-            mt: 4,
+            mt: isEmpty ? 0 : 4,
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
@@ -80,7 +81,7 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
               height: '100%'
             }}
           >
-            {workPackages.length === 0 ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
+            {isEmpty ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
           </Stack>
         </CardContent>
       </Card>
