@@ -21,18 +21,18 @@ const NoOverdueWPsDisplay: React.FC = () => {
 const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workPackages }) => {
   const theme = useTheme();
   return (
-    <Box sx={{ position: 'relative', mt: 8, height: '83%' }}>
+    <Box sx={{ position: 'relative', mt: 5, height: '90%' }}>
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'center',
           position: 'absolute',
-          top: -50,
+          top: -40,
           width: '75%',
           left: '50%',
           transform: 'translateX(-50%)',
           background: theme.palette.background.paper,
-          padding: 4,
+          padding: 2,
           borderRadius: 2,
           borderWidth: 2,
           borderStyle: 'solid',
@@ -45,19 +45,6 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
       </Box>
       <Card
         sx={{
-          overflowY: 'auto',
-          '&::-webkit-scrollbar': {
-            height: '20px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: theme.palette.error.dark,
-            borderRadius: '20px',
-            border: '6px solid transparent',
-            backgroundClip: 'content-box'
-          },
           height: '100%',
           my: 2,
           background: theme.palette.background.paper,
@@ -68,12 +55,31 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
       >
         <CardContent
           sx={{
+            mt: 4,
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
           }}
         >
-          <Stack spacing={2} mt={8}>
+          <Stack
+            spacing={2}
+            sx={{
+              overflowY: 'auto',
+              '&::-webkit-scrollbar': {
+                height: '20px'
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: 'transparent'
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: theme.palette.error.dark,
+                borderRadius: '20px',
+                border: '6px solid transparent',
+                backgroundClip: 'content-box'
+              },
+              height: '100%'
+            }}
+          >
             {workPackages.length === 0 ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <WorkPackageCard wp={wp} />)}
           </Stack>
         </CardContent>
