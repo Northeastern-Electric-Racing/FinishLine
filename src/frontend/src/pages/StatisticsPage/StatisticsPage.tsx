@@ -16,7 +16,7 @@ const StatisticsPage: React.FC = () => {
         yAxisData={[100, 200, 50, 300]}
         xAxisLabel="Categories"
         yAxisLabel="Values"
-        graphTitle="Statistics Overview"
+        graphTitle="Bar Chart Test"
       />
 
       <PieChart
