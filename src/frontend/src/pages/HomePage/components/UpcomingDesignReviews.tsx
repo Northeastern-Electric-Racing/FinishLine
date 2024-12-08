@@ -63,11 +63,11 @@ const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) =>
   });
 
   const fullDisplay = (
-    <ScrollablePageBlock title={`Upcoming Design Reviews (${designReviews.length})`}>
-      {designReviews.length === 0 ? (
+    <ScrollablePageBlock title={`Upcoming Design Reviews (${filteredDesignReviews.length})`}>
+      {filteredDesignReviews.length === 0 ? (
         <NoUpcomingDesignReviewsDisplay />
       ) : (
-        designReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
+        filteredDesignReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
       )}
     </ScrollablePageBlock>
   );
