@@ -19,22 +19,11 @@ interface UpcomingDesignReviewProps {
 
 const NoUpcomingDesignReviewsDisplay: React.FC = () => {
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: `calc(100vh - 300px)`,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <EmptyPageBlockDisplay
-        icon={<Error sx={{ fontSize: 70 }} />}
-        heading={'No Upcoming Design Reviews'}
-        message={'There are no Upcoming Design Reviews to Display'}
-      />
-    </Box>
+    <EmptyPageBlockDisplay
+      icon={<Error sx={{ fontSize: 70 }} />}
+      heading={'No Upcoming Design Reviews'}
+      message={'There are no Upcoming Design Reviews to Display'}
+    />
   );
 };
 

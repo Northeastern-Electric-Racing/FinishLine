@@ -32,9 +32,6 @@ const AdminHomePage = ({ user }: AdminHomePageProps) => {
         <Grid item xs={12} md={12} height={`44%`}>
           <ChangeRequestsToReview user={user} />
         </Grid>
-        <Grid item xs={12} md={6} height={'100%'}>
-          <UpcomingDesignReviews user={user} />
-        </Grid>
         <Grid item xs={10} md={7} height="56%">
           <WorkPackagesSelectionView />
         </Grid>
