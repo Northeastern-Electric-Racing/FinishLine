@@ -12,6 +12,7 @@ import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Box } from '@mui/material';
 import { Error } from '@mui/icons-material';
+import designReviewsRouter from '../../../../../backend/src/routes/design-reviews.routes';
 
 interface UpcomingDesignReviewProps {
   user: AuthenticatedUser;
@@ -63,11 +64,11 @@ const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) =>
   });
 
   const fullDisplay = (
-    <ScrollablePageBlock title={`Upcoming Design Reviews (${filteredDesignReviews.length})`}>
-      {filteredDesignReviews.length === 0 ? (
+    <ScrollablePageBlock title={`Upcoming Design Reviews (${designReviews.length})`}>
+      {designReviews.length === 0 ? (
         <NoUpcomingDesignReviewsDisplay />
       ) : (
-        filteredDesignReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
+        designReviews.map((d) => <DesignReviewCard key={wbsPipe(d.wbsNum)} designReview={d} user={user} />)
       )}
     </ScrollablePageBlock>
   );

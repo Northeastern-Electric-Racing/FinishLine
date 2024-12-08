@@ -13,7 +13,6 @@ import UpcomingDesignReviews from './components/UpcomingDesignReviews';
 import WorkPackagesSelectionView from './components/WorkPackagesSelectionView';
 import ChangeRequestsToReview from './components/ChangeRequestsToReview';
 
-
 interface AdminHomePageProps {
   user: AuthenticatedUser;
 }
