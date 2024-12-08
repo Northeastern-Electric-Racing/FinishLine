@@ -12,7 +12,6 @@ import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import { Box } from '@mui/material';
 import { Error } from '@mui/icons-material';
-import designReviewsRouter from '../../../../../backend/src/routes/design-reviews.routes';
 
 interface UpcomingDesignReviewProps {
   user: AuthenticatedUser;
