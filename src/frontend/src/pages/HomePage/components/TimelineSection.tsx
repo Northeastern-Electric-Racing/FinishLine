@@ -39,13 +39,19 @@ const TimelineSection = () => {
     <Grid
       container
       sx={{
-        height: '80vh',
-        flexDirection: 'column',
+        maxHeight: 'calc(100vh - 200px)',
+        minHeight: 'calc(100vh - 250px)',
         alignItems: 'stretch',
         justifyContent: 'center'
       }}
     >
-      <Timeline position="alternate">
+      <Timeline
+        position="alternate"
+        sx={{
+          flex: 1,
+          minHeight: '100%'
+        }}
+      >
         {sortedMilestones.map((milestone, index) => (
           <TimelineItem key={milestone.milestoneId} sx={{ flexGrow: 1 }}>
             <TimelineSeparator>
