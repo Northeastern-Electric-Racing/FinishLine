@@ -4,9 +4,10 @@ import { Organization } from 'shared';
 
 interface OnboardingBlockProps {
   organization: Organization;
+  isAdmin?: boolean;
 }
 
-const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization }) => {
+const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization, isAdmin }) => {
   const theme = useTheme();
   const handleEdit = () => {
     console.log('clicked');
@@ -26,7 +27,7 @@ const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization }) => {
           <Typography variant="h5" ml={2} pt={2}>
             Onboarding
           </Typography>
-          <EditIcon sx={{ marginRight: '15px', marginTop: '20px' }} onClick={handleEdit}></EditIcon>
+          {isAdmin && <EditIcon sx={{ marginRight: '15px', marginTop: '20px' }} onClick={handleEdit}></EditIcon>}
         </Box>
         <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>{organization.onboardingText}</Typography>
       </Box>

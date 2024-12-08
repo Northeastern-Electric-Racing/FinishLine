@@ -21,7 +21,7 @@ const OnboardingInfoSection: React.FC = () => {
 
   return (
     <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
-      <OnboardingBlock organization={organization} />
+      <OnboardingBlock organization={organization} isAdmin={true} />
       {/* This will be replaced with the 'Useful Links' block*/}
       <Grid item>
         <Box
