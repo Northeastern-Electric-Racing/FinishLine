@@ -53,7 +53,7 @@ const WorkPackagesSelectionView: React.FC = () => {
 
   const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
 
-  // destructuring tuple to get wps of selected options
+  // destructuring tuple to get wps of selected option
   const [, currentWps] = workPackageOptions[currentDisplayedWPs];
 
   const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
