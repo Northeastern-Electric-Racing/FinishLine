@@ -183,8 +183,8 @@ const performSeed: () => Promise<void> = async () => {
   const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
+  const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
   await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
-  const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
