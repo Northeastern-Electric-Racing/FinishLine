@@ -26,9 +26,9 @@ export default class WorkPackageTemplatesController {
         req.organization
       );
 
-      return res.status(200).json(workPackageTemplate);
+      res.status(200).json(workPackageTemplate);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -43,9 +43,9 @@ export default class WorkPackageTemplatesController {
         req.organization
       );
 
-      return res.status(200).json(workPackageTemplate);
+      res.status(200).json(workPackageTemplate);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
   // Get all work package templates
@@ -56,9 +56,9 @@ export default class WorkPackageTemplatesController {
         req.organization
       );
 
-      return res.status(200).json(workPackageTemplates);
+      res.status(200).json(workPackageTemplates);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -84,9 +84,9 @@ export default class WorkPackageTemplatesController {
         req.organization
       );
 
-      return res.status(200).json(updatedWorkPackageTemplate);
+      res.status(200).json(updatedWorkPackageTemplate);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -96,11 +96,9 @@ export default class WorkPackageTemplatesController {
       const { workPackageTemplateId } = req.params;
 
       await WorkPackageTemplatesService.deleteWorkPackageTemplate(req.currentUser, workPackageTemplateId, req.organization);
-      return res
-        .status(200)
-        .json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
+      res.status(200).json({ message: `Successfully deleted work package template #${req.params.workPackageTemplateId}` });
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }
