@@ -29,7 +29,9 @@ const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization, isAdmin
           </Typography>
           {isAdmin && <EditIcon sx={{ marginRight: '15px', marginTop: '20px' }} onClick={handleEdit}></EditIcon>}
         </Box>
-        <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>{organization.onboardingText}</Typography>
+        <Typography sx={{ mt: 1, mb: -1, ml: 2, fontSize: { xs: 16, sm: 16, md: 18 }, marginRight: '15px' }}>
+          {organization.onboardingText}
+        </Typography>
       </Box>
     </Grid>
   );
