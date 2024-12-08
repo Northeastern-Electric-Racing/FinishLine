@@ -10,7 +10,6 @@ import { AuthenticatedUser, DesignReviewStatus, wbsPipe } from 'shared';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import ScrollablePageBlock from './ScrollablePageBlock';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
-import { Box } from '@mui/material';
 import { Error } from '@mui/icons-material';
 
 interface UpcomingDesignReviewProps {
