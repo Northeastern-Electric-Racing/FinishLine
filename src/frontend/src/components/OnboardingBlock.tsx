@@ -8,6 +8,10 @@ interface OnboardingBlockProps {
 
 const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization }) => {
   const theme = useTheme();
+  const handleEdit = () => {
+    console.log('clicked');
+  };
+
   return (
     <Grid item>
       <Box
@@ -22,7 +26,7 @@ const OnboardingBlock: React.FC<OnboardingBlockProps> = ({ organization }) => {
           <Typography variant="h5" ml={2} pt={2}>
             Onboarding
           </Typography>
-          <EditIcon sx={{ marginRight: '15px', marginTop: '20px' }}></EditIcon>
+          <EditIcon sx={{ marginRight: '15px', marginTop: '20px' }} onClick={handleEdit}></EditIcon>
         </Box>
         <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>{organization.onboardingText}</Typography>
       </Box>
