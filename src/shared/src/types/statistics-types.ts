@@ -8,7 +8,8 @@ export enum GraphType {
 
 export enum Measure {
   SUM = 'SUM',
-  AVG = 'AVG'
+  AVG = 'AVG',
+  COUNT = 'COUNT'
 }
 
 export interface GraphGen {
@@ -23,6 +24,14 @@ export interface QueryPath {
   primaryKey: string;
   parentForeignKey?: string;
   next?: QueryPath;
+}
+
+export interface ColumnConfig {
+  columnName: string;
+  dataType: string;
+}
+export interface TrackedFlattenedRelations extends FlattenedRelations {
+  path: { table: string; foreignKey: string }[];
 }
 
 export interface GraphData {
@@ -50,4 +59,33 @@ export interface GraphCollection {
   userDeleted?: User;
   dateDeleted?: Date;
   permissions: Permission[];
+}
+
+export type SimpleForeignRelation = {
+  foreignKey: string;
+  primaryKey: string;
+  table: string;
+};
+
+export type FlattenedRelations = {
+  table: string;
+  primaryKey: string | undefined;
+  columns: TableColumn[];
+  relationships: SimpleForeignRelation[];
+};
+
+export type TableColumn = {
+  dataType: string;
+  columnName: string;
+  isPrimaryKey: boolean;
+};
+
+export interface CreateGraphArgs {
+  startDate: Date;
+  endDate: Date;
+  title: String;
+  graphType: GraphType;
+  measure: Measure;
+  graphCollectionId?: string;
+  graphGen: GraphGen;
 }

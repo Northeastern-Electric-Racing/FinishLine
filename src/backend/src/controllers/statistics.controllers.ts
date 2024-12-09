@@ -5,7 +5,6 @@ import { Graph } from 'shared';
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log('in controller');
       const { startDate, endDate, title, graphType, measure, graphGen, graphCollectionId } = req.body;
 
       const graph: Graph = await StatisticsService.createGraph(
@@ -20,9 +19,19 @@ export default class StatisticsController {
         graphCollectionId
       );
 
-      return res.status(200).json(graph);
+      res.status(200).json(graph);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
+    }
+  }
+
+  static async getGraphConfig(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const graph = await StatisticsService.getGraphConfig();
+
+      res.status(200).json(graph);
+    } catch (error: unknown) {
+      next(error);
     }
   }
 }

@@ -4,19 +4,27 @@
  */
 
 import PageLayout from '../../components/PageLayout';
-import BarChart from '../../components/StatsBarChart';
+import { useGraphConfig } from '../../hooks/statistics.hooks';
+import LoadingIndicator from '../../components/LoadingIndicator';
+import ErrorPage from '../ErrorPage';
+import { Box } from '@mui/material';
 
 const StatisticsPage: React.FC = () => {
-  // Testing bar chart component
+  const { data, isLoading, isError, error } = useGraphConfig();
+
+  if (isError) {
+    return <ErrorPage error={error} />;
+  }
+
+  if (!data || isLoading) {
+    return <LoadingIndicator />;
+  }
+
   return (
     <PageLayout title="Statistics">
-      <BarChart
-        xAxisData={['test1', 'test2', 'test3', 'test4']}
-        yAxisData={[100, 200, 50, 300]}
-        xAxisLabel="Categories"
-        yAxisLabel="Values"
-        graphTitle="Statistics Overview"
-      />
+      {/* Add your frontend components here to check them */}
+      <Box>
+      </Box>
     </PageLayout>
   );
 };

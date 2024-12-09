@@ -58,6 +58,7 @@ const ORGANIZATIONS = `/organizations`;
 
 /**************** Statistics ****************/
 const STATISTICS = `/statistics`;
+const CREATE_GRAPH = `/statistics/graph/create`;
 
 export const routes = {
   BASE,
@@ -106,5 +107,6 @@ export const routes = {
 
   ORGANIZATIONS,
 
-  STATISTICS
+  STATISTICS,
+  CREATE_GRAPH
 };

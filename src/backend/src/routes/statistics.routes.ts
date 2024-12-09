@@ -23,4 +23,6 @@ statisticsRouter.post(
   StatisticsController.createGraph
 );
 
+statisticsRouter.get('/graph/config', StatisticsController.getGraphConfig);
+
 export default statisticsRouter;
