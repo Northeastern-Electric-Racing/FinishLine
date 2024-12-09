@@ -4,21 +4,9 @@
  */
 
 import PageLayout from '../../components/PageLayout';
-import { useGraphConfig } from '../../hooks/statistics.hooks';
-import LoadingIndicator from '../../components/LoadingIndicator';
-import ErrorPage from '../ErrorPage';
 import { Box } from '@mui/material';
 
 const StatisticsPage: React.FC = () => {
-  const { data, isLoading, isError, error } = useGraphConfig();
-
-  if (isError) {
-    return <ErrorPage error={error} />;
-  }
-
-  if (!data || isLoading) {
-    return <LoadingIndicator />;
-  }
 
   return (
     <PageLayout title="Statistics">

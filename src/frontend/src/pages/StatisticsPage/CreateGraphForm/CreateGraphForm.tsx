@@ -16,7 +16,7 @@ import ReactHookTextField from '../../../components/ReactHookTextField';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useHistory } from 'react-router-dom';
-import { useCreateGraph } from '../../../hooks/statistics.hooks';
+import { useCreateGraph, useGraphConfig } from '../../../hooks/statistics.hooks';
 import { routes } from '../../../utils/routes';
 import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -24,6 +24,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { DatePicker } from '@mui/x-date-pickers';
 import { displayEnum } from '../../../utils/pipes';
+import ErrorPage from '../../ErrorPage';
 
 export interface GraphFormInput {
   title: string;
@@ -154,23 +155,26 @@ const schema = yup.object().shape({
   measure: yup.string().required()
 });
 
-const CreateGraphForm: React.FC<CreateGraphFormProps> = ({ data }) => {
+const CreateGraphForm: React.FC<CreateGraphFormProps> = () => {
   const [yTables, setYTables] = useState(new Map<string, FlattenedRelations>());
   const [xTables, setXTables] = useState(new Map<string, TrackedFlattenedRelations>());
   const [yTable, setYTable] = useState<string | null>(null);
   const history = useHistory();
   const toast = useToast();
-  const { mutateAsync, isLoading } = useCreateGraph();
+  const { mutateAsync: createGraph, isLoading: createIsLoading } = useCreateGraph();
   const [startTimeDatePickerOpen, setStartTimeDatePickerOpen] = useState(false);
   const [endTimeDatePickerOpen, setEndTimeDatePickerOpen] = useState(false);
+  const { data: relations, isLoading, isError, error } = useGraphConfig();
 
   useEffect(() => {
-    const tempTables = new Map<string, FlattenedRelations>();
-    data.forEach((data) => {
-      tempTables.set(data.table, data);
-    });
-    setYTables(tempTables);
-  }, [data]);
+    if (relations) {
+      const tempTables = new Map<string, FlattenedRelations>();
+      relations.forEach((data) => {
+        tempTables.set(data.table, data);
+      });
+      setYTables(tempTables);
+    }
+  }, [relations]);
 
   const {
     control,
@@ -232,7 +236,7 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = ({ data }) => {
       if (!formInput.endTime) throw new Error('Please enter end time');
       if (!formInput.startTime) throw new Error('Please enter start time');
       console.log(formInput);
-      await mutateAsync(transformGraphFormInputToCreateGraphArgs(formInput as ValidatedGraphFormInput));
+      await createGraph(transformGraphFormInputToCreateGraphArgs(formInput as ValidatedGraphFormInput));
       history.push(routes.STATISTICS);
     } catch (error) {
       if (error instanceof Error) {
@@ -241,11 +245,13 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = ({ data }) => {
     }
   };
 
-  if (isLoading) {
-    return <LoadingIndicator />;
+  if (isError) {
+    return <ErrorPage error={error} />;
   }
 
-  console.log(xTables);
+  if (!relations || isLoading) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <form
