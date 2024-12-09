@@ -422,7 +422,7 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = ({ data }) => {
                       size="medium"
                       value={value.table ? { label: value.table, id: value.table } : null}
                       placeholder="Select a table"
-                      options={yTables.values().map(tableToAutoCompleteValue).toArray()}
+                      options={Array.from(yTables.values()).map(tableToAutoCompleteValue)}
                       errorMessage={errors.yData?.table}
                     />
                     <NERAutocomplete
@@ -471,7 +471,7 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = ({ data }) => {
                           : null
                       }
                       placeholder="Select a table"
-                      options={xTables.values().map(trackedTableToAutoCompleteValue).toArray()}
+                      options={Array.from(xTables.values()).map(trackedTableToAutoCompleteValue)}
                       errorMessage={errors.xData?.table}
                     />
                     <NERAutocomplete
