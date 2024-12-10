@@ -87,7 +87,6 @@ const CreateGraphForm: React.FC = () => {
         const relationsToProcess: { relation: SimpleForeignRelation; path: SimpleForeignRelation[] }[] =
           yTableConfig.relationships.map((relation) => {
             const clonedRelation = deeplyCopy(relation) as SimpleForeignRelation;
-            console.log('root: ', clonedRelation);
             return {
               path: [
                 clonedRelation,
@@ -113,15 +112,11 @@ const CreateGraphForm: React.FC = () => {
             });
           }
 
-          // console.log(tableConfig);
-
           tableConfig?.relationships.forEach((relation) => {
-            // console.log(relation, getRelationKey(relation));
             if (
               !tempTables.has(getRelationKey(relation)) &&
               !next.path.some((pathValue) => pathValue.table === relation.table)
             ) {
-              console.log(next.path[0], relation);
               if (next.path[0].table.startsWith('_')) {
                 // indicates many to many table
                 if (relation.foreignKey === 'A') {
@@ -141,8 +136,6 @@ const CreateGraphForm: React.FC = () => {
         }
       }
     }
-
-    console.log(tempTables);
 
     setXTables(tempTables);
   }, [yTable, yTables]);

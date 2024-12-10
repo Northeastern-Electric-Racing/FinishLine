@@ -2,14 +2,7 @@ import { FormControl, FormHelperText, FormLabel, Grid, MenuItem, Select } from '
 import ReactHookTextField from '../../../components/ReactHookTextField';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
-import {
-  FlattenedRelations,
-  GraphCollection,
-  GraphFormInput,
-  GraphType,
-  Measure,
-  TrackedFlattenedRelations
-} from 'shared';
+import { FlattenedRelations, GraphCollection, GraphFormInput, GraphType, Measure, TrackedFlattenedRelations } from 'shared';
 import { displayEnum } from '../../../utils/pipes';
 import NERAutocomplete from '../../../components/NERAutocomplete';
 import { useState } from 'react';

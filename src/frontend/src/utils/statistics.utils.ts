@@ -32,7 +32,6 @@ export const tableToColumnAutoCompleteValue = (column: ColumnConfig): { label: s
 };
 
 const getQueryPathForSimpleForeignRelations = (foreignRelations: SimpleForeignRelation[]): QueryPath | undefined => {
-  console.log(JSON.stringify(foreignRelations));
   if (foreignRelations.length === 0) return;
 
   const first = foreignRelations.shift()!;
@@ -53,8 +52,6 @@ const getQueryPathForSimpleForeignRelations = (foreignRelations: SimpleForeignRe
     };
     prev = prev.next;
   }
-
-  console.log(JSON.stringify(init));
 
   return init;
 };

@@ -95,8 +95,6 @@ export default class StatisticsService {
       graphGen.groupByColumn
     }", ${measure}(${graphGen.finalTable.toLowerCase()}.${graphGen.finalColumn})`;
 
-    console.log('graph gen: ', JSON.stringify(graphGen));
-
     let query =
       `SELECT ` + finalSelection + ` FROM "${graphGen.queryPath.table}" ${graphGen.queryPath.table.toLowerCase()} `;
     let currPath = graphGen.queryPath;

@@ -7,12 +7,10 @@ import PageLayout from '../../components/PageLayout';
 import { Box } from '@mui/material';
 
 const StatisticsPage: React.FC = () => {
-
   return (
     <PageLayout title="Statistics">
       {/* Add your frontend components here to check them */}
-      <Box>
-      </Box>
+      <Box></Box>
     </PageLayout>
   );
 };
