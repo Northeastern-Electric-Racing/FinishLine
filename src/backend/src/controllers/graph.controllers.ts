@@ -4,13 +4,13 @@ import GraphService from '../services/graph.services';
 export default class GraphController {
   static async getSingleGraph(req: Request, res: Response, next: NextFunction) {
     try {
-      const { graphDataId } = req.params;
+      const { graphId } = req.params;
 
-      const requestedUser = await GraphService.getSingleGraph(graphDataId, req.organization);
+      const requestedGraph = await GraphService.getSingleGraph(graphId, req.organization);
 
-      return res.status(200).json(requestedUser);
+      res.status(200).json(requestedGraph);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }

@@ -158,4 +158,9 @@ describe('Statistics Tests', () => {
       ]);
     });
   });
+
+
+  describe('Get Single Graph', () => {
+
+  });
 });
