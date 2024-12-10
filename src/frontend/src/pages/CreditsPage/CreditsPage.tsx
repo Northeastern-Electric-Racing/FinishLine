@@ -207,6 +207,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Rup Jaisinghani', color: '#065535' },
     { name: 'Jack Dreifus', color: '#014421' },
     { name: 'Vinay Pillai', color: '#42458e' },
+    { name: 'Aaron Zhou', color: '#BAB86C' },
     { name: 'Benjamin Kataoka', color: '#38FF87' },
     { name: 'Meggan Shvartsberg', color: '#00DBFF' },
     { name: 'Visisht Kamalapuram', color: '#3083AA' },
