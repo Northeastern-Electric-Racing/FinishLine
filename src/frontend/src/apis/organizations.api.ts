@@ -29,3 +29,9 @@ export const getOrganizationLogo = async () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+export const setOrganizationLogo = async (file: File) => {
+  const formData = new FormData();
+  formData.append('logo', file);
+  return axios.post(apiUrls.organizationsSetLogoImage(), formData);
+};

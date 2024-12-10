@@ -6,7 +6,8 @@ import {
   getFeaturedProjects,
   getCurrentOrganization,
   setOrganizationDescription,
-  getOrganizationLogo
+  getOrganizationLogo,
+  setOrganizationLogo
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/finance.api';
 
@@ -69,6 +70,15 @@ export const useSetOrganizationDescription = () => {
       }
     }
   );
+};
+
+export const useSetOrganizationLogo = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, File>(['reimbursement-requsts', 'edit'], async (file: File) => {
+    const { data } = await setOrganizationLogo(file);
+    queryClient.invalidateQueries(['organizations']);
+    return data;
+  });
 };
 
 export const useOrganizationLogo = () => {

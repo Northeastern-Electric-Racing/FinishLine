@@ -19,6 +19,7 @@ import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
 import EditDescription from './EditGuestView/EditDescription';
+import EditLogo from './EditGuestView/EditLogo';
 
 const AdminToolsPage: React.FC = () => {
   const currentUser = useCurrentUser();
@@ -94,9 +95,7 @@ const AdminToolsPage: React.FC = () => {
       ) : tabIndex === 3 ? (
         <AdminToolsRecruitmentConfig />
       ) : tabIndex === 4 ? (
-        <Box>
-          <EditDescription />
-        </Box>
+        <EditLogo />
       ) : (
         <Box>
           <Box pb={2}>
