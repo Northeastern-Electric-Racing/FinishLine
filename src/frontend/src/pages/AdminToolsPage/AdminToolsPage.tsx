@@ -18,7 +18,6 @@ import NERTabs from '../../components/Tabs';
 import { routes } from '../../utils/routes';
 import { Box } from '@mui/system';
 import AdminToolsRecruitmentConfig from './RecruitmentConfig/AdminToolsRecruitmentConfig';
-import EditDescription from './EditGuestView/EditDescription';
 import EditLogo from './EditGuestView/EditLogo';
 
 const AdminToolsPage: React.FC = () => {

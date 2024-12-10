@@ -201,6 +201,10 @@ export default class OrganizationsService {
 
     const logoImageData = await uploadFile(logoImage);
 
+    if (!logoImageData?.name) {
+      throw new HttpException(500, 'Image Name not found');
+    }
+
     const updatedOrg = await prisma.organization.update({
       where: { organizationId: organization.organizationId },
       data: {
