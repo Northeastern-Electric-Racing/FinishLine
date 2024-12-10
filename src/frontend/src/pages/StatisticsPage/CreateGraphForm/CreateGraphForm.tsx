@@ -1,18 +1,15 @@
-import { FormControl, FormHelperText, FormLabel, Grid, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import {
-  ColumnConfig,
-  CreateGraphArgs,
   FlattenedRelations,
+  GraphFormInput,
   GraphType,
   Measure,
-  QueryPath,
   SimpleForeignRelation,
-  TrackedFlattenedRelations
+  TrackedFlattenedRelations,
+  ValidatedGraphFormInput
 } from 'shared';
-import NERAutocomplete from '../../../components/NERAutocomplete';
-import ReactHookTextField from '../../../components/ReactHookTextField';
 import NERSuccessButton from '../../../components/NERSuccessButton';
 import NERFailButton from '../../../components/NERFailButton';
 import { useHistory } from 'react-router-dom';
@@ -22,44 +19,11 @@ import { useToast } from '../../../hooks/toasts.hooks';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { DatePicker } from '@mui/x-date-pickers';
-import { displayEnum } from '../../../utils/pipes';
 import ErrorPage from '../../ErrorPage';
-
-export interface GraphFormInput {
-  title: string;
-  yData: {
-    column: string;
-    table: string;
-  };
-  xData: {
-    column: string;
-    table: string;
-    path: SimpleForeignRelation[];
-  };
-  measure: Measure;
-  graphType: GraphType;
-  startTime: Date | null;
-  endTime: Date | null;
-}
-
-const trackedTableToAutoCompleteValue = (relation: TrackedFlattenedRelations): { label: string; id: string } => {
-  return {
-    label: relation.path
-      .filter((relation) => !relation.table.startsWith('_'))
-      .map((relation) => relation.table)
-      .join('->'),
-    id: relation.table
-  };
-};
-
-const tableToAutoCompleteValue = (table: FlattenedRelations): { label: string; id: string } => {
-  return { label: table.table, id: table.table };
-};
-
-const tableToColumnAutoCompleteValue = (column: ColumnConfig): { label: string; id: string } => {
-  return { label: column.columnName, id: column.columnName };
-};
+import PageLayout from '../../../components/PageLayout';
+import { GraphFormView } from './GraphFormView';
+import { getRelationKey, transformGraphFormInputToCreateGraphArgs } from '../../../utils/statistics.utils';
+import { deeplyCopy } from 'shared/src/utils';
 
 const defaultValues: GraphFormInput = {
   yData: {
@@ -78,75 +42,6 @@ const defaultValues: GraphFormInput = {
   graphType: GraphType.BAR
 };
 
-interface CreateGraphFormProps {
-  data: FlattenedRelations[];
-}
-
-interface ValidatedGraphFormInput {
-  title: string;
-  yData: {
-    column: string;
-    table: string;
-  };
-  xData: {
-    column: string;
-    table: string;
-    path: SimpleForeignRelation[];
-  };
-  measure: Measure;
-  startTime: Date;
-  endTime: Date;
-  graphType: GraphType;
-}
-
-const getQueryPathForSimpleForeignRelations = (foreignRelations: SimpleForeignRelation[]): QueryPath | undefined => {
-  console.log(foreignRelations);
-  if (foreignRelations.length === 0) return;
-
-  const first = foreignRelations.shift()!;
-
-  const init: QueryPath = {
-    table: first.table,
-    primaryKey: first.primaryKey
-  };
-
-  let prev = init;
-
-  while (foreignRelations.length > 0) {
-    const next = foreignRelations.shift()!;
-    prev.next = {
-      table: next.table,
-      parentForeignKey: next.foreignKey,
-      primaryKey: next.primaryKey
-    };
-    prev = prev.next;
-  }
-
-  return init;
-};
-
-const transformGraphFormInputToCreateGraphArgs = (input: ValidatedGraphFormInput): CreateGraphArgs => {
-  const queryPath = getQueryPathForSimpleForeignRelations(input.xData.path);
-
-  if (!queryPath) {
-    throw new Error('Could not transform path to queryPath');
-  }
-
-  return {
-    title: input.title,
-    startDate: input.startTime,
-    endDate: input.endTime,
-    graphType: input.graphType,
-    measure: input.measure,
-    graphGen: {
-      finalTable: input.yData.table,
-      finalColumn: input.yData.column,
-      groupByColumn: input.xData.column,
-      queryPath
-    }
-  };
-};
-
 const schema = yup.object().shape({
   endTime: yup.date().required(),
   startTime: yup.date().required(),
@@ -155,16 +50,14 @@ const schema = yup.object().shape({
   measure: yup.string().required()
 });
 
-const CreateGraphForm: React.FC<CreateGraphFormProps> = () => {
+const CreateGraphForm: React.FC = () => {
   const [yTables, setYTables] = useState(new Map<string, FlattenedRelations>());
   const [xTables, setXTables] = useState(new Map<string, TrackedFlattenedRelations>());
   const [yTable, setYTable] = useState<string | null>(null);
   const history = useHistory();
   const toast = useToast();
   const { mutateAsync: createGraph, isLoading: createIsLoading } = useCreateGraph();
-  const [startTimeDatePickerOpen, setStartTimeDatePickerOpen] = useState(false);
-  const [endTimeDatePickerOpen, setEndTimeDatePickerOpen] = useState(false);
-  const { data: relations, isLoading, isError, error } = useGraphConfig();
+  const { data: relations, isLoading, isError, error } = useGraphConfig(); // get all graph collections to populate autocomplete
 
   useEffect(() => {
     if (relations) {
@@ -193,40 +86,63 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = () => {
       if (yTableConfig) {
         const relationsToProcess: { relation: SimpleForeignRelation; path: SimpleForeignRelation[] }[] =
           yTableConfig.relationships.map((relation) => {
+            const clonedRelation = deeplyCopy(relation) as SimpleForeignRelation;
+            console.log('root: ', clonedRelation);
             return {
               path: [
-                relation,
+                clonedRelation,
                 {
                   table: yTableConfig.table,
                   primaryKey: yTableConfig.primaryKey ?? '',
-                  foreignKey: yTableConfig.primaryKey ?? ''
+                  foreignKey: relation.foreignKey
                 }
               ],
-              relation
+              relation: clonedRelation
             };
           });
 
         while (relationsToProcess.length > 0) {
-          const relationData = relationsToProcess.shift()!;
-          const tableConfig = yTables.get(relationData.relation.table);
-          const tablePath = relationData.path.map((table) => table.table).join(',');
-          if (!tempTables.has(tablePath) && tableConfig) {
-            tempTables.set(tablePath, {
-              table: relationData.relation.table,
-              columns: tableConfig.columns,
-              primaryKey: tableConfig.primaryKey,
-              relationships: tableConfig.relationships,
-              path: relationData.path
-            });
-            tableConfig.relationships.forEach((relation) => {
-              if (relation.table !== tableConfig.table && !tablePath.includes(relation.table)) {
-                relationsToProcess.unshift({ path: [relation].concat(relationData.path), relation });
-              }
+          const next = relationsToProcess.shift()!;
+          const key = getRelationKey(next.relation);
+          const tableConfig = yTables.get(next.relation.table);
+
+          if (!tempTables.has(key) && tableConfig) {
+            tempTables.set(key, {
+              ...tableConfig,
+              path: next.path
             });
           }
+
+          // console.log(tableConfig);
+
+          tableConfig?.relationships.forEach((relation) => {
+            // console.log(relation, getRelationKey(relation));
+            if (
+              !tempTables.has(getRelationKey(relation)) &&
+              !next.path.some((pathValue) => pathValue.table === relation.table)
+            ) {
+              console.log(next.path[0], relation);
+              if (next.path[0].table.startsWith('_')) {
+                // indicates many to many table
+                if (relation.foreignKey === 'A') {
+                  next.path[0].primaryKey = 'B';
+                  next.path[0].foreignKey = 'A';
+                } else {
+                  next.path[0].primaryKey = 'A';
+                  next.path[0].foreignKey = 'B';
+                }
+              } else {
+                next.path[0].foreignKey = relation.foreignKey;
+              }
+              const clonedRelation = deeplyCopy(relation) as SimpleForeignRelation;
+              relationsToProcess.push({ relation: clonedRelation, path: [clonedRelation].concat(next.path) });
+            }
+          });
         }
       }
     }
+
+    console.log(tempTables);
 
     setXTables(tempTables);
   }, [yTable, yTables]);
@@ -235,8 +151,9 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = () => {
     try {
       if (!formInput.endTime) throw new Error('Please enter end time');
       if (!formInput.startTime) throw new Error('Please enter start time');
-      console.log(formInput);
       await createGraph(transformGraphFormInputToCreateGraphArgs(formInput as ValidatedGraphFormInput));
+
+      toast.success('Successfully created graph');
       history.push(routes.STATISTICS);
     } catch (error) {
       if (error instanceof Error) {
@@ -245,11 +162,15 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = () => {
     }
   };
 
+  const exitEditMode = () => {
+    history.push(routes.STATISTICS);
+  };
+
   if (isError) {
     return <ErrorPage error={error} />;
   }
 
-  if (!relations || isLoading) {
+  if (!relations || isLoading || createIsLoading) {
     return <LoadingIndicator />;
   }
 
@@ -258,259 +179,34 @@ const CreateGraphForm: React.FC<CreateGraphFormProps> = () => {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log(e);
         handleSubmit(onSubmit)(e);
       }}
       noValidate
     >
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <FormLabel>Title</FormLabel>
-            <ReactHookTextField placeholder="Enter graph title" control={control} name="title" />
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel>Start Date</FormLabel>
-            <Controller
-              control={control}
-              name="startTime"
-              render={({ field: { value, onChange } }) => {
-                return (
-                  <DatePicker
-                    value={value}
-                    open={startTimeDatePickerOpen}
-                    onClose={() => setStartTimeDatePickerOpen(false)}
-                    onOpen={() => setStartTimeDatePickerOpen(true)}
-                    onChange={onChange}
-                    slotProps={{
-                      textField: {
-                        error: !!errors.startTime,
-                        helperText: errors.startTime?.message,
-                        onClick: () => setStartTimeDatePickerOpen(true),
-                        inputProps: { readOnly: true },
-                        fullWidth: true
-                      }
-                    }}
-                  />
-                );
-              }}
-            />
-          </FormControl>
-          <FormHelperText error={!!errors.startTime}>{errors.startTime?.message}</FormHelperText>
-        </Grid>
-
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel>End Date</FormLabel>
-            <Controller
-              control={control}
-              name="endTime"
-              render={({ field: { value, onChange } }) => {
-                return (
-                  <DatePicker
-                    value={value}
-                    open={endTimeDatePickerOpen}
-                    onClose={() => setEndTimeDatePickerOpen(false)}
-                    onOpen={() => setEndTimeDatePickerOpen(true)}
-                    onChange={onChange}
-                    slotProps={{
-                      textField: {
-                        error: !!errors.endTime,
-                        helperText: errors.endTime?.message,
-                        onClick: () => setEndTimeDatePickerOpen(true),
-                        inputProps: { readOnly: true },
-                        fullWidth: true
-                      }
-                    }}
-                  />
-                );
-              }}
-            />
-          </FormControl>
-          <FormHelperText error={!!errors.endTime}>{errors.endTime?.message}</FormHelperText>
-        </Grid>
-
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel sx={{ alignSelf: 'start' }}>Graph Type</FormLabel>
-            <Controller
-              control={control}
-              name={'graphType'}
-              render={({ field }) => (
-                <Select
-                  displayEmpty
-                  placeholder={'Change Graph Type'}
-                  sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                  fullWidth
-                  MenuProps={{
-                    anchorOrigin: {
-                      vertical: 'bottom',
-                      horizontal: 'right'
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right'
-                    }
-                  }}
-                  {...field}
-                >
-                  {Object.values(GraphType).map((graphType) => {
-                    return (
-                      <MenuItem key={graphType} value={graphType}>
-                        {displayEnum(graphType)}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              )}
-            />
-          </FormControl>
-          <FormHelperText error={!!errors.graphType}>{errors.graphType?.message}</FormHelperText>
-        </Grid>
-
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel sx={{ alignSelf: 'start' }}>Measure</FormLabel>
-            <Controller
-              control={control}
-              name={'measure'}
-              render={({ field }) => (
-                <Select
-                  displayEmpty
-                  fullWidth
-                  placeholder={'Change Measure'}
-                  sx={{ height: 56, width: '100%', textAlign: 'left' }}
-                  MenuProps={{
-                    anchorOrigin: {
-                      vertical: 'bottom',
-                      horizontal: 'right'
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right'
-                    }
-                  }}
-                  {...field}
-                >
-                  {Object.values(Measure).map((measure: Measure) => {
-                    return (
-                      <MenuItem key={measure} value={measure}>
-                        {displayEnum(measure)}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              )}
-            />
-          </FormControl>
-          <FormHelperText error={!!errors.measure}>{errors.measure?.message}</FormHelperText>
-        </Grid>
-
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel>Select Data</FormLabel>
-            <Controller
-              name="yData"
-              control={control}
-              render={({ field: { value, onChange } }) => {
-                return (
-                  <>
-                    <NERAutocomplete
-                      sx={{ width: '100%' }}
-                      id="yTableSelector"
-                      onChange={(_, tableValue) => {
-                        onChange({ table: tableValue?.id, column: null });
-                        setYTable(tableValue?.id ?? null);
-                      }}
-                      size="medium"
-                      value={value.table ? { label: value.table, id: value.table } : null}
-                      placeholder="Select a table"
-                      options={Array.from(yTables.values()).map(tableToAutoCompleteValue)}
-                      errorMessage={errors.yData?.table}
-                    />
-                    <NERAutocomplete
-                      sx={{ width: '100%' }}
-                      id="yColumnSelector"
-                      onChange={(_, columnValue) => onChange({ ...value, column: columnValue?.id })}
-                      size="medium"
-                      value={value.column ? { label: value.column, id: value.column } : null}
-                      placeholder="Select a column"
-                      options={
-                        value.table ? yTables.get(value.table)?.columns.map(tableToColumnAutoCompleteValue).flat() ?? [] : []
-                      }
-                      errorMessage={errors.yData?.column}
-                    />
-                  </>
-                );
-              }}
-            />
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <FormLabel>Select Grouping Data</FormLabel>
-            <Controller
-              name="xData"
-              control={control}
-              render={({ field: { onChange, value } }) => {
-                return (
-                  <>
-                    <NERAutocomplete
-                      sx={{ width: '100%' }}
-                      id="xTableSelector"
-                      onChange={(_, tableValue) => {
-                        console.log(tableValue);
-                        onChange({
-                          table: tableValue?.id,
-                          column: null,
-                          path: tableValue ? xTables.get(tableValue.label.replaceAll('->', ','))?.path : []
-                        });
-                      }}
-                      size="medium"
-                      value={
-                        value.path
-                          ? { label: value.path.map((relation) => relation.table).join('->'), id: value.table }
-                          : null
-                      }
-                      placeholder="Select a table"
-                      options={Array.from(xTables.values()).map(trackedTableToAutoCompleteValue)}
-                      errorMessage={errors.xData?.table}
-                    />
-                    <NERAutocomplete
-                      sx={{ width: '100%' }}
-                      id="xColumnSelector"
-                      onChange={(_, columnValue) =>
-                        onChange({
-                          ...value,
-                          column: columnValue?.id
-                        })
-                      }
-                      size="medium"
-                      placeholder="Select a column"
-                      value={value.column ? { label: value.column, id: value.column } : null}
-                      options={
-                        value.table ? yTables.get(value.table)?.columns.map(tableToColumnAutoCompleteValue).flat() ?? [] : []
-                      }
-                      errorMessage={errors.xData?.column}
-                    />
-                  </>
-                );
-              }}
-            />
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} display={'flex'} justifyContent={'end'}>
-          <NERFailButton sx={{ mr: 1 }} onClick={() => history.push('/statistics')}>
-            Cancel
-          </NERFailButton>
-          <NERSuccessButton type="submit">Submit</NERSuccessButton>
-        </Grid>
-      </Grid>
+      <PageLayout
+        stickyHeader
+        title={'New Graph'}
+        previousPages={[{ name: 'statistics', route: routes.STATISTICS }]}
+        headerRight={
+          <Box display="inline-flex" alignItems="center" justifyContent={'end'}>
+            <NERFailButton variant="contained" onClick={exitEditMode} sx={{ mx: 1 }}>
+              Cancel
+            </NERFailButton>
+            <NERSuccessButton variant="contained" type="submit" sx={{ mx: 1 }}>
+              Submit
+            </NERSuccessButton>
+          </Box>
+        }
+      >
+        <GraphFormView
+          control={control}
+          errors={errors}
+          xTables={xTables}
+          yTables={yTables}
+          setYTable={setYTable}
+          graphCollections={[]} // TODO replace with graph collections
+        />
+      </PageLayout>
     </form>
   );
 };

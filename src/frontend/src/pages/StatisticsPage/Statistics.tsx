@@ -6,9 +6,8 @@ import CreateGraphForm from './CreateGraphForm/CreateGraphForm';
 const Statistics: React.FC = () => {
   return (
     <Switch>
-      <Route path={routes.STATISTICS} component={StatisticsPage} />
       <Route path={routes.CREATE_GRAPH} component={CreateGraphForm} />
-
+      <Route path={routes.STATISTICS} component={StatisticsPage} />
       {/* Add more routes here */}
     </Switch>
   );

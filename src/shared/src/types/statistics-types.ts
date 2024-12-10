@@ -52,6 +52,7 @@ export interface Graph {
 }
 
 export interface GraphCollection {
+  id: string;
   graphs: Graph[];
   title: string;
   linkId: string;
@@ -88,4 +89,40 @@ export interface CreateGraphArgs {
   measure: Measure;
   graphCollectionId?: string;
   graphGen: GraphGen;
+}
+
+export interface GraphFormInput {
+  title: string;
+  yData: {
+    column: string;
+    table: string;
+  };
+  xData: {
+    column: string;
+    table: string;
+    path: SimpleForeignRelation[];
+  };
+  measure: Measure;
+  graphType: GraphType;
+  startTime: Date | null;
+  endTime: Date | null;
+  graphCollectionId?: string;
+}
+
+export interface ValidatedGraphFormInput {
+  title: string;
+  yData: {
+    column: string;
+    table: string;
+  };
+  xData: {
+    column: string;
+    table: string;
+    path: SimpleForeignRelation[];
+  };
+  measure: Measure;
+  startTime: Date;
+  endTime: Date;
+  graphType: GraphType;
+  graphCollectionId?: string;
 }
