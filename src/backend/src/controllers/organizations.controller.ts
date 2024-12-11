@@ -61,6 +61,20 @@ export default class OrganizationsController {
     }
   }
 
+  static async updateApplicationLink(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { applicationLink } = req.body;
+      const updatedOrganization = await OrganizationsService.updateApplicationLink(
+        req.currentUser,
+        applicationLink,
+        req.organization
+      );
+      res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   static async setOnboardingText(req: Request, res: Response, next: NextFunction) {
     try {
       const { onboardingText } = req.body;
@@ -69,6 +83,22 @@ export default class OrganizationsController {
         req.organization,
         onboardingText
       );
+      return res.status(200).json(updatedOrganization);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
+  static async updateOrganizationContacts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { contacts } = req.body;
+
+      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(
+        req.currentUser,
+        req.organization,
+        contacts
+      );
+
       return res.status(200).json(updatedOrganization);
     } catch (error: unknown) {
       return next(error);
