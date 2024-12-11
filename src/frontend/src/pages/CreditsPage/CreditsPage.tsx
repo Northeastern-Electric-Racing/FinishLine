@@ -258,6 +258,7 @@ const CreditsPage: React.FC = () => {
     { name: 'Aryan Gupta', color: '#5a4094' },
     { name: 'Lisa Wan', color: '#CCCCFF' },
     { name: 'Aidan Wong', color: '#4284f5' },
+    { name: 'Joshua Sharma', color: '#50C878' },
     { name: 'Sarah Taylor', color: '#278f4b' },
     { name: 'Shrey Agarwal', color: '#800080' },
     { name: 'Amber Friar', color: '#F5A9B8' }
