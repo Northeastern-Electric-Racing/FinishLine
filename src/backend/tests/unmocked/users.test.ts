@@ -3,7 +3,6 @@ import { createTestOrganization, createTestTask, createTestUser, resetUsers } fr
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
-import prisma from '../../src/prisma/prisma';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -47,29 +46,6 @@ describe('User Tests', () => {
       const userTasks = await UsersService.getManyUserTasks([testBatman.userId, testBatman.userId], organization);
 
       expect(userTasks).toStrictEqual([batmanTask, batmanTask]);
-    });
-  });
-
-  describe('Send Notification', () => {
-    it('fails on invalid user id', async () => {
-      await expect(async () => await UsersService.sendNotification('1', 'test', 'test')).rejects.toThrow(
-        new NotFoundException('User', '1')
-      );
-    });
-
-    it('Succeeds and sends notification to user', async () => {
-      const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await UsersService.sendNotification(testBatman.userId, 'test1', 'test1');
-      await UsersService.sendNotification(testBatman.userId, 'test2', 'test2');
-
-      const batmanWithNotifications = await prisma.user.findUnique({
-        where: { userId: testBatman.userId },
-        include: { unreadNotifications: true }
-      });
-
-      expect(batmanWithNotifications?.unreadNotifications).toHaveLength(2);
-      expect(batmanWithNotifications?.unreadNotifications[0].text).toBe('test1');
-      expect(batmanWithNotifications?.unreadNotifications[1].text).toBe('test2');
     });
   });
 });
