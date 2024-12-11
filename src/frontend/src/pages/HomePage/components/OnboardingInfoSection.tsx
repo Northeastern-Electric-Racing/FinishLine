@@ -25,7 +25,7 @@ const OnboardingInfoSection: React.FC = () => {
   if (organizationIsError) {
     return <ErrorPage message={organizationError.message} />;
   }
-  
+
   if (linksIsError) return <ErrorPage message={linksError?.message} />;
 
   if (!organization || organizationIsLoading || !links || linksIsLoading) return <LoadingIndicator />;
