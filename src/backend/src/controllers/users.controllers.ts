@@ -191,15 +191,4 @@ export default class UsersController {
       next(error);
     }
   }
-
-  static async sendNotificationToUsers(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { text, iconName, userIds } = req.body;
-
-      const createdNotification = await UsersService.sendNotifcationToUsers(text, iconName, userIds, req.organization);
-      res.status(200).json(createdNotification);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
 }
