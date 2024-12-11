@@ -1899,6 +1899,12 @@ const performSeed: () => Promise<void> = async () => {
     }
   ]);
 
+  await OrganizationsService.setOnboardingText(
+    batman,
+    ner,
+    'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.'
+  );
+
   await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);

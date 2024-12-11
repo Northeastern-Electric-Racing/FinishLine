@@ -1,8 +1,10 @@
 import { Grid, Typography, ListItem, List, useTheme, Button } from '@mui/material';
 import { Box } from '@mui/system';
-import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
+import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import OnboardingBlock from '../../../components/OnboardingBlock';
+import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 
 const OnboardingInfoSection: React.FC = () => {
   const theme = useTheme();
@@ -11,32 +13,26 @@ const OnboardingInfoSection: React.FC = () => {
     'Chief Mechanical Engineer - Max Boone boone.m@northeastern.edu',
     'Chief Software Engineer - Peyton Mckee mckee.p@northeastern.edu'
   ];
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
 
   const { data: links, isError: linksIsError, error: linksError, isLoading: linksIsLoading } = useAllUsefulLinks();
 
-  if (!links || linksIsLoading) return <LoadingIndicator />;
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+
   if (linksIsError) return <ErrorPage message={linksError?.message} />;
+
+  if (!organization || organizationIsLoading || !links || linksIsLoading) return <LoadingIndicator />;
 
   return (
     <Grid container item sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-      <Grid item>
-        <Box
-          sx={{
-            height: '25vh',
-            borderRadius: '10px',
-            width: '100%',
-            background: theme.palette.background.paper
-          }}
-        >
-          <Typography variant="h5" ml={2} pt={2}>
-            Onboarding
-          </Typography>
-          <Typography sx={{ mt: 1, mb: -1, ml: 2 }}>
-            Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to
-            officially welcome you to our team.
-          </Typography>
-        </Box>
-      </Grid>
+      <OnboardingBlock organization={organization} />
       <Grid item>
         <Box
           sx={{
