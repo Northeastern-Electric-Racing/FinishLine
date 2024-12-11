@@ -589,8 +589,14 @@ export default class UsersService {
     if (!createdNotification) throw new HttpException(500, 'Failed to create notification');
 
     const notificationsPromises = userIds.map(async (userId) => {
+      const requestedUser = await prisma.user.findUnique({
+        where: { userId }
+      });
+
+      if (!requestedUser) throw new NotFoundException('User', userId);
+
       return await prisma.user.update({
-        where: { userId },
+        where: { userId: requestedUser.userId },
         data: {
           unreadNotifications: {
             connect: { notificationId: createdNotification.notificationId }
