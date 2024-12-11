@@ -1,6 +1,4 @@
-import { Graph, Graph_Type, Measure, Organization, Prisma, User } from '@prisma/client';
-import prisma from '../prisma';
-import { getGraphQueryArgs } from '../../prisma-query-args/statistics.query-args';
+import { Graph_Type, Measure, Organization, User } from '@prisma/client';
 import StatisticsService from '../../services/statistics.services';
 import { GraphGen } from 'shared';
 

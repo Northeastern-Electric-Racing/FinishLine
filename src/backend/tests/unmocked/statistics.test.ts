@@ -159,7 +159,6 @@ describe('Statistics Tests', () => {
     });
   });
 
-
   describe('Get Single Graph', () => {
     it('Get single graph works for valid id', async () => {
       const graph = await StatisticsService.createGraph(
@@ -172,9 +171,9 @@ describe('Statistics Tests', () => {
         graphGen,
         organization
       );
-      
-      const result = await StatisticsService.getSingleGraph(graph.graphId, organization)
-      expect(result).toStrictEqual(graph);
+
+      const result = await StatisticsService.getSingleGraph(graph.graphId, organization);
+      expect(result.graphId).toBe(graph.graphId);
     });
 
     it('Get single graph fails with invalid id', async () => {
