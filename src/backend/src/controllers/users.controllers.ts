@@ -174,6 +174,8 @@ export default class UsersController {
       const { userId } = req.params;
       const { organization } = req;
 
+      console.log('TASK');
+
       const userTasks = await UsersService.getUserTasks(userId, organization);
       res.status(200).json(userTasks);
     } catch (error: unknown) {
@@ -192,20 +194,7 @@ export default class UsersController {
     }
   }
 
-  static async sendNotitifcation(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { userId } = req.params;
-      const { notificationId } = req.body;
-      const { organization } = req;
-
-      const updatedUser = await UsersService.sendNotification(userId, notificationId, organization);
-      res.status(200).json(updatedUser);
-    } catch (error: unknown) {
-      next(error);
-    }
-  }
-
-  static async sendNotificationToManyUsers(req: Request, res: Response, next: NextFunction) {
+  static async sendNotificationToUsers(req: Request, res: Response, next: NextFunction) {
     try {
       console.log('CONTROLLER');
       const { text, iconName, userIds } = req.body;
@@ -213,7 +202,7 @@ export default class UsersController {
       console.log(iconName);
       console.log(userIds);
 
-      const createdNotification = await UsersService.sendNotifcationToManyUsers(userIds, text, iconName, req.organization);
+      const createdNotification = await UsersService.sendNotifcationToUsers(text, iconName, userIds, req.organization);
       res.status(200).json(createdNotification);
     } catch (error: unknown) {
       next(error);

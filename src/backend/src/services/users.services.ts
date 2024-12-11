@@ -570,29 +570,6 @@ export default class UsersService {
   }
 
   /**
-   * Sends a notification to a user
-   * @param userId
-   * @param notificationId
-   * @param organization
-   * @returns the updated unread notification of the user
-   */
-  static async sendNotification(userId: string, notificationId: string, organization: Organization) {
-    const requestedUser = await prisma.user.findUnique({
-      where: { userId }
-    });
-
-    if (!requestedUser) throw new NotFoundException('User', userId);
-
-    const updatedUser = await prisma.user.update({
-      where: { userId: requestedUser.userId },
-      data: { unreadNotifications: { connect: { notificationId } } },
-      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
-    });
-
-    return updatedUser.unreadNotifications.map(notificationTransformer);
-  }
-
-  /**
    * Creates and sends a notification to all users with the given userIds
    * @param text writing in the notification
    * @param iconName icon that appears in the notification
@@ -600,7 +577,7 @@ export default class UsersService {
    * @param organization
    * @returns the created notification
    */
-  static async sendNotifcationToManyUsers(text: string, iconName: string, userIds: string[], organization: Organization) {
+  static async sendNotifcationToUsers(text: string, iconName: string, userIds: string[], organization: Organization) {
     const createdNotification = await prisma.notification.create({
       data: {
         text,
@@ -612,7 +589,14 @@ export default class UsersService {
     if (!createdNotification) throw new HttpException(500, 'Failed to create notification');
 
     const notificationsPromises = userIds.map(async (userId) => {
-      return UsersService.sendNotification(userId, createdNotification.notificationId, organization);
+      return await prisma.user.update({
+        where: { userId },
+        data: {
+          unreadNotifications: {
+            connect: { notificationId: createdNotification.notificationId }
+          }
+        }
+      });
     });
 
     await Promise.all(notificationsPromises);
