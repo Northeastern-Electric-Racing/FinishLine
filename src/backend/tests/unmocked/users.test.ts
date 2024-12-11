@@ -3,6 +3,7 @@ import { createTestOrganization, createTestTask, createTestUser, resetUsers } fr
 import { batmanAppAdmin, supermanAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
+import prisma from '../../src/prisma/prisma';
 
 describe('User Tests', () => {
   let orgId: string;

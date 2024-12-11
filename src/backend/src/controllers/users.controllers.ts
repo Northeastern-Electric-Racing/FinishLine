@@ -174,8 +174,6 @@ export default class UsersController {
       const { userId } = req.params;
       const { organization } = req;
 
-      console.log('TASK');
-
       const userTasks = await UsersService.getUserTasks(userId, organization);
       res.status(200).json(userTasks);
     } catch (error: unknown) {
@@ -193,16 +191,10 @@ export default class UsersController {
       next(error);
     }
   }
-<<<<<<< HEAD
-=======
 
   static async sendNotificationToUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log('CONTROLLER');
       const { text, iconName, userIds } = req.body;
-      console.log(text);
-      console.log(iconName);
-      console.log(userIds);
 
       const createdNotification = await UsersService.sendNotifcationToUsers(text, iconName, userIds, req.organization);
       res.status(200).json(createdNotification);
@@ -210,5 +202,4 @@ export default class UsersController {
       next(error);
     }
   }
->>>>>>> Send-Notification-Update
 }

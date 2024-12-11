@@ -6,10 +6,6 @@ export type NotificationQueryArgs = ReturnType<typeof getNotificationQueryArgs>;
 export const getNotificationQueryArgs = (organizationId: string) =>
   Prisma.validator<Prisma.NotificationDefaultArgs>()({
     include: {
-<<<<<<< HEAD
-      usersReceived: getUserQueryArgs(organizationId)
-=======
       users: getUserQueryArgs(organizationId)
->>>>>>> Send-Notification-Update
     }
   });
