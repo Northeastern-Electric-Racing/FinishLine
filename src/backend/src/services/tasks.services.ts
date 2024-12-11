@@ -95,7 +95,7 @@ export default class TasksService {
     if (!isUnderWordCount(notes, 250)) throw new HttpException(400, 'Notes must be less than 250 words');
 
     if (status === 'IN_PROGRESS' && (!deadline || assignees.length === 0)) {
-      throw new HttpException(400,'Tasks in progress must have a dealine and assignees');
+      throw new HttpException(400, 'Tasks in progress must have a dealine and assignees');
     }
 
     const createdTask = await prisma.task.create({
@@ -169,7 +169,7 @@ export default class TasksService {
    */
   static async editTaskStatus(user: User, taskId: string, status: Task_Status) {
     // Get the original task and check if it exists
-    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: {assignees: true, wbsElement: true } });
+    const originalTask = await prisma.task.findUnique({ where: { taskId }, include: { assignees: true, wbsElement: true } });
     if (!originalTask) throw new NotFoundException('Task', taskId);
     if (originalTask.dateDeleted) throw new DeletedException('Task', taskId);
 

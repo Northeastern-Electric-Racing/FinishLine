@@ -7,7 +7,7 @@ import TasksService from '../../src/services/tasks.services';
 describe('Task Test', () => {
   let organizationId: string;
   beforeEach(async () => {
-    organizationId = (await createTestOrganization()).organizationId;
+    ({ organizationId } = await createTestOrganization());
   });
 
   afterEach(async () => {

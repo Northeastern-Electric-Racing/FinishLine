@@ -29,9 +29,8 @@ const sortAscendingDate = (task1: Task, task2: Task) => {
     return 1;
   } else if (task2.deadline && !task1.deadline) {
     return -1;
-  } else {
-    return 0;
   }
+  return 0;
 };
 
 // Page block containing task list view

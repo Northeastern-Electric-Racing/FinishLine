@@ -8,7 +8,6 @@ import {
   User,
   User_Secure_Settings,
   User_Settings,
-  WBS_Element,
   WBS_Element_Status
 } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
@@ -434,14 +433,14 @@ export const createTestTask = async (
   const task = await prisma.task.create({
     data: {
       taskId: '0000000001',
-      title: title,
-      notes: notes,
-      deadline: deadline,
+      title,
+      notes,
+      deadline,
       assignees: {
         connect: assignees.map((user) => ({ userId: user.userId }))
       },
-      priority: priority,
-      status: status,
+      priority,
+      status,
       dateCreated: new Date(),
       createdBy: {
         connect: { userId: user.userId }
