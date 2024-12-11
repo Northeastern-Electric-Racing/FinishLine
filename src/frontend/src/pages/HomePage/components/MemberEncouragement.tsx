@@ -7,18 +7,31 @@ import { useHistory } from 'react-router-dom';
 const MemberEncouragement: React.FC = () => {
   const history = useHistory();
   return (
-    <Box sx={{ width: '100%', my: 2, mx: 'auto' }}>
+    <Box sx={{ height: '100%', width: '100%', mx: 'auto' }}>
       <Alert
         variant="filled"
         severity="info"
         icon={false}
         sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          height: '100%',
           '& .MuiAlert-message': {
-            width: '100%'
+            width: '100%',
+            overflow: 'hidden'
           }
         }}
       >
-        <Grid container alignItems="center" justifyContent="space-between">
+        <Grid
+          container
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            direction: 'row',
+            flexWrap: 'nowrap'
+          }}
+        >
           <Grid item>
             <Typography variant="h6" color="white">
               Already a member?
@@ -31,7 +44,7 @@ const MemberEncouragement: React.FC = () => {
             <NERButton
               variant="contained"
               size="small"
-              sx={{ color: 'white' }}
+              sx={{ color: 'white', whiteSpace: 'nowrap' }}
               onClick={() => {
                 history.push(routes.TEAMS);
               }}

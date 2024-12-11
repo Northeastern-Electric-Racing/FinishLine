@@ -182,7 +182,7 @@ model User {
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
   receivedAnnouncements           Announcement[]            @relation(name: "ReceivedAnnouncements")
   createdAnnouncements            Announcement[]            @relation(name: "CreatedAnnouncements")
-  unreadNotifications             Notification[]
+  unreadNotifications             Notification[]            @relation(name: "UserNotifications")
 }
 
 model Role {
@@ -944,5 +944,5 @@ model Notification {
   notificationId String @id @default(uuid())
   text           String
   iconName       String
-  usersReceived  User[]
+  users          User[] @relation("UserNotifications")
 }
