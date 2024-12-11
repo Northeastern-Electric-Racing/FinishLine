@@ -23,7 +23,7 @@ export default class StatisticsController {
 
       res.status(200).json(graph);
     } catch (error: unknown) {
-       next(error);
+      next(error);
     }
   }
 

@@ -11,7 +11,7 @@ import { body } from 'express-validator';
 const statisticsRouter = express.Router();
 
 statisticsRouter.post(
-  '/graph/create',
+  '/create',
   isDate(body('startDate')),
   isDate(body('endDate')),
   nonEmptyString(body('title')),
@@ -23,7 +23,6 @@ statisticsRouter.post(
   StatisticsController.createGraph
 );
 
-statisticsRouter.get('/statistics/:graphId', StatisticsController.getSingleGraph);
-
+statisticsRouter.get('/:graphId', StatisticsController.getSingleGraph);
 
 export default statisticsRouter;

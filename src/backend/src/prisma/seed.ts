@@ -5,7 +5,18 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { CR_Type, Club_Accounts, PrismaClient, Scope_CR_Why_Type, Task_Priority, Task_Status, Team } from '@prisma/client';
+import {
+  CR_Type,
+  Club_Accounts,
+  Graph,
+  Graph_Type,
+  Measure,
+  PrismaClient,
+  Scope_CR_Why_Type,
+  Task_Priority,
+  Task_Status,
+  Team
+} from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
@@ -13,6 +24,7 @@ import TeamsService from '../services/teams.services';
 import {
   ClubAccount,
   DesignReviewStatus,
+  GraphGen,
   MaterialStatus,
   RoleEnum,
   StandardChangeRequest,
@@ -33,6 +45,8 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import StatisticsService from '../services/statistics.services';
+import { seedGraph } from './seed-data/statistics.seed';
 
 const prisma = new PrismaClient();
 
@@ -676,6 +690,47 @@ const performSeed: () => Promise<void> = async () => {
     [],
     june.userId,
     glen.userId,
+    ner
+  );
+
+  /**
+   * Graphs
+   */
+
+  /** Graph 1 */
+  const graphGen: GraphGen = {
+    finalColumn: 'budget',
+    finalTable: 'Project',
+    groupByColumn: 'name',
+    queryPath: {
+      table: 'Team_Type',
+      primaryKey: 'teamTypeId',
+      next: {
+        table: 'Team',
+        primaryKey: 'teamId',
+        parentForeignKey: 'teamTypeId',
+        next: {
+          table: '_assignedBy',
+          primaryKey: 'A',
+          parentForeignKey: 'B',
+          next: {
+            table: 'Project',
+            primaryKey: 'projectId',
+            parentForeignKey: 'projectId'
+          }
+        }
+      }
+    }
+  };
+
+  const Graph1 = await seedGraph(
+    new Date('12/12/2024'),
+    new Date('12/12/2027'),
+    'new graph',
+    Graph_Type.BAR,
+    graphGen,
+    Measure.SUM,
+    thomasEmrax,
     ner
   );
 
