@@ -3,9 +3,12 @@ import {
   Organization,
   Project,
   Schedule_Settings,
+  Task_Priority,
+  Task_Status,
   User,
   User_Secure_Settings,
   User_Settings,
+  WBS_Element,
   WBS_Element_Status
 } from '@prisma/client';
 import prisma from '../src/prisma/prisma';
@@ -415,4 +418,48 @@ export const createTestDesignReview = async () => {
 
   const orgId = organization.organizationId;
   return { dr, organization, orgId };
+};
+
+export const createTestTask = async (
+  user: User,
+  title: string,
+  notes: string,
+  assignees: User[],
+  priority: Task_Priority,
+  status: Task_Status,
+  organizationId?: string,
+  deadline?: Date
+) => {
+  if (!organizationId) organizationId = (await createTestOrganization().then((org) => org.organizationId)) as string;
+  const task = await prisma.task.create({
+    data: {
+      taskId: '0000000001',
+      title: title,
+      notes: notes,
+      deadline: deadline,
+      assignees: {
+        connect: assignees.map((user) => ({ userId: user.userId }))
+      },
+      priority: priority,
+      status: status,
+      dateCreated: new Date(),
+      createdBy: {
+        connect: { userId: user.userId }
+      },
+      wbsElement: {
+        create: {
+          carNumber: 0,
+          projectNumber: 0,
+          workPackageNumber: 0,
+          dateCreated: new Date('01/01/2023'),
+          name: 'Car',
+          status: WBS_Element_Status.INACTIVE,
+          leadId: user.userId,
+          managerId: user.userId,
+          organizationId
+        }
+      }
+    }
+  });
+  return task;
 };

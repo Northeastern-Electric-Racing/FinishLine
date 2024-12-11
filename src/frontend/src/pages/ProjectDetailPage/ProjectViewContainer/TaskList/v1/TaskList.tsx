@@ -26,9 +26,9 @@ const sortAscendingDate = (task1: Task, task2: Task) => {
     if (deadLine1 !== deadLine2) return deadLine1 - deadLine2;
     return task1.dateCreated.getTime() - task2.dateCreated.getTime();
   } else if (task1.deadline && !task2.deadline) {
-    return task1.deadline.getTime();
+    return 1;
   } else if (task2.deadline && !task1.deadline) {
-    return task2.deadline.getTime();
+    return -1;
   } else {
     return 0;
   }
