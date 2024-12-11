@@ -38,6 +38,8 @@ import { getAuthUserQueryArgs } from '../prisma-query-args/auth-user.query-args'
 import authenticatedUserTransformer from '../transformers/auth-user.transformer';
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
+import notificationTransformer from '../transformers/notifications.transformer';
+import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
 
 export default class UsersService {
   /**
@@ -567,26 +569,53 @@ export default class UsersService {
     return resolvedTasks.flat();
   }
 
-  static async sendNotification(userId: string, text: string, iconName: string) {
+  /**
+   * Sends a notification to a user
+   * @param userId
+   * @param notificationId
+   * @param organization
+   * @returns the updated unread notification of the user
+   */
+  static async sendNotification(userId: string, notificationId: string, organization: Organization) {
     const requestedUser = await prisma.user.findUnique({
       where: { userId }
     });
 
     if (!requestedUser) throw new NotFoundException('User', userId);
 
+    const updatedUser = await prisma.user.update({
+      where: { userId: requestedUser.userId },
+      data: { unreadNotifications: { connect: { notificationId } } },
+      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    });
+
+    return updatedUser.unreadNotifications.map(notificationTransformer);
+  }
+
+  /**
+   * Creates and sends a notification to all users with the given userIds
+   * @param text writing in the notification
+   * @param iconName icon that appears in the notification
+   * @param userIds ids of users to send the notification to
+   * @param organization
+   * @returns the created notification
+   */
+  static async sendNotifcationToManyUsers(text: string, iconName: string, userIds: string[], organization: Organization) {
     const createdNotification = await prisma.notification.create({
       data: {
         text,
         iconName
-      }
+      },
+      ...getNotificationQueryArgs(organization.organizationId)
     });
 
-    const udaptedUser = await prisma.user.update({
-      where: { userId: requestedUser.userId },
-      data: { unreadNotifications: { connect: createdNotification } },
-      include: { unreadNotifications: true }
+    if (!createdNotification) throw new HttpException(500, 'Failed to create notification');
+
+    const notificationsPromises = userIds.map(async (userId) => {
+      return UsersService.sendNotification(userId, createdNotification.notificationId, organization);
     });
 
-    return udaptedUser;
+    await Promise.all(notificationsPromises);
+    return notificationTransformer(createdNotification);
   }
 }

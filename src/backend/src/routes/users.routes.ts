@@ -54,11 +54,16 @@ userRouter.post(
   validateInputs,
   UsersController.getManyUserTasks
 );
+userRouter.post(`/:userId/notifications/send`, nonEmptyString(body('notificationId')), UsersController.sendNotitifcation);
+
 userRouter.post(
-  `/:userId/notifications/send`,
+  'notifications/send/many',
   nonEmptyString(body('text')),
   nonEmptyString(body('iconName')),
-  UsersController.sendNotitifcation
+  body('userIds').isArray(),
+  nonEmptyString(body('userIds.*')),
+  validateInputs,
+  UsersController.sendNotificationToManyUsers
 );
 
 export default userRouter;
