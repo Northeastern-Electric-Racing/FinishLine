@@ -1,8 +1,10 @@
 import { Organization, User, Graph_Type, Measure } from '@prisma/client';
 import { Graph, GraphData, GraphGen, QueryPath } from 'shared';
 import prisma from '../prisma/prisma';
+import { NotFoundException } from '../utils/errors.utils';
+import { Prisma } from '@prisma/client';
 import graphTransformer from '../transformers/statistics-graph.transformer';
-import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { getGraphQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { Sql } from '@prisma/client/runtime/library';
@@ -114,5 +116,20 @@ export default class StatisticsService {
         label: value[graphGen.groupByColumn]
       };
     });
+  }
+
+  static async getSingleGraph(id: string, organization: Organization): Promise<Graph> {
+    // if (!(await userHasPermissionNew(user.userId, organization.organizationId, ['VIEW_GRAPH']))) {
+    //   throw new AccessDeniedException('You do not have permission to view a graph');
+    // }
+
+    const requestedGraph = await prisma.graph.findUnique({
+      where: { id, organizationId: organization.organizationId },
+      ...getGraphQueryArgs(organization.organizationId)
+    });
+
+    if (!requestedGraph) throw new NotFoundException('Graph', id);
+
+    return graphTransformer(requestedGraph as Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] });
   }
 }

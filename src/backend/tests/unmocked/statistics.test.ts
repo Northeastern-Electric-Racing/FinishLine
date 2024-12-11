@@ -10,7 +10,7 @@ import {
   resetUsers
 } from '../test-utils';
 import StatisticsService from '../../src/services/statistics.services';
-import { AccessDeniedException, HttpException } from '../../src/utils/errors.utils';
+import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
 import { GraphGen, GraphType, Measure } from 'shared';
 
 describe('Statistics Tests', () => {
@@ -161,6 +161,27 @@ describe('Statistics Tests', () => {
 
 
   describe('Get Single Graph', () => {
+    it('Get single graph works for valid id', async () => {
+      const graph = await StatisticsService.createGraph(
+        user,
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000),
+        'New Graph',
+        GraphType.BAR,
+        Measure.AVG,
+        graphGen,
+        organization
+      );
+      
+      const result = await StatisticsService.getSingleGraph(graph.graphId, organization)
+      expect(result).toStrictEqual(graph);
+    });
 
+    it('Get single graph fails with invalid id', async () => {
+      const invalidGraphId = 'invalidId';
+      await expect(async () => StatisticsService.getSingleGraph(invalidGraphId, organization)).rejects.toThrow(
+        new NotFoundException('Graph', invalidGraphId)
+      );
+    });
   });
 });

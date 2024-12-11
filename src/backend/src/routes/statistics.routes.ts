@@ -23,4 +23,7 @@ statisticsRouter.post(
   StatisticsController.createGraph
 );
 
+statisticsRouter.get('/statistics/:graphId', StatisticsController.getSingleGraph);
+
+
 export default statisticsRouter;

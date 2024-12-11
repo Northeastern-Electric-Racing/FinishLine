@@ -5,6 +5,7 @@ import { GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 
 const graphTransformer = (graph: Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] }): Graph => {
   return {
+    graphId: graph.id,
     ...graph,
     graphType: graph.graphType as GraphType,
     userCreated: userTransformer(graph.userCreated),

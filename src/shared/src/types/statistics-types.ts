@@ -31,6 +31,7 @@ export interface GraphData {
 }
 
 export interface Graph {
+  graphId: string;
   startDate: Date;
   endDate: Date;
   title: string;
