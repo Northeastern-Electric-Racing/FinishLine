@@ -17,11 +17,19 @@ const Dropdown = ({ title, description }: DropdownProps) => {
         expanded={expanded}
         onChange={() => setExpanded(!expanded)}
         sx={{
-          backgroundColor: '#ef4244'
+          backgroundColor: '#ef4244',
+          borderRadius: '20px !important',
+          '&:before': {
+            display: 'none'
+          }
         }}
       >
         <AccordionSummary
-          sx={{ flexDirection: 'row-reverse', borderBottomLeftRadius: '100px', borderBottomRightRadius: '100px' }}
+          sx={{
+            flexDirection: 'row-reverse',
+            borderRadius: '20px',
+            backgroundColor: '#ef4244'
+          }}
         >
           <ChevronRight
             sx={{
@@ -32,7 +40,13 @@ const Dropdown = ({ title, description }: DropdownProps) => {
           />
           <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}>{title}</Typography>
         </AccordionSummary>
-        <AccordionDetails sx={{ backgroundColor: 'white', borderBottomLeftRadius: '4px', borderBottomRightRadius: '4px' }}>
+        <AccordionDetails
+          sx={{
+            backgroundColor: '#D9D9D9',
+            borderRadius: '0 0 15px 15px',
+            minHeight: '60px'
+          }}
+        >
           <Typography sx={{ color: 'black' }}>{description}</Typography>
         </AccordionDetails>
       </Accordion>
