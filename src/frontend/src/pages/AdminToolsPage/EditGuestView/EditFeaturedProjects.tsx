@@ -10,7 +10,7 @@ import { projectWbsNamePipe } from '../../../utils/pipes';
 
 const EditFeaturedProjects = () => {
   const { data: featuredProjects, isLoading, isError, error } = useFeaturedProjects();
-  const { mutateAsync: setFeaturedProjects } = useSetFeaturedProjects();
+  const { mutateAsync: setFeaturedProjects, isLoading: setFeaturedProjectsIsLoading } = useSetFeaturedProjects();
   const [isEditMode, setIsEditMode] = useState(false);
   const theme = useTheme();
   const toast = useToast();
@@ -31,7 +31,7 @@ const EditFeaturedProjects = () => {
     handleClose();
   };
 
-  if (isLoading || !featuredProjects) return <LoadingIndicator />;
+  if (isLoading || !featuredProjects || setFeaturedProjectsIsLoading || !setFeaturedProjects) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error.message} />;
 
   return (
