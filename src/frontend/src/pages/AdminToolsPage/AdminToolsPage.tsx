@@ -94,9 +94,7 @@ const AdminToolsPage: React.FC = () => {
       ) : tabIndex === 3 ? (
         <AdminToolsRecruitmentConfig />
       ) : tabIndex === 4 ? (
-        <Box>
-          <GuestViewConfig />
-        </Box>
+        <GuestViewConfig />
       ) : (
         <Box>
           <Box pb={2}>

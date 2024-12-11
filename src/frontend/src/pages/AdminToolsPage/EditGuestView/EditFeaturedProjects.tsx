@@ -15,6 +15,9 @@ const EditFeaturedProjects = () => {
   const theme = useTheme();
   const toast = useToast();
 
+  if (isLoading || !featuredProjects || setFeaturedProjectsIsLoading || !setFeaturedProjects) return <LoadingIndicator />;
+  if (isError) return <ErrorPage message={error.message} />;
+
   const handleClose = () => {
     setIsEditMode(false);
   };
@@ -30,9 +33,6 @@ const EditFeaturedProjects = () => {
     }
     handleClose();
   };
-
-  if (isLoading || !featuredProjects || setFeaturedProjectsIsLoading || !setFeaturedProjects) return <LoadingIndicator />;
-  if (isError) return <ErrorPage message={error.message} />;
 
   return (
     <Card
