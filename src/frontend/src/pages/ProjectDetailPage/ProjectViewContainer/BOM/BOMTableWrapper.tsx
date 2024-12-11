@@ -46,13 +46,18 @@ const BOMTableWrapper: React.FC<BOMTableWrapperProps> = ({ project, hideColumn, 
 
   const user = useCurrentUser();
   const toast = useToast();
-  const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
 
-  if (storedHideColumn === 'false') {
-    setHideColumn(new Array(12).fill(false));
-  } else {
-    setHideColumn(storedHideColumn);
-  }
+  useEffect(() => {
+    const storedHideColumn = JSON.parse(localStorage.getItem('hideColumn') || 'false');
+    if (storedHideColumn === 'false') {
+      setHideColumn((prev) => {
+        const newHideColumn = new Array(12).fill(false);
+        return prev !== newHideColumn ? newHideColumn : prev;
+      });
+    } else {
+      setHideColumn((prev) => (prev !== storedHideColumn ? storedHideColumn : prev));
+    }
+  }, [setHideColumn]);
 
   if (isLoading) return <LoadingIndicator />;
 
