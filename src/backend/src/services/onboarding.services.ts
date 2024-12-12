@@ -71,7 +71,9 @@ export default class OnboardingServices {
       throw new NotFoundException('User', userId);
     }
 
-    const teamTypeIds: string[] = user.teamsAsMember.map((team) => team.teamTypeId).filter((id): id is string => id !== null);
+    const teamTypeIds: string[] = user.teamsAsMember
+      .map((team) => team.teamTypeId)
+      .filter((id): id is string => id !== null);
     const teamIds: string[] = user.teamsAsMember.map((team) => team.teamId).filter((id): id is string => id !== null);
 
     const teamTypeChecklists = await prisma.checklist.findMany({

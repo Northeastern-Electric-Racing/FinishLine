@@ -25,7 +25,7 @@ const OnboardingHomePage = () => {
     <PageLayout title="Home" hidePageTitle>
       <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
         <Grid item xs={12} md={7}>
-          <Typography sx={{ fontSize: '2.5em' }}>Welcome to the Northeastern Electric Racing Team</Typography>
+          <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
         </Grid>
         {/* This will be replaced with the 'Finished' button*/}
         <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
