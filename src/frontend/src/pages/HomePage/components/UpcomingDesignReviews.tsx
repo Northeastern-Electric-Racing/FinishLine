@@ -37,11 +37,12 @@ const UpcomingDesignReviews: React.FC<UpcomingDesignReviewProps> = ({ user }) =>
     const currentDate = new Date();
     const inTwoWeeks = new Date();
     inTwoWeeks.setDate(currentDate.getDate() + 14);
-
     const memberUserIds = [
       ...review.requiredMembers.map((user) => user.userId),
       ...review.optionalMembers.map((user) => user.userId)
     ];
+    // added in case the person who created the design review forgets to add their name onto the required members
+    memberUserIds.concat(review.userCreated.userId);
     return (
       scheduledDate >= currentDate &&
       scheduledDate <= inTwoWeeks &&

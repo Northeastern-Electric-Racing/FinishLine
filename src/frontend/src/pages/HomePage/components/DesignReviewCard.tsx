@@ -71,6 +71,8 @@ function removeYear(str: string): string {
 
 const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const theme = useTheme();
+  const datePlusOne = new Date(designReview.dateScheduled);
+  datePlusOne.setDate(datePlusOne.getDate() + 1);
   return (
     <Card
       variant="outlined"
@@ -83,7 +85,7 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
     >
       <CardContent sx={{ padding: 2 }}>
         <Stack direction="row" justifyContent="space-between" alignItems={'center'}>
-          <Box>
+          <Box sx={{ scrollbarWidth: 'auto', scrollbarColor: `${theme.palette.primary.main} transparent` }}>
             <Typography fontWeight={'regular'} variant="h5" noWrap>
               <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(designReview.wbsNum)}`}>
                 {designReview.wbsName}
@@ -92,9 +94,9 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
               <Typography>{<CalendarMonthIcon sx={{ fontSize: 21 }} />}</Typography>
               <Typography fontWeight={'regular'} variant="body2">
-                {getWeekday(designReview.dateScheduled) +
+                {getWeekday(datePlusOne) +
                   ', ' +
-                  removeYear(datePipe(designReview.dateScheduled)) +
+                  removeYear(datePipe(datePlusOne)) +
                   ' @ ' +
                   meetingStartTimePipe(designReview.meetingTimes)}
               </Typography>
