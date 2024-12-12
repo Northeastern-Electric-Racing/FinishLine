@@ -8,7 +8,6 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
   parentChecklists,
   checklistName
 }) => {
-  console.log('parentChecklist', parentChecklists);
   const theme = useTheme();
   const [showTasks, setShowTasks] = useState(false);
 

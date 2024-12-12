@@ -20,19 +20,16 @@ const ChecklistSection: React.FC = () => {
     isLoading: usersTeamTypeChecklistsIsLoading
   } = useUsersTeamTypeChecklists();
 
-  console.log('general checklist', generalChecklists);
-  console.log('team type checklist', usersTeamTypeChecklists);
-
-  if (!generalChecklists || generalChecklistsIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
-    return <LoadingIndicator />;
-  }
-
   if (generalChecklistsIsError) {
     return <ErrorPage error={generalChecklistsError} />;
   }
 
   if (usersTeamTypeChecklistsIsError) {
     return <ErrorPage error={usersTeamTypeChecklistsError} />;
+  }
+
+  if (!generalChecklists || generalChecklistsIsLoading || usersTeamTypeChecklistsIsLoading || !usersTeamTypeChecklists) {
+    return <LoadingIndicator />;
   }
 
   const groupedChecklists = usersTeamTypeChecklists.reduce<Record<string, ChecklistType[]>>(
