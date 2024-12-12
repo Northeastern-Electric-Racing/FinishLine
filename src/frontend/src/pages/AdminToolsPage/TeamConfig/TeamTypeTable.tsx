@@ -37,21 +37,30 @@ const TeamTypeTable: React.FC = () => {
     }
   }, [teamTypes]);
 
-  const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
+  const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
 
-  if (!teamTypes || teamTypesIsLoading) {
-    return <LoadingIndicator />;
-  }
   if (teamTypesIsError) {
     return <ErrorPage message={teamTypesError?.message} />;
+  }
+
+  if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading) {
+    return <LoadingIndicator />;
   }
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
     const addedImage = addedImages[teamTypeId];
     if (addedImage) {
-      await setTeamTypeImage({ file: addedImage, id: teamTypeId });
-      toast.success('Image uploaded successfully!', 5000);
-      setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      try {
+        await setTeamTypeImage({ file: addedImage, id: teamTypeId });
+        toast.success('Image uploaded successfully!', 5000);
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error('Failed to set team image: ' + error.message);
+        } else {
+          toast.error('Failed to set team image');
+        }
+      }
     } else {
       toast.error('No image selected for upload.', 5000);
     }

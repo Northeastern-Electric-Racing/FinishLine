@@ -101,7 +101,7 @@ export const uploadFile = async (fileObject: Express.Multer.File) => {
       },
       requestBody: {
         name: fileObject.originalname,
-        parents: [GOOGLE_DRIVE_FOLDER_ID || '']
+        parents: GOOGLE_DRIVE_FOLDER_ID ? [GOOGLE_DRIVE_FOLDER_ID] : undefined
       },
       fields: 'id,name'
     });
