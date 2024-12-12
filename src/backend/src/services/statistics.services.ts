@@ -1,7 +1,7 @@
 import { Organization, User, Graph_Type, Measure } from '@prisma/client';
 import { Graph, GraphData, GraphGen, QueryPath } from 'shared';
 import prisma from '../prisma/prisma';
-import { NotFoundException } from '../utils/errors.utils';
+import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import { Prisma } from '@prisma/client';
 import graphTransformer from '../transformers/statistics-graph.transformer';
 import { getGraphQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
@@ -118,14 +118,39 @@ export default class StatisticsService {
     });
   }
 
-  static async getSingleGraph(id: string, organization: Organization): Promise<Graph> {
+  /**
+   * Gets a single graph
+   *
+   * @param id The string identifier of the graph to get
+   * @param user The user retrieving the graph, must have VIEW_GRAPH permission
+   * @param organization The organization to retrieve the graph from
+   * @returns The requested graph and its data
+   * @throws if the graph is not found or the graph is deleted
+   */
+  static async getSingleGraph(id: string, user: User, organization: Organization): Promise<Graph> {
+    if (!(await userHasPermissionNew(user.userId, organization.organizationId, ['VIEW_GRAPH']))) {
+      throw new AccessDeniedException('You do not have permission to view a graph');
+    }
+
     const requestedGraph = await prisma.graph.findUnique({
       where: { id, organizationId: organization.organizationId },
       ...getGraphQueryArgs(organization.organizationId)
     });
 
     if (!requestedGraph) throw new NotFoundException('Graph', id);
+    if (requestedGraph.dateDeleted) throw new DeletedException('Graph', id);
+    if (requestedGraph.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Graph');
 
-    return graphTransformer(requestedGraph as Prisma.GraphGetPayload<GraphQueryArgs> & { graphData: GraphData[] });
+    const graphGen: GraphGen = {
+      finalTable: requestedGraph.finalTable,
+      finalColumn: requestedGraph.finalColumn,
+      groupByColumn: requestedGraph.groupByColumn,
+      queryPath: requestedGraph.queryPaths[0],
+    };
+
+    return graphTransformer({
+      ...requestedGraph,
+      graphData: await StatisticsService.getGraphData(graphGen, requestedGraph.measure)
+    });
   }
 }

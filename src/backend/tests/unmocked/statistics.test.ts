@@ -172,13 +172,31 @@ describe('Statistics Tests', () => {
         organization
       );
 
-      const result = await StatisticsService.getSingleGraph(graph.graphId, organization);
+      const result = await StatisticsService.getSingleGraph(graph.graphId, user, organization);
       expect(result.graphId).toBe(graph.graphId);
+    });
+
+    it('View graph fails if user does not have permission', async () => {
+      const guest_user = await createTestUser(wonderwomanGuest, orgId);
+      const graph = await StatisticsService.createGraph(
+        guest_user,
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000),
+        'New Graph',
+        GraphType.BAR,
+        Measure.AVG,
+        graphGen,
+        organization
+      );
+
+      await expect(async () => StatisticsService.getSingleGraph(graph.graphId, guest_user, organization)).rejects.toThrow(
+        new AccessDeniedException('You do not have permission to view a graph')
+      );
     });
 
     it('Get single graph fails with invalid id', async () => {
       const invalidGraphId = 'invalidId';
-      await expect(async () => StatisticsService.getSingleGraph(invalidGraphId, organization)).rejects.toThrow(
+      await expect(async () => StatisticsService.getSingleGraph(invalidGraphId, user, organization)).rejects.toThrow(
         new NotFoundException('Graph', invalidGraphId)
       );
     });

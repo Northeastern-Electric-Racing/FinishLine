@@ -30,7 +30,7 @@ export default class StatisticsController {
     try {
       const { id } = req.params;
 
-      const requestedGraph = await StatisticsService.getSingleGraph(id, req.organization);
+      const requestedGraph = await StatisticsService.getSingleGraph(id, req.currentUser, req.organization);
 
       res.status(200).json(requestedGraph);
     } catch (error: unknown) {
