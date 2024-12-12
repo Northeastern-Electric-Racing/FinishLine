@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import StatisticsService from '../services/statistics.services';
 import { Graph } from 'shared';
-import GraphService from '../services/statistics.services';
 
 export default class StatisticsController {
   static async createGraph(req: Request, res: Response, next: NextFunction) {
@@ -31,7 +30,7 @@ export default class StatisticsController {
     try {
       const { id } = req.params;
 
-      const requestedGraph = await GraphService.getSingleGraph(id, req.organization);
+      const requestedGraph = await StatisticsService.getSingleGraph(id, req.organization);
 
       res.status(200).json(requestedGraph);
     } catch (error: unknown) {

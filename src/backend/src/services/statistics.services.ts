@@ -119,10 +119,6 @@ export default class StatisticsService {
   }
 
   static async getSingleGraph(id: string, organization: Organization): Promise<Graph> {
-    // if (!(await userHasPermissionNew(user.userId, organization.organizationId, ['VIEW_GRAPH']))) {
-    //   throw new AccessDeniedException('You do not have permission to view a graph');
-    // }
-
     const requestedGraph = await prisma.graph.findUnique({
       where: { id, organizationId: organization.organizationId },
       ...getGraphQueryArgs(organization.organizationId)
