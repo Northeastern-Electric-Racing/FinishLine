@@ -6,9 +6,9 @@ export default class OrganizationsController {
   static async getCurrentOrganization(req: Request, res: Response, next: NextFunction) {
     try {
       const organization = await OrganizationsService.getCurrentOrganization(req.organization.organizationId);
-      return res.status(200).json(organization);
+      res.status(200).json(organization);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -16,9 +16,9 @@ export default class OrganizationsController {
     try {
       const { links } = req.body;
       const newLinks = await OrganizationsService.setUsefulLinks(req.currentUser, req.organization.organizationId, links);
-      return res.status(200).json(newLinks);
+      res.status(200).json(newLinks);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -39,17 +39,17 @@ export default class OrganizationsController {
         req.organization
       );
 
-      return res.status(200).json(newImages);
+      res.status(200).json(newImages);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
   static async getAllUsefulLinks(req: Request, res: Response, next: NextFunction) {
     try {
       const links = await OrganizationsService.getAllUsefulLinks(req.organization.organizationId);
-      return res.status(200).json(links);
+      res.status(200).json(links);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -80,9 +80,9 @@ export default class OrganizationsController {
       }
       const updatedOrg = await OrganizationsService.setLogoImage(req.file, req.currentUser, req.organization);
 
-      return res.status(200).json(updatedOrg);
+      res.status(200).json(updatedOrg);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -103,9 +103,9 @@ export default class OrganizationsController {
         req.organization
       );
 
-      return res.status(200).json(updatedOrg);
+      res.status(200).json(updatedOrg);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -114,7 +114,7 @@ export default class OrganizationsController {
       const featuredProjects = await OrganizationsService.getOrganizationFeaturedProjects(req.organization.organizationId);
       res.status(200).json(featuredProjects);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }

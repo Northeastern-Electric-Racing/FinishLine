@@ -10,18 +10,18 @@ export default class DescriptionBulletsController {
         descriptionId,
         req.organization
       );
-      return res.status(200).json(updatedDB);
+      res.status(200).json(updatedDB);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
   static async getAllDescriptionBulletTypes(req: Request, res: Response, next: NextFunction) {
     try {
       const descriptionBulletTypes = await DescriptionBulletsService.getAllDescriptionBulletTypes(req.organization);
-      return res.status(200).json(descriptionBulletTypes);
+      res.status(200).json(descriptionBulletTypes);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -37,7 +37,7 @@ export default class DescriptionBulletsController {
       );
       res.status(201).json(newDescriptionBulletType);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 
@@ -52,9 +52,9 @@ export default class DescriptionBulletsController {
         projectRequired,
         req.organization
       );
-      return res.status(200).json(updatedDescriptionBulletType);
+      res.status(200).json(updatedDescriptionBulletType);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }
