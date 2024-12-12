@@ -3,7 +3,7 @@ import { createTestOrganization, createTestTask, createTestUser, resetUsers } fr
 import { batmanAppAdmin } from '../test-data/users.test-data';
 import UsersService from '../../src/services/users.services';
 import { NotFoundException } from '../../src/utils/errors.utils';
-import { sendNotificationToUsers } from '../../src/utils/homepage-notifications.utils';
+import NotificationsService from '../../src/services/notifications.services';
 
 describe('User Tests', () => {
   let orgId: string;
@@ -59,8 +59,8 @@ describe('User Tests', () => {
 
     it('Succeeds and gets user notifications', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
-      await sendNotificationToUsers([testBatman.userId], 'test1', 'test1', orgId);
-      await sendNotificationToUsers([testBatman.userId], 'test2', 'test2', orgId);
+      await NotificationsService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
+      await NotificationsService.sendNotifcationToUsers('test2', 'test2', [testBatman.userId], orgId);
 
       const notifications = await UsersService.getUserUnreadNotifications(testBatman.userId, organization);
 

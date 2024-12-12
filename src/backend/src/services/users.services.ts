@@ -39,7 +39,7 @@ import authenticatedUserTransformer from '../transformers/auth-user.transformer'
 import { getTaskQueryArgs } from '../prisma-query-args/tasks.query-args';
 import taskTransformer from '../transformers/tasks.transformer';
 import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
-import notificationTransformer from '../transformers/notification.transformer';
+import notificationTransformer from '../transformers/notifications.transformer';
 
 export default class UsersService {
   /**

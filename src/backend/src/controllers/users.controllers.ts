@@ -198,9 +198,9 @@ export default class UsersController {
       const { organization } = req;
 
       const unreadNotifications = await UsersService.getUserUnreadNotifications(userId, organization);
-      return res.status(200).json(unreadNotifications);
+      res.status(200).json(unreadNotifications);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }
