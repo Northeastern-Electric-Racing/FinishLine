@@ -7,7 +7,8 @@ import {
   getCurrentOrganization,
   setOrganizationDescription,
   getOrganizationLogo,
-  setOrganizationLogo
+  setOrganizationLogo,
+  setOrganizationFeaturedProjects
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/finance.api';
 
@@ -61,7 +62,22 @@ export const useSetOrganizationDescription = () => {
     ['organizations', 'description'],
     async (description: string) => {
       const { data } = await setOrganizationDescription(description);
-      queryClient.invalidateQueries(['organizations']);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetFeaturedProjects = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, Project[]>(
+    ['organizations', 'featured-projects'],
+    async (featuredProjects: Project[]) => {
+      const { data } = await setOrganizationFeaturedProjects(featuredProjects.map((project) => project.id));
       return data;
     },
     {

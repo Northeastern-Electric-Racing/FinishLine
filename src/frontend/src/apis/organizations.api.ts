@@ -35,3 +35,9 @@ export const setOrganizationLogo = async (file: File) => {
   formData.append('logo', file);
   return axios.post(apiUrls.organizationsSetLogoImage(), formData);
 };
+
+export const setOrganizationFeaturedProjects = async (featuredProjectIds: string[]) => {
+  return axios.post<Organization>(apiUrls.organizationsSetFeaturedProjects(), {
+    projectIds: featuredProjectIds
+  });
+};

@@ -179,6 +179,7 @@ const organizationsSetDescription = () => `${organizations()}/description/set`;
 const organizationsFeaturedProjects = () => `${organizations()}/featured-projects`;
 const organizationsLogoImage = () => `${organizations()}/logo`;
 const organizationsSetLogoImage = () => `${organizations()}/logo/update`;
+const organizationsSetFeaturedProjects = () => `${organizationsFeaturedProjects()}/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -340,6 +341,7 @@ export const apiUrls = {
   organizationsSetDescription,
   organizationsLogoImage,
   organizationsSetLogoImage,
+  organizationsSetFeaturedProjects,
 
   cars,
   carsCreate,

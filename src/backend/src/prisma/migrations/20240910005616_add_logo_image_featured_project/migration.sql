@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE "Organization" ADD COLUMN     "logoImage" TEXT;
+ALTER TABLE "Organization" ADD COLUMN     "logoImageId" TEXT;
 
 -- AlterTable
 ALTER TABLE "Project" ADD COLUMN     "organizationId" TEXT;
