@@ -98,11 +98,11 @@ export const useSetOrganizationLogo = () => {
 };
 
 export const useOrganizationLogo = () => {
-  return useQuery<string, Error>(['organizations', 'logo'], async () => {
+  return useQuery<{ url: string; blob: Blob }, Error>(['organizations', 'logo'], async () => {
     const { data: fileId } = await getOrganizationLogo();
 
     const imageBlob = await downloadGoogleImage(fileId);
 
-    return URL.createObjectURL(imageBlob);
+    return { url: URL.createObjectURL(imageBlob), blob: imageBlob };
   });
 };

@@ -1,23 +1,32 @@
-import { Box } from '@mui/material';
+import { Box, useTheme, Card } from '@mui/material';
 import React from 'react';
-import { useOrganizationLogo } from '../../../hooks/organizations.hooks';
-import LoadingIndicator from '../../../components/LoadingIndicator';
 
-const LogoDisplay = () => {
-  const { data: imageUrl, isLoading } = useOrganizationLogo();
+interface LogoDisplayProps {
+  imageUrl?: string;
+}
 
-  if (isLoading) return <LoadingIndicator />;
-
+const LogoDisplay: React.FC<LogoDisplayProps> = ({ imageUrl = './default-logo.png' }) => {
+  const theme = useTheme();
   return (
-    <Box
-      component="img"
-      src={imageUrl ?? '/logo.png'}
+    <Card
+      variant={'outlined'}
       sx={{
+        background: theme.palette.background.paper,
         height: '100%',
         width: '100%',
         borderRadius: 2
       }}
-    />
+    >
+      <Box
+        component="img"
+        src={imageUrl}
+        sx={{
+          height: '100%',
+          width: '100%',
+          borderRadius: 2
+        }}
+      />
+    </Card>
   );
 };
 
