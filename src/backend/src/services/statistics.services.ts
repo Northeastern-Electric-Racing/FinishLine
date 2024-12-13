@@ -167,9 +167,15 @@ export default class StatisticsService {
 
     for (let i = graphQueryPaths.length - 1; i >= 0; i--) {
       const queryIter = graphQueryPaths[i];
+      const parentKey = i > 0 ? graphQueryPaths[i - 1].primaryKey : undefined;
+      if (i > 0 && !parentKey) {
+        throw new Error('Parent key is undefined for {queryIter}');
+      }
+
       queryPath = {
         table: queryIter.table,
         primaryKey: queryIter.primaryKey,
+        parentForeignKey: parentKey,
         next: queryPath
       };
     }
