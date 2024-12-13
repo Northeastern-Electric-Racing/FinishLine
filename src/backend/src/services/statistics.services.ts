@@ -1,10 +1,9 @@
-import { Organization, User, Graph_Type, Measure } from '@prisma/client';
+import { Organization, User, Graph_Type, Measure, Graph_Query } from '@prisma/client';
 import { Graph, GraphData, GraphGen, QueryPath } from 'shared';
 import prisma from '../prisma/prisma';
 import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
-import { Prisma } from '@prisma/client';
 import graphTransformer from '../transformers/statistics-graph.transformer';
-import { getGraphQueryArgs, GraphQueryArgs } from '../prisma-query-args/statistics.query-args';
+import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
 import { Sql } from '@prisma/client/runtime/library';
@@ -145,12 +144,35 @@ export default class StatisticsService {
       finalTable: requestedGraph.finalTable,
       finalColumn: requestedGraph.finalColumn,
       groupByColumn: requestedGraph.groupByColumn,
-      queryPath: requestedGraph.queryPaths[0],
+      queryPath: await StatisticsService.graphQueryPathsToQueryPath(requestedGraph.queryPaths)
     };
 
     return graphTransformer({
       ...requestedGraph,
       graphData: await StatisticsService.getGraphData(graphGen, requestedGraph.measure)
     });
+  }
+
+  /**
+   * Converts the Graph's queryPaths into a queryPath for use in GraphGen
+   *
+   * @param graphQueryPaths queryPaths of the graph
+   * @returns QueryPath representation of the Graph_Query[]
+   */
+  static async graphQueryPathsToQueryPath(graphQueryPaths: Graph_Query[]): Promise<QueryPath> {
+    if (!graphQueryPaths || graphQueryPaths.length == 0) {
+      throw new Error('Graph query paths cannot be empty');
+    }
+    let queryPath: QueryPath | undefined = undefined;
+
+    for (let i = graphQueryPaths.length - 1; i >= 0; i--) {
+      const queryIter = graphQueryPaths[i];
+      queryPath = {
+        table: queryIter.table,
+        primaryKey: queryIter.primaryKey,
+        next: queryPath
+      };
+    }
+    return queryPath!;
   }
 }

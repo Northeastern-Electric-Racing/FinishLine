@@ -179,7 +179,7 @@ describe('Statistics Tests', () => {
     it('View graph fails if user does not have permission', async () => {
       const guest_user = await createTestUser(wonderwomanGuest, orgId);
       const graph = await StatisticsService.createGraph(
-        guest_user,
+        user,
         new Date('12/12/2024'),
         new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
