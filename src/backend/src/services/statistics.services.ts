@@ -160,7 +160,7 @@ export default class StatisticsService {
    * @returns QueryPath representation of the Graph_Query[]
    */
   static async graphQueryPathsToQueryPath(graphQueryPaths: Graph_Query[]): Promise<QueryPath> {
-    if (!graphQueryPaths || graphQueryPaths.length == 0) {
+    if (!graphQueryPaths || graphQueryPaths.length === 0) {
       throw new Error('Graph query paths cannot be empty');
     }
     let queryPath: QueryPath | undefined = undefined;
