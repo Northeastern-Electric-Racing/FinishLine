@@ -17,6 +17,7 @@ import workPackageTemplatesRouter from './src/routes/work-package-templates.rout
 import carsRouter from './src/routes/cars.routes';
 import organizationRouter from './src/routes/organizations.routes';
 import recruitmentRouter from './src/routes/recruitment.routes';
+import slackRouter from './src/routes/slack.routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -67,6 +68,7 @@ app.use('/templates', workPackageTemplatesRouter);
 app.use('/cars', carsRouter);
 app.use('/organizations', organizationRouter);
 app.use('/recruitment', recruitmentRouter);
+app.use('/slack', slackRouter);
 app.use('/', (_req, res) => {
   res.json('Welcome to FinishLine');
 });
