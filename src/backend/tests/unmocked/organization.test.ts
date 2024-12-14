@@ -55,7 +55,7 @@ describe('Organization Tests', () => {
     it('Succeeds and updates all the images', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
 
       await OrganizationsService.setImages(file1, file2, testBatman, organization);
@@ -240,7 +240,7 @@ describe('Organization Tests', () => {
     it('Succeeds and updates the logo', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       (uploadFile as Mock).mockImplementation((file) => {
-        return Promise.resolve({ id: `uploaded-${file.originalname}` });
+        return Promise.resolve({ name: `${file.originalname}`, id: `uploaded-${file.originalname}` });
       });
 
       await OrganizationsService.setLogoImage(file1, testBatman, organization);
