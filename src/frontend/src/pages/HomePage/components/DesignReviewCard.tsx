@@ -77,13 +77,14 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
     <Card
       variant="outlined"
       sx={{
-        minWidth: 'fit-content',
+        width: '100%',
         minHeight: 'fit-content',
         mr: 3,
-        background: theme.palette.background.default
+        background: theme.palette.background.default,
+        borderRadius: 2
       }}
     >
-      <CardContent sx={{ padding: 2 }}>
+      <CardContent>
         <Stack direction="row" justifyContent="space-between" alignItems={'center'}>
           <Box sx={{ scrollbarWidth: 'auto', scrollbarColor: `${theme.palette.primary.main} transparent` }}>
             <Typography fontWeight={'regular'} variant="h5" noWrap>
