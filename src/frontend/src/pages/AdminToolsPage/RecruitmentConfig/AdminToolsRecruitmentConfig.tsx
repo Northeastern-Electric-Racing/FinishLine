@@ -22,6 +22,9 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
   const [addedImage1, setAddedImage1] = useState<File | undefined>(undefined);
   const [addedImage2, setAddedImage2] = useState<File | undefined>(undefined);
 
+  const [defaultImage1Url, setDefaultImage1Url] = useState<string>('');
+  const [defaultImage2Url, setDefaultImage2Url] = useState<string>('');
+
   useEffect(() => {
     const fetchImages = async () => {
       const applyBlob = await downloadGoogleImage(organization?.applyInterestImageId ?? '');
@@ -32,9 +35,21 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
 
       setDefaultImage1(applyFile);
       setDefaultImage2(exploreFile);
+
+      // Create and cache URLs
+      const url1 = URL.createObjectURL(applyFile);
+      const url2 = URL.createObjectURL(exploreFile);
+      setDefaultImage1Url(url1);
+      setDefaultImage2Url(url2);
     };
 
     fetchImages();
+
+    // Cleanup URLs when component unmounts
+    return () => {
+      if (defaultImage1Url) URL.revokeObjectURL(defaultImage1Url);
+      if (defaultImage2Url) URL.revokeObjectURL(defaultImage2Url);
+    };
   }, [organization]);
 
   if (!defaultImage1 || !defaultImage2) {
@@ -94,7 +109,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
               component="img"
               sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
               alt="Apply Interest"
-              src={URL.createObjectURL(defaultImage1)}
+              src={defaultImage1Url}
             />
           ) : null}
           <NERUploadButton
@@ -124,7 +139,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
               component="img"
               sx={{ display: 'block', maxWidth: '200px', mb: 1 }}
               alt="Apply Interest"
-              src={URL.createObjectURL(defaultImage2)}
+              src={defaultImage2Url}
             />
           ) : null}
           <NERUploadButton
