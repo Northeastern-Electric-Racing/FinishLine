@@ -30,7 +30,7 @@ export type ThemeName = 'DARK' | 'LIGHT';
 
 export type OrganizationPreview = Pick<
   Organization,
-  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description'
+  'organizationId' | 'name' | 'dateCreated' | 'dateDeleted' | 'description' | 'applicationLink'
 >;
 
 export interface Organization {
@@ -45,6 +45,8 @@ export interface Organization {
   description: string;
   applyInterestImageId: string;
   exploreAsGuestImageId: string;
+  applicationLink: string;
+  onboardingText?: string;
 }
 
 /**
@@ -66,6 +68,7 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
+  completedOnboarding: boolean;
 }
 
 export interface UserSettings {

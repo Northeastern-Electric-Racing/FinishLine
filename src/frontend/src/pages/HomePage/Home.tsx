@@ -7,10 +7,12 @@ import { routes } from '../../utils/routes';
 import MemberHomePage from './MemberHomePage';
 import GuestHomePage from './GuestHomePage';
 import PNMHomePage from './PNMHomePage';
+import OnboardingHomePage from './OnboardingHomePage';
 
 const Home: React.FC = () => {
   return (
     <Switch>
+      <Route path={routes.HOME_ONBOARDING} component={OnboardingHomePage} />
       <Route path={routes.HOME_PNM} component={PNMHomePage} />
       <Route path={routes.HOME_GUEST} component={GuestHomePage} />
       <Route path={routes.HOME_MEMBER} component={MemberHomePage} />

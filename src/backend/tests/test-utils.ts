@@ -116,6 +116,7 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
+  await prisma.checklist.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.user.deleteMany();
 };
@@ -176,6 +177,17 @@ export const createTestFAQ = async (orgId: string, faqId: string) => {
   });
 };
 
+export const createTestTeamType = async (name: string, organization: Organization) => {
+  return await prisma.team_Type.create({
+    data: {
+      name,
+      iconName: 'YouTubeIcon',
+      description: '',
+      organizationId: organization.organizationId
+    }
+  });
+};
+
 export const createTestOrganization = async () => {
   const user = await prisma.user.create({
     data: {
@@ -190,6 +202,7 @@ export const createTestOrganization = async () => {
     data: {
       name: 'Joe mama',
       description: 'Joe mama`s organization',
+      applicationLink: '',
       userCreated: {
         connect: {
           userId: user.userId
@@ -247,6 +260,34 @@ export const createTestMilestone = async (user: User, organizationId: string) =>
     }
   });
   return milestone;
+};
+
+export const createTestChecklist = async (
+  user: User,
+  organizationId: string,
+  name: string,
+  teamTypeId?: string,
+  teamId?: string,
+  parentChecklistId?: string
+) => {
+  if (!organizationId) organizationId = await createTestOrganization().then((org) => org.organizationId);
+  if (!organizationId) throw new Error('Failed to create checklist');
+
+  const checklist = await prisma.checklist.create({
+    data: {
+      name,
+      organizationId,
+      userCreatedId: user.userId,
+      teamTypeId,
+      teamId,
+      parentChecklistId
+    },
+    include: {
+      subtasks: true
+    }
+  });
+
+  return checklist;
 };
 
 export const createTestLinkType = async (user: User, organizationId?: string) => {

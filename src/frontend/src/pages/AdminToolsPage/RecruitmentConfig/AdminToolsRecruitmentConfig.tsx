@@ -8,6 +8,7 @@ import { useCurrentOrganization, useSetOrganizationImages } from '../../../hooks
 import { downloadGoogleImage } from '../../../apis/finance.api';
 import { blobPipe } from '../../../utils/pipes';
 import LoadingIndicator from '../../../components/LoadingIndicator';
+import ApplicationLinkTable from './ApplicationLinkTable';
 
 const AdminToolsRecruitmentConfig: React.FC = () => {
   const { mutateAsync: organizationImages } = useSetOrganizationImages();
@@ -74,6 +75,9 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
         </Grid>
         <Grid item direction="column" alignSelf="right" xs={12} md={6}>
           <MilestoneTable />
+        </Grid>
+        <Grid item direction="column" xs={12} md={6}>
+          <ApplicationLinkTable />
         </Grid>
       </Grid>
       <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor="white">

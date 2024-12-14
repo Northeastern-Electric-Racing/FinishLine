@@ -12,10 +12,19 @@ import { useCurrentUser, useSingleUserSettings } from '../../hooks/users.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import PageLayout from '../../components/PageLayout';
+import { useEffect } from 'react';
+import { useHomePageContext } from '../../app/HomePageContext';
 
 const MemberHomePage = () => {
   const user = useCurrentUser();
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(user.userId);
+  const { setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage } = useHomePageContext();
+
+  useEffect(() => {
+    setOnGuestHomePage(false);
+    setOnPNMHomePage(false);
+    setOnOnboardingHomePage(false);
+  }, [setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage]);
 
   if (isLoading || !userSettingsData) return <LoadingIndicator />;
   if (isError) return <ErrorPage error={error} message={error.message} />;

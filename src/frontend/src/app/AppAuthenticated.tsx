@@ -31,13 +31,15 @@ import { useState } from 'react';
 import ArrowCircleRightTwoToneIcon from '@mui/icons-material/ArrowCircleRightTwoTone';
 import HiddenContentMargin from '../components/HiddenContentMargin';
 import { useHomePageContext } from './HomePageContext';
+import { useCurrentOrganization } from '../hooks/organizations.hooks';
 
 interface AppAuthenticatedProps {
   userId: string;
   userRole: Role;
+  completedOnboarding: boolean;
 }
 
-const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole }) => {
+const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, completedOnboarding }) => {
   const { isLoading, isError, error, data: userSettingsData } = useSingleUserSettings(userId);
 
   const theme = useTheme();
@@ -45,7 +47,18 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
   const [moveContent, setMoveContent] = useState(false);
   const { onGuestHomePage } = useHomePageContext();
 
-  if (isLoading || !userSettingsData) return <LoadingIndicator />;
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    isError: organizationIsError,
+    error: organizationError
+  } = useCurrentOrganization();
+
+  if (organizationIsError) {
+    return <ErrorPage message={organizationError.message} />;
+  }
+
+  if (isLoading || !userSettingsData || !organization || organizationIsLoading) return <LoadingIndicator />;
 
   if (isError) {
     if ((error as Error).message === 'Authentication Failed: Invalid JWT!') {
@@ -92,6 +105,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
             setDrawerOpen={setDrawerOpen}
             moveContent={moveContent}
             setMoveContent={setMoveContent}
+            organization={organization}
           />
         </>
       )}
@@ -99,6 +113,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole })
         <HiddenContentMargin open={moveContent} variant="permanent" />
         <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
+            {!completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_ONBOARDING} />}
             {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}

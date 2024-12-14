@@ -21,6 +21,7 @@ const GuestHomePage = () => {
 
   const [applyInterestImage, setApplyInterestImage] = useState('');
   const [exploreAsGuestImage, setExploreAsGuestImage] = useState('');
+  const { setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage } = useHomePageContext();
 
   useEffect(() => {
     setOnGuestHomePage(true);
@@ -29,6 +30,8 @@ const GuestHomePage = () => {
 
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+    setOnOnboardingHomePage(false);
+  }, [setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage]);
 
   console.log(imagePreviewUrl(organization!.applyInterestImageId))
   return (

@@ -26,17 +26,18 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import SidebarButton from './SidebarButton';
 import { useHistory } from 'react-router-dom';
 import { useCurrentUser } from '../../hooks/users.hooks';
-import { isGuest } from 'shared';
+import { Organization, isGuest } from 'shared';
 
 interface SidebarProps {
   drawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
   moveContent: boolean;
   setMoveContent: (move: boolean) => void;
+  organization?: Organization;
 }
 
-const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: SidebarProps) => {
-  const { onPNMHomePage } = useHomePageContext();
+const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
+  const { onPNMHomePage, onOnboardingHomePage } = useHomePageContext();
   const user = useCurrentUser();
   const theme = useTheme();
   const history = useHistory();
@@ -84,7 +85,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     }
   ];
 
-  const pnmLinkItems: LinkItem[] = [
+  const onboardingLinkItems: LinkItem[] = [
     {
       name: 'Home',
       icon: <HomeIcon />,
@@ -97,7 +98,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
     }
   ];
 
-  const linkItems = onPNMHomePage ? pnmLinkItems : memberLinkItems;
+  const linkItems = onPNMHomePage || onOnboardingHomePage ? onboardingLinkItems : memberLinkItems;
 
   const handleMoveContent = () => {
     if (moveContent) {
@@ -130,16 +131,15 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent }: Sid
           {linkItems.map((linkItem) => (
             <NavPageLink {...linkItem} />
           ))}
-          {onPNMHomePage ? (
+          {onPNMHomePage && (
             // Apply button
             <SidebarButton
-              onClick={() => window.open('https://google.com', '_blank')}
+              onClick={() => window.open(organization?.applicationLink, '_blank')}
               label={'Apply'}
               icon={<ArticleIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}
             />
-          ) : (
-            <NavUserMenu open={drawerOpen} />
           )}
+          {!(onOnboardingHomePage || onPNMHomePage) && <NavUserMenu open={drawerOpen} />}
         </Box>
         <Box justifyContent={drawerOpen ? 'flex-start' : 'center'}>
           {isGuest(user.role) && (
