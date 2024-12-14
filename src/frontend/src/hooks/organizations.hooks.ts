@@ -105,7 +105,7 @@ export const useOrganizationLogo = () => {
       return await downloadGoogleImage(fileId);
     } catch {
       // return default logo if fileId was not found
-      return getDefaultImageData();
+      return await getDefaultImageData();
     }
   });
 };
