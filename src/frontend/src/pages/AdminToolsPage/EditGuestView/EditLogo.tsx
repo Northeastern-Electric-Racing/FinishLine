@@ -60,12 +60,12 @@ const EditLogo = () => {
         <EditLogoForm
           onSubmit={onSubmit}
           onHide={handleClose}
-          orgLogo={new File([imageData.blob], imageData.blob.name, { type: imageData.blob.type })}
+          orgLogo={new File([imageData], imageData.name, { type: imageData.type })}
         />
       ) : (
         <>
           <Box sx={{ display: 'flex', flexDirection: 'column', height: 350, width: 300 }}>
-            <LogoDisplay imageUrl={imageData.url} />
+            <LogoDisplay imageUrl={URL.createObjectURL(imageData)} />
             <Box
               sx={{
                 display: 'flex',

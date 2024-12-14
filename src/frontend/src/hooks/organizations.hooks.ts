@@ -11,6 +11,7 @@ import {
   setOrganizationFeaturedProjects
 } from '../apis/organizations.api';
 import { downloadGoogleImage } from '../apis/finance.api';
+import { getDefaultImageData } from '../utils/image.utils';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -98,11 +99,13 @@ export const useSetOrganizationLogo = () => {
 };
 
 export const useOrganizationLogo = () => {
-  return useQuery<{ url: string; blob: Blob }, Error>(['organizations', 'logo'], async () => {
-    const { data: fileId } = await getOrganizationLogo();
-
-    const imageBlob = await downloadGoogleImage(fileId);
-
-    return { url: URL.createObjectURL(imageBlob), blob: imageBlob };
+  return useQuery<Blob, Error>(['organizations', 'logo'], async () => {
+    try {
+      const { data: fileId } = await getOrganizationLogo();
+      return await downloadGoogleImage(fileId);
+    } catch {
+      // return default logo if fileId was not found
+      return getDefaultImageData();
+    }
   });
 };

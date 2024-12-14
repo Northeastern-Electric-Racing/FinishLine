@@ -2,10 +2,10 @@ import { Box, useTheme, Card } from '@mui/material';
 import React from 'react';
 
 interface LogoDisplayProps {
-  imageUrl?: string;
+  imageUrl: string;
 }
 
-const LogoDisplay: React.FC<LogoDisplayProps> = ({ imageUrl = './default-logo.png' }) => {
+const LogoDisplay: React.FC<LogoDisplayProps> = ({ imageUrl }) => {
   const theme = useTheme();
   return (
     <Card
