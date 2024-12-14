@@ -5,43 +5,68 @@ import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 const OnboardingInfoSection: React.FC = () => {
   return (
     <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
-      {/* This will be replaced with the 'Onboarding' block*/}
       <Grid item>
         <Box
           sx={{
-            backgroundColor: 'gray',
+            backgroundColor: (theme) => theme.palette.grey[600],
             height: '25vh',
-            borderRadius: '10px'
+            borderRadius: '10px',
+            padding: '16px'
           }}
         >
-          <Typography>Onboarding</Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              marginBottom: '12px'
+            }}
+          >
+            Onboarding
+          </Typography>
         </Box>
       </Grid>
-      <Typography variant="h5" gutterBottom borderBottom={1} color="#ef4345" borderColor={'white'}>
-        Useful Links
-      </Typography>
-      <UsefulLinksTable />
       <Grid item>
         <Box
           sx={{
-            backgroundColor: 'gray',
+            backgroundColor: (theme) => theme.palette.grey[600],
             height: '25vh',
-            borderRadius: '10px'
+            borderRadius: '10px',
+            padding: '16px'
           }}
         >
-          <Typography>Useful Links</Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              marginBottom: '12px'
+            }}
+          >
+            Useful Links
+          </Typography>
+          <UsefulLinksTable />
         </Box>
       </Grid>
-      {/* This will be replaced with the 'Questions' block*/}
       <Grid item>
         <Box
           sx={{
-            backgroundColor: 'gray',
+            backgroundColor: (theme) => theme.palette.grey[600],
             height: '25vh',
-            borderRadius: '10px'
+            borderRadius: '10px',
+            padding: '16px'
           }}
         >
-          <Typography>Questions</Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              marginBottom: '12px'
+            }}
+          >
+            Questions
+          </Typography>
         </Box>
       </Grid>
     </Grid>
