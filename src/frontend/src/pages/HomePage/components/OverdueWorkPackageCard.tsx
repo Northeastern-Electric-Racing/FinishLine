@@ -12,7 +12,7 @@ import {
   useTheme
 } from '@mui/material';
 import { wbsPipe, WorkPackage } from 'shared';
-import { datePipe, fullNamePipe, projectWbsPipe, wbsNamePipe } from '../../../utils/pipes';
+import { datePipe, fullNamePipe, projectWbsPipe } from '../../../utils/pipes';
 import { routes } from '../../../utils/routes';
 import { Link as RouterLink } from 'react-router-dom';
 import { useGetManyWorkPackages } from '../../../hooks/work-packages.hooks';
@@ -84,8 +84,10 @@ const OverdueWorkPackageCard = ({ wp }: { wp: WorkPackage }) => {
               ) : (
                 blockedByWps.map((wp) => (
                   <li key={wp.id}>
-                    <Typography fontWeight="regular" fontSize={16} variant="h6" noWrap>
-                      {wbsNamePipe(wp)}
+                    <Typography fontWeight={'regular'} variant="subtitle2" noWrap>
+                      <Link component={RouterLink} to={`${routes.PROJECTS}/${projectWbsPipe(wp.wbsNum)}`}>
+                        {projectWbsPipe(wp.wbsNum)} - {wp.projectName}
+                      </Link>
                     </Typography>
                   </li>
                 ))
