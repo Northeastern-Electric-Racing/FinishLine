@@ -35,9 +35,13 @@ const AppPublic: React.FC = () => {
         return <Organizations></Organizations>;
       }
 
-      const isOnboarding = (auth.user.onboardingChecklistsId.length ?? 0) > 0;
-
-      return <AppAuthenticated userId={auth.user.userId} userRole={auth.user.role} onboardingChecklists={isOnboarding} />;
+      return (
+        <AppAuthenticated
+          userId={auth.user.userId}
+          userRole={auth.user.role}
+          completedOnboarding={auth.user.completedOnboarding}
+        />
+      );
     }
 
     // if we're on development and the userId is stored in localStorage,

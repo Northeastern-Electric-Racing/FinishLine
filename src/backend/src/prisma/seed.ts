@@ -424,6 +424,10 @@ const performSeed: () => Promise<void> = async () => {
 
   const bomLinkType = await ProjectsService.createLinkType(batman, 'Bill of Materials', 'bar_chart', true, ner);
 
+  const mainWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Website', 'bar_chart', true, ner);
+
+  const instagramWebsiteLinkType = await ProjectsService.createLinkType(batman, 'NER Instagram', 'bar_chart', true, ner);
+
   await ProjectsService.createLinkType(batman, 'Google Drive', 'folder', true, ner);
 
   /**
@@ -1882,57 +1886,102 @@ const performSeed: () => Promise<void> = async () => {
       linkId: '2',
       linkTypeName: 'Bill of Materials',
       url: 'https://docs.google.com'
+    },
+    {
+      linkId: '3',
+      linkTypeName: 'NER Website',
+      url: 'https://electricracing.northeastern.edu/'
+    },
+    {
+      linkId: '4',
+      linkTypeName: 'NER Instagram',
+      url: 'https://www.instagram.com/nuelectricracing/'
     }
   ]);
 
-  await RecruitmentServices.createMilestone(batman, 'Milestone 1', 'This is milestone 1', new Date('11/12/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Milestone 2', 'This is milestone 2', new Date('11/13/24'), ner);
-  await RecruitmentServices.createMilestone(batman, 'Milestone 3', 'This is milestone 3', new Date('11/23/24'), ner);
+  await OrganizationsService.setOnboardingText(
+    batman,
+    ner,
+    'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.'
+  );
+
+  await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Applications Close', '', new Date('11/27/24'), ner);
+  await RecruitmentServices.createMilestone(batman, 'Decision Day!', '', new Date('12/4/24'), ner);
 
   await RecruitmentServices.createFaq(batman, 'Who is the Chief Software Engineer?', 'Peyton McKee', ner);
-
   await RecruitmentServices.createFaq(batman, 'When was FinishLine created?', 'FinishLine was created in 2019', ner);
-
   await RecruitmentServices.createFaq(batman, 'How many developers are working on FinishLine?', '178 as of 2024', ner);
+  await UsersService.toggleCompletedOnboarding(patrick.userId, ner);
 
-  const softwareChecklist = await OnboardingServices.createChecklist(batman, 'Software Checklist', software.teamTypeId, ner);
-  const electricalChecklist = await OnboardingServices.createChecklist(
-    batman,
-    'Electrical Checklist',
-    electrical.teamTypeId,
-    ner
-  );
-  const generalChecklist = await OnboardingServices.createChecklist(batman, 'General Checklist', null, ner);
-
-  const checklistItem1 = await OnboardingServices.createChecklistItem(
+  const joinSlackChecklist = await OnboardingServices.createChecklist(
     batman,
     'Join Slack',
-    softwareChecklist.checklistId,
+    [
+      'Slack is our primary method of communication outside of meetings and the shop. To join, you must use your @northeastern.edu email (No personal emails!). We do not send email reminders for meetings, so you will need to stay in the loop via Slack and Google Calandar.'
+    ],
+    false,
+    null,
     null,
     null,
     ner
   );
 
-  await OnboardingServices.createChecklistItem(
+  await OnboardingServices.createChecklist(
     batman,
-    'Add profile picture',
-    softwareChecklist.checklistId,
-    checklistItem1.checklistItemId,
+    'Put your name and pronouns',
+    [],
+    false,
     null,
+    null,
+    joinSlackChecklist.checklistId,
     ner
   );
 
-  // for testing purposes, will use the setUserChecklist endpoint once it has been created
-  await prisma.user.update({
-    where: {
-      userId: patrick.userId
-    },
-    data: {
-      onboardingChecklists: {
-        connect: { checklistId: softwareChecklist.checklistId }
-      }
-    }
-  });
+  await OnboardingServices.createChecklist(
+    batman,
+    'Include your team and/or subteam',
+    [],
+    false,
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Include your major and/or year',
+    [],
+    false,
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Turn on notifications',
+    [],
+    false,
+    null,
+    null,
+    joinSlackChecklist.checklistId,
+    ner
+  );
+
+  const engageChecklist = await OnboardingServices.createChecklist(
+    batman,
+    'Engage',
+    ['Join NER on engage. This is what Northeastern uses to keep track of our roster'],
+    false,
+    null,
+    software.teamTypeId,
+    null,
+    ner
+  );
 };
 
 performSeed()

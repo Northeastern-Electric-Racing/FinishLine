@@ -44,6 +44,7 @@ export interface Organization {
   advisor?: UserPreview;
   description: string;
   applicationLink: string;
+  onboardingText?: string;
 }
 
 /**
@@ -65,7 +66,7 @@ export interface AuthenticatedUser {
   isAtLeastFinanceLead?: boolean;
   organizations: string[];
   currentOrganization?: OrganizationPreview;
-  onboardingChecklistsId: string[];
+  completedOnboarding: boolean;
 }
 
 export interface UserSettings {

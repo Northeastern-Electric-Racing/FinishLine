@@ -24,3 +24,27 @@ export const transformDate = (date: Date) => {
   const day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate().toString();
   return `${date.getFullYear().toString()}/${month}/${day}`;
 };
+
+/**
+ * Formats a Date object in the form of Month Day, Year (ie: January 1, 2024)
+ *
+ * @param date the date object for modify
+ * @returns a string representing the date
+ */
+export const dateMonthDayYear = (date: Date): string => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+/**
+ * Determines whether the provided date is before today's date
+ * @param startDate the first Date object
+ * @param endDate the second Date object
+ * @returns true if the end date date comes after the start date and false otherwise
+ */
+export const isPastEvent = (startDate: Date, endDate: Date) => {
+  return startDate < endDate;
+};

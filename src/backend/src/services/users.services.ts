@@ -282,8 +282,7 @@ export default class UsersService {
         teamsAsHead: [],
         teamsAsLead: [],
         teamsAsMember: [],
-        roles: [],
-        onboardingChecklists: []
+        roles: []
       }),
       token
     };
@@ -335,8 +334,7 @@ export default class UsersService {
       teamsAsHead: [],
       teamsAsLead: [],
       teamsAsMember: [],
-      roles: [],
-      onboardingChecklists: []
+      roles: []
     });
   }
 
@@ -396,6 +394,23 @@ export default class UsersService {
     return userTransformer(targetUser);
   }
 
+  /**
+   * Toggles the completed onboarding status of a user
+   * @param user the user who's onboarding status is being toggled
+   * @returns the updated user
+   */
+  static async toggleCompletedOnboarding(userId: string, organization: Organization): Promise<SharedUser> {
+    const user = await prisma.user.findUnique({ where: { userId } });
+    if (!user) throw new NotFoundException('User', userId);
+
+    const updatedUser = await prisma.user.update({
+      where: { userId },
+      data: { completedOnboarding: !user.completedOnboarding },
+      ...getUserQueryArgs(organization.organizationId)
+    });
+
+    return userTransformer(updatedUser);
+  }
   /**
    * Gets a user's secure settings
    * @param userId the id of user who's secure settings are being returned
