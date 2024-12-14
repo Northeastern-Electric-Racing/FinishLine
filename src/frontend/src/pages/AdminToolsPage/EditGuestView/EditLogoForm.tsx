@@ -7,7 +7,7 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import ImageIcon from '@mui/icons-material/Image';
 
 export interface EditLogoInput {
-  logoImage?: File;
+  logoImage: File;
 }
 
 interface EditLogoFormProps {
