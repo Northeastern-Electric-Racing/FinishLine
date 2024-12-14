@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import WorkPackageCard from './WorkPackageCard';
 import { WorkPackage } from 'shared';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
