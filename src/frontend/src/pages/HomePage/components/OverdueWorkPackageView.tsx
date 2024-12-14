@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import { WorkPackage } from 'shared';
 import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
@@ -86,7 +86,7 @@ const OverdueWorkPackagesView: React.FC<OverdueWorkPackagesViewProps> = ({ workP
             }}
           >
             {isEmpty ? <NoOverdueWPsDisplay /> : workPackages.map((wp) => <OverdueWorkPackageCard wp={wp} />)}
-          </Stack>
+          </Box>
         </CardContent>
       </Card>
     </Box>
