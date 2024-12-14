@@ -27,12 +27,13 @@ const PNMHomePage = () => {
 
   const [recruitmentInfoTabValue, setRecruitmentInfoTabValue] = useState(0);
   const [teamTypeTabValue, setTeamTypeTabValue] = useState(0);
-  const { setOnPNMHomePage, setOnGuestHomePage } = useHomePageContext();
+  const { setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage } = useHomePageContext();
 
   useEffect(() => {
     setOnPNMHomePage(true);
     setOnGuestHomePage(false);
-  }, [setOnPNMHomePage, setOnGuestHomePage]);
+    setOnOnboardingHomePage(false);
+  }, [setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage]);
 
   if (!organization || organizationIsLoading || !teamTypes || teamTypesIsLoading) return <LoadingIndicator />;
   if (organizationIsError) return <ErrorPage message={organizationError?.message} />;

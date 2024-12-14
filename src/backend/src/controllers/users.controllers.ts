@@ -115,6 +115,18 @@ export default class UsersController {
     }
   }
 
+  static async toggleCompletedOnboarding(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+
+      await UsersService.toggleCompletedOnboarding(userId, req.organization);
+
+      return res.status(200).json({ message: `Successfully toggled onboarding for user` });
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+
   static async getUserSecureSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { userId } = req.params;

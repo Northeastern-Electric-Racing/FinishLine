@@ -151,4 +151,69 @@ export default class OrganizationsService {
       exploreAsGuestImage: organization.exploreAsGuestImageId
     };
   }
+
+  /**
+   * Updates the application link for the given organization Id
+   * @param submitter the user who is setting the links
+   * @param organizationId organization Id of the organization
+   * @param newLink new application link to be updated
+   * @returns updated organization data
+   */
+  static async updateApplicationLink(submitter: User, newLink: string, organization: Organization) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin)))
+      throw new AccessDeniedAdminOnlyException('update application link');
+
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: { applicationLink: newLink }
+    });
+
+    return updatedOrganization;
+  }
+
+  /**
+   * Sets onboarding text field
+   * @param submitter
+   * @param organization
+   * @param text
+   * @returns updated organization with onboarding text
+   */
+  static async setOnboardingText(submitter: User, organization: Organization, onboardingText: string) {
+    if (!(await userHasPermission(submitter.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update onboarding text');
+    }
+
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId: organization.organizationId },
+      data: {
+        onboardingText
+      }
+    });
+
+    return updatedOrganization;
+  }
+
+  /**
+   * Updates contacts of organization
+   * @param user User updating the contacts
+   * @param contacts The new contacts of the organization
+   * @param organizationId organizationId of the organization
+   * @returns updated organization with new contacts
+   */
+  static async updateOrganizationContacts(user: User, organization: Organization, contacts: string[]) {
+    if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
+      throw new AccessDeniedAdminOnlyException('update organiztion contacts');
+    }
+    const { organizationId } = organization;
+    const updatedOrganization = await prisma.organization.update({
+      where: {
+        organizationId
+      },
+      data: {
+        contacts
+      }
+    });
+
+    return updatedOrganization;
+  }
 }
