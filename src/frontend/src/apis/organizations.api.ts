@@ -1,5 +1,5 @@
 import axios from '../utils/axios';
-import { Organization } from 'shared';
+import { Organization, Project } from 'shared';
 import { apiUrls } from '../utils/urls';
 
 /**
@@ -12,8 +12,20 @@ export const getCurrentOrganization = async () => {
   });
 };
 
+export const getFeaturedProjects = async () => {
+  return axios.get<Project[]>(apiUrls.organizationsFeaturedProjects(), {
+    transformResponse: (data) => JSON.parse(data)
+  });
+};
+
 export const setOrganizationDescription = async (description: string) => {
   return axios.post<Organization>(apiUrls.organizationsSetDescription(), {
     description
+  });
+};
+
+export const setOrganizationFeaturedProjects = async (featuredProjectIds: string[]) => {
+  return axios.post<Organization>(apiUrls.organizationsSetFeaturedProjects(), {
+    projectIds: featuredProjectIds
   });
 };

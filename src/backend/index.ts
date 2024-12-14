@@ -20,6 +20,7 @@ import recruitmentRouter from './src/routes/recruitment.routes';
 import slackRouter from './src/routes/slack.routes';
 
 const app = express();
+
 const port = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -70,7 +71,7 @@ app.use('/organizations', organizationRouter);
 app.use('/recruitment', recruitmentRouter);
 app.use('/slack', slackRouter);
 app.use('/', (_req, res) => {
-  res.json('Welcome to FinishLine');
+  res.status(200).json('Welcome to FinishLine');
 });
 
 // custom error handler middleware

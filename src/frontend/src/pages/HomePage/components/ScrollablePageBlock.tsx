@@ -1,6 +1,5 @@
-import { Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { PAGE_GRID_HEIGHT } from '../../../components/PageLayout';
 
 interface ScrollablePageBlockProps {
   children: React.ReactNode;
@@ -13,41 +12,49 @@ const ScrollablePageBlock: React.FC<ScrollablePageBlockProps> = ({ children, tit
   return (
     <Card
       sx={{
-        height: horizontal ? 'auto' : '100%',
-        my: 2,
+        height: '100%',
         background: theme.palette.background.paper
       }}
       variant="outlined"
     >
-      {title && (
-        <Typography ml={2} mt={2} variant="h4">
-          {title}
-        </Typography>
-      )}
       <CardContent
         sx={{
-          marginTop: 1,
-          maxHeight: `calc(${PAGE_GRID_HEIGHT}vh - 100px)`,
-          flexWrap: 'nowrap',
-          overflow: 'auto',
-          justifyContent: 'flex-start',
-          '&::-webkit-scrollbar': {
-            height: '20px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: theme.palette.error.dark,
-            borderRadius: '20px',
-            border: '6px solid transparent',
-            backgroundClip: 'content-box'
-          }
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          flexWrap: 'nowrap'
         }}
       >
-        <Stack direction={horizontal ? 'row' : 'column'} spacing={2}>
+        {title && (
+          <Typography ml={2} mt={2} variant="h5">
+            {title}
+          </Typography>
+        )}
+        <Box
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flexDirection: horizontal ? 'row' : 'column',
+            gap: 2,
+            height: '100%',
+            overflowX: horizontal ? 'auto' : 'hidden',
+            overflowY: horizontal ? 'hidden' : 'auto',
+            '&::-webkit-scrollbar': {
+              height: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.error.dark,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            }
+          }}
+        >
           {children}
-        </Stack>
+        </Box>
       </CardContent>
     </Card>
   );
