@@ -8,6 +8,7 @@ import { LocationOnOutlined, Computer } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { NERButton } from '../../../components/NERButton';
 import { meetingStartTimePipe } from '../../../../../backend/src/utils/design-reviews.utils';
+import { timezoneOffset } from '../../../utils/datetime.utils';
 
 interface DesignReviewProps {
   designReview: DesignReview;
@@ -71,8 +72,7 @@ function removeYear(str: string): string {
 
 const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const theme = useTheme();
-  const datePlusOne = new Date(designReview.dateScheduled);
-  datePlusOne.setDate(datePlusOne.getDate() + 1);
+  const timezoneAdjustedDate = timezoneOffset(designReview.dateScheduled);
   return (
     <Card
       variant="outlined"
@@ -95,9 +95,9 @@ const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, 
             <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
               <Typography>{<CalendarMonthIcon sx={{ fontSize: 21 }} />}</Typography>
               <Typography fontWeight={'regular'} variant="body2">
-                {getWeekday(datePlusOne) +
+                {getWeekday(timezoneAdjustedDate) +
                   ', ' +
-                  removeYear(datePipe(datePlusOne)) +
+                  removeYear(datePipe(timezoneAdjustedDate)) +
                   ' @ ' +
                   meetingStartTimePipe(designReview.meetingTimes)}
               </Typography>
