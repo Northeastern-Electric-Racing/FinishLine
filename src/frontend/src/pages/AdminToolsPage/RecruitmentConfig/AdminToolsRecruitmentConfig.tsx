@@ -50,7 +50,7 @@ const AdminToolsRecruitmentConfig: React.FC = () => {
       if (defaultImage1Url) URL.revokeObjectURL(defaultImage1Url);
       if (defaultImage2Url) URL.revokeObjectURL(defaultImage2Url);
     };
-  }, [organization]);
+  }, [organization, defaultImage1Url, defaultImage2Url]);
 
   if (!defaultImage1 || !defaultImage2) {
     return <LoadingIndicator />;
