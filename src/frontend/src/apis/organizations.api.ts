@@ -23,3 +23,9 @@ export const setOrganizationDescription = async (description: string) => {
     description
   });
 };
+
+export const setOrganizationFeaturedProjects = async (featuredProjectIds: string[]) => {
+  return axios.post<Organization>(apiUrls.organizationsSetFeaturedProjects(), {
+    projectIds: featuredProjectIds
+  });
+};

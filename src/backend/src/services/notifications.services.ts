@@ -11,8 +11,10 @@ import { daysBetween, startOfDay, wbsPipe } from 'shared';
 import { buildDueString } from '../utils/slack.utils';
 import WorkPackagesService from './work-packages.services';
 import { addWeeksToDate } from 'shared';
-import { HttpException } from '../utils/errors.utils';
+import { HttpException, NotFoundException } from '../utils/errors.utils';
 import { meetingStartTimePipe } from '../utils/design-reviews.utils';
+import { getNotificationQueryArgs } from '../prisma-query-args/notifications.query-args';
+import notificationTransformer from '../transformers/notifications.transformer';
 
 export default class NotificationsService {
   static async sendDailySlackNotifications() {
@@ -192,5 +194,45 @@ export default class NotificationsService {
     });
 
     await Promise.all(promises);
+  }
+
+  /**
+   * Creates and sends a notification to all users with the given userIds
+   * @param text writing in the notification
+   * @param iconName icon that appears in the notification
+   * @param userIds ids of users to send the notification to
+   * @param organizationId
+   * @returns the created notification
+   */
+  static async sendNotifcationToUsers(text: string, iconName: string, userIds: string[], organizationId: string) {
+    const createdNotification = await prisma.notification.create({
+      data: {
+        text,
+        iconName
+      },
+      ...getNotificationQueryArgs(organizationId)
+    });
+
+    if (!createdNotification) throw new HttpException(500, 'Failed to create notification');
+
+    const notificationsPromises = userIds.map(async (userId) => {
+      const requestedUser = await prisma.user.findUnique({
+        where: { userId }
+      });
+
+      if (!requestedUser) throw new NotFoundException('User', userId);
+
+      return await prisma.user.update({
+        where: { userId: requestedUser.userId },
+        data: {
+          unreadNotifications: {
+            connect: { notificationId: createdNotification.notificationId }
+          }
+        }
+      });
+    });
+
+    await Promise.all(notificationsPromises);
+    return notificationTransformer(createdNotification);
   }
 }

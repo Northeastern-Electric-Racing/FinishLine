@@ -54,5 +54,6 @@ userRouter.post(
   validateInputs,
   UsersController.getManyUserTasks
 );
+userRouter.get('/:userId/notifications', UsersController.getUserUnreadNotifications);
 
 export default userRouter;
