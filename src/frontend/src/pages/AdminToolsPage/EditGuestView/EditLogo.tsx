@@ -65,7 +65,7 @@ const EditLogo = () => {
       ) : (
         <>
           <Box sx={{ display: 'flex', flexDirection: 'column', height: 350, width: 300 }}>
-            <LogoDisplay imageUrl={imageData ? imageData.url : undefined} />
+            <LogoDisplay imageUrl={imageData.url} />
             <Box
               sx={{
                 display: 'flex',
