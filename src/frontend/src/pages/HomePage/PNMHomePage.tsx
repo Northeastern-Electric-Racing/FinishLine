@@ -10,6 +10,7 @@ import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
 import { useAllTeamTypes } from '../../hooks/team-types.hooks';
 import TeamTypeSection from './components/TeamTypeSection';
+import { TeamType } from 'shared';
 
 const PNMHomePage = () => {
   const {
@@ -44,7 +45,7 @@ const PNMHomePage = () => {
     { label: 'Timeline', component: <TimelineSection /> }
   ];
 
-  const orderedTeamTypes = teamTypes.sort((a: TeamType, b: teamType) => {
+  const orderedTeamTypes = teamTypes.sort((a: TeamType, b: TeamType) => {
     return a.name.localeCompare(b.name);
   });
 
