@@ -8,9 +8,9 @@ import {
   Table,
   TableHead,
   TableBody,
-  TableContainer
+  TableContainer,
+  Button
 } from '@mui/material';
-import { NERButton } from '../../../../components/NERButton';
 import { isAdmin } from 'shared/src/permission-utils';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
@@ -24,6 +24,7 @@ import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
 import CreateUsefulLinkModal from './CreateUsefulLinkModal';
 import EditUsefulLinkModal from './EditUsefulLinkModal';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
+import AddIcon from '@mui/icons-material/Add';
 
 const UsefulLinksTable = () => {
   const currentUser = useCurrentUser();
@@ -120,9 +121,19 @@ const UsefulLinksTable = () => {
 
         <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
           {isAdmin(currentUser.role) && (
-            <NERButton onClick={() => setShowCreateModel(true)} variant="contained">
-              New Useful Link
-            </NERButton>
+            <Button
+              onClick={() => setShowCreateModel(true)}
+              variant="text"
+              startIcon={<AddIcon />}
+              sx={{
+                color: '#ef4345',
+                '&:hover': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+            >
+              Add Link
+            </Button>
           )}
         </Box>
       </Box>
