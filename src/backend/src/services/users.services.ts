@@ -578,4 +578,20 @@ export default class UsersService {
 
     return requestedUser.unreadNotifications.map(notificationTransformer);
   }
+
+  static async removeUserNotification(userId: string, notificationId: string, organization: Organization) {
+    const requestedUser = await prisma.user.update({
+      where: { userId },
+      data: {
+        unreadNotifications: {
+          disconnect: {
+            notificationId
+          }
+        }
+      },
+      include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
+    });
+
+    return requestedUser.unreadNotifications.map(notificationTransformer);
+  }
 }
