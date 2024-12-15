@@ -44,7 +44,11 @@ const PNMHomePage = () => {
     { label: 'Timeline', component: <TimelineSection /> }
   ];
 
-  const teamTypeTabs = teamTypes.map((teamType) => {
+  const orderedTeamTypes = teamTypes.sort((a: TeamType, b: teamType) => {
+    return a.name.localeCompare(b.name);
+  });
+
+  const teamTypeTabs = orderedTeamTypes.map((teamType) => {
     return {
       label: teamType.name,
       component: <TeamTypeSection teamType={teamType} />

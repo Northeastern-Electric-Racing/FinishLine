@@ -1,40 +1,46 @@
 import { Box, Grid, Typography } from '@mui/material';
 import { TeamType } from 'shared';
-import { useState, useEffect } from 'react';
-import { getImageUrl } from '../../../utils/image.utils';
+import { useGetImageUrl } from '../../../hooks/onboarding.hook';
+import LoadingIndicator from '../../../components/LoadingIndicator';
 
 interface TeamTypeSectionProps {
   teamType: TeamType;
 }
 
 const TeamTypeSection = ({ teamType }: TeamTypeSectionProps) => {
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const { data: imageUrl, isLoading } = useGetImageUrl(teamType.imageFileId);
 
-  useEffect(() => {
-    setImageUrl('');
-
-    const fetchImageUrl = async () => {
-      if (teamType.imageFileId) {
-        const url = await getImageUrl(teamType.imageFileId);
-        setImageUrl(url);
-      }
-    };
-
-    fetchImageUrl();
-  }, [teamType.imageFileId]);
+  if (isLoading) return <LoadingIndicator />;
 
   return (
-    <Grid container spacing={2} alignItems="center">
-      {imageUrl && (
-        <Grid item xs={4}>
-          <Box component="img" src={imageUrl} sx={{ maxWidth: '100%', mt: 1, mb: 1 }} />
+    <Grid container spacing={4} alignItems="flex-start" sx={{ p: 2 }}>
+      {imageUrl ? (
+        <>
+          <Grid item xs={12} md={6}>
+            <Box
+              component="img"
+              src={imageUrl}
+              sx={{
+                width: '30vw',
+                height: 'auto',
+                maxWidth: '400px',
+                display: 'block',
+                mx: 'auto'
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ p: 2 }}>
+              <Typography sx={{ fontSize: '1.3em', textAlign: 'left' }}>{teamType.description}</Typography>
+            </Box>
+          </Grid>
+        </>
+      ) : (
+        <Grid item xs={12}>
+          <Typography sx={{ fontSize: '1.3em', textAlign: 'left' }}>{teamType.description}</Typography>
         </Grid>
       )}
-      <Grid item xs={8}>
-        <Typography variant="body1">{teamType.description}</Typography>
-      </Grid>
     </Grid>
   );
 };
-
 export default TeamTypeSection;
