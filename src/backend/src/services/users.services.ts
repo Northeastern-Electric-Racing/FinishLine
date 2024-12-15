@@ -569,6 +569,12 @@ export default class UsersService {
     return resolvedTasks.flat();
   }
 
+  /**
+   * Gets all of a user's unread notifications
+   * @param userId id of user to get unread notifications from
+   * @param organization the user's orgainzation
+   * @returns the unread notifications of the user
+   */
   static async getUserUnreadNotifications(userId: string, organization: Organization) {
     const requestedUser = await prisma.user.findUnique({
       where: { userId },
@@ -579,6 +585,13 @@ export default class UsersService {
     return requestedUser.unreadNotifications.map(notificationTransformer);
   }
 
+  /**
+   * Removes a notification from the user's unread notifications
+   * @param userId id of the user to remove notification from
+   * @param notificationId id of the notification to remove
+   * @param organization the user's organization
+   * @returns the user's updated unread notifications
+   */
   static async removeUserNotification(userId: string, notificationId: string, organization: Organization) {
     const requestedUser = await prisma.user.findUnique({
       where: { userId }
