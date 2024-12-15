@@ -203,4 +203,17 @@ export default class UsersController {
       next(error);
     }
   }
+
+  static async removeUserNotification(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const { notificationId } = req.body;
+      const { organization } = req;
+
+      const unreadNotifications = await UsersService.removeUserNotification(userId, notificationId, organization);
+      res.status(200).json(unreadNotifications);
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
 }
