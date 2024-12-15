@@ -69,4 +69,37 @@ describe('User Tests', () => {
       expect(notifications[1].text).toBe('test2');
     });
   });
+
+  describe('Remove Notifications', () => {
+    it('Fails with invalid user', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await NotificationsService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
+      const notifications = await UsersService.getUserUnreadNotifications(testBatman.userId, organization);
+
+      await expect(
+        async () => await UsersService.removeUserNotification('1', notifications[0].notificationId, organization)
+      ).rejects.toThrow(new NotFoundException('User', '1'));
+    });
+
+    it('Succeeds and gets user notifications', async () => {
+      const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      await NotificationsService.sendNotifcationToUsers('test1', 'test1', [testBatman.userId], orgId);
+      await NotificationsService.sendNotifcationToUsers('test2', 'test2', [testBatman.userId], orgId);
+
+      const notifications = await UsersService.getUserUnreadNotifications(testBatman.userId, organization);
+
+      expect(notifications).toHaveLength(2);
+      expect(notifications[0].text).toBe('test1');
+      expect(notifications[1].text).toBe('test2');
+
+      const updatedNotifications = await UsersService.removeUserNotification(
+        testBatman.userId,
+        notifications[0].notificationId,
+        organization
+      );
+
+      expect(updatedNotifications).toHaveLength(1);
+      expect(updatedNotifications[0].text).toBe('test2');
+    });
+  });
 });

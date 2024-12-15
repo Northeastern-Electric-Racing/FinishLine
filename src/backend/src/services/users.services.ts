@@ -580,7 +580,13 @@ export default class UsersService {
   }
 
   static async removeUserNotification(userId: string, notificationId: string, organization: Organization) {
-    const requestedUser = await prisma.user.update({
+    const requestedUser = await prisma.user.findUnique({
+      where: { userId }
+    });
+
+    if (!requestedUser) throw new NotFoundException('User', userId);
+
+    const updatedUser = await prisma.user.update({
       where: { userId },
       data: {
         unreadNotifications: {
@@ -592,6 +598,6 @@ export default class UsersService {
       include: { unreadNotifications: getNotificationQueryArgs(organization.organizationId) }
     });
 
-    return requestedUser.unreadNotifications.map(notificationTransformer);
+    return updatedUser.unreadNotifications.map(notificationTransformer);
   }
 }
