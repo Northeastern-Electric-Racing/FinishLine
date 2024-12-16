@@ -1,6 +1,16 @@
-import { TableRow, TableCell, Box, IconButton, Typography, Link as LinkComponent } from '@mui/material';
-import AdminToolTable from '../../AdminToolTable';
-import { NERButton } from '../../../../components/NERButton';
+import {
+  TableRow,
+  TableCell,
+  Box,
+  IconButton,
+  Typography,
+  Link as LinkComponent,
+  Table,
+  TableHead,
+  TableBody,
+  TableContainer,
+  Button
+} from '@mui/material';
 import { isAdmin } from 'shared/src/permission-utils';
 import { useCurrentUser } from '../../../../hooks/users.hooks';
 import LoadingIndicator from '../../../../components/LoadingIndicator';
@@ -14,6 +24,7 @@ import { useAllLinkTypes } from '../../../../hooks/projects.hooks';
 import CreateUsefulLinkModal from './CreateUsefulLinkModal';
 import EditUsefulLinkModal from './EditUsefulLinkModal';
 import { linkToLinkCreateArgs } from '../../../../utils/link.utils';
+import AddIcon from '@mui/icons-material/Add';
 
 const UsefulLinksTable = () => {
   const currentUser = useCurrentUser();
@@ -39,34 +50,6 @@ const UsefulLinksTable = () => {
     setLinkToDelete(undefined);
   };
 
-  const usefulLinkRows = usefulLinks.map((link) => (
-    <TableRow
-      onClick={() => {
-        return setEditingLink(link);
-      }}
-      sx={{ cursor: 'pointer' }}
-    >
-      <TableCell align="left" sx={{ border: '2px solid black' }}>
-        {link.linkType.name}
-      </TableCell>
-      <TableCell sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        <LinkComponent sx={{ color: 'white', textDecorationColor: 'white' }} href={link.url} target="_blank">
-          {link.url}
-        </LinkComponent>
-      </TableCell>
-      <TableCell align="center" sx={{ border: '2px solid black', verticalAlign: 'middle' }}>
-        <IconButton
-          onClick={(event) => {
-            event.stopPropagation();
-            return setLinkToDelete(link);
-          }}
-        >
-          <Delete />
-        </IconButton>
-      </TableCell>
-    </TableRow>
-  ));
-
   return (
     <Box>
       <CreateUsefulLinkModal
@@ -88,12 +71,69 @@ const UsefulLinksTable = () => {
       )}
 
       <Box>
-        <AdminToolTable columns={[{ name: 'Name' }, { name: 'URL' }, { name: '' }]} rows={usefulLinkRows} />
+        <TableContainer sx={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
+          <Table sx={{ '& td, & th': { borderBottom: 'none' } }}>
+            <TableHead>
+              <TableRow sx={{ borderBottom: '2px solid white', color: 'white' }}>
+                <TableCell sx={{ borderRight: '2px solid white', color: 'white' }}>Link Name</TableCell>
+                <TableCell>URL</TableCell>
+                <TableCell sx={{ color: 'white' }}></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {usefulLinks.map((link) => (
+                <TableRow key={link.linkId} onClick={() => setEditingLink(link)} sx={{ cursor: 'pointer' }}>
+                  <TableCell align="left" sx={{ color: 'white' }}>
+                    {link.linkType.name}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderLeft: '2px solid white',
+                      color: 'white',
+                      verticalAlign: 'middle'
+                    }}
+                  >
+                    <LinkComponent sx={{ color: 'white', textDecorationColor: 'white' }} href={link.url} target="_blank">
+                      {link.url}
+                    </LinkComponent>
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{
+                      color: 'white',
+                      verticalAlign: 'middle'
+                    }}
+                  >
+                    <IconButton
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        return setLinkToDelete(link);
+                      }}
+                    >
+                      <Delete sx={{ color: 'white' }} />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
         <Box sx={{ display: 'flex', justifyContent: 'right', marginTop: '10px' }}>
           {isAdmin(currentUser.role) && (
-            <NERButton onClick={() => setShowCreateModel(true)} variant="contained">
-              New Useful Link
-            </NERButton>
+            <Button
+              onClick={() => setShowCreateModel(true)}
+              variant="text"
+              startIcon={<AddIcon />}
+              sx={{
+                color: '#ef4345',
+                '&:hover': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+            >
+              Add Link
+            </Button>
           )}
         </Box>
       </Box>
