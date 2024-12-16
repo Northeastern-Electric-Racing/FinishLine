@@ -361,4 +361,5 @@ export const apiUrls = {
   generalChecklists,
   usersTeamTypeChecklists,
   imageById,
+  version
 };
