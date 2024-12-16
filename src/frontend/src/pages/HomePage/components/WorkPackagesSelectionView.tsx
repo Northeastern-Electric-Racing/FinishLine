@@ -1,0 +1,129 @@
+import { WorkPackage } from 'shared';
+import { Box, Card, CardContent, useTheme } from '@mui/material';
+import {
+  getInProgressWorkPackages,
+  getOverdueWorkPackages,
+  getUpcomingWorkPackages
+} from '../../../utils/work-package.utils';
+import { useCurrentUser } from '../../../hooks/users.hooks';
+import WorkPackageCard from './WorkPackageCard';
+import WorkPackageSelect from './WorkPackageSelect';
+import React, { useState } from 'react';
+import EmptyPageBlockDisplay from './EmptyPageBlockDisplay';
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+
+const NoWorkPackages: React.FC = () => {
+  return (
+    <EmptyPageBlockDisplay
+      icon={<CheckCircleOutlineOutlinedIcon sx={{ fontSize: 70 }} />}
+      heading={`You're all set!`}
+      message={'You have no pending work packages of this type!'}
+    />
+  );
+};
+
+const WorkPackagesSelectionView: React.FC = () => {
+  const user = useCurrentUser();
+  const theme = useTheme();
+
+  const teamsAsHead = user.teamsAsHead ?? [];
+  const teamsAsLead = user.teamsAsLead ?? [];
+  const teamsAsLeadership = [...teamsAsHead, ...teamsAsLead];
+
+  const relevantWPs = teamsAsLeadership.map((team) => team.projects.map((project) => project.workPackages)).flat(2);
+
+  const upcomingWPs: WorkPackage[] = getUpcomingWorkPackages(relevantWPs);
+  const inProgressWPs: WorkPackage[] = getInProgressWorkPackages(relevantWPs);
+  const overdueWPs: WorkPackage[] = getOverdueWorkPackages(relevantWPs);
+
+  // options for selection
+  const workPackageOptions: [string, WorkPackage[]][] = [
+    [`Upcoming Work Packages (${upcomingWPs.length})`, upcomingWPs],
+    [`In Progress Work Packages (${inProgressWPs.length})`, inProgressWPs],
+    [`Overdue Work Packages (${overdueWPs.length})`, overdueWPs]
+  ];
+
+  let defaultFirstDisplay = 2;
+  if (workPackageOptions[2][1].length === 0) {
+    defaultFirstDisplay = 1;
+    if (workPackageOptions[1][1].length === 0) {
+      defaultFirstDisplay = 0;
+    }
+  }
+
+  const [currentDisplayedWPs, setCurrentDisplayedWPs] = useState<number>(defaultFirstDisplay);
+
+  // destructuring tuple to get wps of selected option
+  const [, currentWps] = workPackageOptions[currentDisplayedWPs];
+
+  const WorkPackagesDisplay = (workPackages: WorkPackage[]) => (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        overflow: 'auto',
+        width: '100%',
+        gap: 2
+      }}
+    >
+      {workPackages.map((wp) => (
+        <WorkPackageCard wp={wp} />
+      ))}
+    </Box>
+  );
+
+  return (
+    <Card
+      sx={{
+        height: '100%',
+        background: theme.palette.background.paper
+      }}
+      variant="outlined"
+    >
+      <CardContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          flexWrap: 'nowrap'
+        }}
+      >
+        <WorkPackageSelect
+          options={workPackageOptions.map((wp) => wp[0])}
+          onSelect={setCurrentDisplayedWPs}
+          selected={currentDisplayedWPs}
+        />
+        <Box
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flex: 1,
+            flexDirection: 'column',
+            gap: 2,
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '20px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: '20px',
+              border: '6px solid transparent',
+              backgroundClip: 'content-box'
+            },
+            scrollbarWidth: 'auto',
+            scrollbarColor: `${theme.palette.primary.main} transparent`
+          }}
+        >
+          {currentWps.length === 0 ? <NoWorkPackages /> : WorkPackagesDisplay(currentWps)}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default WorkPackagesSelectionView;
