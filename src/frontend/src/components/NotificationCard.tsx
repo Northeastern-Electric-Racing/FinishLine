@@ -31,7 +31,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification, remov
           justifyContent: 'center',
           alignItems: 'center',
           padding: 2,
-          background: 'red',
+          background: theme.palette.primary.main,
           width: '30%',
           borderRadius: 4
         }}

@@ -39,6 +39,7 @@ import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.quer
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils';
+import NotificationsService from './notifications.services';
 
 export default class DesignReviewsService {
   /**
@@ -204,6 +205,13 @@ export default class DesignReviewsService {
         }
       }
     }
+
+    await NotificationsService.sendNotifcationToUsers(
+      `You have been invited to the ${designReview.wbsElement.name} Design Review!`,
+      'calendar_month',
+      members.map((member) => member.userId),
+      organization.organizationId
+    );
 
     const project = wbsElement.workPackage?.project;
     const teams = project?.teams;
