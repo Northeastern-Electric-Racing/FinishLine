@@ -36,9 +36,7 @@ const DesignReviewInfo = ({ icon, text, link }: { icon: React.ReactNode; text: s
 
 const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const history = useHistory();
-
   const confirmedMemberIds = designReview.confirmedMembers.map((user) => user.userId);
-  console.log('CONFIRMED:', confirmedMemberIds);
 
   return (
     <>
@@ -61,14 +59,14 @@ const DisplayStatus: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   );
 };
 
-function getWeekday(date: Date): string {
+const getWeekday = (date: Date): string => {
   const weekdays: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return weekdays[date.getDay()];
-}
+};
 
-function removeYear(str: string): string {
+const removeYear = (str: string): string => {
   return str.substring(0, str.length - 5);
-}
+};
 
 const UpcomingDesignReviewsCard: React.FC<DesignReviewProps> = ({ designReview, user }) => {
   const theme = useTheme();
