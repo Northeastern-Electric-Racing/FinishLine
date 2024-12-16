@@ -36,3 +36,24 @@ export const useGetImageUrl = (imageFileId: string | null) => {
     }
   );
 };
+
+export const useGetImageUrls = (imageFileIds: (string | null)[]) => {
+  return useQuery<string[], Error>(
+    ['image', imageFileIds],
+    async () => {
+      if (!imageFileIds) throw new Error('No image ID provided');
+      const imageBlobs = await Promise.all(
+        imageFileIds
+          .filter((id): id is string => id !== null)
+          .map(async (imageId) => {
+            const imageBlob = await downloadGoogleImage(imageId);
+            return URL.createObjectURL(imageBlob);
+          })
+      );
+      return imageBlobs;
+    },
+    {
+      enabled: !!imageFileIds
+    }
+  );
+};

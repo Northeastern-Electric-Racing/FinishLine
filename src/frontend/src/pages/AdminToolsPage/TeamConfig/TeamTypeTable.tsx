@@ -7,10 +7,10 @@ import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
-import { getImageUrl } from '../../../utils/image.utils';
+import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -24,20 +24,20 @@ const TeamTypeTable: React.FC = () => {
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
-  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({});
 
-  useEffect(() => {
-    try {
-      teamTypes?.forEach(async (teamType) => {
-        const url = await getImageUrl(teamType.imageFileId ?? '');
-        setImageUrls((prev) => ({ ...prev, [teamType.teamTypeId]: url }));
-      });
-    } catch (error) {
-      console.error('Error fetching image urls', error);
-    }
-  }, [teamTypes]);
-
+  const imageFileIds = teamTypes?.map((teamType) => teamType.imageFileId) ?? [];
+  const { data: imageUrlsList, isLoading, isError } = useGetImageUrls(imageFileIds);
   const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
+
+  const imageUrls = useMemo(() => {
+    if (!imageUrlsList || isLoading || isError) return {};
+
+    const urlMap: { [key: string]: string | undefined } = {};
+    teamTypes?.forEach((teamType, index) => {
+      urlMap[teamType.teamTypeId] = imageUrlsList[index];
+    });
+    return urlMap;
+  }, [imageUrlsList, isLoading, isError, teamTypes]);
 
   if (teamTypesIsError) {
     return <ErrorPage message={teamTypesError?.message} />;
