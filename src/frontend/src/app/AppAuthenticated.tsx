@@ -45,6 +45,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
+  // const route = useLocation();
   const { onGuestHomePage } = useHomePageContext();
 
   const {
@@ -114,7 +115,6 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
         <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
           <Switch>
             {!completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_ONBOARDING} />}
-            {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
             <Route path={routes.PROJECTS} component={Projects} />
