@@ -5,9 +5,10 @@ import CloseIcon from '@mui/icons-material/Close';
 
 interface NotificationCardProps {
   notification: Notification;
+  removeNotification: (notificationId: Notification) => Promise<void>;
 }
 
-const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => {
+const NotificationCard: React.FC<NotificationCardProps> = ({ notification, removeNotification }) => {
   const theme = useTheme();
 
   return (
@@ -51,7 +52,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
         }}
       >
         <Typography variant="subtitle2">{notification.text}</Typography>
-        <IconButton>
+        <IconButton onClick={() => removeNotification(notification)}>
           <CloseIcon />
         </IconButton>
       </Box>

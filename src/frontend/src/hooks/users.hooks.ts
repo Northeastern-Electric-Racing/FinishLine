@@ -20,7 +20,8 @@ import {
   updateUserScheduleSettings,
   getUserTasks,
   getManyUserTasks,
-  getNotifications
+  getNotifications,
+  removeNotification
 } from '../apis/users.api';
 import {
   User,
@@ -273,4 +274,25 @@ export const useUserNotifications = (userId: string) => {
     const { data } = await getNotifications(userId);
     return data;
   });
+};
+
+/**
+ * Curstom react hook to remove a notification from a user's unread notifications
+ * @param userId id of user to get unread notifications from
+ * @returns
+ */
+export const useRemoveUserNotification = (userId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<Notification[], Error, Notification>(
+    ['users', userId, 'notifications', 'remove'],
+    async (notification: Notification) => {
+      const { data } = await removeNotification(userId, notification.notificationId);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['users', userId, 'notifications']);
+      }
+    }
+  );
 };
