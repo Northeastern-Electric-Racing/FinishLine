@@ -181,8 +181,8 @@ model User {
   deletedFrequentlyAskedQuestions FrequentlyAskedQuestion[] @relation(name: "frequentlyAskedQuestionDeleter")
   createdMilestones               Milestone[]               @relation(name: "milestoneCreator")
   deletedMilestones               Milestone[]               @relation(name: "milestoneDeleter")
-  createdChecklists               Checklist[]               @relation(name: "ChecklistCreator")
-  deletedChecklists               Checklist[]               @relation(name: "ChecklistDeleter")
+  createdChecklists               Checklist[]               @relation(name: "checklistCreator")
+  deletedChecklists               Checklist[]               @relation(name: "checklistDeleter")
   checkedChecklists               Checklist[]               @relation(name: "checkedChecklists")
 }
 
@@ -944,15 +944,15 @@ model Checklist {
   name              String
   descriptions      String[]
   isOptional        Boolean      @default(false)
-  subtasks          Checklist[]  @relation("Subtasks")
-  parentChecklist   Checklist?   @relation("Subtasks", fields: [parentChecklistId], references: [checklistId])
+  subtasks          Checklist[]  @relation("subtasks")
+  parentChecklist   Checklist?   @relation("subtasks", fields: [parentChecklistId], references: [checklistId])
   parentChecklistId String?
   usersChecked      User[]       @relation(name: "checkedChecklists")
   dateCreated       DateTime     @default(now())
   dateDeleted       DateTime?
-  userCreated       User         @relation(fields: [userCreatedId], references: [userId], name: "ChecklistCreator")
+  userCreated       User         @relation(fields: [userCreatedId], references: [userId], name: "checklistCreator")
   userCreatedId     String
-  userDeleted       User?        @relation(fields: [userDeletedId], references: [userId], name: "ChecklistDeleter")
+  userDeleted       User?        @relation(fields: [userDeletedId], references: [userId], name: "checklistDeleter")
   userDeletedId     String?
   organizationId    String
   organization      Organization @relation(fields: [organizationId], references: [organizationId])

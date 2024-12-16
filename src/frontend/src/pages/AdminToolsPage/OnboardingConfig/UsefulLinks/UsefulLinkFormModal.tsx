@@ -73,7 +73,7 @@ const UsefulLinkFormModal = ({
       <Grid container spacing={2} alignItems="flex-start">
         <Grid item xs={6}>
           <FormControl fullWidth>
-            <FormLabel>LinkType</FormLabel>
+            <FormLabel>Link Type</FormLabel>
             <Controller
               name="linkTypeName"
               control={control}

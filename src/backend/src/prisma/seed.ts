@@ -45,7 +45,7 @@ const performSeed: () => Promise<void> = async () => {
 
   const ner = await prisma.organization.create({
     data: {
-      name: 'NER',
+      name: 'Northeastern Electric Racing',
       userCreatedId: thomasEmrax.userId,
       description:
         'Northeastern Electric Racing is a student-run organization at Northeastern University building all-electric formula-style race cars from scratch to compete in Forumla Hybrid + Electric Formula SAE (FSAE).',
@@ -185,8 +185,8 @@ const performSeed: () => Promise<void> = async () => {
   const carr = await createUser(dbSeedAllUsers.carr, RoleEnum.LEADERSHIP, organizationId);
   const trang = await createUser(dbSeedAllUsers.trang, RoleEnum.LEADERSHIP, organizationId);
   const regina = await createUser(dbSeedAllUsers.regina, RoleEnum.LEADERSHIP, organizationId);
-  await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
   const patrick = await createUser(dbSeedAllUsers.patrick, RoleEnum.MEMBER, organizationId);
+  await createUser(dbSeedAllUsers.spongebob, RoleEnum.GUEST, organizationId);
 
   await UsersService.updateUserRole(cyborg.userId, thomasEmrax, 'APP_ADMIN', ner);
 
@@ -1980,8 +1980,30 @@ const performSeed: () => Promise<void> = async () => {
     ['Join NER on engage. This is what Northeastern uses to keep track of our roster'],
     false,
     null,
+    null,
+    null,
+    ner
+  );
+
+  const learnGitChecklist = await OnboardingServices.createChecklist(
+    batman,
+    'Learn how to use git',
+    ['Go online and learn how to use git'],
+    false,
+    null,
     software.teamTypeId,
     null,
+    ner
+  );
+
+  await OnboardingServices.createChecklist(
+    batman,
+    'Create your first project',
+    [],
+    false,
+    null,
+    software.teamTypeId,
+    learnGitChecklist.checklistId,
     ner
   );
 };

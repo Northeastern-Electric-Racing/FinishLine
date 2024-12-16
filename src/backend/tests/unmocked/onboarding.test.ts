@@ -1,5 +1,12 @@
 import { Organization } from '@prisma/client';
-import { createTestChecklist, createTestOrganization, createTestTeamType, createTestUser, resetUsers } from '../test-utils';
+import {
+  createTestChecklist,
+  createTestOrganization,
+  createTestTeam,
+  createTestTeamType,
+  createTestUser,
+  resetUsers
+} from '../test-utils';
 import OnboardingServices from '../../src/services/onboarding.services';
 import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
@@ -50,9 +57,9 @@ describe('Onboarding tests', () => {
     it('Gets all general checklists for the given organization', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1');
-      await createTestChecklist(batman, orgId, 'Checklist 2');
+      const checklist2 = await createTestChecklist(batman, orgId, 'Checklist 2');
       const generalChecklists = await OnboardingServices.getGeneralChecklists(organization);
-      expect(generalChecklists!.checklistId).toEqual(checklist1.checklistId);
+      expect(generalChecklists).toEqual([checklist1, checklist2]);
     });
   });
 
@@ -81,33 +88,29 @@ describe('Onboarding tests', () => {
     });
   });
 
-  describe('Get TeamType Checklists', () => {
-    it('Fails if teamTypeIds are empty', async () => {
-      await expect(async () => await OnboardingServices.getTeamTypeChecklists([], organization)).rejects.toThrow(
-        new HttpException(400, 'teamTypeIds cannot be empty')
+  describe('Get Users TeamType Checklists', () => {
+    it('Fails if user does not exists', async () => {
+      await expect(async () => await OnboardingServices.getUsersChecklists('1', organization)).rejects.toThrow(
+        new NotFoundException('User', '1')
       );
     });
 
-    it('Fails if teamTypeIds are invalid', async () => {
-      await expect(async () => await OnboardingServices.getTeamTypeChecklists(['id1', 'id2'], organization)).rejects.toThrow(
-        new HttpException(400, 'One or more inavlid teamTypeIds')
-      );
-    });
-
-    it('Succeeds and gets all checklists for the given teamTypeIds', async () => {
+    it('Succeeds and gets all checklists for the user`s team and teamtype', async () => {
       const batman = await createTestUser(batmanAppAdmin, orgId);
       const teamType1 = await createTestTeamType('teamtype1', organization);
       const teamType2 = await createTestTeamType('teamtype2', organization);
+      const team1 = await createTestTeam('team1', organization, teamType1.teamTypeId, batman.userId);
+      await prisma.user.update({
+        where: { userId: batman.userId },
+        data: { teamsAsMember: { connect: { teamId: team1.teamId } } }
+      });
       const checklist1 = await createTestChecklist(batman, orgId, 'Checklist 1', teamType1.teamTypeId);
-      const checklist2 = await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
-      await createTestChecklist(batman, orgId, 'Checklist 3');
-      const teamTypeChecklists = await OnboardingServices.getTeamTypeChecklists(
-        [teamType1.teamTypeId, teamType2.teamTypeId],
-        organization
-      );
+      await createTestChecklist(batman, orgId, 'Checklist 2', teamType2.teamTypeId);
+      const checklist3 = await createTestChecklist(batman, orgId, 'Checklist 3', undefined, team1.teamId);
+      const teamTypeChecklists = await OnboardingServices.getUsersChecklists(batman.userId, organization);
       expect(teamTypeChecklists.length).toEqual(2);
       expect(teamTypeChecklists[0].checklistId).toEqual(checklist1.checklistId);
-      expect(teamTypeChecklists[1].checklistId).toEqual(checklist2.checklistId);
+      expect(teamTypeChecklists[1].checklistId).toEqual(checklist3.checklistId);
     });
   });
 
@@ -142,24 +145,6 @@ describe('Onboarding tests', () => {
             organization
           )
       ).rejects.toThrow(new HttpException(400, 'Checklist cannot be assigned to both a team and a team type'));
-    });
-
-    it('Fails if general checklist already exists', async () => {
-      const batman = await createTestUser(batmanAppAdmin, orgId);
-      await createTestChecklist(batman, orgId, 'General Checklist');
-      await expect(
-        async () =>
-          await OnboardingServices.createChecklist(
-            batman,
-            'name',
-            ['description1', 'description2'],
-            true,
-            null,
-            null,
-            null,
-            organization
-          )
-      ).rejects.toThrow(new HttpException(400, 'General checklist already exists'));
     });
 
     it('Fails if creating a general checklist and its parent is not also a general checklist', async () => {

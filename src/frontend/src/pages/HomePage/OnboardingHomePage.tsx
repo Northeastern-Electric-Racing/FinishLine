@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
 import { useHomePageContext } from '../../app/HomePageContext';
+import ChecklistSection from './components/ChecklistSection';
 import OnboardingInfoSection from './components/OnboardingInfoSection';
 
 const OnboardingHomePage = () => {
@@ -22,10 +23,14 @@ const OnboardingHomePage = () => {
 
   return (
     <PageLayout title="Home" hidePageTitle>
-      <Grid display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
-        <Typography sx={{ fontSize: '2.5em' }}>Welcome to the Northeastern Electric Racing Team</Typography>
+      <Grid container display={'flex'} alignItems={'center'} marginLeft={2} marginTop={4}>
+        <Grid item xs={12} md={7}>
+          <Typography sx={{ fontSize: '2.5em' }}>Welcome to the {organization.name} Team</Typography>
+        </Grid>
         {/* This will be replaced with the 'Finished' button*/}
-        <Typography sx={{ fontSize: '2em', mt: 4, ml: 65 }}>Finished</Typography>
+        <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Typography sx={{ fontSize: '2em' }}>Finished</Typography>
+        </Grid>
       </Grid>
       <Grid
         container
@@ -40,28 +45,19 @@ const OnboardingHomePage = () => {
           <Typography sx={{ fontSize: '2em', mt: 4, ml: 2 }}>Progress Bar</Typography>
         </Box>
         <Grid container display={'flex'}>
-          {/* This will be replaced with the 'Checklist' component*/}
-          <Grid item xs={12} md={7}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                height: '150vh',
-                width: '100%',
-                mt: 4
-              }}
-            >
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '50%',
-                  width: '95%',
-                  borderRadius: '10px'
-                }}
-              >
-                <Typography>Checklists</Typography>
-              </Box>
-            </Box>
+          <Grid
+            item
+            xs={12}
+            md={7}
+            sx={{
+              maxHeight: '82vh',
+              overflow: 'auto',
+              scrollbarColor: 'transparent transparent',
+              scrollbarWidth: 'none',
+              padding: 2
+            }}
+          >
+            <ChecklistSection />
           </Grid>
           <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
             <Grid item>

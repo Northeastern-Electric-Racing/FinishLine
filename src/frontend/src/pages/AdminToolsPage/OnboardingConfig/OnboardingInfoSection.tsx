@@ -1,5 +1,6 @@
 import { Grid, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
@@ -22,28 +23,47 @@ const OnboardingInfoSection: React.FC = () => {
   return (
     <Grid container item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 4 }}>
       <OnboardingBlock organization={organization} isAdmin={true} />
-      {/* This will be replaced with the 'Useful Links' block*/}
       <Grid item>
         <Box
           sx={{
-            backgroundColor: 'gray',
-            height: '25vh',
-            borderRadius: '10px'
+            backgroundColor: (theme) => theme.palette.background.paper,
+            height: '100%',
+            borderRadius: '10px',
+            padding: '16px'
           }}
         >
-          <Typography>Useful Links</Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              marginBottom: '12px'
+            }}
+          >
+            Useful Links
+          </Typography>
+          <UsefulLinksTable />
         </Box>
       </Grid>
-      {/* This will be replaced with the 'Questions' block*/}
       <Grid item>
         <Box
           sx={{
-            backgroundColor: 'gray',
+            backgroundColor: (theme) => theme.palette.grey[600],
             height: '25vh',
-            borderRadius: '10px'
+            borderRadius: '10px',
+            padding: '16px'
           }}
         >
-          <Typography>Questions</Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              marginBottom: '12px'
+            }}
+          >
+            Questions
+          </Typography>
         </Box>
       </Grid>
     </Grid>

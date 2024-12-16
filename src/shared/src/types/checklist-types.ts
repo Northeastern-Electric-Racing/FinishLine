@@ -4,25 +4,19 @@
  */
 
 import { TeamType } from './design-review-types';
+import { Team } from './team-types';
 import { User } from './user-types';
 
 export interface Checklist {
   checklistId: string;
   name: string;
-  checklistItems: ChecklistItem[];
   teamType?: TeamType;
-  userCreated: User;
-  userDeleted?: User;
-  dateCreated: Date;
-  dateDeleted?: Date;
-}
-
-export interface ChecklistItem {
-  checklistItemId: string;
-  name: string;
-  subtasks: ChecklistItem[];
-  description: string[];
-  parentChecklistItem: ChecklistItem[];
+  team?: Team;
+  descriptions: string[];
+  isOptional: boolean;
+  subtasks: Checklist[];
+  parentChecklist?: Checklist;
+  usersChecked: User[];
   userCreated: User;
   userDeleted?: User;
   dateCreated: Date;

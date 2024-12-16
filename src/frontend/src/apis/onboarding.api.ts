@@ -42,3 +42,4 @@ export const downloadGoogleImage = async (fileId: string): Promise<Blob> => {
   const imageBlob = new Blob([imageBuffer], { type: response.headers['content-type'] });
   return imageBlob;
 };
+
