@@ -37,7 +37,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organization }: SidebarProps) => {
-  const { onPNMHomePage, onOnboardingHomePage, setOnGuestHomePage } = useHomePageContext();
+  const { onPNMHomePage, onOnboardingHomePage, setCurrentHomePage } = useHomePageContext();
   const user = useCurrentUser();
   const theme = useTheme();
   const history = useHistory();
@@ -147,7 +147,7 @@ const Sidebar = ({ drawerOpen, setDrawerOpen, moveContent, setMoveContent, organ
               {/* Return to guest mode button */}
               <SidebarButton
                 onClick={() => {
-                  setOnGuestHomePage(true);
+                  setCurrentHomePage('guest');
                   history.push(routes.HOME_GUEST);
                 }}
                 icon={<ArrowBackIcon sx={{ fontSize: 27 }} style={{ color: theme.palette.text.primary }} />}

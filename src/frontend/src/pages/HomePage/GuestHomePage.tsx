@@ -10,13 +10,11 @@ import { useHomePageContext } from '../../app/HomePageContext';
 const GuestHomePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
-  const { setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage } = useHomePageContext();
+  const { setCurrentHomePage } = useHomePageContext();
 
   useEffect(() => {
-    setOnGuestHomePage(true);
-    setOnPNMHomePage(false);
-    setOnOnboardingHomePage(false);
-  }, [setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage]);
+    setCurrentHomePage('guest');
+  }, [setCurrentHomePage]);
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -35,10 +33,7 @@ const GuestHomePage = () => {
             title="Explore Our Work as a Guest"
             imageSrc={`/Guest.png`}
             buttonText="FinishLine"
-            onClick={() => {
-              setOnGuestHomePage(false);
-              history.push(routes.HOME_MEMBER);
-            }}
+            onClick={() => history.push(routes.HOME_MEMBER)}
           />
         </Box>
       </Box>
