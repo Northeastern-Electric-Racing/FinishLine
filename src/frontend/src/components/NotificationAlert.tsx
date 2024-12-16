@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Notification, User } from 'shared';
 import NotificationCard from './NotificationCard';
 import { useRemoveUserNotification, useUserNotifications } from '../hooks/users.hooks';
@@ -9,13 +9,18 @@ interface NotificationAlertProps {
 }
 
 const NotificationAlert: React.FC<NotificationAlertProps> = ({ user }) => {
-  const { data: notifications, isLoading: notificationIsLoading } = useUserNotifications(user.userId);
-  const { mutateAsync: removeNotification } = useRemoveUserNotification(user.userId);
+  const { data: notifications, isLoading: notificationsIsLoading } = useUserNotifications(user.userId);
+  const { mutateAsync: removeNotification, isLoading: removeIsLoading } = useRemoveUserNotification(user.userId);
+  const [currentNotification, setCurrentNotification] = useState<Notification>();
 
-  const currentNotification =
-    !notificationIsLoading && notifications && notifications.length > 0 ? notifications[0] : undefined;
+  useEffect(() => {
+    if (notifications && notifications.length > 0) {
+      setCurrentNotification(notifications[0]);
+    }
+  }, [notifications]);
 
   const removeNotificationWrapper = async (notification: Notification) => {
+    setCurrentNotification(undefined);
     await removeNotification(notification);
   };
 
@@ -29,7 +34,7 @@ const NotificationAlert: React.FC<NotificationAlertProps> = ({ user }) => {
         transition: 'transform 0.5s ease-out'
       }}
     >
-      {currentNotification && (
+      {!removeIsLoading && !notificationsIsLoading && currentNotification && (
         <NotificationCard notification={currentNotification} removeNotification={removeNotificationWrapper} />
       )}
     </Box>

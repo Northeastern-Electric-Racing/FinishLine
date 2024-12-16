@@ -1,4 +1,4 @@
-import { Box, Icon, IconButton, Typography, useTheme } from '@mui/material';
+import { Box, Card, Icon, IconButton, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Notification } from 'shared';
 import CloseIcon from '@mui/icons-material/Close';
@@ -12,7 +12,8 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification, remov
   const theme = useTheme();
 
   return (
-    <Box
+    <Card
+      variant={'outlined'}
       sx={{
         display: 'flex',
         justifyContent: 'left',
@@ -56,7 +57,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification, remov
           <CloseIcon />
         </IconButton>
       </Box>
-    </Box>
+    </Card>
   );
 };
 

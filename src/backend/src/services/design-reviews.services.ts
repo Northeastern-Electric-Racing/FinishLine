@@ -39,7 +39,6 @@ import { getWorkPackageQueryArgs } from '../prisma-query-args/work-packages.quer
 import { UserWithSettings } from '../utils/auth.utils';
 import { getUserScheduleSettingsQueryArgs } from '../prisma-query-args/user.query-args';
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from '../utils/google-integration.utils';
-import NotificationsService from './notifications.services';
 
 export default class DesignReviewsService {
   /**
@@ -211,8 +210,6 @@ export default class DesignReviewsService {
     if (teams && teams.length > 0) {
       await sendSlackDRNotifications(teams, designReview, submitter, wbsElement.name);
     }
-
-    NotificationsService.sendNotifcationToUsers('DR created!', 'star', [submitter.userId], organization.organizationId);
 
     return designReviewTransformer(designReview);
   }
