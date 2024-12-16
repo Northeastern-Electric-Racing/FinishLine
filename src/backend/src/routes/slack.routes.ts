@@ -1,10 +1,7 @@
-import { slackEvents } from '../..';
+import { createEventAdapter } from '@slack/events-api';
+
+export const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET || '');
 
 slackEvents.on('message', async (event) => {
-  try {
-    console.log(`Message received: ${event.text}`);
-    // Respond or process the message as needed
-  } catch (error) {
-    console.error('Error handling message event:', error);
-  }
+  console.log('EVENT:', event);
 });
