@@ -9,7 +9,7 @@ import {
   deleteReimbursementRequest,
   denyReimbursementRequest,
   downloadBlobsToPdf,
-  downloadGoogleImage,
+  downloadFinanceImage,
   editReimbursementRequest,
   getAllReimbursementRequests,
   getAllReimbursements,
@@ -376,7 +376,7 @@ export const useDenyReimbursementRequest = (id: string) => {
 export const useDownloadPDFOfImages = () => {
   return useMutation(['reimbursement-requests'], async (formData: DownloadReceiptsFormInput) => {
     const promises = formData.fileIds.map((fileId) => {
-      return downloadGoogleImage(fileId);
+      return downloadFinanceImage(fileId);
     });
 
     const blobs = await Promise.all(promises);

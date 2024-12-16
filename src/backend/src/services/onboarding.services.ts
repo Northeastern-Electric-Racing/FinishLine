@@ -3,6 +3,7 @@ import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { downloadImageFile } from '../utils/google-integration.utils';
 
 export default class OnboardingServices {
   /* Checklist section */
@@ -14,8 +15,8 @@ export default class OnboardingServices {
    */
   static async getAllChecklists(organization: Organization) {
     const allChecklists = await prisma.checklist.findMany({
-      where: { organizationId: organization.organizationId, dateDeleted: null },
-      include: { subtasks: true }
+      where: { organizationId: organization.organizationId, dateDeleted: null, parentChecklistId: null },
+      include: { subtasks: true, teamType: true }
     });
 
     return allChecklists;
@@ -27,11 +28,16 @@ export default class OnboardingServices {
    * @returns all the general checklists for the given organization
    */
   static async getGeneralChecklists(organization: Organization) {
-    const generalChecklists = await prisma.checklist.findFirst({
-      where: { organizationId: organization.organizationId, teamId: null, teamTypeId: null, dateDeleted: null },
-      include: { subtasks: true }
+    const generalChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        teamId: null,
+        teamTypeId: null,
+        dateDeleted: null,
+        parentChecklistId: null
+      },
+      include: { subtasks: true, teamType: true }
     });
-
     return generalChecklists;
   }
 
@@ -60,29 +66,38 @@ export default class OnboardingServices {
    * @param organization the organization of the checklists
    * @returns all the checklists for the given teamType Ids
    */
-  static async getTeamTypeChecklists(teamTypeIds: string[], organization: Organization) {
-    if (teamTypeIds.length === 0) {
-      throw new HttpException(400, 'teamTypeIds cannot be empty');
+  static async getUsersChecklists(userId: string, organization: Organization) {
+    const user = await prisma.user.findUnique({ where: { userId }, include: { teamsAsMember: true } });
+    if (!user) {
+      throw new NotFoundException('User', userId);
     }
 
-    const teamTypes = await prisma.team_Type.findMany({
-      where: { teamTypeId: { in: teamTypeIds } }
-    });
-
-    if (teamTypes.length !== teamTypeIds.length) {
-      throw new HttpException(400, 'One or more inavlid teamTypeIds');
-    }
+    const teamTypeIds: string[] = user.teamsAsMember
+      .map((team) => team.teamTypeId)
+      .filter((id): id is string => id !== null);
+    const teamIds: string[] = user.teamsAsMember.map((team) => team.teamId).filter((id): id is string => id !== null);
 
     const teamTypeChecklists = await prisma.checklist.findMany({
       where: {
         organizationId: organization.organizationId,
         dateDeleted: null,
-        teamTypeId: { in: teamTypeIds }
+        teamTypeId: { in: teamTypeIds },
+        parentChecklistId: null
       },
-      include: { subtasks: true }
+      include: { subtasks: true, teamType: true }
     });
 
-    return teamTypeChecklists;
+    const teamChecklists = await prisma.checklist.findMany({
+      where: {
+        organizationId: organization.organizationId,
+        dateDeleted: null,
+        teamId: { in: teamIds },
+        parentChecklistId: null
+      },
+      include: { subtasks: true, team: true }
+    });
+
+    return [...teamTypeChecklists, ...teamChecklists];
   }
 
   /**
@@ -115,19 +130,11 @@ export default class OnboardingServices {
     }
 
     if (!teamId && !teamTypeId) {
-      const generalChecklist = await prisma.checklist.findFirst({
-        where: { organizationId: organization.organizationId, teamId: null, teamTypeId: null, dateDeleted: null }
-      });
-
       if (parentChecklistId) {
         const parentChecklist = await prisma.checklist.findFirst({ where: { checklistId: parentChecklistId } });
         if (parentChecklist?.teamId || parentChecklist?.teamTypeId) {
           throw new HttpException(400, 'Parent checklist must also be a general checklist');
         }
-      }
-
-      if (generalChecklist && !parentChecklistId) {
-        throw new HttpException(400, 'General checklist already exists');
       }
     }
 
@@ -312,5 +319,12 @@ export default class OnboardingServices {
       where: { checklistId },
       data: { dateDeleted: new Date(), userDeletedId: deleter.userId }
     });
+  }
+
+  static async downloadImage(fileId: string) {
+    const fileData = await downloadImageFile(fileId);
+
+    if (!fileData) throw new NotFoundException('Image File', fileId);
+    return fileData;
   }
 }
