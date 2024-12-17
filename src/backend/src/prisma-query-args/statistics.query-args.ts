@@ -9,8 +9,7 @@ export const getGraphQueryArgs = (organizationId: string) =>
     include: {
       organization: true,
       userCreated: getUserWithSettingsQueryArgs(organizationId),
-      userDeleted: getUserQueryArgs(organizationId),
-      queryPaths: true
+      userDeleted: getUserQueryArgs(organizationId)
     }
   });
 

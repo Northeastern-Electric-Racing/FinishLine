@@ -1,12 +1,22 @@
-import { Organization, User, Graph_Type, Measure } from '@prisma/client';
-import { FlattenedRelations, Graph, GraphData, GraphGen, QueryPath } from 'shared';
+import { Organization, User, Graph_Type, Measure, Graph_Display_Type } from '@prisma/client';
 import prisma from '../prisma/prisma';
+import { DeletedException, InvalidOrganizationException, NotFoundException } from '../utils/errors.utils';
 import graphTransformer from '../transformers/statistics-graph.transformer';
 import { getGraphQueryArgs } from '../prisma-query-args/statistics.query-args';
 import { userHasPermissionNew } from '../utils/users.utils';
 import { AccessDeniedException, HttpException } from '../utils/errors.utils';
-import { Sql } from '@prisma/client/runtime/library';
-import { buildTree, getFlattenedTree, getSchemaDetails } from '../utils/statistics.utils';
+import { Graph, GraphData } from 'shared';
+import {
+  getGraphDataForChangeRequestsByDivision,
+  getGraphDataForChangeRequestsByProject,
+  getGraphDataForChangeRequestsByTeam,
+  getGraphDataForProjectBudgetByDivision,
+  getGraphDataForProjectBudgetByProject,
+  getGraphDataForProjectBudgetByTeam,
+  getGraphDataForReimbursementRequestsByDivision,
+  getGraphDataForReimbursementRequestsByProject,
+  getGraphDataForReimbursementRequestsByTeam
+} from '../utils/statistics.utils';
 
 export default class StatisticsService {
   /**
@@ -16,10 +26,12 @@ export default class StatisticsService {
    * @param startDate The start date of when to consider the data
    * @param endDate The end date of when to consider the data
    * @param title The title of the graph
-   * @param graphType The type of graph
+   * @param graphType The type of graph to use
    * @param measure The measurement to apply to the data
-   * @param graphGen The metadata for how to acquire the data, leads a recursive path of sql
+   * @param graphDisplayType The way to display the graph
    * @param organization The organization to make the graph under
+   * @param carId Optional id of the car to segment the data by
+   * @param graphcollectionId optional graph collection to add the graph to
    * @returns The created graph and its data
    */
   static async createGraph(
@@ -29,8 +41,9 @@ export default class StatisticsService {
     title: string,
     graphType: Graph_Type,
     measure: Measure,
-    graphGen: GraphGen,
+    graphDisplayType: Graph_Display_Type,
     organization: Organization,
+    carId?: string,
     graphCollectionId?: string
   ): Promise<Graph> {
     if (!(await userHasPermissionNew(user.userId, organization.organizationId, ['CREATE_GRAPH']))) {
@@ -41,8 +54,15 @@ export default class StatisticsService {
       throw new HttpException(400, 'End date must be after start date');
     }
 
-    // Validate we can actually get the graph data first
-    const graphData = await StatisticsService.getGraphData(graphGen, measure);
+    if (carId) {
+      const car = await prisma.car.findUnique({
+        where: { carId }
+      });
+
+      if (!car) {
+        throw new NotFoundException('Car', carId);
+      }
+    }
 
     const graph = await prisma.graph.create({
       data: {
@@ -51,72 +71,93 @@ export default class StatisticsService {
         title,
         graphType,
         measure,
-        finalTable: graphGen.finalTable,
-        finalColumn: graphGen.finalColumn,
-        groupByColumn: graphGen.groupByColumn,
-        graphCollectionId: graphCollectionId ? graphCollectionId : null,
+        displayGraphType: graphDisplayType,
+        graphCollectionId: graphCollectionId ?? null,
         userCreatedId: user.userId,
+        carId,
         organizationId: organization.organizationId
       },
       ...getGraphQueryArgs(organization.organizationId)
     });
 
-    let currGenPath: QueryPath | undefined = graphGen.queryPath;
-    while (currGenPath !== undefined) {
-      await prisma.graph_Query.create({
-        data: {
-          table: currGenPath.table,
-          primaryKey: currGenPath.primaryKey,
-          graph: {
-            connect: {
-              id: graph.id
-            }
-          }
-        }
-      });
-
-      currGenPath = currGenPath.next;
-    }
-
-    return graphTransformer({ ...graph, graphData });
+    return graphTransformer({
+      ...graph,
+      graphData: await StatisticsService.getGraphData(graphType, measure, organization.organizationId, { carId })
+    });
   }
 
-  // TODO IN NEW TICKET: Add Support for Line graphs over time. Currently this only works for grouping one data point by another. Specifically with sum and average
-  static async getGraphData(graphGen: GraphGen, measure: Measure): Promise<GraphData[]> {
-    // POC QUERY EXAMPLE:
-    // SELECT SUM(p.budget) AS total_budget
-    // FROM Division d
-    // JOIN Team t ON d.id = t.division_id
-    // JOIN TeamProject tp ON t.id = tp.team_id
-    // JOIN Project p ON tp.project_id = p.id
-    // GROUP BY d.name;
-    // POSSIBLE QUERY CALCULATION:
-    const finalSelection = `${graphGen.queryPath.table.toLowerCase()}."${
-      graphGen.groupByColumn
-    }", ${measure}(${graphGen.finalTable.toLowerCase()}.${graphGen.finalColumn})`;
-
-    let query =
-      `SELECT ` + finalSelection + ` FROM "${graphGen.queryPath.table}" ${graphGen.queryPath.table.toLowerCase()} `;
-    let currPath = graphGen.queryPath;
-    let prev = currPath;
-    while (currPath.next !== undefined) {
-      prev = currPath;
-      currPath = currPath.next;
-      const tableName = currPath.table;
-      const tableVar = currPath.table.toLowerCase();
-      const parentTableVar = prev.table.toLowerCase();
-      const parentPrimaryKey = prev.primaryKey;
-      query += `JOIN "${tableName}" ${tableVar} ON ${parentTableVar}."${parentPrimaryKey}" = ${tableVar}."${currPath.parentForeignKey}" `;
+  /**
+   *
+   * @param graphType
+   * @param measure
+   * @param organizationId
+   * @param params
+   * @returns
+   */
+  static async getGraphData(
+    graphType: Graph_Type,
+    measure: Measure,
+    organizationId: string,
+    params: { carId?: string }
+  ): Promise<GraphData[]> {
+    switch (graphType) {
+      case Graph_Type.PROJECT_BUDGET_BY_PROJECT:
+        return getGraphDataForProjectBudgetByProject(measure, organizationId, params);
+      case Graph_Type.PROJECT_BUDGET_BY_TEAM:
+        return getGraphDataForProjectBudgetByTeam(measure, organizationId, params);
+      case Graph_Type.PROJECT_BUDGET_BY_DIVISION:
+        return getGraphDataForProjectBudgetByDivision(measure, organizationId, params);
+      case Graph_Type.CHANGE_REQUESTS_BY_PROJECT:
+        return getGraphDataForChangeRequestsByProject(measure, organizationId, params);
+      case Graph_Type.CHANGE_REQUESTS_BY_TEAM:
+        return getGraphDataForChangeRequestsByTeam(measure, organizationId, params);
+      case Graph_Type.CHANGE_REQUESTS_BY_DIVISION:
+        return getGraphDataForChangeRequestsByDivision(measure, organizationId, params);
+      case Graph_Type.REIMBURSEMENT_TOTAL_BY_PROJECT:
+        return getGraphDataForReimbursementRequestsByProject(measure, organizationId, params);
+      case Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM:
+        return getGraphDataForReimbursementRequestsByTeam(measure, organizationId, params);
+      case Graph_Type.REIMBURSEMENT_TOTAL_BY_DIVISION:
+        return getGraphDataForReimbursementRequestsByDivision(measure, organizationId, params);
     }
-    query += `GROUP BY ${graphGen.queryPath.table.toLowerCase()}."${graphGen.groupByColumn}"`;
+  }
 
-    const data: any[] = await prisma.$queryRaw(new Sql([query], []));
+  /**
+   * Gets a single graph
+   *
+   * @param id The string identifier of the graph to get
+   * @param user The user retrieving the graph, must have VIEW_GRAPH permission
+   * @param organization The organization to retrieve the graph from
+   * @returns The requested graph and its data
+   * @throws if the graph is not found or the graph is deleted
+   */
+  static async getSingleGraph(id: string, user: User, organization: Organization): Promise<Graph> {
+    const requestedGraph = await prisma.graph.findUnique({
+      where: { id, organizationId: organization.organizationId },
+      ...getGraphQueryArgs(organization.organizationId)
+    });
 
-    return data.map((value) => {
-      return {
-        value: parseFloat(value[measure.toLowerCase()].toString()),
-        label: value[graphGen.groupByColumn]
-      };
+    if (!requestedGraph) throw new NotFoundException('Graph', id);
+    if (requestedGraph.dateDeleted) throw new DeletedException('Graph', id);
+    if (requestedGraph.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Graph');
+    if (
+      !(await userHasPermissionNew(
+        user.userId,
+        organization.organizationId,
+        ['VIEW_GRAPH'].concat(requestedGraph.specialPermissions)
+      ))
+    ) {
+      throw new AccessDeniedException('You do not have permission to view graphs');
+    }
+
+    return graphTransformer({
+      ...requestedGraph,
+      graphData: await StatisticsService.getGraphData(
+        requestedGraph.graphType,
+        requestedGraph.measure,
+        organization.organizationId,
+        { carId: requestedGraph.carId ?? undefined }
+      )
     });
   }
 

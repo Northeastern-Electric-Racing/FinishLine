@@ -125,7 +125,6 @@ export const resetUsers = async () => {
   await prisma.wBS_Element.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.frequentlyAskedQuestion.deleteMany();
-  await prisma.graph_Query.deleteMany();
   await prisma.graph.deleteMany();
   await prisma.graph_Collection.deleteMany();
   await prisma.organization.deleteMany();
@@ -319,7 +318,8 @@ export const createTestProject = async (
   organizationId?: string,
   teamId?: string,
   carId?: string,
-  projectNumber: number = 1
+  projectNumber: number = 1,
+  dateDeleted?: Date
 ): Promise<Project> => {
   if (!organizationId) organizationId = (await createTestOrganization()).organizationId as string;
   if (!carId) carId = (await createTestCar(organizationId, user.userId)).carId;
@@ -336,7 +336,8 @@ export const createTestProject = async (
           status: WBS_Element_Status.INACTIVE,
           leadId: user.userId,
           managerId: user.userId,
-          organizationId
+          organizationId,
+          dateDeleted: dateDeleted ?? null
         }
       },
       car: {
@@ -485,7 +486,8 @@ export const createTestTeamType = async (organizationId?: string) => {
       name: 'aTeam',
       description: 'aDescription',
       iconName: 'gear',
-      organizationId: orgId!
+      organizationId: orgId!,
+      description: 'aDescription'
     }
   });
 };
