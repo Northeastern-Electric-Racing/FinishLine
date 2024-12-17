@@ -122,11 +122,6 @@ export const daysOrWeeksLeftOrLate = (daysLeft: number) => {
   return `${daysToDaysOrWeeksPipe(Math.abs(daysLeft))} ${daysLeft > 0 ? 'left' : 'late'}`;
 };
 
-/** Display WBS number as string "1.2.0 - Project Name" */
-export const wbsNamePipe = (wbsElement: WbsElement) => {
-  return `${wbsPipe(wbsElement.wbsNum)} - ${wbsElement.name}`;
-};
-
 export const designReviewNamePipe = (designReview: DesignReview) => {
   return `${wbsPipe(designReview.wbsNum)} - ${designReview.wbsName}`;
 };

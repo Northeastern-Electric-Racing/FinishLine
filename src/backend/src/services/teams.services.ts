@@ -15,6 +15,7 @@ import { removeUsersFromList } from '../utils/teams.utils';
 import { getTeamQueryArgs } from '../prisma-query-args/teams.query-args';
 import { uploadFile } from '../utils/google-integration.utils';
 import { createCalendar } from '../utils/google-integration.utils';
+import { teamTypeTransformer } from '../transformers/team-types.transformer';
 
 export default class TeamsService {
   /**
@@ -427,7 +428,7 @@ export default class TeamsService {
       }
     });
 
-    return teamType;
+    return teamTypeTransformer(teamType);
   }
 
   /**
@@ -445,7 +446,7 @@ export default class TeamsService {
     if (!teamType) throw new NotFoundException('Team Type', teamTypeId);
     if (teamType.organizationId !== organization.organizationId) throw new InvalidOrganizationException('Team Type');
 
-    return teamType;
+    return teamTypeTransformer(teamType);
   }
 
   /**
@@ -455,7 +456,7 @@ export default class TeamsService {
    */
   static async getAllTeamTypes(organization: Organization): Promise<TeamType[]> {
     const teamTypes = await prisma.team_Type.findMany({ where: { organizationId: organization.organizationId } });
-    return teamTypes;
+    return teamTypes.map(teamTypeTransformer);
   }
 
   /**
@@ -499,7 +500,7 @@ export default class TeamsService {
       }
     });
 
-    return updatedTeamType;
+    return teamTypeTransformer(updatedTeamType);
   }
 
   /**

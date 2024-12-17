@@ -5,7 +5,19 @@
  * See the LICENSE file in the repository root folder for details.
  */
 
-import { CR_Type, Club_Accounts, PrismaClient, Scope_CR_Why_Type, Task_Priority, Task_Status, Team } from '@prisma/client';
+import {
+  CR_Type,
+  Club_Accounts,
+  Graph,
+  Graph_Display_Type,
+  Graph_Type,
+  Measure,
+  PrismaClient,
+  Scope_CR_Why_Type,
+  Task_Priority,
+  Task_Status,
+  Team
+} from '@prisma/client';
 import { createUser, dbSeedAllUsers } from './seed-data/users.seed';
 import { dbSeedAllTeams } from './seed-data/teams.seed';
 import ChangeRequestsService from '../services/change-requests.services';
@@ -33,6 +45,8 @@ import { writeFileSync } from 'fs';
 import WorkPackageTemplatesService from '../services/work-package-template.services';
 import RecruitmentServices from '../services/recruitment.services';
 import OrganizationsService from '../services/organizations.services';
+import StatisticsService from '../services/statistics.services';
+import { seedGraph } from './seed-data/statistics.seed';
 
 const prisma = new PrismaClient();
 
@@ -676,6 +690,22 @@ const performSeed: () => Promise<void> = async () => {
     [],
     june.userId,
     glen.userId,
+    ner
+  );
+
+  /**
+   * Graphs
+   */
+
+  /** Graph 1 */
+  const graph1 = await seedGraph(
+    new Date('12/12/2024'),
+    new Date('12/12/2027'),
+    'new graph',
+    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+    Graph_Display_Type.BAR,
+    Measure.SUM,
+    thomasEmrax,
     ner
   );
 

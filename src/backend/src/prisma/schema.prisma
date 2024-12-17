@@ -110,26 +110,45 @@ enum Design_Review_Status {
 }
 
 enum Graph_Type {
-  BAR
-  LINE
+  PROJECT_BUDGET_BY_PROJECT
+  PROJECT_BUDGET_BY_TEAM
+  PROJECT_BUDGET_BY_DIVISION
+
+  CHANGE_REQUESTS_BY_PROJECT
+  CHANGE_REQUESTS_BY_TEAM
+  CHANGE_REQUESTS_BY_DIVISION
+
+  REIMBURSEMENT_TOTAL_BY_PROJECT
+  REIMBURSEMENT_TOTAL_BY_TEAM
+  REIMBURSEMENT_TOTAL_BY_DIVISION
+}
+
+enum Graph_Display_Type {
   PIE
+  BAR
 }
 
 enum Measure {
-  COUNT
   SUM
   AVG
 }
 
-enum Permission {
+enum Graph_Permission {
   EDIT_GRAPH
   CREATE_GRAPH
   VIEW_GRAPH
   DELETE_GRAPH
+}
+
+enum Graph_Collection_Permission {
   EDIT_GRAPH_COLLECTION
   CREATE_GRAPH_COLLECTION
   VIEW_GRAPH_COLLECTION
   DELETE_GRAPH_COLLECTION
+}
+
+enum Special_Permission {
+  FINANCE_ONLY
 }
 
 model User {
@@ -140,7 +159,7 @@ model User {
   email                 String                @unique
   emailId               String?               @unique
   roles                 Role[]
-  additionalPermissions Permission[]
+  additionalPermissions String[]
   userSettings          User_Settings?
   userSecureSettings    User_Secure_Settings?
 
@@ -208,6 +227,7 @@ model User {
   deletedGraphCollections         Graph_Collection[]        @relation(name: "graphCollectionDeleter")
   createdGraphs                   Graph[]                   @relation(name: "graphCreator")
   deletedGraphs                   Graph[]                   @relation(name: "graphDeleter")
+  deletedTeamTypes                Team_Type[]               @relation(name: "teamTypeDeleter")
 }
 
 model Role {
@@ -737,12 +757,16 @@ model Team_Type {
   name           String
   iconName       String
   designReviews  Design_Review[]
-  team           Team[]
+  teams          Team[]
   description    String
   imageFileId    String?
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [organizationId])
   calendarId     String?
+
+  dateDeleted DateTime?
+  deletedById String?
+  deletedBy   User?     @relation(name: "teamTypeDeleter", fields: [deletedById], references: [userId])
 
   @@unique([name, organizationId], name: "uniqueTeamType")
 }
@@ -884,6 +908,7 @@ model Car {
   projectProposedChanges Project_Proposed_Changes[]
   wbsElementId           String                     @unique
   wbsElement             WBS_Element                @relation(fields: [wbsElementId], references: [wbsElementId])
+  linkedGraphs           Graph[]
 }
 
 model Organization {
@@ -957,19 +982,16 @@ model Milestone {
 }
 
 model Graph {
-  id            String     @id @default(uuid())
-  startDate     DateTime
-  endDate       DateTime
-  title         String
-  graphType     Graph_Type
-  dateDeleted   DateTime?
-  dateCreated   DateTime   @default(now())
-  finalTable    String
-  finalColumn   String
-  groupByColumn String
-  measure       Measure
-
-  queryPaths Graph_Query[] // Treated as a one to many, should be structured as a queue where the first element is the first element to join in the query and the last element is the table before the final table
+  id                 String               @id @default(uuid())
+  startDate          DateTime?
+  endDate            DateTime?
+  title              String
+  graphType          Graph_Type
+  displayGraphType   Graph_Display_Type
+  measure            Measure
+  dateDeleted        DateTime?
+  dateCreated        DateTime             @default(now())
+  specialPermissions Special_Permission[]
 
   graphCollectionId String?
   graphCollection   Graph_Collection? @relation(fields: [graphCollectionId], references: [id])
@@ -980,22 +1002,15 @@ model Graph {
   userDeletedId  String?
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [organizationId])
-}
-
-model Graph_Query {
-  id         String @id @default(uuid())
-  primaryKey String
-  table      String
-
-  graphId String
-  graph   Graph  @relation(fields: [graphId], references: [id])
+  carId          String?
+  car            Car?         @relation(fields: [carId], references: [carId])
 }
 
 model Graph_Collection {
-  id              String       @id @default(uuid())
+  id              String               @id @default(uuid())
   title           String
   dateDeleted     DateTime?
-  viewPermissions Permission[]
+  viewPermissions Special_Permission[]
   graphs          Graph[]
 
   userCreatedId  String

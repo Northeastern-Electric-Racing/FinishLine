@@ -1,4 +1,4 @@
-import { Design_Review_Status, Graph_Type, Measure } from '@prisma/client';
+import { Design_Review_Status, Graph_Display_Type, Graph_Type, Measure } from '@prisma/client';
 import { Request, Response } from 'express';
 import { body, ValidationChain, validationResult } from 'express-validator';
 import { ClubAccount, MaterialStatus, TaskPriority, TaskStatus, WorkPackageStage, RoleEnum, WbsElementStatus } from 'shared';
@@ -30,52 +30,15 @@ export const isStatus = (validationObject: ValidationChain): ValidationChain => 
 };
 
 export const isGraphType = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn([Graph_Type.BAR, Graph_Type.LINE, Graph_Type.PIE]);
+  return validationObject.isString().isIn(Object.values(Graph_Type));
 };
 
 export const isMeasure = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.isString().isIn([Measure.AVG, Measure.SUM, Measure.COUNT]);
+  return validationObject.isString().isIn(Object.values(Measure));
 };
 
-export const validateGraphGen = () => {
-  return [
-    body('graphGen').isObject(),
-    nonEmptyString(body('graphGen.finalTable')),
-    nonEmptyString(body('graphGen.finalColumn')),
-    nonEmptyString(body('graphGen.groupByColumn')),
-    isQueryPath(body('graphGen.queryPath'))
-  ];
-};
-
-export const isQueryPath = (validationObject: ValidationChain): ValidationChain => {
-  return validationObject.custom((val) => validateQueryPath(val));
-};
-
-const validateQueryPath = (obj: any): boolean => {
-  // Perform basic validation for the nested object
-  if (typeof obj !== 'object' || obj === null) {
-    throw new Error('Nested property must be an object');
-  }
-
-  const { table, primaryKey, parentForeignKey, next } = obj;
-
-  if (!table || typeof table !== 'string') {
-    throw new Error('table must be a string in nested object');
-  }
-
-  if (!primaryKey || typeof primaryKey !== 'string') {
-    throw new Error('primaryKey must be a string in nested object');
-  }
-
-  if (parentForeignKey && typeof parentForeignKey !== 'string') {
-    throw new Error('parentForeignKey must be a string in nested object');
-  }
-
-  if (next && typeof next === 'object') {
-    validateQueryPath(next); // Recursively validate the `next` property
-  }
-
-  return true;
+export const isGraphDisplayType = (validationObject: ValidationChain): ValidationChain => {
+  return validationObject.isString().isIn(Object.values(Graph_Display_Type));
 };
 
 export const isWorkPackageStageOrNone = (validationObject: ValidationChain): ValidationChain => {

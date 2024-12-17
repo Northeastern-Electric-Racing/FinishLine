@@ -5,22 +5,32 @@
 
 import express from 'express';
 import StatisticsController from '../controllers/statistics.controllers';
-import { isDate, isGraphType, isMeasure, nonEmptyString, validateGraphGen, validateInputs } from '../utils/validation.utils';
+import {
+  isDate,
+  isGraphDisplayType,
+  isGraphType,
+  isMeasure,
+  nonEmptyString,
+  validateInputs
+} from '../utils/validation.utils';
 import { body } from 'express-validator';
 
 const statisticsRouter = express.Router();
 
 statisticsRouter.post(
-  '/graph/create',
+  '/create',
   isDate(body('startDate')),
   isDate(body('endDate')),
   nonEmptyString(body('title')),
   isGraphType(body('graphType')),
+  isGraphDisplayType(body('graphDisplayType')),
   isMeasure(body('measure')),
+  body('carId').optional().isString(),
   body('graphCollectionId').optional().isString(),
-  validateGraphGen(),
   validateInputs,
   StatisticsController.createGraph
 );
+
+statisticsRouter.get('/:graphId', StatisticsController.getSingleGraph);
 
 export default statisticsRouter;
