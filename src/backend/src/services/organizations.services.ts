@@ -208,15 +208,15 @@ export default class OrganizationsService {
    * @param titles the titles of each of the user ids
    * @returns updated organization with new contacts
    */
-  static async updateOrganizationContacts(user: User, organization: Organization, userIds: string[], titles: string[]) {
+  static async updateOrganizationContacts(
+    user: User,
+    organization: Organization,
+    contacts: { userId: string; title: string }[]
+  ) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update organiztion contacts');
     }
     const { organizationId } = organization;
-
-    if (userIds.length !== titles.length) {
-      throw new HttpException(400, 'Must have same number of userIds and titles');
-    }
 
     await prisma.contact.deleteMany({
       where: {
@@ -224,13 +224,13 @@ export default class OrganizationsService {
       }
     });
 
-    const contacts = await Promise.all(
-      userIds.map((userId, index) =>
+    const allContacts = await Promise.all(
+      contacts.map((contact) =>
         prisma.contact.create({
           data: {
             organizationId,
-            userId,
-            title: titles[index]
+            userId: contact.userId,
+            title: contact.title
           }
         })
       )
@@ -240,7 +240,7 @@ export default class OrganizationsService {
       where: { organizationId },
       data: {
         contacts: {
-          connect: contacts.map((contact) => ({ contactId: contact.contactId }))
+          connect: allContacts.map((contact) => ({ contactId: contact.contactId }))
         }
       },
       include: {

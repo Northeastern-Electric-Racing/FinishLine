@@ -1923,12 +1923,11 @@ const performSeed: () => Promise<void> = async () => {
     'Thank you for applying to Northeastern Electric Racing! After reviewing your application, we are very excited to officially welcome you to our team.'
   );
 
-  await OrganizationsService.updateOrganizationContacts(
-    batman,
-    ner,
-    [batman.userId, thomasEmrax.userId, regina.userId],
-    ['Chief Software Engineer', 'Chief Mechanical Endineer', 'Cheif Electrical Engineer']
-  );
+  await OrganizationsService.updateOrganizationContacts(batman, ner, [
+    { userId: batman.userId, title: 'Chief Software Engineer' },
+    { userId: thomasEmrax.userId, title: 'Chief Mechanical Engineer' },
+    { userId: regina.userId, title: 'Chief Electrical Engineer' }
+  ]);
 
   await RecruitmentServices.createMilestone(batman, 'Club fair!', 'Also meet us at:', new Date('9/3/24'), ner);
   await RecruitmentServices.createMilestone(batman, 'Applications Open', '', new Date('11/13/24'), ner);

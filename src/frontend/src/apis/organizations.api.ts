@@ -18,7 +18,7 @@ export const getCurrentOrganization = async () => {
  * @param contacts all the contact information that is being set
  */
 export const updateOrganizationContacts = async (payload: UpdateContactsPayload) => {
-  return axios.post<{ message: string }>(apiUrls.organizationsUpdateContacts(), {
+  return axios.post<Organization>(apiUrls.organizationsUpdateContacts(), {
     ...payload
   });
 };

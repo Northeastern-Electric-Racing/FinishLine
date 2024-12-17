@@ -10,8 +10,7 @@ interface OrganizationProvider {
 }
 
 export interface UpdateContactsPayload {
-  userIds: string[];
-  titles: string[];
+  contacts: { userId: string; title: string }[];
 }
 
 export interface OnboardingTextPayload {
@@ -48,7 +47,7 @@ export const useOrganization = () => {
 
 export const useUpdateOrganizationContacts = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, Error, UpdateContactsPayload>(
+  return useMutation<Organization, Error, UpdateContactsPayload>(
     ['organizations'],
     async (payload: UpdateContactsPayload) => {
       const { data } = await updateOrganizationContacts(payload);

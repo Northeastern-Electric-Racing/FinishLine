@@ -13,15 +13,12 @@ import { Contact, User } from 'shared';
 import { useAllUsers } from '../../../hooks/users.hooks';
 
 const schema = yup.object().shape({
-  contacts: yup
-    .array()
-    .of(
-      yup.object({
-        userId: yup.string().required('User cannot be empty'),
-        title: yup.string().required('Title cannot be empty')
-      })
-    )
-    .min(1, 'At least one contact is required')
+  contacts: yup.array().of(
+    yup.object({
+      userId: yup.string().required('User cannot be empty'),
+      title: yup.string().required('Title cannot be empty')
+    })
+  )
 });
 
 interface FormValues {
@@ -74,20 +71,17 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
   });
 
   const onSubmit = async (data: FormValues) => {
-    const updatedContacts = {
-      userIds: data.contacts.map((c) => c.userId),
-      titles: data.contacts.map((c) => c.title)
-    };
-
     try {
-      await mutateAsync(updatedContacts);
+      await mutateAsync({
+        contacts: data.contacts
+      });
       toast.success('Contacts updated successfully');
+      handleClose();
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
     }
-    handleClose();
   };
 
   useEffect(() => {
