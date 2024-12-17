@@ -45,6 +45,7 @@ export interface Organization {
   description: string;
   applicationLink: string;
   onboardingText?: string;
+  contacts: string[];
 }
 
 /**

@@ -11,3 +11,13 @@ export const getCurrentOrganization = async () => {
     transformResponse: (data) => JSON.parse(data)
   });
 };
+
+/**
+ * Sets the contacts for an organization
+ * @param contacts all the contact information that is being set
+ */
+export const updateOrganizationContacts = async (contacts: string[]) => {
+  return axios.post<{ message: string }>(apiUrls.organizationsUpdateContacts(), {
+    contacts
+  });
+};

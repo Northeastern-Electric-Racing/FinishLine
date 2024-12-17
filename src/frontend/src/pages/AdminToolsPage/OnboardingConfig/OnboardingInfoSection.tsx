@@ -1,12 +1,17 @@
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, List, ListItem, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
 import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import OnboardingBlock from '../../../components/OnboardingBlock';
+import EditIcon from '@mui/icons-material/Edit';
+import { useState } from 'react';
+import UpdateOnboardingContactsModal from './UpdateContactsModal';
 
 const OnboardingInfoSection: React.FC = () => {
+  const theme = useTheme();
+  const [showModal, setShowModal] = useState(false);
   const {
     data: organization,
     isLoading: organizationIsLoading,
@@ -48,24 +53,32 @@ const OnboardingInfoSection: React.FC = () => {
       <Grid item>
         <Box
           sx={{
-            backgroundColor: (theme) => theme.palette.grey[600],
-            height: '25vh',
+            minHeight: '200px',
+            height: '100%',
             borderRadius: '10px',
-            padding: '16px'
+            width: '100%',
+            background: theme.palette.background.paper
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              color: 'white',
-              fontWeight: 'bold',
-              marginBottom: '12px'
-            }}
-          >
-            Questions
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography variant="h5" ml={2} mt={2}>
+              Questions
+            </Typography>
+            <EditIcon sx={{ mt: 2, mr: 2, cursor: 'pointer' }} onClick={() => setShowModal(true)}></EditIcon>
+          </Box>
+          <Typography sx={{ mt: 2, ml: 2, fontWeight: 'bold' }}>Feel free to contact:</Typography>
+          <List sx={{ listStyleType: 'disc', pl: 2 }}>
+            {organization.contacts.map((contact) => {
+              return <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>{contact}</ListItem>;
+            })}
+          </List>
         </Box>
       </Grid>
+      <UpdateOnboardingContactsModal
+        showModal={showModal}
+        handleClose={() => setShowModal(false)}
+        defaultValues={{ contacts: organization.contacts }}
+      />
     </Grid>
   );
 };
