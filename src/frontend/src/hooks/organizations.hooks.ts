@@ -2,7 +2,7 @@ import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Organization } from 'shared';
-import { getCurrentOrganization, setOrganizationImages, setOnboardingText  } from '../apis/organizations.api';
+import { getCurrentOrganization, setOrganizationImages, setOnboardingText } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
