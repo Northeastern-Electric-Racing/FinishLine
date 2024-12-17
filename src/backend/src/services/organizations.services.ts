@@ -220,17 +220,13 @@ export default class OrganizationsService {
    * @param organizationId the id of the organization
    * @returns the id of the image
    */
-  static async getLogoImage(organizationId: string): Promise<string> {
+  static async getLogoImage(organizationId: string): Promise<string | null> {
     const organization = await prisma.organization.findUnique({
       where: { organizationId }
     });
 
     if (!organization) {
       throw new NotFoundException('Organization', organizationId);
-    }
-
-    if (!organization.logoImageId) {
-      throw new HttpException(404, `Organization ${organizationId} does not have a logo image`);
     }
 
     return organization.logoImageId;

@@ -15,7 +15,7 @@ const EditLogo = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const theme = useTheme();
 
-  if (isLoading || !mutateAsync || organizationIsLoading || !organization || !imageData || imageDataIsLoading)
+  if (isLoading || !mutateAsync || organizationIsLoading || !organization || imageDataIsLoading)
     return <LoadingIndicator />;
 
   const handleClose = () => {
@@ -60,12 +60,12 @@ const EditLogo = () => {
         <EditLogoForm
           onSubmit={onSubmit}
           onHide={handleClose}
-          orgLogo={new File([imageData], imageData.name, { type: imageData.type })}
+          orgLogo={imageData ? new File([imageData], imageData.name, { type: imageData.type }) : undefined}
         />
       ) : (
         <>
           <Box sx={{ display: 'flex', flexDirection: 'column', height: 350, width: 300 }}>
-            <LogoDisplay imageUrl={URL.createObjectURL(imageData)} />
+            <LogoDisplay imageUrl={imageData ? URL.createObjectURL(imageData) : undefined} />
             <Box
               sx={{
                 display: 'flex',

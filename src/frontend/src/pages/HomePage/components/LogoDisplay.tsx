@@ -2,7 +2,7 @@ import { Box, useTheme, Card } from '@mui/material';
 import React from 'react';
 
 interface LogoDisplayProps {
-  imageUrl: string;
+  imageUrl?: string;
 }
 
 const LogoDisplay: React.FC<LogoDisplayProps> = ({ imageUrl }) => {
@@ -17,7 +17,7 @@ const LogoDisplay: React.FC<LogoDisplayProps> = ({ imageUrl }) => {
         borderRadius: 2
       }}
     >
-      <Box
+      {imageUrl && <Box
         component="img"
         src={imageUrl}
         sx={{
@@ -25,7 +25,7 @@ const LogoDisplay: React.FC<LogoDisplayProps> = ({ imageUrl }) => {
           width: '100%',
           borderRadius: 2
         }}
-      />
+      />}
     </Card>
   );
 };

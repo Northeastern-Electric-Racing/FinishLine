@@ -7,13 +7,13 @@ import NERSuccessButton from '../../../components/NERSuccessButton';
 import ImageIcon from '@mui/icons-material/Image';
 
 export interface EditLogoInput {
-  logoImage: File;
+  logoImage?: File;
 }
 
 interface EditLogoFormProps {
   onSubmit: (logoImage: EditLogoInput) => Promise<void>;
   onHide: () => void;
-  orgLogo: File;
+  orgLogo?: File;
 }
 
 const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }) => {
@@ -24,7 +24,9 @@ const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }
   });
 
   const onSubmitWrapper = async (data: EditLogoInput) => {
-    await onSubmit(data);
+    if (!!data.logoImage) {
+      await onSubmit(data);
+    }
     reset();
   };
 
@@ -85,7 +87,7 @@ const EditLogoForm: React.FC<EditLogoFormProps> = ({ onSubmit, orgLogo, onHide }
                     hidden
                   />
                 </Button>
-                {value.name !== 'undefined' && (
+                {value && value.name !== 'undefined' && (
                   <Stack direction={'row'} spacing={1} mt={2}>
                     <ImageIcon />
                     <Typography>{value.name}</Typography>
