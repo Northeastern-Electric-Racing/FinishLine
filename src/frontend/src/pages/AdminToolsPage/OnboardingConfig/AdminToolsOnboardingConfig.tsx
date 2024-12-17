@@ -1,5 +1,6 @@
 import { Box, Grid, Typography } from '@mui/material';
 import OnboardingInfoSection from './OnboardingInfoSection';
+import ChecklistSection from '../../HomePage/components/ChecklistSection';
 
 const AdminToolsOnboardingConfig: React.FC = () => {
   return (
@@ -16,29 +17,8 @@ const AdminToolsOnboardingConfig: React.FC = () => {
         }}
       >
         <Grid container display={'flex'}>
-          {/* This will be replaced with the 'Checklist' component*/}
           <Grid item xs={12} md={7}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                height: '80vh',
-                width: '100%',
-                mt: 4
-              }}
-            >
-              <Box
-                sx={{
-                  backgroundColor: 'gray',
-                  height: '100%',
-                  width: '95%',
-                  borderRadius: '10px',
-                  overflow: 'auto'
-                }}
-              >
-                <Typography>Checklists</Typography>
-              </Box>
-            </Box>
+            <ChecklistSection />
           </Grid>
           <OnboardingInfoSection />
         </Grid>

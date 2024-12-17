@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Checklist as ChecklistType } from 'shared';
-import { Typography, Grid, Box, IconButton, useTheme } from '@mui/material';
+import { Checklist as ChecklistType, isAdmin } from 'shared';
+import { Typography, Grid, Box, IconButton, useTheme, Button } from '@mui/material';
 import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
 import Task from './Task';
+import AddIcon from '@mui/icons-material/Add';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: string }> = ({
   parentChecklists,
   checklistName
 }) => {
   const theme = useTheme();
+  const currentUser = useCurrentUser();
   const [showTasks, setShowTasks] = useState(false);
 
   const toggleShowTasks = () => {
@@ -45,6 +48,22 @@ const Checklist: React.FC<{ parentChecklists: ChecklistType[]; checklistName?: s
           )}
         </Grid>
       </Grid>
+      <Box sx={{ display: 'flex', justifyContent: 'right', marginBottom: '2vh', marginRight: '1vh' }}>
+        {isAdmin(currentUser.role) && showTasks && (
+          <Button
+            variant="text"
+            startIcon={<AddIcon />}
+            sx={{
+              color: '#ef4345',
+              '&:hover': {
+                backgroundColor: 'transparent'
+              }
+            }}
+          >
+            Add Task
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 };

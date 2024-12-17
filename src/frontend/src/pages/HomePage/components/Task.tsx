@@ -1,8 +1,10 @@
-import { Typography, Box, IconButton, Checkbox } from '@mui/material';
+import { Typography, Box, IconButton, Checkbox, Button } from '@mui/material';
 import { useState } from 'react';
-import { KeyboardArrowRight, KeyboardArrowDown } from '@mui/icons-material';
+import { KeyboardArrowRight, KeyboardArrowDown, Delete } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';
-import { Checklist } from 'shared';
+import EditIcon from '@mui/icons-material/Edit';
+import { Checklist, isAdmin } from 'shared';
+import { useCurrentUser } from '../../../hooks/users.hooks';
 
 interface SubtaskProps {
   subtasks: Checklist[];
@@ -10,6 +12,7 @@ interface SubtaskProps {
 }
 
 const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
+  const currentUser = useCurrentUser();
   const [showSubtasks, setShowSubtasks] = useState(false);
 
   const toggleShowSubtasks = () => {
@@ -45,11 +48,27 @@ const Task: React.FC<SubtaskProps> = ({ subtasks, parentTask }) => {
               }
             }}
           />
-
           <Typography sx={{ color: 'black', fontWeight: 'bold' }}>{parentTask.name}</Typography>
-          <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
-            {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
-          </IconButton>
+          <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+            {isAdmin(currentUser.role) && (
+              <>
+                <EditIcon sx={{ marginRight: '1vw', color: 'black' }} />
+                <IconButton
+                  sx={{
+                    color: '#ef4345',
+                    '&:hover': {
+                      backgroundColor: 'transparent'
+                    }
+                  }}
+                >
+                  <Delete sx={{ color: 'black' }} />
+                </IconButton>
+              </>
+            )}
+            <IconButton onClick={toggleShowSubtasks} sx={{ marginLeft: 'auto' }}>
+              {showSubtasks ? <KeyboardArrowDown sx={{ color: 'black' }} /> : <KeyboardArrowRight sx={{ color: 'black' }} />}
+            </IconButton>
+          </Box>
         </Box>
       </Box>
       {showSubtasks && <SubtaskSection subtasks={subtasks} parentTask={parentTask} />}
