@@ -9,6 +9,7 @@ import {
   CR_Type,
   Club_Accounts,
   Graph,
+  Graph_Display_Type,
   Graph_Type,
   Measure,
   PrismaClient,
@@ -24,7 +25,6 @@ import TeamsService from '../services/teams.services';
 import {
   ClubAccount,
   DesignReviewStatus,
-  GraphGen,
   MaterialStatus,
   RoleEnum,
   StandardChangeRequest,
@@ -698,37 +698,12 @@ const performSeed: () => Promise<void> = async () => {
    */
 
   /** Graph 1 */
-  const graphGen: GraphGen = {
-    finalColumn: 'budget',
-    finalTable: 'Project',
-    groupByColumn: 'name',
-    queryPath: {
-      table: 'Team_Type',
-      primaryKey: 'teamTypeId',
-      next: {
-        table: 'Team',
-        primaryKey: 'teamId',
-        parentForeignKey: 'teamTypeId',
-        next: {
-          table: '_assignedBy',
-          primaryKey: 'A',
-          parentForeignKey: 'B',
-          next: {
-            table: 'Project',
-            primaryKey: 'projectId',
-            parentForeignKey: 'projectId'
-          }
-        }
-      }
-    }
-  };
-
-  const Graph1 = await seedGraph(
+  const graph1 = await seedGraph(
     new Date('12/12/2024'),
     new Date('12/12/2027'),
     'new graph',
-    Graph_Type.BAR,
-    graphGen,
+    Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+    Graph_Display_Type.BAR,
     Measure.SUM,
     thomasEmrax,
     ner

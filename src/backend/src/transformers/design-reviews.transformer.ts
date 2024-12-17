@@ -3,6 +3,7 @@ import { DesignReview, DesignReviewStatus } from 'shared';
 import { wbsNumOf } from '../utils/utils';
 import { userTransformer, userWithScheduleSettingsTransformer } from './user.transformer';
 import { DesignReviewQueryArgs } from '../prisma-query-args/design-reviews.query-args';
+import { teamTypeTransformer } from './team-types.transformer';
 
 export const designReviewTransformer = (
   designReview: Prisma.Design_ReviewGetPayload<DesignReviewQueryArgs>
@@ -27,7 +28,7 @@ export const designReviewTransformer = (
     userDeleted: designReview.userDeleted ? userTransformer(designReview.userDeleted) : undefined,
     docTemplateLink: designReview.docTemplateLink ?? undefined,
     status: designReview.status as DesignReviewStatus,
-    teamType: designReview.teamType,
+    teamType: teamTypeTransformer(designReview.teamType),
     wbsName: designReview.wbsElement.name,
     wbsNum: wbsNumOf(designReview.wbsElement),
     initialDate: designReview.initialDateScheduled

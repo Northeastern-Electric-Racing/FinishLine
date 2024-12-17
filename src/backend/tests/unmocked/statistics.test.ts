@@ -1,4 +1,4 @@
-import { Graph_Type, Organization, User } from '@prisma/client';
+import { Graph_Display_Type, Graph_Type, Organization, User } from '@prisma/client';
 import { supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import {
   createTestCar,
@@ -11,49 +11,21 @@ import {
 } from '../test-utils';
 import StatisticsService from '../../src/services/statistics.services';
 import { AccessDeniedException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { GraphGen, GraphType, Measure } from 'shared';
+import { Measure } from 'shared';
 
 describe('Statistics Tests', () => {
   let orgId: string;
   let organization: Organization;
   let user: User;
-  const graphGen: GraphGen = {
-    finalColumn: 'budget',
-    finalTable: 'Project',
-    groupByColumn: 'name',
-    queryPath: {
-      table: 'Team_Type',
-      primaryKey: 'teamTypeId',
-      next: {
-        table: 'Team',
-        primaryKey: 'teamId',
-        parentForeignKey: 'teamTypeId',
-        next: {
-          table: '_assignedBy',
-          primaryKey: 'A',
-          parentForeignKey: 'B',
-          next: {
-            table: 'Project',
-            primaryKey: 'projectId',
-            parentForeignKey: 'projectId'
-          }
-        }
-      }
-    }
-  };
 
-  let expectedCreatedGraph: any;
+  let expectedCreatedGraphBase: any;
 
   beforeEach(async () => {
     organization = await createTestOrganization();
     user = await createTestUser(supermanAdmin, organization.organizationId);
     orgId = organization.organizationId;
-    expectedCreatedGraph = {
+    expectedCreatedGraphBase = {
       title: 'New Graph',
-      graphType: 'BAR',
-      finalTable: 'Project',
-      finalColumn: 'budget',
-      groupByColumn: 'name',
       measure: 'SUM',
       userCreatedId: user.userId,
       userDeletedId: null,
@@ -74,9 +46,9 @@ describe('Statistics Tests', () => {
             new Date(),
             new Date(new Date().getTime() + 10000),
             'New Graph',
-            Graph_Type.BAR,
+            Graph_Type.CHANGE_REQUESTS_BY_TEAM,
             Measure.SUM,
-            graphGen,
+            Graph_Display_Type.BAR,
             organization
           )
       ).rejects.toThrow(new AccessDeniedException('You do not have permission to create a graph'));
@@ -90,9 +62,9 @@ describe('Statistics Tests', () => {
             new Date('12/12/2024'),
             new Date(new Date('12/12/2024').getTime() - 10000),
             'New Graph',
-            Graph_Type.BAR,
+            Graph_Type.CHANGE_REQUESTS_BY_DIVISION,
             Measure.SUM,
-            graphGen,
+            Graph_Display_Type.PIE,
             organization
           )
       ).rejects.toThrow(new HttpException(400, 'End date must be after start date'));
@@ -110,13 +82,17 @@ describe('Statistics Tests', () => {
         new Date('12/12/2024'),
         new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
-        GraphType.BAR,
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.SUM,
-        graphGen,
+        Graph_Display_Type.BAR,
         organization
       );
 
-      expect(result).toContain(expectedCreatedGraph);
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR'
+      });
       expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
       expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
 
@@ -140,13 +116,53 @@ describe('Statistics Tests', () => {
         new Date('12/12/2024'),
         new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
-        GraphType.BAR,
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
         Measure.AVG,
-        graphGen,
+        Graph_Display_Type.BAR,
         organization
       );
 
-      expect(result).toContain({ ...expectedCreatedGraph, measure: Measure.AVG });
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR',
+        measure: Measure.AVG
+      });
+      expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
+      expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
+
+      expect(result.graphData).toStrictEqual([
+        {
+          label: 'aTeam',
+          value: 1000
+        }
+      ]);
+    });
+
+    it('Create graph works for getting average project budget by division neglecting deleted projects', async () => {
+      const division = await createTestTeamType(orgId);
+      const team = await createTestTeam(user.userId, division.teamTypeId, orgId);
+      const car = await createTestCar(orgId, user.userId);
+      await createTestProject(user, orgId, team.teamId, car.carId);
+      await createTestProject(user, orgId, team.teamId, car.carId, 2, new Date());
+
+      const result = await StatisticsService.createGraph(
+        user,
+        new Date('12/12/2024'),
+        new Date(new Date('12/12/2024').getTime() + 10000),
+        'New Graph',
+        Graph_Type.PROJECT_BUDGET_BY_DIVISION,
+        Measure.SUM,
+        Graph_Display_Type.BAR,
+        organization
+      );
+
+      expect(result).toContain({
+        ...expectedCreatedGraphBase,
+        graphType: 'PROJECT_BUDGET_BY_DIVISION',
+        graphDisplayType: 'BAR',
+        measure: Measure.SUM
+      });
       expect(result.startDate).toStrictEqual(new Date('12/12/2024'));
       expect(result.endDate).toStrictEqual(new Date(new Date('12/12/2024').getTime() + 10000));
 
@@ -166,9 +182,9 @@ describe('Statistics Tests', () => {
         new Date('12/12/2024'),
         new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
-        GraphType.BAR,
+        Graph_Type.REIMBURSEMENT_TOTAL_BY_TEAM,
         Measure.AVG,
-        graphGen,
+        Graph_Display_Type.PIE,
         organization
       );
 
@@ -183,14 +199,14 @@ describe('Statistics Tests', () => {
         new Date('12/12/2024'),
         new Date(new Date('12/12/2024').getTime() + 10000),
         'New Graph',
-        GraphType.BAR,
+        Graph_Type.CHANGE_REQUESTS_BY_PROJECT,
         Measure.AVG,
-        graphGen,
+        Graph_Display_Type.PIE,
         organization
       );
 
       await expect(async () => StatisticsService.getSingleGraph(graph.graphId, guest_user, organization)).rejects.toThrow(
-        new AccessDeniedException('You do not have permission to view a graph')
+        new AccessDeniedException('You do not have permission to view graphs')
       );
     });
 

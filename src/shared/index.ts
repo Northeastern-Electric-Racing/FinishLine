@@ -21,3 +21,5 @@ export * from './src/word-count';
 export * from './src/permission-utils';
 export * from './src/types/bom-types';
 export * from './src/types/statistics-types';
+
+export * from './src/utils';
