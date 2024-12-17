@@ -484,7 +484,6 @@ export const createTestTeamType = async (organizationId?: string) => {
   return await prisma.team_Type.create({
     data: {
       name: 'aTeam',
-      description: 'team',
       iconName: 'gear',
       organizationId: orgId!,
       description: 'aDescription'

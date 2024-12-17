@@ -91,10 +91,7 @@ const validateFoundUsers = (users: User[], userIds: string[]) => {
   }
 };
 
-const getUserWithPermissions = async (
-  userId: string,
-  organizationId: string
-): Promise<User & { permissions: string[] }> => {
+const getUserWithPermissions = async (userId: string, organizationId: string): Promise<User & { permissions: string[] }> => {
   const user = await prisma.user.findUnique({
     where: { userId },
     include: {
