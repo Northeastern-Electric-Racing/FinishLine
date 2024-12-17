@@ -46,13 +46,15 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
     error: updateContactsError,
     mutateAsync
   } = useUpdateOrganizationContacts();
+
   const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
 
-  const contactsAsObjects = useMemo(() => 
-    defaultValues.contacts.map((c) => ({ 
-      userId: c.user.userId, 
-      title: c.title 
-    })),
+  const contactsAsObjects = useMemo(
+    () =>
+      defaultValues.contacts.map((c) => ({
+        userId: c.user.userId,
+        title: c.title
+      })),
     [defaultValues.contacts]
   );
 
@@ -116,14 +118,12 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
               name={`contacts.${index}.userId`}
               control={control}
               render={({ field }) => (
-                <Select {...field} label={`User ${index + 1}`} variant="outlined" fullWidth displayEmpty>
+                <Select {...field} label={`User ${index + 1}`} variant="outlined" fullWidth>
                   <MenuItem value="" disabled>
                     Select a User
                   </MenuItem>
                   {users.map((user: User) => (
-                    <MenuItem value={user.userId}>
-                      {`${user.firstName} ${user.lastName}`}
-                    </MenuItem>
+                    <MenuItem value={user.userId}>{`${user.firstName} ${user.lastName}`}</MenuItem>
                   ))}
                 </Select>
               )}
@@ -131,7 +131,9 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
             <Controller
               name={`contacts.${index}.title`}
               control={control}
-              render={({ field }) => <TextField {...field} label={`Title ${index + 1}`} variant="outlined" fullWidth />}
+              render={({ field }) => (
+                <TextField {...field} label={`Title ${index + 1}`} variant="outlined" fullWidth sx={{ minWidth: '300px' }} />
+              )}
             />
             <IconButton onClick={() => remove(index)} color="error">
               <DeleteIcon />

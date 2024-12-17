@@ -67,10 +67,10 @@ const OnboardingInfoSection: React.FC = () => {
             <EditIcon sx={{ mt: 2, mr: 2, cursor: 'pointer' }} onClick={() => setShowModal(true)}></EditIcon>
           </Box>
           <Typography sx={{ mt: 2, ml: 2, fontWeight: 'bold' }}>Feel free to contact:</Typography>
-          <List sx={{ listStyleType: 'disc', pl: 2 }}>
+          <List sx={{ listStyleType: 'disc', pl: 4 }}>
             {organization.contacts.map((contact) => {
               return (
-                <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>
+                <ListItem sx={{ display: 'list-item', padding: 0.5 }}>
                   {contact.user.firstName} {contact.user.lastName}: {contact.user.email} - {contact.title}
                 </ListItem>
               );
