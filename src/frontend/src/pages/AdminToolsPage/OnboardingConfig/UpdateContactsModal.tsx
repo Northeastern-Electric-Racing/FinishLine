@@ -103,6 +103,9 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
                   label={`Contact ${index + 1}`}
                   variant="outlined"
                   fullWidth
+                  sx={{
+                    minWidth: '500px'
+                  }}
                   error={!!errors?.contacts?.[index]?.value?.message}
                   helperText={errors?.contacts?.[index]?.value?.message as string}
                 />
