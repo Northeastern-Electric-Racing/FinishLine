@@ -1,8 +1,8 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Contact, Organization } from 'shared';
-import { getCurrentOrganization, updateOrganizationContacts } from '../apis/organizations.api';
+import { Organization } from 'shared';
+import { getCurrentOrganization, updateOrganizationContacts, setOnboardingText } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -12,6 +12,10 @@ interface OrganizationProvider {
 export interface UpdateContactsPayload {
   userIds: string[];
   titles: string[];
+}
+
+export interface OnboardingTextPayload {
+  onboardingText: string;
 }
 
 export const useCurrentOrganization = () => {
@@ -48,6 +52,22 @@ export const useUpdateOrganizationContacts = () => {
     ['organizations'],
     async (payload: UpdateContactsPayload) => {
       const { data } = await updateOrganizationContacts(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
+};
+
+export const useSetOnboardingText = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, OnboardingTextPayload>(
+    ['organizations', 'edit'],
+    async (payload) => {
+      const { data } = await setOnboardingText(payload);
       return data;
     },
     {

@@ -4,10 +4,10 @@ import UsefulLinksTable from './UsefulLinks/UsefulLinksTable';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import OnboardingBlock from '../../../components/OnboardingBlock';
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from 'react';
 import UpdateOnboardingContactsModal from './UpdateContactsModal';
+import OnboardingBlock from './OnboardingBlock';
 
 const OnboardingInfoSection: React.FC = () => {
   const theme = useTheme();

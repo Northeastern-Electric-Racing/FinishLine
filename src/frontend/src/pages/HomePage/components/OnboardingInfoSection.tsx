@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import OnboardingBlock from '../../../components/OnboardingBlock';
+import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlock';
 import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 
 const OnboardingInfoSection: React.FC = () => {
@@ -83,7 +83,11 @@ const OnboardingInfoSection: React.FC = () => {
           <Typography sx={{ mt: 1, ml: 2, fontWeight: 'bold' }}>Feel free to contact:</Typography>
           <List sx={{ listStyleType: 'disc', pl: 2 }}>
             {organization.contacts.map((contact) => {
-              return <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>{contact}</ListItem>;
+              return (
+                <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>
+                  {contact.user.firstName} {contact.user.lastName}: {contact.user.email} - {contact.title}
+                </ListItem>
+              );
             })}
           </List>
         </Box>
