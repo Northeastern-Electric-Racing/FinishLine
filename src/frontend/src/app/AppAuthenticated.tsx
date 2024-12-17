@@ -45,7 +45,7 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [moveContent, setMoveContent] = useState(false);
-  const { onGuestHomePage } = useHomePageContext();
+  const { onGuestHomePage, onMemberHomePage } = useHomePageContext();
 
   const {
     data: organization,
@@ -69,20 +69,20 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
 
   return userSettingsData.slackId || isGuest(userRole) ? (
     <AppContextUser>
-      <Box
-        onMouseEnter={() => {
-          setDrawerOpen(true);
-        }}
-        sx={{
-          height: '100vh',
-          position: 'fixed',
-          width: 15,
-          borderRight: !onGuestHomePage ? 2 : 0,
-          borderRightColor: theme.palette.background.paper
-        }}
-      />
       {!onGuestHomePage && (
         <>
+          <Box
+            onMouseEnter={() => {
+              setDrawerOpen(true);
+            }}
+            sx={{
+              height: '100vh',
+              position: 'fixed',
+              width: 15,
+              borderRight: 2,
+              borderRightColor: theme.palette.background.paper
+            }}
+          />
           <IconButton
             onClick={() => {
               setDrawerOpen(true);
@@ -110,11 +110,14 @@ const AppAuthenticated: React.FC<AppAuthenticatedProps> = ({ userId, userRole, c
         </>
       )}
       <Box display={'flex'}>
-        <HiddenContentMargin open={moveContent} variant="permanent" />
-        <Container maxWidth={false} sx={{ width: moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}>
+        <HiddenContentMargin open={!onGuestHomePage && moveContent} variant="permanent" />
+        <Container
+          maxWidth={false}
+          sx={{ width: !onGuestHomePage && moveContent ? 'calc(100vw - 220px)' : `calc(100vw - 30px)` }}
+        >
           <Switch>
             {!completedOnboarding && <Redirect exact path={routes.HOME} to={routes.HOME_ONBOARDING} />}
-            {isGuest(userRole) && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
+            {isGuest(userRole) && !onMemberHomePage && <Redirect exact path={routes.HOME} to={routes.HOME_GUEST} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_GUEST} to={routes.HOME} />}
             {!isGuest(userRole) && <Redirect exact path={routes.HOME_PNM} to={routes.HOME} />}
             <Route path={routes.PROJECTS} component={Projects} />

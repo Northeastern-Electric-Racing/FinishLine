@@ -10,7 +10,7 @@ import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.
 import { useMemo, useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
-import { useGetImageUrls } from '../../../hooks/onboarding.hooks';
+import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 
 const TeamTypeTable: React.FC = () => {
   const {

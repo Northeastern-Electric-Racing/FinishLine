@@ -2,7 +2,7 @@ import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Organization } from 'shared';
-import { getCurrentOrganization, setOrganizationImages } from '../apis/organizations.api';
+import { getCurrentOrganization, setOrganizationImages, setOnboardingText  } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
@@ -51,4 +51,24 @@ export const useOrganization = () => {
   const context = useContext(OrganizationContext);
   if (context === undefined) throw Error('Organization must be used inside of an organizational context.');
   return context;
+};
+
+export interface OnboardingTextPayload {
+  onboardingText: string;
+}
+
+export const useSetOnboardingText = () => {
+  const queryClient = useQueryClient();
+  return useMutation<Organization, Error, OnboardingTextPayload>(
+    ['organizations', 'edit'],
+    async (payload) => {
+      const { data } = await setOnboardingText(payload);
+      return data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['organizations']);
+      }
+    }
+  );
 };

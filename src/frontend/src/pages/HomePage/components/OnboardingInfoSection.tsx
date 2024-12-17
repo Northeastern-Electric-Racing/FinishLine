@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import OnboardingBlock from '../../../components/OnboardingBlock';
+import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlock';
 import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 
 const OnboardingInfoSection: React.FC = () => {
@@ -37,17 +37,17 @@ const OnboardingInfoSection: React.FC = () => {
         <Box
           sx={{
             backgroundColor: theme.palette.background.paper,
-            height: '25vh',
             borderRadius: '10px',
             width: '100%',
             overflow: 'hidden',
-            overflowY: 'scroll'
+            overflowY: 'auto',
+            paddingBottom: 2,
+            minHeight: '150px'
           }}
         >
-          <Typography variant="h5" sx={{ mb: 3, px: 2, pt: 2 }}>
+          <Typography variant="h5" sx={{ mb: 2, px: 2, pt: 2 }}>
             Useful Links
           </Typography>
-
           <Grid container spacing={2} justifyContent="center" sx={{ px: 2 }}>
             {links.map((link) => {
               return (

@@ -176,7 +176,7 @@ const currentOrganization = () => `${organizations()}/current`;
 const organizationsUsefulLinks = () => `${organizations()}/useful-links`;
 const organizationsSetUsefulLinks = () => `${organizationsUsefulLinks()}/set`;
 const organizationsSetImages = () => `${organizations()}/images/update`;
-const organizationsGetImages = () => `${organizations()}/images`;
+const organizationSetOnboardingText = () => `${organizations()}/onboardingText/set`;
 
 /******************* Car Endpoints ********************/
 const cars = () => `${API_URL}/cars`;
@@ -342,7 +342,7 @@ export const apiUrls = {
   organizationsUsefulLinks,
   organizationsSetUsefulLinks,
   organizationsSetImages,
-  organizationsGetImages,
+  organizationSetOnboardingText,
 
   cars,
   carsCreate,
@@ -361,5 +361,6 @@ export const apiUrls = {
   generalChecklists,
   usersTeamTypeChecklists,
   imageById,
+
   version
 };

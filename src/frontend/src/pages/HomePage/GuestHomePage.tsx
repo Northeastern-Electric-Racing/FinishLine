@@ -14,13 +14,11 @@ const GuestHomePage = () => {
   const user = useCurrentUser();
   const history = useHistory();
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
-  const { setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage } = useHomePageContext();
+  const { setCurrentHomePage } = useHomePageContext();
 
   useEffect(() => {
-    setOnGuestHomePage(true);
-    setOnPNMHomePage(false);
-    setOnOnboardingHomePage(false);
-  }, [setOnGuestHomePage, setOnPNMHomePage, setOnOnboardingHomePage]);
+    setCurrentHomePage('guest');
+  }, [setCurrentHomePage]);
 
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
@@ -51,10 +49,7 @@ const GuestHomePage = () => {
             title="Explore Our Work as a Guest"
             imageSrc={`https://drive.google.com/thumbnail?id=${organization?.exploreAsGuestImageId}&sz=w1000`}
             buttonText="FinishLine"
-            onClick={() => {
-              setOnGuestHomePage(false);
-              history.push(routes.HOME_MEMBER);
-            }}
+            onClick={() => history.push(routes.HOME_MEMBER)}
           />
         </Box>
       </Box>
