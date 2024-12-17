@@ -15,8 +15,7 @@ const EditLogo = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const theme = useTheme();
 
-  if (isLoading || !mutateAsync || organizationIsLoading || !organization || imageDataIsLoading)
-    return <LoadingIndicator />;
+  if (isLoading || !mutateAsync || organizationIsLoading || !organization || imageDataIsLoading) return <LoadingIndicator />;
 
   const handleClose = () => {
     setIsEditMode(false);

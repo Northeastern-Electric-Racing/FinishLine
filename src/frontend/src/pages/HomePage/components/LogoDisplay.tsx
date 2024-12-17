@@ -17,15 +17,17 @@ const LogoDisplay: React.FC<LogoDisplayProps> = ({ imageUrl }) => {
         borderRadius: 2
       }}
     >
-      {imageUrl && <Box
-        component="img"
-        src={imageUrl}
-        sx={{
-          height: '100%',
-          width: '100%',
-          borderRadius: 2
-        }}
-      />}
+      {imageUrl && (
+        <Box
+          component="img"
+          src={imageUrl}
+          sx={{
+            height: '100%',
+            width: '100%',
+            borderRadius: 2
+          }}
+        />
+      )}
     </Card>
   );
 };
