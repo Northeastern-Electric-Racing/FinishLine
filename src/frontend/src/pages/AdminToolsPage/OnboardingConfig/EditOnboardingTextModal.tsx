@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { TextField } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
 import { useSetOnboardingText } from '../../../hooks/organizations.hooks';
@@ -60,15 +60,18 @@ const EditOnboardingTextModal: React.FC<OnboardingTextModalProps> = ({ open, onH
       handleUseFormSubmit={handleSubmit}
       onFormSubmit={onSubmit}
     >
-      <TextField
-        {...register('onboardingText')}
-        fullWidth
-        multiline
-        minRows={4}
-        label="Onboarding Text"
-        placeholder="Enter onboarding text"
-        margin="normal"
-      />
+      <Box sx={{ width: '500px' }}>
+        <TextField
+          {...register('onboardingText')}
+          fullWidth
+          multiline
+          minRows={3}
+          maxRows={4}
+          label="Onboarding Text"
+          placeholder="Enter onboarding text"
+          margin="normal"
+        />
+      </Box>
     </NERFormModal>
   );
 };
