@@ -1,4 +1,4 @@
-import { Typography, Box, IconButton, Checkbox, Button } from '@mui/material';
+import { Typography, Box, IconButton, Checkbox } from '@mui/material';
 import { useState } from 'react';
 import { KeyboardArrowRight, KeyboardArrowDown, Delete } from '@mui/icons-material';
 import SubtaskSection from './SubtaskSection';

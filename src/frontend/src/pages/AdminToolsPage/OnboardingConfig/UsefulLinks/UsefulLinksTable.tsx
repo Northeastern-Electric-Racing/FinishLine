@@ -109,9 +109,6 @@ const UsefulLinksTable = () => {
                         event.stopPropagation();
                         return setLinkToDelete(link);
                       }}
-                      sx={{'&hover': {
-                        backgroundColor:'transparent'
-                      }}}
                     >
                       <Delete sx={{ color: 'white' }} />
                     </IconButton>
