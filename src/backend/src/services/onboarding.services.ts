@@ -322,7 +322,7 @@ export default class OnboardingServices {
   static async toggleChecklistItem(checklistId: string, userId: string) {
     const checklist = await prisma.checklist.findUnique({
       where: { checklistId },
-      include: { usersChecked: true, subtasks: true }
+      include: { usersChecked: true, subtasks: { where: { dateDeleted: null }, include: { usersChecked: true } } }
     });
 
     if (!checklist) {
@@ -330,6 +330,16 @@ export default class OnboardingServices {
     }
 
     const isChecked = checklist.usersChecked.some((user) => user.userId === userId);
+
+    if (checklist.subtasks.length > 0 && !isChecked) {
+      const allSubtasksChecked = checklist.subtasks.every((subtask) =>
+        subtask.usersChecked.some((user) => user.userId === userId)
+      );
+
+      if (!allSubtasksChecked) {
+        throw new Error('Cannot check off this checklist item because not all of its subtasks are checked.');
+      }
+    }
 
     if (isChecked) {
       await prisma.checklist.update({
