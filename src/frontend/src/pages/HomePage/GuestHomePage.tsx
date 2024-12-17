@@ -9,6 +9,7 @@ import { useHomePageContext } from '../../app/HomePageContext';
 import { useCurrentOrganization } from '../../hooks/organizations.hooks';
 import LoadingIndicator from '../../components/LoadingIndicator';
 import ErrorPage from '../ErrorPage';
+import { useGetImageUrl } from '../../hooks/onboarding.hooks';
 
 const GuestHomePage = () => {
   const user = useCurrentUser();
@@ -16,12 +17,26 @@ const GuestHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
   const { setCurrentHomePage } = useHomePageContext();
 
+  const {
+    data: applyInterestImageUrl,
+    isLoading: applyImageLoading,
+    isError: applyImageError
+  } = useGetImageUrl(organization?.applyInterestImageId ?? null);
+  const {
+    data: exploreGuestImageUrl,
+    isLoading: exploreImageLoading,
+    isError: exploreImageError
+  } = useGetImageUrl(organization?.exploreAsGuestImageId ?? null);
+
   useEffect(() => {
     setCurrentHomePage('guest');
   }, [setCurrentHomePage]);
 
-  if (!organization || isLoading) return <LoadingIndicator />;
+  if (!organization || isLoading || applyImageLoading || exploreImageLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;
+  if (applyImageError) return <ErrorPage message="Error loading apply interest image" />;
+  if (exploreImageError) return <ErrorPage message="Error loading explore as guest image" />;
+  if (!applyInterestImageUrl || !exploreGuestImageUrl) throw new Error('Image URLs are undefined');
 
   return (
     <PageLayout title="Home" hidePageTitle>
@@ -41,13 +56,13 @@ const GuestHomePage = () => {
         <Box sx={{ display: 'flex', gap: 5 }}>
           <ImageWithButton
             title="Interested in applying"
-            imageSrc={`https://drive.google.com/thumbnail?id=${organization?.applyInterestImageId}&sz=w1000`}
+            imageSrc={applyInterestImageUrl}
             buttonText="Learn More"
             onClick={() => history.push(routes.HOME_PNM)}
           />
           <ImageWithButton
             title="Explore Our Work as a Guest"
-            imageSrc={`https://drive.google.com/thumbnail?id=${organization?.exploreAsGuestImageId}&sz=w1000`}
+            imageSrc={exploreGuestImageUrl}
             buttonText="FinishLine"
             onClick={() => history.push(routes.HOME_MEMBER)}
           />
