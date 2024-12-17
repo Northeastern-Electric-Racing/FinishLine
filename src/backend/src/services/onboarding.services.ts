@@ -351,46 +351,41 @@ export default class OnboardingServices {
       });
     }
 
-    if (!checklist.parentChecklistId) {
-      return checklist;
-    }
+    if (checklist.parentChecklistId) {
+      const parentChecklist = await prisma.checklist.findUnique({
+        where: { checklistId: checklist.parentChecklistId },
+        include: {
+          subtasks: {
+            where: { dateDeleted: null },
+            include: { usersChecked: true }
+          }
+        }
+      });
 
-    const parentChecklist = await prisma.checklist.findUnique({
-      where: { checklistId: checklist.parentChecklistId },
-      include: {
-        subtasks: {
-          where: { dateDeleted: null },
-          include: { usersChecked: true }
+      if (parentChecklist) {
+        const allSubtasksChecked = parentChecklist.subtasks.every((subtask) =>
+          subtask.usersChecked.some((user) => user.userId === userId)
+        );
+        if (allSubtasksChecked) {
+          await prisma.checklist.update({
+            where: { checklistId: parentChecklist.checklistId },
+            data: {
+              usersChecked: {
+                connect: { userId }
+              }
+            }
+          });
+        } else {
+          await prisma.checklist.update({
+            where: { checklistId: parentChecklist.checklistId },
+            data: {
+              usersChecked: {
+                disconnect: { userId }
+              }
+            }
+          });
         }
       }
-    });
-
-    if (!parentChecklist) {
-      return checklist;
-    }
-
-    const allSubtasksChecked = parentChecklist.subtasks.every((subtask) =>
-      subtask.usersChecked.some((user) => user.userId === userId)
-    );
-
-    if (allSubtasksChecked) {
-      await prisma.checklist.update({
-        where: { checklistId: parentChecklist.checklistId },
-        data: {
-          usersChecked: {
-            connect: { userId }
-          }
-        }
-      });
-    } else {
-      await prisma.checklist.update({
-        where: { checklistId: parentChecklist.checklistId },
-        data: {
-          usersChecked: {
-            disconnect: { userId }
-          }
-        }
-      });
     }
 
     return checklist;
