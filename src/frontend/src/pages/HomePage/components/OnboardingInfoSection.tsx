@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import { useCurrentOrganization } from '../../../hooks/organizations.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
-import OnboardingBlock from '../../../components/OnboardingBlock';
+import OnboardingBlock from '../../AdminToolsPage/OnboardingConfig/OnboardingBlock';
 import { useAllUsefulLinks } from '../../../hooks/projects.hooks';
 
 const OnboardingInfoSection: React.FC = () => {
