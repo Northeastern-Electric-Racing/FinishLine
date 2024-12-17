@@ -257,32 +257,21 @@ describe('Organization Tests', () => {
           await OrganizationsService.updateOrganizationContacts(
             await createTestUser(wonderwomanGuest, orgId),
             organization,
-            ['1', '2'],
-            ['Title 1', 'Title 2']
+            [
+              { userId: '1', title: 'Title 1' },
+              { userId: '2', title: 'Title 2' }
+            ]
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update organiztion contacts'));
-    });
-    it('Fails if there is not the same number of userIds and titles', async () => {
-      await expect(
-        async () =>
-          await OrganizationsService.updateOrganizationContacts(
-            await createTestUser(batmanAppAdmin, orgId),
-            organization,
-            ['1', '2'],
-            ['Title 1']
-          )
-      ).rejects.toThrow(new HttpException(400, 'Must have same number of userIds and titles'));
     });
     it('Succeeds and creates new contacts and updates organizations contacts', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       const testSuperman = await createTestUser(supermanAdmin, orgId);
 
-      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(
-        testBatman,
-        organization,
-        [testBatman.userId, testSuperman.userId],
-        ['Chief Software Engineer', 'Chief Mechanical Engineer']
-      );
+      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
+        { userId: testBatman.userId, title: 'Chief Software Engineer' },
+        { userId: testSuperman.userId, title: 'Chief Mechanical Engineer' }
+      ]);
 
       const allContacts = await prisma.contact.findMany({
         where: {
