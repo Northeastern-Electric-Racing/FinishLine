@@ -89,6 +89,7 @@ export default class OnboardingController {
     }
   }
 
+
   static async toggleChecklistItem(req: Request, res: Response, next: NextFunction) {
     try {
       const { checklistId } = req.params;
@@ -96,6 +97,23 @@ export default class OnboardingController {
 
       const updatedItem = await OnboardingServices.toggleChecklistItem(checklistId, userId);
       res.status(200).json(updatedItem);
+    } catch (error: unknown) {
+      return next(error);
+    }
+  }
+      
+  static async downloadImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { fileId } = req.params;
+
+      const imageData = await OnboardingServices.downloadImage(fileId);
+
+      // Set the appropriate headers for the HTTP response
+      res.setHeader('content-type', String(imageData.type));
+      res.setHeader('content-length', imageData.buffer.length);
+
+      // Send the Buffer as the response body
+      res.send(imageData.buffer);
     } catch (error: unknown) {
       return next(error);
     }

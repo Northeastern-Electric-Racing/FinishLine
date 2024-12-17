@@ -44,4 +44,7 @@ onboardingRouter.post('/checklist/delete/:checklistId', OnboardingController.del
 
 onboardingRouter.post('/checklists/item/:checklistId/checked', OnboardingController.toggleChecklistItem);
 
+onboardingRouter.get('/image/:fileId', OnboardingController.downloadImage);
+
+
 export default onboardingRouter;

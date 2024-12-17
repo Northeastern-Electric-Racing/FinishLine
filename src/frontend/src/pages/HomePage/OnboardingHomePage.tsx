@@ -10,13 +10,11 @@ import OnboardingInfoSection from './components/OnboardingInfoSection';
 
 const OnboardingHomePage = () => {
   const { data: organization, isError, error, isLoading } = useCurrentOrganization();
-  const { setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage } = useHomePageContext();
+  const { setCurrentHomePage } = useHomePageContext();
 
   useEffect(() => {
-    setOnPNMHomePage(false);
-    setOnGuestHomePage(false);
-    setOnOnboardingHomePage(true);
-  }, [setOnPNMHomePage, setOnGuestHomePage, setOnOnboardingHomePage]);
+    setCurrentHomePage('onboarding');
+  }, [setCurrentHomePage]);
 
   if (!organization || isLoading) return <LoadingIndicator />;
   if (isError) return <ErrorPage message={error?.message} />;

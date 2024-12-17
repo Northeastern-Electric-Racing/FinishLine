@@ -7,10 +7,10 @@ import CreateTeamTypeFormModal from './CreateTeamTypeFormModal';
 import { TeamType } from 'shared';
 import EditTeamTypeFormModal from './EditTeamTypeFormModal';
 import { useAllTeamTypes, useSetTeamTypeImage } from '../../../hooks/team-types.hooks';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useToast } from '../../../hooks/toasts.hooks';
 import NERUploadButton from '../../../components/NERUploadButton';
-import { downloadGoogleImage } from '../../../apis/finance.api';
+import { useGetImageUrls } from '../../../hooks/onboarding.hook';
 
 const TeamTypeTable: React.FC = () => {
   const {
@@ -24,35 +24,43 @@ const TeamTypeTable: React.FC = () => {
   const [editingTeamType, setEditingTeamType] = useState<TeamType | undefined>(undefined);
   const [addedImages, setAddedImages] = useState<{ [key: string]: File | undefined }>({});
   const toast = useToast();
-  const [imageUrls, setImageUrls] = useState<{ [key: string]: string | undefined }>({});
 
-  useEffect(() => {
-    try {
-      teamTypes?.forEach(async (teamType) => {
-        const imageBlob = await downloadGoogleImage(teamType.imageFileId ?? '');
-        const url = URL.createObjectURL(imageBlob);
-        setImageUrls((prev) => ({ ...prev, [teamType.teamTypeId]: url }));
-      });
-    } catch (error) {
-      console.error('Error fetching image urls', error);
-    }
-  }, [teamTypes]);
+  const imageFileIds = teamTypes?.map((teamType) => teamType.imageFileId) ?? [];
+  const { data: imageUrlsList, isLoading, isError } = useGetImageUrls(imageFileIds);
+  const { mutateAsync: setTeamTypeImage, isLoading: setTeamTypeIsLoading } = useSetTeamTypeImage();
 
-  const { mutateAsync: setTeamTypeImage } = useSetTeamTypeImage();
+  const imageUrls = useMemo(() => {
+    if (!imageUrlsList || isLoading || isError) return {};
 
-  if (!teamTypes || teamTypesIsLoading) {
-    return <LoadingIndicator />;
-  }
+    const urlMap: { [key: string]: string | undefined } = {};
+    teamTypes?.forEach((teamType, index) => {
+      urlMap[teamType.teamTypeId] = imageUrlsList[index];
+    });
+    return urlMap;
+  }, [imageUrlsList, isLoading, isError, teamTypes]);
+
   if (teamTypesIsError) {
     return <ErrorPage message={teamTypesError?.message} />;
+  }
+
+  if (!teamTypes || teamTypesIsLoading || setTeamTypeIsLoading) {
+    return <LoadingIndicator />;
   }
 
   const onSubmitTeamTypeImage = async (teamTypeId: string) => {
     const addedImage = addedImages[teamTypeId];
     if (addedImage) {
-      await setTeamTypeImage({ file: addedImage, id: teamTypeId });
-      toast.success('Image uploaded successfully!', 5000);
-      setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      try {
+        await setTeamTypeImage({ file: addedImage, id: teamTypeId });
+        toast.success('Image uploaded successfully!', 5000);
+        setAddedImages((prev) => ({ ...prev, [teamTypeId]: undefined }));
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error('Failed to set team image: ' + error.message);
+        } else {
+          toast.error('Failed to set team image');
+        }
+      }
     } else {
       toast.error('No image selected for upload.', 5000);
     }

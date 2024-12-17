@@ -3,6 +3,7 @@ import prisma from '../prisma/prisma';
 import { userHasPermission } from '../utils/users.utils';
 import { isAdmin } from 'shared';
 import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
+import { downloadImageFile } from '../utils/google-integration.utils';
 
 export default class OnboardingServices {
   /* Checklist section */
@@ -399,5 +400,11 @@ export default class OnboardingServices {
     }
 
     return checklist;
+}
+  static async downloadImage(fileId: string) {
+    const fileData = await downloadImageFile(fileId);
+
+    if (!fileData) throw new NotFoundException('Image File', fileId);
+    return fileData;
   }
 }
