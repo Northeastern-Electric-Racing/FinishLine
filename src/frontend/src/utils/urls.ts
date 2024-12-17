@@ -196,6 +196,7 @@ const onboarding = () => `${API_URL}/onboarding`;
 const allChecklists = () => `${onboarding()}/checklists`;
 const generalChecklists = () => `${allChecklists()}/general`;
 const usersTeamTypeChecklists = () => `${allChecklists()}/usersChecklists`;
+const imageById = (imageId: string) => `${onboarding()}/image/${imageId}`;
 
 /**************** Other Endpoints ****************/
 const version = () => `https://api.github.com/repos/Northeastern-Electric-Racing/FinishLine/releases/latest`;
@@ -355,6 +356,7 @@ export const apiUrls = {
   allChecklists,
   generalChecklists,
   usersTeamTypeChecklists,
+  imageById,
 
   version
 };
