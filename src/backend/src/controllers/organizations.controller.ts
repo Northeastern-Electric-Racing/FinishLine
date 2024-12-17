@@ -91,12 +91,13 @@ export default class OrganizationsController {
 
   static async updateOrganizationContacts(req: Request, res: Response, next: NextFunction) {
     try {
-      const { contacts } = req.body;
+      const { userIds, titles } = req.body;
 
       const updatedOrganization = await OrganizationsService.updateOrganizationContacts(
         req.currentUser,
         req.organization,
-        contacts
+        userIds,
+        titles
       );
 
       return res.status(200).json(updatedOrganization);

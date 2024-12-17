@@ -69,7 +69,11 @@ const OnboardingInfoSection: React.FC = () => {
           <Typography sx={{ mt: 2, ml: 2, fontWeight: 'bold' }}>Feel free to contact:</Typography>
           <List sx={{ listStyleType: 'disc', pl: 2 }}>
             {organization.contacts.map((contact) => {
-              return <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>{contact}</ListItem>;
+              return (
+                <ListItem sx={{ display: 'list-item', padding: 0.5, ml: 2 }}>
+                  {contact.user.firstName} {contact.user.lastName}: {contact.user.email} - {contact.title}
+                </ListItem>
+              );
             })}
           </List>
         </Box>

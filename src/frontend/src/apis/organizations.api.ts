@@ -1,6 +1,7 @@
 import axios from '../utils/axios';
 import { Organization } from 'shared';
 import { apiUrls } from '../utils/urls';
+import { UpdateContactsPayload } from '../hooks/organizations.hooks';
 
 /**
  * Create a design review
@@ -16,8 +17,8 @@ export const getCurrentOrganization = async () => {
  * Sets the contacts for an organization
  * @param contacts all the contact information that is being set
  */
-export const updateOrganizationContacts = async (contacts: string[]) => {
+export const updateOrganizationContacts = async (payload: UpdateContactsPayload) => {
   return axios.post<{ message: string }>(apiUrls.organizationsUpdateContacts(), {
-    contacts
+    ...payload
   });
 };

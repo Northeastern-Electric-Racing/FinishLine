@@ -1,6 +1,6 @@
 import { LinkCreateArgs } from 'shared';
 import { AccessDeniedAdminOnlyException, HttpException, NotFoundException } from '../../src/utils/errors.utils';
-import { batmanAppAdmin, wonderwomanGuest } from '../test-data/users.test-data';
+import { batmanAppAdmin, supermanAdmin, wonderwomanGuest } from '../test-data/users.test-data';
 import { createTestLinkType, createTestOrganization, createTestUser, resetUsers } from '../test-utils';
 import prisma from '../../src/prisma/prisma';
 import { testLink1 } from '../test-data/organizations.test-data';
@@ -257,22 +257,46 @@ describe('Organization Tests', () => {
           await OrganizationsService.updateOrganizationContacts(
             await createTestUser(wonderwomanGuest, orgId),
             organization,
-            ['Test contact 1', 'Test Contact 2']
+            ['1', '2'],
+            ['Title 1', 'Title 2']
           )
       ).rejects.toThrow(new AccessDeniedAdminOnlyException('update organiztion contacts'));
     });
-
-    it('Succeeds and updates organization contacts', async () => {
+    it('Fails if there is not the same number of userIds and titles', async () => {
+      await expect(
+        async () =>
+          await OrganizationsService.updateOrganizationContacts(
+            await createTestUser(batmanAppAdmin, orgId),
+            organization,
+            ['1', '2'],
+            ['Title 1']
+          )
+      ).rejects.toThrow(new HttpException(400, 'Must have same number of userIds and titles'));
+    });
+    it('Succeeds and creates new contacts and updates organizations contacts', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
+      const testSuperman = await createTestUser(supermanAdmin, orgId);
 
-      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(testBatman, organization, [
-        'Test Contact 1',
-        'Test Contact 2'
-      ]);
+      const updatedOrganization = await OrganizationsService.updateOrganizationContacts(
+        testBatman,
+        organization,
+        [testBatman.userId, testSuperman.userId],
+        ['Chief Software Engineer', 'Chief Mechanical Engineer']
+      );
+
+      const allContacts = await prisma.contact.findMany({
+        where: {
+          organizationId: orgId
+        }
+      });
+
+      expect(allContacts.length).toBe(2);
+      expect(allContacts[0].userId).toBe(testBatman.userId);
+      expect(allContacts[1].userId).toBe(testSuperman.userId);
 
       expect(updatedOrganization).not.toBeNull();
-      expect(updatedOrganization.contacts[0]).toBe('Test Contact 1');
-      expect(updatedOrganization.contacts[1]).toBe('Test Contact 2');
+      expect(updatedOrganization.contacts[0].title).toBe('Chief Software Engineer');
+      expect(updatedOrganization.contacts[1].title).toBe('Chief Mechanical Engineer');
     });
   });
 });

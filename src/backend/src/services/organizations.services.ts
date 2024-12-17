@@ -1,7 +1,7 @@
 import { Organization, User } from '@prisma/client';
 import { LinkCreateArgs, isAdmin } from 'shared';
 import prisma from '../prisma/prisma';
-import { AccessDeniedAdminOnlyException, DeletedException, NotFoundException } from '../utils/errors.utils';
+import { AccessDeniedAdminOnlyException, DeletedException, HttpException, NotFoundException } from '../utils/errors.utils';
 import { userHasPermission } from '../utils/users.utils';
 import { createUsefulLinks } from '../utils/organizations.utils';
 import { linkTransformer } from '../transformers/links.transformer';
@@ -15,7 +15,14 @@ export default class OrganizationsService {
    */
   static async getCurrentOrganization(organizationId: string) {
     const organization = await prisma.organization.findUnique({
-      where: { organizationId }
+      where: { organizationId },
+      include: {
+        contacts: {
+          include: {
+            user: true
+          }
+        }
+      }
     });
 
     if (!organization) {
@@ -196,21 +203,52 @@ export default class OrganizationsService {
   /**
    * Updates contacts of organization
    * @param user User updating the contacts
-   * @param contacts The new contacts of the organization
    * @param organizationId organizationId of the organization
+   * @param userIds users to be added as contacts
+   * @param titles the titles of each of the user ids
    * @returns updated organization with new contacts
    */
-  static async updateOrganizationContacts(user: User, organization: Organization, contacts: string[]) {
+  static async updateOrganizationContacts(user: User, organization: Organization, userIds: string[], titles: string[]) {
     if (!(await userHasPermission(user.userId, organization.organizationId, isAdmin))) {
       throw new AccessDeniedAdminOnlyException('update organiztion contacts');
     }
     const { organizationId } = organization;
-    const updatedOrganization = await prisma.organization.update({
+
+    if (userIds.length !== titles.length) {
+      throw new HttpException(400, 'Must have same number of userIds and titles');
+    }
+
+    await prisma.contact.deleteMany({
       where: {
         organizationId
-      },
+      }
+    });
+
+    const contacts = await Promise.all(
+      userIds.map((userId, index) =>
+        prisma.contact.create({
+          data: {
+            organizationId,
+            userId,
+            title: titles[index]
+          }
+        })
+      )
+    );
+
+    const updatedOrganization = await prisma.organization.update({
+      where: { organizationId },
       data: {
-        contacts
+        contacts: {
+          connect: contacts.map((contact) => ({ contactId: contact.contactId }))
+        }
+      },
+      include: {
+        contacts: {
+          include: {
+            user: true
+          }
+        }
       }
     });
 

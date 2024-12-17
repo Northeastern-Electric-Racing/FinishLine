@@ -1,34 +1,37 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import NERFormModal from '../../../components/NERFormModal';
-import { FormLabel, Button, IconButton, TextField, FormHelperText, Box } from '@mui/material';
+import { FormLabel, Button, IconButton, TextField, FormHelperText, Box, Select, MenuItem } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useToast } from '../../../hooks/toasts.hooks';
 import ErrorPage from '../../ErrorPage';
 import LoadingIndicator from '../../../components/LoadingIndicator';
 import * as yup from 'yup';
-import { useUpdateOrganizationContacts } from '../../../hooks/organizations.hooks';
+import { useUpdateOrganizationContacts } from '../../../hooks/organizations.hooks'; // Assume hook exists
+import { Contact, User } from 'shared';
+import { useAllUsers } from '../../../hooks/users.hooks';
 
 const schema = yup.object().shape({
   contacts: yup
     .array()
-    .of(yup.object({ value: yup.string().required('Contact cannot be empty') }))
+    .of(
+      yup.object({
+        userId: yup.string().required('User cannot be empty'),
+        title: yup.string().required('Title cannot be empty')
+      })
+    )
     .min(1, 'At least one contact is required')
 });
 
-interface Contact {
-  value: string;
-}
-
 interface FormValues {
-  contacts: Contact[];
+  contacts: { userId: string; title: string }[];
 }
 
 interface UpdateOnboardingContactsModalProps {
   showModal: boolean;
   handleClose: () => void;
-  defaultValues: { contacts: string[] };
+  defaultValues: { contacts: Contact[] };
 }
 
 const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps> = ({
@@ -37,9 +40,21 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
   defaultValues
 }) => {
   const toast = useToast();
-  const { isLoading, isError, error, mutateAsync } = useUpdateOrganizationContacts();
+  const {
+    isLoading: updateContactsIsLoading,
+    isError: updateContactsIsError,
+    error: updateContactsError,
+    mutateAsync
+  } = useUpdateOrganizationContacts();
+  const { isLoading: allUsersIsLoading, isError: allUsersIsError, error: allUsersError, data: users } = useAllUsers();
 
-  const contactsAsObjects = defaultValues.contacts.map((c) => ({ value: c }));
+  const contactsAsObjects = useMemo(() => 
+    defaultValues.contacts.map((c) => ({ 
+      userId: c.user.userId, 
+      title: c.title 
+    })),
+    [defaultValues.contacts]
+  );
 
   const {
     handleSubmit,
@@ -57,7 +72,10 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
   });
 
   const onSubmit = async (data: FormValues) => {
-    const updatedContacts = data.contacts.map((c) => c.value);
+    const updatedContacts = {
+      userIds: data.contacts.map((c) => c.userId),
+      titles: data.contacts.map((c) => c.title)
+    };
 
     try {
       await mutateAsync(updatedContacts);
@@ -72,13 +90,13 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
 
   useEffect(() => {
     if (showModal) {
-      const contactsAsObjects = defaultValues.contacts.map((c) => ({ value: c }));
       reset({ contacts: contactsAsObjects });
     }
-  }, [showModal, defaultValues, reset]);
+  }, [showModal, defaultValues, reset, contactsAsObjects]);
 
-  if (isError) return <ErrorPage message={error?.message} />;
-  if (isLoading) return <LoadingIndicator />;
+  if (updateContactsIsError) return <ErrorPage message={updateContactsError?.message} />;
+  if (allUsersIsError) return <ErrorPage message={allUsersError?.message} />;
+  if (updateContactsIsLoading || allUsersIsLoading || !users) return <LoadingIndicator />;
 
   return (
     <NERFormModal
@@ -95,21 +113,25 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
         {fields.map((field, index) => (
           <Box key={field.id} display="flex" alignItems="center" gap={1}>
             <Controller
-              name={`contacts.${index}.value`}
+              name={`contacts.${index}.userId`}
               control={control}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  label={`Contact ${index + 1}`}
-                  variant="outlined"
-                  fullWidth
-                  sx={{
-                    minWidth: '500px'
-                  }}
-                  error={!!errors?.contacts?.[index]?.value?.message}
-                  helperText={errors?.contacts?.[index]?.value?.message as string}
-                />
+                <Select {...field} label={`User ${index + 1}`} variant="outlined" fullWidth displayEmpty>
+                  <MenuItem value="" disabled>
+                    Select a User
+                  </MenuItem>
+                  {users.map((user: User) => (
+                    <MenuItem value={user.userId}>
+                      {`${user.firstName} ${user.lastName}`}
+                    </MenuItem>
+                  ))}
+                </Select>
               )}
+            />
+            <Controller
+              name={`contacts.${index}.title`}
+              control={control}
+              render={({ field }) => <TextField {...field} label={`Title ${index + 1}`} variant="outlined" fullWidth />}
             />
             <IconButton onClick={() => remove(index)} color="error">
               <DeleteIcon />
@@ -118,7 +140,7 @@ const UpdateOnboardingContactsModal: React.FC<UpdateOnboardingContactsModalProps
         ))}
         <Button
           startIcon={<AddIcon />}
-          onClick={() => append({ value: '' })}
+          onClick={() => append({ userId: '', title: '' })}
           variant="outlined"
           sx={{ alignSelf: 'flex-start' }}
         >

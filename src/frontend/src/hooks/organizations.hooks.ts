@@ -1,12 +1,17 @@
 import { useContext, useState } from 'react';
 import { OrganizationContext } from '../app/AppOrganizationContext';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { Organization } from 'shared';
+import { Contact, Organization } from 'shared';
 import { getCurrentOrganization, updateOrganizationContacts } from '../apis/organizations.api';
 
 interface OrganizationProvider {
   organizationId: string;
   selectOrganization: (organizationId: string) => void;
+}
+
+export interface UpdateContactsPayload {
+  userIds: string[];
+  titles: string[];
 }
 
 export const useCurrentOrganization = () => {
@@ -39,11 +44,10 @@ export const useOrganization = () => {
 
 export const useUpdateOrganizationContacts = () => {
   const queryClient = useQueryClient();
-  console.log('test 2');
-  return useMutation<{ message: string }, Error, string[]>(
+  return useMutation<{ message: string }, Error, UpdateContactsPayload>(
     ['organizations'],
-    async (contacts: string[]) => {
-      const { data } = await updateOrganizationContacts(contacts);
+    async (payload: UpdateContactsPayload) => {
+      const { data } = await updateOrganizationContacts(payload);
       return data;
     },
     {
