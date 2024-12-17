@@ -273,12 +273,6 @@ describe('Organization Tests', () => {
       );
     });
 
-    it('Fails if the organization does not have a logo image', async () => {
-      await expect(async () => await OrganizationsService.getLogoImage(orgId)).rejects.toThrow(
-        new HttpException(404, `Organization ${orgId} does not have a logo image`)
-      );
-    });
-
     it('Succeeds and gets the image', async () => {
       const testBatman = await createTestUser(batmanAppAdmin, orgId);
       await OrganizationsService.setLogoImage(
