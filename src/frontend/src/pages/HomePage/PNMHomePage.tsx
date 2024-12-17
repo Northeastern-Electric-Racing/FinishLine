@@ -28,10 +28,10 @@ const PNMHomePage = () => {
 
   const [recruitmentInfoTabValue, setRecruitmentInfoTabValue] = useState(0);
   const [teamTypeTabValue, setTeamTypeTabValue] = useState(0);
-  const { setCurrentHomePage} = useHomePageContext();
+  const { setCurrentHomePage } = useHomePageContext();
 
   useEffect(() => {
-    setCurrentHomePage('pnm')
+    setCurrentHomePage('pnm');
   }, [setCurrentHomePage]);
 
   if (!organization || organizationIsLoading || !teamTypes || teamTypesIsLoading) return <LoadingIndicator />;
