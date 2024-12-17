@@ -5,9 +5,10 @@
 
 import PageLayout from '../../components/PageLayout';
 import BarChart from '../../components/StatsBarChart';
+import PieChart from '../../components/StatsPieChart';
 
 const StatisticsPage: React.FC = () => {
-  // Testing bar chart component
+  // Testing bar and pie chart components
   return (
     <PageLayout title="Statistics">
       <BarChart
@@ -15,7 +16,26 @@ const StatisticsPage: React.FC = () => {
         yAxisData={[100, 200, 50, 300]}
         xAxisLabel="Categories"
         yAxisLabel="Values"
-        graphTitle="Statistics Overview"
+        graphTitle="Bar Chart Test"
+      />
+
+      <PieChart
+        xAxisData={[
+          'test1',
+          'test2',
+          'test3',
+          'test4',
+          'test5',
+          'test6',
+          'test7',
+          'test8',
+          'test9',
+          'test10',
+          'test11',
+          'test12'
+        ]}
+        yAxisData={[10, 20, 5, 35, 15, 25, 10, 20, 5, 10, 12, 20]}
+        graphTitle="Pie Chart Test"
       />
     </PageLayout>
   );

@@ -20,9 +20,9 @@ export default class StatisticsController {
         graphCollectionId
       );
 
-      return res.status(200).json(graph);
+      res.status(200).json(graph);
     } catch (error: unknown) {
-      return next(error);
+      next(error);
     }
   }
 }
